@@ -67,13 +67,16 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
-/** This class is entry point of modeldb server. */
+/**
+ * This class is entry point of modeldb server.
+ */
 @SpringBootApplication
 @EnableAutoConfiguration
 @EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
 @ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
 public class App implements ApplicationContextAware {
+
   public ApplicationContext applicationContext;
 
   /**

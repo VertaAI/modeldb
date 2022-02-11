@@ -244,7 +244,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     }
   }
 
-  /** Fetch all the datasetVersions pointed to by dataset ID */
+  /**
+   * Fetch all the datasetVersions pointed to by dataset ID
+   */
   @Override
   public void getAllDatasetVersionsByDatasetId(
       GetAllDatasetVersionsByDatasetId request,
@@ -371,7 +373,9 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     }
   }
 
-  /** get the datasetVersion with the most recent time logged */
+  /**
+   * get the datasetVersion with the most recent time logged
+   */
   @Override
   public void getLatestDatasetVersionByDatasetId(
       GetLatestDatasetVersionByDatasetId request,
@@ -575,7 +579,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
               "tags",
               new Gson()
                   .toJsonTree(
-                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "dataset_version tags added successfully");
 
       responseObserver.onNext(response);
@@ -629,7 +634,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             "tags",
             new Gson()
                 .toJsonTree(
-                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           datasetVersion.getId(),
@@ -695,7 +701,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
                       request.getAttributesList().stream()
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "dataset_version attributes added successfully");
 
       responseObserver.onNext(response);
@@ -754,7 +761,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
                       Stream.of(request.getAttribute())
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "dataset_version attribute updated successfully");
 
       responseObserver.onNext(response);
@@ -856,7 +864,8 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType()));
+                    new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           updatedDatasetVersion.getId(),

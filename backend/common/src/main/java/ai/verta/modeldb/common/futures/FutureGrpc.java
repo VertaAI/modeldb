@@ -13,7 +13,9 @@ import java.util.concurrent.ForkJoinPool;
 
 @SuppressWarnings({"squid:S100"})
 public class FutureGrpc {
-  private FutureGrpc() {}
+
+  private FutureGrpc() {
+  }
 
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
   // InternalFuture
@@ -54,6 +56,7 @@ public class FutureGrpc {
 
   // Callback for a ListenableFuture to satisfy a promise
   private static class Callback<T> implements com.google.common.util.concurrent.FutureCallback<T> {
+
     final CompletableFuture<T> promise;
 
     private Callback(CompletableFuture<T> promise) {
@@ -72,6 +75,7 @@ public class FutureGrpc {
   }
 
   private static class ExecutorWrapper implements Executor {
+
     final Executor other;
 
     ExecutorWrapper(Executor other) {

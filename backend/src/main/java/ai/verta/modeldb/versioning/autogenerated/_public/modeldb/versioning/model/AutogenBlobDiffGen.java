@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenBlobDiffGen extends Generator<AutogenBlobDiff> {
+
   public AutogenBlobDiffGen() {
     super(AutogenBlobDiff.class);
   }

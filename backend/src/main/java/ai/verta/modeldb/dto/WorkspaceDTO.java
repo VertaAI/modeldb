@@ -3,6 +3,7 @@ package ai.verta.modeldb.dto;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 
 public class WorkspaceDTO {
+
   Long workspaceServiceId;
   private String workspaceName;
   private String workspaceId;

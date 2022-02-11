@@ -9,7 +9,9 @@ import java.util.Collections;
 import java.util.List;
 
 public class CollaboratorUtils {
-  private CollaboratorUtils() {}
+
+  private CollaboratorUtils() {
+  }
 
   public static AddCollaboratorRequest addCollaboratorRequestDataset(
       Dataset dataset, String email, CollaboratorType collaboratorType) {

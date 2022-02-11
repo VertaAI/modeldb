@@ -25,8 +25,10 @@ springServer:
 
 ## AuthService Properties ***(Optional)***
 
-- AuthService is the authentication service that provides access control on top of the modeldb-backend.
-- you can use your AuthService by implementing the protos in the [UAC package](../protos/protos/public/uac/UACService.proto).
+- AuthService is the authentication service that provides access control on top of the
+  modeldb-backend.
+- you can use your AuthService by implementing the protos in
+  the [UAC package](../protos/protos/public/uac/UACService.proto).
 
 ```yaml
 authService:
@@ -56,12 +58,15 @@ artifactStoreConfig:
 ```
 
 1. `artifactStoreType` define your prefer artifact store type like NFS, S3.
-1. If select `S3` then set appropriate `cloudAccessKey`, `cloudSecretKey` provide by amazon setup and `cloudBucketName`(**Note:** bucket needs to exist already) of amazon S3
+1. If select `S3` then set appropriate `cloudAccessKey`, `cloudSecretKey` provide by amazon setup
+   and `cloudBucketName`(**Note:** bucket needs to exist already) of amazon S3
 1. If select `NFS` then set appropriate properties
     - `nfsServerHost` NFS server host where you have to connect default value is `localhost`
-    - `nfsUrlProtocol` NFS server URL protocol if it secure then its value is `https` otherwise `http`
+    - `nfsUrlProtocol` NFS server URL protocol if it secure then its value is `https`
+      otherwise `http`
     - `nfsRootPath` is the root path of NFS server where you want to store all artifacts
-    - `artifactEndpoint` define the artifact endpoints URLs which you will use for store & get artifacts
+    - `artifactEndpoint` define the artifact endpoints URLs which you will use for store & get
+      artifacts
 
 ### Database Config ***(Mandatory)***
 
@@ -79,13 +84,20 @@ database:
     RdbPassword: root
 ```
 
-1. `DBType` provide the provision to configure different database like Relation DB, noSql DB. based on this type modeldb-backend initialize the database. (***Note:*** Currently modeldb-backend support only relational DB but you can extend it by writing your own database code)
-1. `timeout`(**Optional**) the time in seconds to wait for the database operation used to validate the DB connection to complete. Default value is 4.
-1. `liquibaseLockThreshold`(**Optional**) the time in second to check liquibase db lock threshold, if system found lock time difference greater then this threshold at system startup it will release the liquibase lock. Default value is 60
-1. `RdbConfiguration` define the database relevant configuration above sample defined for the PostgreSQL DB.
+1. `DBType` provide the provision to configure different database like Relation DB, noSql DB. based
+   on this type modeldb-backend initialize the database. (***Note:*** Currently modeldb-backend
+   support only relational DB but you can extend it by writing your own database code)
+1. `timeout`(**Optional**) the time in seconds to wait for the database operation used to validate
+   the DB connection to complete. Default value is 4.
+1. `liquibaseLockThreshold`(**Optional**) the time in second to check liquibase db lock threshold,
+   if system found lock time difference greater then this threshold at system startup it will
+   release the liquibase lock. Default value is 60
+1. `RdbConfiguration` define the database relevant configuration above sample defined for the
+   PostgreSQL DB.
 
-    ***Note:***
-    - Ensure the user mentioned in `RdbUsername` & `RdbPassword` has create privileges on the database mentioned in `RdbDatabaseName`.
+   ***Note:***
+    - Ensure the user mentioned in `RdbUsername` & `RdbPassword` has create privileges on the
+      database mentioned in `RdbDatabaseName`.
 
 ### Test Database Config ***(Mandatory)***
 
@@ -112,4 +124,5 @@ test:
 ```
 
 1. `test-database` go with the same steps define on above section
-1. `testUsers` if you are use the authService then `testUsers` properties are compulsory and provide to register test users details `email` and `devKey` which provide by UAC service.
+1. `testUsers` if you are use the authService then `testUsers` properties are compulsory and provide
+   to register test users details `email` and `devKey` which provide by UAC service.

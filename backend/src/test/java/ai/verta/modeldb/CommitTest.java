@@ -135,7 +135,7 @@ public class CommitTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (Repository repo : new Repository[] {repository}) {
+    for (Repository repo : new Repository[]{repository}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repo.getId()))
@@ -477,7 +477,7 @@ public class CommitTest extends TestsInit {
         commitList.get(0),
         listCommitsResponse.getCommits(0));
 
-    for (Commit cm : new Commit[] {commit4, commit3, commit2, commit1}) {
+    for (Commit cm : new Commit[]{commit4, commit3, commit2, commit1}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(
@@ -1877,7 +1877,7 @@ public class CommitTest extends TestsInit {
         listCommitBlobsResponse.getBlobs(0).getBlob().getConfig().getHyperparametersCount());
 
     for (Commit deleteCommit :
-        new Commit[] {revertedCommit2, revertedCommit1, commitD, commitC, commitB, commitA}) {
+        new Commit[]{revertedCommit2, revertedCommit1, commitD, commitC, commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(
@@ -1918,7 +1918,7 @@ public class CommitTest extends TestsInit {
         VersioningUtils.revertCommitMessage(commitA),
         revertedCommit1.getMessage());
 
-    for (Commit deleteCommit : new Commit[] {revertedCommit1, commitA}) {
+    for (Commit deleteCommit : new Commit[]{revertedCommit1, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(
@@ -2556,7 +2556,7 @@ public class CommitTest extends TestsInit {
     Assert.assertTrue(
         "component diff does not have a C",
         componentDiff.getC().equals(PathDatasetComponentBlob.getDefaultInstance()));
-    for (Commit commit : new Commit[] {commitResponse1.getCommit(), commitResponse2.getCommit()}) {
+    for (Commit commit : new Commit[]{commitResponse1.getCommit(), commitResponse2.getCommit()}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(
@@ -2666,7 +2666,7 @@ public class CommitTest extends TestsInit {
     Assert.assertTrue(
         "python diff does not have a C",
         reqDiff.getC().equals(PythonRequirementEnvironmentBlob.getDefaultInstance()));
-    for (Commit commit : new Commit[] {commitResponse1.getCommit(), commitResponse2.getCommit()}) {
+    for (Commit commit : new Commit[]{commitResponse1.getCommit(), commitResponse2.getCommit()}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(

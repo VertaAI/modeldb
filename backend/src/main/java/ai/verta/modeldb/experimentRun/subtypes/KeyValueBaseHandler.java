@@ -12,6 +12,7 @@ import java.util.AbstractMap;
 import java.util.concurrent.Executor;
 
 public class KeyValueBaseHandler extends KeyValueHandler<String> {
+
   public KeyValueBaseHandler(
       Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     super(executor, jdbi, fieldType, entityName);

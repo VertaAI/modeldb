@@ -25,7 +25,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "experiment")
 public class ExperimentEntity implements Serializable {
 
-  public ExperimentEntity() {}
+  public ExperimentEntity() {
+  }
 
   public ExperimentEntity(Experiment experiment) {
     setId(experiment.getId());
@@ -116,7 +117,8 @@ public class ExperimentEntity implements Serializable {
   @Column(name = "version_number")
   private Long version_number;
 
-  @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
+  @Transient
+  private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
 
   public String getId() {
     return id;

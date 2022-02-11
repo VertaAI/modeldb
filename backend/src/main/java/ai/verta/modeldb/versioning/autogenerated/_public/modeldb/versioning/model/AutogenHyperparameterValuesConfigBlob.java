@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenHyperparameterValuesConfigBlob implements ProtoType {
+
   private Float FloatValue;
   private Long IntValue;
   private String StringValue;
@@ -45,17 +46,23 @@ public class AutogenHyperparameterValuesConfigBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenHyperparameterValuesConfigBlob\", \"fields\": {");
     boolean first = true;
     if (this.FloatValue != null && !this.FloatValue.equals(0.f)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"FloatValue\": " + FloatValue);
       first = false;
     }
     if (this.IntValue != null && !this.IntValue.equals(0l)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"IntValue\": " + IntValue);
       first = false;
     }
     if (this.StringValue != null && !this.StringValue.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"StringValue\": " + "\"" + StringValue + "\"");
       first = false;
     }
@@ -78,33 +85,57 @@ public class AutogenHyperparameterValuesConfigBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenHyperparameterValuesConfigBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenHyperparameterValuesConfigBlob)) {
+      return false;
+    }
     AutogenHyperparameterValuesConfigBlob other = (AutogenHyperparameterValuesConfigBlob) o;
 
     {
       Function3<Float, Float, Boolean> f = (x, y) -> x.equals(y);
       if (this.FloatValue != null || other.FloatValue != null) {
-        if (this.FloatValue == null && other.FloatValue != null) return false;
-        if (this.FloatValue != null && other.FloatValue == null) return false;
-        if (!f.apply(this.FloatValue, other.FloatValue)) return false;
+        if (this.FloatValue == null && other.FloatValue != null) {
+          return false;
+        }
+        if (this.FloatValue != null && other.FloatValue == null) {
+          return false;
+        }
+        if (!f.apply(this.FloatValue, other.FloatValue)) {
+          return false;
+        }
       }
     }
     {
       Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
       if (this.IntValue != null || other.IntValue != null) {
-        if (this.IntValue == null && other.IntValue != null) return false;
-        if (this.IntValue != null && other.IntValue == null) return false;
-        if (!f.apply(this.IntValue, other.IntValue)) return false;
+        if (this.IntValue == null && other.IntValue != null) {
+          return false;
+        }
+        if (this.IntValue != null && other.IntValue == null) {
+          return false;
+        }
+        if (!f.apply(this.IntValue, other.IntValue)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.StringValue != null || other.StringValue != null) {
-        if (this.StringValue == null && other.StringValue != null) return false;
-        if (this.StringValue != null && other.StringValue == null) return false;
-        if (!f.apply(this.StringValue, other.StringValue)) return false;
+        if (this.StringValue == null && other.StringValue != null) {
+          return false;
+        }
+        if (this.StringValue != null && other.StringValue == null) {
+          return false;
+        }
+        if (!f.apply(this.StringValue, other.StringValue)) {
+          return false;
+        }
       }
     }
     return true;

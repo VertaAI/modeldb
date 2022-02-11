@@ -200,7 +200,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     return datasetBuilder.build();
   }
 
-  /** Fetch all (owned and shared) dataset for the current user */
+  /**
+   * Fetch all (owned and shared) dataset for the current user
+   */
   @Override
   public void getAllDatasets(
       GetAllDatasets request, StreamObserver<GetAllDatasets.Response> responseObserver) {
@@ -242,7 +244,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     }
   }
 
-  /** Deletes dataset corresponding to the id. Required input parameter : id */
+  /**
+   * Deletes dataset corresponding to the id. Required input parameter : id
+   */
   @Override
   public void deleteDataset(
       DeleteDataset request, StreamObserver<DeleteDataset.Response> responseObserver) {
@@ -266,8 +270,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   }
 
   /**
-   * Fetches dataset corresponding to the id. <br>
-   * Required input parameter : id
+   * Fetches dataset corresponding to the id. <br> Required input parameter : id
    */
   @Override
   public void getDatasetById(
@@ -503,7 +506,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               "tags",
               new Gson()
                   .toJsonTree(
-                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "dataset tags added successfully");
 
       responseObserver.onNext(response);
@@ -562,7 +566,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             "tags",
             new Gson()
                 .toJsonTree(
-                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           response.getDataset().getId(),
@@ -627,7 +632,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       request.getAttributesList().stream()
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "dataset attributes added successfully");
 
       responseObserver.onNext(response);
@@ -682,7 +688,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       Stream.of(request.getAttribute())
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "dataset attributes updated successfully");
 
       responseObserver.onNext(response);
@@ -742,7 +749,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType()));
+                    new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           response.getDataset().getId(),

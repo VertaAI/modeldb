@@ -27,6 +27,7 @@ import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public class CommonUtils {
+
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
   private static final int STACKTRACE_LENGTH = 4;
 
@@ -60,6 +61,7 @@ public class CommonUtils {
   }
 
   public interface RetryCallInterface<T> {
+
     T retryCall(boolean retry);
   }
 

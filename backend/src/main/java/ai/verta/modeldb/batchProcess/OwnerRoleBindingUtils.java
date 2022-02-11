@@ -27,7 +27,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class OwnerRoleBindingUtils {
-  private OwnerRoleBindingUtils() {}
+
+  private OwnerRoleBindingUtils() {
+  }
 
   private static final Logger LOGGER = LogManager.getLogger(OwnerRoleBindingUtils.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =

@@ -91,7 +91,7 @@ public class ExperimentRunTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
+    for (ExperimentRun run : new ExperimentRun[]{experimentRun, experimentRun2}) {
       DeleteExperimentRun deleteExperimentRun =
           DeleteExperimentRun.newBuilder().setId(run.getId()).build();
       DeleteExperimentRun.Response deleteExperimentRunResponse =
@@ -289,7 +289,7 @@ public class ExperimentRunTest extends TestsInit {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
-                  == status.getCode()); // because of shadow delete the response could be 403 or 404
+              == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -7483,8 +7483,8 @@ public class ExperimentRunTest extends TestsInit {
             assertTrue(
                 "Value should be GTE 0.0001 " + kv,
                 (kv.getValue().getKindCase() == KindCase.STRING_VALUE
-                        ? Double.parseDouble(kv.getValue().getStringValue())
-                        : kv.getValue().getNumberValue())
+                    ? Double.parseDouble(kv.getValue().getStringValue())
+                    : kv.getValue().getNumberValue())
                     > 0.0001);
           }
         }
@@ -8160,7 +8160,7 @@ public class ExperimentRunTest extends TestsInit {
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
       Assert.assertTrue(deleteResult.getStatus());
 
-      for (Project project : new Project[] {project1, project2}) {
+      for (Project project : new Project[]{project1, project2}) {
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =
             projectServiceStub.deleteProject(deleteProject);

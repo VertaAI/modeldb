@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenConfigBlobGen extends Generator<AutogenConfigBlob> {
+
   public AutogenConfigBlobGen() {
     super(AutogenConfigBlob.class);
   }

@@ -11,7 +11,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "folder_element")
 public class InternalFolderElementEntity implements Serializable {
-  public InternalFolderElementEntity() {}
+
+  public InternalFolderElementEntity() {
+  }
 
   public InternalFolderElementEntity(
       InternalFolderElement internalFolderElement, String folderHash, String elementType) {
@@ -61,8 +63,12 @@ public class InternalFolderElementEntity implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     InternalFolderElementEntity that = (InternalFolderElementEntity) o;
     return folder_hash.equals(that.folder_hash)
         && element_sha.equals(that.element_sha)

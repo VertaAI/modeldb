@@ -151,12 +151,12 @@ public interface BlobDAO {
       throws ModelDBException;
 
   GetCommittedVersionedDatasetBlobArtifactParts.Response
-      getCommittedVersionedDatasetBlobArtifactParts(
-          RepositoryDAO repositoryDAO,
-          String datasetId,
-          CommitFunction commitFunction,
-          GetCommittedVersionedDatasetBlobArtifactParts request)
-          throws ModelDBException;
+  getCommittedVersionedDatasetBlobArtifactParts(
+      RepositoryDAO repositoryDAO,
+      String datasetId,
+      CommitFunction commitFunction,
+      GetCommittedVersionedDatasetBlobArtifactParts request)
+      throws ModelDBException;
 
   GetCommittedVersionedBlobArtifactParts.Response getCommittedVersionedBlobArtifactParts(
       RepositoryFunction repositoryFunction,

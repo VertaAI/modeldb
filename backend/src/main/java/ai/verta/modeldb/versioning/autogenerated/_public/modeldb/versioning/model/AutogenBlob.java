@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenBlob implements ProtoType {
+
   private AutogenCodeBlob Code;
   private AutogenConfigBlob Config;
   private AutogenDatasetBlob Dataset;
@@ -50,22 +51,30 @@ public class AutogenBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenBlob\", \"fields\": {");
     boolean first = true;
     if (this.Code != null && !this.Code.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Code\": " + Code);
       first = false;
     }
     if (this.Config != null && !this.Config.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Config\": " + Config);
       first = false;
     }
     if (this.Dataset != null && !this.Dataset.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Dataset\": " + Dataset);
       first = false;
     }
     if (this.Environment != null && !this.Environment.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Environment\": " + Environment);
       first = false;
     }
@@ -88,41 +97,71 @@ public class AutogenBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenBlob)) {
+      return false;
+    }
     AutogenBlob other = (AutogenBlob) o;
 
     {
       Function3<AutogenCodeBlob, AutogenCodeBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.Code != null || other.Code != null) {
-        if (this.Code == null && other.Code != null) return false;
-        if (this.Code != null && other.Code == null) return false;
-        if (!f.apply(this.Code, other.Code)) return false;
+        if (this.Code == null && other.Code != null) {
+          return false;
+        }
+        if (this.Code != null && other.Code == null) {
+          return false;
+        }
+        if (!f.apply(this.Code, other.Code)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenConfigBlob, AutogenConfigBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.Config != null || other.Config != null) {
-        if (this.Config == null && other.Config != null) return false;
-        if (this.Config != null && other.Config == null) return false;
-        if (!f.apply(this.Config, other.Config)) return false;
+        if (this.Config == null && other.Config != null) {
+          return false;
+        }
+        if (this.Config != null && other.Config == null) {
+          return false;
+        }
+        if (!f.apply(this.Config, other.Config)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenDatasetBlob, AutogenDatasetBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.Dataset != null || other.Dataset != null) {
-        if (this.Dataset == null && other.Dataset != null) return false;
-        if (this.Dataset != null && other.Dataset == null) return false;
-        if (!f.apply(this.Dataset, other.Dataset)) return false;
+        if (this.Dataset == null && other.Dataset != null) {
+          return false;
+        }
+        if (this.Dataset != null && other.Dataset == null) {
+          return false;
+        }
+        if (!f.apply(this.Dataset, other.Dataset)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenEnvironmentBlob, AutogenEnvironmentBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.Environment != null || other.Environment != null) {
-        if (this.Environment == null && other.Environment != null) return false;
-        if (this.Environment != null && other.Environment == null) return false;
-        if (!f.apply(this.Environment, other.Environment)) return false;
+        if (this.Environment == null && other.Environment != null) {
+          return false;
+        }
+        if (this.Environment != null && other.Environment == null) {
+          return false;
+        }
+        if (!f.apply(this.Environment, other.Environment)) {
+          return false;
+        }
       }
     }
     return true;

@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenS3DatasetComponentBlob implements ProtoType {
+
   private AutogenPathDatasetComponentBlob Path;
   private String S3VersionId;
 
@@ -40,12 +41,16 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenS3DatasetComponentBlob\", \"fields\": {");
     boolean first = true;
     if (this.Path != null && !this.Path.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Path\": " + Path);
       first = false;
     }
     if (this.S3VersionId != null && !this.S3VersionId.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"S3VersionId\": " + "\"" + S3VersionId + "\"");
       first = false;
     }
@@ -68,26 +73,44 @@ public class AutogenS3DatasetComponentBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenS3DatasetComponentBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenS3DatasetComponentBlob)) {
+      return false;
+    }
     AutogenS3DatasetComponentBlob other = (AutogenS3DatasetComponentBlob) o;
 
     {
       Function3<AutogenPathDatasetComponentBlob, AutogenPathDatasetComponentBlob, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Path != null || other.Path != null) {
-        if (this.Path == null && other.Path != null) return false;
-        if (this.Path != null && other.Path == null) return false;
-        if (!f.apply(this.Path, other.Path)) return false;
+        if (this.Path == null && other.Path != null) {
+          return false;
+        }
+        if (this.Path != null && other.Path == null) {
+          return false;
+        }
+        if (!f.apply(this.Path, other.Path)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.S3VersionId != null || other.S3VersionId != null) {
-        if (this.S3VersionId == null && other.S3VersionId != null) return false;
-        if (this.S3VersionId != null && other.S3VersionId == null) return false;
-        if (!f.apply(this.S3VersionId, other.S3VersionId)) return false;
+        if (this.S3VersionId == null && other.S3VersionId != null) {
+          return false;
+        }
+        if (this.S3VersionId != null && other.S3VersionId == null) {
+          return false;
+        }
+        if (!f.apply(this.S3VersionId, other.S3VersionId)) {
+          return false;
+        }
       }
     }
     return true;

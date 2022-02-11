@@ -22,7 +22,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "\"commit\"")
 public class CommitEntity implements Serializable {
-  public CommitEntity() {}
+
+  public CommitEntity() {
+  }
 
   public CommitEntity(
       RepositoryEntity repositoryEntity,
@@ -80,7 +82,7 @@ public class CommitEntity implements Serializable {
       name = "commit_parent",
       joinColumns = {@JoinColumn(name = "child_hash", referencedColumnName = "commit_hash")},
       inverseJoinColumns = {
-        @JoinColumn(name = "parent_hash", referencedColumnName = "commit_hash")
+          @JoinColumn(name = "parent_hash", referencedColumnName = "commit_hash")
       })
   @MapKeyColumn(name = "parent_order")
   private Map<Integer, CommitEntity> parent_commits = new HashMap<>();

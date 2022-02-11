@@ -21,6 +21,7 @@ import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class ObservationHandler {
+
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
   private static final String RUN_ID_QUERY_PARAM = "run_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
@@ -86,35 +87,35 @@ public class ObservationHandler {
 
   public InternalFuture<MapSubtypes<String, Observation>> getObservationsMap(Set<String> runIds) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id, o.timestamp "
-                            + " from observation as o"
-                            + " join keyvalue as k"
-                            + " on o.keyvaluemapping_id = k.id"
-                            + " where o.experiment_run_id in (<run_ids>) and o.entity_name = :entityName and k.entity_name IS NULL")
-                    .bindList("run_ids", runIds)
-                    .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString(RUN_ID_QUERY_PARAM),
-                                Observation.newBuilder()
-                                    .setTimestamp(rs.getLong("timestamp"))
-                                    .setEpochNumber(
-                                        Value.newBuilder()
-                                            .setNumberValue(rs.getLong(EPOCH_QUERY_PARAM)))
-                                    .setAttribute(
-                                        KeyValue.newBuilder()
-                                            .setKey(rs.getString("_key"))
-                                            .setValue(
-                                                (Value.Builder)
-                                                    CommonUtils.getProtoObjectFromString(
-                                                        rs.getString("_value"), Value.newBuilder()))
-                                            .setValueTypeValue(rs.getInt("_type")))
-                                    .build()))
-                    .list())
+        handle ->
+            handle
+                .createQuery(
+                    "select k.kv_key _key, k.kv_value _value, k.value_type _type, o.epoch_number epoch, o.experiment_run_id run_id, o.timestamp "
+                        + " from observation as o"
+                        + " join keyvalue as k"
+                        + " on o.keyvaluemapping_id = k.id"
+                        + " where o.experiment_run_id in (<run_ids>) and o.entity_name = :entityName and k.entity_name IS NULL")
+                .bindList("run_ids", runIds)
+                .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+                .map(
+                    (rs, ctx) ->
+                        new AbstractMap.SimpleEntry<>(
+                            rs.getString(RUN_ID_QUERY_PARAM),
+                            Observation.newBuilder()
+                                .setTimestamp(rs.getLong("timestamp"))
+                                .setEpochNumber(
+                                    Value.newBuilder()
+                                        .setNumberValue(rs.getLong(EPOCH_QUERY_PARAM)))
+                                .setAttribute(
+                                    KeyValue.newBuilder()
+                                        .setKey(rs.getString("_key"))
+                                        .setValue(
+                                            (Value.Builder)
+                                                CommonUtils.getProtoObjectFromString(
+                                                    rs.getString("_value"), Value.newBuilder()))
+                                        .setValueTypeValue(rs.getInt("_type")))
+                                .build()))
+                .list())
         .thenApply(MapSubtypes::from, executor);
   }
 

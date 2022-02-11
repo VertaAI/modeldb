@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitQuickcheck.class)
 public class BlobProtoEquality {
+
   @Property
   public void protoEqualityAutogenBlobDiff(AutogenBlobDiff b) throws ModelDBException {
     AutogenBlobDiff newb = enforceOneof(b);

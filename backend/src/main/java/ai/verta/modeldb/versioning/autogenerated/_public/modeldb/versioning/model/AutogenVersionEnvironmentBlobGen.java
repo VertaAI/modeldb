@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenVersionEnvironmentBlobGen extends Generator<AutogenVersionEnvironmentBlob> {
+
   public AutogenVersionEnvironmentBlobGen() {
     super(AutogenVersionEnvironmentBlob.class);
   }

@@ -16,7 +16,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "comment")
 public class CommentEntity {
 
-  public CommentEntity() {}
+  public CommentEntity() {
+  }
 
   public CommentEntity(EntityComment entityComment) {
     setId(entityComment.getId());

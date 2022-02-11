@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import org.jdbi.v3.core.statement.Query;
 
 public class QueryFilterContext {
+
   private final List<String> conditions;
   private final List<Consumer<Query>> binds;
   private final List<OrderItem> orderItems;
@@ -108,13 +109,13 @@ public class QueryFilterContext {
               var ret = " LIMIT " + size;
               return ret
                   + pageNumber
-                      .map(
-                          number -> {
-                            final var pageIndex = calculatePageIndex(number);
-                            final var offset = calculateOffset(pageIndex, size);
-                            return " OFFSET " + offset;
-                          })
-                      .orElse("");
+                  .map(
+                      number -> {
+                        final var pageIndex = calculatePageIndex(number);
+                        final var offset = calculateOffset(pageIndex, size);
+                        return " OFFSET " + offset;
+                      })
+                  .orElse("");
             })
         .orElse("");
   }
@@ -127,13 +128,13 @@ public class QueryFilterContext {
         .map(
             size ->
                 pageNumber
-                        .map(
-                            number -> {
-                              final var pageIndex = calculatePageIndex(number);
-                              final var offset = calculateOffset(pageIndex, size);
-                              return " OFFSET " + offset;
-                            })
-                        .orElse("")
+                    .map(
+                        number -> {
+                          final var pageIndex = calculatePageIndex(number);
+                          final var offset = calculateOffset(pageIndex, size);
+                          return " OFFSET " + offset;
+                        })
+                    .orElse("")
                     + " ROWS FETCH NEXT "
                     + size
                     + " ROWS ONLY")

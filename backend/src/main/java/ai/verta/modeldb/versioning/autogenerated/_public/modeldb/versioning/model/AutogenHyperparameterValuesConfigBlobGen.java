@@ -10,6 +10,7 @@ import java.util.*;
 
 public class AutogenHyperparameterValuesConfigBlobGen
     extends Generator<AutogenHyperparameterValuesConfigBlob> {
+
   public AutogenHyperparameterValuesConfigBlobGen() {
     super(AutogenHyperparameterValuesConfigBlob.class);
   }

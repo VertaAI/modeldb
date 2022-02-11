@@ -22,7 +22,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "project")
 public class ProjectEntity implements Serializable {
 
-  public ProjectEntity() {}
+  public ProjectEntity() {
+  }
 
   public ProjectEntity(Project project) {
     setId(project.getId());
@@ -74,7 +75,8 @@ public class ProjectEntity implements Serializable {
   @Column(name = "project_visibility")
   private Integer project_visibility;
 
-  @Transient private ResourceVisibility projectVisibility = ResourceVisibility.PRIVATE;
+  @Transient
+  private ResourceVisibility projectVisibility = ResourceVisibility.PRIVATE;
 
   @OneToMany(
       targetEntity = KeyValueEntity.class,
@@ -118,7 +120,8 @@ public class ProjectEntity implements Serializable {
   @OrderBy("id")
   private CodeVersionEntity code_version_snapshot;
 
-  @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
+  @Transient
+  private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
 
   @Column(name = "workspace_id")
   private Long workspaceServiceId;

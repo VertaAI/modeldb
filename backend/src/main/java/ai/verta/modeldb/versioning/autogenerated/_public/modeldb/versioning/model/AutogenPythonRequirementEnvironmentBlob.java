@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPythonRequirementEnvironmentBlob implements ProtoType {
+
   private String Constraint;
   private String Library;
   private AutogenVersionEnvironmentBlob Version;
@@ -45,17 +46,23 @@ public class AutogenPythonRequirementEnvironmentBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenPythonRequirementEnvironmentBlob\", \"fields\": {");
     boolean first = true;
     if (this.Constraint != null && !this.Constraint.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Constraint\": " + "\"" + Constraint + "\"");
       first = false;
     }
     if (this.Library != null && !this.Library.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Library\": " + "\"" + Library + "\"");
       first = false;
     }
     if (this.Version != null && !this.Version.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Version\": " + Version);
       first = false;
     }
@@ -78,34 +85,58 @@ public class AutogenPythonRequirementEnvironmentBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenPythonRequirementEnvironmentBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenPythonRequirementEnvironmentBlob)) {
+      return false;
+    }
     AutogenPythonRequirementEnvironmentBlob other = (AutogenPythonRequirementEnvironmentBlob) o;
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Constraint != null || other.Constraint != null) {
-        if (this.Constraint == null && other.Constraint != null) return false;
-        if (this.Constraint != null && other.Constraint == null) return false;
-        if (!f.apply(this.Constraint, other.Constraint)) return false;
+        if (this.Constraint == null && other.Constraint != null) {
+          return false;
+        }
+        if (this.Constraint != null && other.Constraint == null) {
+          return false;
+        }
+        if (!f.apply(this.Constraint, other.Constraint)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Library != null || other.Library != null) {
-        if (this.Library == null && other.Library != null) return false;
-        if (this.Library != null && other.Library == null) return false;
-        if (!f.apply(this.Library, other.Library)) return false;
+        if (this.Library == null && other.Library != null) {
+          return false;
+        }
+        if (this.Library != null && other.Library == null) {
+          return false;
+        }
+        if (!f.apply(this.Library, other.Library)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenVersionEnvironmentBlob, AutogenVersionEnvironmentBlob, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Version != null || other.Version != null) {
-        if (this.Version == null && other.Version != null) return false;
-        if (this.Version != null && other.Version == null) return false;
-        if (!f.apply(this.Version, other.Version)) return false;
+        if (this.Version == null && other.Version != null) {
+          return false;
+        }
+        if (this.Version != null && other.Version == null) {
+          return false;
+        }
+        if (!f.apply(this.Version, other.Version)) {
+          return false;
+        }
       }
     }
     return true;
@@ -157,8 +188,8 @@ public class AutogenPythonRequirementEnvironmentBlob implements ProtoType {
     }
     {
       Function<
-              ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob,
-              AutogenVersionEnvironmentBlob>
+          ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob,
+          AutogenVersionEnvironmentBlob>
           f = x -> AutogenVersionEnvironmentBlob.fromProto(blob.getVersion());
       obj.setVersion(f.apply(blob));
     }

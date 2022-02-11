@@ -53,8 +53,8 @@ public class UpdateProjectTimestampReconcile
     logger.debug(
         "Reconciling update timestamp for projects: "
             + updatedMaxDateMap.stream()
-                .map(AbstractMap.SimpleEntry::getKey)
-                .collect(Collectors.toList()));
+            .map(AbstractMap.SimpleEntry::getKey)
+            .collect(Collectors.toList()));
     return futureJdbi
         .useHandle(
             handle -> {

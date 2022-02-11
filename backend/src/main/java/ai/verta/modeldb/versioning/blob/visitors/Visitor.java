@@ -7,15 +7,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Visitor {
+
   public void preVisitListOfAutogenBlobDiff(List<AutogenBlobDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenBlobDiff val : lst) {
       preVisitAutogenBlobDiff(val);
     }
   }
 
   public void preVisitDeepListOfAutogenBlobDiff(List<AutogenBlobDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenBlobDiff val : lst) {
       preVisitDeepAutogenBlobDiff(val);
     }
@@ -23,7 +28,9 @@ public class Visitor {
 
   public List<AutogenBlobDiff> postVisitListOfAutogenBlobDiff(List<AutogenBlobDiff> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenBlobDiff> collect = new ArrayList<>(lst.size());
     for (AutogenBlobDiff val : lst) {
       collect.add(postVisitAutogenBlobDiff(val));
@@ -33,7 +40,9 @@ public class Visitor {
 
   public List<AutogenBlobDiff> postVisitDeepListOfAutogenBlobDiff(List<AutogenBlobDiff> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenBlobDiff> collect = new ArrayList<>(lst.size());
     for (AutogenBlobDiff val : lst) {
       collect.add(postVisitDeepAutogenBlobDiff(val));
@@ -41,9 +50,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {}
+  public void preVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
+  }
 
   public AutogenBlobDiff postVisitAutogenBlobDiff(AutogenBlobDiff blob) throws ModelDBException {
     return blob;
@@ -51,19 +62,25 @@ public class Visitor {
 
   public AutogenBlobDiff postVisitDeepAutogenBlobDiff(AutogenBlobDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenBlob(List<AutogenBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenBlob val : lst) {
       preVisitAutogenBlob(val);
     }
   }
 
   public void preVisitDeepListOfAutogenBlob(List<AutogenBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenBlob val : lst) {
       preVisitDeepAutogenBlob(val);
     }
@@ -71,7 +88,9 @@ public class Visitor {
 
   public List<AutogenBlob> postVisitListOfAutogenBlob(List<AutogenBlob> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenBlob> collect = new ArrayList<>(lst.size());
     for (AutogenBlob val : lst) {
       collect.add(postVisitAutogenBlob(val));
@@ -81,7 +100,9 @@ public class Visitor {
 
   public List<AutogenBlob> postVisitDeepListOfAutogenBlob(List<AutogenBlob> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenBlob> collect = new ArrayList<>(lst.size());
     for (AutogenBlob val : lst) {
       collect.add(postVisitDeepAutogenBlob(val));
@@ -89,28 +110,36 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {}
+  public void preVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {
+  }
 
   public AutogenBlob postVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
     return blob;
   }
 
   public AutogenBlob postVisitDeepAutogenBlob(AutogenBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenCodeBlob(List<AutogenCodeBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenCodeBlob val : lst) {
       preVisitAutogenCodeBlob(val);
     }
   }
 
   public void preVisitDeepListOfAutogenCodeBlob(List<AutogenCodeBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenCodeBlob val : lst) {
       preVisitDeepAutogenCodeBlob(val);
     }
@@ -118,7 +147,9 @@ public class Visitor {
 
   public List<AutogenCodeBlob> postVisitListOfAutogenCodeBlob(List<AutogenCodeBlob> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenCodeBlob> collect = new ArrayList<>(lst.size());
     for (AutogenCodeBlob val : lst) {
       collect.add(postVisitAutogenCodeBlob(val));
@@ -128,7 +159,9 @@ public class Visitor {
 
   public List<AutogenCodeBlob> postVisitDeepListOfAutogenCodeBlob(List<AutogenCodeBlob> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenCodeBlob> collect = new ArrayList<>(lst.size());
     for (AutogenCodeBlob val : lst) {
       collect.add(postVisitDeepAutogenCodeBlob(val));
@@ -136,9 +169,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {}
+  public void preVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
+  }
 
   public AutogenCodeBlob postVisitAutogenCodeBlob(AutogenCodeBlob blob) throws ModelDBException {
     return blob;
@@ -146,19 +181,25 @@ public class Visitor {
 
   public AutogenCodeBlob postVisitDeepAutogenCodeBlob(AutogenCodeBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenCodeDiff(List<AutogenCodeDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenCodeDiff val : lst) {
       preVisitAutogenCodeDiff(val);
     }
   }
 
   public void preVisitDeepListOfAutogenCodeDiff(List<AutogenCodeDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenCodeDiff val : lst) {
       preVisitDeepAutogenCodeDiff(val);
     }
@@ -166,7 +207,9 @@ public class Visitor {
 
   public List<AutogenCodeDiff> postVisitListOfAutogenCodeDiff(List<AutogenCodeDiff> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenCodeDiff> collect = new ArrayList<>(lst.size());
     for (AutogenCodeDiff val : lst) {
       collect.add(postVisitAutogenCodeDiff(val));
@@ -176,7 +219,9 @@ public class Visitor {
 
   public List<AutogenCodeDiff> postVisitDeepListOfAutogenCodeDiff(List<AutogenCodeDiff> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenCodeDiff> collect = new ArrayList<>(lst.size());
     for (AutogenCodeDiff val : lst) {
       collect.add(postVisitDeepAutogenCodeDiff(val));
@@ -184,9 +229,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {}
+  public void preVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
+  }
 
   public AutogenCodeDiff postVisitAutogenCodeDiff(AutogenCodeDiff blob) throws ModelDBException {
     return blob;
@@ -194,13 +241,17 @@ public class Visitor {
 
   public AutogenCodeDiff postVisitDeepAutogenCodeDiff(AutogenCodeDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenCommandLineEnvironmentDiff(
       List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenCommandLineEnvironmentDiff val : lst) {
       preVisitAutogenCommandLineEnvironmentDiff(val);
     }
@@ -208,7 +259,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenCommandLineEnvironmentDiff(
       List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenCommandLineEnvironmentDiff val : lst) {
       preVisitDeepAutogenCommandLineEnvironmentDiff(val);
     }
@@ -216,7 +269,9 @@ public class Visitor {
 
   public List<AutogenCommandLineEnvironmentDiff> postVisitListOfAutogenCommandLineEnvironmentDiff(
       List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenCommandLineEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenCommandLineEnvironmentDiff val : lst) {
       collect.add(postVisitAutogenCommandLineEnvironmentDiff(val));
@@ -225,9 +280,11 @@ public class Visitor {
   }
 
   public List<AutogenCommandLineEnvironmentDiff>
-      postVisitDeepListOfAutogenCommandLineEnvironmentDiff(
-          List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitDeepListOfAutogenCommandLineEnvironmentDiff(
+      List<AutogenCommandLineEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenCommandLineEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenCommandLineEnvironmentDiff val : lst) {
       collect.add(postVisitDeepAutogenCommandLineEnvironmentDiff(val));
@@ -236,10 +293,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenCommandLineEnvironmentDiff(AutogenCommandLineEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenCommandLineEnvironmentDiff(AutogenCommandLineEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenCommandLineEnvironmentDiff postVisitAutogenCommandLineEnvironmentDiff(
       AutogenCommandLineEnvironmentDiff blob) throws ModelDBException {
@@ -248,12 +307,16 @@ public class Visitor {
 
   public AutogenCommandLineEnvironmentDiff postVisitDeepAutogenCommandLineEnvironmentDiff(
       AutogenCommandLineEnvironmentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenConfigBlob(List<AutogenConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenConfigBlob val : lst) {
       preVisitAutogenConfigBlob(val);
     }
@@ -261,7 +324,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenConfigBlob(List<AutogenConfigBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenConfigBlob val : lst) {
       preVisitDeepAutogenConfigBlob(val);
     }
@@ -269,7 +334,9 @@ public class Visitor {
 
   public List<AutogenConfigBlob> postVisitListOfAutogenConfigBlob(List<AutogenConfigBlob> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenConfigBlob val : lst) {
       collect.add(postVisitAutogenConfigBlob(val));
@@ -279,7 +346,9 @@ public class Visitor {
 
   public List<AutogenConfigBlob> postVisitDeepListOfAutogenConfigBlob(List<AutogenConfigBlob> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenConfigBlob val : lst) {
       collect.add(postVisitDeepAutogenConfigBlob(val));
@@ -287,9 +356,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {}
+  public void preVisitAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenConfigBlob(AutogenConfigBlob blob) throws ModelDBException {
+  }
 
   public AutogenConfigBlob postVisitAutogenConfigBlob(AutogenConfigBlob blob)
       throws ModelDBException {
@@ -298,12 +369,16 @@ public class Visitor {
 
   public AutogenConfigBlob postVisitDeepAutogenConfigBlob(AutogenConfigBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenConfigDiff(List<AutogenConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenConfigDiff val : lst) {
       preVisitAutogenConfigDiff(val);
     }
@@ -311,7 +386,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenConfigDiff(List<AutogenConfigDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenConfigDiff val : lst) {
       preVisitDeepAutogenConfigDiff(val);
     }
@@ -319,7 +396,9 @@ public class Visitor {
 
   public List<AutogenConfigDiff> postVisitListOfAutogenConfigDiff(List<AutogenConfigDiff> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenConfigDiff> collect = new ArrayList<>(lst.size());
     for (AutogenConfigDiff val : lst) {
       collect.add(postVisitAutogenConfigDiff(val));
@@ -329,7 +408,9 @@ public class Visitor {
 
   public List<AutogenConfigDiff> postVisitDeepListOfAutogenConfigDiff(List<AutogenConfigDiff> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenConfigDiff> collect = new ArrayList<>(lst.size());
     for (AutogenConfigDiff val : lst) {
       collect.add(postVisitDeepAutogenConfigDiff(val));
@@ -337,9 +418,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {}
+  public void preVisitAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenConfigDiff(AutogenConfigDiff blob) throws ModelDBException {
+  }
 
   public AutogenConfigDiff postVisitAutogenConfigDiff(AutogenConfigDiff blob)
       throws ModelDBException {
@@ -348,13 +431,17 @@ public class Visitor {
 
   public AutogenConfigDiff postVisitDeepAutogenConfigDiff(AutogenConfigDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenContinuousHyperparameterSetConfigBlob(
       List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenContinuousHyperparameterSetConfigBlob val : lst) {
       preVisitAutogenContinuousHyperparameterSetConfigBlob(val);
     }
@@ -362,16 +449,20 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenContinuousHyperparameterSetConfigBlob(
       List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenContinuousHyperparameterSetConfigBlob val : lst) {
       preVisitDeepAutogenContinuousHyperparameterSetConfigBlob(val);
     }
   }
 
   public List<AutogenContinuousHyperparameterSetConfigBlob>
-      postVisitListOfAutogenContinuousHyperparameterSetConfigBlob(
-          List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitListOfAutogenContinuousHyperparameterSetConfigBlob(
+      List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenContinuousHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenContinuousHyperparameterSetConfigBlob val : lst) {
       collect.add(postVisitAutogenContinuousHyperparameterSetConfigBlob(val));
@@ -380,9 +471,11 @@ public class Visitor {
   }
 
   public List<AutogenContinuousHyperparameterSetConfigBlob>
-      postVisitDeepListOfAutogenContinuousHyperparameterSetConfigBlob(
-          List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitDeepListOfAutogenContinuousHyperparameterSetConfigBlob(
+      List<AutogenContinuousHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenContinuousHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenContinuousHyperparameterSetConfigBlob val : lst) {
       collect.add(postVisitDeepAutogenContinuousHyperparameterSetConfigBlob(val));
@@ -391,27 +484,33 @@ public class Visitor {
   }
 
   public void preVisitAutogenContinuousHyperparameterSetConfigBlob(
-      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {}
+      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
-      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {}
+      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
+  }
 
   public AutogenContinuousHyperparameterSetConfigBlob
-      postVisitAutogenContinuousHyperparameterSetConfigBlob(
-          AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
+  postVisitAutogenContinuousHyperparameterSetConfigBlob(
+      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
     return blob;
   }
 
   public AutogenContinuousHyperparameterSetConfigBlob
-      postVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
-          AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+  postVisitDeepAutogenContinuousHyperparameterSetConfigBlob(
+      AutogenContinuousHyperparameterSetConfigBlob blob) throws ModelDBException {
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenDatasetBlob(List<AutogenDatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDatasetBlob val : lst) {
       preVisitAutogenDatasetBlob(val);
     }
@@ -419,7 +518,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenDatasetBlob(List<AutogenDatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDatasetBlob val : lst) {
       preVisitDeepAutogenDatasetBlob(val);
     }
@@ -427,7 +528,9 @@ public class Visitor {
 
   public List<AutogenDatasetBlob> postVisitListOfAutogenDatasetBlob(List<AutogenDatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDatasetBlob> collect = new ArrayList<>(lst.size());
     for (AutogenDatasetBlob val : lst) {
       collect.add(postVisitAutogenDatasetBlob(val));
@@ -437,7 +540,9 @@ public class Visitor {
 
   public List<AutogenDatasetBlob> postVisitDeepListOfAutogenDatasetBlob(
       List<AutogenDatasetBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDatasetBlob> collect = new ArrayList<>(lst.size());
     for (AutogenDatasetBlob val : lst) {
       collect.add(postVisitDeepAutogenDatasetBlob(val));
@@ -445,9 +550,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {}
+  public void preVisitAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenDatasetBlob(AutogenDatasetBlob blob) throws ModelDBException {
+  }
 
   public AutogenDatasetBlob postVisitAutogenDatasetBlob(AutogenDatasetBlob blob)
       throws ModelDBException {
@@ -456,13 +563,17 @@ public class Visitor {
 
   public AutogenDatasetBlob postVisitDeepAutogenDatasetBlob(AutogenDatasetBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenDatasetDiff(List<AutogenDatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDatasetDiff val : lst) {
       preVisitAutogenDatasetDiff(val);
     }
@@ -470,7 +581,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenDatasetDiff(List<AutogenDatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDatasetDiff val : lst) {
       preVisitDeepAutogenDatasetDiff(val);
     }
@@ -478,7 +591,9 @@ public class Visitor {
 
   public List<AutogenDatasetDiff> postVisitListOfAutogenDatasetDiff(List<AutogenDatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDatasetDiff> collect = new ArrayList<>(lst.size());
     for (AutogenDatasetDiff val : lst) {
       collect.add(postVisitAutogenDatasetDiff(val));
@@ -488,7 +603,9 @@ public class Visitor {
 
   public List<AutogenDatasetDiff> postVisitDeepListOfAutogenDatasetDiff(
       List<AutogenDatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDatasetDiff> collect = new ArrayList<>(lst.size());
     for (AutogenDatasetDiff val : lst) {
       collect.add(postVisitDeepAutogenDatasetDiff(val));
@@ -496,9 +613,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {}
+  public void preVisitAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenDatasetDiff(AutogenDatasetDiff blob) throws ModelDBException {
+  }
 
   public AutogenDatasetDiff postVisitAutogenDatasetDiff(AutogenDatasetDiff blob)
       throws ModelDBException {
@@ -507,13 +626,17 @@ public class Visitor {
 
   public AutogenDatasetDiff postVisitDeepAutogenDatasetDiff(AutogenDatasetDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenDiscreteHyperparameterSetConfigBlob(
       List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDiscreteHyperparameterSetConfigBlob val : lst) {
       preVisitAutogenDiscreteHyperparameterSetConfigBlob(val);
     }
@@ -521,16 +644,20 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenDiscreteHyperparameterSetConfigBlob(
       List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDiscreteHyperparameterSetConfigBlob val : lst) {
       preVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(val);
     }
   }
 
   public List<AutogenDiscreteHyperparameterSetConfigBlob>
-      postVisitListOfAutogenDiscreteHyperparameterSetConfigBlob(
-          List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitListOfAutogenDiscreteHyperparameterSetConfigBlob(
+      List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDiscreteHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenDiscreteHyperparameterSetConfigBlob val : lst) {
       collect.add(postVisitAutogenDiscreteHyperparameterSetConfigBlob(val));
@@ -539,9 +666,11 @@ public class Visitor {
   }
 
   public List<AutogenDiscreteHyperparameterSetConfigBlob>
-      postVisitDeepListOfAutogenDiscreteHyperparameterSetConfigBlob(
-          List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitDeepListOfAutogenDiscreteHyperparameterSetConfigBlob(
+      List<AutogenDiscreteHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDiscreteHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenDiscreteHyperparameterSetConfigBlob val : lst) {
       collect.add(postVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(val));
@@ -550,27 +679,33 @@ public class Visitor {
   }
 
   public void preVisitAutogenDiscreteHyperparameterSetConfigBlob(
-      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {}
+      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
-      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {}
+      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
+  }
 
   public AutogenDiscreteHyperparameterSetConfigBlob
-      postVisitAutogenDiscreteHyperparameterSetConfigBlob(
-          AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
+  postVisitAutogenDiscreteHyperparameterSetConfigBlob(
+      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
     return blob;
   }
 
   public AutogenDiscreteHyperparameterSetConfigBlob
-      postVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
-          AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+  postVisitDeepAutogenDiscreteHyperparameterSetConfigBlob(
+      AutogenDiscreteHyperparameterSetConfigBlob blob) throws ModelDBException {
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenDockerEnvironmentBlob(List<AutogenDockerEnvironmentBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDockerEnvironmentBlob val : lst) {
       preVisitAutogenDockerEnvironmentBlob(val);
     }
@@ -578,7 +713,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenDockerEnvironmentBlob(List<AutogenDockerEnvironmentBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDockerEnvironmentBlob val : lst) {
       preVisitDeepAutogenDockerEnvironmentBlob(val);
     }
@@ -586,7 +723,9 @@ public class Visitor {
 
   public List<AutogenDockerEnvironmentBlob> postVisitListOfAutogenDockerEnvironmentBlob(
       List<AutogenDockerEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDockerEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenDockerEnvironmentBlob val : lst) {
       collect.add(postVisitAutogenDockerEnvironmentBlob(val));
@@ -596,7 +735,9 @@ public class Visitor {
 
   public List<AutogenDockerEnvironmentBlob> postVisitDeepListOfAutogenDockerEnvironmentBlob(
       List<AutogenDockerEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDockerEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenDockerEnvironmentBlob val : lst) {
       collect.add(postVisitDeepAutogenDockerEnvironmentBlob(val));
@@ -605,10 +746,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenDockerEnvironmentBlob(AutogenDockerEnvironmentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenDockerEnvironmentBlob(AutogenDockerEnvironmentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenDockerEnvironmentBlob postVisitAutogenDockerEnvironmentBlob(
       AutogenDockerEnvironmentBlob blob) throws ModelDBException {
@@ -617,13 +760,17 @@ public class Visitor {
 
   public AutogenDockerEnvironmentBlob postVisitDeepAutogenDockerEnvironmentBlob(
       AutogenDockerEnvironmentBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenDockerEnvironmentDiff(List<AutogenDockerEnvironmentDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDockerEnvironmentDiff val : lst) {
       preVisitAutogenDockerEnvironmentDiff(val);
     }
@@ -631,7 +778,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenDockerEnvironmentDiff(List<AutogenDockerEnvironmentDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDockerEnvironmentDiff val : lst) {
       preVisitDeepAutogenDockerEnvironmentDiff(val);
     }
@@ -639,7 +788,9 @@ public class Visitor {
 
   public List<AutogenDockerEnvironmentDiff> postVisitListOfAutogenDockerEnvironmentDiff(
       List<AutogenDockerEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDockerEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenDockerEnvironmentDiff val : lst) {
       collect.add(postVisitAutogenDockerEnvironmentDiff(val));
@@ -649,7 +800,9 @@ public class Visitor {
 
   public List<AutogenDockerEnvironmentDiff> postVisitDeepListOfAutogenDockerEnvironmentDiff(
       List<AutogenDockerEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDockerEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenDockerEnvironmentDiff val : lst) {
       collect.add(postVisitDeepAutogenDockerEnvironmentDiff(val));
@@ -658,10 +811,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenDockerEnvironmentDiff(AutogenDockerEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenDockerEnvironmentDiff(AutogenDockerEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenDockerEnvironmentDiff postVisitAutogenDockerEnvironmentDiff(
       AutogenDockerEnvironmentDiff blob) throws ModelDBException {
@@ -670,13 +825,17 @@ public class Visitor {
 
   public AutogenDockerEnvironmentDiff postVisitDeepAutogenDockerEnvironmentDiff(
       AutogenDockerEnvironmentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenEnvironmentBlob(List<AutogenEnvironmentBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenEnvironmentBlob val : lst) {
       preVisitAutogenEnvironmentBlob(val);
     }
@@ -684,7 +843,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenEnvironmentBlob(List<AutogenEnvironmentBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenEnvironmentBlob val : lst) {
       preVisitDeepAutogenEnvironmentBlob(val);
     }
@@ -692,7 +853,9 @@ public class Visitor {
 
   public List<AutogenEnvironmentBlob> postVisitListOfAutogenEnvironmentBlob(
       List<AutogenEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenEnvironmentBlob val : lst) {
       collect.add(postVisitAutogenEnvironmentBlob(val));
@@ -702,7 +865,9 @@ public class Visitor {
 
   public List<AutogenEnvironmentBlob> postVisitDeepListOfAutogenEnvironmentBlob(
       List<AutogenEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenEnvironmentBlob val : lst) {
       collect.add(postVisitDeepAutogenEnvironmentBlob(val));
@@ -710,10 +875,12 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob) throws ModelDBException {}
+  public void preVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenEnvironmentBlob postVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
       throws ModelDBException {
@@ -722,13 +889,17 @@ public class Visitor {
 
   public AutogenEnvironmentBlob postVisitDeepAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenEnvironmentDiff(List<AutogenEnvironmentDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenEnvironmentDiff val : lst) {
       preVisitAutogenEnvironmentDiff(val);
     }
@@ -736,7 +907,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenEnvironmentDiff(List<AutogenEnvironmentDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenEnvironmentDiff val : lst) {
       preVisitDeepAutogenEnvironmentDiff(val);
     }
@@ -744,7 +917,9 @@ public class Visitor {
 
   public List<AutogenEnvironmentDiff> postVisitListOfAutogenEnvironmentDiff(
       List<AutogenEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenEnvironmentDiff val : lst) {
       collect.add(postVisitAutogenEnvironmentDiff(val));
@@ -754,7 +929,9 @@ public class Visitor {
 
   public List<AutogenEnvironmentDiff> postVisitDeepListOfAutogenEnvironmentDiff(
       List<AutogenEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenEnvironmentDiff val : lst) {
       collect.add(postVisitDeepAutogenEnvironmentDiff(val));
@@ -762,10 +939,12 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob) throws ModelDBException {}
+  public void preVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenEnvironmentDiff postVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
       throws ModelDBException {
@@ -774,13 +953,17 @@ public class Visitor {
 
   public AutogenEnvironmentDiff postVisitDeepAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenEnvironmentVariablesBlob(
       List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenEnvironmentVariablesBlob val : lst) {
       preVisitAutogenEnvironmentVariablesBlob(val);
     }
@@ -788,7 +971,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenEnvironmentVariablesBlob(
       List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenEnvironmentVariablesBlob val : lst) {
       preVisitDeepAutogenEnvironmentVariablesBlob(val);
     }
@@ -796,7 +981,9 @@ public class Visitor {
 
   public List<AutogenEnvironmentVariablesBlob> postVisitListOfAutogenEnvironmentVariablesBlob(
       List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenEnvironmentVariablesBlob> collect = new ArrayList<>(lst.size());
     for (AutogenEnvironmentVariablesBlob val : lst) {
       collect.add(postVisitAutogenEnvironmentVariablesBlob(val));
@@ -806,7 +993,9 @@ public class Visitor {
 
   public List<AutogenEnvironmentVariablesBlob> postVisitDeepListOfAutogenEnvironmentVariablesBlob(
       List<AutogenEnvironmentVariablesBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenEnvironmentVariablesBlob> collect = new ArrayList<>(lst.size());
     for (AutogenEnvironmentVariablesBlob val : lst) {
       collect.add(postVisitDeepAutogenEnvironmentVariablesBlob(val));
@@ -815,10 +1004,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenEnvironmentVariablesBlob(AutogenEnvironmentVariablesBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenEnvironmentVariablesBlob(AutogenEnvironmentVariablesBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenEnvironmentVariablesBlob postVisitAutogenEnvironmentVariablesBlob(
       AutogenEnvironmentVariablesBlob blob) throws ModelDBException {
@@ -827,13 +1018,17 @@ public class Visitor {
 
   public AutogenEnvironmentVariablesBlob postVisitDeepAutogenEnvironmentVariablesBlob(
       AutogenEnvironmentVariablesBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenEnvironmentVariablesDiff(
       List<AutogenEnvironmentVariablesDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenEnvironmentVariablesDiff val : lst) {
       preVisitAutogenEnvironmentVariablesDiff(val);
     }
@@ -841,7 +1036,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenEnvironmentVariablesDiff(
       List<AutogenEnvironmentVariablesDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenEnvironmentVariablesDiff val : lst) {
       preVisitDeepAutogenEnvironmentVariablesDiff(val);
     }
@@ -849,7 +1046,9 @@ public class Visitor {
 
   public List<AutogenEnvironmentVariablesDiff> postVisitListOfAutogenEnvironmentVariablesDiff(
       List<AutogenEnvironmentVariablesDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenEnvironmentVariablesDiff> collect = new ArrayList<>(lst.size());
     for (AutogenEnvironmentVariablesDiff val : lst) {
       collect.add(postVisitAutogenEnvironmentVariablesDiff(val));
@@ -859,7 +1058,9 @@ public class Visitor {
 
   public List<AutogenEnvironmentVariablesDiff> postVisitDeepListOfAutogenEnvironmentVariablesDiff(
       List<AutogenEnvironmentVariablesDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenEnvironmentVariablesDiff> collect = new ArrayList<>(lst.size());
     for (AutogenEnvironmentVariablesDiff val : lst) {
       collect.add(postVisitDeepAutogenEnvironmentVariablesDiff(val));
@@ -868,10 +1069,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenEnvironmentVariablesDiff(AutogenEnvironmentVariablesDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenEnvironmentVariablesDiff(AutogenEnvironmentVariablesDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenEnvironmentVariablesDiff postVisitAutogenEnvironmentVariablesDiff(
       AutogenEnvironmentVariablesDiff blob) throws ModelDBException {
@@ -880,13 +1083,17 @@ public class Visitor {
 
   public AutogenEnvironmentVariablesDiff postVisitDeepAutogenEnvironmentVariablesDiff(
       AutogenEnvironmentVariablesDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenGitCodeBlob(List<AutogenGitCodeBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenGitCodeBlob val : lst) {
       preVisitAutogenGitCodeBlob(val);
     }
@@ -894,7 +1101,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenGitCodeBlob(List<AutogenGitCodeBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenGitCodeBlob val : lst) {
       preVisitDeepAutogenGitCodeBlob(val);
     }
@@ -902,7 +1111,9 @@ public class Visitor {
 
   public List<AutogenGitCodeBlob> postVisitListOfAutogenGitCodeBlob(List<AutogenGitCodeBlob> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenGitCodeBlob> collect = new ArrayList<>(lst.size());
     for (AutogenGitCodeBlob val : lst) {
       collect.add(postVisitAutogenGitCodeBlob(val));
@@ -912,7 +1123,9 @@ public class Visitor {
 
   public List<AutogenGitCodeBlob> postVisitDeepListOfAutogenGitCodeBlob(
       List<AutogenGitCodeBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenGitCodeBlob> collect = new ArrayList<>(lst.size());
     for (AutogenGitCodeBlob val : lst) {
       collect.add(postVisitDeepAutogenGitCodeBlob(val));
@@ -920,9 +1133,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {}
+  public void preVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenGitCodeBlob(AutogenGitCodeBlob blob) throws ModelDBException {
+  }
 
   public AutogenGitCodeBlob postVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob)
       throws ModelDBException {
@@ -931,13 +1146,17 @@ public class Visitor {
 
   public AutogenGitCodeBlob postVisitDeepAutogenGitCodeBlob(AutogenGitCodeBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenGitCodeDiff(List<AutogenGitCodeDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenGitCodeDiff val : lst) {
       preVisitAutogenGitCodeDiff(val);
     }
@@ -945,7 +1164,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenGitCodeDiff(List<AutogenGitCodeDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenGitCodeDiff val : lst) {
       preVisitDeepAutogenGitCodeDiff(val);
     }
@@ -953,7 +1174,9 @@ public class Visitor {
 
   public List<AutogenGitCodeDiff> postVisitListOfAutogenGitCodeDiff(List<AutogenGitCodeDiff> lst)
       throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenGitCodeDiff> collect = new ArrayList<>(lst.size());
     for (AutogenGitCodeDiff val : lst) {
       collect.add(postVisitAutogenGitCodeDiff(val));
@@ -963,7 +1186,9 @@ public class Visitor {
 
   public List<AutogenGitCodeDiff> postVisitDeepListOfAutogenGitCodeDiff(
       List<AutogenGitCodeDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenGitCodeDiff> collect = new ArrayList<>(lst.size());
     for (AutogenGitCodeDiff val : lst) {
       collect.add(postVisitDeepAutogenGitCodeDiff(val));
@@ -971,9 +1196,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {}
+  public void preVisitAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenGitCodeDiff(AutogenGitCodeDiff blob) throws ModelDBException {
+  }
 
   public AutogenGitCodeDiff postVisitAutogenGitCodeDiff(AutogenGitCodeDiff blob)
       throws ModelDBException {
@@ -982,13 +1209,17 @@ public class Visitor {
 
   public AutogenGitCodeDiff postVisitDeepAutogenGitCodeDiff(AutogenGitCodeDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenHyperparameterConfigBlob(
       List<AutogenHyperparameterConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterConfigBlob val : lst) {
       preVisitAutogenHyperparameterConfigBlob(val);
     }
@@ -996,7 +1227,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenHyperparameterConfigBlob(
       List<AutogenHyperparameterConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterConfigBlob val : lst) {
       preVisitDeepAutogenHyperparameterConfigBlob(val);
     }
@@ -1004,7 +1237,9 @@ public class Visitor {
 
   public List<AutogenHyperparameterConfigBlob> postVisitListOfAutogenHyperparameterConfigBlob(
       List<AutogenHyperparameterConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterConfigBlob val : lst) {
       collect.add(postVisitAutogenHyperparameterConfigBlob(val));
@@ -1014,7 +1249,9 @@ public class Visitor {
 
   public List<AutogenHyperparameterConfigBlob> postVisitDeepListOfAutogenHyperparameterConfigBlob(
       List<AutogenHyperparameterConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterConfigBlob val : lst) {
       collect.add(postVisitDeepAutogenHyperparameterConfigBlob(val));
@@ -1023,10 +1260,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterConfigBlob(AutogenHyperparameterConfigBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenHyperparameterConfigBlob(AutogenHyperparameterConfigBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenHyperparameterConfigBlob postVisitAutogenHyperparameterConfigBlob(
       AutogenHyperparameterConfigBlob blob) throws ModelDBException {
@@ -1035,13 +1274,17 @@ public class Visitor {
 
   public AutogenHyperparameterConfigBlob postVisitDeepAutogenHyperparameterConfigBlob(
       AutogenHyperparameterConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenHyperparameterConfigDiff(
       List<AutogenHyperparameterConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterConfigDiff val : lst) {
       preVisitAutogenHyperparameterConfigDiff(val);
     }
@@ -1049,7 +1292,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenHyperparameterConfigDiff(
       List<AutogenHyperparameterConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterConfigDiff val : lst) {
       preVisitDeepAutogenHyperparameterConfigDiff(val);
     }
@@ -1057,7 +1302,9 @@ public class Visitor {
 
   public List<AutogenHyperparameterConfigDiff> postVisitListOfAutogenHyperparameterConfigDiff(
       List<AutogenHyperparameterConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterConfigDiff> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterConfigDiff val : lst) {
       collect.add(postVisitAutogenHyperparameterConfigDiff(val));
@@ -1067,7 +1314,9 @@ public class Visitor {
 
   public List<AutogenHyperparameterConfigDiff> postVisitDeepListOfAutogenHyperparameterConfigDiff(
       List<AutogenHyperparameterConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterConfigDiff> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterConfigDiff val : lst) {
       collect.add(postVisitDeepAutogenHyperparameterConfigDiff(val));
@@ -1076,10 +1325,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterConfigDiff(AutogenHyperparameterConfigDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenHyperparameterConfigDiff(AutogenHyperparameterConfigDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenHyperparameterConfigDiff postVisitAutogenHyperparameterConfigDiff(
       AutogenHyperparameterConfigDiff blob) throws ModelDBException {
@@ -1088,13 +1339,17 @@ public class Visitor {
 
   public AutogenHyperparameterConfigDiff postVisitDeepAutogenHyperparameterConfigDiff(
       AutogenHyperparameterConfigDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenHyperparameterSetConfigBlob(
       List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterSetConfigBlob val : lst) {
       preVisitAutogenHyperparameterSetConfigBlob(val);
     }
@@ -1102,7 +1357,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenHyperparameterSetConfigBlob(
       List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterSetConfigBlob val : lst) {
       preVisitDeepAutogenHyperparameterSetConfigBlob(val);
     }
@@ -1110,7 +1367,9 @@ public class Visitor {
 
   public List<AutogenHyperparameterSetConfigBlob> postVisitListOfAutogenHyperparameterSetConfigBlob(
       List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterSetConfigBlob val : lst) {
       collect.add(postVisitAutogenHyperparameterSetConfigBlob(val));
@@ -1119,9 +1378,11 @@ public class Visitor {
   }
 
   public List<AutogenHyperparameterSetConfigBlob>
-      postVisitDeepListOfAutogenHyperparameterSetConfigBlob(
-          List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitDeepListOfAutogenHyperparameterSetConfigBlob(
+      List<AutogenHyperparameterSetConfigBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterSetConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterSetConfigBlob val : lst) {
       collect.add(postVisitDeepAutogenHyperparameterSetConfigBlob(val));
@@ -1130,10 +1391,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterSetConfigBlob(AutogenHyperparameterSetConfigBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenHyperparameterSetConfigBlob(
-      AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {}
+      AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
+  }
 
   public AutogenHyperparameterSetConfigBlob postVisitAutogenHyperparameterSetConfigBlob(
       AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
@@ -1142,13 +1405,17 @@ public class Visitor {
 
   public AutogenHyperparameterSetConfigBlob postVisitDeepAutogenHyperparameterSetConfigBlob(
       AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenHyperparameterSetConfigDiff(
       List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterSetConfigDiff val : lst) {
       preVisitAutogenHyperparameterSetConfigDiff(val);
     }
@@ -1156,7 +1423,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenHyperparameterSetConfigDiff(
       List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterSetConfigDiff val : lst) {
       preVisitDeepAutogenHyperparameterSetConfigDiff(val);
     }
@@ -1164,7 +1433,9 @@ public class Visitor {
 
   public List<AutogenHyperparameterSetConfigDiff> postVisitListOfAutogenHyperparameterSetConfigDiff(
       List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterSetConfigDiff> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterSetConfigDiff val : lst) {
       collect.add(postVisitAutogenHyperparameterSetConfigDiff(val));
@@ -1173,9 +1444,11 @@ public class Visitor {
   }
 
   public List<AutogenHyperparameterSetConfigDiff>
-      postVisitDeepListOfAutogenHyperparameterSetConfigDiff(
-          List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitDeepListOfAutogenHyperparameterSetConfigDiff(
+      List<AutogenHyperparameterSetConfigDiff> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterSetConfigDiff> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterSetConfigDiff val : lst) {
       collect.add(postVisitDeepAutogenHyperparameterSetConfigDiff(val));
@@ -1184,10 +1457,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterSetConfigDiff(AutogenHyperparameterSetConfigDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenHyperparameterSetConfigDiff(
-      AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {}
+      AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {
+  }
 
   public AutogenHyperparameterSetConfigDiff postVisitAutogenHyperparameterSetConfigDiff(
       AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {
@@ -1196,13 +1471,17 @@ public class Visitor {
 
   public AutogenHyperparameterSetConfigDiff postVisitDeepAutogenHyperparameterSetConfigDiff(
       AutogenHyperparameterSetConfigDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenHyperparameterValuesConfigBlob(
       List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterValuesConfigBlob val : lst) {
       preVisitAutogenHyperparameterValuesConfigBlob(val);
     }
@@ -1210,16 +1489,20 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenHyperparameterValuesConfigBlob(
       List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenHyperparameterValuesConfigBlob val : lst) {
       preVisitDeepAutogenHyperparameterValuesConfigBlob(val);
     }
   }
 
   public List<AutogenHyperparameterValuesConfigBlob>
-      postVisitListOfAutogenHyperparameterValuesConfigBlob(
-          List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitListOfAutogenHyperparameterValuesConfigBlob(
+      List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterValuesConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterValuesConfigBlob val : lst) {
       collect.add(postVisitAutogenHyperparameterValuesConfigBlob(val));
@@ -1228,9 +1511,11 @@ public class Visitor {
   }
 
   public List<AutogenHyperparameterValuesConfigBlob>
-      postVisitDeepListOfAutogenHyperparameterValuesConfigBlob(
-          List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitDeepListOfAutogenHyperparameterValuesConfigBlob(
+      List<AutogenHyperparameterValuesConfigBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenHyperparameterValuesConfigBlob> collect = new ArrayList<>(lst.size());
     for (AutogenHyperparameterValuesConfigBlob val : lst) {
       collect.add(postVisitDeepAutogenHyperparameterValuesConfigBlob(val));
@@ -1239,10 +1524,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenHyperparameterValuesConfigBlob(
-      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {}
+      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenHyperparameterValuesConfigBlob(
-      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {}
+      AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
+  }
 
   public AutogenHyperparameterValuesConfigBlob postVisitAutogenHyperparameterValuesConfigBlob(
       AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
@@ -1251,13 +1538,17 @@ public class Visitor {
 
   public AutogenHyperparameterValuesConfigBlob postVisitDeepAutogenHyperparameterValuesConfigBlob(
       AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenNotebookCodeBlob(List<AutogenNotebookCodeBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenNotebookCodeBlob val : lst) {
       preVisitAutogenNotebookCodeBlob(val);
     }
@@ -1265,7 +1556,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenNotebookCodeBlob(List<AutogenNotebookCodeBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenNotebookCodeBlob val : lst) {
       preVisitDeepAutogenNotebookCodeBlob(val);
     }
@@ -1273,7 +1566,9 @@ public class Visitor {
 
   public List<AutogenNotebookCodeBlob> postVisitListOfAutogenNotebookCodeBlob(
       List<AutogenNotebookCodeBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenNotebookCodeBlob> collect = new ArrayList<>(lst.size());
     for (AutogenNotebookCodeBlob val : lst) {
       collect.add(postVisitAutogenNotebookCodeBlob(val));
@@ -1283,7 +1578,9 @@ public class Visitor {
 
   public List<AutogenNotebookCodeBlob> postVisitDeepListOfAutogenNotebookCodeBlob(
       List<AutogenNotebookCodeBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenNotebookCodeBlob> collect = new ArrayList<>(lst.size());
     for (AutogenNotebookCodeBlob val : lst) {
       collect.add(postVisitDeepAutogenNotebookCodeBlob(val));
@@ -1292,10 +1589,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenNotebookCodeBlob postVisitAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
       throws ModelDBException {
@@ -1304,13 +1603,17 @@ public class Visitor {
 
   public AutogenNotebookCodeBlob postVisitDeepAutogenNotebookCodeBlob(AutogenNotebookCodeBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenNotebookCodeDiff(List<AutogenNotebookCodeDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenNotebookCodeDiff val : lst) {
       preVisitAutogenNotebookCodeDiff(val);
     }
@@ -1318,7 +1621,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenNotebookCodeDiff(List<AutogenNotebookCodeDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenNotebookCodeDiff val : lst) {
       preVisitDeepAutogenNotebookCodeDiff(val);
     }
@@ -1326,7 +1631,9 @@ public class Visitor {
 
   public List<AutogenNotebookCodeDiff> postVisitListOfAutogenNotebookCodeDiff(
       List<AutogenNotebookCodeDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenNotebookCodeDiff> collect = new ArrayList<>(lst.size());
     for (AutogenNotebookCodeDiff val : lst) {
       collect.add(postVisitAutogenNotebookCodeDiff(val));
@@ -1336,7 +1643,9 @@ public class Visitor {
 
   public List<AutogenNotebookCodeDiff> postVisitDeepListOfAutogenNotebookCodeDiff(
       List<AutogenNotebookCodeDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenNotebookCodeDiff> collect = new ArrayList<>(lst.size());
     for (AutogenNotebookCodeDiff val : lst) {
       collect.add(postVisitDeepAutogenNotebookCodeDiff(val));
@@ -1345,10 +1654,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenNotebookCodeDiff postVisitAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
       throws ModelDBException {
@@ -1357,13 +1668,17 @@ public class Visitor {
 
   public AutogenNotebookCodeDiff postVisitDeepAutogenNotebookCodeDiff(AutogenNotebookCodeDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenPathDatasetBlob(List<AutogenPathDatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPathDatasetBlob val : lst) {
       preVisitAutogenPathDatasetBlob(val);
     }
@@ -1371,7 +1686,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenPathDatasetBlob(List<AutogenPathDatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPathDatasetBlob val : lst) {
       preVisitDeepAutogenPathDatasetBlob(val);
     }
@@ -1379,7 +1696,9 @@ public class Visitor {
 
   public List<AutogenPathDatasetBlob> postVisitListOfAutogenPathDatasetBlob(
       List<AutogenPathDatasetBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPathDatasetBlob> collect = new ArrayList<>(lst.size());
     for (AutogenPathDatasetBlob val : lst) {
       collect.add(postVisitAutogenPathDatasetBlob(val));
@@ -1389,7 +1708,9 @@ public class Visitor {
 
   public List<AutogenPathDatasetBlob> postVisitDeepListOfAutogenPathDatasetBlob(
       List<AutogenPathDatasetBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPathDatasetBlob> collect = new ArrayList<>(lst.size());
     for (AutogenPathDatasetBlob val : lst) {
       collect.add(postVisitDeepAutogenPathDatasetBlob(val));
@@ -1397,10 +1718,12 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenPathDatasetBlob(AutogenPathDatasetBlob blob) throws ModelDBException {}
+  public void preVisitAutogenPathDatasetBlob(AutogenPathDatasetBlob blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenPathDatasetBlob(AutogenPathDatasetBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenPathDatasetBlob postVisitAutogenPathDatasetBlob(AutogenPathDatasetBlob blob)
       throws ModelDBException {
@@ -1409,13 +1732,17 @@ public class Visitor {
 
   public AutogenPathDatasetBlob postVisitDeepAutogenPathDatasetBlob(AutogenPathDatasetBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenPathDatasetComponentBlob(
       List<AutogenPathDatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPathDatasetComponentBlob val : lst) {
       preVisitAutogenPathDatasetComponentBlob(val);
     }
@@ -1423,7 +1750,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenPathDatasetComponentBlob(
       List<AutogenPathDatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPathDatasetComponentBlob val : lst) {
       preVisitDeepAutogenPathDatasetComponentBlob(val);
     }
@@ -1431,7 +1760,9 @@ public class Visitor {
 
   public List<AutogenPathDatasetComponentBlob> postVisitListOfAutogenPathDatasetComponentBlob(
       List<AutogenPathDatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPathDatasetComponentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenPathDatasetComponentBlob val : lst) {
       collect.add(postVisitAutogenPathDatasetComponentBlob(val));
@@ -1441,7 +1772,9 @@ public class Visitor {
 
   public List<AutogenPathDatasetComponentBlob> postVisitDeepListOfAutogenPathDatasetComponentBlob(
       List<AutogenPathDatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPathDatasetComponentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenPathDatasetComponentBlob val : lst) {
       collect.add(postVisitDeepAutogenPathDatasetComponentBlob(val));
@@ -1450,10 +1783,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenPathDatasetComponentBlob(AutogenPathDatasetComponentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenPathDatasetComponentBlob postVisitAutogenPathDatasetComponentBlob(
       AutogenPathDatasetComponentBlob blob) throws ModelDBException {
@@ -1462,13 +1797,17 @@ public class Visitor {
 
   public AutogenPathDatasetComponentBlob postVisitDeepAutogenPathDatasetComponentBlob(
       AutogenPathDatasetComponentBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenPathDatasetComponentDiff(
       List<AutogenPathDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPathDatasetComponentDiff val : lst) {
       preVisitAutogenPathDatasetComponentDiff(val);
     }
@@ -1476,7 +1815,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenPathDatasetComponentDiff(
       List<AutogenPathDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPathDatasetComponentDiff val : lst) {
       preVisitDeepAutogenPathDatasetComponentDiff(val);
     }
@@ -1484,7 +1825,9 @@ public class Visitor {
 
   public List<AutogenPathDatasetComponentDiff> postVisitListOfAutogenPathDatasetComponentDiff(
       List<AutogenPathDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPathDatasetComponentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenPathDatasetComponentDiff val : lst) {
       collect.add(postVisitAutogenPathDatasetComponentDiff(val));
@@ -1494,7 +1837,9 @@ public class Visitor {
 
   public List<AutogenPathDatasetComponentDiff> postVisitDeepListOfAutogenPathDatasetComponentDiff(
       List<AutogenPathDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPathDatasetComponentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenPathDatasetComponentDiff val : lst) {
       collect.add(postVisitDeepAutogenPathDatasetComponentDiff(val));
@@ -1503,10 +1848,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenPathDatasetComponentDiff(AutogenPathDatasetComponentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenPathDatasetComponentDiff(AutogenPathDatasetComponentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenPathDatasetComponentDiff postVisitAutogenPathDatasetComponentDiff(
       AutogenPathDatasetComponentDiff blob) throws ModelDBException {
@@ -1515,13 +1862,17 @@ public class Visitor {
 
   public AutogenPathDatasetComponentDiff postVisitDeepAutogenPathDatasetComponentDiff(
       AutogenPathDatasetComponentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenPathDatasetDiff(List<AutogenPathDatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPathDatasetDiff val : lst) {
       preVisitAutogenPathDatasetDiff(val);
     }
@@ -1529,7 +1880,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenPathDatasetDiff(List<AutogenPathDatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPathDatasetDiff val : lst) {
       preVisitDeepAutogenPathDatasetDiff(val);
     }
@@ -1537,7 +1890,9 @@ public class Visitor {
 
   public List<AutogenPathDatasetDiff> postVisitListOfAutogenPathDatasetDiff(
       List<AutogenPathDatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPathDatasetDiff> collect = new ArrayList<>(lst.size());
     for (AutogenPathDatasetDiff val : lst) {
       collect.add(postVisitAutogenPathDatasetDiff(val));
@@ -1547,7 +1902,9 @@ public class Visitor {
 
   public List<AutogenPathDatasetDiff> postVisitDeepListOfAutogenPathDatasetDiff(
       List<AutogenPathDatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPathDatasetDiff> collect = new ArrayList<>(lst.size());
     for (AutogenPathDatasetDiff val : lst) {
       collect.add(postVisitDeepAutogenPathDatasetDiff(val));
@@ -1555,10 +1912,12 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenPathDatasetDiff(AutogenPathDatasetDiff blob) throws ModelDBException {}
+  public void preVisitAutogenPathDatasetDiff(AutogenPathDatasetDiff blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenPathDatasetDiff(AutogenPathDatasetDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenPathDatasetDiff postVisitAutogenPathDatasetDiff(AutogenPathDatasetDiff blob)
       throws ModelDBException {
@@ -1567,13 +1926,17 @@ public class Visitor {
 
   public AutogenPathDatasetDiff postVisitDeepAutogenPathDatasetDiff(AutogenPathDatasetDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenPythonEnvironmentBlob(List<AutogenPythonEnvironmentBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPythonEnvironmentBlob val : lst) {
       preVisitAutogenPythonEnvironmentBlob(val);
     }
@@ -1581,7 +1944,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenPythonEnvironmentBlob(List<AutogenPythonEnvironmentBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPythonEnvironmentBlob val : lst) {
       preVisitDeepAutogenPythonEnvironmentBlob(val);
     }
@@ -1589,7 +1954,9 @@ public class Visitor {
 
   public List<AutogenPythonEnvironmentBlob> postVisitListOfAutogenPythonEnvironmentBlob(
       List<AutogenPythonEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPythonEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenPythonEnvironmentBlob val : lst) {
       collect.add(postVisitAutogenPythonEnvironmentBlob(val));
@@ -1599,7 +1966,9 @@ public class Visitor {
 
   public List<AutogenPythonEnvironmentBlob> postVisitDeepListOfAutogenPythonEnvironmentBlob(
       List<AutogenPythonEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPythonEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenPythonEnvironmentBlob val : lst) {
       collect.add(postVisitDeepAutogenPythonEnvironmentBlob(val));
@@ -1608,10 +1977,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenPythonEnvironmentBlob(AutogenPythonEnvironmentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenPythonEnvironmentBlob postVisitAutogenPythonEnvironmentBlob(
       AutogenPythonEnvironmentBlob blob) throws ModelDBException {
@@ -1620,13 +1991,17 @@ public class Visitor {
 
   public AutogenPythonEnvironmentBlob postVisitDeepAutogenPythonEnvironmentBlob(
       AutogenPythonEnvironmentBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenPythonEnvironmentDiff(List<AutogenPythonEnvironmentDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPythonEnvironmentDiff val : lst) {
       preVisitAutogenPythonEnvironmentDiff(val);
     }
@@ -1634,7 +2009,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenPythonEnvironmentDiff(List<AutogenPythonEnvironmentDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPythonEnvironmentDiff val : lst) {
       preVisitDeepAutogenPythonEnvironmentDiff(val);
     }
@@ -1642,7 +2019,9 @@ public class Visitor {
 
   public List<AutogenPythonEnvironmentDiff> postVisitListOfAutogenPythonEnvironmentDiff(
       List<AutogenPythonEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPythonEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenPythonEnvironmentDiff val : lst) {
       collect.add(postVisitAutogenPythonEnvironmentDiff(val));
@@ -1652,7 +2031,9 @@ public class Visitor {
 
   public List<AutogenPythonEnvironmentDiff> postVisitDeepListOfAutogenPythonEnvironmentDiff(
       List<AutogenPythonEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPythonEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenPythonEnvironmentDiff val : lst) {
       collect.add(postVisitDeepAutogenPythonEnvironmentDiff(val));
@@ -1661,10 +2042,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenPythonEnvironmentDiff(AutogenPythonEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenPythonEnvironmentDiff(AutogenPythonEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenPythonEnvironmentDiff postVisitAutogenPythonEnvironmentDiff(
       AutogenPythonEnvironmentDiff blob) throws ModelDBException {
@@ -1673,13 +2056,17 @@ public class Visitor {
 
   public AutogenPythonEnvironmentDiff postVisitDeepAutogenPythonEnvironmentDiff(
       AutogenPythonEnvironmentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenPythonRequirementEnvironmentBlob(
       List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPythonRequirementEnvironmentBlob val : lst) {
       preVisitAutogenPythonRequirementEnvironmentBlob(val);
     }
@@ -1687,16 +2074,20 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenPythonRequirementEnvironmentBlob(
       List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPythonRequirementEnvironmentBlob val : lst) {
       preVisitDeepAutogenPythonRequirementEnvironmentBlob(val);
     }
   }
 
   public List<AutogenPythonRequirementEnvironmentBlob>
-      postVisitListOfAutogenPythonRequirementEnvironmentBlob(
-          List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitListOfAutogenPythonRequirementEnvironmentBlob(
+      List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPythonRequirementEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenPythonRequirementEnvironmentBlob val : lst) {
       collect.add(postVisitAutogenPythonRequirementEnvironmentBlob(val));
@@ -1705,9 +2096,11 @@ public class Visitor {
   }
 
   public List<AutogenPythonRequirementEnvironmentBlob>
-      postVisitDeepListOfAutogenPythonRequirementEnvironmentBlob(
-          List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitDeepListOfAutogenPythonRequirementEnvironmentBlob(
+      List<AutogenPythonRequirementEnvironmentBlob> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPythonRequirementEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenPythonRequirementEnvironmentBlob val : lst) {
       collect.add(postVisitDeepAutogenPythonRequirementEnvironmentBlob(val));
@@ -1716,10 +2109,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenPythonRequirementEnvironmentBlob(
-      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {}
+      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenPythonRequirementEnvironmentBlob(
-      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {}
+      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
+  }
 
   public AutogenPythonRequirementEnvironmentBlob postVisitAutogenPythonRequirementEnvironmentBlob(
       AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
@@ -1727,15 +2122,19 @@ public class Visitor {
   }
 
   public AutogenPythonRequirementEnvironmentBlob
-      postVisitDeepAutogenPythonRequirementEnvironmentBlob(
-          AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+  postVisitDeepAutogenPythonRequirementEnvironmentBlob(
+      AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenPythonRequirementEnvironmentDiff(
       List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPythonRequirementEnvironmentDiff val : lst) {
       preVisitAutogenPythonRequirementEnvironmentDiff(val);
     }
@@ -1743,16 +2142,20 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenPythonRequirementEnvironmentDiff(
       List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenPythonRequirementEnvironmentDiff val : lst) {
       preVisitDeepAutogenPythonRequirementEnvironmentDiff(val);
     }
   }
 
   public List<AutogenPythonRequirementEnvironmentDiff>
-      postVisitListOfAutogenPythonRequirementEnvironmentDiff(
-          List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitListOfAutogenPythonRequirementEnvironmentDiff(
+      List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPythonRequirementEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenPythonRequirementEnvironmentDiff val : lst) {
       collect.add(postVisitAutogenPythonRequirementEnvironmentDiff(val));
@@ -1761,9 +2164,11 @@ public class Visitor {
   }
 
   public List<AutogenPythonRequirementEnvironmentDiff>
-      postVisitDeepListOfAutogenPythonRequirementEnvironmentDiff(
-          List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+  postVisitDeepListOfAutogenPythonRequirementEnvironmentDiff(
+      List<AutogenPythonRequirementEnvironmentDiff> lst) throws ModelDBException {
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenPythonRequirementEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenPythonRequirementEnvironmentDiff val : lst) {
       collect.add(postVisitDeepAutogenPythonRequirementEnvironmentDiff(val));
@@ -1772,10 +2177,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenPythonRequirementEnvironmentDiff(
-      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {}
+      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenPythonRequirementEnvironmentDiff(
-      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {}
+      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
+  }
 
   public AutogenPythonRequirementEnvironmentDiff postVisitAutogenPythonRequirementEnvironmentDiff(
       AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
@@ -1783,15 +2190,19 @@ public class Visitor {
   }
 
   public AutogenPythonRequirementEnvironmentDiff
-      postVisitDeepAutogenPythonRequirementEnvironmentDiff(
-          AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+  postVisitDeepAutogenPythonRequirementEnvironmentDiff(
+      AutogenPythonRequirementEnvironmentDiff blob) throws ModelDBException {
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenQueryDatasetBlob(List<AutogenQueryDatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenQueryDatasetBlob val : lst) {
       preVisitAutogenQueryDatasetBlob(val);
     }
@@ -1799,7 +2210,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenQueryDatasetBlob(List<AutogenQueryDatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenQueryDatasetBlob val : lst) {
       preVisitDeepAutogenQueryDatasetBlob(val);
     }
@@ -1807,7 +2220,9 @@ public class Visitor {
 
   public List<AutogenQueryDatasetBlob> postVisitListOfAutogenQueryDatasetBlob(
       List<AutogenQueryDatasetBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenQueryDatasetBlob> collect = new ArrayList<>(lst.size());
     for (AutogenQueryDatasetBlob val : lst) {
       collect.add(postVisitAutogenQueryDatasetBlob(val));
@@ -1817,7 +2232,9 @@ public class Visitor {
 
   public List<AutogenQueryDatasetBlob> postVisitDeepListOfAutogenQueryDatasetBlob(
       List<AutogenQueryDatasetBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenQueryDatasetBlob> collect = new ArrayList<>(lst.size());
     for (AutogenQueryDatasetBlob val : lst) {
       collect.add(postVisitDeepAutogenQueryDatasetBlob(val));
@@ -1826,10 +2243,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenQueryDatasetBlob postVisitAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
       throws ModelDBException {
@@ -1838,13 +2257,17 @@ public class Visitor {
 
   public AutogenQueryDatasetBlob postVisitDeepAutogenQueryDatasetBlob(AutogenQueryDatasetBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenQueryDatasetComponentBlob(
       List<AutogenQueryDatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenQueryDatasetComponentBlob val : lst) {
       preVisitAutogenQueryDatasetComponentBlob(val);
     }
@@ -1852,7 +2275,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenQueryDatasetComponentBlob(
       List<AutogenQueryDatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenQueryDatasetComponentBlob val : lst) {
       preVisitDeepAutogenQueryDatasetComponentBlob(val);
     }
@@ -1860,7 +2285,9 @@ public class Visitor {
 
   public List<AutogenQueryDatasetComponentBlob> postVisitListOfAutogenQueryDatasetComponentBlob(
       List<AutogenQueryDatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenQueryDatasetComponentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenQueryDatasetComponentBlob val : lst) {
       collect.add(postVisitAutogenQueryDatasetComponentBlob(val));
@@ -1870,7 +2297,9 @@ public class Visitor {
 
   public List<AutogenQueryDatasetComponentBlob> postVisitDeepListOfAutogenQueryDatasetComponentBlob(
       List<AutogenQueryDatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenQueryDatasetComponentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenQueryDatasetComponentBlob val : lst) {
       collect.add(postVisitDeepAutogenQueryDatasetComponentBlob(val));
@@ -1879,10 +2308,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenQueryDatasetComponentBlob(AutogenQueryDatasetComponentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenQueryDatasetComponentBlob postVisitAutogenQueryDatasetComponentBlob(
       AutogenQueryDatasetComponentBlob blob) throws ModelDBException {
@@ -1891,13 +2322,17 @@ public class Visitor {
 
   public AutogenQueryDatasetComponentBlob postVisitDeepAutogenQueryDatasetComponentBlob(
       AutogenQueryDatasetComponentBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenQueryDatasetComponentDiff(
       List<AutogenQueryDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenQueryDatasetComponentDiff val : lst) {
       preVisitAutogenQueryDatasetComponentDiff(val);
     }
@@ -1905,7 +2340,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenQueryDatasetComponentDiff(
       List<AutogenQueryDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenQueryDatasetComponentDiff val : lst) {
       preVisitDeepAutogenQueryDatasetComponentDiff(val);
     }
@@ -1913,7 +2350,9 @@ public class Visitor {
 
   public List<AutogenQueryDatasetComponentDiff> postVisitListOfAutogenQueryDatasetComponentDiff(
       List<AutogenQueryDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenQueryDatasetComponentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenQueryDatasetComponentDiff val : lst) {
       collect.add(postVisitAutogenQueryDatasetComponentDiff(val));
@@ -1923,7 +2362,9 @@ public class Visitor {
 
   public List<AutogenQueryDatasetComponentDiff> postVisitDeepListOfAutogenQueryDatasetComponentDiff(
       List<AutogenQueryDatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenQueryDatasetComponentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenQueryDatasetComponentDiff val : lst) {
       collect.add(postVisitDeepAutogenQueryDatasetComponentDiff(val));
@@ -1932,10 +2373,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenQueryDatasetComponentDiff(AutogenQueryDatasetComponentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenQueryDatasetComponentDiff(AutogenQueryDatasetComponentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenQueryDatasetComponentDiff postVisitAutogenQueryDatasetComponentDiff(
       AutogenQueryDatasetComponentDiff blob) throws ModelDBException {
@@ -1944,13 +2387,17 @@ public class Visitor {
 
   public AutogenQueryDatasetComponentDiff postVisitDeepAutogenQueryDatasetComponentDiff(
       AutogenQueryDatasetComponentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenQueryDatasetDiff(List<AutogenQueryDatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenQueryDatasetDiff val : lst) {
       preVisitAutogenQueryDatasetDiff(val);
     }
@@ -1958,7 +2405,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenQueryDatasetDiff(List<AutogenQueryDatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenQueryDatasetDiff val : lst) {
       preVisitDeepAutogenQueryDatasetDiff(val);
     }
@@ -1966,7 +2415,9 @@ public class Visitor {
 
   public List<AutogenQueryDatasetDiff> postVisitListOfAutogenQueryDatasetDiff(
       List<AutogenQueryDatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenQueryDatasetDiff> collect = new ArrayList<>(lst.size());
     for (AutogenQueryDatasetDiff val : lst) {
       collect.add(postVisitAutogenQueryDatasetDiff(val));
@@ -1976,7 +2427,9 @@ public class Visitor {
 
   public List<AutogenQueryDatasetDiff> postVisitDeepListOfAutogenQueryDatasetDiff(
       List<AutogenQueryDatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenQueryDatasetDiff> collect = new ArrayList<>(lst.size());
     for (AutogenQueryDatasetDiff val : lst) {
       collect.add(postVisitDeepAutogenQueryDatasetDiff(val));
@@ -1985,10 +2438,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenQueryDatasetDiff postVisitAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
       throws ModelDBException {
@@ -1997,13 +2452,17 @@ public class Visitor {
 
   public AutogenQueryDatasetDiff postVisitDeepAutogenQueryDatasetDiff(AutogenQueryDatasetDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenS3DatasetBlob(List<AutogenS3DatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenS3DatasetBlob val : lst) {
       preVisitAutogenS3DatasetBlob(val);
     }
@@ -2011,7 +2470,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenS3DatasetBlob(List<AutogenS3DatasetBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenS3DatasetBlob val : lst) {
       preVisitDeepAutogenS3DatasetBlob(val);
     }
@@ -2019,7 +2480,9 @@ public class Visitor {
 
   public List<AutogenS3DatasetBlob> postVisitListOfAutogenS3DatasetBlob(
       List<AutogenS3DatasetBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenS3DatasetBlob> collect = new ArrayList<>(lst.size());
     for (AutogenS3DatasetBlob val : lst) {
       collect.add(postVisitAutogenS3DatasetBlob(val));
@@ -2029,7 +2492,9 @@ public class Visitor {
 
   public List<AutogenS3DatasetBlob> postVisitDeepListOfAutogenS3DatasetBlob(
       List<AutogenS3DatasetBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenS3DatasetBlob> collect = new ArrayList<>(lst.size());
     for (AutogenS3DatasetBlob val : lst) {
       collect.add(postVisitDeepAutogenS3DatasetBlob(val));
@@ -2037,9 +2502,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {}
+  public void preVisitAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {}
+  public void preVisitDeepAutogenS3DatasetBlob(AutogenS3DatasetBlob blob) throws ModelDBException {
+  }
 
   public AutogenS3DatasetBlob postVisitAutogenS3DatasetBlob(AutogenS3DatasetBlob blob)
       throws ModelDBException {
@@ -2048,13 +2515,17 @@ public class Visitor {
 
   public AutogenS3DatasetBlob postVisitDeepAutogenS3DatasetBlob(AutogenS3DatasetBlob blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenS3DatasetComponentBlob(List<AutogenS3DatasetComponentBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenS3DatasetComponentBlob val : lst) {
       preVisitAutogenS3DatasetComponentBlob(val);
     }
@@ -2062,7 +2533,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenS3DatasetComponentBlob(
       List<AutogenS3DatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenS3DatasetComponentBlob val : lst) {
       preVisitDeepAutogenS3DatasetComponentBlob(val);
     }
@@ -2070,7 +2543,9 @@ public class Visitor {
 
   public List<AutogenS3DatasetComponentBlob> postVisitListOfAutogenS3DatasetComponentBlob(
       List<AutogenS3DatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenS3DatasetComponentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenS3DatasetComponentBlob val : lst) {
       collect.add(postVisitAutogenS3DatasetComponentBlob(val));
@@ -2080,7 +2555,9 @@ public class Visitor {
 
   public List<AutogenS3DatasetComponentBlob> postVisitDeepListOfAutogenS3DatasetComponentBlob(
       List<AutogenS3DatasetComponentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenS3DatasetComponentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenS3DatasetComponentBlob val : lst) {
       collect.add(postVisitDeepAutogenS3DatasetComponentBlob(val));
@@ -2089,10 +2566,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenS3DatasetComponentBlob(AutogenS3DatasetComponentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenS3DatasetComponentBlob(AutogenS3DatasetComponentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenS3DatasetComponentBlob postVisitAutogenS3DatasetComponentBlob(
       AutogenS3DatasetComponentBlob blob) throws ModelDBException {
@@ -2101,13 +2580,17 @@ public class Visitor {
 
   public AutogenS3DatasetComponentBlob postVisitDeepAutogenS3DatasetComponentBlob(
       AutogenS3DatasetComponentBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenS3DatasetComponentDiff(List<AutogenS3DatasetComponentDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenS3DatasetComponentDiff val : lst) {
       preVisitAutogenS3DatasetComponentDiff(val);
     }
@@ -2115,7 +2598,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenS3DatasetComponentDiff(
       List<AutogenS3DatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenS3DatasetComponentDiff val : lst) {
       preVisitDeepAutogenS3DatasetComponentDiff(val);
     }
@@ -2123,7 +2608,9 @@ public class Visitor {
 
   public List<AutogenS3DatasetComponentDiff> postVisitListOfAutogenS3DatasetComponentDiff(
       List<AutogenS3DatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenS3DatasetComponentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenS3DatasetComponentDiff val : lst) {
       collect.add(postVisitAutogenS3DatasetComponentDiff(val));
@@ -2133,7 +2620,9 @@ public class Visitor {
 
   public List<AutogenS3DatasetComponentDiff> postVisitDeepListOfAutogenS3DatasetComponentDiff(
       List<AutogenS3DatasetComponentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenS3DatasetComponentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenS3DatasetComponentDiff val : lst) {
       collect.add(postVisitDeepAutogenS3DatasetComponentDiff(val));
@@ -2142,10 +2631,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenS3DatasetComponentDiff(AutogenS3DatasetComponentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenS3DatasetComponentDiff(AutogenS3DatasetComponentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenS3DatasetComponentDiff postVisitAutogenS3DatasetComponentDiff(
       AutogenS3DatasetComponentDiff blob) throws ModelDBException {
@@ -2154,13 +2645,17 @@ public class Visitor {
 
   public AutogenS3DatasetComponentDiff postVisitDeepAutogenS3DatasetComponentDiff(
       AutogenS3DatasetComponentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenS3DatasetDiff(List<AutogenS3DatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenS3DatasetDiff val : lst) {
       preVisitAutogenS3DatasetDiff(val);
     }
@@ -2168,7 +2663,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenS3DatasetDiff(List<AutogenS3DatasetDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenS3DatasetDiff val : lst) {
       preVisitDeepAutogenS3DatasetDiff(val);
     }
@@ -2176,7 +2673,9 @@ public class Visitor {
 
   public List<AutogenS3DatasetDiff> postVisitListOfAutogenS3DatasetDiff(
       List<AutogenS3DatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenS3DatasetDiff> collect = new ArrayList<>(lst.size());
     for (AutogenS3DatasetDiff val : lst) {
       collect.add(postVisitAutogenS3DatasetDiff(val));
@@ -2186,7 +2685,9 @@ public class Visitor {
 
   public List<AutogenS3DatasetDiff> postVisitDeepListOfAutogenS3DatasetDiff(
       List<AutogenS3DatasetDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenS3DatasetDiff> collect = new ArrayList<>(lst.size());
     for (AutogenS3DatasetDiff val : lst) {
       collect.add(postVisitDeepAutogenS3DatasetDiff(val));
@@ -2194,9 +2695,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {}
+  public void preVisitAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {}
+  public void preVisitDeepAutogenS3DatasetDiff(AutogenS3DatasetDiff blob) throws ModelDBException {
+  }
 
   public AutogenS3DatasetDiff postVisitAutogenS3DatasetDiff(AutogenS3DatasetDiff blob)
       throws ModelDBException {
@@ -2205,13 +2708,17 @@ public class Visitor {
 
   public AutogenS3DatasetDiff postVisitDeepAutogenS3DatasetDiff(AutogenS3DatasetDiff blob)
       throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenVersionEnvironmentBlob(List<AutogenVersionEnvironmentBlob> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenVersionEnvironmentBlob val : lst) {
       preVisitAutogenVersionEnvironmentBlob(val);
     }
@@ -2219,7 +2726,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenVersionEnvironmentBlob(
       List<AutogenVersionEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenVersionEnvironmentBlob val : lst) {
       preVisitDeepAutogenVersionEnvironmentBlob(val);
     }
@@ -2227,7 +2736,9 @@ public class Visitor {
 
   public List<AutogenVersionEnvironmentBlob> postVisitListOfAutogenVersionEnvironmentBlob(
       List<AutogenVersionEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenVersionEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenVersionEnvironmentBlob val : lst) {
       collect.add(postVisitAutogenVersionEnvironmentBlob(val));
@@ -2237,7 +2748,9 @@ public class Visitor {
 
   public List<AutogenVersionEnvironmentBlob> postVisitDeepListOfAutogenVersionEnvironmentBlob(
       List<AutogenVersionEnvironmentBlob> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenVersionEnvironmentBlob> collect = new ArrayList<>(lst.size());
     for (AutogenVersionEnvironmentBlob val : lst) {
       collect.add(postVisitDeepAutogenVersionEnvironmentBlob(val));
@@ -2246,10 +2759,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenVersionEnvironmentBlob(AutogenVersionEnvironmentBlob blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenVersionEnvironmentBlob postVisitAutogenVersionEnvironmentBlob(
       AutogenVersionEnvironmentBlob blob) throws ModelDBException {
@@ -2258,13 +2773,17 @@ public class Visitor {
 
   public AutogenVersionEnvironmentBlob postVisitDeepAutogenVersionEnvironmentBlob(
       AutogenVersionEnvironmentBlob blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfAutogenVersionEnvironmentDiff(List<AutogenVersionEnvironmentDiff> lst)
       throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenVersionEnvironmentDiff val : lst) {
       preVisitAutogenVersionEnvironmentDiff(val);
     }
@@ -2272,7 +2791,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenVersionEnvironmentDiff(
       List<AutogenVersionEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenVersionEnvironmentDiff val : lst) {
       preVisitDeepAutogenVersionEnvironmentDiff(val);
     }
@@ -2280,7 +2801,9 @@ public class Visitor {
 
   public List<AutogenVersionEnvironmentDiff> postVisitListOfAutogenVersionEnvironmentDiff(
       List<AutogenVersionEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenVersionEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenVersionEnvironmentDiff val : lst) {
       collect.add(postVisitAutogenVersionEnvironmentDiff(val));
@@ -2290,7 +2813,9 @@ public class Visitor {
 
   public List<AutogenVersionEnvironmentDiff> postVisitDeepListOfAutogenVersionEnvironmentDiff(
       List<AutogenVersionEnvironmentDiff> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenVersionEnvironmentDiff> collect = new ArrayList<>(lst.size());
     for (AutogenVersionEnvironmentDiff val : lst) {
       collect.add(postVisitDeepAutogenVersionEnvironmentDiff(val));
@@ -2299,10 +2824,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenVersionEnvironmentDiff(AutogenVersionEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenVersionEnvironmentDiff(AutogenVersionEnvironmentDiff blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenVersionEnvironmentDiff postVisitAutogenVersionEnvironmentDiff(
       AutogenVersionEnvironmentDiff blob) throws ModelDBException {
@@ -2311,26 +2838,34 @@ public class Visitor {
 
   public AutogenVersionEnvironmentDiff postVisitDeepAutogenVersionEnvironmentDiff(
       AutogenVersionEnvironmentDiff blob) throws ModelDBException {
-    if (blob != null) return blob.postVisitDeep(this);
+    if (blob != null) {
+      return blob.postVisitDeep(this);
+    }
     return null;
   }
 
   public void preVisitListOfString(List<String> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (String val : lst) {
       preVisitString(val);
     }
   }
 
   public void preVisitDeepListOfString(List<String> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (String val : lst) {
       preVisitDeepString(val);
     }
   }
 
   public List<String> postVisitListOfString(List<String> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<String> collect = new ArrayList<>(lst.size());
     for (String val : lst) {
       collect.add(postVisitString(val));
@@ -2339,7 +2874,9 @@ public class Visitor {
   }
 
   public List<String> postVisitDeepListOfString(List<String> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<String> collect = new ArrayList<>(lst.size());
     for (String val : lst) {
       collect.add(postVisitDeepString(val));
@@ -2347,9 +2884,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitString(String blob) throws ModelDBException {}
+  public void preVisitString(String blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepString(String blob) throws ModelDBException {}
+  public void preVisitDeepString(String blob) throws ModelDBException {
+  }
 
   public String postVisitString(String blob) throws ModelDBException {
     return blob;
@@ -2360,21 +2899,27 @@ public class Visitor {
   }
 
   public void preVisitListOfBoolean(List<Boolean> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Boolean val : lst) {
       preVisitBoolean(val);
     }
   }
 
   public void preVisitDeepListOfBoolean(List<Boolean> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Boolean val : lst) {
       preVisitDeepBoolean(val);
     }
   }
 
   public List<Boolean> postVisitListOfBoolean(List<Boolean> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Boolean> collect = new ArrayList<>(lst.size());
     for (Boolean val : lst) {
       collect.add(postVisitBoolean(val));
@@ -2383,7 +2928,9 @@ public class Visitor {
   }
 
   public List<Boolean> postVisitDeepListOfBoolean(List<Boolean> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Boolean> collect = new ArrayList<>(lst.size());
     for (Boolean val : lst) {
       collect.add(postVisitDeepBoolean(val));
@@ -2391,9 +2938,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitBoolean(Boolean blob) throws ModelDBException {}
+  public void preVisitBoolean(Boolean blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepBoolean(Boolean blob) throws ModelDBException {}
+  public void preVisitDeepBoolean(Boolean blob) throws ModelDBException {
+  }
 
   public Boolean postVisitBoolean(Boolean blob) throws ModelDBException {
     return blob;
@@ -2404,21 +2953,27 @@ public class Visitor {
   }
 
   public void preVisitListOfDouble(List<Double> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Double val : lst) {
       preVisitDouble(val);
     }
   }
 
   public void preVisitDeepListOfDouble(List<Double> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Double val : lst) {
       preVisitDeepDouble(val);
     }
   }
 
   public List<Double> postVisitListOfDouble(List<Double> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Double> collect = new ArrayList<>(lst.size());
     for (Double val : lst) {
       collect.add(postVisitDouble(val));
@@ -2427,7 +2982,9 @@ public class Visitor {
   }
 
   public List<Double> postVisitDeepListOfDouble(List<Double> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Double> collect = new ArrayList<>(lst.size());
     for (Double val : lst) {
       collect.add(postVisitDeepDouble(val));
@@ -2435,9 +2992,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitDouble(Double blob) throws ModelDBException {}
+  public void preVisitDouble(Double blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepDouble(Double blob) throws ModelDBException {}
+  public void preVisitDeepDouble(Double blob) throws ModelDBException {
+  }
 
   public Double postVisitDouble(Double blob) throws ModelDBException {
     return blob;
@@ -2448,21 +3007,27 @@ public class Visitor {
   }
 
   public void preVisitListOfInteger(List<Integer> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Integer val : lst) {
       preVisitInteger(val);
     }
   }
 
   public void preVisitDeepListOfInteger(List<Integer> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Integer val : lst) {
       preVisitDeepInteger(val);
     }
   }
 
   public List<Integer> postVisitListOfInteger(List<Integer> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Integer> collect = new ArrayList<>(lst.size());
     for (Integer val : lst) {
       collect.add(postVisitInteger(val));
@@ -2471,7 +3036,9 @@ public class Visitor {
   }
 
   public List<Integer> postVisitDeepListOfInteger(List<Integer> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Integer> collect = new ArrayList<>(lst.size());
     for (Integer val : lst) {
       collect.add(postVisitDeepInteger(val));
@@ -2479,9 +3046,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitInteger(Integer blob) throws ModelDBException {}
+  public void preVisitInteger(Integer blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepInteger(Integer blob) throws ModelDBException {}
+  public void preVisitDeepInteger(Integer blob) throws ModelDBException {
+  }
 
   public Integer postVisitInteger(Integer blob) throws ModelDBException {
     return blob;
@@ -2492,21 +3061,27 @@ public class Visitor {
   }
 
   public void preVisitListOfLong(List<Long> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Long val : lst) {
       preVisitLong(val);
     }
   }
 
   public void preVisitDeepListOfLong(List<Long> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Long val : lst) {
       preVisitDeepLong(val);
     }
   }
 
   public List<Long> postVisitListOfLong(List<Long> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Long> collect = new ArrayList<>(lst.size());
     for (Long val : lst) {
       collect.add(postVisitLong(val));
@@ -2515,7 +3090,9 @@ public class Visitor {
   }
 
   public List<Long> postVisitDeepListOfLong(List<Long> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Long> collect = new ArrayList<>(lst.size());
     for (Long val : lst) {
       collect.add(postVisitDeepLong(val));
@@ -2523,9 +3100,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitLong(Long blob) throws ModelDBException {}
+  public void preVisitLong(Long blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepLong(Long blob) throws ModelDBException {}
+  public void preVisitDeepLong(Long blob) throws ModelDBException {
+  }
 
   public Long postVisitLong(Long blob) throws ModelDBException {
     return blob;
@@ -2536,21 +3115,27 @@ public class Visitor {
   }
 
   public void preVisitListOfFloat(List<Float> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Float val : lst) {
       preVisitFloat(val);
     }
   }
 
   public void preVisitDeepListOfFloat(List<Float> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (Float val : lst) {
       preVisitDeepFloat(val);
     }
   }
 
   public List<Float> postVisitListOfFloat(List<Float> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Float> collect = new ArrayList<>(lst.size());
     for (Float val : lst) {
       collect.add(postVisitFloat(val));
@@ -2559,7 +3144,9 @@ public class Visitor {
   }
 
   public List<Float> postVisitDeepListOfFloat(List<Float> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<Float> collect = new ArrayList<>(lst.size());
     for (Float val : lst) {
       collect.add(postVisitDeepFloat(val));
@@ -2567,9 +3154,11 @@ public class Visitor {
     return collect;
   }
 
-  public void preVisitFloat(Float blob) throws ModelDBException {}
+  public void preVisitFloat(Float blob) throws ModelDBException {
+  }
 
-  public void preVisitDeepFloat(Float blob) throws ModelDBException {}
+  public void preVisitDeepFloat(Float blob) throws ModelDBException {
+  }
 
   public Float postVisitFloat(Float blob) throws ModelDBException {
     return blob;
@@ -2581,7 +3170,9 @@ public class Visitor {
 
   public void preVisitListOfAutogenDiffStatusEnumDiffStatus(
       List<AutogenDiffStatusEnumDiffStatus> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDiffStatusEnumDiffStatus val : lst) {
       preVisitAutogenDiffStatusEnumDiffStatus(val);
     }
@@ -2589,7 +3180,9 @@ public class Visitor {
 
   public void preVisitDeepListOfAutogenDiffStatusEnumDiffStatus(
       List<AutogenDiffStatusEnumDiffStatus> lst) throws ModelDBException {
-    if (lst == null) return;
+    if (lst == null) {
+      return;
+    }
     for (AutogenDiffStatusEnumDiffStatus val : lst) {
       preVisitDeepAutogenDiffStatusEnumDiffStatus(val);
     }
@@ -2597,7 +3190,9 @@ public class Visitor {
 
   public List<AutogenDiffStatusEnumDiffStatus> postVisitListOfAutogenDiffStatusEnumDiffStatus(
       List<AutogenDiffStatusEnumDiffStatus> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDiffStatusEnumDiffStatus> collect = new ArrayList<>(lst.size());
     for (AutogenDiffStatusEnumDiffStatus val : lst) {
       collect.add(postVisitAutogenDiffStatusEnumDiffStatus(val));
@@ -2607,7 +3202,9 @@ public class Visitor {
 
   public List<AutogenDiffStatusEnumDiffStatus> postVisitDeepListOfAutogenDiffStatusEnumDiffStatus(
       List<AutogenDiffStatusEnumDiffStatus> lst) throws ModelDBException {
-    if (lst == null) return null;
+    if (lst == null) {
+      return null;
+    }
     final List<AutogenDiffStatusEnumDiffStatus> collect = new ArrayList<>(lst.size());
     for (AutogenDiffStatusEnumDiffStatus val : lst) {
       collect.add(postVisitDeepAutogenDiffStatusEnumDiffStatus(val));
@@ -2616,10 +3213,12 @@ public class Visitor {
   }
 
   public void preVisitAutogenDiffStatusEnumDiffStatus(AutogenDiffStatusEnumDiffStatus blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public void preVisitDeepAutogenDiffStatusEnumDiffStatus(AutogenDiffStatusEnumDiffStatus blob)
-      throws ModelDBException {}
+      throws ModelDBException {
+  }
 
   public AutogenDiffStatusEnumDiffStatus postVisitAutogenDiffStatusEnumDiffStatus(
       AutogenDiffStatusEnumDiffStatus blob) throws ModelDBException {

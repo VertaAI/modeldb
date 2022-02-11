@@ -17,7 +17,8 @@ public class MssqlMigrationUtil {
 
   private static final Logger LOGGER = LogManager.getLogger(MssqlMigrationUtil.class);
 
-  private MssqlMigrationUtil() {}
+  private MssqlMigrationUtil() {
+  }
 
   public static void migrateToUTF16ForMssql(FutureJdbi futureJdbi) {
     futureJdbi
@@ -165,7 +166,7 @@ public class MssqlMigrationUtil {
     for (Map.Entry<String, Map<String, Map.Entry<String, String>>> tableConstraintsMap :
         foreignKeyAndDefaultKeyConstraintsMap.entrySet()) {
       for (Map.Entry<String, Map.Entry<String, String>> entry :
-          tableConstraintsMap.getValue().entrySet())
+          tableConstraintsMap.getValue().entrySet()) {
         handle
             .createUpdate(
                 String.format(
@@ -179,6 +180,7 @@ public class MssqlMigrationUtil {
                     entry.getValue().getValue(),
                     entry.getValue().getKey()))
             .execute();
+      }
     }
   }
 
@@ -389,7 +391,7 @@ public class MssqlMigrationUtil {
     for (Map.Entry<String, Map<String, Map.Entry<String, String>>> tableConstraintsMap :
         tableWiseConstraintsMap.entrySet()) {
       for (Map.Entry<String, Map.Entry<String, String>> constraintEntry :
-          tableConstraintsMap.getValue().entrySet())
+          tableConstraintsMap.getValue().entrySet()) {
         handle
             .createUpdate(
                 String.format(
@@ -401,11 +403,12 @@ public class MssqlMigrationUtil {
                     constraintEntry.getKey(),
                     tableConstraintsMap.getKey()))
             .execute();
+      }
     }
   }
 
   private static Map<String, Map<String, Map.Entry<String, String>>>
-      getAllTableForeignKeyConstraints(Handle handle, Set<String> columnNames) {
+  getAllTableForeignKeyConstraints(Handle handle, Set<String> columnNames) {
     Map<String, Map<String, Map.Entry<String, String>>> tableWiseConstraintsMap = new HashMap<>();
     handle
         .createQuery(
@@ -452,7 +455,7 @@ public class MssqlMigrationUtil {
   }
 
   private static Map<String, Map<String, Map.Entry<String, String>>>
-      getAllTableDefaultKeyConstraints(Handle handle, Set<String> columnNames) {
+  getAllTableDefaultKeyConstraints(Handle handle, Set<String> columnNames) {
     Map<String, Map<String, Map.Entry<String, String>>> tableWiseConstraintsMap = new HashMap<>();
     handle
         .createQuery(

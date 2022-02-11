@@ -1,6 +1,7 @@
 package ai.verta.modeldb.entities.versioning;
 
 public class RepositoryEnums {
+
   public enum RepositoryTypeEnum {
     UNKNOWN,
     REGULAR,

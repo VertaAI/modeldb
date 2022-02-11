@@ -12,7 +12,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "hyperparameter_element_config_blob")
 public class HyperparameterElementConfigBlobEntity implements Serializable {
-  private HyperparameterElementConfigBlobEntity() {}
+
+  private HyperparameterElementConfigBlobEntity() {
+  }
 
   public HyperparameterElementConfigBlobEntity(
       String blobHash,

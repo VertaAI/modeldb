@@ -14,6 +14,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitQuickcheck.class)
 public class DiffAndMerge {
+
   @Property
   public void diffAndMerge(AutogenBlob a, AutogenBlob b) throws ModelDBException {
     AutogenBlob newA = enforceOneof(a);

@@ -135,7 +135,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
    * Convert CreateExperimentRun request to Experiment object. This method generate the
    * ExperimentRun Id using UUID and put it in ExperimentRun object.
    *
-   * @param request : CreateExperimentRun request
+   * @param request  : CreateExperimentRun request
    * @param userInfo : current login UserInfo
    * @return ExperimentRun : experimentRun
    */
@@ -208,7 +208,7 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
   /**
    * Convert CreateExperimentRun request to ExperimentRun entity and insert in database.
    *
-   * @param request : CreateExperimentRun request
+   * @param request          : CreateExperimentRun request
    * @param responseObserver : CreateExperimentRun.Response response
    */
   @Override
@@ -592,7 +592,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               "tags",
               new Gson()
                   .toJsonTree(
-                      request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType())),
+                      request.getTagsList(), new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run tags added successfully");
 
       responseObserver.onNext(response);
@@ -646,7 +647,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getTag()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run tags added successfully");
 
       responseObserver.onNext(response);
@@ -723,7 +725,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             "tags",
             new Gson()
                 .toJsonTree(
-                    request.getTagsList(), new TypeToken<ArrayList<String>>() {}.getType()));
+                    request.getTagsList(), new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           updatedExperimentRun.getId(),
@@ -786,7 +789,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getTag()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run tag deleted successfully");
       responseObserver.onNext(response);
       responseObserver.onCompleted();
@@ -839,7 +843,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       request.getAttributesList().stream()
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run attributes added successfully");
 
       responseObserver.onNext(response);
@@ -892,7 +897,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType()));
+                    new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           request.getId(),
@@ -960,7 +966,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           Optional.of("observations"),
           Collections.singletonMap(
               "observation_keys",
-              new Gson().toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
+              new Gson().toJsonTree(keys, new TypeToken<ArrayList<String>>() {
+              }.getType())),
           "experiment_run observations added successfully");
 
       responseObserver.onNext(response);
@@ -1015,7 +1022,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
           Optional.of("observations"),
           Collections.singletonMap(
               "observation_keys",
-              new Gson().toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
+              new Gson().toJsonTree(keys, new TypeToken<ArrayList<String>>() {
+              }.getType())),
           "experiment_run observations added successfully");
 
       responseObserver.onNext(response);
@@ -1099,7 +1107,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       Stream.of(request.getMetric())
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run metrics added successfully");
 
       responseObserver.onNext(response);
@@ -1148,7 +1157,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       request.getMetricsList().stream()
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run metrics added successfully");
 
       responseObserver.onNext(response);
@@ -1286,11 +1296,12 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
     var exprRun = experimentRunDAO.getExperimentRun(request.getId());
     List<Artifact> datasets = exprRun.getDatasetsList();
     for (Artifact dataset : datasets) {
-      if (dataset.getKey().equals(request.getKey()))
+      if (dataset.getKey().equals(request.getKey())) {
         return new SimpleEntry<>(
             datasetVersionDAO.getUrlForDatasetVersion(
                 dataset.getLinkedArtifactId(), request.getMethod()),
             null);
+      }
     }
     // if the loop above did not return anything that means there was no Dataset logged with the
     // particular key
@@ -1382,7 +1393,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       Stream.of(request.getArtifact())
                           .map(Artifact::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run artifacts added successfully");
 
       responseObserver.onNext(response);
@@ -1435,7 +1447,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       request.getArtifactsList().stream()
                           .map(Artifact::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run artifacts added successfully");
 
       responseObserver.onNext(response);
@@ -1609,7 +1622,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       Stream.of(request.getHyperparameter())
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run hyperparameter added successfully");
 
       responseObserver.onNext(response);
@@ -1661,7 +1675,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       request.getHyperparametersList().stream()
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run hyperparameters added successfully");
 
       responseObserver.onNext(response);
@@ -1741,7 +1756,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       Stream.of(request.getAttribute())
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run attributes added successfully");
 
       responseObserver.onNext(response);
@@ -1791,7 +1807,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                       request.getAttributesList().stream()
                           .map(KeyValue::getKey)
                           .collect(Collectors.toSet()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment_run attributes added successfully");
 
       responseObserver.onNext(response);
@@ -2147,7 +2164,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                     Stream.of(request.getDataset())
                         .map(Artifact::getKey)
                         .collect(Collectors.toSet()),
-                    new TypeToken<ArrayList<String>>() {}.getType()));
+                    new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           request.getId(),
@@ -2200,7 +2218,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
                     request.getDatasetsList().stream()
                         .map(Artifact::getKey)
                         .collect(Collectors.toSet()),
-                    new TypeToken<ArrayList<String>>() {}.getType()));
+                    new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           request.getId(),
@@ -2256,7 +2275,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
               new Gson()
                   .toJsonTree(
                       Collections.singletonList(request.getKey()),
-                      new TypeToken<ArrayList<String>>() {}.getType())),
+                      new TypeToken<ArrayList<String>>() {
+                      }.getType())),
           "experiment artifact deleted successfully");
 
       responseObserver.onNext(response);
@@ -2497,7 +2517,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             new Gson()
                 .toJsonTree(
                     request.getHyperparameterKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType()));
+                    new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           request.getId(),
@@ -2549,7 +2570,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             "metric_keys",
             new Gson()
                 .toJsonTree(
-                    request.getMetricKeysList(), new TypeToken<ArrayList<String>>() {}.getType()));
+                    request.getMetricKeysList(), new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           request.getId(),
@@ -2598,7 +2620,8 @@ public class ExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
             new Gson()
                 .toJsonTree(
                     request.getObservationKeysList(),
-                    new TypeToken<ArrayList<String>>() {}.getType()));
+                    new TypeToken<ArrayList<String>>() {
+                    }.getType()));
       }
       addEvent(
           request.getId(),

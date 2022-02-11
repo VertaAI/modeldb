@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenPathDatasetDiffGen extends Generator<AutogenPathDatasetDiff> {
+
   public AutogenPathDatasetDiffGen() {
     super(AutogenPathDatasetDiff.class);
   }

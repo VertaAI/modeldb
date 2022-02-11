@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.Logger;
 
 public abstract class Reconciler<T> {
+
   protected final Logger logger;
   protected final HashSet<T> elements = new HashSet<>();
   protected final LinkedList<T> order = new LinkedList<>();
@@ -125,7 +126,9 @@ public abstract class Reconciler<T> {
     HashSet<T> ret = new HashSet<>();
     lock.lock();
     try {
-      while (elements.isEmpty()) notEmpty.await();
+      while (elements.isEmpty()) {
+        notEmpty.await();
+      }
 
       while (!elements.isEmpty() && ret.size() < config.getBatchSize()) {
         T obj = order.pop();

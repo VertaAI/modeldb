@@ -15,7 +15,8 @@ import javax.persistence.Table;
 @Table(name = "tag_mapping")
 public class TagsMapping implements Serializable {
 
-  public TagsMapping() {}
+  public TagsMapping() {
+  }
 
   public TagsMapping(Object entity, String tag) {
     setTag(tag);

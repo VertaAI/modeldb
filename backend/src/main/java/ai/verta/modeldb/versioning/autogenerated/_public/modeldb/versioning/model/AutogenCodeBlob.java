@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenCodeBlob implements ProtoType {
+
   private AutogenGitCodeBlob Git;
   private AutogenNotebookCodeBlob Notebook;
 
@@ -40,12 +41,16 @@ public class AutogenCodeBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenCodeBlob\", \"fields\": {");
     boolean first = true;
     if (this.Git != null && !this.Git.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Git\": " + Git);
       first = false;
     }
     if (this.Notebook != null && !this.Notebook.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Notebook\": " + Notebook);
       first = false;
     }
@@ -68,26 +73,44 @@ public class AutogenCodeBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenCodeBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenCodeBlob)) {
+      return false;
+    }
     AutogenCodeBlob other = (AutogenCodeBlob) o;
 
     {
       Function3<AutogenGitCodeBlob, AutogenGitCodeBlob, Boolean> f = (x, y) -> x.equals(y);
       if (this.Git != null || other.Git != null) {
-        if (this.Git == null && other.Git != null) return false;
-        if (this.Git != null && other.Git == null) return false;
-        if (!f.apply(this.Git, other.Git)) return false;
+        if (this.Git == null && other.Git != null) {
+          return false;
+        }
+        if (this.Git != null && other.Git == null) {
+          return false;
+        }
+        if (!f.apply(this.Git, other.Git)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenNotebookCodeBlob, AutogenNotebookCodeBlob, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Notebook != null || other.Notebook != null) {
-        if (this.Notebook == null && other.Notebook != null) return false;
-        if (this.Notebook != null && other.Notebook == null) return false;
-        if (!f.apply(this.Notebook, other.Notebook)) return false;
+        if (this.Notebook == null && other.Notebook != null) {
+          return false;
+        }
+        if (this.Notebook != null && other.Notebook == null) {
+          return false;
+        }
+        if (!f.apply(this.Notebook, other.Notebook)) {
+          return false;
+        }
       }
     }
     return true;

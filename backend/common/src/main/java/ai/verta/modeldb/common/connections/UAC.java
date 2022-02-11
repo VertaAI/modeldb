@@ -13,6 +13,7 @@ import org.apache.logging.log4j.Logger;
 
 @SuppressWarnings({"squid:S100"})
 public class UAC extends Connection {
+
   private static final Logger LOGGER = LogManager.getLogger(UAC.class);
 
   private final Config config;
@@ -28,8 +29,11 @@ public class UAC extends Connection {
   private final EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub;
 
   public static UAC FromConfig(Config config) {
-    if (!config.hasAuth()) return null;
-    else return new UAC(config);
+    if (!config.hasAuth()) {
+      return null;
+    } else {
+      return new UAC(config);
+    }
   }
 
   private UAC(Config config) {

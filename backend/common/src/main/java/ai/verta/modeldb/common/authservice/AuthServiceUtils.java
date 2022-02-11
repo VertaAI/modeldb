@@ -14,6 +14,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class AuthServiceUtils implements AuthService {
+
   private final UAC uac;
   private final Integer timeout;
 
@@ -110,8 +111,8 @@ public class AuthServiceUtils implements AuthService {
   }
 
   /**
-   * @param vertaIdList : vertaId list which is now deprecated
-   * @param emailIdList : email id list
+   * @param vertaIdList  : vertaId list which is now deprecated
+   * @param emailIdList  : email id list
    * @param usernameList : username list
    * @return Map from verta_id to userInfo
    */

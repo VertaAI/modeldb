@@ -10,6 +10,7 @@ import java.util.*;
 
 public class AutogenPythonRequirementEnvironmentBlobGen
     extends Generator<AutogenPythonRequirementEnvironmentBlob> {
+
   public AutogenPythonRequirementEnvironmentBlobGen() {
     super(AutogenPythonRequirementEnvironmentBlob.class);
   }

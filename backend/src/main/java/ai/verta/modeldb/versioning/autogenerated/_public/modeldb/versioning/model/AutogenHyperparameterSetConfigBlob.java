@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenHyperparameterSetConfigBlob implements ProtoType {
+
   private AutogenContinuousHyperparameterSetConfigBlob Continuous;
   private AutogenDiscreteHyperparameterSetConfigBlob Discrete;
   private String Name;
@@ -45,17 +46,23 @@ public class AutogenHyperparameterSetConfigBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenHyperparameterSetConfigBlob\", \"fields\": {");
     boolean first = true;
     if (this.Continuous != null && !this.Continuous.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Continuous\": " + Continuous);
       first = false;
     }
     if (this.Discrete != null && !this.Discrete.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Discrete\": " + Discrete);
       first = false;
     }
     if (this.Name != null && !this.Name.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Name\": " + "\"" + Name + "\"");
       first = false;
     }
@@ -78,41 +85,65 @@ public class AutogenHyperparameterSetConfigBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenHyperparameterSetConfigBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenHyperparameterSetConfigBlob)) {
+      return false;
+    }
     AutogenHyperparameterSetConfigBlob other = (AutogenHyperparameterSetConfigBlob) o;
 
     {
       Function3<
-              AutogenContinuousHyperparameterSetConfigBlob,
-              AutogenContinuousHyperparameterSetConfigBlob,
-              Boolean>
+          AutogenContinuousHyperparameterSetConfigBlob,
+          AutogenContinuousHyperparameterSetConfigBlob,
+          Boolean>
           f = (x, y) -> x.equals(y);
       if (this.Continuous != null || other.Continuous != null) {
-        if (this.Continuous == null && other.Continuous != null) return false;
-        if (this.Continuous != null && other.Continuous == null) return false;
-        if (!f.apply(this.Continuous, other.Continuous)) return false;
+        if (this.Continuous == null && other.Continuous != null) {
+          return false;
+        }
+        if (this.Continuous != null && other.Continuous == null) {
+          return false;
+        }
+        if (!f.apply(this.Continuous, other.Continuous)) {
+          return false;
+        }
       }
     }
     {
       Function3<
-              AutogenDiscreteHyperparameterSetConfigBlob,
-              AutogenDiscreteHyperparameterSetConfigBlob,
-              Boolean>
+          AutogenDiscreteHyperparameterSetConfigBlob,
+          AutogenDiscreteHyperparameterSetConfigBlob,
+          Boolean>
           f = (x, y) -> x.equals(y);
       if (this.Discrete != null || other.Discrete != null) {
-        if (this.Discrete == null && other.Discrete != null) return false;
-        if (this.Discrete != null && other.Discrete == null) return false;
-        if (!f.apply(this.Discrete, other.Discrete)) return false;
+        if (this.Discrete == null && other.Discrete != null) {
+          return false;
+        }
+        if (this.Discrete != null && other.Discrete == null) {
+          return false;
+        }
+        if (!f.apply(this.Discrete, other.Discrete)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Name != null || other.Name != null) {
-        if (this.Name == null && other.Name != null) return false;
-        if (this.Name != null && other.Name == null) return false;
-        if (!f.apply(this.Name, other.Name)) return false;
+        if (this.Name == null && other.Name != null) {
+          return false;
+        }
+        if (this.Name != null && other.Name == null) {
+          return false;
+        }
+        if (!f.apply(this.Name, other.Name)) {
+          return false;
+        }
       }
     }
     return true;
@@ -156,15 +187,15 @@ public class AutogenHyperparameterSetConfigBlob implements ProtoType {
     AutogenHyperparameterSetConfigBlob obj = new AutogenHyperparameterSetConfigBlob();
     {
       Function<
-              ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
-              AutogenContinuousHyperparameterSetConfigBlob>
+          ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
+          AutogenContinuousHyperparameterSetConfigBlob>
           f = x -> AutogenContinuousHyperparameterSetConfigBlob.fromProto(blob.getContinuous());
       obj.setContinuous(f.apply(blob));
     }
     {
       Function<
-              ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
-              AutogenDiscreteHyperparameterSetConfigBlob>
+          ai.verta.modeldb.versioning.HyperparameterSetConfigBlob,
+          AutogenDiscreteHyperparameterSetConfigBlob>
           f = x -> AutogenDiscreteHyperparameterSetConfigBlob.fromProto(blob.getDiscrete());
       obj.setDiscrete(f.apply(blob));
     }

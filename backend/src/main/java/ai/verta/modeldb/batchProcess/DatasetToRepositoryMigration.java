@@ -51,7 +51,8 @@ public class DatasetToRepositoryMigration {
   private static final String DATASET_ID_KEY = "datasetId";
   private static final String STATUS_KEY = "status";
 
-  private DatasetToRepositoryMigration() {}
+  private DatasetToRepositoryMigration() {
+  }
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetToRepositoryMigration.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =

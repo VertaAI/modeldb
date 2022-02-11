@@ -26,6 +26,7 @@ import org.hibernate.LockMode;
 import org.hibernate.Session;
 
 public class ArtifactHandler extends ArtifactHandlerBase {
+
   private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
   private static final String KEY_S_NOT_LOGGED_ERROR = "Key %s not logged";
 
@@ -65,19 +66,19 @@ public class ArtifactHandler extends ArtifactHandlerBase {
 
   public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
     return InternalFuture.runAsync(
-            () -> {
-              String errorMessage = null;
-              if (request.getKey().isEmpty()) {
-                errorMessage = "Artifact Key not found in GetUrlForArtifact request";
-              } else if (request.getMethod().isEmpty()) {
-                errorMessage = "Method is not found in GetUrlForArtifact request";
-              }
+        () -> {
+          String errorMessage = null;
+          if (request.getKey().isEmpty()) {
+            errorMessage = "Artifact Key not found in GetUrlForArtifact request";
+          } else if (request.getMethod().isEmpty()) {
+            errorMessage = "Method is not found in GetUrlForArtifact request";
+          }
 
-              if (errorMessage != null) {
-                throw new InvalidArgumentException(errorMessage);
-              }
-            },
-            executor)
+          if (errorMessage != null) {
+            throw new InvalidArgumentException(errorMessage);
+          }
+        },
+        executor)
         .thenCompose(
             unused -> {
               final InternalFuture<Map.Entry<String, String>> urlInfo;
@@ -171,7 +172,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
           || artifactEntity.isUploadCompleted()) {
         session.beginTransaction();
         VersioningUtils.getArtifactPartEntities(
-                session, String.valueOf(artifactEntity.getId()), this.artifactEntityType)
+            session, String.valueOf(artifactEntity.getId()), this.artifactEntityType)
             .forEach(session::delete);
         artifactEntity.setUploadId(uploadId);
         artifactEntity.setUploadCompleted(false);
@@ -185,12 +186,12 @@ public class ArtifactHandler extends ArtifactHandlerBase {
 
   private InternalFuture<Map.Entry<String, String>> getUrlForData(GetUrlForArtifact request) {
     return InternalFuture.runAsync(
-            () -> {
-              if (request.getKey().isEmpty()) {
-                throw new InvalidArgumentException("Key must be provided");
-              }
-            },
-            executor)
+        () -> {
+          if (request.getKey().isEmpty()) {
+            throw new InvalidArgumentException("Key must be provided");
+          }
+        },
+        executor)
         .thenCompose(
             unused ->
                 datasetHandler

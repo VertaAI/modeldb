@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenDatasetDiff implements ProtoType {
+
   private AutogenPathDatasetDiff Path;
   private AutogenQueryDatasetDiff Query;
   private AutogenS3DatasetDiff S3;
@@ -45,17 +46,23 @@ public class AutogenDatasetDiff implements ProtoType {
     sb.append("{\"class\": \"AutogenDatasetDiff\", \"fields\": {");
     boolean first = true;
     if (this.Path != null && !this.Path.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Path\": " + Path);
       first = false;
     }
     if (this.Query != null && !this.Query.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Query\": " + Query);
       first = false;
     }
     if (this.S3 != null && !this.S3.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"S3\": " + S3);
       first = false;
     }
@@ -78,34 +85,58 @@ public class AutogenDatasetDiff implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenDatasetDiff)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenDatasetDiff)) {
+      return false;
+    }
     AutogenDatasetDiff other = (AutogenDatasetDiff) o;
 
     {
       Function3<AutogenPathDatasetDiff, AutogenPathDatasetDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.Path != null || other.Path != null) {
-        if (this.Path == null && other.Path != null) return false;
-        if (this.Path != null && other.Path == null) return false;
-        if (!f.apply(this.Path, other.Path)) return false;
+        if (this.Path == null && other.Path != null) {
+          return false;
+        }
+        if (this.Path != null && other.Path == null) {
+          return false;
+        }
+        if (!f.apply(this.Path, other.Path)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenQueryDatasetDiff, AutogenQueryDatasetDiff, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Query != null || other.Query != null) {
-        if (this.Query == null && other.Query != null) return false;
-        if (this.Query != null && other.Query == null) return false;
-        if (!f.apply(this.Query, other.Query)) return false;
+        if (this.Query == null && other.Query != null) {
+          return false;
+        }
+        if (this.Query != null && other.Query == null) {
+          return false;
+        }
+        if (!f.apply(this.Query, other.Query)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenS3DatasetDiff, AutogenS3DatasetDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.S3 != null || other.S3 != null) {
-        if (this.S3 == null && other.S3 != null) return false;
-        if (this.S3 != null && other.S3 == null) return false;
-        if (!f.apply(this.S3, other.S3)) return false;
+        if (this.S3 == null && other.S3 != null) {
+          return false;
+        }
+        if (this.S3 != null && other.S3 == null) {
+          return false;
+        }
+        if (!f.apply(this.S3, other.S3)) {
+          return false;
+        }
       }
     }
     return true;

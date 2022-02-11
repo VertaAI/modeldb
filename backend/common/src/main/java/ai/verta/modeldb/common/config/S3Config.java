@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.config;
 
 @SuppressWarnings({"squid:S100"})
 public class S3Config {
+
   private String cloudBucketName;
   private String cloudAccessKey;
   private String cloudSecretKey;
@@ -10,8 +11,9 @@ public class S3Config {
   private Boolean s3presignedURLEnabled = true;
 
   public void Validate(String base) throws InvalidConfigException {
-    if (cloudBucketName == null || cloudBucketName.isEmpty())
+    if (cloudBucketName == null || cloudBucketName.isEmpty()) {
       throw new InvalidConfigException(base + ".cloudBucketName", Config.MISSING_REQUIRED);
+    }
   }
 
   public String storeTypePathPrefix() {

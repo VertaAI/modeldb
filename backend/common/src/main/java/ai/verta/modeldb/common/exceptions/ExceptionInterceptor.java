@@ -23,6 +23,7 @@ public class ExceptionInterceptor implements ServerInterceptor {
 
   private class ExceptionHandlingServerCallListener<ReqT, RespT>
       extends ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT> {
+
     private ServerCall<ReqT, RespT> serverCall;
     private Metadata metadata;
 

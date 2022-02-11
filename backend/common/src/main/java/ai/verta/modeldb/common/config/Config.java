@@ -28,6 +28,7 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public abstract class Config {
+
   public static final String MISSING_REQUIRED = "required field is missing";
 
   private ServiceConfig authService;
@@ -69,13 +70,19 @@ public abstract class Config {
       }
     }
 
-    if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
+    if (database == null) {
+      throw new InvalidConfigException("database", MISSING_REQUIRED);
+    }
     database.Validate("database");
 
-    if (grpcServer == null) throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
+    if (grpcServer == null) {
+      throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
+    }
     grpcServer.Validate("grpcServer");
 
-    if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
+    if (springServer == null) {
+      throw new InvalidConfigException("springServer", MISSING_REQUIRED);
+    }
     springServer.Validate("springServer");
   }
 
@@ -89,7 +96,9 @@ public abstract class Config {
   private TracingClientInterceptor tracingClientInterceptor = null;
 
   private void initializeTracing() {
-    if (!enableTrace) return;
+    if (!enableTrace) {
+      return;
+    }
 
     if (tracingServerInterceptor == null) {
       Tracer tracer = Configuration.fromEnv().getTracer();

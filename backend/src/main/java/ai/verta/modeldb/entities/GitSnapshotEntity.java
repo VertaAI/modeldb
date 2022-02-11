@@ -18,7 +18,8 @@ import javax.persistence.Table;
 @Table(name = "git_snapshot")
 public class GitSnapshotEntity implements Serializable {
 
-  public GitSnapshotEntity() {}
+  public GitSnapshotEntity() {
+  }
 
   public GitSnapshotEntity(String fieldType, GitSnapshot gitSnapshot) {
 

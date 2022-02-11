@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPathDatasetComponentBlob implements ProtoType {
+
   private String BasePath;
   private String InternalVersionedPath;
   private Long LastModifiedAtSource;
@@ -65,37 +66,51 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenPathDatasetComponentBlob\", \"fields\": {");
     boolean first = true;
     if (this.BasePath != null && !this.BasePath.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"BasePath\": " + "\"" + BasePath + "\"");
       first = false;
     }
     if (this.InternalVersionedPath != null && !this.InternalVersionedPath.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"InternalVersionedPath\": " + "\"" + InternalVersionedPath + "\"");
       first = false;
     }
     if (this.LastModifiedAtSource != null && !this.LastModifiedAtSource.equals(0l)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"LastModifiedAtSource\": " + LastModifiedAtSource);
       first = false;
     }
     if (this.Md5 != null && !this.Md5.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Md5\": " + "\"" + Md5 + "\"");
       first = false;
     }
     if (this.Path != null && !this.Path.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Path\": " + "\"" + Path + "\"");
       first = false;
     }
     if (this.Sha256 != null && !this.Sha256.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Sha256\": " + "\"" + Sha256 + "\"");
       first = false;
     }
     if (this.Size != null && !this.Size.equals(0l)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Size\": " + Size);
       first = false;
     }
@@ -118,65 +133,113 @@ public class AutogenPathDatasetComponentBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenPathDatasetComponentBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenPathDatasetComponentBlob)) {
+      return false;
+    }
     AutogenPathDatasetComponentBlob other = (AutogenPathDatasetComponentBlob) o;
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.BasePath != null || other.BasePath != null) {
-        if (this.BasePath == null && other.BasePath != null) return false;
-        if (this.BasePath != null && other.BasePath == null) return false;
-        if (!f.apply(this.BasePath, other.BasePath)) return false;
+        if (this.BasePath == null && other.BasePath != null) {
+          return false;
+        }
+        if (this.BasePath != null && other.BasePath == null) {
+          return false;
+        }
+        if (!f.apply(this.BasePath, other.BasePath)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.InternalVersionedPath != null || other.InternalVersionedPath != null) {
-        if (this.InternalVersionedPath == null && other.InternalVersionedPath != null) return false;
-        if (this.InternalVersionedPath != null && other.InternalVersionedPath == null) return false;
-        if (!f.apply(this.InternalVersionedPath, other.InternalVersionedPath)) return false;
+        if (this.InternalVersionedPath == null && other.InternalVersionedPath != null) {
+          return false;
+        }
+        if (this.InternalVersionedPath != null && other.InternalVersionedPath == null) {
+          return false;
+        }
+        if (!f.apply(this.InternalVersionedPath, other.InternalVersionedPath)) {
+          return false;
+        }
       }
     }
     {
       Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
       if (this.LastModifiedAtSource != null || other.LastModifiedAtSource != null) {
-        if (this.LastModifiedAtSource == null && other.LastModifiedAtSource != null) return false;
-        if (this.LastModifiedAtSource != null && other.LastModifiedAtSource == null) return false;
-        if (!f.apply(this.LastModifiedAtSource, other.LastModifiedAtSource)) return false;
+        if (this.LastModifiedAtSource == null && other.LastModifiedAtSource != null) {
+          return false;
+        }
+        if (this.LastModifiedAtSource != null && other.LastModifiedAtSource == null) {
+          return false;
+        }
+        if (!f.apply(this.LastModifiedAtSource, other.LastModifiedAtSource)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Md5 != null || other.Md5 != null) {
-        if (this.Md5 == null && other.Md5 != null) return false;
-        if (this.Md5 != null && other.Md5 == null) return false;
-        if (!f.apply(this.Md5, other.Md5)) return false;
+        if (this.Md5 == null && other.Md5 != null) {
+          return false;
+        }
+        if (this.Md5 != null && other.Md5 == null) {
+          return false;
+        }
+        if (!f.apply(this.Md5, other.Md5)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Path != null || other.Path != null) {
-        if (this.Path == null && other.Path != null) return false;
-        if (this.Path != null && other.Path == null) return false;
-        if (!f.apply(this.Path, other.Path)) return false;
+        if (this.Path == null && other.Path != null) {
+          return false;
+        }
+        if (this.Path != null && other.Path == null) {
+          return false;
+        }
+        if (!f.apply(this.Path, other.Path)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Sha256 != null || other.Sha256 != null) {
-        if (this.Sha256 == null && other.Sha256 != null) return false;
-        if (this.Sha256 != null && other.Sha256 == null) return false;
-        if (!f.apply(this.Sha256, other.Sha256)) return false;
+        if (this.Sha256 == null && other.Sha256 != null) {
+          return false;
+        }
+        if (this.Sha256 != null && other.Sha256 == null) {
+          return false;
+        }
+        if (!f.apply(this.Sha256, other.Sha256)) {
+          return false;
+        }
       }
     }
     {
       Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
       if (this.Size != null || other.Size != null) {
-        if (this.Size == null && other.Size != null) return false;
-        if (this.Size != null && other.Size == null) return false;
-        if (!f.apply(this.Size, other.Size)) return false;
+        if (this.Size == null && other.Size != null) {
+          return false;
+        }
+        if (this.Size != null && other.Size == null) {
+          return false;
+        }
+        if (!f.apply(this.Size, other.Size)) {
+          return false;
+        }
       }
     }
     return true;

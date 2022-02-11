@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Handle;
 
 public class FeatureHandler {
+
   private static Logger LOGGER = LogManager.getLogger(FeatureHandler.class);
   private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
@@ -91,23 +92,23 @@ public class FeatureHandler {
 
   public InternalFuture<MapSubtypes<String, Feature>> getFeaturesMap(Set<String> entityIds) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        "select feature, "
-                            + entityIdReferenceColumn
-                            + " as entity_id from feature "
-                            + "where entity_name=:entity_name and "
-                            + entityIdReferenceColumn
-                            + " in (<entity_ids>)")
-                    .bindList("entity_ids", entityIds)
-                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString(ENTITY_ID_QUERY_PARAM),
-                                Feature.newBuilder().setName(rs.getString("feature")).build()))
-                    .list())
+        handle ->
+            handle
+                .createQuery(
+                    "select feature, "
+                        + entityIdReferenceColumn
+                        + " as entity_id from feature "
+                        + "where entity_name=:entity_name and "
+                        + entityIdReferenceColumn
+                        + " in (<entity_ids>)")
+                .bindList("entity_ids", entityIds)
+                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                .map(
+                    (rs, ctx) ->
+                        new AbstractMap.SimpleEntry<>(
+                            rs.getString(ENTITY_ID_QUERY_PARAM),
+                            Feature.newBuilder().setName(rs.getString("feature")).build()))
+                .list())
         .thenApply(MapSubtypes::from, executor);
   }
 }

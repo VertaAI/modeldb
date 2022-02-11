@@ -4,6 +4,7 @@ import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
 
 public class MetadataForwarder implements ServerInterceptor {
+
   public static final Context.Key<Metadata> METADATA_INFO = Context.key("metadata");
 
   @Override
@@ -11,7 +12,8 @@ public class MetadataForwarder implements ServerInterceptor {
       ServerCall<R, S> call, Metadata requestHeaders, ServerCallHandler<R, S> next) {
     var context = Context.current().withValue(METADATA_INFO, requestHeaders);
     ServerCall.Listener<R> delegate = Contexts.interceptCall(context, call, requestHeaders, next);
-    return new ForwardingServerCallListener.SimpleForwardingServerCallListener<R>(delegate) {};
+    return new ForwardingServerCallListener.SimpleForwardingServerCallListener<R>(delegate) {
+    };
   }
 
   public static ClientInterceptor clientInterceptor() {

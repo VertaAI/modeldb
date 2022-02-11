@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class EnvironmentHandler {
+
   private static Logger LOGGER = LogManager.getLogger(EnvironmentHandler.class);
 
   private final Executor executor;

@@ -75,7 +75,7 @@ public class RepositoryTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (Repository repo : new Repository[] {repository, repository2, repository3}) {
+    for (Repository repo : new Repository[]{repository, repository2, repository3}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repo.getId()))
@@ -153,7 +153,7 @@ public class RepositoryTest extends TestsInit {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
-                  == status.getCode()); // because of shadow delete the response could be 403 or 404
+              == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -912,7 +912,7 @@ public class RepositoryTest extends TestsInit {
     UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
 
     String[] ownerArr = {
-      testUser1.getVertaInfo().getUserId(), testUser2.getVertaInfo().getUserId()
+        testUser1.getVertaInfo().getUserId(), testUser2.getVertaInfo().getUserId()
     };
     Value stringValue = Value.newBuilder().setStringValue(String.join(",", ownerArr)).build();
     KeyValueQuery keyValueQuery =

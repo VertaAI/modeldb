@@ -4,6 +4,7 @@ import com.amazonaws.SignableRequest;
 import com.amazonaws.services.s3.internal.AWSS3V4Signer;
 
 public class SignOverrideS3Signer extends AWSS3V4Signer {
+
   @Override
   protected String getCanonicalizedHeaderString(SignableRequest<?> request) {
     String hostKey = null;

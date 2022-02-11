@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenPythonEnvironmentBlobGen extends Generator<AutogenPythonEnvironmentBlob> {
+
   public AutogenPythonEnvironmentBlobGen() {
     super(AutogenPythonEnvironmentBlob.class);
   }

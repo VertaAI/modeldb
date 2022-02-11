@@ -19,7 +19,8 @@ import javax.persistence.Table;
 @Table(name = "artifact")
 public class ArtifactEntity implements Serializable {
 
-  public ArtifactEntity() {}
+  public ArtifactEntity() {
+  }
 
   public ArtifactEntity(Object entity, String fieldType, Artifact artifact) {
     var app = App.getInstance();

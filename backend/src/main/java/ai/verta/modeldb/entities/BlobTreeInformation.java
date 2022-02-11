@@ -1,6 +1,8 @@
 package ai.verta.modeldb.entities;
 
-/** This class is to store information about blob in a tree */
+/**
+ * This class is to store information about blob in a tree
+ */
 public interface BlobTreeInformation {
 
   // this setter will be gone

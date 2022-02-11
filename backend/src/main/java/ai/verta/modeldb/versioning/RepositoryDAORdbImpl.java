@@ -888,7 +888,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     query.setParameter(BRANCH_QUERY_PARAM, branch);
     var branchEntity = (BranchEntity) query.uniqueResult();
     if (branchEntity != null) {
-      if (branchEntity.getCommit_hash().equals(commitSHA)) return;
+      if (branchEntity.getCommit_hash().equals(commitSHA)) {
+        return;
+      }
       session.delete(branchEntity);
     }
 
@@ -1148,7 +1150,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         var findRepositoriesQuery =
             new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
-                    session, authService, mdbRoleService)
+                session, authService, mdbRoleService)
                 .setRepoIds(
                     accessibleResourceIdsWithCollaborator.stream()
                         .map(Long::valueOf)

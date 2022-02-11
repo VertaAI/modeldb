@@ -19,7 +19,8 @@ import javax.persistence.Table;
 @Table(name = "query_parameter")
 public class QueryParameterEntity {
 
-  public QueryParameterEntity() {}
+  public QueryParameterEntity() {
+  }
 
   public QueryParameterEntity(Object entity, String fieldType, QueryParameter queryParameter) {
     setParameter_name(queryParameter.getParameterName());

@@ -116,7 +116,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .build(
               new CacheLoader<String, ReadWriteLock>() {
                 public ReadWriteLock load(String lockKey) {
-                  return new ReentrantReadWriteLock() {};
+                  return new ReentrantReadWriteLock() {
+                  };
                 }
               });
 
@@ -194,7 +195,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   /**
-   * @param session : hibernate session
+   * @param session         : hibernate session
    * @param versioningEntry : versioningEntry
    * @return returns a map from location to an Entry of BlobExpanded and sha
    * @throws ModelDBException ModelDBException
@@ -509,7 +510,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   /**
    * @param newDatasets : new datasets for privilege check
-   * @param errorOut : Throw error while creation (true) otherwise we will keep it silent (false)
+   * @param errorOut    : Throw error while creation (true) otherwise we will keep it silent
+   *                    (false)
    * @return {@link List} : accessible datasets
    * @throws ModelDBException: modelDBException
    */
@@ -797,7 +799,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       for (Observation observation : experimentRun.getObservationsList()) {
         if ((observation.hasArtifact() && observation.getArtifact().getKey().equals(observationKey))
             || (observation.hasAttribute()
-                && observation.getAttribute().getKey().equals(observationKey))) {
+            && observation.getAttribute().getKey().equals(observationKey))) {
           observationEntities.add(observation);
         }
       }
@@ -1194,7 +1196,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
    *   <li>Get the project Id they belong to.
    *   <li>Check if project is accessible or not.
    * </ol>
-   *
+   * <p>
    * The list of accessible experimentRunIDs is built and returned by this method.
    *
    * @param requestedExperimentRunIds : experimentRun Ids
@@ -1601,10 +1603,10 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   /**
-   * @param session : session
+   * @param session   : session
    * @param expRunIds : ExperimentRun ids
    * @return {@link Map<String, Map<String, CodeBlob>>} : Map from experimentRunID to Map of
-   *     LocationString to CodeVersion
+   * LocationString to CodeVersion
    */
   private Map<String, Map<String, CodeVersion>> getExperimentRunCodeVersionMap(
       Session session, List<String> expRunIds, List<String> selfAllowedRepositoryIds) {
@@ -2055,11 +2057,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           VersioningModeldbEntityMapping existingFirstEntityMapping = existingMappings.get(0);
           var versioningModeldbFirstEntityMapping = versioningModeldbEntityMappings.get(0);
           if (!existingFirstEntityMapping
-                  .getRepository_id()
-                  .equals(versioningModeldbFirstEntityMapping.getRepository_id())
+              .getRepository_id()
+              .equals(versioningModeldbFirstEntityMapping.getRepository_id())
               || !existingFirstEntityMapping
-                  .getCommit()
-                  .equals(versioningModeldbFirstEntityMapping.getCommit())) {
+              .getCommit()
+              .equals(versioningModeldbFirstEntityMapping.getCommit())) {
             if (!OVERWRITE_VERSION_MAP) {
               throw new ModelDBException(
                   ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE,
@@ -2424,9 +2426,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           || artifactEntity.isUploadCompleted()) {
         session.beginTransaction();
         VersioningUtils.getArtifactPartEntities(
-                session,
-                String.valueOf(artifactEntity.getId()),
-                ArtifactPartEntity.EXP_RUN_ARTIFACT)
+            session,
+            String.valueOf(artifactEntity.getId()),
+            ArtifactPartEntity.EXP_RUN_ARTIFACT)
             .forEach(session::delete);
         artifactEntity.setUploadId(uploadId);
         artifactEntity.setUploadCompleted(false);
@@ -2624,11 +2626,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         observationEntities.forEach(
             observationEntity -> {
               if ((observationEntity.getKeyValueMapping() != null
-                      && experimentRunObservationsKeys.contains(
-                          observationEntity.getKeyValueMapping().getKey()))
+                  && experimentRunObservationsKeys.contains(
+                  observationEntity.getKeyValueMapping().getKey()))
                   || (observationEntity.getArtifactMapping() != null
-                      && experimentRunObservationsKeys.contains(
-                          observationEntity.getArtifactMapping().getKey()))) {
+                  && experimentRunObservationsKeys.contains(
+                  observationEntity.getArtifactMapping().getKey()))) {
                 session.delete(observationEntity);
                 removedObservationEntities.add(observationEntity);
               }

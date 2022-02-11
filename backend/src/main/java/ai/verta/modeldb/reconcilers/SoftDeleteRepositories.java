@@ -30,6 +30,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class SoftDeleteRepositories extends Reconciler<String> {
+
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final MDBRoleService mdbRoleService;

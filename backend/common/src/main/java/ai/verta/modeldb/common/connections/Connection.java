@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class Connection {
+
   private final Optional<TracingClientInterceptor> tracingClientInterceptor;
 
   protected Connection(Config config) {

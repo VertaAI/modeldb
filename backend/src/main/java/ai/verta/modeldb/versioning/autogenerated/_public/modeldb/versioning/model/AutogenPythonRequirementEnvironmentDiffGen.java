@@ -10,6 +10,7 @@ import java.util.*;
 
 public class AutogenPythonRequirementEnvironmentDiffGen
     extends Generator<AutogenPythonRequirementEnvironmentDiff> {
+
   public AutogenPythonRequirementEnvironmentDiffGen() {
     super(AutogenPythonRequirementEnvironmentDiff.class);
   }

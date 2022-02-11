@@ -25,6 +25,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class CodeVersionFromBlobHandler {
+
   private static Logger LOGGER = LogManager.getLogger(CodeVersionFromBlobHandler.class);
   private final FutureJdbi jdbi;
   private final Executor executor;
@@ -41,7 +42,7 @@ public class CodeVersionFromBlobHandler {
   /**
    * @param expRunIds : ExperimentRun ids
    * @return {@link Map <String, Map<String, CodeBlob >>} : Map from experimentRunID to Map of
-   *     LocationString to CodeVersion
+   * LocationString to CodeVersion
    */
   public InternalFuture<Map<String, Map<String, CodeVersion>>> getExperimentRunCodeVersionMap(
       Set<String> expRunIds,

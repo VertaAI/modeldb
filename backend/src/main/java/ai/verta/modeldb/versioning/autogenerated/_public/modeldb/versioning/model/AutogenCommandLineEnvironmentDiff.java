@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenCommandLineEnvironmentDiff implements ProtoType {
+
   private List<String> A;
   private List<String> B;
   private List<String> C;
@@ -52,22 +53,30 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
     sb.append("{\"class\": \"AutogenCommandLineEnvironmentDiff\", \"fields\": {");
     boolean first = true;
     if (this.A != null && !this.A.equals(null) && !this.A.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"A\": " + A);
       first = false;
     }
     if (this.B != null && !this.B.equals(null) && !this.B.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"B\": " + B);
       first = false;
     }
     if (this.C != null && !this.C.equals(null) && !this.C.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"C\": " + C);
       first = false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Status\": " + Status);
       first = false;
     }
@@ -90,9 +99,15 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenCommandLineEnvironmentDiff)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenCommandLineEnvironmentDiff)) {
+      return false;
+    }
     AutogenCommandLineEnvironmentDiff other = (AutogenCommandLineEnvironmentDiff) o;
 
     {
@@ -108,9 +123,15 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
                   .collect(Collectors.toList())
                   .isEmpty();
       if (this.A != null || other.A != null) {
-        if (this.A == null && other.A != null) return false;
-        if (this.A != null && other.A == null) return false;
-        if (!f.apply(this.A, other.A)) return false;
+        if (this.A == null && other.A != null) {
+          return false;
+        }
+        if (this.A != null && other.A == null) {
+          return false;
+        }
+        if (!f.apply(this.A, other.A)) {
+          return false;
+        }
       }
     }
     {
@@ -126,9 +147,15 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
                   .collect(Collectors.toList())
                   .isEmpty();
       if (this.B != null || other.B != null) {
-        if (this.B == null && other.B != null) return false;
-        if (this.B != null && other.B == null) return false;
-        if (!f.apply(this.B, other.B)) return false;
+        if (this.B == null && other.B != null) {
+          return false;
+        }
+        if (this.B != null && other.B == null) {
+          return false;
+        }
+        if (!f.apply(this.B, other.B)) {
+          return false;
+        }
       }
     }
     {
@@ -144,18 +171,30 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
                   .collect(Collectors.toList())
                   .isEmpty();
       if (this.C != null || other.C != null) {
-        if (this.C == null && other.C != null) return false;
-        if (this.C != null && other.C == null) return false;
-        if (!f.apply(this.C, other.C)) return false;
+        if (this.C == null && other.C != null) {
+          return false;
+        }
+        if (this.C != null && other.C == null) {
+          return false;
+        }
+        if (!f.apply(this.C, other.C)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Status != null || other.Status != null) {
-        if (this.Status == null && other.Status != null) return false;
-        if (this.Status != null && other.Status == null) return false;
-        if (!f.apply(this.Status, other.Status)) return false;
+        if (this.Status == null && other.Status != null) {
+          return false;
+        }
+        if (this.Status != null && other.Status == null) {
+          return false;
+        }
+        if (!f.apply(this.Status, other.Status)) {
+          return false;
+        }
       }
     }
     return true;
@@ -221,8 +260,8 @@ public class AutogenCommandLineEnvironmentDiff implements ProtoType {
     }
     {
       Function<
-              ai.verta.modeldb.versioning.CommandLineEnvironmentDiff,
-              AutogenDiffStatusEnumDiffStatus>
+          ai.verta.modeldb.versioning.CommandLineEnvironmentDiff,
+          AutogenDiffStatusEnumDiffStatus>
           f = x -> AutogenDiffStatusEnumDiffStatus.fromProto(blob.getStatus());
       obj.setStatus(f.apply(blob));
     }

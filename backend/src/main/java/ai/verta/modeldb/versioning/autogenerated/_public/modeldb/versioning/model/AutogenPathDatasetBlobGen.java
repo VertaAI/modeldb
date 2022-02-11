@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenPathDatasetBlobGen extends Generator<AutogenPathDatasetBlob> {
+
   public AutogenPathDatasetBlobGen() {
     super(AutogenPathDatasetBlob.class);
   }

@@ -5,5 +5,6 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import org.hibernate.Session;
 
 public interface IsExistsPredicate {
+
   boolean test(Session session, String id, LineageEntryType type) throws ModelDBException;
 }

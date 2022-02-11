@@ -25,14 +25,21 @@ import org.mockito.junit.MockitoJUnitRunner;
 @RunWith(MockitoJUnitRunner.class)
 public class LineageServiceImplNegativeTest {
 
-  @Mock private DAOSet daoSet;
-  @Mock private StreamObserver<AddLineage.Response> addLineageObserver;
-  @Mock private StreamObserver<DeleteLineage.Response> deleteLineageObserver;
-  @Mock private StreamObserver<FindAllInputs.Response> findAllInputsObserver;
-  @Mock private StreamObserver<FindAllOutputs.Response> findAllOutputsObserver;
-  @Mock private StreamObserver<FindAllInputsOutputs.Response> findAllInputOutputsObserver;
+  @Mock
+  private DAOSet daoSet;
+  @Mock
+  private StreamObserver<AddLineage.Response> addLineageObserver;
+  @Mock
+  private StreamObserver<DeleteLineage.Response> deleteLineageObserver;
+  @Mock
+  private StreamObserver<FindAllInputs.Response> findAllInputsObserver;
+  @Mock
+  private StreamObserver<FindAllOutputs.Response> findAllOutputsObserver;
+  @Mock
+  private StreamObserver<FindAllInputsOutputs.Response> findAllInputOutputsObserver;
   private LineageServiceImpl sut;
-  @Captor private ArgumentCaptor<Throwable> captorThrow;
+  @Captor
+  private ArgumentCaptor<Throwable> captorThrow;
 
   @Before
   public void before() {

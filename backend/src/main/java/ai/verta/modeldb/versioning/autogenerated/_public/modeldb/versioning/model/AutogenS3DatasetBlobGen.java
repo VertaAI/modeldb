@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenS3DatasetBlobGen extends Generator<AutogenS3DatasetBlob> {
+
   public AutogenS3DatasetBlobGen() {
     super(AutogenS3DatasetBlob.class);
   }

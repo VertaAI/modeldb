@@ -118,14 +118,14 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
           queryContext.addCondition(
               "("
                   + String.join(
-                      " AND ", finalHyperparametersFromERSql, finalHyperparameterFromBlobMappingSql)
+                  " AND ", finalHyperparametersFromERSql, finalHyperparameterFromBlobMappingSql)
                   + ")");
     } else {
       queryContext =
           queryContext.addCondition(
               "("
                   + String.join(
-                      " OR ", finalHyperparametersFromERSql, finalHyperparameterFromBlobMappingSql)
+                  " OR ", finalHyperparametersFromERSql, finalHyperparameterFromBlobMappingSql)
                   + ")");
     }
     return InternalFuture.completedInternalFuture(queryContext);

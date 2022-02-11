@@ -14,13 +14,16 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "labels_mapping")
 public class LabelsMappingEntity {
-  public LabelsMappingEntity() {}
+
+  public LabelsMappingEntity() {
+  }
 
   public LabelsMappingEntity(LabelMappingId id) {
     this.id = id;
   }
 
-  @EmbeddedId private LabelMappingId id;
+  @EmbeddedId
+  private LabelMappingId id;
 
   public static LabelMappingId createId(IdentificationType id, String label) {
     if (id.getIdCase().equals(IdentificationType.IdCase.INT_ID)) {
@@ -58,7 +61,8 @@ public class LabelsMappingEntity {
       this.label = label;
     }
 
-    private LabelMappingId() {}
+    private LabelMappingId() {
+    }
 
     public String getEntity_hash() {
       return entity_hash;
@@ -74,8 +78,12 @@ public class LabelsMappingEntity {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof LabelMappingId)) return false;
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof LabelMappingId)) {
+        return false;
+      }
       LabelMappingId that = (LabelMappingId) o;
       return Objects.equals(getEntity_hash(), that.getEntity_hash())
           && Objects.equals(getEntity_type(), that.getEntity_type())

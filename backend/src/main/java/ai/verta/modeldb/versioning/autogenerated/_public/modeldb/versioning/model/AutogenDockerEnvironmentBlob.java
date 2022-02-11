@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenDockerEnvironmentBlob implements ProtoType {
+
   private String Repository;
   private String Sha;
   private String Tag;
@@ -45,17 +46,23 @@ public class AutogenDockerEnvironmentBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenDockerEnvironmentBlob\", \"fields\": {");
     boolean first = true;
     if (this.Repository != null && !this.Repository.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Repository\": " + "\"" + Repository + "\"");
       first = false;
     }
     if (this.Sha != null && !this.Sha.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Sha\": " + "\"" + Sha + "\"");
       first = false;
     }
     if (this.Tag != null && !this.Tag.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Tag\": " + "\"" + Tag + "\"");
       first = false;
     }
@@ -78,33 +85,57 @@ public class AutogenDockerEnvironmentBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenDockerEnvironmentBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenDockerEnvironmentBlob)) {
+      return false;
+    }
     AutogenDockerEnvironmentBlob other = (AutogenDockerEnvironmentBlob) o;
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Repository != null || other.Repository != null) {
-        if (this.Repository == null && other.Repository != null) return false;
-        if (this.Repository != null && other.Repository == null) return false;
-        if (!f.apply(this.Repository, other.Repository)) return false;
+        if (this.Repository == null && other.Repository != null) {
+          return false;
+        }
+        if (this.Repository != null && other.Repository == null) {
+          return false;
+        }
+        if (!f.apply(this.Repository, other.Repository)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Sha != null || other.Sha != null) {
-        if (this.Sha == null && other.Sha != null) return false;
-        if (this.Sha != null && other.Sha == null) return false;
-        if (!f.apply(this.Sha, other.Sha)) return false;
+        if (this.Sha == null && other.Sha != null) {
+          return false;
+        }
+        if (this.Sha != null && other.Sha == null) {
+          return false;
+        }
+        if (!f.apply(this.Sha, other.Sha)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Tag != null || other.Tag != null) {
-        if (this.Tag == null && other.Tag != null) return false;
-        if (this.Tag != null && other.Tag == null) return false;
-        if (!f.apply(this.Tag, other.Tag)) return false;
+        if (this.Tag == null && other.Tag != null) {
+          return false;
+        }
+        if (this.Tag != null && other.Tag == null) {
+          return false;
+        }
+        if (!f.apply(this.Tag, other.Tag)) {
+          return false;
+        }
       }
     }
     return true;

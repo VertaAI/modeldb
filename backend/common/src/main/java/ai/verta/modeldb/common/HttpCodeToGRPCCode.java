@@ -3,7 +3,9 @@ package ai.verta.modeldb.common;
 import com.google.rpc.Code;
 
 public class HttpCodeToGRPCCode {
-  private HttpCodeToGRPCCode() {}
+
+  private HttpCodeToGRPCCode() {
+  }
 
   public static Code convertHTTPCodeToGRPCCode(int httpCode) {
     if (httpCode == 200) {

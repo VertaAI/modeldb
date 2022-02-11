@@ -11,6 +11,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class CollaboratorOrg extends CollaboratorBase {
+
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorOrg.class);
 
   public CollaboratorOrg(String orgId) {

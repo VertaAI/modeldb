@@ -36,7 +36,8 @@ public class ExperimentRunEntity implements Serializable {
 
   private static Logger LOGGER = LogManager.getLogger(ExperimentRunEntity.class);
 
-  public ExperimentRunEntity() {}
+  public ExperimentRunEntity() {
+  }
 
   public ExperimentRunEntity(ExperimentRun experimentRun) {
     setId(experimentRun.getId());
@@ -212,11 +213,14 @@ public class ExperimentRunEntity implements Serializable {
   @Column(name = "version_number")
   private Long version_number;
 
-  @Transient private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
+  @Transient
+  private Map<String, List<KeyValueEntity>> keyValueEntityMap = new HashMap<>();
 
-  @Transient private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
+  @Transient
+  private Map<String, List<ArtifactEntity>> artifactEntityMap = new HashMap<>();
 
-  @Transient private Map<String, List<ObservationEntity>> observationEntityMap = new HashMap<>();
+  @Transient
+  private Map<String, List<ObservationEntity>> observationEntityMap = new HashMap<>();
 
   public String getId() {
     return id;
@@ -516,7 +520,7 @@ public class ExperimentRunEntity implements Serializable {
     }
     List<ObservationEntity> observationList =
         (observationMapping != null
-                && observationEntityMap.containsKey(ModelDBConstants.OBSERVATIONS))
+            && observationEntityMap.containsKey(ModelDBConstants.OBSERVATIONS))
             ? observationEntityMap.get(ModelDBConstants.OBSERVATIONS)
             : Collections.emptyList();
     var experimentRunBuilder =

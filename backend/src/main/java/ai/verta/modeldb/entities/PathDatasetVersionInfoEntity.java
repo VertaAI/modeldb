@@ -21,7 +21,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "path_dataset_version_info")
 public class PathDatasetVersionInfoEntity implements Serializable {
 
-  public PathDatasetVersionInfoEntity() {}
+  public PathDatasetVersionInfoEntity() {
+  }
 
   public PathDatasetVersionInfoEntity(
       String fieldType, PathDatasetVersionInfo pathDatasetVersionInfo) {

@@ -32,6 +32,7 @@ import org.apache.logging.log4j.Logger;
 // We use a reference counter to keep track of when we have to shutdown a previous client that
 // should not be used anymore.
 public class S3Client {
+
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
 
   private String bucketName;
@@ -218,9 +219,13 @@ public class S3Client {
       }
 
     } finally {
-      if (stsClient != null) stsClient.shutdown();
+      if (stsClient != null) {
+        stsClient.shutdown();
+      }
       // Cleanup in case we couldn't perform the switch
-      if (newS3Client != null && newS3Client != s3Client) newS3Client.shutdown();
+      if (newS3Client != null && newS3Client != s3Client) {
+        newS3Client.shutdown();
+      }
     }
   }
 

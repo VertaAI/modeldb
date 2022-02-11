@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.config;
 
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public class DatabaseConfig {
+
   private String DBType;
   private Integer timeout;
   private Integer liquibaseLockThreshold = 60;
@@ -17,12 +18,14 @@ public class DatabaseConfig {
   private RdbConfig RdbConfiguration;
 
   public void Validate(String base) throws InvalidConfigException {
-    if (DBType == null || DBType.isEmpty())
+    if (DBType == null || DBType.isEmpty()) {
       throw new InvalidConfigException(base + ".DBType", Config.MISSING_REQUIRED);
+    }
 
     if ("relational".equals(DBType)) {
-      if (RdbConfiguration == null)
+      if (RdbConfiguration == null) {
         throw new InvalidConfigException(base + ".RdbConfiguration", Config.MISSING_REQUIRED);
+      }
       RdbConfiguration.Validate(base + ".RdbConfiguration");
     } else {
       throw new InvalidConfigException(base + ".DBType", "unknown type " + DBType);

@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenGitCodeDiffGen extends Generator<AutogenGitCodeDiff> {
+
   public AutogenGitCodeDiffGen() {
     super(AutogenGitCodeDiff.class);
   }

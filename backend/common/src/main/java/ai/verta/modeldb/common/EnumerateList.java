@@ -4,9 +4,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class EnumerateList<T> {
+
   private final LinkedList<Item<T>> lst;
 
   public static class Item<T> {
+
     private final int index;
     private final T value;
 

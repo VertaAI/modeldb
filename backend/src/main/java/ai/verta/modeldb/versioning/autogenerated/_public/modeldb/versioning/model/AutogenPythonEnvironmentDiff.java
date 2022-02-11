@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPythonEnvironmentDiff implements ProtoType {
+
   private List<AutogenPythonRequirementEnvironmentDiff> Constraints;
   private List<AutogenPythonRequirementEnvironmentDiff> Requirements;
   private AutogenVersionEnvironmentDiff Version;
@@ -49,19 +50,25 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
     sb.append("{\"class\": \"AutogenPythonEnvironmentDiff\", \"fields\": {");
     boolean first = true;
     if (this.Constraints != null && !this.Constraints.equals(null) && !this.Constraints.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Constraints\": " + Constraints);
       first = false;
     }
     if (this.Requirements != null
         && !this.Requirements.equals(null)
         && !this.Requirements.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Requirements\": " + Requirements);
       first = false;
     }
     if (this.Version != null && !this.Version.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Version\": " + Version);
       first = false;
     }
@@ -84,70 +91,94 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenPythonEnvironmentDiff)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenPythonEnvironmentDiff)) {
+      return false;
+    }
     AutogenPythonEnvironmentDiff other = (AutogenPythonEnvironmentDiff) o;
 
     {
       Function3<
-              List<AutogenPythonRequirementEnvironmentDiff>,
-              List<AutogenPythonRequirementEnvironmentDiff>,
-              Boolean>
+          List<AutogenPythonRequirementEnvironmentDiff>,
+          List<AutogenPythonRequirementEnvironmentDiff>,
+          Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenPythonRequirementEnvironmentDiff,
-                                    AutogenPythonRequirementEnvironmentDiff,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenPythonRequirementEnvironmentDiff,
+                            AutogenPythonRequirementEnvironmentDiff,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.Constraints != null || other.Constraints != null) {
-        if (this.Constraints == null && other.Constraints != null) return false;
-        if (this.Constraints != null && other.Constraints == null) return false;
-        if (!f.apply(this.Constraints, other.Constraints)) return false;
+        if (this.Constraints == null && other.Constraints != null) {
+          return false;
+        }
+        if (this.Constraints != null && other.Constraints == null) {
+          return false;
+        }
+        if (!f.apply(this.Constraints, other.Constraints)) {
+          return false;
+        }
       }
     }
     {
       Function3<
-              List<AutogenPythonRequirementEnvironmentDiff>,
-              List<AutogenPythonRequirementEnvironmentDiff>,
-              Boolean>
+          List<AutogenPythonRequirementEnvironmentDiff>,
+          List<AutogenPythonRequirementEnvironmentDiff>,
+          Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenPythonRequirementEnvironmentDiff,
-                                    AutogenPythonRequirementEnvironmentDiff,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenPythonRequirementEnvironmentDiff,
+                            AutogenPythonRequirementEnvironmentDiff,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.Requirements != null || other.Requirements != null) {
-        if (this.Requirements == null && other.Requirements != null) return false;
-        if (this.Requirements != null && other.Requirements == null) return false;
-        if (!f.apply(this.Requirements, other.Requirements)) return false;
+        if (this.Requirements == null && other.Requirements != null) {
+          return false;
+        }
+        if (this.Requirements != null && other.Requirements == null) {
+          return false;
+        }
+        if (!f.apply(this.Requirements, other.Requirements)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenVersionEnvironmentDiff, AutogenVersionEnvironmentDiff, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Version != null || other.Version != null) {
-        if (this.Version == null && other.Version != null) return false;
-        if (this.Version != null && other.Version == null) return false;
-        if (!f.apply(this.Version, other.Version)) return false;
+        if (this.Version == null && other.Version != null) {
+          return false;
+        }
+        if (this.Version != null && other.Version == null) {
+          return false;
+        }
+        if (!f.apply(this.Version, other.Version)) {
+          return false;
+        }
       }
     }
     return true;
@@ -199,24 +230,24 @@ public class AutogenPythonEnvironmentDiff implements ProtoType {
     AutogenPythonEnvironmentDiff obj = new AutogenPythonEnvironmentDiff();
     {
       Function<
-              ai.verta.modeldb.versioning.PythonEnvironmentDiff,
-              List<AutogenPythonRequirementEnvironmentDiff>>
+          ai.verta.modeldb.versioning.PythonEnvironmentDiff,
+          List<AutogenPythonRequirementEnvironmentDiff>>
           f =
-              x ->
-                  blob.getConstraintsList().stream()
-                      .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
-                      .collect(Collectors.toList());
+          x ->
+              blob.getConstraintsList().stream()
+                  .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
+                  .collect(Collectors.toList());
       obj.setConstraints(f.apply(blob));
     }
     {
       Function<
-              ai.verta.modeldb.versioning.PythonEnvironmentDiff,
-              List<AutogenPythonRequirementEnvironmentDiff>>
+          ai.verta.modeldb.versioning.PythonEnvironmentDiff,
+          List<AutogenPythonRequirementEnvironmentDiff>>
           f =
-              x ->
-                  blob.getRequirementsList().stream()
-                      .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
-                      .collect(Collectors.toList());
+          x ->
+              blob.getRequirementsList().stream()
+                  .map(AutogenPythonRequirementEnvironmentDiff::fromProto)
+                  .collect(Collectors.toList());
       obj.setRequirements(f.apply(blob));
     }
     {

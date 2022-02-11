@@ -22,6 +22,7 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 public class MetadataDAORdbImpl implements MetadataDAO {
+
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
 

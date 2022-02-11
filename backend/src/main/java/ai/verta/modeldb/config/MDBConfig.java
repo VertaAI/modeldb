@@ -27,15 +27,18 @@ public class MDBConfig extends Config {
   public void Validate() throws InvalidConfigException {
     super.Validate();
 
-    if (artifactStoreConfig == null)
+    if (artifactStoreConfig == null) {
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    }
     artifactStoreConfig.Validate("artifactStoreConfig");
 
     if (getService_user() != null) {
       getService_user().Validate("service_user");
     }
 
-    if (telemetry == null) telemetry = new TelemetryConfig();
+    if (telemetry == null) {
+      telemetry = new TelemetryConfig();
+    }
     telemetry.Validate("telemetry");
 
     if (migrations != null) {

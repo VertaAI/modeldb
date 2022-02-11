@@ -16,7 +16,8 @@ import javax.persistence.Table;
 @Table(name = "dataset_part_info")
 public class DatasetPartInfoEntity {
 
-  public DatasetPartInfoEntity() {}
+  public DatasetPartInfoEntity() {
+  }
 
   public DatasetPartInfoEntity(Object entity, String fieldType, DatasetPartInfo datasetPartInfo) {
 

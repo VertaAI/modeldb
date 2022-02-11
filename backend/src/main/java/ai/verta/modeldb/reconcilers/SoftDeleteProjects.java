@@ -17,6 +17,7 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 
 public class SoftDeleteProjects extends Reconciler<String> {
+
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final MDBRoleService mdbRoleService;

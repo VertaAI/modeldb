@@ -34,12 +34,16 @@ public class HealthStatusManager {
 
   private final HealthServiceImpl healthService;
 
-  /** Creates a new health service instance. */
+  /**
+   * Creates a new health service instance.
+   */
   public HealthStatusManager(HealthServiceImpl healthService) {
     this.healthService = healthService;
   }
 
-  /** Gets the health check service created in the constructor. */
+  /**
+   * Gets the health check service created in the constructor.
+   */
   public BindableService getHealthService() {
     return healthService;
   }
@@ -48,10 +52,10 @@ public class HealthStatusManager {
    * Updates the status of the server.
    *
    * @param service the name of some aspect of the server that is associated with a health status.
-   *     This name can have no relation with the gRPC services that the server is running with. It
-   *     can also be an empty String {@code ""} per the gRPC specification.
-   * @param status is one of the values {@link ServingStatus#SERVING}, {@link
-   *     ServingStatus#NOT_SERVING} and {@link ServingStatus#UNKNOWN}.
+   *                This name can have no relation with the gRPC services that the server is running
+   *                with. It can also be an empty String {@code ""} per the gRPC specification.
+   * @param status  is one of the values {@link ServingStatus#SERVING}, {@link
+   *                ServingStatus#NOT_SERVING} and {@link ServingStatus#UNKNOWN}.
    */
   public void setStatus(String service, ServingStatus status) {
     checkNotNull(status, "status");
@@ -63,8 +67,8 @@ public class HealthStatusManager {
    * error on checking the status of a cleared service.
    *
    * @param service the name of some aspect of the server that is associated with a health status.
-   *     This name can have no relation with the gRPC services that the server is running with. It
-   *     can also be an empty String {@code ""} per the gRPC specification.
+   *                This name can have no relation with the gRPC services that the server is running
+   *                with. It can also be an empty String {@code ""} per the gRPC specification.
    */
   public void clearStatus(String service) {
     healthService.clearStatus(service);

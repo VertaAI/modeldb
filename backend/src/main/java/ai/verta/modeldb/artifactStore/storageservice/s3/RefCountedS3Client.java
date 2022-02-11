@@ -8,6 +8,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class RefCountedS3Client implements AutoCloseable {
+
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
   private AWSCredentials credentials;
   private AmazonS3 s3Client;

@@ -18,7 +18,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class PopulateVersionMigration {
-  private PopulateVersionMigration() {}
+
+  private PopulateVersionMigration() {
+  }
 
   private static final Logger LOGGER = LogManager.getLogger(PopulateVersionMigration.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =

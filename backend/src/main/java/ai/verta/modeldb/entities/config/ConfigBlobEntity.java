@@ -19,7 +19,8 @@ public class ConfigBlobEntity implements Serializable {
   public static final int HYPERPARAMETER_SET = 0;
   public static final int HYPERPARAMETER = 1;
 
-  private ConfigBlobEntity() {}
+  private ConfigBlobEntity() {
+  }
 
   public ConfigBlobEntity(String blobHash, Integer configSeqNumber, Object blobEntity)
       throws ModelDBException {
@@ -83,8 +84,12 @@ public class ConfigBlobEntity implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     ConfigBlobEntity that = (ConfigBlobEntity) o;
     return blob_hash.equals(that.blob_hash)
         && config_seq_number.equals(that.config_seq_number)

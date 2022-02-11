@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class TelemetryUtils {
+
   private static final Logger LOGGER = LogManager.getLogger(TelemetryUtils.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
@@ -81,12 +82,12 @@ public class TelemetryUtils {
             // UTF migration is only applied to mysql due to db-specific syntax
             try (var stmt = connection.createStatement()) {
               var updateStatements =
-                  new String[] {
-                    "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                    "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                    "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                    "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
-                    "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
+                  new String[]{
+                      "ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                      "          ALTER TABLE modeldb_deployment_info MODIFY COLUMN md_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                      "          ALTER TABLE telemetry_information MODIFY COLUMN tel_key varchar(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                      "          ALTER TABLE telemetry_information MODIFY COLUMN tel_value varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci",
+                      "          ALTER TABLE telemetry_information MODIFY COLUMN telemetry_consumer varchar(256) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci"
                   };
               for (String updateStatement : updateStatements) {
                 stmt.executeUpdate(updateStatement);
@@ -150,7 +151,9 @@ public class TelemetryUtils {
       var query = "DELETE FROM telemetry_information";
       int deletedRows = stmt.executeUpdate(query);
       LOGGER.info("Record deleted successfully : {}", deletedRows);
-      if (!connection.getAutoCommit()) connection.commit();
+      if (!connection.getAutoCommit()) {
+        connection.commit();
+      }
     } catch (SQLException e) {
       LOGGER.error(ModelDBMessages.ERROR_WHILE_GETTING_DB_CONNECTION_ERROR, e.getMessage(), e);
     }

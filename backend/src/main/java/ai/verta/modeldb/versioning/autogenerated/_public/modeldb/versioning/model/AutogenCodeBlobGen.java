@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenCodeBlobGen extends Generator<AutogenCodeBlob> {
+
   public AutogenCodeBlobGen() {
     super(AutogenCodeBlob.class);
   }

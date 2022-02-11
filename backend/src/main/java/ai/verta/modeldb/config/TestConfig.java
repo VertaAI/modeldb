@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class TestConfig extends MDBConfig {
+
   private static TestConfig config = null;
 
   public Map<String, ServiceUserConfig> testUsers = new HashMap<>();
@@ -22,7 +23,9 @@ public class TestConfig extends MDBConfig {
   }
 
   public void Validate() throws InvalidConfigException {
-    if (getDatabase() == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
+    if (getDatabase() == null) {
+      throw new InvalidConfigException("database", MISSING_REQUIRED);
+    }
     getDatabase().Validate("database");
 
     if (getService_user() != null) {
@@ -37,8 +40,9 @@ public class TestConfig extends MDBConfig {
       entry.getValue().Validate(entry.getKey());
     }
 
-    if (artifactStoreConfig == null)
+    if (artifactStoreConfig == null) {
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    }
     artifactStoreConfig.Validate("artifactStoreConfig");
 
     if (migrations != null) {

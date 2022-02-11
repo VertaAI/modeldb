@@ -16,7 +16,7 @@ public interface DatasetDAO {
   /**
    * Create and log a dataset.
    *
-   * @param dataset : newDataset
+   * @param dataset  : newDataset
    * @param userInfo : current login user
    * @return {@link Dataset} : dataset
    */
@@ -33,14 +33,14 @@ public interface DatasetDAO {
   /**
    * Fetch all the dataset based on user details and filter parameters.
    *
-   * @param userInfo : {@link UserInfo}
-   * @param pageNumber : page number use for pagination.
-   * @param pageLimit : page limit is per page record count.
-   * @param order : this parameter has order like asc OR desc.
-   * @param sortKey : Use this field for filter data.
+   * @param userInfo          : {@link UserInfo}
+   * @param pageNumber        : page number use for pagination.
+   * @param pageLimit         : page limit is per page record count.
+   * @param order             : this parameter has order like asc OR desc.
+   * @param sortKey           : Use this field for filter data.
    * @param datasetVisibility : ResourceVisibility.PRIVATE, ResourceVisibility.PUBLIC
    * @return {@link DatasetPaginationDTO} : datasetPaginationDTO contains the experimentRunList &
-   *     total_pages count
+   * total_pages count
    */
   DatasetPaginationDTO getDatasets(
       UserInfo userInfo,
@@ -71,11 +71,11 @@ public interface DatasetDAO {
   /**
    * Return list of datasets based on FindDatasets queryParameters
    *
-   * @param queryParameters : queryParameters --> query parameters for filtering datasets
-   * @param userInfo : userInfo
+   * @param queryParameters    : queryParameters --> query parameters for filtering datasets
+   * @param userInfo           : userInfo
    * @param resourceVisibility : ResourceVisibility.PRIVATE, ResourceVisibility.PUBLIC
    * @return {@link DatasetPaginationDTO} : datasetPaginationDTO contains the list of datasets based
-   *     on filter queryParameters & total_pages count
+   * on filter queryParameters & total_pages count
    */
   DatasetPaginationDTO findDatasets(
       FindDatasets queryParameters, UserInfo userInfo, ResourceVisibility resourceVisibility);
@@ -83,8 +83,8 @@ public interface DatasetDAO {
   /**
    * Fetch the Dataset based on key and value from database.
    *
-   * @param key : key like ModelDBConstants.ID,ModelDBConstants.NAME etc.
-   * @param value : value is dataset.Id, dataset.name etc.
+   * @param key      : key like ModelDBConstants.ID,ModelDBConstants.NAME etc.
+   * @param value    : value is dataset.Id, dataset.name etc.
    * @param userInfo : current login userInfo
    * @return Dataset dataset : based on search return dataset entity.
    */
@@ -93,7 +93,7 @@ public interface DatasetDAO {
   /**
    * Update dataset name
    *
-   * @param datasetId : dataset.id
+   * @param datasetId   : dataset.id
    * @param datasetName : Dataset.name
    * @return {@link Dataset} : updated Dataset
    */
@@ -102,7 +102,7 @@ public interface DatasetDAO {
   /**
    * Update dataset description
    *
-   * @param datasetId : dataset.id
+   * @param datasetId          : dataset.id
    * @param datasetDescription : Dataset.description
    * @return {@link Dataset} : updated Dataset
    */
@@ -112,7 +112,7 @@ public interface DatasetDAO {
    * Update Dataset Tags in database using datasetId.
    *
    * @param datasetId : dataset.id
-   * @param tagsList : List<String> new added tags
+   * @param tagsList  : List<String> new added tags
    * @return {@link Dataset} Dataset : updated Dataset entity
    */
   Dataset addDatasetTags(String datasetId, List<String> tagsList);
@@ -129,8 +129,8 @@ public interface DatasetDAO {
    * Delete Dataset Tags in database using datasetId.
    *
    * @param datasetTagList : tag list for deletion
-   * @param deleteAll : flag for identification of delete all tag
-   * @param datasetId : dataset.id
+   * @param deleteAll      : flag for identification of delete all tag
+   * @param datasetId      : dataset.id
    * @return Dataset : dataset
    */
   Dataset deleteDatasetTags(String datasetId, List<String> datasetTagList, Boolean deleteAll);
@@ -138,7 +138,7 @@ public interface DatasetDAO {
   /**
    * Add attributes in database using datasetId
    *
-   * @param datasetId : dataset.id
+   * @param datasetId      : dataset.id
    * @param attributesList : new attribute list
    * @return {@link Dataset} updatedDataset : updated Dataset entity
    */
@@ -159,9 +159,9 @@ public interface DatasetDAO {
   /**
    * Fetch Dataset Attributes from database using datasetId.
    *
-   * @param datasetId : dataset.id
+   * @param datasetId        : dataset.id
    * @param attributeKeyList : attribute keys
-   * @param getAll : flag
+   * @param getAll           : flag
    * @return {@link List<KeyValue>} datasetAttributes
    */
   List<KeyValue> getDatasetAttributes(
@@ -170,9 +170,9 @@ public interface DatasetDAO {
   /**
    * Delete Dataset Attributes in database using datasetId.
    *
-   * @param datasetId : dataset.id
+   * @param datasetId        : dataset.id
    * @param attributeKeyList : attribute keys
-   * @param deleteAll : flag
+   * @param deleteAll        : flag
    * @return {@link Dataset} updatedDataset
    */
   Dataset deleteDatasetAttributes(

@@ -3,6 +3,7 @@ package ai.verta.modeldb.common.query;
 import java.util.List;
 
 public class OrderTable implements OrderItem {
+
   private final String table;
   private final boolean ascending;
   private final List<OrderColumn> orderColumns;

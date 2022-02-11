@@ -9,6 +9,7 @@ import org.hibernate.dialect.SQLServer2008Dialect;
 
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public class RdbConfig {
+
   private static final Logger LOGGER = LogManager.getLogger(RdbConfig.class);
 
   private String RdbDatabaseName;
@@ -22,18 +23,24 @@ public class RdbConfig {
   private Boolean sslEnabled = false;
 
   public void Validate(String base) throws InvalidConfigException {
-    if (RdbDatabaseName == null || RdbDatabaseName.isEmpty())
+    if (RdbDatabaseName == null || RdbDatabaseName.isEmpty()) {
       throw new InvalidConfigException(base + ".RdbDatabaseName", Config.MISSING_REQUIRED);
-    if (RdbDriver == null || RdbDriver.isEmpty())
+    }
+    if (RdbDriver == null || RdbDriver.isEmpty()) {
       throw new InvalidConfigException(base + ".RdbDriver", Config.MISSING_REQUIRED);
-    if (RdbDialect == null || RdbDialect.isEmpty())
+    }
+    if (RdbDialect == null || RdbDialect.isEmpty()) {
       throw new InvalidConfigException(base + ".RdbDialect", Config.MISSING_REQUIRED);
-    if (RdbUrl == null || RdbUrl.isEmpty())
+    }
+    if (RdbUrl == null || RdbUrl.isEmpty()) {
       throw new InvalidConfigException(base + ".RdbUrl", Config.MISSING_REQUIRED);
-    if (RdbUsername == null || RdbUsername.isEmpty())
+    }
+    if (RdbUsername == null || RdbUsername.isEmpty()) {
       throw new InvalidConfigException(base + ".RdbUsername", Config.MISSING_REQUIRED);
-    if (sslMode == null || sslMode.isEmpty())
+    }
+    if (sslMode == null || sslMode.isEmpty()) {
       throw new InvalidConfigException(base + ".sslMode", Config.MISSING_REQUIRED);
+    }
     if (!isPostgres() && !isMysql() && !isMssql()) {
       throw new InvalidConfigException(base + ".RdbDialect", "Unknown or unsupported dialect.");
     }

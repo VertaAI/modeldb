@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenEnvironmentVariablesBlob implements ProtoType {
+
   private String Name;
   private String Value;
 
@@ -40,12 +41,16 @@ public class AutogenEnvironmentVariablesBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenEnvironmentVariablesBlob\", \"fields\": {");
     boolean first = true;
     if (this.Name != null && !this.Name.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Name\": " + "\"" + Name + "\"");
       first = false;
     }
     if (this.Value != null && !this.Value.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Value\": " + "\"" + Value + "\"");
       first = false;
     }
@@ -68,25 +73,43 @@ public class AutogenEnvironmentVariablesBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenEnvironmentVariablesBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenEnvironmentVariablesBlob)) {
+      return false;
+    }
     AutogenEnvironmentVariablesBlob other = (AutogenEnvironmentVariablesBlob) o;
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Name != null || other.Name != null) {
-        if (this.Name == null && other.Name != null) return false;
-        if (this.Name != null && other.Name == null) return false;
-        if (!f.apply(this.Name, other.Name)) return false;
+        if (this.Name == null && other.Name != null) {
+          return false;
+        }
+        if (this.Name != null && other.Name == null) {
+          return false;
+        }
+        if (!f.apply(this.Name, other.Name)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Value != null || other.Value != null) {
-        if (this.Value == null && other.Value != null) return false;
-        if (this.Value != null && other.Value == null) return false;
-        if (!f.apply(this.Value, other.Value)) return false;
+        if (this.Value == null && other.Value != null) {
+          return false;
+        }
+        if (this.Value != null && other.Value == null) {
+          return false;
+        }
+        if (!f.apply(this.Value, other.Value)) {
+          return false;
+        }
       }
     }
     return true;

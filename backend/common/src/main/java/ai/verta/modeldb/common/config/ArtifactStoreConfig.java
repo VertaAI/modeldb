@@ -1,6 +1,7 @@
 package ai.verta.modeldb.common.config;
 
 public abstract class ArtifactStoreConfig {
+
   private String artifactStoreType;
   private boolean pickArtifactStoreHostFromConfig = false;
   private boolean enabled = true;

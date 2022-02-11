@@ -36,6 +36,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class DeleteEntitiesCron extends TimerTask {
+
   private static final Logger LOGGER = LogManager.getLogger(DeleteEntitiesCron.class);
   private static final String DELETED_KEY = "deleted";
   private static final String REPO_ID_KEY = "repoId";
@@ -51,7 +52,9 @@ public class DeleteEntitiesCron extends TimerTask {
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
-  /** The action to be performed by this timer task. */
+  /**
+   * The action to be performed by this timer task.
+   */
   @Override
   public void run() {
     LOGGER.info("DeleteEntitiesCron wakeup");

@@ -15,6 +15,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class FutureEventDAO {
+
   private static final Logger LOGGER = LogManager.getLogger(FutureEventDAO.class);
   private final Executor executor;
   private final FutureJdbi jdbi;
@@ -55,15 +56,15 @@ public class FutureEventDAO {
     eventMetadata.addProperty("logged_time", new Date().getTime());
 
     return jdbi.useHandle(
-            handle ->
-                handle
-                    .createUpdate(
-                        "insert into event (event_uuid, event_type, workspace_id, event_metadata) values (:event_uuid, :event_type, :workspace_id, :event_metadata) ")
-                    .bind("event_uuid", UUID.randomUUID().toString())
-                    .bind("event_type", eventType)
-                    .bind("workspace_id", workspaceId)
-                    .bind("event_metadata", eventMetadata.toString())
-                    .execute())
+        handle ->
+            handle
+                .createUpdate(
+                    "insert into event (event_uuid, event_type, workspace_id, event_metadata) values (:event_uuid, :event_type, :workspace_id, :event_metadata) ")
+                .bind("event_uuid", UUID.randomUUID().toString())
+                .bind("event_type", eventType)
+                .bind("workspace_id", workspaceId)
+                .bind("event_metadata", eventMetadata.toString())
+                .execute())
         .thenAccept(unused -> LOGGER.debug("Event added successfully"), executor);
   }
 
@@ -92,11 +93,11 @@ public class FutureEventDAO {
     }
 
     return jdbi.useHandle(
-            handle ->
-                handle
-                    .createUpdate("DELETE FROM event WHERE event_uuid IN (<eventUUIDs>) ")
-                    .bindList("eventUUIDs", eventUUIDs)
-                    .execute())
+        handle ->
+            handle
+                .createUpdate("DELETE FROM event WHERE event_uuid IN (<eventUUIDs>) ")
+                .bindList("eventUUIDs", eventUUIDs)
+                .execute())
         .thenAccept(unused -> LOGGER.debug("Events deleted successfully"), executor);
   }
 }

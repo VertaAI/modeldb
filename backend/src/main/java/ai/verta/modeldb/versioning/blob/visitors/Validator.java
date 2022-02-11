@@ -61,9 +61,9 @@ public class Validator extends Visitor {
 
   @Override
   public AutogenContinuousHyperparameterSetConfigBlob
-      postVisitAutogenContinuousHyperparameterSetConfigBlob(
-          AutogenContinuousHyperparameterSetConfigBlob autogenContinuousHyperparameterSetConfigBlob)
-          throws ModelDBException {
+  postVisitAutogenContinuousHyperparameterSetConfigBlob(
+      AutogenContinuousHyperparameterSetConfigBlob autogenContinuousHyperparameterSetConfigBlob)
+      throws ModelDBException {
     AutogenHyperparameterValuesConfigBlob beginSetConfigBlob =
         autogenContinuousHyperparameterSetConfigBlob.getIntervalBegin();
     AutogenHyperparameterValuesConfigBlob endSetConfigBlob =

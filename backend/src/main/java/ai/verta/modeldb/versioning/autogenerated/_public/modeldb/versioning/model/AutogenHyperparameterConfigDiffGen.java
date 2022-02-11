@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenHyperparameterConfigDiffGen extends Generator<AutogenHyperparameterConfigDiff> {
+
   public AutogenHyperparameterConfigDiffGen() {
     super(AutogenHyperparameterConfigDiff.class);
   }

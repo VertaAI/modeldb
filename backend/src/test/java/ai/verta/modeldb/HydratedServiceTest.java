@@ -620,7 +620,7 @@ public class HydratedServiceTest extends TestsInit {
             LOGGER.info(
                 "Hydrated project collborator : "
                     + authService.getVertaIdFromUserInfo(
-                        collaboratorUserInfo.getCollaboratorUserInfo()));
+                    collaboratorUserInfo.getCollaboratorUserInfo()));
             match = true;
             break;
           }

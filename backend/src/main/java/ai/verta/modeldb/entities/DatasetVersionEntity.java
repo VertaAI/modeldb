@@ -22,7 +22,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "dataset_version")
 public class DatasetVersionEntity implements Serializable {
 
-  public DatasetVersionEntity() {}
+  public DatasetVersionEntity() {
+  }
 
   public DatasetVersionEntity(DatasetVersion datasetVersion) {
     setId(datasetVersion.getId());

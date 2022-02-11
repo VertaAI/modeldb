@@ -1250,12 +1250,12 @@ public class DatasetVersionTest extends TestsInit {
                   .build());
       GetCommittedVersionedDatasetBlobArtifactParts.Response
           committedVersionedDatasetBlobArtifactParts =
-              datasetVersionServiceStub.getCommittedVersionedDatasetBlobArtifactParts(
-                  GetCommittedVersionedDatasetBlobArtifactParts.newBuilder()
-                      .setDatasetId(dataset.getId())
-                      .setDatasetVersionId(datasetVersion1.getId())
-                      .setPathDatasetComponentBlobPath(path1)
-                      .build());
+          datasetVersionServiceStub.getCommittedVersionedDatasetBlobArtifactParts(
+              GetCommittedVersionedDatasetBlobArtifactParts.newBuilder()
+                  .setDatasetId(dataset.getId())
+                  .setDatasetVersionId(datasetVersion1.getId())
+                  .setPathDatasetComponentBlobPath(path1)
+                  .build());
     } finally {
       DeleteDatasetVersions deleteDatasetVersionsRequest =
           DeleteDatasetVersions.newBuilder().addIds(datasetVersion1.getId()).build();

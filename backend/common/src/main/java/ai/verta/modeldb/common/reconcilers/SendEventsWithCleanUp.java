@@ -16,6 +16,7 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 
 public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
+
   private final UAC uac;
   private final FutureEventDAO futureEventDAO;
 

@@ -4,6 +4,7 @@ import ai.verta.uac.UserInfo;
 import java.util.List;
 
 public class UserInfoPaginationDTO {
+
   private List<UserInfo> userInfoList;
   private Long totalRecords;
 

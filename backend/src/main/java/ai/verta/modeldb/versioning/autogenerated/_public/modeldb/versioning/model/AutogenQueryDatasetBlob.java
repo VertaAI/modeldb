@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenQueryDatasetBlob implements ProtoType {
+
   private List<AutogenQueryDatasetComponentBlob> Components;
 
   public AutogenQueryDatasetBlob() {
@@ -37,7 +38,9 @@ public class AutogenQueryDatasetBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenQueryDatasetBlob\", \"fields\": {");
     boolean first = true;
     if (this.Components != null && !this.Components.equals(null) && !this.Components.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Components\": " + Components);
       first = false;
     }
@@ -60,35 +63,47 @@ public class AutogenQueryDatasetBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenQueryDatasetBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenQueryDatasetBlob)) {
+      return false;
+    }
     AutogenQueryDatasetBlob other = (AutogenQueryDatasetBlob) o;
 
     {
       Function3<
-              List<AutogenQueryDatasetComponentBlob>,
-              List<AutogenQueryDatasetComponentBlob>,
-              Boolean>
+          List<AutogenQueryDatasetComponentBlob>,
+          List<AutogenQueryDatasetComponentBlob>,
+          Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenQueryDatasetComponentBlob,
-                                    AutogenQueryDatasetComponentBlob,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenQueryDatasetComponentBlob,
+                            AutogenQueryDatasetComponentBlob,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.Components != null || other.Components != null) {
-        if (this.Components == null && other.Components != null) return false;
-        if (this.Components != null && other.Components == null) return false;
-        if (!f.apply(this.Components, other.Components)) return false;
+        if (this.Components == null && other.Components != null) {
+          return false;
+        }
+        if (this.Components != null && other.Components == null) {
+          return false;
+        }
+        if (!f.apply(this.Components, other.Components)) {
+          return false;
+        }
       }
     }
     return true;
@@ -116,10 +131,10 @@ public class AutogenQueryDatasetBlob implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.QueryDatasetBlob, List<AutogenQueryDatasetComponentBlob>>
           f =
-              x ->
-                  blob.getComponentsList().stream()
-                      .map(AutogenQueryDatasetComponentBlob::fromProto)
-                      .collect(Collectors.toList());
+          x ->
+              blob.getComponentsList().stream()
+                  .map(AutogenQueryDatasetComponentBlob::fromProto)
+                  .collect(Collectors.toList());
       obj.setComponents(f.apply(blob));
     }
     return obj;

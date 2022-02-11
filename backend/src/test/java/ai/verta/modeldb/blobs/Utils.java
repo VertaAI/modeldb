@@ -11,119 +11,190 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class Utils {
+
   public static <T extends ProtoType> T enforceOneof(T b) throws ModelDBException {
     Visitor v =
         new Visitor() {
           @Override
           public AutogenBlob postVisitAutogenBlob(AutogenBlob blob) throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenBlob other = new AutogenBlob();
-            if (blob.getDataset() != null) return other.setDataset(blob.getDataset());
-            if (blob.getConfig() != null) return other.setConfig(blob.getConfig());
-            if (blob.getCode() != null) return other.setCode(blob.getCode());
-            if (blob.getEnvironment() != null) return other.setEnvironment(blob.getEnvironment());
+            if (blob.getDataset() != null) {
+              return other.setDataset(blob.getDataset());
+            }
+            if (blob.getConfig() != null) {
+              return other.setConfig(blob.getConfig());
+            }
+            if (blob.getCode() != null) {
+              return other.setCode(blob.getCode());
+            }
+            if (blob.getEnvironment() != null) {
+              return other.setEnvironment(blob.getEnvironment());
+            }
             return super.postVisitAutogenBlob(blob);
           }
 
           @Override
           public AutogenBlobDiff postVisitAutogenBlobDiff(AutogenBlobDiff blob)
               throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenBlobDiff other = new AutogenBlobDiff();
-            if (blob.getDataset() != null) return other.setDataset(blob.getDataset());
-            if (blob.getConfig() != null) return other.setConfig(blob.getConfig());
-            if (blob.getCode() != null) return other.setCode(blob.getCode());
-            if (blob.getEnvironment() != null) return other.setEnvironment(blob.getEnvironment());
+            if (blob.getDataset() != null) {
+              return other.setDataset(blob.getDataset());
+            }
+            if (blob.getConfig() != null) {
+              return other.setConfig(blob.getConfig());
+            }
+            if (blob.getCode() != null) {
+              return other.setCode(blob.getCode());
+            }
+            if (blob.getEnvironment() != null) {
+              return other.setEnvironment(blob.getEnvironment());
+            }
             return super.postVisitAutogenBlobDiff(blob);
           }
 
           @Override
           public AutogenDatasetBlob postVisitAutogenDatasetBlob(AutogenDatasetBlob blob)
               throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenDatasetBlob other = new AutogenDatasetBlob();
-            if (blob.getPath() != null) return other.setPath(blob.getPath());
-            if (blob.getS3() != null) return other.setS3(blob.getS3());
+            if (blob.getPath() != null) {
+              return other.setPath(blob.getPath());
+            }
+            if (blob.getS3() != null) {
+              return other.setS3(blob.getS3());
+            }
             return super.postVisitAutogenDatasetBlob(blob);
           }
 
           @Override
           public AutogenDatasetDiff postVisitAutogenDatasetDiff(AutogenDatasetDiff blob)
               throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenDatasetDiff other = new AutogenDatasetDiff();
-            if (blob.getPath() != null) return other.setPath(blob.getPath());
-            if (blob.getS3() != null) return other.setS3(blob.getS3());
+            if (blob.getPath() != null) {
+              return other.setPath(blob.getPath());
+            }
+            if (blob.getS3() != null) {
+              return other.setS3(blob.getS3());
+            }
             return super.postVisitAutogenDatasetDiff(blob);
           }
 
           @Override
           public AutogenEnvironmentBlob postVisitAutogenEnvironmentBlob(AutogenEnvironmentBlob blob)
               throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenEnvironmentBlob other =
                 new AutogenEnvironmentBlob()
                     .setCommandLine(blob.getCommandLine())
                     .setEnvironmentVariables(blob.getEnvironmentVariables());
-            if (blob.getPython() != null) return other.setPython(blob.getPython());
-            if (blob.getDocker() != null) return other.setDocker(blob.getDocker());
+            if (blob.getPython() != null) {
+              return other.setPython(blob.getPython());
+            }
+            if (blob.getDocker() != null) {
+              return other.setDocker(blob.getDocker());
+            }
             return super.postVisitAutogenEnvironmentBlob(blob);
           }
 
           @Override
           public AutogenEnvironmentDiff postVisitAutogenEnvironmentDiff(AutogenEnvironmentDiff blob)
               throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenEnvironmentDiff other =
                 new AutogenEnvironmentDiff()
                     .setCommandLine(blob.getCommandLine())
                     .setEnvironmentVariables(blob.getEnvironmentVariables());
-            if (blob.getPython() != null) return other.setPython(blob.getPython());
-            if (blob.getDocker() != null) return other.setDocker(blob.getDocker());
+            if (blob.getPython() != null) {
+              return other.setPython(blob.getPython());
+            }
+            if (blob.getDocker() != null) {
+              return other.setDocker(blob.getDocker());
+            }
             return super.postVisitAutogenEnvironmentDiff(blob);
           }
 
           @Override
           public AutogenCodeBlob postVisitAutogenCodeBlob(AutogenCodeBlob blob)
               throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenCodeBlob other = new AutogenCodeBlob();
-            if (blob.getNotebook() != null) return other.setNotebook(blob.getNotebook());
-            if (blob.getGit() != null) return other.setGit(blob.getGit());
+            if (blob.getNotebook() != null) {
+              return other.setNotebook(blob.getNotebook());
+            }
+            if (blob.getGit() != null) {
+              return other.setGit(blob.getGit());
+            }
             return super.postVisitAutogenCodeBlob(blob);
           }
 
           @Override
           public AutogenCodeDiff postVisitAutogenCodeDiff(AutogenCodeDiff blob)
               throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenCodeDiff other = new AutogenCodeDiff();
-            if (blob.getNotebook() != null) return other.setNotebook(blob.getNotebook());
-            if (blob.getGit() != null) return other.setGit(blob.getGit());
+            if (blob.getNotebook() != null) {
+              return other.setNotebook(blob.getNotebook());
+            }
+            if (blob.getGit() != null) {
+              return other.setGit(blob.getGit());
+            }
             return super.postVisitAutogenCodeDiff(blob);
           }
 
           @Override
           public AutogenHyperparameterValuesConfigBlob
-              postVisitAutogenHyperparameterValuesConfigBlob(
-                  AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
-            if (blob == null) return null;
+          postVisitAutogenHyperparameterValuesConfigBlob(
+              AutogenHyperparameterValuesConfigBlob blob) throws ModelDBException {
+            if (blob == null) {
+              return null;
+            }
             AutogenHyperparameterValuesConfigBlob other =
                 new AutogenHyperparameterValuesConfigBlob();
-            if (blob.getFloatValue() != null) return other.setFloatValue(blob.getFloatValue());
-            if (blob.getIntValue() != null) return other.setIntValue(blob.getIntValue());
-            if (blob.getStringValue() != null) return other.setStringValue(blob.getStringValue());
+            if (blob.getFloatValue() != null) {
+              return other.setFloatValue(blob.getFloatValue());
+            }
+            if (blob.getIntValue() != null) {
+              return other.setIntValue(blob.getIntValue());
+            }
+            if (blob.getStringValue() != null) {
+              return other.setStringValue(blob.getStringValue());
+            }
             return super.postVisitAutogenHyperparameterValuesConfigBlob(blob);
           }
 
           @Override
           public AutogenHyperparameterSetConfigBlob postVisitAutogenHyperparameterSetConfigBlob(
               AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
-            if (blob == null) return null;
+            if (blob == null) {
+              return null;
+            }
             AutogenHyperparameterSetConfigBlob other =
                 new AutogenHyperparameterSetConfigBlob().setName(blob.getName());
-            if (blob.getDiscrete() != null) return other.setDiscrete(blob.getDiscrete());
-            if (blob.getContinuous() != null) return other.setContinuous(blob.getContinuous());
+            if (blob.getDiscrete() != null) {
+              return other.setDiscrete(blob.getDiscrete());
+            }
+            if (blob.getContinuous() != null) {
+              return other.setContinuous(blob.getContinuous());
+            }
             return super.postVisitAutogenHyperparameterSetConfigBlob(blob);
           }
         };
@@ -132,22 +203,37 @@ public class Utils {
   }
 
   private static ProtoType sanitize(ProtoType b) {
-    if (b == null) return b;
-    if (b instanceof AutogenBlob) return sanitizeBlob((AutogenBlob) b);
-    if (b instanceof AutogenConfigBlob) return sanitizeConfigBlob((AutogenConfigBlob) b);
-    if (b instanceof AutogenDatasetBlob) return sanitizeDataset((AutogenDatasetBlob) b);
-    if (b instanceof AutogenEnvironmentBlob)
+    if (b == null) {
+      return b;
+    }
+    if (b instanceof AutogenBlob) {
+      return sanitizeBlob((AutogenBlob) b);
+    }
+    if (b instanceof AutogenConfigBlob) {
+      return sanitizeConfigBlob((AutogenConfigBlob) b);
+    }
+    if (b instanceof AutogenDatasetBlob) {
+      return sanitizeDataset((AutogenDatasetBlob) b);
+    }
+    if (b instanceof AutogenEnvironmentBlob) {
       return sanitizeEnvironmentBlob((AutogenEnvironmentBlob) b);
-    if (b instanceof AutogenPathDatasetBlob)
+    }
+    if (b instanceof AutogenPathDatasetBlob) {
       return sanitizePathDatasetBlob((AutogenPathDatasetBlob) b);
-    if (b instanceof AutogenPythonEnvironmentBlob)
+    }
+    if (b instanceof AutogenPythonEnvironmentBlob) {
       return sanitizePythonEnvironmentBlob((AutogenPythonEnvironmentBlob) b);
-    if (b instanceof AutogenS3DatasetBlob) return sanitizeS3DatasetBlob((AutogenS3DatasetBlob) b);
+    }
+    if (b instanceof AutogenS3DatasetBlob) {
+      return sanitizeS3DatasetBlob((AutogenS3DatasetBlob) b);
+    }
     return b;
   }
 
   private static ProtoType sanitizeBlob(AutogenBlob b) {
-    if (b == null) return b;
+    if (b == null) {
+      return b;
+    }
     b.setConfig(sanitizeConfigBlob(b.getConfig()));
     b.setDataset(sanitizeDataset(b.getDataset()));
     b.setEnvironment(sanitizeEnvironmentBlob(b.getEnvironment()));
@@ -155,7 +241,9 @@ public class Utils {
   }
 
   private static AutogenConfigBlob sanitizeConfigBlob(AutogenConfigBlob b) {
-    if (b == null) return b;
+    if (b == null) {
+      return b;
+    }
     if (b.getHyperparameters() != null) {
       Map<String, AutogenHyperparameterConfigBlob> blobMap = new HashMap<>();
       for (AutogenHyperparameterConfigBlob blob : b.getHyperparameters()) {
@@ -174,14 +262,18 @@ public class Utils {
   }
 
   private static AutogenDatasetBlob sanitizeDataset(AutogenDatasetBlob b) {
-    if (b == null) return b;
+    if (b == null) {
+      return b;
+    }
     b.setS3(sanitizeS3DatasetBlob(b.getS3()));
     b.setPath(sanitizePathDatasetBlob(b.getPath()));
     return b;
   }
 
   private static AutogenPathDatasetBlob sanitizePathDatasetBlob(AutogenPathDatasetBlob b) {
-    if (b == null) return b;
+    if (b == null) {
+      return b;
+    }
     Map<String, AutogenPathDatasetComponentBlob> blobMap = new HashMap<>();
     for (AutogenPathDatasetComponentBlob blob : b.getComponents()) {
       blobMap.put(blob.getPath(), blob);
@@ -191,7 +283,9 @@ public class Utils {
   }
 
   private static AutogenEnvironmentBlob sanitizeEnvironmentBlob(AutogenEnvironmentBlob b) {
-    if (b == null) return b;
+    if (b == null) {
+      return b;
+    }
     b.setPython(sanitizePythonEnvironmentBlob(b.getPython()));
     if (b.getEnvironmentVariables() != null) {
       Map<String, AutogenEnvironmentVariablesBlob> blobMap = new HashMap<>();
@@ -205,7 +299,9 @@ public class Utils {
 
   private static AutogenPythonEnvironmentBlob sanitizePythonEnvironmentBlob(
       AutogenPythonEnvironmentBlob b) {
-    if (b == null) return b;
+    if (b == null) {
+      return b;
+    }
     Map<String, AutogenPythonRequirementEnvironmentBlob> blobMap = new HashMap<>();
     if (b.getConstraints() != null) {
       for (AutogenPythonRequirementEnvironmentBlob blob : b.getConstraints()) {
@@ -232,28 +328,38 @@ public class Utils {
   }
 
   private static AutogenS3DatasetBlob sanitizeS3DatasetBlob(AutogenS3DatasetBlob b) {
-    if (b == null) return b;
+    if (b == null) {
+      return b;
+    }
     Map<String, AutogenS3DatasetComponentBlob> blobMap = new HashMap<>();
     for (AutogenS3DatasetComponentBlob blob : b.getComponents()) {
-      if (blob.getPath() == null) continue;
+      if (blob.getPath() == null) {
+        continue;
+      }
       blobMap.put(blob.getPath().getPath(), blob);
     }
-    if (blobMap.isEmpty()) return null;
+    if (blobMap.isEmpty()) {
+      return null;
+    }
     b.setComponents(new LinkedList<AutogenS3DatasetComponentBlob>(blobMap.values()));
     return b;
   }
 
   public static <T> T removeEmpty(T obj) {
     if (obj instanceof ProtoType) {
-      if (((ProtoType) obj).isEmpty()) return null;
+      if (((ProtoType) obj).isEmpty()) {
+        return null;
+      }
     } else if (obj instanceof List) {
       Object ret =
           ((List) obj)
               .stream()
-                  .map(x -> removeEmpty(x))
-                  .filter(x -> x != null)
-                  .collect(Collectors.toList());
-      if (((List) ret).isEmpty()) return null;
+              .map(x -> removeEmpty(x))
+              .filter(x -> x != null)
+              .collect(Collectors.toList());
+      if (((List) ret).isEmpty()) {
+        return null;
+      }
       return (T) ret;
     }
     return obj;

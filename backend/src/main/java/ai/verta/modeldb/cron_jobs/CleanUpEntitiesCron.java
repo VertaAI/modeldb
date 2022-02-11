@@ -20,6 +20,7 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 
 public class CleanUpEntitiesCron extends TimerTask {
+
   private static final Logger LOGGER = LogManager.getLogger(CleanUpEntitiesCron.class);
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private final MDBRoleService mdbRoleService;
@@ -30,7 +31,9 @@ public class CleanUpEntitiesCron extends TimerTask {
     this.recordUpdateLimit = recordUpdateLimit;
   }
 
-  /** The action to be performed by this timer task. */
+  /**
+   * The action to be performed by this timer task.
+   */
   @Override
   public void run() {
     LOGGER.info("CleanUpEntitiesCron wakeup");

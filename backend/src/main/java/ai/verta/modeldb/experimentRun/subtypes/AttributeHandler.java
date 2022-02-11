@@ -12,6 +12,7 @@ import java.util.AbstractMap;
 import java.util.concurrent.Executor;
 
 public class AttributeHandler extends KeyValueHandler<String> {
+
   public AttributeHandler(Executor executor, FutureJdbi jdbi, String entityName) {
     super(executor, jdbi, "attributes", entityName);
   }

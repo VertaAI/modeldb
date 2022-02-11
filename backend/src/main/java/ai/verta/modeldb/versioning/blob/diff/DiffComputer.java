@@ -11,6 +11,7 @@ import java.util.stream.Stream;
 // TODO: equal comparison should compare just immediate A and B, instead of recursing. This happens
 // because some diff types are not isolated
 public class DiffComputer {
+
   public static <B, F, R> R computeDiff(
       B a, B b, Function<B, F> getter, Function3<F, F, R> computer) {
     return computer.apply(Utils.getOrNull(a, getter), Utils.getOrNull(b, getter));
@@ -77,7 +78,9 @@ public class DiffComputer {
   }
 
   public static <F> Map<String, HashSet<F>> toMap(List<F> input, Function<F, String> hasher) {
-    if (input == null) return new HashMap<>();
+    if (input == null) {
+      return new HashMap<>();
+    }
     return input.stream()
         .collect(
             Collectors.toMap(
@@ -129,8 +132,12 @@ public class DiffComputer {
   }
 
   public static AutogenGitCodeDiff computeGitCodeDiff(AutogenGitCodeBlob a, AutogenGitCodeBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
 
     return Utils.removeEmpty(new AutogenGitCodeDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
@@ -171,16 +178,24 @@ public class DiffComputer {
 
   public static AutogenHyperparameterConfigDiff computeHyperparameterConfigDiff(
       AutogenHyperparameterConfigBlob a, AutogenHyperparameterConfigBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenHyperparameterConfigDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static AutogenHyperparameterSetConfigDiff computeHyperparameterSetConfigDiff(
       AutogenHyperparameterSetConfigBlob a, AutogenHyperparameterSetConfigBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenHyperparameterSetConfigDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
@@ -212,8 +227,12 @@ public class DiffComputer {
 
   public static AutogenPathDatasetComponentDiff computePathDatasetComponentDiff(
       AutogenPathDatasetComponentBlob a, AutogenPathDatasetComponentBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenPathDatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
@@ -233,8 +252,12 @@ public class DiffComputer {
 
   public static AutogenQueryDatasetComponentDiff computeQueryDatasetComponentDiff(
       AutogenQueryDatasetComponentBlob a, AutogenQueryDatasetComponentBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenQueryDatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
@@ -254,16 +277,24 @@ public class DiffComputer {
 
   public static AutogenS3DatasetComponentDiff computeS3DatasetComponentDiff(
       AutogenS3DatasetComponentBlob a, AutogenS3DatasetComponentBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenS3DatasetComponentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static AutogenEnvironmentDiff computeEnvironmentDiff(
       AutogenEnvironmentBlob a, AutogenEnvironmentBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenEnvironmentDiff()
             .setCommandLine(
@@ -295,16 +326,24 @@ public class DiffComputer {
 
   public static AutogenCommandLineEnvironmentDiff computeCommandLineEnvironmentDiff(
       List<String> a, List<String> b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenCommandLineEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static AutogenDockerEnvironmentDiff computeDockerEnvironmentDiff(
       AutogenDockerEnvironmentBlob a, AutogenDockerEnvironmentBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenDockerEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
@@ -337,16 +376,24 @@ public class DiffComputer {
 
   public static AutogenVersionEnvironmentDiff computeVersionEnvironmentDiff(
       AutogenVersionEnvironmentBlob a, AutogenVersionEnvironmentBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenVersionEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }
 
   public static AutogenPythonRequirementEnvironmentDiff computePythonRequirementEnvironmentDiff(
       AutogenPythonRequirementEnvironmentBlob a, AutogenPythonRequirementEnvironmentBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
 
     return Utils.removeEmpty(
         new AutogenPythonRequirementEnvironmentDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
@@ -354,8 +401,12 @@ public class DiffComputer {
 
   public static AutogenEnvironmentVariablesDiff computeEnvironmentVariablesDiff(
       AutogenEnvironmentVariablesBlob a, AutogenEnvironmentVariablesBlob b) {
-    if (a == null && b == null) return null;
-    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) return null;
+    if (a == null && b == null) {
+      return null;
+    }
+    if ((a != null && a.equals(b)) || (b != null && b.equals(a))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenEnvironmentVariablesDiff().setA(a).setB(b).setStatus(getStatus(a, b)));
   }

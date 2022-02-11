@@ -1,6 +1,7 @@
 package ai.verta.modeldb.common.reconcilers;
 
 public class ReconcilerConfig {
+
   private int resyncPeriodSeconds = 60;
   private int batchSize = 10;
   private int workerCount = 10;

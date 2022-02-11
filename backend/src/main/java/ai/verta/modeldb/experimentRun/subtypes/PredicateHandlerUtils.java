@@ -6,6 +6,7 @@ import ai.verta.modeldb.config.MDBConfig;
 import java.util.regex.Pattern;
 
 public class PredicateHandlerUtils {
+
   private static final MDBConfig mdbConfig = App.getInstance().mdbConfig;
 
   protected String columnAsNumber(String colName, boolean isString) {

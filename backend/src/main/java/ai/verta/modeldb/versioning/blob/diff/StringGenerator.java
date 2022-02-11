@@ -5,6 +5,7 @@ import com.pholser.junit.quickcheck.generator.Generator;
 import com.pholser.junit.quickcheck.random.SourceOfRandomness;
 
 public class StringGenerator extends Generator<String> {
+
   private static final String LOWERCASE_CHARS = "abcdefghijklmnopqrstuvwxyz";
   private static final String UPPERCASE_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   private static final String NUMBERS = "0123456789";

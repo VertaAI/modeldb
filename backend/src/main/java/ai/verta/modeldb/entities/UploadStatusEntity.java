@@ -10,6 +10,7 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "upload_status")
 public class UploadStatusEntity {
+
   public static final int PATH_DATASET_COMPONENT_BLOB = 0;
   public static final int S3_DATASET_COMPONENT_BLOB = 1;
 

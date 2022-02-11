@@ -10,6 +10,7 @@ import java.util.*;
 
 public class AutogenHyperparameterSetConfigDiffGen
     extends Generator<AutogenHyperparameterSetConfigDiff> {
+
   public AutogenHyperparameterSetConfigDiffGen() {
     super(AutogenHyperparameterSetConfigDiff.class);
   }

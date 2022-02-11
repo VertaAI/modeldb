@@ -28,6 +28,7 @@ import org.mariadb.jdbc.MariaDbDataSource;
 import org.postgresql.ds.PGSimpleDataSource;
 
 public abstract class CommonHibernateUtil extends CommonDBUtil {
+
   private static final Logger LOGGER = LogManager.getLogger(CommonHibernateUtil.class);
   private StandardServiceRegistry registry;
   private SessionFactory sessionFactory;
@@ -210,7 +211,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
   public boolean ping() {
     if (sessionFactory != null) {
       try (var session = sessionFactory.openSession()) {
-        final var valid = new boolean[] {false};
+        final var valid = new boolean[]{false};
         session.doWork(
             connection -> {
               if (connection.isValid(databaseConfig.getTimeout())) {

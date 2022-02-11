@@ -14,7 +14,9 @@ import org.apache.logging.log4j.Logger;
 @Entity
 @Table(name = "versioning_modeldb_entity_mapping")
 public class VersioningModeldbEntityMapping implements Serializable {
-  private VersioningModeldbEntityMapping() {}
+
+  private VersioningModeldbEntityMapping() {
+  }
 
   private static final Logger LOGGER = LogManager.getLogger(VersioningModeldbEntityMapping.class);
 
@@ -79,27 +81,27 @@ public class VersioningModeldbEntityMapping implements Serializable {
   @JoinTable(
       name = "versioning_modeldb_entity_mapping_config_blob",
       joinColumns = {
-        @JoinColumn(
-            name = "versioning_modeldb_entity_mapping_repository_id",
-            referencedColumnName = "repository_id"),
-        @JoinColumn(
-            name = "versioning_modeldb_entity_mapping_commit",
-            referencedColumnName = "commit"),
-        @JoinColumn(
-            name = "versioning_modeldb_entity_mapping_versioning_key",
-            referencedColumnName = "versioning_key"),
-        @JoinColumn(
-            name = "versioning_modeldb_entity_mapping_experiment_run_id",
-            referencedColumnName = "experiment_run_id"),
-        @JoinColumn(
-            name = "versioning_modeldb_entity_mapping_entity_type",
-            referencedColumnName = "entity_type")
+          @JoinColumn(
+              name = "versioning_modeldb_entity_mapping_repository_id",
+              referencedColumnName = "repository_id"),
+          @JoinColumn(
+              name = "versioning_modeldb_entity_mapping_commit",
+              referencedColumnName = "commit"),
+          @JoinColumn(
+              name = "versioning_modeldb_entity_mapping_versioning_key",
+              referencedColumnName = "versioning_key"),
+          @JoinColumn(
+              name = "versioning_modeldb_entity_mapping_experiment_run_id",
+              referencedColumnName = "experiment_run_id"),
+          @JoinColumn(
+              name = "versioning_modeldb_entity_mapping_entity_type",
+              referencedColumnName = "entity_type")
       },
       inverseJoinColumns = {
-        @JoinColumn(name = "config_blob_entity_blob_hash", referencedColumnName = "blob_hash"),
-        @JoinColumn(
-            name = "config_blob_entity_config_seq_number",
-            referencedColumnName = "config_seq_number")
+          @JoinColumn(name = "config_blob_entity_blob_hash", referencedColumnName = "blob_hash"),
+          @JoinColumn(
+              name = "config_blob_entity_config_seq_number",
+              referencedColumnName = "config_seq_number")
       })
   private Set<ConfigBlobEntity> config_blob_entities = new HashSet<>();
 

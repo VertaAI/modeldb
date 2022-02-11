@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class OrderColumn implements OrderItem {
+
   public final String column;
   public final boolean ascending;
 

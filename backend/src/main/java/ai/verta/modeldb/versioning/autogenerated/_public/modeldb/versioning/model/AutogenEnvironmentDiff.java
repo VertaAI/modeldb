@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenEnvironmentDiff implements ProtoType {
+
   private AutogenCommandLineEnvironmentDiff CommandLine;
   private AutogenDockerEnvironmentDiff Docker;
   private List<AutogenEnvironmentVariablesDiff> EnvironmentVariables;
@@ -54,24 +55,32 @@ public class AutogenEnvironmentDiff implements ProtoType {
     sb.append("{\"class\": \"AutogenEnvironmentDiff\", \"fields\": {");
     boolean first = true;
     if (this.CommandLine != null && !this.CommandLine.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"CommandLine\": " + CommandLine);
       first = false;
     }
     if (this.Docker != null && !this.Docker.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Docker\": " + Docker);
       first = false;
     }
     if (this.EnvironmentVariables != null
         && !this.EnvironmentVariables.equals(null)
         && !this.EnvironmentVariables.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"EnvironmentVariables\": " + EnvironmentVariables);
       first = false;
     }
     if (this.Python != null && !this.Python.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Python\": " + Python);
       first = false;
     }
@@ -94,60 +103,90 @@ public class AutogenEnvironmentDiff implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenEnvironmentDiff)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenEnvironmentDiff)) {
+      return false;
+    }
     AutogenEnvironmentDiff other = (AutogenEnvironmentDiff) o;
 
     {
       Function3<AutogenCommandLineEnvironmentDiff, AutogenCommandLineEnvironmentDiff, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.CommandLine != null || other.CommandLine != null) {
-        if (this.CommandLine == null && other.CommandLine != null) return false;
-        if (this.CommandLine != null && other.CommandLine == null) return false;
-        if (!f.apply(this.CommandLine, other.CommandLine)) return false;
+        if (this.CommandLine == null && other.CommandLine != null) {
+          return false;
+        }
+        if (this.CommandLine != null && other.CommandLine == null) {
+          return false;
+        }
+        if (!f.apply(this.CommandLine, other.CommandLine)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenDockerEnvironmentDiff, AutogenDockerEnvironmentDiff, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Docker != null || other.Docker != null) {
-        if (this.Docker == null && other.Docker != null) return false;
-        if (this.Docker != null && other.Docker == null) return false;
-        if (!f.apply(this.Docker, other.Docker)) return false;
+        if (this.Docker == null && other.Docker != null) {
+          return false;
+        }
+        if (this.Docker != null && other.Docker == null) {
+          return false;
+        }
+        if (!f.apply(this.Docker, other.Docker)) {
+          return false;
+        }
       }
     }
     {
       Function3<
-              List<AutogenEnvironmentVariablesDiff>, List<AutogenEnvironmentVariablesDiff>, Boolean>
+          List<AutogenEnvironmentVariablesDiff>, List<AutogenEnvironmentVariablesDiff>, Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenEnvironmentVariablesDiff,
-                                    AutogenEnvironmentVariablesDiff,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenEnvironmentVariablesDiff,
+                            AutogenEnvironmentVariablesDiff,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.EnvironmentVariables != null || other.EnvironmentVariables != null) {
-        if (this.EnvironmentVariables == null && other.EnvironmentVariables != null) return false;
-        if (this.EnvironmentVariables != null && other.EnvironmentVariables == null) return false;
-        if (!f.apply(this.EnvironmentVariables, other.EnvironmentVariables)) return false;
+        if (this.EnvironmentVariables == null && other.EnvironmentVariables != null) {
+          return false;
+        }
+        if (this.EnvironmentVariables != null && other.EnvironmentVariables == null) {
+          return false;
+        }
+        if (!f.apply(this.EnvironmentVariables, other.EnvironmentVariables)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenPythonEnvironmentDiff, AutogenPythonEnvironmentDiff, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Python != null || other.Python != null) {
-        if (this.Python == null && other.Python != null) return false;
-        if (this.Python != null && other.Python == null) return false;
-        if (!f.apply(this.Python, other.Python)) return false;
+        if (this.Python == null && other.Python != null) {
+          return false;
+        }
+        if (this.Python != null && other.Python == null) {
+          return false;
+        }
+        if (!f.apply(this.Python, other.Python)) {
+          return false;
+        }
       }
     }
     return true;
@@ -213,10 +252,10 @@ public class AutogenEnvironmentDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.EnvironmentDiff, List<AutogenEnvironmentVariablesDiff>>
           f =
-              x ->
-                  blob.getEnvironmentVariablesList().stream()
-                      .map(AutogenEnvironmentVariablesDiff::fromProto)
-                      .collect(Collectors.toList());
+          x ->
+              blob.getEnvironmentVariablesList().stream()
+                  .map(AutogenEnvironmentVariablesDiff::fromProto)
+                  .collect(Collectors.toList());
       obj.setEnvironmentVariables(f.apply(blob));
     }
     {

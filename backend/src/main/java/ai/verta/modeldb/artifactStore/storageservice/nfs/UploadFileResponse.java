@@ -1,6 +1,7 @@
 package ai.verta.modeldb.artifactStore.storageservice.nfs;
 
 public class UploadFileResponse {
+
   private String fileName;
   private String fileDownloadUri;
   private String fileType;

@@ -13,6 +13,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class CronJobUtils {
+
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
 
   public static void initializeCronJobs(MDBConfig mdbConfig, ServiceSet services) {

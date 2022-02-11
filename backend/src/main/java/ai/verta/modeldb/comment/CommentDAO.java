@@ -9,8 +9,8 @@ public interface CommentDAO {
   /**
    * Insert Comment in database.
    *
-   * @param String entityType --> like project, experiment, experimentRun etc.
-   * @param String entityId --> like project.id, experiment.id, experimentRun.id etc.
+   * @param String  entityType --> like project, experiment, experimentRun etc.
+   * @param String  entityId --> like project.id, experiment.id, experimentRun.id etc.
    * @param Comment newComment
    * @return Comment comment --> return the comment
    */
@@ -19,8 +19,8 @@ public interface CommentDAO {
   /**
    * Update comment in database and return the updated comment to client
    *
-   * @param String entityType --> like project, experiment, experimentRun etc.
-   * @param String entityId --> like project.id, experiment.id, experimentRun.id etc.
+   * @param String  entityType --> like project, experiment, experimentRun etc.
+   * @param String  entityId --> like project.id, experiment.id, experimentRun.id etc.
    * @param Comment updatedComment
    * @return Comment comment --> return the single updated comment
    */
@@ -38,9 +38,9 @@ public interface CommentDAO {
   /**
    * Delete the selected comment from EntityComment.
    *
-   * @param String entityType --> like project, experiment, experimentRun etc.
-   * @param String entityId --> like project.id, experiment.id, experimentRun.id etc.
-   * @param String commentId --> like comment.id
+   * @param String   entityType --> like project, experiment, experimentRun etc.
+   * @param String   entityId --> like project.id, experiment.id, experimentRun.id etc.
+   * @param String   commentId --> like comment.id
    * @param UserInfo userInfo
    * @return Boolean deletedStatus
    */

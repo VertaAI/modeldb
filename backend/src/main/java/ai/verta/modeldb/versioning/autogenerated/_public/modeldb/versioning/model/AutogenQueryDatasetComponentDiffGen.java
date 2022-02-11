@@ -10,6 +10,7 @@ import java.util.*;
 
 public class AutogenQueryDatasetComponentDiffGen
     extends Generator<AutogenQueryDatasetComponentDiff> {
+
   public AutogenQueryDatasetComponentDiffGen() {
     super(AutogenQueryDatasetComponentDiff.class);
   }

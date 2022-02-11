@@ -45,7 +45,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
 
   private static final String CHECK_DATASET_VERSION_EXISTS_BY_ID_HQL =
       new StringBuilder(
-              "Select count(dsv." + ModelDBConstants.ID + ") From DatasetVersionEntity dsv where ")
+          "Select count(dsv." + ModelDBConstants.ID + ") From DatasetVersionEntity dsv where ")
           .append(" dsv." + ModelDBConstants.ID + " = :datasetVersionId ")
           .append(" AND dsv." + ModelDBConstants.DELETED + " = false ")
           .toString();
@@ -198,11 +198,11 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
    *   <li>Get the dataset Id they belong to.
    *   <li>Check if dataset is accessible or not.
    * </ol>
-   *
+   * <p>
    * The list of accessible datasetVersionIDs is built and returned by this method.
    *
    * @param requestedDatasetVersionIds : datasetVersion Ids
-   * @param modelDBServiceActions : modelDB action like READ, UPDATE
+   * @param modelDBServiceActions      : modelDB action like READ, UPDATE
    * @return List<String> : list of accessible datasetVersion Id
    */
   public List<String> getAccessibleDatasetVersionIDs(

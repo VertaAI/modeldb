@@ -54,6 +54,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class ConflictGenerator {
+
   private static final Logger LOGGER = LogManager.getLogger(ConflictGenerator.class);
 
   public static List<BlobDiff> setConflictBlobsInDiff(
@@ -147,14 +148,14 @@ public class ConflictGenerator {
             .build();
       case DATASET:
         return diff.setDataset(
-                getDatasetConflictBlob(a.getDataset(), b.getDataset(), c.getDataset()).get(0))
+            getDatasetConflictBlob(a.getDataset(), b.getDataset(), c.getDataset()).get(0))
             .toProto()
             .build();
       case ENVIRONMENT:
         return diff.setEnvironment(
-                getEnvironmentonflictBlob(
-                        a.getEnvironment(), b.getEnvironment(), c.getEnvironment())
-                    .get(0))
+            getEnvironmentonflictBlob(
+                a.getEnvironment(), b.getEnvironment(), c.getEnvironment())
+                .get(0))
             .toProto()
             .build();
       case CONTENT_NOT_SET:
@@ -242,7 +243,9 @@ public class ConflictGenerator {
       AutogenVersionEnvironmentDiff a,
       AutogenVersionEnvironmentDiff b,
       AutogenVersionEnvironmentBlob c) {
-    if ((a == null && b == null) || (a != null && a.equals(b))) return null;
+    if ((a == null && b == null) || (a != null && a.equals(b))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenVersionEnvironmentDiff()
             .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
@@ -260,8 +263,11 @@ public class ConflictGenerator {
     Map<String, AutogenPythonRequirementEnvironmentBlob> mapC = getRequirementMap(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
-    if (keys.isEmpty()) keys.addAll(mapB.keySet());
-    else if (!mapB.keySet().isEmpty()) keys.retainAll(mapB.keySet());
+    if (keys.isEmpty()) {
+      keys.addAll(mapB.keySet());
+    } else if (!mapB.keySet().isEmpty()) {
+      keys.retainAll(mapB.keySet());
+    }
     List<AutogenPythonRequirementEnvironmentDiff> retList =
         new LinkedList<AutogenPythonRequirementEnvironmentDiff>();
     for (String key : keys) {
@@ -280,7 +286,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenPythonRequirementEnvironmentBlob> getRequirementMap(
       List<AutogenPythonRequirementEnvironmentBlob> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenPythonRequirementEnvironmentBlob> retMap =
         new HashMap<String, AutogenPythonRequirementEnvironmentBlob>();
     for (AutogenPythonRequirementEnvironmentBlob blob : list) {
@@ -293,7 +301,9 @@ public class ConflictGenerator {
   private static Map<String, AutogenPythonRequirementEnvironmentBlob> getRequirementDiffMap(
       List<AutogenPythonRequirementEnvironmentDiff> list) {
 
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenPythonRequirementEnvironmentBlob> retMap =
         new HashMap<String, AutogenPythonRequirementEnvironmentBlob>();
     for (AutogenPythonRequirementEnvironmentDiff diff : list) {
@@ -313,8 +323,11 @@ public class ConflictGenerator {
     HashSet<String> keys = new HashSet<>();
 
     keys.addAll(mapA.keySet());
-    if (keys.isEmpty()) keys.addAll(mapB.keySet());
-    else if (!mapB.keySet().isEmpty()) keys.retainAll(mapB.keySet());
+    if (keys.isEmpty()) {
+      keys.addAll(mapB.keySet());
+    } else if (!mapB.keySet().isEmpty()) {
+      keys.retainAll(mapB.keySet());
+    }
     List<AutogenEnvironmentVariablesDiff> retList =
         new LinkedList<AutogenEnvironmentVariablesDiff>();
     for (String key : keys) {
@@ -333,7 +346,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenEnvironmentVariablesBlob> getEnvVarMap(
       List<AutogenEnvironmentVariablesBlob> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenEnvironmentVariablesBlob> retMap =
         new HashMap<String, AutogenEnvironmentVariablesBlob>();
     for (AutogenEnvironmentVariablesBlob blob : list) {
@@ -345,7 +360,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenEnvironmentVariablesBlob> getEnvVarDiffMap(
       List<AutogenEnvironmentVariablesDiff> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenEnvironmentVariablesBlob> retMap =
         new HashMap<String, AutogenEnvironmentVariablesBlob>();
     for (AutogenEnvironmentVariablesDiff diff : list) {
@@ -359,7 +376,9 @@ public class ConflictGenerator {
       AutogenDockerEnvironmentDiff a,
       AutogenDockerEnvironmentDiff b,
       AutogenDockerEnvironmentBlob c) {
-    if ((a == null && b == null) || (a != null && a.equals(b))) return null;
+    if ((a == null && b == null) || (a != null && a.equals(b))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenDockerEnvironmentDiff()
             .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
@@ -370,7 +389,9 @@ public class ConflictGenerator {
 
   private static AutogenCommandLineEnvironmentDiff getCommandLineDiff(
       AutogenCommandLineEnvironmentDiff a, AutogenCommandLineEnvironmentDiff b, List<String> c) {
-    if ((a == null && b == null) || (a != null && a.equals(b))) return null;
+    if ((a == null && b == null) || (a != null && a.equals(b))) {
+      return null;
+    }
     return Utils.removeEmpty(
         new AutogenCommandLineEnvironmentDiff()
             .setStatus(AutogenDiffStatusEnumDiffStatus.fromProto(DiffStatus.CONFLICTED))
@@ -405,8 +426,11 @@ public class ConflictGenerator {
     HashSet<String> keys = new HashSet<>();
 
     keys.addAll(mapA.keySet());
-    if (keys.isEmpty()) keys.addAll(mapB.keySet());
-    else if (!mapB.keySet().isEmpty()) keys.retainAll(mapB.keySet());
+    if (keys.isEmpty()) {
+      keys.addAll(mapB.keySet());
+    } else if (!mapB.keySet().isEmpty()) {
+      keys.retainAll(mapB.keySet());
+    }
     List<AutogenHyperparameterSetConfigDiff> retList =
         new LinkedList<AutogenHyperparameterSetConfigDiff>();
     for (String key : keys) {
@@ -425,7 +449,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenHyperparameterSetConfigBlob> getHyperparameterSetMap(
       List<AutogenHyperparameterSetConfigBlob> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenHyperparameterSetConfigBlob> retMap =
         new HashMap<String, AutogenHyperparameterSetConfigBlob>();
     for (AutogenHyperparameterSetConfigBlob blob : list) {
@@ -437,7 +463,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenHyperparameterSetConfigBlob> getHyperparameterSetDiffMap(
       List<AutogenHyperparameterSetConfigDiff> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenHyperparameterSetConfigBlob> retMap =
         new HashMap<String, AutogenHyperparameterSetConfigBlob>();
     for (AutogenHyperparameterSetConfigDiff diff : list) {
@@ -457,8 +485,11 @@ public class ConflictGenerator {
     HashSet<String> keys = new HashSet<>();
 
     keys.addAll(mapA.keySet());
-    if (keys.isEmpty()) keys.addAll(mapB.keySet());
-    else if (!mapB.keySet().isEmpty()) keys.retainAll(mapB.keySet());
+    if (keys.isEmpty()) {
+      keys.addAll(mapB.keySet());
+    } else if (!mapB.keySet().isEmpty()) {
+      keys.retainAll(mapB.keySet());
+    }
     List<AutogenHyperparameterConfigDiff> retList =
         new LinkedList<AutogenHyperparameterConfigDiff>();
     for (String key : keys) {
@@ -477,7 +508,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenHyperparameterConfigBlob> getHyperparameterMap(
       List<AutogenHyperparameterConfigBlob> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenHyperparameterConfigBlob> retMap =
         new HashMap<String, AutogenHyperparameterConfigBlob>();
     for (AutogenHyperparameterConfigBlob pathBlob : list) {
@@ -489,7 +522,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenHyperparameterConfigBlob> getHyperparameterDiffMap(
       List<AutogenHyperparameterConfigDiff> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenHyperparameterConfigBlob> retMap =
         new HashMap<String, AutogenHyperparameterConfigBlob>();
     for (AutogenHyperparameterConfigDiff diff : list) {
@@ -535,7 +570,9 @@ public class ConflictGenerator {
                     b == null ? null : b.getGitRepo(),
                     c == null ? null : c.getGitRepo()));
     if (((a == null || a.getPath() == null) && (b == null || b.getPath() == null))
-        || (a != null && a.equals(b))) return Utils.removeEmpty(diff);
+        || (a != null && a.equals(b))) {
+      return Utils.removeEmpty(diff);
+    }
     diff.setPath(
         new AutogenPathDatasetComponentDiff()
             .setA(a == null || a.getPath() == null ? null : a.getPath().getB())
@@ -547,7 +584,9 @@ public class ConflictGenerator {
 
   private static AutogenGitCodeDiff getGitDiff(
       AutogenGitCodeDiff a, AutogenGitCodeDiff b, AutogenGitCodeBlob c) {
-    if ((a == null && b == null) || (a != null && a.equals(b))) return null;
+    if ((a == null && b == null) || (a != null && a.equals(b))) {
+      return null;
+    }
     var ret = new AutogenGitCodeDiff();
     return ret.setA(a == null ? null : a.getB())
         .setB(b == null ? null : b.getB())
@@ -600,8 +639,11 @@ public class ConflictGenerator {
     HashSet<String> keys = new HashSet<>();
 
     keys.addAll(mapA.keySet());
-    if (keys.isEmpty()) keys.addAll(mapB.keySet());
-    else if (!mapB.keySet().isEmpty()) keys.retainAll(mapB.keySet());
+    if (keys.isEmpty()) {
+      keys.addAll(mapB.keySet());
+    } else if (!mapB.keySet().isEmpty()) {
+      keys.retainAll(mapB.keySet());
+    }
     List<AutogenS3DatasetComponentDiff> retList = new LinkedList<AutogenS3DatasetComponentDiff>();
     for (String key : keys) {
       if (!mapA.containsKey(key) || !mapA.get(key).equals(mapB.get(key))) {
@@ -619,7 +661,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenS3DatasetComponentBlob> getS3Map(
       List<AutogenS3DatasetComponentBlob> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenS3DatasetComponentBlob> retMap =
         new HashMap<String, AutogenS3DatasetComponentBlob>();
     for (AutogenS3DatasetComponentBlob s3Blob : list) {
@@ -631,7 +675,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenS3DatasetComponentBlob> getS3DiffMap(
       List<AutogenS3DatasetComponentDiff> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenS3DatasetComponentBlob> retMap =
         new HashMap<String, AutogenS3DatasetComponentBlob>();
     for (AutogenS3DatasetComponentDiff diff : list) {
@@ -665,8 +711,11 @@ public class ConflictGenerator {
     Map<String, AutogenPathDatasetComponentBlob> mapC = getPathMap(c);
     HashSet<String> keys = new HashSet<>();
     keys.addAll(mapA.keySet());
-    if (keys.isEmpty()) keys.addAll(mapB.keySet());
-    else if (!mapB.keySet().isEmpty()) keys.retainAll(mapB.keySet());
+    if (keys.isEmpty()) {
+      keys.addAll(mapB.keySet());
+    } else if (!mapB.keySet().isEmpty()) {
+      keys.retainAll(mapB.keySet());
+    }
     List<AutogenPathDatasetComponentDiff> retList =
         new LinkedList<AutogenPathDatasetComponentDiff>();
     for (String key : keys) {
@@ -685,7 +734,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenPathDatasetComponentBlob> getPathMap(
       List<AutogenPathDatasetComponentBlob> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenPathDatasetComponentBlob> retMap =
         new HashMap<String, AutogenPathDatasetComponentBlob>();
     for (AutogenPathDatasetComponentBlob pathBlob : list) {
@@ -697,7 +748,9 @@ public class ConflictGenerator {
 
   private static Map<String, AutogenPathDatasetComponentBlob> getPathDiffMap(
       List<AutogenPathDatasetComponentDiff> list) {
-    if (list == null) return Collections.emptyMap();
+    if (list == null) {
+      return Collections.emptyMap();
+    }
     Map<String, AutogenPathDatasetComponentBlob> retMap =
         new HashMap<String, AutogenPathDatasetComponentBlob>();
     for (AutogenPathDatasetComponentDiff diff : list) {

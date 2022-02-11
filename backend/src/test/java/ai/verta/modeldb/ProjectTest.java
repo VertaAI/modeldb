@@ -247,7 +247,7 @@ public class ProjectTest extends TestsInit {
       assertTrue(
           Status.PERMISSION_DENIED.getCode() == status.getCode()
               || Status.NOT_FOUND.getCode()
-                  == status.getCode()); // because of shadow delete the response could be 403 or 404
+              == status.getCode()); // because of shadow delete the response could be 403 or 404
     } else {
       assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
     }
@@ -1648,7 +1648,7 @@ public class ProjectTest extends TestsInit {
           "last modified experimentRun summary does not match",
           lastModifiedExperimentRun.getName().equals(lastModifiedExperimentRunSummary.getName())
               && lastModifiedExperimentRun.getDateUpdated()
-                  == lastModifiedExperimentRunSummary.getLastUpdatedTime());
+              == lastModifiedExperimentRunSummary.getLastUpdatedTime());
       assertEquals("Total metrics does not match", keySet.size(), response.getMetricsCount());
     }
 

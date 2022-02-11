@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenQueryDatasetComponentBlob implements ProtoType {
+
   private String DataSourceUri;
   private Long ExecutionTimestamp;
   private Long NumRecords;
@@ -50,22 +51,30 @@ public class AutogenQueryDatasetComponentBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenQueryDatasetComponentBlob\", \"fields\": {");
     boolean first = true;
     if (this.DataSourceUri != null && !this.DataSourceUri.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"DataSourceUri\": " + "\"" + DataSourceUri + "\"");
       first = false;
     }
     if (this.ExecutionTimestamp != null && !this.ExecutionTimestamp.equals(0l)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"ExecutionTimestamp\": " + ExecutionTimestamp);
       first = false;
     }
     if (this.NumRecords != null && !this.NumRecords.equals(0l)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"NumRecords\": " + NumRecords);
       first = false;
     }
     if (this.Query != null && !this.Query.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Query\": " + "\"" + Query + "\"");
       first = false;
     }
@@ -88,41 +97,71 @@ public class AutogenQueryDatasetComponentBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenQueryDatasetComponentBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenQueryDatasetComponentBlob)) {
+      return false;
+    }
     AutogenQueryDatasetComponentBlob other = (AutogenQueryDatasetComponentBlob) o;
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.DataSourceUri != null || other.DataSourceUri != null) {
-        if (this.DataSourceUri == null && other.DataSourceUri != null) return false;
-        if (this.DataSourceUri != null && other.DataSourceUri == null) return false;
-        if (!f.apply(this.DataSourceUri, other.DataSourceUri)) return false;
+        if (this.DataSourceUri == null && other.DataSourceUri != null) {
+          return false;
+        }
+        if (this.DataSourceUri != null && other.DataSourceUri == null) {
+          return false;
+        }
+        if (!f.apply(this.DataSourceUri, other.DataSourceUri)) {
+          return false;
+        }
       }
     }
     {
       Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
       if (this.ExecutionTimestamp != null || other.ExecutionTimestamp != null) {
-        if (this.ExecutionTimestamp == null && other.ExecutionTimestamp != null) return false;
-        if (this.ExecutionTimestamp != null && other.ExecutionTimestamp == null) return false;
-        if (!f.apply(this.ExecutionTimestamp, other.ExecutionTimestamp)) return false;
+        if (this.ExecutionTimestamp == null && other.ExecutionTimestamp != null) {
+          return false;
+        }
+        if (this.ExecutionTimestamp != null && other.ExecutionTimestamp == null) {
+          return false;
+        }
+        if (!f.apply(this.ExecutionTimestamp, other.ExecutionTimestamp)) {
+          return false;
+        }
       }
     }
     {
       Function3<Long, Long, Boolean> f = (x, y) -> x.equals(y);
       if (this.NumRecords != null || other.NumRecords != null) {
-        if (this.NumRecords == null && other.NumRecords != null) return false;
-        if (this.NumRecords != null && other.NumRecords == null) return false;
-        if (!f.apply(this.NumRecords, other.NumRecords)) return false;
+        if (this.NumRecords == null && other.NumRecords != null) {
+          return false;
+        }
+        if (this.NumRecords != null && other.NumRecords == null) {
+          return false;
+        }
+        if (!f.apply(this.NumRecords, other.NumRecords)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Query != null || other.Query != null) {
-        if (this.Query == null && other.Query != null) return false;
-        if (this.Query != null && other.Query == null) return false;
-        if (!f.apply(this.Query, other.Query)) return false;
+        if (this.Query == null && other.Query != null) {
+          return false;
+        }
+        if (this.Query != null && other.Query == null) {
+          return false;
+        }
+        if (!f.apply(this.Query, other.Query)) {
+          return false;
+        }
       }
     }
     return true;

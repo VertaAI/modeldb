@@ -12,7 +12,8 @@ import javax.persistence.Table;
 @Table(name = "lineage")
 public class LineageEntity implements Serializable {
 
-  public LineageEntity() {}
+  public LineageEntity() {
+  }
 
   public LineageEntity(LineageEntry input, LineageEntry output) {
     inputExternalId = input.getExternalId();

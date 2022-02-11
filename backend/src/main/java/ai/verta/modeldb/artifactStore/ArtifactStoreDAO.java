@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Optional;
 
 public interface ArtifactStoreDAO {
+
   GetUrlForArtifact.Response getUrlForArtifact(String path, String method) throws ModelDBException;
 
   Response getUrlForArtifactMultipart(String s3Key, String method, long partNumber, String uploadId)

@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenBlobDiff implements ProtoType {
+
   private AutogenCodeDiff Code;
   private AutogenConfigDiff Config;
   private AutogenDatasetDiff Dataset;
@@ -62,32 +63,44 @@ public class AutogenBlobDiff implements ProtoType {
     sb.append("{\"class\": \"AutogenBlobDiff\", \"fields\": {");
     boolean first = true;
     if (this.Code != null && !this.Code.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Code\": " + Code);
       first = false;
     }
     if (this.Config != null && !this.Config.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Config\": " + Config);
       first = false;
     }
     if (this.Dataset != null && !this.Dataset.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Dataset\": " + Dataset);
       first = false;
     }
     if (this.Environment != null && !this.Environment.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Environment\": " + Environment);
       first = false;
     }
     if (this.Location != null && !this.Location.equals(null) && !this.Location.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Location\": " + Location);
       first = false;
     }
     if (this.Status != null && !this.Status.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Status\": " + Status);
       first = false;
     }
@@ -110,41 +123,71 @@ public class AutogenBlobDiff implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenBlobDiff)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenBlobDiff)) {
+      return false;
+    }
     AutogenBlobDiff other = (AutogenBlobDiff) o;
 
     {
       Function3<AutogenCodeDiff, AutogenCodeDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.Code != null || other.Code != null) {
-        if (this.Code == null && other.Code != null) return false;
-        if (this.Code != null && other.Code == null) return false;
-        if (!f.apply(this.Code, other.Code)) return false;
+        if (this.Code == null && other.Code != null) {
+          return false;
+        }
+        if (this.Code != null && other.Code == null) {
+          return false;
+        }
+        if (!f.apply(this.Code, other.Code)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenConfigDiff, AutogenConfigDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.Config != null || other.Config != null) {
-        if (this.Config == null && other.Config != null) return false;
-        if (this.Config != null && other.Config == null) return false;
-        if (!f.apply(this.Config, other.Config)) return false;
+        if (this.Config == null && other.Config != null) {
+          return false;
+        }
+        if (this.Config != null && other.Config == null) {
+          return false;
+        }
+        if (!f.apply(this.Config, other.Config)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenDatasetDiff, AutogenDatasetDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.Dataset != null || other.Dataset != null) {
-        if (this.Dataset == null && other.Dataset != null) return false;
-        if (this.Dataset != null && other.Dataset == null) return false;
-        if (!f.apply(this.Dataset, other.Dataset)) return false;
+        if (this.Dataset == null && other.Dataset != null) {
+          return false;
+        }
+        if (this.Dataset != null && other.Dataset == null) {
+          return false;
+        }
+        if (!f.apply(this.Dataset, other.Dataset)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenEnvironmentDiff, AutogenEnvironmentDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.Environment != null || other.Environment != null) {
-        if (this.Environment == null && other.Environment != null) return false;
-        if (this.Environment != null && other.Environment == null) return false;
-        if (!f.apply(this.Environment, other.Environment)) return false;
+        if (this.Environment == null && other.Environment != null) {
+          return false;
+        }
+        if (this.Environment != null && other.Environment == null) {
+          return false;
+        }
+        if (!f.apply(this.Environment, other.Environment)) {
+          return false;
+        }
       }
     }
     {
@@ -160,18 +203,30 @@ public class AutogenBlobDiff implements ProtoType {
                   .collect(Collectors.toList())
                   .isEmpty();
       if (this.Location != null || other.Location != null) {
-        if (this.Location == null && other.Location != null) return false;
-        if (this.Location != null && other.Location == null) return false;
-        if (!f.apply(this.Location, other.Location)) return false;
+        if (this.Location == null && other.Location != null) {
+          return false;
+        }
+        if (this.Location != null && other.Location == null) {
+          return false;
+        }
+        if (!f.apply(this.Location, other.Location)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenDiffStatusEnumDiffStatus, AutogenDiffStatusEnumDiffStatus, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Status != null || other.Status != null) {
-        if (this.Status == null && other.Status != null) return false;
-        if (this.Status != null && other.Status == null) return false;
-        if (!f.apply(this.Status, other.Status)) return false;
+        if (this.Status == null && other.Status != null) {
+          return false;
+        }
+        if (this.Status != null && other.Status == null) {
+          return false;
+        }
+        if (!f.apply(this.Status, other.Status)) {
+          return false;
+        }
       }
     }
     return true;

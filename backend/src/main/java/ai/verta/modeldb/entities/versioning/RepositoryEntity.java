@@ -27,7 +27,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "repository")
 public class RepositoryEntity implements Serializable {
 
-  public RepositoryEntity() {}
+  public RepositoryEntity() {
+  }
 
   public RepositoryEntity(Repository repository, RepositoryTypeEnum repositoryTypeEnum) {
     this.name = ModelDBUtils.checkEntityNameLength(repository.getName());
@@ -96,7 +97,8 @@ public class RepositoryEntity implements Serializable {
   @Column(name = "repository_visibility")
   private Integer repository_visibility = null;
 
-  @Transient private ResourceVisibility repositoryVisibility = ResourceVisibility.PRIVATE;
+  @Transient
+  private ResourceVisibility repositoryVisibility = ResourceVisibility.PRIVATE;
 
   @Column(name = "repository_access_modifier")
   private Integer repositoryAccessModifier = null;

@@ -11,6 +11,7 @@ import com.google.protobuf.GeneratedMessageV3;
 import java.util.Objects;
 
 public class CollaboratorUser extends CollaboratorBase {
+
   private AuthService authService;
 
   public CollaboratorUser(AuthService authService, GeneratedMessageV3 shareWith) {
@@ -46,7 +47,9 @@ public class CollaboratorUser extends CollaboratorBase {
     return Entities.newBuilder().addUserIds(getVertaId()).build();
   }
 
-  /** Returns the vertaId for user */
+  /**
+   * Returns the vertaId for user
+   */
   @Override
   public String getId() {
     return getVertaId();
@@ -74,9 +77,15 @@ public class CollaboratorUser extends CollaboratorBase {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof CollaboratorUser)) return false;
-    if (!super.equals(o)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof CollaboratorUser)) {
+      return false;
+    }
+    if (!super.equals(o)) {
+      return false;
+    }
     CollaboratorUser that = (CollaboratorUser) o;
     return Objects.equals(authService, that.authService);
   }

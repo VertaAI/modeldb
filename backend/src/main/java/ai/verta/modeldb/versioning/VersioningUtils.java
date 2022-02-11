@@ -23,6 +23,7 @@ import org.hibernate.Session;
 import org.hibernate.query.Query;
 
 public class VersioningUtils {
+
   private static final Logger LOGGER = LogManager.getLogger(VersioningUtils.class);
 
   private static final String COMMIT_BELONGS_TO_REPO_QUERY =
@@ -34,7 +35,7 @@ public class VersioningUtils {
    * Checks the database and returns if a commitHash belongs to a repository
    *
    * @param session
-   * @param commitHash : hash of commit
+   * @param commitHash   : hash of commit
    * @param repositoryId : id of the repository
    * @return
    */
@@ -76,6 +77,7 @@ public class VersioningUtils {
     query.setParameterList("childCommitSHAs", commitSHAs);
     return query.list();
   }
+
   /**
    * Given commit components returns commitSHA
    *
@@ -119,7 +121,7 @@ public class VersioningUtils {
   /**
    * joins the predicate Clauses with the operator name
    *
-   * @param operatorName : like AND,OR etc.
+   * @param operatorName     : like AND,OR etc.
    * @param predicateClauses : where clause string like ['repo.id = 123', 'repo.name = xyz']
    * @return {@link String} : 'repo.id = 123 AND repo.name = xyz'
    */

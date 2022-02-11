@@ -6,6 +6,7 @@ import java.util.List;
 import org.hibernate.Session;
 
 public interface MetadataDAO {
+
   boolean addLabels(IdentificationType id, List<String> labels) throws ModelDBException;
 
   void addProperty(Session session, IdentificationType id, String key, String value);

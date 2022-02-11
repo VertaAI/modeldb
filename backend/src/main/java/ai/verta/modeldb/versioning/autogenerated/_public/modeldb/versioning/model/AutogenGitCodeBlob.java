@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenGitCodeBlob implements ProtoType {
+
   private String Branch;
   private String Hash;
   private Boolean IsDirty;
@@ -55,27 +56,37 @@ public class AutogenGitCodeBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenGitCodeBlob\", \"fields\": {");
     boolean first = true;
     if (this.Branch != null && !this.Branch.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Branch\": " + "\"" + Branch + "\"");
       first = false;
     }
     if (this.Hash != null && !this.Hash.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Hash\": " + "\"" + Hash + "\"");
       first = false;
     }
     if (this.IsDirty != null && !this.IsDirty.equals(false)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"IsDirty\": " + IsDirty);
       first = false;
     }
     if (this.Repo != null && !this.Repo.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Repo\": " + "\"" + Repo + "\"");
       first = false;
     }
     if (this.Tag != null && !this.Tag.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Tag\": " + "\"" + Tag + "\"");
       first = false;
     }
@@ -98,49 +109,85 @@ public class AutogenGitCodeBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenGitCodeBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenGitCodeBlob)) {
+      return false;
+    }
     AutogenGitCodeBlob other = (AutogenGitCodeBlob) o;
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Branch != null || other.Branch != null) {
-        if (this.Branch == null && other.Branch != null) return false;
-        if (this.Branch != null && other.Branch == null) return false;
-        if (!f.apply(this.Branch, other.Branch)) return false;
+        if (this.Branch == null && other.Branch != null) {
+          return false;
+        }
+        if (this.Branch != null && other.Branch == null) {
+          return false;
+        }
+        if (!f.apply(this.Branch, other.Branch)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Hash != null || other.Hash != null) {
-        if (this.Hash == null && other.Hash != null) return false;
-        if (this.Hash != null && other.Hash == null) return false;
-        if (!f.apply(this.Hash, other.Hash)) return false;
+        if (this.Hash == null && other.Hash != null) {
+          return false;
+        }
+        if (this.Hash != null && other.Hash == null) {
+          return false;
+        }
+        if (!f.apply(this.Hash, other.Hash)) {
+          return false;
+        }
       }
     }
     {
       Function3<Boolean, Boolean, Boolean> f = (x, y) -> x.equals(y);
       if (this.IsDirty != null || other.IsDirty != null) {
-        if (this.IsDirty == null && other.IsDirty != null) return false;
-        if (this.IsDirty != null && other.IsDirty == null) return false;
-        if (!f.apply(this.IsDirty, other.IsDirty)) return false;
+        if (this.IsDirty == null && other.IsDirty != null) {
+          return false;
+        }
+        if (this.IsDirty != null && other.IsDirty == null) {
+          return false;
+        }
+        if (!f.apply(this.IsDirty, other.IsDirty)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Repo != null || other.Repo != null) {
-        if (this.Repo == null && other.Repo != null) return false;
-        if (this.Repo != null && other.Repo == null) return false;
-        if (!f.apply(this.Repo, other.Repo)) return false;
+        if (this.Repo == null && other.Repo != null) {
+          return false;
+        }
+        if (this.Repo != null && other.Repo == null) {
+          return false;
+        }
+        if (!f.apply(this.Repo, other.Repo)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Tag != null || other.Tag != null) {
-        if (this.Tag == null && other.Tag != null) return false;
-        if (this.Tag != null && other.Tag == null) return false;
-        if (!f.apply(this.Tag, other.Tag)) return false;
+        if (this.Tag == null && other.Tag != null) {
+          return false;
+        }
+        if (this.Tag != null && other.Tag == null) {
+          return false;
+        }
+        if (!f.apply(this.Tag, other.Tag)) {
+          return false;
+        }
       }
     }
     return true;

@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
 
 public class ServiceSet {
+
   private static final Logger LOGGER = LogManager.getLogger(App.class);
   private static final String SCAN_PACKAGES = "scan.packages";
 
@@ -111,5 +112,6 @@ public class ServiceSet {
     return artifactStoreService;
   }
 
-  private ServiceSet() {}
+  private ServiceSet() {
+  }
 }

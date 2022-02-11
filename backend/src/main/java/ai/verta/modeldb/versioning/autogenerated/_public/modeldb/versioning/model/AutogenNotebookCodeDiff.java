@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenNotebookCodeDiff implements ProtoType {
+
   private AutogenGitCodeDiff GitRepo;
   private AutogenPathDatasetComponentDiff Path;
 
@@ -40,12 +41,16 @@ public class AutogenNotebookCodeDiff implements ProtoType {
     sb.append("{\"class\": \"AutogenNotebookCodeDiff\", \"fields\": {");
     boolean first = true;
     if (this.GitRepo != null && !this.GitRepo.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"GitRepo\": " + GitRepo);
       first = false;
     }
     if (this.Path != null && !this.Path.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Path\": " + Path);
       first = false;
     }
@@ -68,26 +73,44 @@ public class AutogenNotebookCodeDiff implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenNotebookCodeDiff)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenNotebookCodeDiff)) {
+      return false;
+    }
     AutogenNotebookCodeDiff other = (AutogenNotebookCodeDiff) o;
 
     {
       Function3<AutogenGitCodeDiff, AutogenGitCodeDiff, Boolean> f = (x, y) -> x.equals(y);
       if (this.GitRepo != null || other.GitRepo != null) {
-        if (this.GitRepo == null && other.GitRepo != null) return false;
-        if (this.GitRepo != null && other.GitRepo == null) return false;
-        if (!f.apply(this.GitRepo, other.GitRepo)) return false;
+        if (this.GitRepo == null && other.GitRepo != null) {
+          return false;
+        }
+        if (this.GitRepo != null && other.GitRepo == null) {
+          return false;
+        }
+        if (!f.apply(this.GitRepo, other.GitRepo)) {
+          return false;
+        }
       }
     }
     {
       Function3<AutogenPathDatasetComponentDiff, AutogenPathDatasetComponentDiff, Boolean> f =
           (x, y) -> x.equals(y);
       if (this.Path != null || other.Path != null) {
-        if (this.Path == null && other.Path != null) return false;
-        if (this.Path != null && other.Path == null) return false;
-        if (!f.apply(this.Path, other.Path)) return false;
+        if (this.Path == null && other.Path != null) {
+          return false;
+        }
+        if (this.Path != null && other.Path == null) {
+          return false;
+        }
+        if (!f.apply(this.Path, other.Path)) {
+          return false;
+        }
       }
     }
     return true;

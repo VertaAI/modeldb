@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
+
   private AutogenHyperparameterValuesConfigBlob IntervalBegin;
   private AutogenHyperparameterValuesConfigBlob IntervalEnd;
   private AutogenHyperparameterValuesConfigBlob IntervalStep;
@@ -45,17 +46,23 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenContinuousHyperparameterSetConfigBlob\", \"fields\": {");
     boolean first = true;
     if (this.IntervalBegin != null && !this.IntervalBegin.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"IntervalBegin\": " + IntervalBegin);
       first = false;
     }
     if (this.IntervalEnd != null && !this.IntervalEnd.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"IntervalEnd\": " + IntervalEnd);
       first = false;
     }
     if (this.IntervalStep != null && !this.IntervalStep.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"IntervalStep\": " + IntervalStep);
       first = false;
     }
@@ -78,40 +85,64 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenContinuousHyperparameterSetConfigBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenContinuousHyperparameterSetConfigBlob)) {
+      return false;
+    }
     AutogenContinuousHyperparameterSetConfigBlob other =
         (AutogenContinuousHyperparameterSetConfigBlob) o;
 
     {
       Function3<
-              AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
+          AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
           f = (x, y) -> x.equals(y);
       if (this.IntervalBegin != null || other.IntervalBegin != null) {
-        if (this.IntervalBegin == null && other.IntervalBegin != null) return false;
-        if (this.IntervalBegin != null && other.IntervalBegin == null) return false;
-        if (!f.apply(this.IntervalBegin, other.IntervalBegin)) return false;
+        if (this.IntervalBegin == null && other.IntervalBegin != null) {
+          return false;
+        }
+        if (this.IntervalBegin != null && other.IntervalBegin == null) {
+          return false;
+        }
+        if (!f.apply(this.IntervalBegin, other.IntervalBegin)) {
+          return false;
+        }
       }
     }
     {
       Function3<
-              AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
+          AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
           f = (x, y) -> x.equals(y);
       if (this.IntervalEnd != null || other.IntervalEnd != null) {
-        if (this.IntervalEnd == null && other.IntervalEnd != null) return false;
-        if (this.IntervalEnd != null && other.IntervalEnd == null) return false;
-        if (!f.apply(this.IntervalEnd, other.IntervalEnd)) return false;
+        if (this.IntervalEnd == null && other.IntervalEnd != null) {
+          return false;
+        }
+        if (this.IntervalEnd != null && other.IntervalEnd == null) {
+          return false;
+        }
+        if (!f.apply(this.IntervalEnd, other.IntervalEnd)) {
+          return false;
+        }
       }
     }
     {
       Function3<
-              AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
+          AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
           f = (x, y) -> x.equals(y);
       if (this.IntervalStep != null || other.IntervalStep != null) {
-        if (this.IntervalStep == null && other.IntervalStep != null) return false;
-        if (this.IntervalStep != null && other.IntervalStep == null) return false;
-        if (!f.apply(this.IntervalStep, other.IntervalStep)) return false;
+        if (this.IntervalStep == null && other.IntervalStep != null) {
+          return false;
+        }
+        if (this.IntervalStep != null && other.IntervalStep == null) {
+          return false;
+        }
+        if (!f.apply(this.IntervalStep, other.IntervalStep)) {
+          return false;
+        }
       }
     }
     return true;
@@ -157,22 +188,22 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
         new AutogenContinuousHyperparameterSetConfigBlob();
     {
       Function<
-              ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
-              AutogenHyperparameterValuesConfigBlob>
+          ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
+          AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalBegin());
       obj.setIntervalBegin(f.apply(blob));
     }
     {
       Function<
-              ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
-              AutogenHyperparameterValuesConfigBlob>
+          ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
+          AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalEnd());
       obj.setIntervalEnd(f.apply(blob));
     }
     {
       Function<
-              ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
-              AutogenHyperparameterValuesConfigBlob>
+          ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob,
+          AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getIntervalStep());
       obj.setIntervalStep(f.apply(blob));
     }
@@ -186,10 +217,10 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
       if (this.IntervalBegin != null && !this.IntervalBegin.equals(null)) {
         Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
             f =
-                x -> {
-                  builder.setIntervalBegin(this.IntervalBegin.toProto());
-                  return null;
-                };
+            x -> {
+              builder.setIntervalBegin(this.IntervalBegin.toProto());
+              return null;
+            };
         f.apply(builder);
       }
     }
@@ -197,10 +228,10 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
       if (this.IntervalEnd != null && !this.IntervalEnd.equals(null)) {
         Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
             f =
-                x -> {
-                  builder.setIntervalEnd(this.IntervalEnd.toProto());
-                  return null;
-                };
+            x -> {
+              builder.setIntervalEnd(this.IntervalEnd.toProto());
+              return null;
+            };
         f.apply(builder);
       }
     }
@@ -208,10 +239,10 @@ public class AutogenContinuousHyperparameterSetConfigBlob implements ProtoType {
       if (this.IntervalStep != null && !this.IntervalStep.equals(null)) {
         Function<ai.verta.modeldb.versioning.ContinuousHyperparameterSetConfigBlob.Builder, Void>
             f =
-                x -> {
-                  builder.setIntervalStep(this.IntervalStep.toProto());
-                  return null;
-                };
+            x -> {
+              builder.setIntervalStep(this.IntervalStep.toProto());
+              return null;
+            };
         f.apply(builder);
       }
     }

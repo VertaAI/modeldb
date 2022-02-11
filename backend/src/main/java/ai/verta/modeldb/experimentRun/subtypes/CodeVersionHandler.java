@@ -21,6 +21,7 @@ import org.hibernate.LockMode;
 import org.jdbi.v3.core.Handle;
 
 public class CodeVersionHandler {
+
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);
   private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
 
@@ -38,15 +39,15 @@ public class CodeVersionHandler {
 
   public InternalFuture<Optional<CodeVersion>> getCodeVersion(String entityId) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        String.format(
-                            "select code_version_snapshot_id from %s where id=:entity_id",
-                            entityTableName))
-                    .bind(ENTITY_ID_QUERY_PARAM, entityId)
-                    .mapTo(Long.class)
-                    .findOne())
+        handle ->
+            handle
+                .createQuery(
+                    String.format(
+                        "select code_version_snapshot_id from %s where id=:entity_id",
+                        entityTableName))
+                .bind(ENTITY_ID_QUERY_PARAM, entityId)
+                .mapTo(Long.class)
+                .findOne())
         .thenApply(
             maybeSnapshotId ->
                 maybeSnapshotId.map(
@@ -122,18 +123,18 @@ public class CodeVersionHandler {
 
   public InternalFuture<Map<String, CodeVersion>> getCodeVersionMap(List<String> entityIds) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        String.format(
-                            "select id, code_version_snapshot_id from %s where id IN (<entity_ids>) ",
-                            entityTableName))
-                    .bindList("entity_ids", entityIds)
-                    .map(
-                        (rs, ctx) ->
-                            new AbstractMap.SimpleEntry<>(
-                                rs.getString("id"), rs.getLong("code_version_snapshot_id")))
-                    .list())
+        handle ->
+            handle
+                .createQuery(
+                    String.format(
+                        "select id, code_version_snapshot_id from %s where id IN (<entity_ids>) ",
+                        entityTableName))
+                .bindList("entity_ids", entityIds)
+                .map(
+                    (rs, ctx) ->
+                        new AbstractMap.SimpleEntry<>(
+                            rs.getString("id"), rs.getLong("code_version_snapshot_id")))
+                .list())
         .thenCompose(
             maybeSnapshotIds -> {
               Map<String, CodeVersion> codeVersionMap = new HashMap<>();

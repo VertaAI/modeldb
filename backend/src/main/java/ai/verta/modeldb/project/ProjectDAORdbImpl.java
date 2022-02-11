@@ -98,7 +98,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
    * Method to convert createProject request to Project object. This method generates the project Id
    * using UUID and puts it in Project object.
    *
-   * @param request : CreateProject
+   * @param request  : CreateProject
    * @param userInfo : UserInfo
    * @return Project
    */
@@ -586,7 +586,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     // if no project id specified , default to the one captured from config.yaml
     // TODO: extend the starter project to be set of projects, so parameterizing this function makes
     // sense
-    if (srcProjectID == null || srcProjectID.isEmpty()) srcProjectID = starterProjectID;
+    if (srcProjectID == null || srcProjectID.isEmpty()) {
+      srcProjectID = starterProjectID;
+    }
 
     // if this is not a starter project, then cloning is not supported
     if (!srcProjectID.equals(starterProjectID)) {

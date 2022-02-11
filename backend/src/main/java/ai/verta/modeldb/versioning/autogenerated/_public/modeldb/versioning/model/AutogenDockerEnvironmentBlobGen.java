@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenDockerEnvironmentBlobGen extends Generator<AutogenDockerEnvironmentBlob> {
+
   public AutogenDockerEnvironmentBlobGen() {
     super(AutogenDockerEnvironmentBlob.class);
   }

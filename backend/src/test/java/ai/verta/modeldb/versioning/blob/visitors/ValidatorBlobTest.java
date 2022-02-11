@@ -132,6 +132,7 @@ environment {
  */
 @RunWith(Parameterized.class)
 public class ValidatorBlobTest {
+
   private static final Logger LOGGER = LogManager.getLogger(ValidatorBlobTest.class);
   private static final Validator validator = new Validator();
   private static final Builder BUILDER_FOR_VAR =
@@ -143,67 +144,67 @@ public class ValidatorBlobTest {
           .setLibrary("numpy")
           .setVersion(VersionEnvironmentBlob.newBuilder().setMajor(3).build());
   private static final Blob.Builder[] blobs = {
-    Blob.newBuilder(),
-    Blob.newBuilder()
-        .setEnvironment(
-            EnvironmentBlob.newBuilder()
-                .setDocker(DockerEnvironmentBlob.newBuilder().setSha("test_sha"))),
-    Blob.newBuilder()
-        .setConfig(
-            ConfigBlob.newBuilder()
-                .addHyperparameterSet(
-                    HyperparameterSetConfigBlob.newBuilder()
-                        .setName("test")
-                        .setContinuous(
-                            ContinuousHyperparameterSetConfigBlob.newBuilder()
-                                .setIntervalBegin(
-                                    HyperparameterValuesConfigBlob.newBuilder()
-                                        .setStringValue("test"))))),
-    Blob.newBuilder()
-        .setEnvironment(
-            EnvironmentBlob.newBuilder()
-                .addEnvironmentVariables(BUILDER_FOR_VAR)
-                .addEnvironmentVariables(BUILDER_FOR_VAR2)),
-    Blob.newBuilder()
-        .setCode(CodeBlob.newBuilder().setGit(GitCodeBlob.newBuilder().setIsDirty(true))),
-    Blob.newBuilder()
-        .setConfig(
-            ConfigBlob.newBuilder()
-                .addHyperparameterSet(
-                    HyperparameterSetConfigBlob.newBuilder()
-                        .setContinuous(
-                            ContinuousHyperparameterSetConfigBlob.newBuilder()
-                                .setIntervalBegin(
-                                    HyperparameterValuesConfigBlob.newBuilder()
-                                        .setStringValue("1"))))),
-    Blob.newBuilder()
-        .setDataset(
-            DatasetBlob.newBuilder()
-                .setPath(
-                    PathDatasetBlob.newBuilder()
-                        .addComponents(PathDatasetComponentBlob.newBuilder().setSize(3)))),
-    Blob.newBuilder()
-        .setEnvironment(
-            EnvironmentBlob.newBuilder()
-                .setPython(
-                    PythonEnvironmentBlob.newBuilder()
-                        .addRequirements(NUMPY)
-                        .addRequirements(NUMPY))),
-    Blob.newBuilder()
-        .setEnvironment(
-            EnvironmentBlob.newBuilder()
-                .setPython(
-                    PythonEnvironmentBlob.newBuilder()
-                        .addConstraints(NUMPY)
-                        .addConstraints(NUMPY))),
-    Blob.newBuilder()
-        .setEnvironment(
-            EnvironmentBlob.newBuilder()
-                .setPython(
-                    PythonEnvironmentBlob.newBuilder()
-                        .addConstraints(
-                            PythonRequirementEnvironmentBlob.newBuilder()
-                                .setVersion(VersionEnvironmentBlob.newBuilder().setPatch(6)))))
+      Blob.newBuilder(),
+      Blob.newBuilder()
+          .setEnvironment(
+          EnvironmentBlob.newBuilder()
+              .setDocker(DockerEnvironmentBlob.newBuilder().setSha("test_sha"))),
+      Blob.newBuilder()
+          .setConfig(
+          ConfigBlob.newBuilder()
+              .addHyperparameterSet(
+                  HyperparameterSetConfigBlob.newBuilder()
+                      .setName("test")
+                      .setContinuous(
+                          ContinuousHyperparameterSetConfigBlob.newBuilder()
+                              .setIntervalBegin(
+                                  HyperparameterValuesConfigBlob.newBuilder()
+                                      .setStringValue("test"))))),
+      Blob.newBuilder()
+          .setEnvironment(
+          EnvironmentBlob.newBuilder()
+              .addEnvironmentVariables(BUILDER_FOR_VAR)
+              .addEnvironmentVariables(BUILDER_FOR_VAR2)),
+      Blob.newBuilder()
+          .setCode(CodeBlob.newBuilder().setGit(GitCodeBlob.newBuilder().setIsDirty(true))),
+      Blob.newBuilder()
+          .setConfig(
+          ConfigBlob.newBuilder()
+              .addHyperparameterSet(
+                  HyperparameterSetConfigBlob.newBuilder()
+                      .setContinuous(
+                          ContinuousHyperparameterSetConfigBlob.newBuilder()
+                              .setIntervalBegin(
+                                  HyperparameterValuesConfigBlob.newBuilder()
+                                      .setStringValue("1"))))),
+      Blob.newBuilder()
+          .setDataset(
+          DatasetBlob.newBuilder()
+              .setPath(
+                  PathDatasetBlob.newBuilder()
+                      .addComponents(PathDatasetComponentBlob.newBuilder().setSize(3)))),
+      Blob.newBuilder()
+          .setEnvironment(
+          EnvironmentBlob.newBuilder()
+              .setPython(
+                  PythonEnvironmentBlob.newBuilder()
+                      .addRequirements(NUMPY)
+                      .addRequirements(NUMPY))),
+      Blob.newBuilder()
+          .setEnvironment(
+          EnvironmentBlob.newBuilder()
+              .setPython(
+                  PythonEnvironmentBlob.newBuilder()
+                      .addConstraints(NUMPY)
+                      .addConstraints(NUMPY))),
+      Blob.newBuilder()
+          .setEnvironment(
+          EnvironmentBlob.newBuilder()
+              .setPython(
+                  PythonEnvironmentBlob.newBuilder()
+                      .addConstraints(
+                          PythonRequirementEnvironmentBlob.newBuilder()
+                              .setVersion(VersionEnvironmentBlob.newBuilder().setPatch(6)))))
   };
   private final Blob blob;
 
@@ -211,7 +212,7 @@ public class ValidatorBlobTest {
   public static Collection<Object[]> data() {
     List<Object[]> result = new LinkedList<>();
     for (Blob.Builder b : blobs) {
-      result.add(new Object[] {b.build()});
+      result.add(new Object[]{b.build()});
     }
     return result;
   }

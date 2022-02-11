@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenConfigBlob implements ProtoType {
+
   private List<AutogenHyperparameterSetConfigBlob> HyperparameterSet;
   private List<AutogenHyperparameterConfigBlob> Hyperparameters;
 
@@ -48,14 +49,18 @@ public class AutogenConfigBlob implements ProtoType {
     if (this.HyperparameterSet != null
         && !this.HyperparameterSet.equals(null)
         && !this.HyperparameterSet.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"HyperparameterSet\": " + HyperparameterSet);
       first = false;
     }
     if (this.Hyperparameters != null
         && !this.Hyperparameters.equals(null)
         && !this.Hyperparameters.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Hyperparameters\": " + Hyperparameters);
       first = false;
     }
@@ -78,59 +83,77 @@ public class AutogenConfigBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenConfigBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenConfigBlob)) {
+      return false;
+    }
     AutogenConfigBlob other = (AutogenConfigBlob) o;
 
     {
       Function3<
-              List<AutogenHyperparameterSetConfigBlob>,
-              List<AutogenHyperparameterSetConfigBlob>,
-              Boolean>
+          List<AutogenHyperparameterSetConfigBlob>,
+          List<AutogenHyperparameterSetConfigBlob>,
+          Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenHyperparameterSetConfigBlob,
-                                    AutogenHyperparameterSetConfigBlob,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenHyperparameterSetConfigBlob,
+                            AutogenHyperparameterSetConfigBlob,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.HyperparameterSet != null || other.HyperparameterSet != null) {
-        if (this.HyperparameterSet == null && other.HyperparameterSet != null) return false;
-        if (this.HyperparameterSet != null && other.HyperparameterSet == null) return false;
-        if (!f.apply(this.HyperparameterSet, other.HyperparameterSet)) return false;
+        if (this.HyperparameterSet == null && other.HyperparameterSet != null) {
+          return false;
+        }
+        if (this.HyperparameterSet != null && other.HyperparameterSet == null) {
+          return false;
+        }
+        if (!f.apply(this.HyperparameterSet, other.HyperparameterSet)) {
+          return false;
+        }
       }
     }
     {
       Function3<
-              List<AutogenHyperparameterConfigBlob>, List<AutogenHyperparameterConfigBlob>, Boolean>
+          List<AutogenHyperparameterConfigBlob>, List<AutogenHyperparameterConfigBlob>, Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenHyperparameterConfigBlob,
-                                    AutogenHyperparameterConfigBlob,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenHyperparameterConfigBlob,
+                            AutogenHyperparameterConfigBlob,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.Hyperparameters != null || other.Hyperparameters != null) {
-        if (this.Hyperparameters == null && other.Hyperparameters != null) return false;
-        if (this.Hyperparameters != null && other.Hyperparameters == null) return false;
-        if (!f.apply(this.Hyperparameters, other.Hyperparameters)) return false;
+        if (this.Hyperparameters == null && other.Hyperparameters != null) {
+          return false;
+        }
+        if (this.Hyperparameters != null && other.Hyperparameters == null) {
+          return false;
+        }
+        if (!f.apply(this.Hyperparameters, other.Hyperparameters)) {
+          return false;
+        }
       }
     }
     return true;

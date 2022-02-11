@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenDockerEnvironmentDiffGen extends Generator<AutogenDockerEnvironmentDiff> {
+
   public AutogenDockerEnvironmentDiffGen() {
     super(AutogenDockerEnvironmentDiff.class);
   }

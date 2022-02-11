@@ -11,14 +11,17 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "tag")
 public class TagsEntity {
-  public TagsEntity() {}
+
+  public TagsEntity() {
+  }
 
   public TagsEntity(Long repositoryId, String commitHash, String tag) {
     this.id = new TagId(tag, repositoryId);
     this.commit_hash = commitHash;
   }
 
-  @EmbeddedId private TagId id;
+  @EmbeddedId
+  private TagId id;
 
   @Column(name = "commit_hash", nullable = false, columnDefinition = "varchar", length = 64)
   private String commit_hash;
@@ -46,7 +49,8 @@ public class TagsEntity {
       this.repository_id = repositoryId;
     }
 
-    private TagId() {}
+    private TagId() {
+    }
 
     public String getTag() {
       return tag;
@@ -58,8 +62,12 @@ public class TagsEntity {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof TagId)) return false;
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof TagId)) {
+        return false;
+      }
       TagId that = (TagId) o;
       return Objects.equals(getTag(), that.getTag())
           && Objects.equals(getRepository_id(), that.getRepository_id());

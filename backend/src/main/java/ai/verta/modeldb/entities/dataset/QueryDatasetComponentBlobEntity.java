@@ -13,7 +13,8 @@ import javax.persistence.Table;
 @Table(name = "query_dataset_component_blob")
 public class QueryDatasetComponentBlobEntity {
 
-  public QueryDatasetComponentBlobEntity() {}
+  public QueryDatasetComponentBlobEntity() {
+  }
 
   public QueryDatasetComponentBlobEntity(
       String blobHash,
@@ -26,7 +27,8 @@ public class QueryDatasetComponentBlobEntity {
     this.num_records = queryDatasetComponentBlob.getNumRecords();
   }
 
-  @EmbeddedId private QueryDatasetComponentBlobId id;
+  @EmbeddedId
+  private QueryDatasetComponentBlobId id;
 
   @Column(name = "query", columnDefinition = "TEXT")
   private String query;
@@ -68,7 +70,8 @@ class QueryDatasetComponentBlobId implements Serializable {
     query_dataset_blob_id = datasetBlobHash;
   }
 
-  private QueryDatasetComponentBlobId() {}
+  private QueryDatasetComponentBlobId() {
+  }
 
   public String getBlob_hash() {
     return blob_hash;
@@ -80,8 +83,12 @@ class QueryDatasetComponentBlobId implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof QueryDatasetComponentBlobId)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof QueryDatasetComponentBlobId)) {
+      return false;
+    }
     QueryDatasetComponentBlobId that = (QueryDatasetComponentBlobId) o;
     return Objects.equals(getBlob_hash(), that.getBlob_hash())
         && Objects.equals(getQuery_dataset_blob_id(), that.getQuery_dataset_blob_id());

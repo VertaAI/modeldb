@@ -29,6 +29,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 public class PredicatesHandler extends PredicateHandlerUtils {
+
   private static final String ENTITY_ID_NOT_IN_QUERY_CONDITION = "%s.id NOT IN (%s)";
   private static final String ENTITY_ID_IN_QUERY_CONDITION = "%s.id IN (%s)";
   private static final String K_P_D_VALUE_BINDING_KEY = "k_p_%d";
@@ -128,7 +129,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                 .addBind(q -> q.bind(bindingName, dateUpdated)));
       case "owner":
         return setOwnerPredicate(index, predicate);
-        // case visibility:
+      // case visibility:
       case "":
         return InternalFuture.failedStage(new InvalidArgumentException("Key is empty"));
       case "end_time":
@@ -167,7 +168,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       case ModelDBConstants.OBSERVATIONS:
         return processObservationPredicate(
             index, predicate, Arrays.copyOfRange(names, 1, names.length));
-        // case ModelDBConstants.FEATURES: TODO?
+      // case ModelDBConstants.FEATURES: TODO?
       case ModelDBConstants.TAGS:
         return processTagsPredicate(index, predicate);
       case ModelDBConstants.VERSIONED_INPUTS:

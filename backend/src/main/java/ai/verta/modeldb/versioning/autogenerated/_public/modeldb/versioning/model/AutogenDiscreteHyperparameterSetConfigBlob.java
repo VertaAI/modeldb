@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenDiscreteHyperparameterSetConfigBlob implements ProtoType {
+
   private List<AutogenHyperparameterValuesConfigBlob> Values;
 
   public AutogenDiscreteHyperparameterSetConfigBlob() {
@@ -37,7 +38,9 @@ public class AutogenDiscreteHyperparameterSetConfigBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenDiscreteHyperparameterSetConfigBlob\", \"fields\": {");
     boolean first = true;
     if (this.Values != null && !this.Values.equals(null) && !this.Values.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Values\": " + Values);
       first = false;
     }
@@ -60,36 +63,48 @@ public class AutogenDiscreteHyperparameterSetConfigBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenDiscreteHyperparameterSetConfigBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenDiscreteHyperparameterSetConfigBlob)) {
+      return false;
+    }
     AutogenDiscreteHyperparameterSetConfigBlob other =
         (AutogenDiscreteHyperparameterSetConfigBlob) o;
 
     {
       Function3<
-              List<AutogenHyperparameterValuesConfigBlob>,
-              List<AutogenHyperparameterValuesConfigBlob>,
-              Boolean>
+          List<AutogenHyperparameterValuesConfigBlob>,
+          List<AutogenHyperparameterValuesConfigBlob>,
+          Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenHyperparameterValuesConfigBlob,
-                                    AutogenHyperparameterValuesConfigBlob,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenHyperparameterValuesConfigBlob,
+                            AutogenHyperparameterValuesConfigBlob,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.Values != null || other.Values != null) {
-        if (this.Values == null && other.Values != null) return false;
-        if (this.Values != null && other.Values == null) return false;
-        if (!f.apply(this.Values, other.Values)) return false;
+        if (this.Values == null && other.Values != null) {
+          return false;
+        }
+        if (this.Values != null && other.Values == null) {
+          return false;
+        }
+        if (!f.apply(this.Values, other.Values)) {
+          return false;
+        }
       }
     }
     return true;
@@ -118,13 +133,13 @@ public class AutogenDiscreteHyperparameterSetConfigBlob implements ProtoType {
         new AutogenDiscreteHyperparameterSetConfigBlob();
     {
       Function<
-              ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob,
-              List<AutogenHyperparameterValuesConfigBlob>>
+          ai.verta.modeldb.versioning.DiscreteHyperparameterSetConfigBlob,
+          List<AutogenHyperparameterValuesConfigBlob>>
           f =
-              x ->
-                  blob.getValuesList().stream()
-                      .map(AutogenHyperparameterValuesConfigBlob::fromProto)
-                      .collect(Collectors.toList());
+          x ->
+              blob.getValuesList().stream()
+                  .map(AutogenHyperparameterValuesConfigBlob::fromProto)
+                  .collect(Collectors.toList());
       obj.setValues(f.apply(blob));
     }
     return obj;

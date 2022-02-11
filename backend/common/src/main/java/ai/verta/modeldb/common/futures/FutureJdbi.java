@@ -9,6 +9,7 @@ import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class FutureJdbi {
+
   private final Executor executor;
   private final Jdbi jdbi;
 
@@ -19,11 +20,13 @@ public class FutureJdbi {
 
   @FunctionalInterface
   private interface SupplierWithException<R, T extends Exception> {
+
     R get() throws T;
   }
 
   @FunctionalInterface
   private interface RunnableWithException<T extends Exception> {
+
     void run() throws T;
   }
 

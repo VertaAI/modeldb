@@ -25,7 +25,8 @@ public class KeyValueEntity implements Serializable {
 
   private static Logger LOGGER = LogManager.getLogger(KeyValueEntity.class);
 
-  public KeyValueEntity() {}
+  public KeyValueEntity() {
+  }
 
   public KeyValueEntity(Object entity, String fieldType, KeyValue keyValue) {
     setKey(keyValue.getKey());

@@ -11,7 +11,8 @@ import javax.persistence.Table;
 @Table(name = "artifact_store")
 public class ArtifactStoreMapping {
 
-  public ArtifactStoreMapping() {}
+  public ArtifactStoreMapping() {
+  }
 
   public ArtifactStoreMapping(
       String entityName,

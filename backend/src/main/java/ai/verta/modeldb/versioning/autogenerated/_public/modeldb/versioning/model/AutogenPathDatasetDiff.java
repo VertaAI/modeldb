@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenPathDatasetDiff implements ProtoType {
+
   private List<AutogenPathDatasetComponentDiff> Components;
 
   public AutogenPathDatasetDiff() {
@@ -37,7 +38,9 @@ public class AutogenPathDatasetDiff implements ProtoType {
     sb.append("{\"class\": \"AutogenPathDatasetDiff\", \"fields\": {");
     boolean first = true;
     if (this.Components != null && !this.Components.equals(null) && !this.Components.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Components\": " + Components);
       first = false;
     }
@@ -60,33 +63,45 @@ public class AutogenPathDatasetDiff implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenPathDatasetDiff)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenPathDatasetDiff)) {
+      return false;
+    }
     AutogenPathDatasetDiff other = (AutogenPathDatasetDiff) o;
 
     {
       Function3<
-              List<AutogenPathDatasetComponentDiff>, List<AutogenPathDatasetComponentDiff>, Boolean>
+          List<AutogenPathDatasetComponentDiff>, List<AutogenPathDatasetComponentDiff>, Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenPathDatasetComponentDiff,
-                                    AutogenPathDatasetComponentDiff,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenPathDatasetComponentDiff,
+                            AutogenPathDatasetComponentDiff,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.Components != null || other.Components != null) {
-        if (this.Components == null && other.Components != null) return false;
-        if (this.Components != null && other.Components == null) return false;
-        if (!f.apply(this.Components, other.Components)) return false;
+        if (this.Components == null && other.Components != null) {
+          return false;
+        }
+        if (this.Components != null && other.Components == null) {
+          return false;
+        }
+        if (!f.apply(this.Components, other.Components)) {
+          return false;
+        }
       }
     }
     return true;
@@ -113,10 +128,10 @@ public class AutogenPathDatasetDiff implements ProtoType {
     {
       Function<ai.verta.modeldb.versioning.PathDatasetDiff, List<AutogenPathDatasetComponentDiff>>
           f =
-              x ->
-                  blob.getComponentsList().stream()
-                      .map(AutogenPathDatasetComponentDiff::fromProto)
-                      .collect(Collectors.toList());
+          x ->
+              blob.getComponentsList().stream()
+                  .map(AutogenPathDatasetComponentDiff::fromProto)
+                  .collect(Collectors.toList());
       obj.setComponents(f.apply(blob));
     }
     return obj;

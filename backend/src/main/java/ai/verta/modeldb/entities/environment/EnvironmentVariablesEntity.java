@@ -14,7 +14,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "environment_variables")
 public class EnvironmentVariablesEntity implements Serializable {
-  public EnvironmentVariablesEntity() {}
+
+  public EnvironmentVariablesEntity() {
+  }
 
   public EnvironmentVariablesEntity(EnvironmentVariablesBlob environmentVariablesBlob) {
     variable_name = environmentVariablesBlob.getName();

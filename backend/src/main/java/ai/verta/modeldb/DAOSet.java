@@ -30,6 +30,7 @@ import ai.verta.uac.ServiceEnum;
 import java.util.concurrent.Executor;
 
 public class DAOSet {
+
   public ArtifactStoreDAO artifactStoreDAO;
   public BlobDAO blobDAO;
   public CommentDAO commentDAO;
@@ -110,5 +111,6 @@ public class DAOSet {
     return set;
   }
 
-  private DAOSet() {}
+  private DAOSet() {
+  }
 }

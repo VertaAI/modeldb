@@ -14,7 +14,8 @@ import javax.persistence.Table;
 @Table(name = "user_comment")
 public class UserCommentEntity {
 
-  public UserCommentEntity() {}
+  public UserCommentEntity() {
+  }
 
   public UserCommentEntity(Object entity, Comment comment) {
 
@@ -33,7 +34,9 @@ public class UserCommentEntity {
   @Column(name = "id", unique = true)
   private String id;
 
-  /** @deprecated use `owner` instead of `user_id` */
+  /**
+   * @deprecated use `owner` instead of `user_id`
+   */
   @Deprecated
   @Column(name = "user_id")
   private String user_id;

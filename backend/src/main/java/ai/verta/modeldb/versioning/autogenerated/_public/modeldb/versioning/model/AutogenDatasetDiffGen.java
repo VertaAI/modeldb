@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenDatasetDiffGen extends Generator<AutogenDatasetDiff> {
+
   public AutogenDatasetDiffGen() {
     super(AutogenDatasetDiff.class);
   }

@@ -35,6 +35,7 @@ import org.hibernate.Transaction;
 import org.hibernate.query.Query;
 
 public class CollaboratorResourceMigration {
+
   private static final Logger LOGGER = LogManager.getLogger(CollaboratorResourceMigration.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();

@@ -22,7 +22,8 @@ import org.hibernate.annotations.LazyCollectionOption;
 @Table(name = "dataset")
 public class DatasetEntity implements Serializable {
 
-  public DatasetEntity() {}
+  public DatasetEntity() {
+  }
 
   public DatasetEntity(Dataset dataset) {
 
@@ -66,7 +67,8 @@ public class DatasetEntity implements Serializable {
   @Column(name = "dataset_visibility")
   private Integer dataset_visibility;
 
-  @Transient private ResourceVisibility datasetVisibility = ResourceVisibility.PRIVATE;
+  @Transient
+  private ResourceVisibility datasetVisibility = ResourceVisibility.PRIVATE;
 
   @Column(name = "dataset_type")
   private Integer dataset_type;

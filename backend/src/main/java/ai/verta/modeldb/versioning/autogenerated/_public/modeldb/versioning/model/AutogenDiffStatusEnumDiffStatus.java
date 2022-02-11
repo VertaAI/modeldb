@@ -9,6 +9,7 @@ import ai.verta.modeldb.versioning.blob.visitors.Visitor;
 import java.util.*;
 
 public class AutogenDiffStatusEnumDiffStatus implements ProtoType {
+
   public DiffStatusEnum.DiffStatus Status;
 
   public AutogenDiffStatusEnumDiffStatus() {
@@ -29,9 +30,15 @@ public class AutogenDiffStatusEnumDiffStatus implements ProtoType {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenDiffStatusEnumDiffStatus)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenDiffStatusEnumDiffStatus)) {
+      return false;
+    }
     AutogenDiffStatusEnumDiffStatus other = (AutogenDiffStatusEnumDiffStatus) o;
     return Status == other.Status;
   }

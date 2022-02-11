@@ -13,7 +13,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "s3_dataset_component_blob")
 public class S3DatasetComponentBlobEntity {
-  public S3DatasetComponentBlobEntity() {}
+
+  public S3DatasetComponentBlobEntity() {
+  }
 
   public S3DatasetComponentBlobEntity(
       String blobHash, String blobHashDataset, S3DatasetComponentBlob s3DatasetComponentBlob) {
@@ -30,7 +32,8 @@ public class S3DatasetComponentBlobEntity {
     this.base_path = pathDatasetComponentBlob.getBasePath();
   }
 
-  @EmbeddedId private S3DatasetComponentBlobId id;
+  @EmbeddedId
+  private S3DatasetComponentBlobId id;
 
   @Column(name = "path", columnDefinition = "TEXT")
   private String path;
@@ -109,7 +112,8 @@ class S3DatasetComponentBlobId implements Serializable {
     this.s3_dataset_blob_id = blobHashDataset;
   }
 
-  private S3DatasetComponentBlobId() {}
+  private S3DatasetComponentBlobId() {
+  }
 
   public String getBlob_hash() {
     return blob_hash;
@@ -121,8 +125,12 @@ class S3DatasetComponentBlobId implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (!(o instanceof S3DatasetComponentBlobId)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof S3DatasetComponentBlobId)) {
+      return false;
+    }
     S3DatasetComponentBlobId that = (S3DatasetComponentBlobId) o;
     return Objects.equals(getBlob_hash(), that.getBlob_hash())
         && Objects.equals(getS3_dataset_blob_id(), that.getS3_dataset_blob_id());

@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenNotebookCodeDiffGen extends Generator<AutogenNotebookCodeDiff> {
+
   public AutogenNotebookCodeDiffGen() {
     super(AutogenNotebookCodeDiff.class);
   }

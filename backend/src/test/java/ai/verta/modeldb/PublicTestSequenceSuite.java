@@ -12,25 +12,27 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-  ProjectTest.class,
-  ExperimentTest.class,
-  ExperimentRunTest.class,
-  CommentTest.class,
-  DatasetTest.class,
-  DatasetVersionTest.class,
-  HydratedServiceTest.class,
-  LineageTest.class,
-  LineageServiceImplNegativeTest.class,
-  FindProjectEntitiesTest.class,
-  FindDatasetEntitiesTest.class,
-  RepositoryTest.class,
-  CommitTest.class,
-  DiffTest.class,
-  MetadataTest.class,
-  BlobEquality.class,
-  BlobProtoEquality.class,
-  DiffAndMerge.class,
-  ValidatorBlobTest.class,
-  ValidatorBlobDiffTest.class
+    ProjectTest.class,
+    ExperimentTest.class,
+    ExperimentRunTest.class,
+    CommentTest.class,
+    DatasetTest.class,
+    DatasetVersionTest.class,
+    HydratedServiceTest.class,
+    LineageTest.class,
+    LineageServiceImplNegativeTest.class,
+    FindProjectEntitiesTest.class,
+    FindDatasetEntitiesTest.class,
+    RepositoryTest.class,
+    CommitTest.class,
+    DiffTest.class,
+    MetadataTest.class,
+    BlobEquality.class,
+    BlobProtoEquality.class,
+    DiffAndMerge.class,
+    ValidatorBlobTest.class,
+    ValidatorBlobDiffTest.class
 })
-public class PublicTestSequenceSuite {}
+public class PublicTestSequenceSuite {
+
+}

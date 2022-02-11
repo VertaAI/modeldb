@@ -46,7 +46,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
    * Convert AddComment request to Comment object. This method generates the Comment Id using UUID
    * and puts it in the Comment object.
    *
-   * @param request : AddComment
+   * @param request  : AddComment
    * @param userInfo : UserInfo
    * @return Comment comment
    */

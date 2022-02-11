@@ -85,7 +85,7 @@ public class DiffTest extends TestsInit {
   // 2. commit type -- 0 -- blob, 1 -- diff
   @Parameters
   public static Collection<Object[]> data() {
-    return Arrays.asList(new Object[][] {{0, 0}, {1, 1}, {2, 0}, {3, 1}});
+    return Arrays.asList(new Object[][]{{0, 0}, {1, 1}, {2, 0}, {3, 1}});
   }
 
   public DiffTest(int blobType, int commitType) {
@@ -101,7 +101,7 @@ public class DiffTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (Repository repo : new Repository[] {repository}) {
+    for (Repository repo : new Repository[]{repository}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repo.getId()))
@@ -247,7 +247,7 @@ public class DiffTest extends TestsInit {
       Assert.assertNotNull(blobDiff3);
     }
 
-    for (Commit commit : new Commit[] {commitB, commitA}) {
+    for (Commit commit : new Commit[]{commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(
@@ -382,7 +382,7 @@ public class DiffTest extends TestsInit {
       Assert.assertNotNull(blobDiff3);
     }
 
-    for (String branch : new String[] {branchA, branchB}) {
+    for (String branch : new String[]{branchA, branchB}) {
       DeleteBranchRequest deleteBranchRequest =
           DeleteBranchRequest.newBuilder()
               .setRepositoryId(
@@ -392,7 +392,7 @@ public class DiffTest extends TestsInit {
       versioningServiceBlockingStub.deleteBranch(deleteBranchRequest);
     }
 
-    for (Commit commit : new Commit[] {commitB, commitA}) {
+    for (Commit commit : new Commit[]{commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(
@@ -856,7 +856,7 @@ public class DiffTest extends TestsInit {
       Assert.assertNotNull(blobDiff3);
     }
 
-    for (String branch : new String[] {branchA, branchB}) {
+    for (String branch : new String[]{branchA, branchB}) {
       DeleteBranchRequest deleteBranchRequest =
           DeleteBranchRequest.newBuilder()
               .setRepositoryId(
@@ -866,7 +866,7 @@ public class DiffTest extends TestsInit {
       versioningServiceBlockingStub.deleteBranch(deleteBranchRequest);
     }
 
-    for (Commit commit : new Commit[] {commitB, commitA}) {
+    for (Commit commit : new Commit[]{commitB, commitA}) {
       DeleteCommitRequest deleteCommitRequest =
           DeleteCommitRequest.newBuilder()
               .setRepositoryId(
@@ -1186,7 +1186,7 @@ public class DiffTest extends TestsInit {
                 .build();
     }
 
-    return new BlobDiff[] {blobDiff1, blobDiff2, blobDiff3, blobDiff4, blobDiff5};
+    return new BlobDiff[]{blobDiff1, blobDiff2, blobDiff3, blobDiff4, blobDiff5};
   }
 
   private BlobExpanded[] createBlobs(int blobType) {
@@ -1280,8 +1280,8 @@ public class DiffTest extends TestsInit {
         blobExpanded5 =
             BlobExpanded.newBuilder().setBlob(builderForBlob).addAllLocation(LOCATION5).build();
     }
-    return new BlobExpanded[] {
-      blobExpanded1, blobExpanded2, blobExpanded3, blobExpanded4, blobExpanded5
+    return new BlobExpanded[]{
+        blobExpanded1, blobExpanded2, blobExpanded3, blobExpanded4, blobExpanded5
     };
   }
 }

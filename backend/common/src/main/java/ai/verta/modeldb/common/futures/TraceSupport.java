@@ -10,11 +10,15 @@ import java.util.Map;
 import java.util.function.Supplier;
 
 public class TraceSupport {
-  private TraceSupport() {}
+
+  private TraceSupport() {
+  }
 
   public static <T> T traceNonFuture(
       Supplier<T> supplier, String operationName, Map<String, String> tags) {
-    if (!GlobalTracer.isRegistered()) return supplier.get();
+    if (!GlobalTracer.isRegistered()) {
+      return supplier.get();
+    }
 
     final var tracer = GlobalTracer.get();
 

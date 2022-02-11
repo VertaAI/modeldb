@@ -14,6 +14,7 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
 
 public class S3SignatureUtil extends AWS4Signer {
+
   private String awsServiceName;
   private AWSCredentials credentials;
   private String region;

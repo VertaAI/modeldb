@@ -13,18 +13,22 @@ import java.util.Set;
 import org.hibernate.Session;
 
 public class TreeElem {
+
   private String path;
   private String blobHash = null;
   private String type = null;
   private Map<String, TreeElem> children = new HashMap<>();
 
-  TreeElem() {}
+  TreeElem() {
+  }
 
   public TreeElem push(List<String> pathList, String blobHash, String type) {
     path = pathList.get(0);
     if (pathList.size() > 1) {
       children.putIfAbsent(pathList.get(1), new TreeElem());
-      if (this.type == null) this.type = TREE;
+      if (this.type == null) {
+        this.type = TREE;
+      }
       return children
           .get(pathList.get(1))
           .push(pathList.subList(1, pathList.size()), blobHash, type);

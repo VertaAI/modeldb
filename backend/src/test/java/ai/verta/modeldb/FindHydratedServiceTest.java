@@ -146,7 +146,9 @@ public class FindHydratedServiceTest extends TestsInit {
     experimentRunMap.put(experimentRun4.getId(), experimentRun4);
   }
 
-  /** FindHydratedProjects with single user collaborator */
+  /**
+   * FindHydratedProjects with single user collaborator
+   */
   @Test
   public void findHydratedProjectsWithSingleUserCollaboratorTest() {
     LOGGER.info("FindHydratedProjects with single user collaborator test start............");
@@ -223,7 +225,9 @@ public class FindHydratedServiceTest extends TestsInit {
     LOGGER.info("FindHydratedProjects with single user collaborator test stop............");
   }
 
-  /** FindHydratedProjects with multiple user collaborator */
+  /**
+   * FindHydratedProjects with multiple user collaborator
+   */
   @Test
   public void findHydratedProjectsWithMultipleUserCollaboratorTest() {
     LOGGER.info("FindHydratedProjects with multiple user collaborators test start............");
@@ -297,7 +301,7 @@ public class FindHydratedServiceTest extends TestsInit {
             LOGGER.info(
                 "Hydrated project collborator : "
                     + authService.getVertaIdFromUserInfo(
-                        collaboratorUserInfo.getCollaboratorUserInfo()));
+                    collaboratorUserInfo.getCollaboratorUserInfo()));
             match = true;
             break;
           }

@@ -23,6 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class TelemetryCron extends TimerTask {
+
   private static final Logger LOGGER = LogManager.getLogger(TelemetryCron.class);
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
   private TelemetryUtils telemetryUtils;
@@ -31,7 +32,9 @@ public class TelemetryCron extends TimerTask {
     telemetryUtils = new TelemetryUtils(consumerURL);
   }
 
-  /** The action to be performed by this timer task. */
+  /**
+   * The action to be performed by this timer task.
+   */
   @Override
   public void run() {
     LOGGER.info("TelemetryUtils wakeup");

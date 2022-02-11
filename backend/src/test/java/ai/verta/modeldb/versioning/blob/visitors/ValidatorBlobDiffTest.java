@@ -88,56 +88,57 @@ dataset {
 */
 @RunWith(Parameterized.class)
 public class ValidatorBlobDiffTest {
+
   private static final Logger LOGGER = LogManager.getLogger(ValidatorBlobDiffTest.class);
 
   private static final Validator validator = new Validator();
   private static final BlobDiff.Builder blobDiffs[] = {
-    BlobDiff.newBuilder(),
-    BlobDiff.newBuilder()
-        .addLocation("location")
-        .setConfig(
-            ConfigDiff.newBuilder()
-                .addHyperparameters(
-                    HyperparameterConfigDiff.newBuilder()
-                        .setB(
-                            HyperparameterConfigBlob.newBuilder()
-                                .setName("test")
-                                .setValue(
-                                    HyperparameterValuesConfigBlob.newBuilder()
-                                        .setStringValue("test"))))
-                .build()),
-    BlobDiff.newBuilder()
-        .setCode(
-            CodeDiff.newBuilder()
-                .setGit(
-                    GitCodeDiff.newBuilder()
-                        .setStatus(DiffStatus.ADDED)
-                        .setB(GitCodeBlob.newBuilder().setRepo("test")))),
-    BlobDiff.newBuilder()
-        .addLocation("location")
-        .setStatus(DiffStatus.MODIFIED)
-        .setEnvironment(
-            EnvironmentDiff.newBuilder()
-                .addEnvironmentVariables(
-                    EnvironmentVariablesDiff.newBuilder()
-                        .setStatus(DiffStatus.ADDED)
-                        .setA(EnvironmentVariablesBlob.newBuilder().setName("word1 word2"))
-                        .setB(EnvironmentVariablesBlob.newBuilder().setName("word1")))),
-    BlobDiff.newBuilder()
-        .addLocation("location")
-        .setStatus(DiffStatus.DELETED)
-        .setDataset(
-            DatasetDiff.newBuilder()
-                .setS3(
-                    S3DatasetDiff.newBuilder()
-                        .addComponents(
-                            S3DatasetComponentDiff.newBuilder()
-                                .setA(
-                                    S3DatasetComponentBlob.newBuilder()
-                                        .setPath(
-                                            PathDatasetComponentBlob.newBuilder()
-                                                .setMd5("test_md5")))
-                                .setStatus(DiffStatus.DELETED))))
+      BlobDiff.newBuilder(),
+      BlobDiff.newBuilder()
+          .addLocation("location")
+          .setConfig(
+          ConfigDiff.newBuilder()
+              .addHyperparameters(
+                  HyperparameterConfigDiff.newBuilder()
+                      .setB(
+                          HyperparameterConfigBlob.newBuilder()
+                              .setName("test")
+                              .setValue(
+                                  HyperparameterValuesConfigBlob.newBuilder()
+                                      .setStringValue("test"))))
+              .build()),
+      BlobDiff.newBuilder()
+          .setCode(
+          CodeDiff.newBuilder()
+              .setGit(
+                  GitCodeDiff.newBuilder()
+                      .setStatus(DiffStatus.ADDED)
+                      .setB(GitCodeBlob.newBuilder().setRepo("test")))),
+      BlobDiff.newBuilder()
+          .addLocation("location")
+          .setStatus(DiffStatus.MODIFIED)
+          .setEnvironment(
+          EnvironmentDiff.newBuilder()
+              .addEnvironmentVariables(
+                  EnvironmentVariablesDiff.newBuilder()
+                      .setStatus(DiffStatus.ADDED)
+                      .setA(EnvironmentVariablesBlob.newBuilder().setName("word1 word2"))
+                      .setB(EnvironmentVariablesBlob.newBuilder().setName("word1")))),
+      BlobDiff.newBuilder()
+          .addLocation("location")
+          .setStatus(DiffStatus.DELETED)
+          .setDataset(
+          DatasetDiff.newBuilder()
+              .setS3(
+                  S3DatasetDiff.newBuilder()
+                      .addComponents(
+                          S3DatasetComponentDiff.newBuilder()
+                              .setA(
+                                  S3DatasetComponentBlob.newBuilder()
+                                      .setPath(
+                                          PathDatasetComponentBlob.newBuilder()
+                                              .setMd5("test_md5")))
+                              .setStatus(DiffStatus.DELETED))))
   };
 
   private final BlobDiff blobDiff;
@@ -146,7 +147,7 @@ public class ValidatorBlobDiffTest {
   public static Collection<Object[]> data() {
     List<Object[]> result = new LinkedList<>();
     for (BlobDiff.Builder b : blobDiffs) {
-      result.add(new Object[] {b.build()});
+      result.add(new Object[]{b.build()});
     }
     return result;
   }

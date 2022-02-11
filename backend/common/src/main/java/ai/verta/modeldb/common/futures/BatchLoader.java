@@ -8,6 +8,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class BatchLoader<T, R> {
+
   private final Function<List<T>, InternalFuture<List<R>>> processor;
   private final Executor executor;
   private int maxBatchSize = 1000;
@@ -18,7 +19,9 @@ public class BatchLoader<T, R> {
   }
 
   public InternalFuture<List<R>> loadAll(List<T> ids) {
-    if (ids.isEmpty()) return InternalFuture.completedInternalFuture(List.of());
+    if (ids.isEmpty()) {
+      return InternalFuture.completedInternalFuture(List.of());
+    }
 
     var localList = new ArrayList<T>(maxBatchSize);
     var resultsList = new ArrayList<InternalFuture<List<R>>>();

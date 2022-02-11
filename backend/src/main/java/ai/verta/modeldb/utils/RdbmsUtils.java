@@ -470,22 +470,22 @@ public class RdbmsUtils {
   /**
    * Return List of entity data and total count base on the given parameters
    *
-   * @param session : hibernate session
-   * @param entityName : entity name like ProjectEntity, DatasetEntity etc. Here we used the
-   *     hibernate so this entity name is the same name of java class name
+   * @param session          : hibernate session
+   * @param entityName       : entity name like ProjectEntity, DatasetEntity etc. Here we used the
+   *                         hibernate so this entity name is the same name of java class name
    * @param projectionFields : list of string which contains the selected field names
    * @param whereClauseParam : where clause parameter map contains key="entity field name",
-   *     value="object[2] where position-1 = operator like EQ,IN etc. position-2 = entity field
-   *     values"
-   * @param pageNumber : page number for pagination
-   * @param pageLimit : page limit for pagination
-   * @param order : sort order for sorted list
-   * @param sortBy : sort key for sorted list (default sortKey=DATE_UPDATED)
+   *                         value="object[2] where position-1 = operator like EQ,IN etc. position-2
+   *                         = entity field values"
+   * @param pageNumber       : page number for pagination
+   * @param pageLimit        : page limit for pagination
+   * @param order            : sort order for sorted list
+   * @param sortBy           : sort key for sorted list (default sortKey=DATE_UPDATED)
    * @param isNeedTotalCount : if service need the total count for pagination then
-   *     'isNeedTotalCount' = true
+   *                         'isNeedTotalCount' = true
    * @return {@link Map} : return Map where key=ModelDBConstants.DATA_LIST &
-   *     ModelDBConstants.TOTAL_COUNT AND value=list of entity (ex: List<ProjectEntity>),
-   *     total_count(Long)
+   * ModelDBConstants.TOTAL_COUNT AND value=list of entity (ex: List<ProjectEntity>),
+   * total_count(Long)
    */
   public static Map<String, Object> findListWithPagination(
       Session session,
@@ -654,11 +654,11 @@ public class RdbmsUtils {
   /**
    * Return the where clause predicate based on given parameters
    *
-   * @param builder : Hibernate criteria builder
+   * @param builder         : Hibernate criteria builder
    * @param valueExpression : field value path for criteria query
-   * @param operator : operator like EQ, GTE, LE etc.
-   * @param operatorValue : field value which set to where clause based on field, Operator and this
-   *     value
+   * @param operator        : operator like EQ, GTE, LE etc.
+   * @param operatorValue   : field value which set to where clause based on field, Operator and
+   *                        this value
    * @return {@link Predicate} : return predicate (where clause condition) for criteria query
    */
   private static Predicate getOperatorPredicate(
@@ -693,12 +693,12 @@ public class RdbmsUtils {
   }
 
   /**
-   * @param builder : Hibernate criteria builder
-   * @param fieldName : field name which is set in entity like project.attributes, dataset.parent_id
-   *     etc.
+   * @param builder         : Hibernate criteria builder
+   * @param fieldName       : field name which is set in entity like project.attributes,
+   *                        dataset.parent_id etc.
    * @param valueExpression : criteria query path for field value to set on query predicate
-   * @param keyValueQuery : field contain the keyValue and operator for query which is set by
-   *     frontend
+   * @param keyValueQuery   : field contain the keyValue and operator for query which is set by
+   *                        frontend
    * @return {@link Predicate} : return predicate (where clause condition) for criteria query
    */
   public static Predicate getValuePredicate(
@@ -784,14 +784,14 @@ public class RdbmsUtils {
    * Method add the where clause base on the sort key switch cases and create the condition and add
    * it in final where clause predicate list and create the hibernate criteria Order for query
    *
-   * @param sortBy : sort key for sorted list (default sortKey=DATE_UPDATED)
-   * @param isAscending : sort order for sorted list
-   * @param builder : Hibernate criteria builder
-   * @param root : entity root which is further used for getting sub filed path from it and set in
-   *     criteria where clause. Ex: Root<DatasetEntity> datasetRoot =
-   *     criteriaQuery.from(DatasetEntity.class);
+   * @param sortBy          : sort key for sorted list (default sortKey=DATE_UPDATED)
+   * @param isAscending     : sort order for sorted list
+   * @param builder         : Hibernate criteria builder
+   * @param root            : entity root which is further used for getting sub filed path from it
+   *                        and set in criteria where clause. Ex: Root<DatasetEntity> datasetRoot =
+   *                        criteriaQuery.from(DatasetEntity.class);
    * @param parentFieldName : entity has multi level field hierarchy so here mention the parent
-   *     field name like attributes, artifacts, tags, metrics etc.
+   *                        field name like attributes, artifacts, tags, metrics etc.
    * @return {@link Order} : return hibernate order base on the parameters
    */
   public static Order getOrderBasedOnSortKey(
@@ -995,14 +995,14 @@ public class RdbmsUtils {
    * Method add the where clause base on the sort key switch cases and create the condition and add
    * it in final where clause predicate list and create the hibernate criteria Order for query
    *
-   * @param sortBy : sort key for sorted list (default sortKey=DATE_UPDATED)
-   * @param isAscending : sort order for sorted list
-   * @param builder : Hibernate criteria builder
-   * @param root : entity root which is further used for getting sub filed path from it and set in
-   *     criteria where clause. Ex: Root<DatasetEntity> datasetRoot =
-   *     criteriaQuery.from(DatasetEntity.class);
+   * @param sortBy          : sort key for sorted list (default sortKey=DATE_UPDATED)
+   * @param isAscending     : sort order for sorted list
+   * @param builder         : Hibernate criteria builder
+   * @param root            : entity root which is further used for getting sub filed path from it
+   *                        and set in criteria where clause. Ex: Root<DatasetEntity> datasetRoot =
+   *                        criteriaQuery.from(DatasetEntity.class);
    * @param parentFieldName : entity has multi level field hierarchy so here mention the parent
-   *     field name like attributes, artifacts, tags, metrics etc.
+   *                        field name like attributes, artifacts, tags, metrics etc.
    * @return {@link Order} : return hibernate order base on the parameters
    */
   public static Order[] getOrderArrBasedOnSortKey(
@@ -1224,13 +1224,13 @@ public class RdbmsUtils {
 
   /**
    * @param expression : entity has multi level field this field name from parent root path
-   * @param builder : Hibernate criteria builder
-   * @param fieldType : For example, artifact has the single table but type is different like
-   *     dataset(artifact), artifact(artifact) etc.
-   * @param key : artifact.key
-   * @param predicate : field contain the keyValue and operator for query which is set by frontend
+   * @param builder    : Hibernate criteria builder
+   * @param fieldType  : For example, artifact has the single table but type is different like
+   *                   dataset(artifact), artifact(artifact) etc.
+   * @param key        : artifact.key
+   * @param predicate  : field contain the keyValue and operator for query which is set by frontend
    * @return {@link List<Predicate>} : which contain the where clause condition(predicate) created
-   *     from KeyValueQuery base on artifact
+   * from KeyValueQuery base on artifact
    */
   private static List<Predicate> getArtifactTypePredicates(
       Path expression,
@@ -1262,13 +1262,13 @@ public class RdbmsUtils {
 
   /**
    * @param expression : entity has multi level field this field name from parent root path
-   * @param builder : Hibernate criteria builder
-   * @param fieldType : For example, attribute has the single table but type is different like
-   *     metrics(attribute), attribute(attribute), hyperparameter(attribute) etc.
-   * @param key : attribute.key
-   * @param predicate : field contain the keyValue and operator for query which is set by frontend
+   * @param builder    : Hibernate criteria builder
+   * @param fieldType  : For example, attribute has the single table but type is different like
+   *                   metrics(attribute), attribute(attribute), hyperparameter(attribute) etc.
+   * @param key        : attribute.key
+   * @param predicate  : field contain the keyValue and operator for query which is set by frontend
    * @return {@link List<Predicate>} : which contain the where clause condition(predicate) created
-   *     from KeyValueQuery base on attributes
+   * from KeyValueQuery base on attributes
    */
   private static List<Predicate> getKeyValueTypePredicates(
       Path expression,
@@ -1299,12 +1299,12 @@ public class RdbmsUtils {
   /**
    * Return the data count base on the criteria query
    *
-   * @param session : hibernate session
-   * @param root : entity root which is further used for getting sub filed path from it and set in
-   *     criteria where clause. Ex: Root<ProjectEntity> projectRoot =
-   *     criteriaQuery.from(ProjectEntity.class);
+   * @param session  : hibernate session
+   * @param root     : entity root which is further used for getting sub filed path from it and set
+   *                 in criteria where clause. Ex: Root<ProjectEntity> projectRoot =
+   *                 criteriaQuery.from(ProjectEntity.class);
    * @param criteria : Hibernate criteria query reference for further process
-   * @param <T> : T = entity name like ProjectEntity, DatasetEntity, ExperimentEntity etc.
+   * @param <T>      : T = entity name like ProjectEntity, DatasetEntity, ExperimentEntity etc.
    * @return {@link Long} : total records count
    */
   public static <T> long count(Session session, Root<T> root, CriteriaQuery<T> criteria) {
@@ -1330,14 +1330,15 @@ public class RdbmsUtils {
   }
 
   /**
-   * @param entityName : entity name like ProjectEntity, DatasetEntity etc. Here we used the
-   *     hibernate so this entity name is the same name of java class name
-   * @param predicates : field contain the keyValue and operator for query which is set by frontend
-   * @param builder : Hibernate criteria builder
-   * @param criteriaQuery : Hibernate criteria query reference for further process
+   * @param entityName     : entity name like ProjectEntity, DatasetEntity etc. Here we used the
+   *                       hibernate so this entity name is the same name of java class name
+   * @param predicates     : field contain the keyValue and operator for query which is set by
+   *                       frontend
+   * @param builder        : Hibernate criteria builder
+   * @param criteriaQuery  : Hibernate criteria query reference for further process
    * @param entityRootPath : entity root which is further used for getting sub filed path from it
-   *     and set in criteria where clause. Ex: Root<ProjectEntity> projectRoot =
-   *     criteriaQuery.from(ProjectEntity.class);
+   *                       and set in criteria where clause. Ex: Root<ProjectEntity> projectRoot =
+   *                       criteriaQuery.from(ProjectEntity.class);
    * @return {@link List<Predicate>} : list for where clause condition for criteria query
    */
   public static List<Predicate> getQueryPredicatesFromPredicateList(
@@ -1859,9 +1860,9 @@ public class RdbmsUtils {
    * where added two function one for old logic with owner Id for other entities excluding project,
    * repository
    *
-   * @param authService: authService
-   * @param builder: CriteriaBuilder
-   * @param entityRootPath: entityRootPath
+   * @param authService:        authService
+   * @param builder:            CriteriaBuilder
+   * @param entityRootPath:     entityRootPath
    * @param requestedPredicate: requestedPredicate
    * @return {@link Predicate}: criteria query predicate
    */
@@ -2126,10 +2127,10 @@ public class RdbmsUtils {
    *
    * <p>Workspace & workspace type should not allowed in the predicate
    *
-   * @param entityName : dataset, project etc.
+   * @param entityName          : dataset, project etc.
    * @param accessibleEntityIds : accessible entity ids like project.ids, dataset.ids etc.
-   * @param predicate : predicate request
-   * @param mdbRoleService : role service
+   * @param predicate           : predicate request
+   * @param mdbRoleService      : role service
    */
   public static void validatePredicates(
       String entityName,
@@ -2160,10 +2161,10 @@ public class RdbmsUtils {
   }
 
   /**
-   * @param index0 : predicate index for unique query parameter identity
-   * @param queryBuilder : query builder
-   * @param operator : query operator like GE, LE, EQ, GTE etc.
-   * @param value : query parameter value like repoId(123), repoName(xyz) etc.
+   * @param index0        : predicate index for unique query parameter identity
+   * @param queryBuilder  : query builder
+   * @param operator      : query operator like GE, LE, EQ, GTE etc.
+   * @param value         : query parameter value like repoId(123), repoName(xyz) etc.
    * @param parametersMap : query parameter identity map.
    */
   public static void setValueWithOperatorInQuery(

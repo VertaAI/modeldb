@@ -1,7 +1,9 @@
 package ai.verta.modeldb;
 
 public abstract class ModelDBMessages {
-  private ModelDBMessages() {}
+
+  private ModelDBMessages() {
+  }
 
   public static final String USER_NOT_FOUND_ERROR_MSG = "Could not find owner details for {}";
   public static final String EXP_RUN_RECORD_COUNT_MSG =

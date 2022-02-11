@@ -22,6 +22,7 @@ import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public abstract class CommonArtifactHandler<T> {
+
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   protected final Executor executor;
   protected final FutureJdbi jdbi;
@@ -78,10 +79,10 @@ public abstract class CommonArtifactHandler<T> {
 
   public InternalFuture<MapSubtypes<T, Artifact>> getArtifactsMap(Set<T> entityIds) {
     return jdbi.withHandle(
-            handle -> {
-              Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
-              return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
-            })
+        handle -> {
+          Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
+          return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
+        })
         .thenApply(
             simpleEntries ->
                 simpleEntries.stream()

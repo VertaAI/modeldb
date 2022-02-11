@@ -12,6 +12,7 @@ import java.util.List;
 import org.hibernate.Session;
 
 public interface CommitDAO {
+
   CreateCommitRequest.Response setCommit(
       String author,
       Commit commit,

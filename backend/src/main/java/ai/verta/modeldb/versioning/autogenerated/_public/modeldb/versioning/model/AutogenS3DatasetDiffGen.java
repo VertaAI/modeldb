@@ -9,6 +9,7 @@ import com.pholser.junit.quickcheck.random.*;
 import java.util.*;
 
 public class AutogenS3DatasetDiffGen extends Generator<AutogenS3DatasetDiff> {
+
   public AutogenS3DatasetDiffGen() {
     super(AutogenS3DatasetDiff.class);
   }

@@ -28,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class UACApisUtil {
+
   private static final Logger LOGGER = LogManager.getLogger(UACApisUtil.class);
   protected final Executor executor;
   protected final UAC uac;
@@ -63,8 +64,8 @@ public class UACApisUtil {
     var builder = GetResources.newBuilder().setResources(resources.build());
     builder.setWorkspaceName(workspaceName);
     return FutureGrpc.ClientRequest(
-            uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
-            executor)
+        uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
+        executor)
         .thenApply(GetResources.Response::getItemList, executor);
   }
 
@@ -89,7 +90,7 @@ public class UACApisUtil {
     workspaceName.ifPresent(builder::setWorkspaceName);
     resourceName.ifPresent(builder::setResourceName);
     return FutureGrpc.ClientRequest(
-            uac.getCollaboratorService().getResources(builder.build()), executor)
+        uac.getCollaboratorService().getResources(builder.build()), executor)
         .thenApply(GetResources.Response::getItemList, executor);
   }
 
@@ -102,9 +103,9 @@ public class UACApisUtil {
       return InternalFuture.completedInternalFuture(paginationDTO);
     }
     return FutureGrpc.ClientRequest(
-            uac.getUACService()
-                .getUsersFuzzy(GetUsersFuzzy.newBuilder().setUsername(usernameChar).build()),
-            executor)
+        uac.getUACService()
+            .getUsersFuzzy(GetUsersFuzzy.newBuilder().setUsername(usernameChar).build()),
+        executor)
         .thenApply(
             response -> {
               LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
@@ -130,7 +131,7 @@ public class UACApisUtil {
     LOGGER.trace("username Id List : {}", usernameList);
     // Get the user info from the Context
     return FutureGrpc.ClientRequest(
-            uac.getUACService().getUsers(getUserRequestBuilder.build()), executor)
+        uac.getUACService().getUsers(getUserRequestBuilder.build()), executor)
         .thenApply(
             response -> {
               LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);

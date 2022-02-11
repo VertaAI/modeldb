@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 // TODO: handle collisions instead of just overwriting? It will be useful for mergingit
 public class DiffMerger {
+
   public static <B, D, F, DF, L> F merge(
       B a,
       D d,
@@ -61,8 +62,9 @@ public class DiffMerger {
                         }
                       } else if (elStatus.Status == DiffStatusEnum.DiffStatus.ADDED) {
                         if (diffB != null) {
-                          if (elA.isEmpty()) elA.add(diffB);
-                          else if (!elA.contains(diffB)) {
+                          if (elA.isEmpty()) {
+                            elA.add(diffB);
+                          } else if (!elA.contains(diffB)) {
                             conflictKeys.add(key);
                           }
                         }
@@ -90,7 +92,9 @@ public class DiffMerger {
                       }
                     }
                   }
-                  if (elA == null || elA.isEmpty()) return null;
+                  if (elA == null || elA.isEmpty()) {
+                    return null;
+                  }
                   return elA.stream();
                 })
             .map(Utils::removeEmpty)
@@ -143,9 +147,9 @@ public class DiffMerger {
         && d != null
         && !diffStatusDeleted
         && !a.toProto()
-            .getContentCase()
-            .name()
-            .equalsIgnoreCase(d.toProto().getContentCase().name())) {
+        .getContentCase()
+        .name()
+        .equalsIgnoreCase(d.toProto().getContentCase().name())) {
       conflictKeys.add(a.toString());
     }
     return Utils.removeEmpty(
@@ -214,9 +218,15 @@ public class DiffMerger {
 
   public static AutogenGitCodeBlob mergeGitCode(
       AutogenGitCodeBlob a, AutogenGitCodeDiff d, HashSet<String> conflictKeys) {
-    if (a == null && d == null) return null;
-    if (d == null) return a;
-    if (d.getStatus().isDeleted()) return null;
+    if (a == null && d == null) {
+      return null;
+    }
+    if (d == null) {
+      return a;
+    }
+    if (d.getStatus().isDeleted()) {
+      return null;
+    }
     return Utils.removeEmpty(
         mergeLast(
             a,
@@ -469,9 +479,15 @@ public class DiffMerger {
 
   public static List<String> mergeCommandLine(
       List<String> a, AutogenCommandLineEnvironmentDiff d, HashSet<String> conflictKeys) {
-    if (a == null && d == null) return null;
-    if (d == null) return a;
-    if (d.getStatus().isDeleted()) return null;
+    if (a == null && d == null) {
+      return null;
+    }
+    if (d == null) {
+      return a;
+    }
+    if (d.getStatus().isDeleted()) {
+      return null;
+    }
     return Utils.removeEmpty(
         mergeLast(
             a,
@@ -530,9 +546,15 @@ public class DiffMerger {
       AutogenVersionEnvironmentDiff d,
       HashSet<String> conflictKeys) {
 
-    if (a == null && d == null) return null;
-    if (d == null) return a;
-    if (d.getStatus().isDeleted()) return null;
+    if (a == null && d == null) {
+      return null;
+    }
+    if (d == null) {
+      return a;
+    }
+    if (d.getStatus().isDeleted()) {
+      return null;
+    }
     return Utils.removeEmpty(
         mergeLast(
             a,
@@ -548,9 +570,15 @@ public class DiffMerger {
       AutogenDockerEnvironmentBlob a,
       AutogenDockerEnvironmentDiff d,
       HashSet<String> conflictKeys) {
-    if (a == null && d == null) return null;
-    if (d == null) return a;
-    if (d.getStatus().isDeleted()) return null;
+    if (a == null && d == null) {
+      return null;
+    }
+    if (d == null) {
+      return a;
+    }
+    if (d.getStatus().isDeleted()) {
+      return null;
+    }
     return Utils.removeEmpty(
         mergeLast(
             a,

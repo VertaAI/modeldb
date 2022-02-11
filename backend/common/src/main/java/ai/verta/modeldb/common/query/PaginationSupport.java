@@ -3,6 +3,7 @@ package ai.verta.modeldb.common.query;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 
 public class PaginationSupport {
+
   // getLimitString is used with JDBI queries, because the query objects do not have methods
   // to set max results and first result, so the string can be manually added to the query.
   public static String getLimitString(

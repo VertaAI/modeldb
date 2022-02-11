@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenHyperparameterConfigBlob implements ProtoType {
+
   private String Name;
   private AutogenHyperparameterValuesConfigBlob Value;
 
@@ -40,12 +41,16 @@ public class AutogenHyperparameterConfigBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenHyperparameterConfigBlob\", \"fields\": {");
     boolean first = true;
     if (this.Name != null && !this.Name.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Name\": " + "\"" + Name + "\"");
       first = false;
     }
     if (this.Value != null && !this.Value.equals(null)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Value\": " + Value);
       first = false;
     }
@@ -68,27 +73,45 @@ public class AutogenHyperparameterConfigBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenHyperparameterConfigBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenHyperparameterConfigBlob)) {
+      return false;
+    }
     AutogenHyperparameterConfigBlob other = (AutogenHyperparameterConfigBlob) o;
 
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Name != null || other.Name != null) {
-        if (this.Name == null && other.Name != null) return false;
-        if (this.Name != null && other.Name == null) return false;
-        if (!f.apply(this.Name, other.Name)) return false;
+        if (this.Name == null && other.Name != null) {
+          return false;
+        }
+        if (this.Name != null && other.Name == null) {
+          return false;
+        }
+        if (!f.apply(this.Name, other.Name)) {
+          return false;
+        }
       }
     }
     {
       Function3<
-              AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
+          AutogenHyperparameterValuesConfigBlob, AutogenHyperparameterValuesConfigBlob, Boolean>
           f = (x, y) -> x.equals(y);
       if (this.Value != null || other.Value != null) {
-        if (this.Value == null && other.Value != null) return false;
-        if (this.Value != null && other.Value == null) return false;
-        if (!f.apply(this.Value, other.Value)) return false;
+        if (this.Value == null && other.Value != null) {
+          return false;
+        }
+        if (this.Value != null && other.Value == null) {
+          return false;
+        }
+        if (!f.apply(this.Value, other.Value)) {
+          return false;
+        }
       }
     }
     return true;
@@ -126,8 +149,8 @@ public class AutogenHyperparameterConfigBlob implements ProtoType {
     }
     {
       Function<
-              ai.verta.modeldb.versioning.HyperparameterConfigBlob,
-              AutogenHyperparameterValuesConfigBlob>
+          ai.verta.modeldb.versioning.HyperparameterConfigBlob,
+          AutogenHyperparameterValuesConfigBlob>
           f = x -> AutogenHyperparameterValuesConfigBlob.fromProto(blob.getValue());
       obj.setValue(f.apply(blob));
     }

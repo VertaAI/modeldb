@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 
 @RunWith(JUnitQuickcheck.class)
 public class BlobEquality {
+
   @Property
   public void equalityAutogenBlobDiff(AutogenBlobDiff b) {
     assertTrue(b.equals(b));

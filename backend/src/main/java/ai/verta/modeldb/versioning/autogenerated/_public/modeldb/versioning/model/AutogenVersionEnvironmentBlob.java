@@ -16,6 +16,7 @@ import java.util.function.Function;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenVersionEnvironmentBlob implements ProtoType {
+
   private Integer Major;
   private Integer Minor;
   private Integer Patch;
@@ -50,22 +51,30 @@ public class AutogenVersionEnvironmentBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenVersionEnvironmentBlob\", \"fields\": {");
     boolean first = true;
     if (this.Major != null && !this.Major.equals(0)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Major\": " + Major);
       first = false;
     }
     if (this.Minor != null && !this.Minor.equals(0)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Minor\": " + Minor);
       first = false;
     }
     if (this.Patch != null && !this.Patch.equals(0)) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Patch\": " + Patch);
       first = false;
     }
     if (this.Suffix != null && !this.Suffix.equals("")) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Suffix\": " + "\"" + Suffix + "\"");
       first = false;
     }
@@ -88,41 +97,71 @@ public class AutogenVersionEnvironmentBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenVersionEnvironmentBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenVersionEnvironmentBlob)) {
+      return false;
+    }
     AutogenVersionEnvironmentBlob other = (AutogenVersionEnvironmentBlob) o;
 
     {
       Function3<Integer, Integer, Boolean> f = (x, y) -> x.equals(y);
       if (this.Major != null || other.Major != null) {
-        if (this.Major == null && other.Major != null) return false;
-        if (this.Major != null && other.Major == null) return false;
-        if (!f.apply(this.Major, other.Major)) return false;
+        if (this.Major == null && other.Major != null) {
+          return false;
+        }
+        if (this.Major != null && other.Major == null) {
+          return false;
+        }
+        if (!f.apply(this.Major, other.Major)) {
+          return false;
+        }
       }
     }
     {
       Function3<Integer, Integer, Boolean> f = (x, y) -> x.equals(y);
       if (this.Minor != null || other.Minor != null) {
-        if (this.Minor == null && other.Minor != null) return false;
-        if (this.Minor != null && other.Minor == null) return false;
-        if (!f.apply(this.Minor, other.Minor)) return false;
+        if (this.Minor == null && other.Minor != null) {
+          return false;
+        }
+        if (this.Minor != null && other.Minor == null) {
+          return false;
+        }
+        if (!f.apply(this.Minor, other.Minor)) {
+          return false;
+        }
       }
     }
     {
       Function3<Integer, Integer, Boolean> f = (x, y) -> x.equals(y);
       if (this.Patch != null || other.Patch != null) {
-        if (this.Patch == null && other.Patch != null) return false;
-        if (this.Patch != null && other.Patch == null) return false;
-        if (!f.apply(this.Patch, other.Patch)) return false;
+        if (this.Patch == null && other.Patch != null) {
+          return false;
+        }
+        if (this.Patch != null && other.Patch == null) {
+          return false;
+        }
+        if (!f.apply(this.Patch, other.Patch)) {
+          return false;
+        }
       }
     }
     {
       Function3<String, String, Boolean> f = (x, y) -> x.equals(y);
       if (this.Suffix != null || other.Suffix != null) {
-        if (this.Suffix == null && other.Suffix != null) return false;
-        if (this.Suffix != null && other.Suffix == null) return false;
-        if (!f.apply(this.Suffix, other.Suffix)) return false;
+        if (this.Suffix == null && other.Suffix != null) {
+          return false;
+        }
+        if (this.Suffix != null && other.Suffix == null) {
+          return false;
+        }
+        if (!f.apply(this.Suffix, other.Suffix)) {
+          return false;
+        }
       }
     }
     return true;

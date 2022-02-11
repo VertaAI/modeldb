@@ -18,6 +18,7 @@ import java.util.stream.IntStream;
 import org.apache.commons.codec.binary.Hex;
 
 public class AutogenS3DatasetBlob implements ProtoType {
+
   private List<AutogenS3DatasetComponentBlob> Components;
 
   public AutogenS3DatasetBlob() {
@@ -37,7 +38,9 @@ public class AutogenS3DatasetBlob implements ProtoType {
     sb.append("{\"class\": \"AutogenS3DatasetBlob\", \"fields\": {");
     boolean first = true;
     if (this.Components != null && !this.Components.equals(null) && !this.Components.isEmpty()) {
-      if (!first) sb.append(", ");
+      if (!first) {
+        sb.append(", ");
+      }
       sb.append("\"Components\": " + Components);
       first = false;
     }
@@ -60,32 +63,44 @@ public class AutogenS3DatasetBlob implements ProtoType {
   // TODO: not consider order on lists
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null) return false;
-    if (!(o instanceof AutogenS3DatasetBlob)) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null) {
+      return false;
+    }
+    if (!(o instanceof AutogenS3DatasetBlob)) {
+      return false;
+    }
     AutogenS3DatasetBlob other = (AutogenS3DatasetBlob) o;
 
     {
       Function3<List<AutogenS3DatasetComponentBlob>, List<AutogenS3DatasetComponentBlob>, Boolean>
           f =
-              (x2, y2) ->
-                  IntStream.range(0, Math.min(x2.size(), y2.size()))
-                      .mapToObj(
-                          i -> {
-                            Function3<
-                                    AutogenS3DatasetComponentBlob,
-                                    AutogenS3DatasetComponentBlob,
-                                    Boolean>
-                                f2 = (x, y) -> x.equals(y);
-                            return f2.apply(x2.get(i), y2.get(i));
-                          })
-                      .filter(x -> x.equals(false))
-                      .collect(Collectors.toList())
-                      .isEmpty();
+          (x2, y2) ->
+              IntStream.range(0, Math.min(x2.size(), y2.size()))
+                  .mapToObj(
+                      i -> {
+                        Function3<
+                            AutogenS3DatasetComponentBlob,
+                            AutogenS3DatasetComponentBlob,
+                            Boolean>
+                            f2 = (x, y) -> x.equals(y);
+                        return f2.apply(x2.get(i), y2.get(i));
+                      })
+                  .filter(x -> x.equals(false))
+                  .collect(Collectors.toList())
+                  .isEmpty();
       if (this.Components != null || other.Components != null) {
-        if (this.Components == null && other.Components != null) return false;
-        if (this.Components != null && other.Components == null) return false;
-        if (!f.apply(this.Components, other.Components)) return false;
+        if (this.Components == null && other.Components != null) {
+          return false;
+        }
+        if (this.Components != null && other.Components == null) {
+          return false;
+        }
+        if (!f.apply(this.Components, other.Components)) {
+          return false;
+        }
       }
     }
     return true;

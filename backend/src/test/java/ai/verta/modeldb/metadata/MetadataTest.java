@@ -20,6 +20,7 @@ import org.junit.runners.MethodSorters;
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class MetadataTest extends TestsInit {
+
   private static final Logger LOGGER = LogManager.getLogger(MetadataTest.class.getName());
 
   @Test

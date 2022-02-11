@@ -33,11 +33,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleService {
+
   private static final Logger LOGGER = LogManager.getLogger(MDBRoleServiceUtils.class);
 
   public static MDBRoleService FromConfig(Config config, AuthService authService, UAC uac) {
-    if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(authService);
-    else return new MDBRoleServiceUtils(config, authService, uac);
+    if (!config.hasAuth()) {
+      return new PublicMDBRoleServiceUtils(authService);
+    } else {
+      return new MDBRoleServiceUtils(config, authService, uac);
+    }
   }
 
   private MDBRoleServiceUtils(Config config, AuthService authService, UAC uac) {
@@ -275,9 +279,9 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
   /**
    * Checks permissions of the user wrt the Entity
    *
-   * @param resourceId --> value of key like project.id, dataset.id etc.
+   * @param resourceId            --> value of key like project.id, dataset.id etc.
    * @param modelDBServiceActions --> ModelDBServiceActions.UPDATE, ModelDBServiceActions.DELETE,
-   *     ModelDBServiceActions.CREATE
+   *                              ModelDBServiceActions.CREATE
    */
   @Override
   public void validateEntityUserWithUserInfo(
@@ -350,7 +354,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
     if (workspaceName == null
         || workspaceName.isEmpty()
         || workspaceName.equalsIgnoreCase(
-            authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
       String vertaId = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
       workspaceDTO.setWorkspaceId(vertaId);
       workspaceDTO.setWorkspaceType(WorkspaceType.USER);

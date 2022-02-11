@@ -14,7 +14,9 @@ import org.apache.logging.log4j.Logger;
 @Entity
 @Table(name = "hyperparameter_element_mapping")
 public class HyperparameterElementMappingEntity implements Serializable {
-  private HyperparameterElementMappingEntity() {}
+
+  private HyperparameterElementMappingEntity() {
+  }
 
   private static final Logger LOGGER =
       LogManager.getLogger(HyperparameterElementMappingEntity.class);
@@ -122,8 +124,12 @@ public class HyperparameterElementMappingEntity implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     HyperparameterElementMappingEntity that = (HyperparameterElementMappingEntity) o;
     return name.equals(that.name)
         && int_value.equals(that.int_value)

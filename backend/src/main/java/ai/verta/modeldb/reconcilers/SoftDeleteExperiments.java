@@ -18,6 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.hibernate.query.Query;
 
 public class SoftDeleteExperiments extends Reconciler<String> {
+
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final MDBRoleService mdbRoleService;

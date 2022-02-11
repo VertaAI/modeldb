@@ -14,14 +14,17 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "key_value_property_mapping")
 public class KeyValuePropertyMappingEntity {
-  public KeyValuePropertyMappingEntity() {}
+
+  public KeyValuePropertyMappingEntity() {
+  }
 
   public KeyValuePropertyMappingEntity(KeyValuePropertyMappingId id, String value) {
     this.id = id;
     this.value = value;
   }
 
-  @EmbeddedId private KeyValuePropertyMappingId id;
+  @EmbeddedId
+  private KeyValuePropertyMappingId id;
 
   @Column(name = "kv_value", columnDefinition = "TEXT")
   private String value;
@@ -67,7 +70,8 @@ public class KeyValuePropertyMappingEntity {
       this.property_name = propertyName;
     }
 
-    private KeyValuePropertyMappingId() {}
+    private KeyValuePropertyMappingId() {
+    }
 
     public String getEntity_hash() {
       return entity_hash;
@@ -83,8 +87,12 @@ public class KeyValuePropertyMappingEntity {
 
     @Override
     public boolean equals(Object o) {
-      if (this == o) return true;
-      if (!(o instanceof KeyValuePropertyMappingId)) return false;
+      if (this == o) {
+        return true;
+      }
+      if (!(o instanceof KeyValuePropertyMappingId)) {
+        return false;
+      }
       KeyValuePropertyMappingId that = (KeyValuePropertyMappingId) o;
       return Objects.equals(getEntity_hash(), that.getEntity_hash())
           && Objects.equals(getKey(), that.getKey())

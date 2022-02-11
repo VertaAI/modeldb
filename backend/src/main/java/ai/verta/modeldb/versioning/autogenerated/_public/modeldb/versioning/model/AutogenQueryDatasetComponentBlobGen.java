@@ -10,6 +10,7 @@ import java.util.*;
 
 public class AutogenQueryDatasetComponentBlobGen
     extends Generator<AutogenQueryDatasetComponentBlob> {
+
   public AutogenQueryDatasetComponentBlobGen() {
     super(AutogenQueryDatasetComponentBlob.class);
   }

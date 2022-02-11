@@ -1,7 +1,9 @@
 package ai.verta.modeldb.common;
 
 public abstract class CommonMessages {
-  private CommonMessages() {}
+
+  private CommonMessages() {
+  }
 
   public static final String HOST_PORT_INFO_STR = "Host : {} Port : {}";
   public static final String AUTH_SERVICE_CHANNEL_CLOSE_ERROR =

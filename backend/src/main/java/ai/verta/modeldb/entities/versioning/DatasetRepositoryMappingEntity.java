@@ -12,7 +12,9 @@ import javax.persistence.Table;
 @Entity
 @Table(name = "dataset_repository_mapping")
 public class DatasetRepositoryMappingEntity implements Serializable {
-  public DatasetRepositoryMappingEntity() {}
+
+  public DatasetRepositoryMappingEntity() {
+  }
 
   public DatasetRepositoryMappingEntity(RepositoryEntity repositoryEntity) {
     this.repositoryEntity = repositoryEntity;
@@ -25,8 +27,12 @@ public class DatasetRepositoryMappingEntity implements Serializable {
 
   @Override
   public boolean equals(Object o) {
-    if (this == o) return true;
-    if (o == null || getClass() != o.getClass()) return false;
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
     DatasetRepositoryMappingEntity that = (DatasetRepositoryMappingEntity) o;
     return repositoryEntity.equals(that.repositoryEntity);
   }

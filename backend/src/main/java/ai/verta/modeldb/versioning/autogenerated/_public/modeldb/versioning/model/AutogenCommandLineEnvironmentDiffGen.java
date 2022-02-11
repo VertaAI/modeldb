@@ -10,6 +10,7 @@ import java.util.*;
 
 public class AutogenCommandLineEnvironmentDiffGen
     extends Generator<AutogenCommandLineEnvironmentDiff> {
+
   public AutogenCommandLineEnvironmentDiffGen() {
     super(AutogenCommandLineEnvironmentDiff.class);
   }
