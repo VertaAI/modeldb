@@ -51,6 +51,7 @@ import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -551,13 +552,122 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   public void deleteExperimentTags(
       DeleteExperimentTags request,
       StreamObserver<DeleteExperimentTags.Response> responseObserver) {
-    super.deleteExperimentTags(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                String errorMessage = null;
+                if (request.getId().isEmpty()
+                    && request.getTagsList().isEmpty()
+                    && !request.getDeleteAll()) {
+                  errorMessage =
+                      "Experiment ID and Experiment tags not found in DeleteExperimentTags request";
+                } else if (request.getId().isEmpty()) {
+                  errorMessage = "Experiment ID not found in DeleteExperimentTags request";
+                } else if (request.getTagsList().isEmpty() && !request.getDeleteAll()) {
+                  errorMessage = "Experiment tags not found in DeleteExperimentTags request";
+                }
+
+                if (errorMessage != null) {
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.deleteTags(
+                          request.getId(), request.getTagsList(), request.getDeleteAll()),
+                  executor)
+              .thenCompose(
+                  updatedExperiment -> {
+                    Map<String, Object> extraField = new HashMap<>();
+                    if (request.getDeleteAll()) {
+                      extraField.put("tags_delete_all", true);
+                    } else {
+                      extraField.put(
+                          "tags",
+                          new Gson()
+                              .toJsonTree(
+                                  request.getTagsList(),
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
+                    }
+                    // Add succeeded event in local DB
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            extraField,
+                            "experiment tags deleted successfully")
+                        .thenApply(unused -> updatedExperiment, executor);
+                  },
+                  executor)
+              .thenApply(
+                  experiment ->
+                      DeleteExperimentTags.Response.newBuilder().setExperiment(experiment).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteExperimentTag(
       DeleteExperimentTag request, StreamObserver<DeleteExperimentTag.Response> responseObserver) {
-    super.deleteExperimentTag(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                String errorMessage = null;
+                if (request.getId().isEmpty() && request.getTag().isEmpty()) {
+                  errorMessage =
+                      "Experiment ID and Experiment tag not found in DeleteExperimentTag request";
+                } else if (request.getId().isEmpty()) {
+                  errorMessage = "Experiment ID not found in DeleteExperimentTag request";
+                } else if (request.getTag().isEmpty()) {
+                  errorMessage = "Experiment tag not found in DeleteExperimentTag request";
+                }
+
+                if (errorMessage != null) {
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.deleteTags(
+                          request.getId(), Collections.singletonList(request.getTag()), false),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getTag()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment tag deleted successfully")
+                          .thenApply(unused -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      DeleteExperimentTag.Response.newBuilder().setExperiment(experiment).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

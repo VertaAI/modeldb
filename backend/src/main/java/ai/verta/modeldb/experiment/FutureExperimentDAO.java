@@ -37,6 +37,7 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
@@ -571,5 +572,28 @@ public class FutureExperimentDAO {
         .thenCompose(unused -> tagsHandler.getTags(expId), executor)
         .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor)
         .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
+  }
+
+  public InternalFuture<Experiment> deleteTags(String expId, List<String> tags, boolean deleteAll) {
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    final Optional<List<String>> maybeTags = deleteAll ? Optional.empty() : Optional.of(tags);
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      tagsHandler.deleteTags(handle, expId, maybeTags);
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
   }
 }
