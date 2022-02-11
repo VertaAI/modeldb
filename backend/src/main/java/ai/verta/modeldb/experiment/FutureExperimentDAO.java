@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.CreateExperiment;
@@ -590,6 +591,27 @@ public class FutureExperimentDAO {
                 jdbi.useHandle(
                     handle -> {
                       tagsHandler.deleteTags(handle, expId, maybeTags);
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<Experiment> logAttributes(String expId, List<KeyValue> attributes) {
+    final var now = new Date().getTime();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      attributeHandler.logKeyValues(handle, expId, attributes);
                       updateModifiedTimestamp(handle, expId, now);
                       updateVersionNumber(handle, expId);
                     }),
