@@ -175,7 +175,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   public OrganizationServiceGrpc.OrganizationServiceBlockingStub
-  getOrganizationServiceBlockingStub() {
+      getOrganizationServiceBlockingStub() {
     if (organizationServiceBlockingStub == null) {
       initOrganizationServiceStubChannel();
     }
@@ -188,7 +188,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   public OrganizationServiceGrpc.OrganizationServiceBlockingStub
-  getOrganizationServiceBlockingStubForServiceUser() {
+      getOrganizationServiceBlockingStubForServiceUser() {
     if (organizationServiceBlockingStubForServiceUser == null) {
       initOrganizationServiceStubChannelForServiceUser();
     }
@@ -218,7 +218,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
-  getCollaboratorServiceBlockingStub() {
+      getCollaboratorServiceBlockingStub() {
     if (collaboratorServiceBlockingStub == null) {
       initCollaboratorServiceStubChannel();
     }
@@ -226,7 +226,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
-  getCollaboratorServiceBlockingStubForServiceUser() {
+      getCollaboratorServiceBlockingStubForServiceUser() {
     if (collaboratorServiceBlockingStubForServiceUser == null) {
       initCollaboratorServiceStubChannelForServiceUser();
     }

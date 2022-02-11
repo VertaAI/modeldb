@@ -47,9 +47,7 @@ public class CollaboratorUser extends CollaboratorBase {
     return Entities.newBuilder().addUserIds(getVertaId()).build();
   }
 
-  /**
-   * Returns the vertaId for user
-   */
+  /** Returns the vertaId for user */
   @Override
   public String getId() {
     return getVertaId();

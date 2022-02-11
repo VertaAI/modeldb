@@ -18,11 +18,11 @@ public class AuthInterceptor implements ServerInterceptor {
   public static final Context.Key<Metadata> METADATA_INFO = Context.key("metadata");
 
   /**
-   * @param call:          ServerCall
+   * @param call: ServerCall
    * @param requestHeaders : Metadata request headers
-   * @param next:          ServerCallHandler
-   * @param <R>:           Request
-   * @param <S>:           Response
+   * @param next: ServerCallHandler
+   * @param <R>: Request
+   * @param <S>: Response
    * @return {@link Contexts}
    */
   @Override
@@ -54,7 +54,7 @@ public class AuthInterceptor implements ServerInterceptor {
         if (isDevKeyUsed) {
           if (!requestHeaders.containsKey(emailKey)
               || !(requestHeaders.containsKey(devKeyUnderscore)
-              || requestHeaders.containsKey(devKey))) {
+                  || requestHeaders.containsKey(devKey))) {
             parameterMissing = true;
           }
         } else if (sourceValue.equals("SessionId")) {
@@ -69,13 +69,11 @@ public class AuthInterceptor implements ServerInterceptor {
         var message = "Required parameter is missing in metadata in request: " + methodName;
         call.close(Status.PERMISSION_DENIED.withDescription(message), requestHeaders);
         LOGGER.debug(message);
-        return new ServerCall.Listener<>() {
-        };
+        return new ServerCall.Listener<>() {};
       }
     }
 
     ServerCall.Listener<R> delegate = Contexts.interceptCall(context, call, requestHeaders, next);
-    return new ForwardingServerCallListener.SimpleForwardingServerCallListener<>(delegate) {
-    };
+    return new ForwardingServerCallListener.SimpleForwardingServerCallListener<>(delegate) {};
   }
 }

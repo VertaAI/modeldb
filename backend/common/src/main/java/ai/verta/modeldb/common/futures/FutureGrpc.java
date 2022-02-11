@@ -14,8 +14,7 @@ import java.util.concurrent.ForkJoinPool;
 @SuppressWarnings({"squid:S100"})
 public class FutureGrpc {
 
-  private FutureGrpc() {
-  }
+  private FutureGrpc() {}
 
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
   // InternalFuture

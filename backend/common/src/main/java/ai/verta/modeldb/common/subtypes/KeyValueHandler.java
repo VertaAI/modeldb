@@ -100,17 +100,17 @@ public abstract class KeyValueHandler<T> {
 
   public InternalFuture<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
     return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    String.format(
-                        "select kv_key as k, kv_value as v, value_type as t, %s as entity_id from %s where entity_name=:entity_name and field_type=:field_type and %s in (<entity_ids>)",
-                        entityIdReferenceColumn, getTableName(), entityIdReferenceColumn))
-                .bindList("entity_ids", entityIds)
-                .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
-                .list())
+            handle ->
+                handle
+                    .createQuery(
+                        String.format(
+                            "select kv_key as k, kv_value as v, value_type as t, %s as entity_id from %s where entity_name=:entity_name and field_type=:field_type and %s in (<entity_ids>)",
+                            entityIdReferenceColumn, getTableName(), entityIdReferenceColumn))
+                    .bindList("entity_ids", entityIds)
+                    .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                    .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
+                    .list())
         .thenApply(
             simpleEntries ->
                 simpleEntries.stream()
@@ -254,18 +254,18 @@ public abstract class KeyValueHandler<T> {
   private InternalFuture<Boolean> keyValueExists(T entityId, KeyValue kv) {
     // Check for conflicts
     return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    String.format(
-                        "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
-                        getTableName(), entityIdReferenceColumn))
-                .bind(KEY_QUERY_PARAM, kv.getKey())
-                .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                .bind(ENTITY_ID_PARAM_QUERY, entityId)
-                .mapTo(Long.class)
-                .findOne())
+            handle ->
+                handle
+                    .createQuery(
+                        String.format(
+                            "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
+                            getTableName(), entityIdReferenceColumn))
+                    .bind(KEY_QUERY_PARAM, kv.getKey())
+                    .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                    .bind(ENTITY_ID_PARAM_QUERY, entityId)
+                    .mapTo(Long.class)
+                    .findOne())
         .thenApply(count -> (count.isPresent() && count.get() > 0), executor);
   }
 }

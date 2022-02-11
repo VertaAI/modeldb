@@ -76,16 +76,16 @@ public abstract class TagsHandlerBase<T> {
 
   public InternalFuture<MapSubtypes<T, String>> getTagsMap(Set<T> entityIds) {
     return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    String.format(
-                        "select tags, %s as entity_id from tag_mapping where entity_name=:entity_name and %s in (<entity_ids>) ORDER BY tags ASC",
-                        entityIdReferenceColumn, entityIdReferenceColumn))
-                .bindList("entity_ids", entityIds)
-                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
-                .list())
+            handle ->
+                handle
+                    .createQuery(
+                        String.format(
+                            "select tags, %s as entity_id from tag_mapping where entity_name=:entity_name and %s in (<entity_ids>) ORDER BY tags ASC",
+                            entityIdReferenceColumn, entityIdReferenceColumn))
+                    .bindList("entity_ids", entityIds)
+                    .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                    .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
+                    .list())
         .thenApply(
             simpleEntries ->
                 simpleEntries.stream()

@@ -11,8 +11,7 @@ import java.util.function.Supplier;
 
 public class TraceSupport {
 
-  private TraceSupport() {
-  }
+  private TraceSupport() {}
 
   public static <T> T traceNonFuture(
       Supplier<T> supplier, String operationName, Map<String, String> tags) {

@@ -13,8 +13,7 @@ public class InternalFuture<T> {
 
   private CompletionStage<T> stage;
 
-  private InternalFuture() {
-  }
+  private InternalFuture() {}
 
   public static <T> InternalFuture<T> trace(
       Supplier<InternalFuture<T>> supplier,

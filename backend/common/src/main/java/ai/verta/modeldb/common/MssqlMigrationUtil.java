@@ -17,8 +17,7 @@ public class MssqlMigrationUtil {
 
   private static final Logger LOGGER = LogManager.getLogger(MssqlMigrationUtil.class);
 
-  private MssqlMigrationUtil() {
-  }
+  private MssqlMigrationUtil() {}
 
   public static void migrateToUTF16ForMssql(FutureJdbi futureJdbi) {
     futureJdbi
@@ -408,7 +407,7 @@ public class MssqlMigrationUtil {
   }
 
   private static Map<String, Map<String, Map.Entry<String, String>>>
-  getAllTableForeignKeyConstraints(Handle handle, Set<String> columnNames) {
+      getAllTableForeignKeyConstraints(Handle handle, Set<String> columnNames) {
     Map<String, Map<String, Map.Entry<String, String>>> tableWiseConstraintsMap = new HashMap<>();
     handle
         .createQuery(
@@ -455,7 +454,7 @@ public class MssqlMigrationUtil {
   }
 
   private static Map<String, Map<String, Map.Entry<String, String>>>
-  getAllTableDefaultKeyConstraints(Handle handle, Set<String> columnNames) {
+      getAllTableDefaultKeyConstraints(Handle handle, Set<String> columnNames) {
     Map<String, Map<String, Map.Entry<String, String>>> tableWiseConstraintsMap = new HashMap<>();
     handle
         .createQuery(

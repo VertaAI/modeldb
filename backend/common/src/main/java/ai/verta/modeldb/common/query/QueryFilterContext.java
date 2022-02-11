@@ -109,13 +109,13 @@ public class QueryFilterContext {
               var ret = " LIMIT " + size;
               return ret
                   + pageNumber
-                  .map(
-                      number -> {
-                        final var pageIndex = calculatePageIndex(number);
-                        final var offset = calculateOffset(pageIndex, size);
-                        return " OFFSET " + offset;
-                      })
-                  .orElse("");
+                      .map(
+                          number -> {
+                            final var pageIndex = calculatePageIndex(number);
+                            final var offset = calculateOffset(pageIndex, size);
+                            return " OFFSET " + offset;
+                          })
+                      .orElse("");
             })
         .orElse("");
   }
@@ -128,13 +128,13 @@ public class QueryFilterContext {
         .map(
             size ->
                 pageNumber
-                    .map(
-                        number -> {
-                          final var pageIndex = calculatePageIndex(number);
-                          final var offset = calculateOffset(pageIndex, size);
-                          return " OFFSET " + offset;
-                        })
-                    .orElse("")
+                        .map(
+                            number -> {
+                              final var pageIndex = calculatePageIndex(number);
+                              final var offset = calculateOffset(pageIndex, size);
+                              return " OFFSET " + offset;
+                            })
+                        .orElse("")
                     + " ROWS FETCH NEXT "
                     + size
                     + " ROWS ONLY")

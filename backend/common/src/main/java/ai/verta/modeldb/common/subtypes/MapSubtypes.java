@@ -6,8 +6,7 @@ public class MapSubtypes<S, T> {
 
   private Map<S, List<T>> map = null;
 
-  private MapSubtypes() {
-  }
+  private MapSubtypes() {}
 
   public static <S, T> MapSubtypes<S, T> from(List<AbstractMap.SimpleEntry<S, T>> entries) {
     final var map = new HashMap<S, List<T>>();

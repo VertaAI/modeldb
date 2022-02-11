@@ -211,7 +211,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
   public boolean ping() {
     if (sessionFactory != null) {
       try (var session = sessionFactory.openSession()) {
-        final var valid = new boolean[]{false};
+        final var valid = new boolean[] {false};
         session.doWork(
             connection -> {
               if (connection.isValid(databaseConfig.getTimeout())) {

@@ -79,10 +79,10 @@ public abstract class CommonArtifactHandler<T> {
 
   public InternalFuture<MapSubtypes<T, Artifact>> getArtifactsMap(Set<T> entityIds) {
     return jdbi.withHandle(
-        handle -> {
-          Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
-          return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
-        })
+            handle -> {
+              Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
+              return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
+            })
         .thenApply(
             simpleEntries ->
                 simpleEntries.stream()

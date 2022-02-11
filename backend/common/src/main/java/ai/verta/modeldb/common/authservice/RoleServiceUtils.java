@@ -32,14 +32,14 @@ public class RoleServiceUtils implements RoleService {
   }
 
   /**
-   * @param workspaceId        workspace.id
-   * @param workspaceName      workspace.name
-   * @param resourceId         project.id, repository.id etc.
-   * @param resourceName       project.name, repository.name etc.
-   * @param ownerId:           parameter added for migration where we should have to populate entity
-   *                           owner.For other UAC will populate the owner ID
-   * @param resourceType       PROJECT, REPOSITORY, DATASET
-   * @param permissions        CollaboratorPermissions.
+   * @param workspaceId workspace.id
+   * @param workspaceName workspace.name
+   * @param resourceId project.id, repository.id etc.
+   * @param resourceName project.name, repository.name etc.
+   * @param ownerId: parameter added for migration where we should have to populate entity owner.For
+   *     other UAC will populate the owner ID
+   * @param resourceType PROJECT, REPOSITORY, DATASET
+   * @param permissions CollaboratorPermissions.
    * @param resourceVisibility ResourceVisibility
    * @return {@link Boolean} true, false based on success call
    */
@@ -281,8 +281,8 @@ public class RoleServiceUtils implements RoleService {
    * getResourceItems method is the main roleService method at MDB which actually call to the UAC
    * using endpoint getResources
    *
-   * @param workspace:                   workspace
-   * @param resourceIds:                 requested resource ids
+   * @param workspace: workspace
+   * @param resourceIds: requested resource ids
    * @param modelDBServiceResourceTypes: modelDBServiceResourceTypes like PROJECT, REPOSITORY
    * @return {@link List}: list of the resource details
    */
