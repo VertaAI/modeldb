@@ -341,8 +341,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
           InternalFuture.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
-                  var errorMessage =
-                      "Experiment ID not found in UpdateExperimentNameOrDescription request";
+                  var errorMessage = "Experiment ID not found in UpdateExperimentName request";
                   throw new InvalidArgumentException(errorMessage);
                 }
               },
