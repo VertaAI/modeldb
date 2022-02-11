@@ -47,6 +47,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentDAO {
@@ -527,40 +528,35 @@ public class FutureExperimentDAO {
         .thenCompose(
             unused ->
                 jdbi.useHandle(
-                    handle ->
-                        tagsHandler.addTags(
-                            handle, expId, TagsHandlerBase.checkEntityTagsLength(tags))),
+                    handle -> {
+                      tagsHandler.addTags(
+                          handle, expId, TagsHandlerBase.checkEntityTagsLength(tags));
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
             executor)
-        .thenCompose(unused -> updateModifiedTimestamp(expId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(expId), executor)
         .thenCompose(unused -> getExperimentById(expId), executor);
   }
 
-  private InternalFuture<Void> updateModifiedTimestamp(String experimentId, Long now) {
-    return jdbi.useHandle(
-        handle -> {
-          final var currentDateUpdated =
-              handle
-                  .createQuery("SELECT date_updated FROM experiment WHERE id=:exp_id")
-                  .bind("exp_id", experimentId)
-                  .mapTo(Long.class)
-                  .one();
-          final var dateUpdated = Math.max(currentDateUpdated, now);
-          handle
-              .createUpdate("update experiment set date_updated=:date_updated where id=:exp_id")
-              .bind("exp_id", experimentId)
-              .bind("date_updated", dateUpdated)
-              .execute();
-        });
+  private void updateModifiedTimestamp(Handle handle, String experimentId, Long now) {
+    final var currentDateUpdated =
+        handle
+            .createQuery("SELECT date_updated FROM experiment WHERE id=:exp_id")
+            .bind("exp_id", experimentId)
+            .mapTo(Long.class)
+            .one();
+    final var dateUpdated = Math.max(currentDateUpdated, now);
+    handle
+        .createUpdate("update experiment set date_updated=:date_updated where id=:exp_id")
+        .bind("exp_id", experimentId)
+        .bind("date_updated", dateUpdated)
+        .execute();
   }
 
-  private InternalFuture<Void> updateVersionNumber(String expId) {
-    return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "update experiment set version_number=(version_number + 1) where id=:exp_id")
-                .bind("exp_id", expId)
-                .execute());
+  private void updateVersionNumber(Handle handle, String expId) {
+    handle
+        .createUpdate("update experiment set version_number=(version_number + 1) where id=:exp_id")
+        .bind("exp_id", expId)
+        .execute();
   }
 }
