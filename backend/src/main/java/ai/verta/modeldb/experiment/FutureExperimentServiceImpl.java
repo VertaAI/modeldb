@@ -786,6 +786,34 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   public void getExperimentAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
     super.getExperimentAttributes(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                String errorMessage = null;
+                if (request.getId().isEmpty()
+                    && request.getAttributeKeysList().isEmpty()
+                    && !request.getGetAll()) {
+                  errorMessage =
+                      "Experiment ID and Experiment Attribute keys not found in GetAttributes request";
+                } else if (request.getId().isEmpty()) {
+                  errorMessage = "Experiment ID not found in GetAttributes request";
+                } else if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
+                  errorMessage = "Experiment Attribute keys not found in GetAttributes request";
+                }
+
+                if (errorMessage != null) {
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture.thenCompose(
+              unused -> futureExperimentDAO.getExperimentAttributes(request), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
