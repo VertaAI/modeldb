@@ -36,10 +36,8 @@ import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -212,24 +210,10 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       final var response =
           requestValidationFuture
               .thenCompose(
-                  unused ->
-                      futureExperimentDAO.findExperiments(
-                          FindExperiments.newBuilder().addExperimentIds(request.getId()).build()),
-                  executor)
+                  unused -> futureExperimentDAO.getExperimentById(request.getId()), executor)
               .thenApply(
-                  findResponse -> {
-                    if (findResponse.getExperimentsCount() > 1) {
-                      throw new InternalErrorException(
-                          "More than one Experiment found for ID: " + request.getId());
-                    } else if (findResponse.getExperimentsCount() == 0) {
-                      throw new NotFoundException(
-                          "Experiment not found for the ID: " + request.getId());
-                    } else {
-                      return GetExperimentById.Response.newBuilder()
-                          .setExperiment(findResponse.getExperiments(0))
-                          .build();
-                    }
-                  },
+                  experiment ->
+                      GetExperimentById.Response.newBuilder().setExperiment(experiment).build(),
                   executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
@@ -310,6 +294,43 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       UpdateExperimentNameOrDescription request,
       StreamObserver<UpdateExperimentNameOrDescription.Response> responseObserver) {
     super.updateExperimentNameOrDescription(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage =
+                      "Experiment ID not found in UpdateExperimentNameOrDescription request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused -> futureExperimentDAO.updateExperimentNameOrDescription(request),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "experiment updated successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      UpdateExperimentNameOrDescription.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

@@ -6,8 +6,11 @@ import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -22,13 +25,19 @@ import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.project.FutureProjectDAO;
+import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.Empty;
 import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -380,5 +389,92 @@ public class FutureExperimentDAO {
               },
               executor);
     }
+  }
+
+  public InternalFuture<Experiment> updateExperimentNameOrDescription(
+      UpdateExperimentNameOrDescription request) {
+    return getProjectIdByExperimentId(Collections.singletonList(request.getId()))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(request.getId()), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused -> {
+              if (!request.getName().isEmpty()) {
+                return updateExperimentName(
+                    request.getId(), ModelDBUtils.checkEntityNameLength(request.getName()));
+              }
+              // FIXME: this code never allows us to set the description as an empty string
+              if (!request.getDescription().isEmpty()) {
+                return updateExperimentDescription(request.getId(), request.getDescription());
+              }
+              return InternalFuture.completedInternalFuture(null);
+            },
+            executor)
+        .thenCompose(unused -> getExperimentById(request.getId()), executor);
+  }
+
+  private InternalFuture<Void> updateExperimentName(String expId, String name) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate(
+                    "update experiment set name = :name, date_update = :updatedTime, version_number=(version_number + 1) where id = :id ")
+                .bind("name", name)
+                .bind("id", expId)
+                .bind("updatedTime", new Date().getTime())
+                .execute());
+  }
+
+  private InternalFuture<Void> updateExperimentDescription(String expId, String description) {
+    return jdbi.useHandle(
+        handle ->
+            handle
+                .createUpdate(
+                    "update experiment set description = :description, date_update = :updatedTime, version_number=(version_number + 1) where id = :id ")
+                .bind("description", description)
+                .bind("id", expId)
+                .bind("updatedTime", new Date().getTime())
+                .execute());
+  }
+
+  private InternalFuture<Map<String, String>> getProjectIdByExperimentId(
+      List<String> experimentIds) {
+    return jdbi.withHandle(
+        handle -> {
+          List<Map<String, String>> experimentEntitiesMap =
+              handle
+                  .createQuery(
+                      "select id, project_id from experiment where id IN (<ids>) AND deleted = :deleted")
+                  .bind("deleted", false)
+                  .bindList("ids", experimentIds)
+                  .map(
+                      (rs, ctx) ->
+                          Collections.singletonMap(rs.getString("id"), rs.getString("project_id")))
+                  .list();
+
+          Map<String, String> projectIdFromExperimentMap = new HashMap<>();
+          for (var result : experimentEntitiesMap) {
+            projectIdFromExperimentMap.putAll(result);
+          }
+          return projectIdFromExperimentMap;
+        });
+  }
+
+  public InternalFuture<Experiment> getExperimentById(String experimentId) {
+    return findExperiments(FindExperiments.newBuilder().addExperimentIds(experimentId).build())
+        .thenApply(
+            findResponse -> {
+              if (findResponse.getExperimentsCount() > 1) {
+                throw new InternalErrorException(
+                    "More than one Experiment found for ID: " + experimentId);
+              } else if (findResponse.getExperimentsCount() == 0) {
+                throw new NotFoundException("Experiment not found for the ID: " + experimentId);
+              } else {
+                return findResponse.getExperiments(0);
+              }
+            },
+            executor);
   }
 }
