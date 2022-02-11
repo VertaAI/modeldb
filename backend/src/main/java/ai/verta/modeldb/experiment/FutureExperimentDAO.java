@@ -6,6 +6,7 @@ import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
@@ -494,6 +495,21 @@ public class FutureExperimentDAO {
               return updateExperimentField(
                   request.getId(), "name", ModelDBUtils.checkEntityNameLength(name));
             },
+            executor)
+        .thenCompose(unused -> getExperimentById(request.getId()), executor);
+  }
+
+  public InternalFuture<Experiment> updateExperimentDescription(
+      UpdateExperimentDescription request) {
+    return getProjectIdByExperimentId(Collections.singletonList(request.getId()))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(request.getId()), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                updateExperimentField(request.getId(), "description", request.getDescription()),
             executor)
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
   }

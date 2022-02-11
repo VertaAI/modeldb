@@ -374,7 +374,42 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   public void updateExperimentDescription(
       UpdateExperimentDescription request,
       StreamObserver<UpdateExperimentDescription.Response> responseObserver) {
-    super.updateExperimentDescription(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage =
+                      "Experiment ID not found in UpdateExperimentDescription request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused -> futureExperimentDAO.updateExperimentDescription(request), executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("description"),
+                              Collections.emptyMap(),
+                              "experiment description updated successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      UpdateExperimentDescription.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
