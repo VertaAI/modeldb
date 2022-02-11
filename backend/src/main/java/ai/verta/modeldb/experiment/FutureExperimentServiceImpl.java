@@ -785,7 +785,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void getExperimentAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    super.getExperimentAttributes(request, responseObserver);
     try {
       final var requestValidationFuture =
           InternalFuture.runAsync(
