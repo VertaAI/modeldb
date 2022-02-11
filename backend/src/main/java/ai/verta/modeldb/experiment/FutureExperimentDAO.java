@@ -6,6 +6,7 @@ import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
@@ -408,12 +409,13 @@ public class FutureExperimentDAO {
               }
 
               if (!name.isEmpty()) {
-                return updateExperimentName(
-                    request.getId(), ModelDBUtils.checkEntityNameLength(name));
+                return updateExperimentField(
+                    request.getId(), "name", ModelDBUtils.checkEntityNameLength(name));
               }
               // FIXME: this code never allows us to set the description as an empty string
               if (!request.getDescription().isEmpty()) {
-                return updateExperimentDescription(request.getId(), request.getDescription());
+                return updateExperimentField(
+                    request.getId(), "description", request.getDescription());
               }
               return InternalFuture.completedInternalFuture(null);
             },
@@ -421,25 +423,16 @@ public class FutureExperimentDAO {
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
   }
 
-  private InternalFuture<Void> updateExperimentName(String expId, String name) {
+  private InternalFuture<Void> updateExperimentField(
+      String expId, String fieldName, String fieldValue) {
     return jdbi.useHandle(
         handle ->
             handle
                 .createUpdate(
-                    "update experiment set name = :name, date_updated = :updatedTime, version_number=(version_number + 1) where id = :id ")
-                .bind("name", name)
-                .bind("id", expId)
-                .bind("updatedTime", new Date().getTime())
-                .execute());
-  }
-
-  private InternalFuture<Void> updateExperimentDescription(String expId, String description) {
-    return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "update experiment set description = :description, date_updated = :updatedTime, version_number=(version_number + 1) where id = :id ")
-                .bind("description", description)
+                    String.format(
+                        "update experiment set %s = :fieldValue, date_updated = :updatedTime, version_number=(version_number + 1) where id = :id ",
+                        fieldName))
+                .bind("fieldValue", fieldValue)
                 .bind("id", expId)
                 .bind("updatedTime", new Date().getTime())
                 .execute());
@@ -482,5 +475,26 @@ public class FutureExperimentDAO {
               }
             },
             executor);
+  }
+
+  public InternalFuture<Experiment> updateExperimentName(UpdateExperimentName request) {
+    return getProjectIdByExperimentId(Collections.singletonList(request.getId()))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(request.getId()), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused -> {
+              var name = request.getName();
+              if (request.getName().isEmpty()) {
+                name = MetadataServiceImpl.createRandomName();
+              }
+
+              return updateExperimentField(
+                  request.getId(), "name", ModelDBUtils.checkEntityNameLength(name));
+            },
+            executor)
+        .thenCompose(unused -> getExperimentById(request.getId()), executor);
   }
 }
