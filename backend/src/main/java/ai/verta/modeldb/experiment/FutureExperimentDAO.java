@@ -465,6 +465,11 @@ public class FutureExperimentDAO {
           for (var result : experimentEntitiesMap) {
             projectIdFromExperimentMap.putAll(result);
           }
+          for (var expId : experimentIds) {
+            if (!projectIdFromExperimentMap.containsKey(expId)) {
+              projectIdFromExperimentMap.put(expId, "");
+            }
+          }
           return projectIdFromExperimentMap;
         });
   }
