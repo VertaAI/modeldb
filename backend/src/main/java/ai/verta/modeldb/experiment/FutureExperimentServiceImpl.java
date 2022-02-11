@@ -676,7 +676,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void addAttribute(
       AddAttributes request, StreamObserver<AddAttributes.Response> responseObserver) {
-    super.addAttribute(request, responseObserver);
     try {
       final var requestValidationFuture =
           InternalFuture.runAsync(
