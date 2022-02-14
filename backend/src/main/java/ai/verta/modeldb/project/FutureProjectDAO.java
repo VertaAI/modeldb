@@ -1030,7 +1030,18 @@ public class FutureProjectDAO {
     final var artifacts = request.getArtifactsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
-    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project Id is not found in request");
+              }
+            },
+            executor);
+
+    return validateParamFuture.thenCompose(unused -> checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE), executor)
         .thenCompose(
             unused ->
                 jdbi.useHandle(
