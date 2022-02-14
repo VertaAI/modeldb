@@ -1035,13 +1035,16 @@ public class FutureProjectDAO {
         InternalFuture.runAsync(
             () -> {
               if (request.getId().isEmpty()) {
-                throw new InvalidArgumentException(
-                    "Project Id is not found in request");
+                throw new InvalidArgumentException("Project Id is not found in request");
               }
             },
             executor);
 
-    return validateParamFuture.thenCompose(unused -> checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE), executor)
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
         .thenCompose(
             unused ->
                 jdbi.useHandle(
