@@ -45,7 +45,7 @@
   <span> · </span>
   <a href="https://docs.verta.ai/verta/tutorials/metadata">Workflow</a>
   <span> · </span>
-  <a href="https://github.com/VertaAI/modeldb/tree/master/client/workflows">Examples</a>
+  <a href="https://github.com/VertaAI/examples">Examples</a>
   <span> · </span>
   <a href="#contributions">Contribute</a>
   <span> · </span>
@@ -105,7 +105,7 @@ docker-compose -f docker-compose-all.yaml up
 pip install verta
 ```
 
-3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://github.com/VertaAI/modeldb/tree/master/client/workflows) in our repository.*
+3. Version a model or log a workflow. *Alternatively, run any of the detailed [examples](https://github.com/VertaAI/examples) in our repository.*
 
 ```python
 from verta import Client

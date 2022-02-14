@@ -279,7 +279,10 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       for (KeyValueQuery predicate : predicates) {
         // Validate if current user has access to the entity or not where predicate key has an id
         RdbmsUtils.validatePredicates(
-            ModelDBConstants.DATASETS, accessibleDatasetIds, predicate, mdbRoleService);
+            ModelDBConstants.DATASETS,
+            accessibleDatasetIds,
+            predicate,
+            mdbRoleService.IsImplemented());
       }
 
       String workspaceName = queryParameters.getWorkspaceName();

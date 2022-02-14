@@ -169,10 +169,6 @@ def log_tensorboard_events(run, log_dir):
 
     This integration has been verified to work with TensorFlow >=1.14 and 2.X.
 
-    See our `GitHub repository
-    <https://github.com/VertaAI/modeldb/blob/master/client/workflows/examples/tensorboard-integration.ipynb>`__
-    for an example of this intergation in action.
-
     Parameters
     ----------
     run : :class:`~verta.tracking.entities.ExperimentRun`

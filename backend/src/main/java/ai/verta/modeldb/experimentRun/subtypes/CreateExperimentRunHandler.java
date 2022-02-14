@@ -14,10 +14,8 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
-import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.uac.*;
 import java.util.*;
 import java.util.concurrent.Executor;
@@ -35,7 +33,6 @@ public class CreateExperimentRunHandler {
   private final FutureJdbi jdbi;
   private final UAC uac;
   private final Config config;
-  private final TrialConfig trialConfig;
 
   private final AttributeHandler attributeHandler;
   private final KeyValueHandler hyperparametersHandler;
@@ -52,7 +49,6 @@ public class CreateExperimentRunHandler {
       Executor executor,
       FutureJdbi jdbi,
       Config config,
-      TrialConfig trialConfig,
       UAC uac,
       AttributeHandler attributeHandler,
       KeyValueHandler hyperparametersHandler,
@@ -66,7 +62,6 @@ public class CreateExperimentRunHandler {
     this.executor = executor;
     this.jdbi = jdbi;
     this.config = config;
-    this.trialConfig = trialConfig;
     this.uac = uac;
 
     this.attributeHandler = attributeHandler;
@@ -85,19 +80,11 @@ public class CreateExperimentRunHandler {
     return FutureGrpc.ClientRequest(
             uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
-            currentLoginUserInfo ->
-                TrialUtils.futureValidateExperimentRunPerWorkspaceForTrial(trialConfig, executor)
-                    .thenCompose(
-                        unused -> {
-                          final var experimentRun =
-                              getExperimentRunFromRequest(request, currentLoginUserInfo);
+            currentLoginUserInfo -> {
+              final var experimentRun = getExperimentRunFromRequest(request, currentLoginUserInfo);
 
-                          TrialUtils.validateMaxArtifactsForTrial(
-                              trialConfig, experimentRun.getArtifactsCount(), 0);
-
-                          return InternalFuture.completedInternalFuture(experimentRun);
-                        },
-                        executor),
+              return InternalFuture.completedInternalFuture(experimentRun);
+            },
             executor);
     /*.thenCompose(
     experimentRun -> {
@@ -224,102 +211,127 @@ public class CreateExperimentRunHandler {
     queryStrBuilder.append(bindArguments);
     queryStrBuilder.append(" ) ");
 
-    return jdbi.useHandle(
-            handle ->
-                handle.useTransaction(
-                    TransactionIsolationLevel.READ_COMMITTED,
-                    handleForTransaction -> {
-                      Boolean exists =
-                          checkInsertedEntityAlreadyExists(handleForTransaction, newExperimentRun);
-                      if (exists) {
-                        throw new AlreadyExistsException(
-                            "ExperimentRun '"
-                                + newExperimentRun.getName()
-                                + "' already exists in database");
-                      }
-
-                      LOGGER.trace(
-                          "insert experiment run query string: " + queryStrBuilder.toString());
-                      var query = handleForTransaction.createUpdate(queryStrBuilder.toString());
-
-                      // Inserting fields arguments based on the keys and value of map
-                      for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
-                        query.bind(objectEntry.getKey(), objectEntry.getValue());
-                      }
-
-                      try {
-                        int count = query.execute();
-                        LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
-                      } catch (UnableToExecuteStatementException exception) {
-                        // take a brief pause before resubmitting its query/transaction
-                        Thread.sleep(config.getJdbi_retry_time()); // Time in ms
-                        LOGGER.trace("Retry to insert ExperimentRun");
-                        int count = query.execute();
-                        LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
-                      }
-                    }))
+    return InternalFuture.completedInternalFuture(true)
         .thenCompose(
             unused -> {
-              final var futureLogs = new LinkedList<InternalFuture<Void>>();
-
-              if (!newExperimentRun.getTagsList().isEmpty()) {
-                futureLogs.add(
-                    tagsHandler.addTags(newExperimentRun.getId(), newExperimentRun.getTagsList()));
-              }
-              if (!newExperimentRun.getAttributesList().isEmpty()) {
-                futureLogs.add(
-                    attributeHandler.logKeyValues(
-                        newExperimentRun.getId(), newExperimentRun.getAttributesList()));
-              }
-              if (!newExperimentRun.getHyperparametersList().isEmpty()) {
-                futureLogs.add(
-                    hyperparametersHandler.logKeyValues(
-                        newExperimentRun.getId(), newExperimentRun.getHyperparametersList()));
-              }
-              if (!newExperimentRun.getMetricsList().isEmpty()) {
-                futureLogs.add(
-                    metricsHandler.logKeyValues(
-                        newExperimentRun.getId(), newExperimentRun.getMetricsList()));
-              }
-              if (!newExperimentRun.getObservationsList().isEmpty()) {
-                futureLogs.add(
-                    observationHandler.logObservations(
-                        newExperimentRun.getId(), newExperimentRun.getObservationsList(), now));
-              }
-              if (!newExperimentRun.getArtifactsList().isEmpty()) {
-                futureLogs.add(
-                    artifactHandler.logArtifacts(
-                        newExperimentRun.getId(), newExperimentRun.getArtifactsList(), false));
-              }
-              if (!newExperimentRun.getFeaturesList().isEmpty()) {
-                futureLogs.add(
-                    featureHandler.logFeatures(
-                        newExperimentRun.getId(), newExperimentRun.getFeaturesList()));
-              }
-              if (newExperimentRun.getCodeVersionSnapshot().hasCodeArchive()
-                  || newExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
-                futureLogs.add(
-                    codeVersionHandler.logCodeVersion(
-                        LogExperimentRunCodeVersion.newBuilder()
-                            .setId(newExperimentRun.getId())
-                            .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
-                            .setOverwrite(false)
-                            .build()));
-              }
-              if (!newExperimentRun.getDatasetsList().isEmpty()) {
-                futureLogs.add(
-                    datasetHandler.logArtifacts(
-                        newExperimentRun.getId(), newExperimentRun.getDatasetsList(), false));
-              }
               if (newExperimentRun.getVersionedInputs().getRepositoryId() != 0) {
-                futureLogs.add(
-                    versionInputHandler.validateAndInsertVersionedInputs(
-                        newExperimentRun.getId(), newExperimentRun.getVersionedInputs()));
+                return versionInputHandler.validateVersioningEntity(
+                    newExperimentRun.getVersionedInputs());
               }
-
-              return InternalFuture.sequence(futureLogs, executor)
-                  .thenAccept(unused2 -> {}, executor);
+              return InternalFuture.completedInternalFuture(new HashMap<>());
             },
+            executor)
+        .thenCompose(
+            locationBlobWithHashMap ->
+                jdbi.useHandle(
+                    handle ->
+                        handle.useTransaction(
+                            TransactionIsolationLevel.SERIALIZABLE,
+                            handleForTransaction -> {
+                              Boolean exists =
+                                  checkInsertedEntityAlreadyExists(
+                                      handleForTransaction, newExperimentRun);
+                              if (exists) {
+                                throw new AlreadyExistsException(
+                                    "ExperimentRun '"
+                                        + newExperimentRun.getName()
+                                        + "' already exists in database");
+                              }
+
+                              LOGGER.trace(
+                                  "insert experiment run query string: "
+                                      + queryStrBuilder.toString());
+                              var query =
+                                  handleForTransaction.createUpdate(queryStrBuilder.toString());
+
+                              // Inserting fields arguments based on the keys and value of map
+                              for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
+                                query.bind(objectEntry.getKey(), objectEntry.getValue());
+                              }
+
+                              try {
+                                int count = query.execute();
+                                LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
+                              } catch (UnableToExecuteStatementException exception) {
+                                // take a brief pause before resubmitting its query/transaction
+                                Thread.sleep(config.getJdbi_retry_time()); // Time in ms
+                                LOGGER.trace("Retry to insert ExperimentRun");
+                                int count = query.execute();
+                                LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
+                              }
+
+                              final var futureLogs = new LinkedList<InternalFuture<Void>>();
+
+                              if (!newExperimentRun.getTagsList().isEmpty()) {
+                                tagsHandler.addTags(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getTagsList());
+                              }
+                              if (!newExperimentRun.getAttributesList().isEmpty()) {
+                                attributeHandler.logKeyValues(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getAttributesList());
+                              }
+                              if (!newExperimentRun.getHyperparametersList().isEmpty()) {
+                                hyperparametersHandler.logKeyValues(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getHyperparametersList());
+                              }
+                              if (!newExperimentRun.getMetricsList().isEmpty()) {
+                                metricsHandler.logKeyValues(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getMetricsList());
+                              }
+                              if (!newExperimentRun.getObservationsList().isEmpty()) {
+                                observationHandler.logObservations(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getObservationsList(),
+                                    now);
+                              }
+                              if (!newExperimentRun.getArtifactsList().isEmpty()) {
+                                artifactHandler.logArtifacts(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getArtifactsList(),
+                                    false);
+                              }
+                              if (!newExperimentRun.getFeaturesList().isEmpty()) {
+                                featureHandler.logFeatures(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getFeaturesList());
+                              }
+                              if (newExperimentRun.getCodeVersionSnapshot().hasCodeArchive()
+                                  || newExperimentRun.getCodeVersionSnapshot().hasGitSnapshot()) {
+                                codeVersionHandler.logCodeVersion(
+                                    handleForTransaction,
+                                    LogExperimentRunCodeVersion.newBuilder()
+                                        .setId(newExperimentRun.getId())
+                                        .setCodeVersion(newExperimentRun.getCodeVersionSnapshot())
+                                        .setOverwrite(false)
+                                        .build());
+                              }
+                              if (!newExperimentRun.getDatasetsList().isEmpty()) {
+                                datasetHandler.logArtifacts(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getDatasetsList(),
+                                    false);
+                              }
+
+                              if (newExperimentRun.getVersionedInputs().getRepositoryId() != 0) {
+                                versionInputHandler.validateAndInsertVersionedInputs(
+                                    handleForTransaction,
+                                    newExperimentRun.getId(),
+                                    newExperimentRun.getVersionedInputs(),
+                                    locationBlobWithHashMap);
+                              }
+                            })),
             executor)
         .thenCompose(unused2 -> createRoleBindingsForExperimentRun(newExperimentRun), executor)
         .thenCompose(

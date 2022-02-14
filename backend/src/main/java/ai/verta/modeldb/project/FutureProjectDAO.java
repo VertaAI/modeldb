@@ -1,51 +1,108 @@
 package ai.verta.modeldb.project;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.Pagination;
+import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.AddProjectTags;
+import ai.verta.modeldb.DeleteProjectArtifact;
 import ai.verta.modeldb.DeleteProjectAttributes;
 import ai.verta.modeldb.DeleteProjectTags;
+import ai.verta.modeldb.Empty;
+import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.FindProjects;
+import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetProjectByName;
+import ai.verta.modeldb.GetProjectReadme;
+import ai.verta.modeldb.GetSummary;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.LastModifiedExperimentRunSummary;
 import ai.verta.modeldb.LogAttributes;
+import ai.verta.modeldb.LogProjectArtifacts;
+import ai.verta.modeldb.MetricsSummary;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.Project;
+import ai.verta.modeldb.ProjectVisibility;
+import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.UpdateProjectAttributes;
+import ai.verta.modeldb.UpdateProjectDescription;
+import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CodeVersionHandler;
 import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
+import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
+import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
+import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.Action;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
+import ai.verta.uac.Workspace;
+import java.sql.SQLException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.statement.Query;
 
 public class FutureProjectDAO {
+  private static final Logger LOGGER = LogManager.getLogger(FutureProjectDAO.class);
 
-  private final Executor executor;
   private final FutureJdbi jdbi;
+  private final Executor executor;
   private final UAC uac;
   private final boolean isMssql;
 
   private final AttributeHandler attributeHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
+  private final PredicatesHandler predicatesHandler;
+  private final CodeVersionHandler codeVersionHandler;
+  private final SortingHandler sortingHandler;
+  private final FutureExperimentRunDAO futureExperimentRunDAO;
+  private final UACApisUtil uacApisUtil;
 
   public FutureProjectDAO(
       Executor executor,
@@ -53,16 +110,20 @@ public class FutureProjectDAO {
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
-      MDBConfig mdbConfig) {
-    this.executor = executor;
+      MDBConfig mdbConfig,
+      FutureExperimentRunDAO futureExperimentRunDAO,
+      UACApisUtil uacApisUtil) {
     this.jdbi = jdbi;
-    this.uac = uac;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
+    this.executor = executor;
+    this.uac = uac;
+    this.futureExperimentRunDAO = futureExperimentRunDAO;
+    this.uacApisUtil = uacApisUtil;
 
     var entityName = "ProjectEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
-    CodeVersionHandler codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
+    codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
     DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName, mdbConfig);
     artifactHandler =
         new ArtifactHandler(
@@ -74,6 +135,8 @@ public class FutureProjectDAO {
             artifactStoreDAO,
             datasetVersionDAO,
             mdbConfig);
+    predicatesHandler = new PredicatesHandler(executor, "project", "p", uacApisUtil);
+    sortingHandler = new SortingHandler("project");
   }
 
   public InternalFuture<Void> deleteAttributes(DeleteProjectAttributes request) {
@@ -97,7 +160,11 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> attributeHandler.deleteKeyValues(projectId, maybeKeys), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> attributeHandler.deleteKeyValues(handle, projectId, maybeKeys)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
@@ -147,7 +214,11 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> attributeHandler.logKeyValues(projectId, attributes), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> attributeHandler.logKeyValues(handle, projectId, attributes)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
@@ -199,7 +270,9 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> tagsHandler.addTags(projectId, tags), executor)
+        .thenCompose(
+            unused -> jdbi.useHandle(handle -> tagsHandler.addTags(handle, projectId, tags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
@@ -225,7 +298,10 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> tagsHandler.deleteTags(projectId, maybeTags), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(handle -> tagsHandler.deleteTags(handle, projectId, maybeTags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
@@ -342,5 +418,889 @@ public class FutureProjectDAO {
 
     return permissionCheck.thenCompose(
         unused -> artifactHandler.getUrlForArtifact(request), executor);
+  }
+
+  public InternalFuture<VerifyConnectionResponse> verifyConnection(Empty request) {
+    return InternalFuture.completedInternalFuture(
+        VerifyConnectionResponse.newBuilder().setStatus(true).build());
+  }
+
+  public InternalFuture<FindProjects.Response> findProjects(FindProjects request) {
+    return FutureGrpc.ClientRequest(
+            uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
+        .thenCompose(
+            userInfo -> {
+              InternalFuture<List<GetResourcesResponseItem>> resourcesFuture;
+              if (request.getWorkspaceName().isEmpty()
+                  || request.getWorkspaceName().equals(userInfo.getVertaInfo().getUsername())) {
+                resourcesFuture =
+                    uacApisUtil.getResourceItemsForLoginUserWorkspace(
+                        request.getWorkspaceName(),
+                        Optional.of(request.getProjectIdsList()),
+                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+              } else {
+                resourcesFuture =
+                    uacApisUtil.getResourceItemsForWorkspace(
+                        Optional.of(request.getWorkspaceName()),
+                        Optional.of(request.getProjectIdsList()),
+                        Optional.empty(),
+                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+              }
+
+              return resourcesFuture.thenCompose(
+                  getResourceItems -> {
+                    Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
+                    Set<String> accessibleResourceIdsWithCollaborator =
+                        getResourceItems.stream()
+                            .peek(
+                                responseItem ->
+                                    getResourcesMap.put(responseItem.getResourceId(), responseItem))
+                            .map(GetResourcesResponseItem::getResourceId)
+                            .collect(Collectors.toSet());
+
+                    if (accessibleResourceIdsWithCollaborator.isEmpty()) {
+                      LOGGER.debug("Accessible Project Ids not found, size 0");
+                      return InternalFuture.completedInternalFuture(
+                          FindProjects.Response.newBuilder().build());
+                    }
+
+                    final InternalFuture<QueryFilterContext> futureLocalContext =
+                        getFutureLocalContext();
+
+                    // futurePredicatesContext
+                    final var futurePredicatesContext =
+                        predicatesHandler.processPredicates(request.getPredicatesList(), executor);
+
+                    // futureSortingContext
+                    final var futureSortingContext =
+                        sortingHandler.processSort(request.getSortKey(), request.getAscending());
+
+                    var futureProjectIdsContext =
+                        getFutureProjectIdsContext(request, accessibleResourceIdsWithCollaborator);
+
+                    final var futureProjects =
+                        InternalFuture.sequence(
+                                Arrays.asList(
+                                    futureLocalContext,
+                                    futurePredicatesContext,
+                                    futureSortingContext,
+                                    futureProjectIdsContext),
+                                executor)
+                            .thenApply(QueryFilterContext::combine, executor)
+                            .thenCompose(
+                                queryContext ->
+                                    jdbi.withHandle(
+                                            handle -> {
+                                              var sql =
+                                                  "select p.id, p.date_created, p.date_updated, p.name, p.description, p.owner, "
+                                                      + "p.short_name, p.project_visibility, p.readme_text, "
+                                                      + "p.deleted, p.version_number from project p ";
+
+                                              Query query =
+                                                  CommonUtils.buildQueryFromQueryContext(
+                                                      "p",
+                                                      Pagination.newBuilder()
+                                                          .setPageLimit(request.getPageLimit())
+                                                          .setPageNumber(request.getPageNumber())
+                                                          .build(),
+                                                      queryContext,
+                                                      handle,
+                                                      sql,
+                                                      isMssql);
+
+                                              Map<Long, Workspace> cacheWorkspaceMap =
+                                                  new HashMap<>();
+                                              return query
+                                                  .map(
+                                                      (rs, ctx) ->
+                                                          buildProjectBuilderFromResultSet(
+                                                              getResourcesMap,
+                                                              cacheWorkspaceMap,
+                                                              rs))
+                                                  .list();
+                                            })
+                                        .thenCompose(
+                                            builders -> {
+                                              if (builders == null || builders.isEmpty()) {
+                                                return InternalFuture.completedInternalFuture(
+                                                    new LinkedList<Project>());
+                                              }
+
+                                              var futureBuildersStream =
+                                                  InternalFuture.completedInternalFuture(
+                                                      builders.stream());
+                                              final var ids =
+                                                  builders.stream()
+                                                      .map(Project.Builder::getId)
+                                                      .collect(Collectors.toSet());
+
+                                              // Get tags
+                                              final var futureTags = tagsHandler.getTagsMap(ids);
+                                              futureBuildersStream =
+                                                  futureBuildersStream.thenCombine(
+                                                      futureTags,
+                                                      (stream, tags) ->
+                                                          stream.map(
+                                                              builder ->
+                                                                  builder.addAllTags(
+                                                                      tags.get(builder.getId()))),
+                                                      executor);
+
+                                              // Get attributes
+                                              final var futureAttributes =
+                                                  attributeHandler.getKeyValuesMap(ids);
+                                              futureBuildersStream =
+                                                  futureBuildersStream.thenCombine(
+                                                      futureAttributes,
+                                                      (stream, attributes) ->
+                                                          stream.map(
+                                                              builder ->
+                                                                  builder.addAllAttributes(
+                                                                      attributes.get(
+                                                                          builder.getId()))),
+                                                      executor);
+
+                                              // Get artifacts
+                                              final var futureArtifacts =
+                                                  artifactHandler.getArtifactsMap(ids);
+                                              futureBuildersStream =
+                                                  futureBuildersStream.thenCombine(
+                                                      futureArtifacts,
+                                                      (stream, artifacts) ->
+                                                          stream.map(
+                                                              builder ->
+                                                                  builder.addAllArtifacts(
+                                                                      artifacts.get(
+                                                                          builder.getId()))),
+                                                      executor);
+
+                                              final var futureCodeVersions =
+                                                  codeVersionHandler.getCodeVersionMap(
+                                                      new ArrayList<>(ids));
+                                              futureBuildersStream =
+                                                  futureBuildersStream.thenCombine(
+                                                      futureCodeVersions,
+                                                      (stream, codeVersionMap) ->
+                                                          stream.map(
+                                                              builder -> {
+                                                                if (codeVersionMap.containsKey(
+                                                                    builder.getId())) {
+                                                                  return builder
+                                                                      .setCodeVersionSnapshot(
+                                                                          codeVersionMap.get(
+                                                                              builder.getId()));
+                                                                } else {
+                                                                  return builder;
+                                                                }
+                                                              }),
+                                                      executor);
+
+                                              return futureBuildersStream.thenApply(
+                                                  projectBuilders ->
+                                                      projectBuilders
+                                                          .map(Project.Builder::build)
+                                                          .collect(Collectors.toList()),
+                                                  executor);
+                                            },
+                                            executor),
+                                executor);
+
+                    final var futureCount =
+                        InternalFuture.sequence(
+                                Arrays.asList(
+                                    futureLocalContext,
+                                    futurePredicatesContext,
+                                    futureProjectIdsContext),
+                                executor)
+                            .thenApply(QueryFilterContext::combine, executor)
+                            .thenCompose(this::getProjectCountBasedOnQueryFilter, executor);
+
+                    return futureProjects
+                        .thenApply(this::sortProjectFields, executor)
+                        .thenCombine(
+                            futureCount,
+                            (projects, count) ->
+                                FindProjects.Response.newBuilder()
+                                    .addAllProjects(projects)
+                                    .setTotalRecords(count)
+                                    .build(),
+                            executor);
+                  },
+                  executor);
+            },
+            executor);
+  }
+
+  private InternalFuture<Long> getProjectCountBasedOnQueryFilter(QueryFilterContext queryContext) {
+    return jdbi.withHandle(
+        handle -> {
+          var sql = "select count(p.id) from project p ";
+
+          if (!queryContext.getConditions().isEmpty()) {
+            sql += " WHERE " + String.join(" AND ", queryContext.getConditions());
+          }
+
+          var query = handle.createQuery(sql);
+          queryContext.getBinds().forEach(b -> b.accept(query));
+
+          return query.mapTo(Long.class).one();
+        });
+  }
+
+  private Project.Builder buildProjectBuilderFromResultSet(
+      Map<String, GetResourcesResponseItem> getResourcesMap,
+      Map<Long, Workspace> cacheWorkspaceMap,
+      java.sql.ResultSet rs)
+      throws SQLException {
+    var projectBuilder =
+        Project.newBuilder()
+            .setId(rs.getString("id"))
+            .setName(rs.getString("name"))
+            .setDescription(rs.getString("description"))
+            .setDateUpdated(rs.getLong("date_updated"))
+            .setDateCreated(rs.getLong("date_created"))
+            .setOwner(rs.getString("owner"))
+            .setVersionNumber(rs.getLong("version_number"))
+            .setShortName(rs.getString("short_name"))
+            .setReadmeText(rs.getString("readme_text"));
+
+    var projectResource = getResourcesMap.get(projectBuilder.getId());
+    projectBuilder.setVisibility(projectResource.getVisibility());
+    projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+
+    Workspace workspace;
+    if (cacheWorkspaceMap.containsKey(projectResource.getWorkspaceId())) {
+      workspace = cacheWorkspaceMap.get(projectResource.getWorkspaceId());
+    } else {
+      workspace = uacApisUtil.getWorkspaceById(projectResource.getWorkspaceId()).get();
+      cacheWorkspaceMap.put(workspace.getId(), workspace);
+    }
+    switch (workspace.getInternalIdCase()) {
+      case ORG_ID:
+        projectBuilder.setWorkspaceId(workspace.getOrgId());
+        projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+        break;
+      case USER_ID:
+        projectBuilder.setWorkspaceId(workspace.getUserId());
+        projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+        break;
+      default:
+        // Do nothing
+        break;
+    }
+
+    ProjectVisibility visibility =
+        (ProjectVisibility)
+            ModelDBUtils.getOldVisibility(
+                ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                projectResource.getVisibility());
+    projectBuilder.setProjectVisibility(visibility);
+
+    return projectBuilder;
+  }
+
+  private InternalFuture<QueryFilterContext> getFutureLocalContext() {
+    return InternalFuture.supplyAsync(
+        () -> {
+          final var localQueryContext = new QueryFilterContext();
+          localQueryContext.getConditions().add("p.deleted = :deleted");
+          localQueryContext.getBinds().add(q -> q.bind("deleted", false));
+
+          localQueryContext.getConditions().add("p.created = :created");
+          localQueryContext.getBinds().add(q -> q.bind("created", true));
+
+          return localQueryContext;
+        },
+        executor);
+  }
+
+  private InternalFuture<QueryFilterContext> getFutureProjectIdsContext(
+      FindProjects request, Set<String> accessibleResourceIdsWithCollaborator) {
+    List<KeyValueQuery> predicates = new ArrayList<>(request.getPredicatesList());
+    for (KeyValueQuery predicate : predicates) {
+      // Validate if current user has access to the entity or not where predicate
+      // key has an id
+      RdbmsUtils.validatePredicates(
+          ModelDBConstants.PROJECTS,
+          new ArrayList<>(accessibleResourceIdsWithCollaborator),
+          predicate,
+          true);
+    }
+
+    return InternalFuture.supplyAsync(
+        () -> {
+          final var localQueryContext = new QueryFilterContext();
+          localQueryContext.getConditions().add(" p.id IN (<projectIds>) ");
+          localQueryContext
+              .getBinds()
+              .add(q -> q.bindList("projectIds", accessibleResourceIdsWithCollaborator));
+
+          return localQueryContext;
+        },
+        executor);
+  }
+
+  private List<Project> sortProjectFields(List<Project> projects) {
+    List<Project> sortedProjects = new LinkedList<>();
+    for (Project project : projects) {
+      var projectBuilder = Project.newBuilder(project);
+      projectBuilder
+          .clearTags()
+          .addAllTags(project.getTagsList().stream().sorted().collect(Collectors.toList()))
+          .clearAttributes()
+          .addAllAttributes(
+              project.getAttributesList().stream()
+                  .sorted(Comparator.comparing(KeyValue::getKey))
+                  .collect(Collectors.toList()))
+          .clearArtifacts()
+          .addAllArtifacts(
+              project.getArtifactsList().stream()
+                  .sorted(Comparator.comparing(Artifact::getKey))
+                  .collect(Collectors.toList()));
+      sortedProjects.add(projectBuilder.build());
+    }
+    return sortedProjects;
+  }
+
+  public InternalFuture<List<GetResourcesResponseItem>> deleteProjects(List<String> projectIds) {
+    // validate argument
+    InternalFuture<Void> validateArgumentFuture =
+        InternalFuture.runAsync(
+            () -> {
+              // Request Parameter Validation
+              if (projectIds.isEmpty() || projectIds.stream().allMatch(String::isEmpty)) {
+                var errorMessage = "Project ID not found in request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateArgumentFuture
+        .thenCompose(
+            unused -> {
+              // Get self allowed resources id where user has delete permission
+              return getSelfAllowedResources(
+                  ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                  ModelDBActionEnum.ModelDBServiceActions.DELETE,
+                  projectIds);
+            },
+            executor)
+        .thenApply(
+            allowedProjectIds -> {
+              if (allowedProjectIds.isEmpty()) {
+                throw new PermissionDeniedException(
+                    "Delete Access Denied for given project Ids : " + projectIds);
+              }
+              return allowedProjectIds;
+            },
+            executor)
+        .thenCompose(
+            allowedProjectIds ->
+                uacApisUtil.getResourceItemsForWorkspace(
+                    Optional.empty(),
+                    Optional.of(allowedProjectIds),
+                    Optional.empty(),
+                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT),
+            executor)
+        .thenCompose(
+            allowedProjectResources ->
+                jdbi.useHandle(
+                        handle -> {
+                          var updatedCount =
+                              handle
+                                  .createUpdate(
+                                      "update project set deleted = :deleted where id IN (<projectIds>)")
+                                  .bind("deleted", true)
+                                  .bindList(
+                                      "projectIds",
+                                      allowedProjectResources.stream()
+                                          .map(GetResourcesResponseItem::getResourceId)
+                                          .collect(Collectors.toList()))
+                                  .execute();
+                          LOGGER.debug(
+                              "Mark Projects as deleted : {}, count : {}",
+                              allowedProjectResources,
+                              updatedCount);
+                          allowedProjectResources.forEach(
+                              allowedResource ->
+                                  ReconcilerInitializer.softDeleteProjects.insert(
+                                      allowedResource.getResourceId()));
+                          LOGGER.debug("Project deleted successfully");
+                        })
+                    .thenApply(unused -> allowedProjectResources, executor),
+            executor);
+  }
+
+  private InternalFuture<List<String>> getSelfAllowedResources(
+      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes,
+      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedResourcesIds) {
+    var action =
+        Action.newBuilder()
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .setModeldbServiceAction(modelDBServiceActions)
+            .build();
+    GetSelfAllowedResources getAllowedResourcesRequest =
+        GetSelfAllowedResources.newBuilder()
+            .addActions(action)
+            .setResourceType(
+                ResourceType.newBuilder()
+                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
+            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+            .build();
+    return FutureGrpc.ClientRequest(
+            uac.getAuthzService().getSelfAllowedResources(getAllowedResourcesRequest), executor)
+        .thenApply(
+            getAllowedResourcesResponse -> {
+              LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
+              LOGGER.trace(
+                  CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
+
+              var resourcesIds = new ArrayList<String>();
+              if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
+                for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
+                  resourcesIds.addAll(resources.getResourceIdsList());
+                }
+                // Validate if current user has access to the entity or not
+                resourcesIds.retainAll(requestedResourcesIds);
+              }
+              return resourcesIds;
+            },
+            executor);
+  }
+
+  public InternalFuture<Project> getProjectById(String projectId) {
+    try {
+      var validateArgumentFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (projectId.isEmpty()) {
+                  throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
+                }
+              },
+              executor);
+      return validateArgumentFuture
+          .thenCompose(
+              unused ->
+                  findProjects(
+                      FindProjects.newBuilder()
+                          .addProjectIds(projectId)
+                          .setPageLimit(1)
+                          .setPageNumber(1)
+                          .build()),
+              executor)
+          .thenApply(
+              response -> {
+                if (response.getProjectsList().isEmpty()) {
+                  throw new NotFoundException("Project not found for given Id");
+                } else if (response.getProjectsCount() > 1) {
+                  throw new InternalErrorException("More then one projects found");
+                }
+                return response.getProjects(0);
+              },
+              executor);
+    } catch (Exception e) {
+      return InternalFuture.failedStage(e);
+    }
+  }
+
+  public InternalFuture<Project> updateProjectDescription(UpdateProjectDescription request) {
+    InternalFuture<Void> validateParametersFuture =
+        InternalFuture.runAsync(
+            () -> {
+              // Request Parameter Validation
+              if (request.getId().isEmpty()) {
+                var errorMessage = "Project ID is not found in UpdateProjectDescription request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateParametersFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(unused -> getProjectById(request.getId()), executor)
+        .thenCompose(
+            project ->
+                jdbi.withHandle(
+                    handle -> {
+                      var now = new Date().getTime();
+                      handle
+                          .createUpdate(
+                              "update project set description = :description, date_updated = :dateUpdated, version_number=(version_number + 1) where id = :id")
+                          .bind("id", project.getId())
+                          .bind("description", request.getDescription())
+                          .bind("dateUpdated", now)
+                          .execute();
+                      return project
+                          .toBuilder()
+                          .setDateUpdated(now)
+                          .setDescription(request.getDescription())
+                          .setVersionNumber(project.getVersionNumber() + 1L)
+                          .build();
+                    }),
+            executor);
+  }
+
+  public InternalFuture<GetProjectByName.Response> getProjectByName(GetProjectByName request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getName().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project name is not found in GetProjectByName request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                FutureGrpc.ClientRequest(
+                    uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()),
+                    executor),
+            executor)
+        .thenCompose(
+            userInfo -> {
+              // Get the user info from the Context
+              return uacApisUtil
+                  .getResourceItemsForWorkspace(
+                      Optional.empty(),
+                      Optional.empty(),
+                      Optional.of(request.getName()),
+                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                  .thenCompose(
+                      responseItem -> {
+                        if (responseItem.size() == 0) {
+                          throw new NotFoundException("Project not found");
+                        }
+
+                        String workspaceName =
+                            request.getWorkspaceName().isEmpty()
+                                ? userInfo.getVertaInfo().getUsername()
+                                : request.getWorkspaceName();
+
+                        FindProjects.Builder findProjects =
+                            FindProjects.newBuilder()
+                                .addAllProjectIds(
+                                    responseItem.stream()
+                                        .map(GetResourcesResponseItem::getResourceId)
+                                        .collect(Collectors.toList()))
+                                .setWorkspaceName(workspaceName);
+                        return findProjects(findProjects.build())
+                            .thenApply(
+                                response -> {
+                                  Project selfOwnerProject = null;
+                                  List<Project> sharedProjects = new ArrayList<>();
+
+                                  for (Project project : response.getProjectsList()) {
+                                    if (userInfo == null
+                                        || project
+                                            .getOwner()
+                                            .equals(userInfo.getVertaInfo().getUserId())) {
+                                      selfOwnerProject = project;
+                                    } else {
+                                      sharedProjects.add(project);
+                                    }
+                                  }
+
+                                  var responseBuilder = GetProjectByName.Response.newBuilder();
+                                  if (selfOwnerProject != null) {
+                                    responseBuilder.setProjectByUser(selfOwnerProject);
+                                  }
+                                  responseBuilder.addAllSharedProjects(sharedProjects);
+
+                                  return responseBuilder.build();
+                                },
+                                executor);
+                      },
+                      executor);
+            },
+            executor);
+  }
+
+  public InternalFuture<Void> logArtifacts(LogProjectArtifacts request) {
+    final var projectId = request.getId();
+    final var artifacts = request.getArtifactsList();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> artifactHandler.logArtifacts(handle, projectId, artifacts, false)),
+            executor)
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
+    final var projectId = request.getId();
+    final var key = request.getKey();
+    Optional<String> maybeKey = key.isEmpty() ? Optional.empty() : Optional.of(key);
+
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException("Project ID not found in GetArtifacts request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> artifactHandler.getArtifacts(projectId, maybeKey), executor)
+        .thenApply(
+            artifacts ->
+                artifacts.stream()
+                    .sorted(Comparator.comparing(Artifact::getKey))
+                    .collect(Collectors.toList()),
+            executor);
+  }
+
+  public InternalFuture<Void> deleteArtifacts(DeleteProjectArtifact request) {
+    final var projectId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    final var keys =
+        request.getKey().isEmpty()
+            ? new ArrayList<String>()
+            : Collections.singletonList(request.getKey());
+    Optional<List<String>> optionalKeys = keys.isEmpty() ? Optional.empty() : Optional.of(keys);
+
+    return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
+        .thenCompose(unused -> artifactHandler.deleteArtifacts(projectId, optionalKeys), executor)
+        .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
+        .thenCompose(unused -> updateVersionNumber(projectId), executor);
+  }
+
+  public InternalFuture<GetSummary.Response> getSummary(GetSummary request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getEntityId().isEmpty()) {
+                var errorMessage = "Project ID not found in GetSummary request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getEntityId(), ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> getProjectById(request.getEntityId()), executor)
+        .thenCompose(
+            project -> {
+              final var responseBuilder =
+                  GetSummary.Response.newBuilder()
+                      .setName(project.getName())
+                      .setLastUpdatedTime(project.getDateUpdated());
+
+              var experimentCountFuture =
+                  getExperimentCount(Collections.singletonList(project.getId()))
+                      .thenApply(responseBuilder::setTotalExperiment, executor);
+              return experimentCountFuture
+                  .thenCompose(
+                      builder ->
+                          getExperimentRunCount(Collections.singletonList(project.getId()))
+                              .thenApply(builder::setTotalExperimentRuns, executor),
+                      executor)
+                  .thenCompose(
+                      builder ->
+                          futureExperimentRunDAO
+                              .findExperimentRuns(
+                                  FindExperimentRuns.newBuilder()
+                                      .setProjectId(request.getEntityId())
+                                      .build())
+                              .thenApply(
+                                  response -> {
+                                    var experimentRuns = response.getExperimentRunsList();
+                                    LastModifiedExperimentRunSummary
+                                        lastModifiedExperimentRunSummary = null;
+                                    List<MetricsSummary> minMaxMetricsValueList = new ArrayList<>();
+                                    if (!experimentRuns.isEmpty()) {
+                                      ExperimentRun lastModifiedExperimentRun = null;
+                                      Map<String, Double[]> minMaxMetricsValueMap =
+                                          new HashMap<>(); // In double[], Index 0 =
+                                      // minValue, Index 1 =
+                                      // maxValue
+                                      Set<String> keySet = new HashSet<>();
+
+                                      for (ExperimentRun experimentRun : experimentRuns) {
+                                        if (lastModifiedExperimentRun == null
+                                            || lastModifiedExperimentRun.getDateUpdated()
+                                                < experimentRun.getDateUpdated()) {
+                                          lastModifiedExperimentRun = experimentRun;
+                                        }
+
+                                        for (KeyValue keyValue : experimentRun.getMetricsList()) {
+                                          keySet.add(keyValue.getKey());
+                                          minMaxMetricsValueMap.putAll(
+                                              getMinMaxMetricsValueMap(
+                                                  minMaxMetricsValueMap, keyValue));
+                                        }
+                                      }
+
+                                      lastModifiedExperimentRunSummary =
+                                          LastModifiedExperimentRunSummary.newBuilder()
+                                              .setLastUpdatedTime(
+                                                  lastModifiedExperimentRun.getDateUpdated())
+                                              .setName(lastModifiedExperimentRun.getName())
+                                              .build();
+
+                                      for (String key : keySet) {
+                                        Double[] minMaxValueArray =
+                                            minMaxMetricsValueMap.get(
+                                                key); // Index 0 = minValue, Index 1
+                                        // = maxValue
+                                        var minMaxMetricsSummary =
+                                            MetricsSummary.newBuilder()
+                                                .setKey(key)
+                                                .setMinValue(minMaxValueArray[0]) // Index 0 =
+                                                // minValue
+                                                .setMaxValue(
+                                                    minMaxValueArray[1]) // Index 1 = maxValue
+                                                .build();
+                                        minMaxMetricsValueList.add(minMaxMetricsSummary);
+                                      }
+                                    }
+
+                                    builder.addAllMetrics(minMaxMetricsValueList);
+
+                                    if (lastModifiedExperimentRunSummary != null) {
+                                      builder.setLastModifiedExperimentRunSummary(
+                                          lastModifiedExperimentRunSummary);
+                                    }
+
+                                    return builder.build();
+                                  },
+                                  executor),
+                      executor);
+            },
+            executor);
+  }
+
+  private Map<String, Double[]> getMinMaxMetricsValueMap(
+      Map<String, Double[]> minMaxMetricsValueMap, KeyValue keyValue) {
+    Double value = keyValue.getValue().getNumberValue();
+    Double[] minMaxValueArray = minMaxMetricsValueMap.get(keyValue.getKey());
+    if (minMaxValueArray == null) {
+      minMaxValueArray = new Double[2]; // Index 0 = minValue, Index 1 = maxValue
+    }
+    if (minMaxValueArray[0] == null || minMaxValueArray[0] > value) {
+      minMaxValueArray[0] = value;
+    }
+    if (minMaxValueArray[1] == null || minMaxValueArray[1] < value) {
+      minMaxValueArray[1] = value;
+    }
+    return Collections.singletonMap(keyValue.getKey(), minMaxValueArray);
+  }
+
+  private InternalFuture<Long> getExperimentCount(List<String> projectIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "SELECT COUNT(ee.id) FROM experiment ee WHERE ee.project_id IN (<project_ids>)")
+                    .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
+                    .mapTo(Long.class)
+                    .findOne())
+        .thenApply(count -> count.orElse(0L), executor);
+  }
+
+  private InternalFuture<Long> getExperimentRunCount(List<String> projectIds) {
+    return jdbi.withHandle(
+            handle ->
+                handle
+                    .createQuery(
+                        "SELECT COUNT(er.id) FROM experiment_run er WHERE er.project_id IN (<project_ids>)")
+                    .bindList(ModelDBConstants.PROJECT_IDS, projectIds)
+                    .mapTo(Long.class)
+                    .findOne())
+        .thenApply(count -> count.orElse(0L), executor);
+  }
+
+  public InternalFuture<Void> setProjectReadme(SetProjectReadme request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                throw new InvalidArgumentException(
+                    "Project ID not found in SetProjectReadme request");
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        handle
+                            .createUpdate(
+                                "update project set readme_text = :readmeText where id = :id")
+                            .bind("id", request.getId())
+                            .bind("readmeText", request.getReadmeText())
+                            .execute()),
+            executor)
+        .thenCompose(
+            unused -> updateModifiedTimestamp(request.getId(), new Date().getTime()), executor)
+        .thenCompose(unused -> updateVersionNumber(request.getId()), executor);
+  }
+
+  public InternalFuture<GetProjectReadme.Response> getProjectReadme(GetProjectReadme request) {
+    // Request Parameter Validation
+    InternalFuture<Void> validateParamFuture =
+        InternalFuture.runAsync(
+            () -> {
+              if (request.getId().isEmpty()) {
+                var errorMessage = "Project ID not found in GetProjectReadme request";
+                throw new InvalidArgumentException(errorMessage);
+              }
+            },
+            executor);
+
+    return validateParamFuture
+        .thenCompose(
+            unused ->
+                checkProjectPermission(
+                    request.getId(), ModelDBActionEnum.ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery("select readme_text from project where id = :id")
+                            .bind("id", request.getId())
+                            .mapTo(String.class)
+                            .findOne()),
+            executor)
+        .thenApply(
+            readmeTextOptional -> {
+              var response = GetProjectReadme.Response.newBuilder();
+              readmeTextOptional.ifPresent(response::setReadmeText);
+              return response.build();
+            },
+            executor);
   }
 }

@@ -41,19 +41,14 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
   public Response getUrlForArtifactMultipart(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
     try {
-      if (mdbConfig.trial != null) {
-        return artifactStoreService.generatePresignedUrlForTrial(
-            s3Key, method, partNumber, uploadId);
-      } else {
-        String presignedUrl =
-            artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
-        return GetUrlForArtifact.Response.newBuilder()
-            .setMultipartUploadOk(
-                mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3)
-                    && uploadId != null)
-            .setUrl(presignedUrl)
-            .build();
-      }
+      String presignedUrl =
+          artifactStoreService.generatePresignedUrl(s3Key, method, partNumber, uploadId);
+      return GetUrlForArtifact.Response.newBuilder()
+          .setMultipartUploadOk(
+              mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3)
+                  && uploadId != null)
+          .setUrl(presignedUrl)
+          .build();
     } catch (AmazonServiceException e) {
       // Amazon S3 couldn't be contacted for a response, or the client
       // couldn't parse the response from Amazon S3.

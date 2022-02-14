@@ -217,6 +217,7 @@ class TestStandardModels:
             == _constants.ModelType.STANDARD_VERTA_MODEL
         )
 
+    @pytest.mark.deployment
     @pytest.mark.parametrize(
         "model",
         verta_models,
@@ -249,6 +250,7 @@ class TestStandardModels:
         deployed_model = endpoint.get_deployed_model()
         assert deployed_model.predict(artifact_value) == artifact_value
 
+    @pytest.mark.deployment
     @pytest.mark.parametrize(
         "model",
         decorated_verta_models,
@@ -291,6 +293,7 @@ class TestStandardModels:
                 Python([]),
             )
 
+    @pytest.mark.deployment
     @pytest.mark.tensorflow
     @pytest.mark.parametrize(
         "model",
@@ -331,6 +334,7 @@ class TestStandardModels:
                 Python(["tensorflow"]),
             )
 
+    @pytest.mark.deployment
     @pytest.mark.parametrize(
         "model",
         sklearn_models,
@@ -361,6 +365,7 @@ class TestStandardModels:
                 Python(["scikit-learn"]),
             )
 
+    @pytest.mark.deployment
     @pytest.mark.parametrize(
         "model",
         torch_models,
@@ -396,6 +401,7 @@ class TestStandardModels:
                 Python(["torch"]),
             )
 
+    @pytest.mark.deployment
     @pytest.mark.parametrize(
         "model",
         xgboost_models,

@@ -14,7 +14,7 @@ _sym_db = _symbol_database.Default()
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
 from ..common import CommonService_pb2 as common_dot_CommonService__pb2
-from ..monitoring import Summary_pb2 as monitoring_dot_Summary__pb2
+from ..monitoring import MonitoredEntity_pb2 as monitoring_dot_MonitoredEntity__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -22,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.monitoring',
   syntax='proto3',
   serialized_options=b'P\001ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring',
-  serialized_pb=b'\n\x16monitoring/Alert.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x18monitoring/Summary.proto\"P\n\x1bNotificationChannelTypeEnum\"1\n\x17NotificationChannelType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05SLACK\x10\x01\"\xad\x02\n\x13NotificationChannel\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x03 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x04 \x01(\x04\x12V\n\x04type\x18\x05 \x01(\x0e\x32H.ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType\x12M\n\rslack_webhook\x18\x06 \x01(\x0b\x32\x34.ai.verta.monitoring.NotificationChannelSlackWebhookH\x00\x12\x14\n\x0cworkspace_id\x18\x07 \x01(\x04\x42\t\n\x07\x63hannel\".\n\x1fNotificationChannelSlackWebhook\x12\x0b\n\x03url\x18\x01 \x01(\t\"\xaa\x03\n CreateNotificationChannelRequest\x12\x39\n\x07\x63hannel\x18\x01 \x01(\x0b\x32(.ai.verta.monitoring.NotificationChannel\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x03 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x04 \x01(\x04\x12\x16\n\x0cworkspace_id\x18\x07 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x08 \x01(\tH\x00\x12V\n\x04type\x18\x05 \x01(\x0e\x32H.ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType\x12M\n\rslack_webhook\x18\x06 \x01(\x0b\x32\x34.ai.verta.monitoring.NotificationChannelSlackWebhookH\x01\x42\x16\n\x14workspace_identifierB\x16\n\x14notification_channel\"]\n UpdateNotificationChannelRequest\x12\x39\n\x07\x63hannel\x18\x01 \x01(\x0b\x32(.ai.verta.monitoring.NotificationChannel\"\xcf\x02\n\x1e\x46indNotificationChannelRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12?\n\x05types\x18\x03 \x03(\x0b\x32\x30.ai.verta.monitoring.NotificationChannelTypeEnum\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x12\x16\n\x0cworkspace_id\x18\x06 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x07 \x01(\tH\x00\x1a]\n\x08Response\x12:\n\x08\x63hannels\x18\x01 \x03(\x0b\x32(.ai.verta.monitoring.NotificationChannel\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x42\x16\n\x14workspace_identifier\"/\n DeleteNotificationChannelRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"R\n\x0f\x41lerterTypeEnum\"?\n\x0b\x41lerterType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x46IXED\x10\x01\x12\r\n\tREFERENCE\x10\x02\x12\t\n\x05RANGE\x10\x03\"C\n\x0f\x41lertStatusEnum\"0\n\x0b\x41lertStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x06\n\x02OK\x10\x01\x12\x0c\n\x08\x41LERTING\x10\x02\"\xfa\x05\n\x05\x41lert\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x1b\n\x13monitored_entity_id\x18\x03 \x01(\x04\x12\x19\n\x11\x63reated_at_millis\x18\x04 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x05 \x01(\x04\x12 \n\x18last_evaluated_at_millis\x18\x06 \x01(\x04\x12S\n\x15notification_channels\x18\x07 \x03(\x0b\x32\x34.ai.verta.monitoring.Alert.NotificationChannelsEntry\x12G\n\x10sample_find_base\x18\x08 \x01(\x0b\x32-.ai.verta.monitoring.FindSummarySampleRequest\x12@\n\x06status\x18\t \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12$\n\x1cviolating_summary_sample_ids\x18\n \x03(\x04\x12\x46\n\x0c\x61lerter_type\x18\x0b \x01(\x0e\x32\x30.ai.verta.monitoring.AlerterTypeEnum.AlerterType\x12\x38\n\ralerter_fixed\x18\x0c \x01(\x0b\x32\x1f.ai.verta.monitoring.AlertFixedH\x00\x12@\n\x11\x61lerter_reference\x18\r \x01(\x0b\x32#.ai.verta.monitoring.AlertReferenceH\x00\x12\x38\n\ralerter_range\x18\x0e \x01(\x0b\x32\x1f.ai.verta.monitoring.AlertRangeH\x00\x12\x16\n\x0eversion_number\x18\x0f \x01(\x04\x1a;\n\x19NotificationChannelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01\x42\t\n\x07\x61lerter\"Y\n\nAlertFixed\x12\x11\n\tthreshold\x18\x01 \x01(\x02\x12\x38\n\x08operator\x18\x02 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"V\n\nAlertRange\x12\x13\n\x0blower_bound\x18\x01 \x01(\x02\x12\x13\n\x0bupper_bound\x18\x02 \x01(\x02\x12\x1e\n\x16\x61lert_if_outside_range\x18\x03 \x01(\x08\"z\n\x0e\x41lertReference\x12\x11\n\tthreshold\x18\x01 \x01(\x02\x12\x1b\n\x13reference_sample_id\x18\x02 \x01(\x04\x12\x38\n\x08operator\x18\x03 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"?\n\x12\x43reateAlertRequest\x12)\n\x05\x61lert\x18\x01 \x01(\x0b\x32\x1a.ai.verta.monitoring.Alert\"?\n\x12UpdateAlertRequest\x12)\n\x05\x61lert\x18\x02 \x01(\x0b\x32\x1a.ai.verta.monitoring.Alert\"\x89\x03\n\x10\x46indAlertRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x1c\n\x14monitored_entity_ids\x18\x03 \x03(\x04\x12&\n\x1elast_evaluated_at_millis_after\x18\x04 \x01(\x04\x12G\n\ralerter_types\x18\x05 \x03(\x0e\x32\x30.ai.verta.monitoring.AlerterTypeEnum.AlerterType\x12@\n\x06status\x18\x06 \x03(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x13\n\x0bpage_number\x18\x07 \x01(\x05\x12\x12\n\npage_limit\x18\x08 \x01(\x05\x1aM\n\x08Response\x12*\n\x06\x61lerts\x18\x01 \x03(\x0b\x32\x1a.ai.verta.monitoring.Alert\x12\x15\n\rtotal_records\x18\x02 \x01(\x05J\x04\x08\t\x10\nJ\x04\x08\n\x10\x0bJ\x04\x08\x0b\x10\x0c\"!\n\x12\x44\x65leteAlertRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"\xe6\x01\n\x18UpdateAlertStatusRequest\x12\x10\n\x08\x61lert_id\x18\x01 \x01(\x04\x12\x19\n\x11\x65vent_time_millis\x18\x02 \x01(\x04\x12@\n\x06status\x18\x03 \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x1b\n\x13\x61lerting_sample_ids\x18\x05 \x03(\x04\x12\x15\n\rok_sample_ids\x18\x06 \x03(\x04\x12!\n\x19\x63lear_alerting_sample_ids\x18\x07 \x01(\x08J\x04\x08\x04\x10\x05\"m\n\x17ListAlertHistoryRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\x46\n\x08Response\x12:\n\x07history\x18\x01 \x03(\x0b\x32).ai.verta.monitoring.ListAlertHistoryItem\"\xab\x01\n\x14ListAlertHistoryItem\x12\x19\n\x11\x65vent_time_millis\x18\x01 \x01(\x04\x12@\n\x06status\x18\x02 \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12$\n\x1cviolating_summary_sample_ids\x18\x03 \x03(\x04\x12\x10\n\x08\x65vent_id\x18\x04 \x01(\t2\xfe\x0c\n\x0c\x41lertService\x12\xbc\x01\n\x19\x63reateNotificationChannel\x12\x35.ai.verta.monitoring.CreateNotificationChannelRequest\x1a(.ai.verta.monitoring.NotificationChannel\">\x82\xd3\xe4\x93\x02\x38\"3/api/v1/monitoring/alerts/createNotificationChannel:\x01*\x12\xbc\x01\n\x19updateNotificationChannel\x12\x35.ai.verta.monitoring.UpdateNotificationChannelRequest\x1a(.ai.verta.monitoring.NotificationChannel\">\x82\xd3\xe4\x93\x02\x38\"3/api/v1/monitoring/alerts/updateNotificationChannel:\x01*\x12\xca\x01\n\x17\x66indNotificationChannel\x12\x33.ai.verta.monitoring.FindNotificationChannelRequest\x1a<.ai.verta.monitoring.FindNotificationChannelRequest.Response\"<\x82\xd3\xe4\x93\x02\x36\"1/api/v1/monitoring/alerts/findNotificationChannel:\x01*\x12\xae\x01\n\x19\x64\x65leteNotificationChannel\x12\x35.ai.verta.monitoring.DeleteNotificationChannelRequest\x1a\x1a.ai.verta.monitoring.Empty\">\x82\xd3\xe4\x93\x02\x38*3/api/v1/monitoring/alerts/deleteNotificationChannel:\x01*\x12\x84\x01\n\x0b\x63reateAlert\x12\'.ai.verta.monitoring.CreateAlertRequest\x1a\x1a.ai.verta.monitoring.Alert\"0\x82\xd3\xe4\x93\x02*\"%/api/v1/monitoring/alerts/createAlert:\x01*\x12\x84\x01\n\x0bupdateAlert\x12\'.ai.verta.monitoring.UpdateAlertRequest\x1a\x1a.ai.verta.monitoring.Alert\"0\x82\xd3\xe4\x93\x02*\"%/api/v1/monitoring/alerts/updateAlert:\x01*\x12\x96\x01\n\x11updateAlertStatus\x12-.ai.verta.monitoring.UpdateAlertStatusRequest\x1a\x1a.ai.verta.monitoring.Empty\"6\x82\xd3\xe4\x93\x02\x30\"+/api/v1/monitoring/alerts/updateAlertStatus:\x01*\x12\x92\x01\n\tfindAlert\x12%.ai.verta.monitoring.FindAlertRequest\x1a..ai.verta.monitoring.FindAlertRequest.Response\".\x82\xd3\xe4\x93\x02(\"#/api/v1/monitoring/alerts/findAlert:\x01*\x12\xae\x01\n\x10listAlertHistory\x12,.ai.verta.monitoring.ListAlertHistoryRequest\x1a\x35.ai.verta.monitoring.ListAlertHistoryRequest.Response\"5\x82\xd3\xe4\x93\x02/\"*/api/v1/monitoring/alerts/listAlertHistory:\x01*\x12\x84\x01\n\x0b\x64\x65leteAlert\x12\'.ai.verta.monitoring.DeleteAlertRequest\x1a\x1a.ai.verta.monitoring.Empty\"0\x82\xd3\xe4\x93\x02**%/api/v1/monitoring/alerts/deleteAlert:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
+  serialized_pb=b'\n\x16monitoring/Alert.proto\x12\x13\x61i.verta.monitoring\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1a\x63ommon/CommonService.proto\x1a monitoring/MonitoredEntity.proto\"P\n\x1bNotificationChannelTypeEnum\"1\n\x17NotificationChannelType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05SLACK\x10\x01\"\xad\x02\n\x13NotificationChannel\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x03 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x04 \x01(\x04\x12V\n\x04type\x18\x05 \x01(\x0e\x32H.ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType\x12M\n\rslack_webhook\x18\x06 \x01(\x0b\x32\x34.ai.verta.monitoring.NotificationChannelSlackWebhookH\x00\x12\x14\n\x0cworkspace_id\x18\x07 \x01(\x04\x42\t\n\x07\x63hannel\".\n\x1fNotificationChannelSlackWebhook\x12\x0b\n\x03url\x18\x01 \x01(\t\"\xaa\x03\n CreateNotificationChannelRequest\x12\x39\n\x07\x63hannel\x18\x01 \x01(\x0b\x32(.ai.verta.monitoring.NotificationChannel\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x63reated_at_millis\x18\x03 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x04 \x01(\x04\x12\x16\n\x0cworkspace_id\x18\x07 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x08 \x01(\tH\x00\x12V\n\x04type\x18\x05 \x01(\x0e\x32H.ai.verta.monitoring.NotificationChannelTypeEnum.NotificationChannelType\x12M\n\rslack_webhook\x18\x06 \x01(\x0b\x32\x34.ai.verta.monitoring.NotificationChannelSlackWebhookH\x01\x42\x16\n\x14workspace_identifierB\x16\n\x14notification_channel\"]\n UpdateNotificationChannelRequest\x12\x39\n\x07\x63hannel\x18\x01 \x01(\x0b\x32(.ai.verta.monitoring.NotificationChannel\"\xcf\x02\n\x1e\x46indNotificationChannelRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12?\n\x05types\x18\x03 \x03(\x0b\x32\x30.ai.verta.monitoring.NotificationChannelTypeEnum\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x12\x16\n\x0cworkspace_id\x18\x06 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x07 \x01(\tH\x00\x1a]\n\x08Response\x12:\n\x08\x63hannels\x18\x01 \x03(\x0b\x32(.ai.verta.monitoring.NotificationChannel\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x42\x16\n\x14workspace_identifier\"/\n DeleteNotificationChannelRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"R\n\x0f\x41lerterTypeEnum\"?\n\x0b\x41lerterType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\t\n\x05\x46IXED\x10\x01\x12\r\n\tREFERENCE\x10\x02\x12\t\n\x05RANGE\x10\x03\"C\n\x0f\x41lertStatusEnum\"0\n\x0b\x41lertStatus\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x06\n\x02OK\x10\x01\x12\x0c\n\x08\x41LERTING\x10\x02\"b\n\x17\x45valuationFrequencyEnum\"G\n\x13\x45valuationFrequency\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0c\x46IVE_MINUTES\x10\x01\x12\x08\n\x04HOUR\x10\x02\x12\x07\n\x03\x44\x41Y\x10\x03\"^\n\x15\x41ggregationWindowEnum\"E\n\x11\x41ggregationWindow\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0c\x46IVE_MINUTES\x10\x01\x12\x08\n\x04HOUR\x10\x02\x12\x07\n\x03\x44\x41Y\x10\x03\"\xac\x07\n\x05\x41lert\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x1b\n\x13monitored_entity_id\x18\x03 \x01(\x04\x12\x19\n\x11\x63reated_at_millis\x18\x04 \x01(\x04\x12\x19\n\x11updated_at_millis\x18\x05 \x01(\x04\x12 \n\x18last_evaluated_at_millis\x18\x06 \x01(\x04\x12S\n\x15notification_channels\x18\x07 \x03(\x0b\x32\x34.ai.verta.monitoring.Alert.NotificationChannelsEntry\x12@\n\x06status\x18\t \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x46\n\x0c\x61lerter_type\x18\x0b \x01(\x0e\x32\x30.ai.verta.monitoring.AlerterTypeEnum.AlerterType\x12\x38\n\ralerter_fixed\x18\x0c \x01(\x0b\x32\x1f.ai.verta.monitoring.AlertFixedH\x00\x12@\n\x11\x61lerter_reference\x18\r \x01(\x0b\x32#.ai.verta.monitoring.AlertReferenceH\x00\x12\x38\n\ralerter_range\x18\x0e \x01(\x0b\x32\x1f.ai.verta.monitoring.AlertRangeH\x00\x12\x16\n\x0eversion_number\x18\x0f \x01(\x04\x12\x0f\n\x07\x66\x65\x61ture\x18\x10 \x01(\t\x12X\n\x12\x61ggregation_window\x18\x12 \x01(\x0e\x32<.ai.verta.monitoring.AggregationWindowEnum.AggregationWindow\x12^\n\x14\x65valuation_frequency\x18\x13 \x01(\x0e\x32@.ai.verta.monitoring.EvaluationFrequencyEnum.EvaluationFrequency\x12\x18\n\x10\x61ggregation_type\x18\x14 \x01(\t\x12\x1d\n\x15\x61ggregation_algorithm\x18\x15 \x01(\t\x12\x0f\n\x07\x65nabled\x18\x16 \x01(\x08\x1a;\n\x19NotificationChannelsEntry\x12\x0b\n\x03key\x18\x01 \x01(\x04\x12\r\n\x05value\x18\x02 \x01(\x08:\x02\x38\x01\x42\t\n\x07\x61lerterJ\x04\x08\x08\x10\tJ\x04\x08\n\x10\x0b\"Y\n\nAlertFixed\x12\x11\n\tthreshold\x18\x01 \x01(\x02\x12\x38\n\x08operator\x18\x02 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"V\n\nAlertRange\x12\x13\n\x0blower_bound\x18\x01 \x01(\x02\x12\x13\n\x0bupper_bound\x18\x02 \x01(\x02\x12\x1e\n\x16\x61lert_if_outside_range\x18\x03 \x01(\x08\"c\n\x0e\x41lertReference\x12\x11\n\tthreshold\x18\x01 \x01(\x02\x12\x38\n\x08operator\x18\x03 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.OperatorJ\x04\x08\x02\x10\x03\"?\n\x12\x43reateAlertRequest\x12)\n\x05\x61lert\x18\x01 \x01(\x0b\x32\x1a.ai.verta.monitoring.Alert\"?\n\x12UpdateAlertRequest\x12)\n\x05\x61lert\x18\x02 \x01(\x0b\x32\x1a.ai.verta.monitoring.Alert\"\x89\x03\n\x10\x46indAlertRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x1c\n\x14monitored_entity_ids\x18\x03 \x03(\x04\x12&\n\x1elast_evaluated_at_millis_after\x18\x04 \x01(\x04\x12G\n\ralerter_types\x18\x05 \x03(\x0e\x32\x30.ai.verta.monitoring.AlerterTypeEnum.AlerterType\x12@\n\x06status\x18\x06 \x03(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x13\n\x0bpage_number\x18\x07 \x01(\x05\x12\x12\n\npage_limit\x18\x08 \x01(\x05\x1aM\n\x08Response\x12*\n\x06\x61lerts\x18\x01 \x03(\x0b\x32\x1a.ai.verta.monitoring.Alert\x12\x15\n\rtotal_records\x18\x02 \x01(\x05J\x04\x08\t\x10\nJ\x04\x08\n\x10\x0bJ\x04\x08\x0b\x10\x0c\"!\n\x12\x44\x65leteAlertRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\"\xa1\x01\n\x18UpdateAlertStatusRequest\x12\x10\n\x08\x61lert_id\x18\x01 \x01(\x04\x12\x19\n\x11\x65vent_time_millis\x18\x02 \x01(\x04\x12@\n\x06status\x18\x03 \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatusJ\x04\x08\x04\x10\x05J\x04\x08\x05\x10\x06J\x04\x08\x06\x10\x07J\x04\x08\x07\x10\x08\"m\n\x17ListAlertHistoryRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\x46\n\x08Response\x12:\n\x07history\x18\x01 \x03(\x0b\x32).ai.verta.monitoring.ListAlertHistoryItem\"\xb6\x01\n\x14ListAlertHistoryItem\x12\x19\n\x11\x65vent_time_millis\x18\x01 \x01(\x04\x12@\n\x06status\x18\x02 \x01(\x0e\x32\x30.ai.verta.monitoring.AlertStatusEnum.AlertStatus\x12\x10\n\x08\x65vent_id\x18\x04 \x01(\t\x12)\n\x05\x61lert\x18\x05 \x01(\x0b\x32\x1a.ai.verta.monitoring.AlertJ\x04\x08\x03\x10\x04\x32\xfe\x0c\n\x0c\x41lertService\x12\xbc\x01\n\x19\x63reateNotificationChannel\x12\x35.ai.verta.monitoring.CreateNotificationChannelRequest\x1a(.ai.verta.monitoring.NotificationChannel\">\x82\xd3\xe4\x93\x02\x38\"3/api/v1/monitoring/alerts/createNotificationChannel:\x01*\x12\xbc\x01\n\x19updateNotificationChannel\x12\x35.ai.verta.monitoring.UpdateNotificationChannelRequest\x1a(.ai.verta.monitoring.NotificationChannel\">\x82\xd3\xe4\x93\x02\x38\"3/api/v1/monitoring/alerts/updateNotificationChannel:\x01*\x12\xca\x01\n\x17\x66indNotificationChannel\x12\x33.ai.verta.monitoring.FindNotificationChannelRequest\x1a<.ai.verta.monitoring.FindNotificationChannelRequest.Response\"<\x82\xd3\xe4\x93\x02\x36\"1/api/v1/monitoring/alerts/findNotificationChannel:\x01*\x12\xae\x01\n\x19\x64\x65leteNotificationChannel\x12\x35.ai.verta.monitoring.DeleteNotificationChannelRequest\x1a\x1a.ai.verta.monitoring.Empty\">\x82\xd3\xe4\x93\x02\x38*3/api/v1/monitoring/alerts/deleteNotificationChannel:\x01*\x12\x84\x01\n\x0b\x63reateAlert\x12\'.ai.verta.monitoring.CreateAlertRequest\x1a\x1a.ai.verta.monitoring.Alert\"0\x82\xd3\xe4\x93\x02*\"%/api/v1/monitoring/alerts/createAlert:\x01*\x12\x84\x01\n\x0bupdateAlert\x12\'.ai.verta.monitoring.UpdateAlertRequest\x1a\x1a.ai.verta.monitoring.Alert\"0\x82\xd3\xe4\x93\x02*\"%/api/v1/monitoring/alerts/updateAlert:\x01*\x12\x96\x01\n\x11updateAlertStatus\x12-.ai.verta.monitoring.UpdateAlertStatusRequest\x1a\x1a.ai.verta.monitoring.Empty\"6\x82\xd3\xe4\x93\x02\x30\"+/api/v1/monitoring/alerts/updateAlertStatus:\x01*\x12\x92\x01\n\tfindAlert\x12%.ai.verta.monitoring.FindAlertRequest\x1a..ai.verta.monitoring.FindAlertRequest.Response\".\x82\xd3\xe4\x93\x02(\"#/api/v1/monitoring/alerts/findAlert:\x01*\x12\xae\x01\n\x10listAlertHistory\x12,.ai.verta.monitoring.ListAlertHistoryRequest\x1a\x35.ai.verta.monitoring.ListAlertHistoryRequest.Response\"5\x82\xd3\xe4\x93\x02/\"*/api/v1/monitoring/alerts/listAlertHistory:\x01*\x12\x84\x01\n\x0b\x64\x65leteAlert\x12\'.ai.verta.monitoring.DeleteAlertRequest\x1a\x1a.ai.verta.monitoring.Empty\"0\x82\xd3\xe4\x93\x02**%/api/v1/monitoring/alerts/deleteAlert:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,monitoring_dot_Summary__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,monitoring_dot_MonitoredEntity__pb2.DESCRIPTOR,])
 
 
 
@@ -45,8 +45,8 @@ _NOTIFICATIONCHANNELTYPEENUM_NOTIFICATIONCHANNELTYPE = _descriptor.EnumDescripto
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=192,
-  serialized_end=241,
+  serialized_start=200,
+  serialized_end=249,
 )
 _sym_db.RegisterEnumDescriptor(_NOTIFICATIONCHANNELTYPEENUM_NOTIFICATIONCHANNELTYPE)
 
@@ -75,8 +75,8 @@ _ALERTERTYPEENUM_ALERTERTYPE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1525,
-  serialized_end=1588,
+  serialized_start=1533,
+  serialized_end=1596,
 )
 _sym_db.RegisterEnumDescriptor(_ALERTERTYPEENUM_ALERTERTYPE)
 
@@ -101,10 +101,70 @@ _ALERTSTATUSENUM_ALERTSTATUS = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1609,
-  serialized_end=1657,
+  serialized_start=1617,
+  serialized_end=1665,
 )
 _sym_db.RegisterEnumDescriptor(_ALERTSTATUSENUM_ALERTSTATUS)
+
+_EVALUATIONFREQUENCYENUM_EVALUATIONFREQUENCY = _descriptor.EnumDescriptor(
+  name='EvaluationFrequency',
+  full_name='ai.verta.monitoring.EvaluationFrequencyEnum.EvaluationFrequency',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FIVE_MINUTES', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='HOUR', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DAY', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=1694,
+  serialized_end=1765,
+)
+_sym_db.RegisterEnumDescriptor(_EVALUATIONFREQUENCYENUM_EVALUATIONFREQUENCY)
+
+_AGGREGATIONWINDOWENUM_AGGREGATIONWINDOW = _descriptor.EnumDescriptor(
+  name='AggregationWindow',
+  full_name='ai.verta.monitoring.AggregationWindowEnum.AggregationWindow',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='UNKNOWN', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='FIVE_MINUTES', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='HOUR', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='DAY', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=1792,
+  serialized_end=1861,
+)
+_sym_db.RegisterEnumDescriptor(_AGGREGATIONWINDOWENUM_AGGREGATIONWINDOW)
 
 
 _NOTIFICATIONCHANNELTYPEENUM = _descriptor.Descriptor(
@@ -127,8 +187,8 @@ _NOTIFICATIONCHANNELTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=161,
-  serialized_end=241,
+  serialized_start=169,
+  serialized_end=249,
 )
 
 
@@ -203,8 +263,8 @@ _NOTIFICATIONCHANNEL = _descriptor.Descriptor(
       name='channel', full_name='ai.verta.monitoring.NotificationChannel.channel',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=244,
-  serialized_end=545,
+  serialized_start=252,
+  serialized_end=553,
 )
 
 
@@ -234,8 +294,8 @@ _NOTIFICATIONCHANNELSLACKWEBHOOK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=547,
-  serialized_end=593,
+  serialized_start=555,
+  serialized_end=601,
 )
 
 
@@ -320,8 +380,8 @@ _CREATENOTIFICATIONCHANNELREQUEST = _descriptor.Descriptor(
       name='notification_channel', full_name='ai.verta.monitoring.CreateNotificationChannelRequest.notification_channel',
       index=1, containing_type=None, fields=[]),
   ],
-  serialized_start=596,
-  serialized_end=1022,
+  serialized_start=604,
+  serialized_end=1030,
 )
 
 
@@ -351,8 +411,8 @@ _UPDATENOTIFICATIONCHANNELREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1024,
-  serialized_end=1117,
+  serialized_start=1032,
+  serialized_end=1125,
 )
 
 
@@ -389,8 +449,8 @@ _FINDNOTIFICATIONCHANNELREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1338,
-  serialized_end=1431,
+  serialized_start=1346,
+  serialized_end=1439,
 )
 
 _FINDNOTIFICATIONCHANNELREQUEST = _descriptor.Descriptor(
@@ -464,8 +524,8 @@ _FINDNOTIFICATIONCHANNELREQUEST = _descriptor.Descriptor(
       name='workspace_identifier', full_name='ai.verta.monitoring.FindNotificationChannelRequest.workspace_identifier',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1120,
-  serialized_end=1455,
+  serialized_start=1128,
+  serialized_end=1463,
 )
 
 
@@ -495,8 +555,8 @@ _DELETENOTIFICATIONCHANNELREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1457,
-  serialized_end=1504,
+  serialized_start=1465,
+  serialized_end=1512,
 )
 
 
@@ -520,8 +580,8 @@ _ALERTERTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1506,
-  serialized_end=1588,
+  serialized_start=1514,
+  serialized_end=1596,
 )
 
 
@@ -545,8 +605,58 @@ _ALERTSTATUSENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1590,
-  serialized_end=1657,
+  serialized_start=1598,
+  serialized_end=1665,
+)
+
+
+_EVALUATIONFREQUENCYENUM = _descriptor.Descriptor(
+  name='EvaluationFrequencyEnum',
+  full_name='ai.verta.monitoring.EvaluationFrequencyEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _EVALUATIONFREQUENCYENUM_EVALUATIONFREQUENCY,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1667,
+  serialized_end=1765,
+)
+
+
+_AGGREGATIONWINDOWENUM = _descriptor.Descriptor(
+  name='AggregationWindowEnum',
+  full_name='ai.verta.monitoring.AggregationWindowEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _AGGREGATIONWINDOWENUM_AGGREGATIONWINDOW,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1767,
+  serialized_end=1861,
 )
 
 
@@ -583,8 +693,8 @@ _ALERT_NOTIFICATIONCHANNELSENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2352,
-  serialized_end=2411,
+  serialized_start=2722,
+  serialized_end=2781,
 )
 
 _ALERT = _descriptor.Descriptor(
@@ -644,58 +754,86 @@ _ALERT = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='sample_find_base', full_name='ai.verta.monitoring.Alert.sample_find_base', index=7,
-      number=8, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='status', full_name='ai.verta.monitoring.Alert.status', index=8,
+      name='status', full_name='ai.verta.monitoring.Alert.status', index=7,
       number=9, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='violating_summary_sample_ids', full_name='ai.verta.monitoring.Alert.violating_summary_sample_ids', index=9,
-      number=10, type=4, cpp_type=4, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='alerter_type', full_name='ai.verta.monitoring.Alert.alerter_type', index=10,
+      name='alerter_type', full_name='ai.verta.monitoring.Alert.alerter_type', index=8,
       number=11, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='alerter_fixed', full_name='ai.verta.monitoring.Alert.alerter_fixed', index=11,
+      name='alerter_fixed', full_name='ai.verta.monitoring.Alert.alerter_fixed', index=9,
       number=12, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='alerter_reference', full_name='ai.verta.monitoring.Alert.alerter_reference', index=12,
+      name='alerter_reference', full_name='ai.verta.monitoring.Alert.alerter_reference', index=10,
       number=13, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='alerter_range', full_name='ai.verta.monitoring.Alert.alerter_range', index=13,
+      name='alerter_range', full_name='ai.verta.monitoring.Alert.alerter_range', index=11,
       number=14, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='version_number', full_name='ai.verta.monitoring.Alert.version_number', index=14,
+      name='version_number', full_name='ai.verta.monitoring.Alert.version_number', index=12,
       number=15, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='feature', full_name='ai.verta.monitoring.Alert.feature', index=13,
+      number=16, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='aggregation_window', full_name='ai.verta.monitoring.Alert.aggregation_window', index=14,
+      number=18, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='evaluation_frequency', full_name='ai.verta.monitoring.Alert.evaluation_frequency', index=15,
+      number=19, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='aggregation_type', full_name='ai.verta.monitoring.Alert.aggregation_type', index=16,
+      number=20, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='aggregation_algorithm', full_name='ai.verta.monitoring.Alert.aggregation_algorithm', index=17,
+      number=21, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='enabled', full_name='ai.verta.monitoring.Alert.enabled', index=18,
+      number=22, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -714,8 +852,8 @@ _ALERT = _descriptor.Descriptor(
       name='alerter', full_name='ai.verta.monitoring.Alert.alerter',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1660,
-  serialized_end=2422,
+  serialized_start=1864,
+  serialized_end=2804,
 )
 
 
@@ -752,8 +890,8 @@ _ALERTFIXED = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2424,
-  serialized_end=2513,
+  serialized_start=2806,
+  serialized_end=2895,
 )
 
 
@@ -797,8 +935,8 @@ _ALERTRANGE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2515,
-  serialized_end=2601,
+  serialized_start=2897,
+  serialized_end=2983,
 )
 
 
@@ -817,14 +955,7 @@ _ALERTREFERENCE = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='reference_sample_id', full_name='ai.verta.monitoring.AlertReference.reference_sample_id', index=1,
-      number=2, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='operator', full_name='ai.verta.monitoring.AlertReference.operator', index=2,
+      name='operator', full_name='ai.verta.monitoring.AlertReference.operator', index=1,
       number=3, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -842,8 +973,8 @@ _ALERTREFERENCE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2603,
-  serialized_end=2725,
+  serialized_start=2985,
+  serialized_end=3084,
 )
 
 
@@ -873,8 +1004,8 @@ _CREATEALERTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2727,
-  serialized_end=2790,
+  serialized_start=3086,
+  serialized_end=3149,
 )
 
 
@@ -904,8 +1035,8 @@ _UPDATEALERTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2792,
-  serialized_end=2855,
+  serialized_start=3151,
+  serialized_end=3214,
 )
 
 
@@ -942,8 +1073,8 @@ _FINDALERTREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3156,
-  serialized_end=3233,
+  serialized_start=3515,
+  serialized_end=3592,
 )
 
 _FINDALERTREQUEST = _descriptor.Descriptor(
@@ -1021,8 +1152,8 @@ _FINDALERTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2858,
-  serialized_end=3251,
+  serialized_start=3217,
+  serialized_end=3610,
 )
 
 
@@ -1052,8 +1183,8 @@ _DELETEALERTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3253,
-  serialized_end=3286,
+  serialized_start=3612,
+  serialized_end=3645,
 )
 
 
@@ -1085,27 +1216,6 @@ _UPDATEALERTSTATUSREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='alerting_sample_ids', full_name='ai.verta.monitoring.UpdateAlertStatusRequest.alerting_sample_ids', index=3,
-      number=5, type=4, cpp_type=4, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='ok_sample_ids', full_name='ai.verta.monitoring.UpdateAlertStatusRequest.ok_sample_ids', index=4,
-      number=6, type=4, cpp_type=4, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='clear_alerting_sample_ids', full_name='ai.verta.monitoring.UpdateAlertStatusRequest.clear_alerting_sample_ids', index=5,
-      number=7, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -1118,8 +1228,8 @@ _UPDATEALERTSTATUSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3289,
-  serialized_end=3519,
+  serialized_start=3648,
+  serialized_end=3809,
 )
 
 
@@ -1149,8 +1259,8 @@ _LISTALERTHISTORYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3560,
-  serialized_end=3630,
+  serialized_start=3850,
+  serialized_end=3920,
 )
 
 _LISTALERTHISTORYREQUEST = _descriptor.Descriptor(
@@ -1179,8 +1289,8 @@ _LISTALERTHISTORYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3521,
-  serialized_end=3630,
+  serialized_start=3811,
+  serialized_end=3920,
 )
 
 
@@ -1206,16 +1316,16 @@ _LISTALERTHISTORYITEM = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='violating_summary_sample_ids', full_name='ai.verta.monitoring.ListAlertHistoryItem.violating_summary_sample_ids', index=2,
-      number=3, type=4, cpp_type=4, label=3,
-      has_default_value=False, default_value=[],
+      name='event_id', full_name='ai.verta.monitoring.ListAlertHistoryItem.event_id', index=2,
+      number=4, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='event_id', full_name='ai.verta.monitoring.ListAlertHistoryItem.event_id', index=3,
-      number=4, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
+      name='alert', full_name='ai.verta.monitoring.ListAlertHistoryItem.alert', index=3,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -1231,8 +1341,8 @@ _LISTALERTHISTORYITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3633,
-  serialized_end=3804,
+  serialized_start=3923,
+  serialized_end=4105,
 )
 
 _NOTIFICATIONCHANNELTYPEENUM_NOTIFICATIONCHANNELTYPE.containing_type = _NOTIFICATIONCHANNELTYPEENUM
@@ -1265,14 +1375,17 @@ _FINDNOTIFICATIONCHANNELREQUEST.oneofs_by_name['workspace_identifier'].fields.ap
 _FINDNOTIFICATIONCHANNELREQUEST.fields_by_name['workspace_name'].containing_oneof = _FINDNOTIFICATIONCHANNELREQUEST.oneofs_by_name['workspace_identifier']
 _ALERTERTYPEENUM_ALERTERTYPE.containing_type = _ALERTERTYPEENUM
 _ALERTSTATUSENUM_ALERTSTATUS.containing_type = _ALERTSTATUSENUM
+_EVALUATIONFREQUENCYENUM_EVALUATIONFREQUENCY.containing_type = _EVALUATIONFREQUENCYENUM
+_AGGREGATIONWINDOWENUM_AGGREGATIONWINDOW.containing_type = _AGGREGATIONWINDOWENUM
 _ALERT_NOTIFICATIONCHANNELSENTRY.containing_type = _ALERT
 _ALERT.fields_by_name['notification_channels'].message_type = _ALERT_NOTIFICATIONCHANNELSENTRY
-_ALERT.fields_by_name['sample_find_base'].message_type = monitoring_dot_Summary__pb2._FINDSUMMARYSAMPLEREQUEST
 _ALERT.fields_by_name['status'].enum_type = _ALERTSTATUSENUM_ALERTSTATUS
 _ALERT.fields_by_name['alerter_type'].enum_type = _ALERTERTYPEENUM_ALERTERTYPE
 _ALERT.fields_by_name['alerter_fixed'].message_type = _ALERTFIXED
 _ALERT.fields_by_name['alerter_reference'].message_type = _ALERTREFERENCE
 _ALERT.fields_by_name['alerter_range'].message_type = _ALERTRANGE
+_ALERT.fields_by_name['aggregation_window'].enum_type = _AGGREGATIONWINDOWENUM_AGGREGATIONWINDOW
+_ALERT.fields_by_name['evaluation_frequency'].enum_type = _EVALUATIONFREQUENCYENUM_EVALUATIONFREQUENCY
 _ALERT.oneofs_by_name['alerter'].fields.append(
   _ALERT.fields_by_name['alerter_fixed'])
 _ALERT.fields_by_name['alerter_fixed'].containing_oneof = _ALERT.oneofs_by_name['alerter']
@@ -1294,6 +1407,7 @@ _UPDATEALERTSTATUSREQUEST.fields_by_name['status'].enum_type = _ALERTSTATUSENUM_
 _LISTALERTHISTORYREQUEST_RESPONSE.fields_by_name['history'].message_type = _LISTALERTHISTORYITEM
 _LISTALERTHISTORYREQUEST_RESPONSE.containing_type = _LISTALERTHISTORYREQUEST
 _LISTALERTHISTORYITEM.fields_by_name['status'].enum_type = _ALERTSTATUSENUM_ALERTSTATUS
+_LISTALERTHISTORYITEM.fields_by_name['alert'].message_type = _ALERT
 DESCRIPTOR.message_types_by_name['NotificationChannelTypeEnum'] = _NOTIFICATIONCHANNELTYPEENUM
 DESCRIPTOR.message_types_by_name['NotificationChannel'] = _NOTIFICATIONCHANNEL
 DESCRIPTOR.message_types_by_name['NotificationChannelSlackWebhook'] = _NOTIFICATIONCHANNELSLACKWEBHOOK
@@ -1303,6 +1417,8 @@ DESCRIPTOR.message_types_by_name['FindNotificationChannelRequest'] = _FINDNOTIFI
 DESCRIPTOR.message_types_by_name['DeleteNotificationChannelRequest'] = _DELETENOTIFICATIONCHANNELREQUEST
 DESCRIPTOR.message_types_by_name['AlerterTypeEnum'] = _ALERTERTYPEENUM
 DESCRIPTOR.message_types_by_name['AlertStatusEnum'] = _ALERTSTATUSENUM
+DESCRIPTOR.message_types_by_name['EvaluationFrequencyEnum'] = _EVALUATIONFREQUENCYENUM
+DESCRIPTOR.message_types_by_name['AggregationWindowEnum'] = _AGGREGATIONWINDOWENUM
 DESCRIPTOR.message_types_by_name['Alert'] = _ALERT
 DESCRIPTOR.message_types_by_name['AlertFixed'] = _ALERTFIXED
 DESCRIPTOR.message_types_by_name['AlertRange'] = _ALERTRANGE
@@ -1386,6 +1502,20 @@ AlertStatusEnum = _reflection.GeneratedProtocolMessageType('AlertStatusEnum', (_
   # @@protoc_insertion_point(class_scope:ai.verta.monitoring.AlertStatusEnum)
   })
 _sym_db.RegisterMessage(AlertStatusEnum)
+
+EvaluationFrequencyEnum = _reflection.GeneratedProtocolMessageType('EvaluationFrequencyEnum', (_message.Message,), {
+  'DESCRIPTOR' : _EVALUATIONFREQUENCYENUM,
+  '__module__' : 'monitoring.Alert_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.EvaluationFrequencyEnum)
+  })
+_sym_db.RegisterMessage(EvaluationFrequencyEnum)
+
+AggregationWindowEnum = _reflection.GeneratedProtocolMessageType('AggregationWindowEnum', (_message.Message,), {
+  'DESCRIPTOR' : _AGGREGATIONWINDOWENUM,
+  '__module__' : 'monitoring.Alert_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.AggregationWindowEnum)
+  })
+_sym_db.RegisterMessage(AggregationWindowEnum)
 
 Alert = _reflection.GeneratedProtocolMessageType('Alert', (_message.Message,), {
 
@@ -1498,8 +1628,8 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=3807,
-  serialized_end=5469,
+  serialized_start=4108,
+  serialized_end=5770,
   methods=[
   _descriptor.MethodDescriptor(
     name='createNotificationChannel',
@@ -1534,7 +1664,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     index=3,
     containing_service=None,
     input_type=_DELETENOTIFICATIONCHANNELREQUEST,
-    output_type=monitoring_dot_Summary__pb2._EMPTY,
+    output_type=monitoring_dot_MonitoredEntity__pb2._EMPTY,
     serialized_options=b'\202\323\344\223\0028*3/api/v1/monitoring/alerts/deleteNotificationChannel:\001*',
   ),
   _descriptor.MethodDescriptor(
@@ -1561,7 +1691,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     index=6,
     containing_service=None,
     input_type=_UPDATEALERTSTATUSREQUEST,
-    output_type=monitoring_dot_Summary__pb2._EMPTY,
+    output_type=monitoring_dot_MonitoredEntity__pb2._EMPTY,
     serialized_options=b'\202\323\344\223\0020\"+/api/v1/monitoring/alerts/updateAlertStatus:\001*',
   ),
   _descriptor.MethodDescriptor(
@@ -1588,7 +1718,7 @@ _ALERTSERVICE = _descriptor.ServiceDescriptor(
     index=9,
     containing_service=None,
     input_type=_DELETEALERTREQUEST,
-    output_type=monitoring_dot_Summary__pb2._EMPTY,
+    output_type=monitoring_dot_MonitoredEntity__pb2._EMPTY,
     serialized_options=b'\202\323\344\223\002**%/api/v1/monitoring/alerts/deleteAlert:\001*',
   ),
 ])

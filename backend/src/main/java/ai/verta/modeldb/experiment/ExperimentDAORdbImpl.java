@@ -10,6 +10,7 @@ import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
@@ -769,7 +770,10 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
           accessibleExperimentIds.addAll(accessibleExperimentId);
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
-              ModelDBConstants.EXPERIMENTS, accessibleExperimentIds, predicate, mdbRoleService);
+              ModelDBConstants.EXPERIMENTS,
+              accessibleExperimentIds,
+              predicate,
+              mdbRoleService.IsImplemented());
         }
       }
 

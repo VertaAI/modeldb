@@ -2,9 +2,9 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.interfaces.CheckEntityPermissionBasedOnResourceTypesFunction;
 import ai.verta.uac.ModelDBActionEnum;

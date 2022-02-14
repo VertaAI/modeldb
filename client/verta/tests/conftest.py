@@ -20,9 +20,13 @@ import verta
 from verta import Client
 from verta._internal_utils import _utils, _pip_requirements_utils
 from verta.environment import _Environment, Docker, Python
+from verta.tracking.entities._deployable_entity import _DeployableEntity
+from verta.tracking.entities import ExperimentRun
+from verta.registry.entities import RegisteredModelVersion
 
 import hypothesis
 import pytest
+pytest.register_assert_rewrite("tests.utils")
 from . import constants, utils
 from . import clean_test_accounts
 from .env_fixtures import (
@@ -332,20 +336,11 @@ def random_data():
             return data
 
 
-@pytest.fixture(scope="session")
-def tempdir_root():
-    return os.environ.get("TEMPDIR_ROOT")
-
-
 @pytest.fixture
-def in_tempdir(tempdir_root):
+def in_tempdir():
     """Moves test to execute inside a temporary directory."""
-    dirpath = tempfile.mkdtemp(dir=tempdir_root)
-    try:
-        with utils.chdir(dirpath):
-            yield dirpath
-    finally:
-        shutil.rmtree(dirpath)
+    with utils.chtempdir() as dirpath:
+        yield dirpath
 
 
 @pytest.fixture
@@ -473,6 +468,26 @@ def registered_model(client, created_entities):
 @pytest.fixture(scope="class")
 def class_registered_model(class_client, class_created_entities):
     return registered_model_factory(class_client, class_created_entities)
+
+
+@pytest.fixture(params=utils.sorted_subclasses(_DeployableEntity))
+def deployable_entity(request, client, created_entities):
+    cls = request.param
+    if cls is ExperimentRun:
+        proj = client.create_project()
+        created_entities.append(proj)
+        entity = client.create_experiment_run()
+    elif cls is RegisteredModelVersion:
+        reg_model = client.create_registered_model()
+        created_entities.append(reg_model)
+        entity = reg_model.create_version()
+    else:
+        raise RuntimeError(
+            "_DeployableEntity appears to have a subclass {} that is not"
+            " accounted for in this fixture".format(cls)
+        )
+
+    return entity
 
 
 @pytest.fixture

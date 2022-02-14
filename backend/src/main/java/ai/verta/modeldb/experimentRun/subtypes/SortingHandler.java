@@ -1,16 +1,55 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.OrderTable;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 public class SortingHandler {
+
+  private final String tableName;
+
+  public SortingHandler(String tableName) {
+    this.tableName = tableName;
+  }
+
+  private String getEntityColumn() {
+    String entityColumn = "";
+    switch (tableName) {
+      case "project":
+        entityColumn = "project_id";
+        break;
+      case "experiment":
+        entityColumn = "experiment_id";
+        break;
+      case "experiment_run":
+        entityColumn = "experiment_run_id";
+        break;
+    }
+    return entityColumn;
+  }
+
+  private String getEntityName() {
+    String entityColumn = "";
+    switch (tableName) {
+      case "project":
+        entityColumn = "ProjectEntity";
+        break;
+      case "experiment":
+        entityColumn = "ExperimentEntity";
+        break;
+      case "experiment_run":
+        entityColumn = "ExperimentRunEntity";
+        break;
+    }
+    return entityColumn;
+  }
+
   public InternalFuture<QueryFilterContext> processSort(String key, boolean ascending) {
     if (key == null || key.isEmpty()) {
       key = "date_updated";
@@ -34,6 +73,9 @@ public class SortingHandler {
       case ModelDBConstants.METRICS:
         return InternalFuture.completedInternalFuture(
             processKeyValueSort(names[1], ascending, "metrics"));
+      case ModelDBConstants.ATTRIBUTES:
+        return InternalFuture.completedInternalFuture(
+            processAttributeSort(names[1], ascending, "attributes"));
       case ModelDBConstants.HYPERPARAMETERS:
         final var hyperparameterSoryPredicate =
             processKeyValueSort(names[1], ascending, "hyperparameters");
@@ -54,11 +96,29 @@ public class SortingHandler {
 
   private QueryFilterContext processKeyValueSort(String key, boolean ascending, String fieldType) {
     var sql =
-        "select experiment_run_id as runId, kv_value as value from keyvalue where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key";
+        String.format(
+            "select %s as entityId, kv_value as value from keyvalue where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key",
+            getEntityColumn());
     var queryContext =
         new QueryFilterContext()
             .addBind(q -> q.bind("sort_field_type", fieldType))
-            .addBind(q -> q.bind("entityName", "ExperimentRunEntity"))
+            .addBind(q -> q.bind("entityName", getEntityName()))
+            .addBind(q -> q.bind("sort_key", key));
+    queryContext.addOrderItem(
+        new OrderTable(
+            sql, ascending, Collections.singletonList(new OrderColumn("value", ascending))));
+    return queryContext;
+  }
+
+  private QueryFilterContext processAttributeSort(String key, boolean ascending, String fieldType) {
+    var sql =
+        String.format(
+            "select %s as entityId, kv_value as value from attribute where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key",
+            getEntityColumn());
+    var queryContext =
+        new QueryFilterContext()
+            .addBind(q -> q.bind("sort_field_type", fieldType))
+            .addBind(q -> q.bind("entityName", getEntityName()))
             .addBind(q -> q.bind("sort_key", key));
     queryContext.addOrderItem(
         new OrderTable(
@@ -68,10 +128,12 @@ public class SortingHandler {
 
   private QueryFilterContext processConfigHyperparametersSort(String key, boolean ascending) {
     var hyperparameterFromBlobMappingSql =
-        "select distinct experiment_run_id as runId, int_value, float_value, string_value from hyperparameter_element_mapping where entity_type=:entity_type and experiment_run_id IS NOT NULL and name=:name";
+        String.format(
+            "select distinct %s as entityId, int_value, float_value, string_value from hyperparameter_element_mapping where entity_type=:entity_type and experiment_run_id IS NOT NULL and name=:name",
+            getEntityColumn());
     var queryContext =
         new QueryFilterContext()
-            .addBind(q -> q.bind("entity_type", "ExperimentRunEntity"))
+            .addBind(q -> q.bind("entity_type", getEntityName()))
             .addBind(q -> q.bind("name", key));
     List<OrderColumn> orderColumnList = new ArrayList<>();
     orderColumnList.add(new OrderColumn("int_value", ascending));

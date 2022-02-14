@@ -1,33 +1,87 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
+import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
+import ai.verta.modeldb.project.UACApisUtil;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 
 public class PredicatesHandler extends PredicateHandlerUtils {
-  private static final String EXPERIMENT_RUN_ID_NOT_IN_QUERY_CONDITION =
-      "experiment_run.id NOT IN (%s)";
-  private static final String EXPERIMENT_RUN_ID_IN_QUERY_CONDITION = "experiment_run.id IN (%s)";
-  private static final String EXPERIMENT_RUN_ENTITY_PARAM_VALUE = "ExperimentRunEntity";
+  private static final String ENTITY_ID_NOT_IN_QUERY_CONDITION = "%s.id NOT IN (%s)";
+  private static final String ENTITY_ID_IN_QUERY_CONDITION = "%s.id IN (%s)";
   private static final String K_P_D_VALUE_BINDING_KEY = "k_p_%d";
   private static final String V_P_D_VALUE_BINDING_NAME = "v_p_%d";
   private static final String FIELD_TYPE_NAME_PARAM = "field_type_%d";
-  private final HyperparameterPredicatesHandler hyperparameterPredicatesHandler;
+  private HyperparameterPredicatesHandler hyperparameterPredicatesHandler;
+  private final String tableName;
+  private final String alias;
+  private final Executor executor;
+  private final UACApisUtil uacApisUtil;
 
-  public PredicatesHandler() {
-    this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler();
+  public PredicatesHandler(
+      Executor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
+    this.executor = executor;
+    this.tableName = tableName;
+    this.alias = alias;
+    this.uacApisUtil = uacApisUtil;
+
+    if ("experiment_run".equals(tableName)) {
+      this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler();
+    }
+  }
+
+  private String getEntityColumn() {
+    String entityColumn = "";
+    switch (tableName) {
+      case "project":
+        entityColumn = "project_id";
+        break;
+      case "experiment":
+        entityColumn = "experiment_id";
+        break;
+      case "experiment_run":
+        entityColumn = "experiment_run_id";
+        break;
+    }
+    return entityColumn;
+  }
+
+  private String getEntityName() {
+    String entityColumn = "";
+    switch (tableName) {
+      case "project":
+        entityColumn = "ProjectEntity";
+        break;
+      case "experiment":
+        entityColumn = "ExperimentEntity";
+        break;
+      case "experiment_run":
+        entityColumn = "ExperimentRunEntity";
+        break;
+    }
+    return entityColumn;
   }
 
   public InternalFuture<QueryFilterContext> processPredicates(
@@ -45,13 +99,6 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     final var key = predicate.getKey();
     final var value = predicate.getValue();
 
-    if (!key.contains(ModelDBConstants.LINKED_ARTIFACT_ID)
-        && predicate.getOperator().equals(OperatorEnum.Operator.IN)) {
-      return InternalFuture.failedStage(
-          new InvalidArgumentException(
-              "Operator `IN` supported only with the linked_artifact_id as a key"));
-    }
-
     final var bindingName = String.format("predicate_%d", index);
 
     // TODO: don't assume that the operator is equality for these
@@ -59,76 +106,42 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       case "id":
         return InternalFuture.completedInternalFuture(
             new QueryFilterContext()
-                .addCondition("experiment_run.id = :" + bindingName)
+                .addCondition(String.format("%s.id = :%s", alias, bindingName))
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
-      case "project_id":
+      case "date_created":
+        var date =
+            value.getKindCase().equals(Value.KindCase.STRING_VALUE)
+                ? Double.parseDouble(value.getStringValue())
+                : value.getNumberValue();
         return InternalFuture.completedInternalFuture(
             new QueryFilterContext()
-                .addCondition("experiment_run.project_id = :" + bindingName)
-                .addBind(q -> q.bind(bindingName, value.getStringValue())));
-      case "experiment_id":
-        String operator = predicate.getOperator().equals(OperatorEnum.Operator.NE) ? "<>" : "=";
+                .addCondition(String.format("%s.date_created = :%s", alias, bindingName))
+                .addBind(q -> q.bind(bindingName, date)));
+      case "date_updated":
+        var dateUpdated =
+            value.getKindCase().equals(Value.KindCase.STRING_VALUE)
+                ? Double.parseDouble(value.getStringValue())
+                : value.getNumberValue();
         return InternalFuture.completedInternalFuture(
             new QueryFilterContext()
-                .addCondition("experiment_run.experiment_id " + operator + " :" + bindingName)
-                .addBind(q -> q.bind(bindingName, value.getStringValue())));
-      case "name":
-        var sql = "select distinct id from experiment_run where ";
-        sql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
-
-        var queryContext =
-            new QueryFilterContext()
-                .addBind(
-                    q ->
-                        q.bind(
-                            bindingName,
-                            wrapValue(predicate.getOperator(), value.getStringValue())));
-        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
-          queryContext =
-              queryContext.addCondition(
-                  String.format(EXPERIMENT_RUN_ID_NOT_IN_QUERY_CONDITION, sql));
-        } else {
-          queryContext =
-              queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_IN_QUERY_CONDITION, sql));
-        }
-
-        return InternalFuture.completedInternalFuture(queryContext);
+                .addCondition(String.format("%s.date_updated = :%s", alias, bindingName))
+                .addBind(q -> q.bind(bindingName, dateUpdated)));
       case "owner":
-        // case time created/updated:
+        return setOwnerPredicate(index, predicate);
         // case visibility:
       case "":
         return InternalFuture.failedStage(new InvalidArgumentException("Key is empty"));
       case "end_time":
         return InternalFuture.completedInternalFuture(
             new QueryFilterContext()
-                .addCondition("experiment_run.end_time = :" + bindingName)
+                .addCondition(String.format("%s.end_time = :%s", alias, bindingName))
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
-      case "experiment.name":
-        var expSql = "select distinct id from experiment where ";
-        expSql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
-
-        var expQueryContext =
-            new QueryFilterContext()
-                .addBind(
-                    q ->
-                        q.bind(
-                            bindingName,
-                            wrapValue(predicate.getOperator(), value.getStringValue())));
-        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
-          expQueryContext =
-              expQueryContext.addCondition(
-                  String.format("experiment_run.experiment_id NOT IN (%s)", expSql));
-        } else {
-          expQueryContext =
-              expQueryContext.addCondition(
-                  String.format("experiment_run.experiment_id IN (%s)", expSql));
-        }
-
-        return InternalFuture.completedInternalFuture(expQueryContext);
       default:
-        // Do nothing
+        InternalFuture<QueryFilterContext> filterContext =
+            processEntityNameBasedPredicates(index, bindingName, predicate);
+        if (filterContext != null) {
+          return filterContext;
+        }
         break;
     }
 
@@ -139,8 +152,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       case ModelDBConstants.METRICS:
         return processKeyValuePredicate(index, predicate, names[1], "metrics");
       case ModelDBConstants.HYPERPARAMETERS:
-        return hyperparameterPredicatesHandler.processHyperparametersPredicate(
-            index, predicate, names[1], "hyperparameters");
+        if (tableName.equals("experiment_run")) {
+          return hyperparameterPredicatesHandler.processHyperparametersPredicate(
+              index, predicate, names[1], "hyperparameters");
+        }
+        break;
       case ModelDBConstants.ARTIFACTS:
         return processArtifactPredicate(index, predicate, names[1], "artifacts");
       case ModelDBConstants.DATASETS:
@@ -165,6 +181,137 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     return InternalFuture.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
   }
 
+  private InternalFuture<QueryFilterContext> processEntityNameBasedPredicates(
+      long index, String bindingName, KeyValueQuery predicate) {
+    switch (tableName) {
+      case "project":
+        return processProjectPredicates(index, bindingName, predicate);
+      case "experiment":
+        return processExperimentPredicates(index, bindingName, predicate);
+      case "experiment_run":
+        return processExperimentRunPredicates(index, bindingName, predicate);
+      default:
+        // return null for further process
+        return null;
+    }
+  }
+
+  private InternalFuture<QueryFilterContext> processExperimentRunPredicates(
+      long index, String bindingName, KeyValueQuery predicate) {
+
+    if (!predicate.getKey().contains(ModelDBConstants.LINKED_ARTIFACT_ID)
+        && predicate.getOperator().equals(OperatorEnum.Operator.IN)) {
+      return InternalFuture.failedStage(
+          new InvalidArgumentException(
+              "Operator `IN` supported only with the linked_artifact_id as a key"));
+    }
+
+    var value = predicate.getValue();
+    switch (predicate.getKey()) {
+      case "name":
+        var sql = String.format("select distinct id from %s where ", tableName);
+        sql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
+
+        var queryContext =
+            new QueryFilterContext()
+                .addBind(
+                    q ->
+                        q.bind(
+                            bindingName,
+                            wrapValue(predicate.getOperator(), value.getStringValue())));
+        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+          queryContext =
+              queryContext.addCondition(
+                  String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
+        } else {
+          queryContext =
+              queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
+        }
+
+        return InternalFuture.completedInternalFuture(queryContext);
+      case "project_id":
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition(String.format("%s.project_id = :%s", alias, bindingName))
+                .addBind(q -> q.bind(bindingName, value.getStringValue())));
+      case "experiment_id":
+        String operator = predicate.getOperator().equals(OperatorEnum.Operator.NE) ? "<>" : "=";
+        return InternalFuture.completedInternalFuture(
+            new QueryFilterContext()
+                .addCondition("experiment_run.experiment_id " + operator + " :" + bindingName)
+                .addBind(q -> q.bind(bindingName, value.getStringValue())));
+      default:
+        // return null for further process
+        return null;
+    }
+  }
+
+  private InternalFuture<QueryFilterContext> processExperimentPredicates(
+      long index, String bindingName, KeyValueQuery predicate) {
+    var value = predicate.getValue();
+    switch (predicate.getKey()) {
+      case "experiment.name":
+        var expSql = "select distinct id from experiment where ";
+        expSql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
+
+        var expQueryContext =
+            new QueryFilterContext()
+                .addBind(
+                    q ->
+                        q.bind(
+                            bindingName,
+                            wrapValue(predicate.getOperator(), value.getStringValue())));
+        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+          expQueryContext =
+              expQueryContext.addCondition(
+                  String.format("experiment_run.experiment_id NOT IN (%s)", expSql));
+        } else {
+          expQueryContext =
+              expQueryContext.addCondition(
+                  String.format("experiment_run.experiment_id IN (%s)", expSql));
+        }
+
+        return InternalFuture.completedInternalFuture(expQueryContext);
+      default:
+        // return null for further process
+        return null;
+    }
+  }
+
+  private InternalFuture<QueryFilterContext> processProjectPredicates(
+      long index, String bindingName, KeyValueQuery predicate) {
+    var value = predicate.getValue();
+    switch (predicate.getKey()) {
+      case "name":
+        var sql = String.format("select distinct id from %s where ", tableName);
+        sql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
+
+        var queryContext =
+            new QueryFilterContext()
+                .addBind(
+                    q ->
+                        q.bind(
+                            bindingName,
+                            wrapValue(predicate.getOperator(), value.getStringValue())));
+        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+          queryContext =
+              queryContext.addCondition(
+                  String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
+        } else {
+          queryContext =
+              queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
+        }
+
+        return InternalFuture.completedInternalFuture(queryContext);
+      default:
+        // return null for further process
+        return null;
+    }
+  }
+
   private InternalFuture<QueryFilterContext> processTagsPredicate(
       long index, KeyValueQuery predicate) {
     try {
@@ -175,17 +322,21 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       final var entityNameBindingName = String.format("entity_name_%d", index);
 
       var sql =
-          "select distinct experiment_run_id from tag_mapping where entity_name=:"
-              + entityNameBindingName;
+          String.format(
+              "select distinct %s from tag_mapping where entity_name=:%s",
+              getEntityColumn(), entityNameBindingName);
       sql += " and ";
 
       final var colValue = "tags";
       var queryContext =
-          new QueryFilterContext()
-              .addBind(q -> q.bind(entityNameBindingName, EXPERIMENT_RUN_ENTITY_PARAM_VALUE));
+          new QueryFilterContext().addBind(q -> q.bind(entityNameBindingName, getEntityName()));
 
       switch (value.getKindCase()) {
         case STRING_VALUE:
+          if (value.getStringValue().isEmpty()) {
+            throw new InvalidArgumentException(
+                "Predicate does not contain string value in request");
+          }
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
           queryContext =
               queryContext.addBind(
@@ -210,10 +361,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
           || operator.equals(OperatorEnum.Operator.NE)) {
         queryContext =
-            queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_NOT_IN_QUERY_CONDITION, sql));
+            queryContext.addCondition(String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
       } else {
         queryContext =
-            queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_IN_QUERY_CONDITION, sql));
+            queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
       }
 
       return InternalFuture.completedInternalFuture(queryContext);
@@ -253,15 +404,18 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     String sql;
     if (fieldType.equals("observations")) {
       sql =
-          "select distinct ob.experiment_run_id from observation as ob "
-              + " inner join keyvalue as kv ON kv.id = ob.keyvaluemapping_id"
-              + " where ob.entity_name=:entityName and ob.field_type=:"
-              + fieldTypeName
-              + " and kv.field_type = 'attributes' ";
+          String.format(
+              "select distinct ob.%s from observation as ob "
+                  + " inner join keyvalue as kv ON kv.id = ob.keyvaluemapping_id"
+                  + " where ob.entity_name=:entityName and ob.field_type=:"
+                  + fieldTypeName
+                  + " and kv.field_type = 'attributes' ",
+              getEntityColumn());
     } else {
       sql =
-          "select distinct kv.experiment_run_id from keyvalue as kv where kv.entity_name=:entityName and kv.field_type=:"
-              + fieldTypeName;
+          String.format(
+              "select distinct kv.%s from keyvalue as kv where kv.entity_name=:entityName and kv.field_type=:%s",
+              getEntityColumn(), fieldTypeName);
     }
 
     sql += String.format(" and kv.kv_key=:%s ", valueBindingKey);
@@ -271,7 +425,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     var queryContext =
         new QueryFilterContext()
             .addBind(q -> q.bind(valueBindingKey, name))
-            .addBind(q -> q.bind("entityName", EXPERIMENT_RUN_ENTITY_PARAM_VALUE))
+            .addBind(q -> q.bind("entityName", getEntityName()))
             .addBind(q -> q.bind(fieldTypeName, fieldType));
 
     switch (value.getKindCase()) {
@@ -310,10 +464,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
         || operator.equals(OperatorEnum.Operator.NE)) {
       queryContext =
-          queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_NOT_IN_QUERY_CONDITION, sql));
+          queryContext.addCondition(String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
     } else {
       queryContext =
-          queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_IN_QUERY_CONDITION, sql));
+          queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
     }
 
     return InternalFuture.completedInternalFuture(queryContext);
@@ -330,8 +484,9 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       final var fieldTypeName = String.format(FIELD_TYPE_NAME_PARAM, index);
 
       var sql =
-          "select distinct experiment_run_id from attribute where entity_name=\"ExperimentRunEntity\" and field_type=:"
-              + fieldTypeName;
+          String.format(
+              "select distinct %s from attribute where entity_name= '%s' and field_type=:%s",
+              getEntityColumn(), getEntityName(), fieldTypeName);
       sql += String.format(" and kv_key=:%s ", valueBindingKey);
       sql += " and ";
 
@@ -342,7 +497,16 @@ public class PredicatesHandler extends PredicateHandlerUtils {
               .addBind(q -> q.bind(fieldTypeName, fieldType));
 
       switch (value.getKindCase()) {
+        case NUMBER_VALUE:
+          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          queryContext =
+              queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
+          break;
         case STRING_VALUE:
+          if (value.getStringValue().isEmpty()) {
+            throw new InvalidArgumentException(
+                "Predicate does not contain string value in request");
+          }
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
           var valueStr = CommonUtils.getStringFromProtoObject(value);
           if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
@@ -378,10 +542,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
           || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
         queryContext =
-            queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_NOT_IN_QUERY_CONDITION, sql));
+            queryContext.addCondition(String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
       } else {
         queryContext =
-            queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_IN_QUERY_CONDITION, sql));
+            queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
       }
 
       return InternalFuture.completedInternalFuture(queryContext);
@@ -401,12 +565,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       final var fieldTypeName = String.format(FIELD_TYPE_NAME_PARAM, index);
 
       var sql =
-          "select distinct experiment_run_id from artifact where entity_name=:entityName and field_type=:"
-              + fieldTypeName;
+          String.format(
+              "select distinct %s from artifact where entity_name=:entityName and field_type=:%s",
+              getEntityColumn(), fieldTypeName);
 
       var queryContext =
           new QueryFilterContext()
-              .addBind(q -> q.bind("entityName", EXPERIMENT_RUN_ENTITY_PARAM_VALUE))
+              .addBind(q -> q.bind("entityName", getEntityName()))
               .addBind(q -> q.bind(fieldTypeName, fieldType));
 
       String colValue;
@@ -421,6 +586,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       sql += " and ";
 
       switch (value.getKindCase()) {
+        case NUMBER_VALUE:
+          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          queryContext =
+              queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
+          break;
         case STRING_VALUE:
           sql += applyOperator(operator, colValue, ":" + valueBindingName);
           String valueStr;
@@ -460,15 +630,93 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
           || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
         queryContext =
-            queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_NOT_IN_QUERY_CONDITION, sql));
+            queryContext.addCondition(String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
       } else {
         queryContext =
-            queryContext.addCondition(String.format(EXPERIMENT_RUN_ID_IN_QUERY_CONDITION, sql));
+            queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
       }
 
       return InternalFuture.completedInternalFuture(queryContext);
     } catch (Exception ex) {
       return InternalFuture.failedStage(ex);
     }
+  }
+
+  private InternalFuture<QueryFilterContext> setOwnerPredicate(long index, KeyValueQuery predicate)
+      throws ModelDBException {
+    var operator = predicate.getOperator();
+    InternalFuture<List<UserInfo>> userInfoListFuture;
+    if (operator.equals(OperatorEnum.Operator.CONTAIN)
+        || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+      userInfoListFuture =
+          uacApisUtil
+              .getFuzzyUserInfoList(predicate.getValue().getStringValue())
+              .thenApply(UserInfoPaginationDTO::getUserInfoList, executor);
+    } else {
+      var ownerIdsArrString = predicate.getValue().getStringValue();
+      List<String> ownerIds = new ArrayList<>();
+      if (operator.equals(OperatorEnum.Operator.IN)) {
+        ownerIds = Arrays.asList(ownerIdsArrString.split(","));
+      } else {
+        ownerIds.add(ownerIdsArrString);
+      }
+      userInfoListFuture =
+          uacApisUtil
+              .getUserInfoFromAuthServer(
+                  new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList())
+              .thenApply(userInfoMap -> new ArrayList<>(userInfoMap.values()), executor);
+    }
+
+    return userInfoListFuture.thenCompose(
+        userInfoList -> {
+          if (userInfoList != null && !userInfoList.isEmpty()) {
+            var resourceItemsFutures = new ArrayList<InternalFuture<Set<String>>>();
+            for (var userInfo : userInfoList) {
+              resourceItemsFutures.add(
+                  uacApisUtil
+                      .getResourceItemsForLoginUserWorkspace(
+                          userInfo.getVertaInfo().getUsername(),
+                          Optional.empty(),
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                      .thenApply(
+                          accessibleAllWorkspaceItems ->
+                              accessibleAllWorkspaceItems.stream()
+                                  .map(GetResourcesResponseItem::getResourceId)
+                                  .collect(Collectors.toSet()),
+                          executor));
+            }
+            return InternalFuture.sequence(resourceItemsFutures, executor)
+                .thenCompose(
+                    resourceIdsList -> {
+                      var resourceIds = new HashSet<String>();
+                      for (var resourceIdSet : resourceIdsList) {
+                        resourceIds.addAll(resourceIdSet);
+                      }
+
+                      final var valueBindingName = String.format("fuzzy_id_%d", index);
+                      var sql = "<" + valueBindingName + ">";
+
+                      var queryContext =
+                          new QueryFilterContext()
+                              .addBind(q -> q.bindList(valueBindingName, resourceIds));
+                      if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                          || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+                        queryContext =
+                            queryContext.addCondition(
+                                String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
+                      } else {
+                        queryContext =
+                            queryContext.addCondition(
+                                String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
+                      }
+                      return InternalFuture.completedInternalFuture(queryContext);
+                    },
+                    executor);
+          } else {
+            return InternalFuture.completedInternalFuture(
+                new QueryFilterContext().addCondition(String.format("%s.id = -1", alias)));
+          }
+        },
+        executor);
   }
 }

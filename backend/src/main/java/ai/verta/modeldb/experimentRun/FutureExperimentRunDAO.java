@@ -6,6 +6,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
+import ai.verta.common.Pagination;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CloneExperimentRun;
@@ -51,23 +52,20 @@ import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
-import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.config.TrialConfig;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
@@ -86,8 +84,8 @@ import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
+import ai.verta.modeldb.project.UACApisUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.modeldb.utils.TrialUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
@@ -122,6 +120,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
@@ -149,7 +148,6 @@ public class FutureExperimentRunDAO {
   private final CreateExperimentRunHandler createExperimentRunHandler;
   private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
   private final MDBConfig config;
-  private final TrialConfig trialConfig;
   private final CodeVersionFromBlobHandler codeVersionFromBlobHandler;
 
   public FutureExperimentRunDAO(
@@ -161,12 +159,12 @@ public class FutureExperimentRunDAO {
       DatasetVersionDAO datasetVersionDAO,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
-      BlobDAO blobDAO) {
+      BlobDAO blobDAO,
+      UACApisUtil uacApisUtil) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
     this.config = config;
-    this.trialConfig = config.trial;
 
     attributeHandler = new AttributeHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     hyperparametersHandler =
@@ -186,8 +184,9 @@ public class FutureExperimentRunDAO {
             artifactStoreDAO,
             datasetVersionDAO,
             config);
-    predicatesHandler = new PredicatesHandler();
-    sortingHandler = new SortingHandler();
+    predicatesHandler =
+        new PredicatesHandler(executor, "experiment_run", "experiment_run", uacApisUtil);
+    sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     privilegedDatasetsHandler = new FilterPrivilegedDatasetsHandler(executor, jdbi);
@@ -200,7 +199,6 @@ public class FutureExperimentRunDAO {
             executor,
             jdbi,
             config,
-            trialConfig,
             uac,
             attributeHandler,
             hyperparametersHandler,
@@ -262,7 +260,10 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> observationHandler.logObservations(runId, observations, now), executor)
+            unused ->
+                jdbi.useHandle(
+                    handle -> observationHandler.logObservations(handle, runId, observations, now)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -276,7 +277,10 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> metricsHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(handle -> metricsHandler.deleteKeyValues(handle, runId, maybeKeys)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -292,7 +296,11 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> hyperparametersHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> hyperparametersHandler.deleteKeyValues(handle, runId, maybeKeys)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -306,7 +314,11 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> attributeHandler.deleteKeyValues(runId, maybeKeys), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> attributeHandler.deleteKeyValues(handle, runId, maybeKeys)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -365,7 +377,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> metricsHandler.logKeyValues(runId, metrics), executor)
+        .thenCompose(
+            unused -> jdbi.useHandle(handle -> metricsHandler.logKeyValues(handle, runId, metrics)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -378,7 +392,10 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> hyperparametersHandler.logKeyValues(runId, hyperparameters), executor)
+            unused ->
+                jdbi.useHandle(
+                    handle -> hyperparametersHandler.logKeyValues(handle, runId, hyperparameters)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -390,7 +407,10 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> attributeHandler.logKeyValues(runId, attributes), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(handle -> attributeHandler.logKeyValues(handle, runId, attributes)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -403,7 +423,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> tagsHandler.addTags(runId, TagsHandlerBase.checkEntityTagsLength(tags)),
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        tagsHandler.addTags(
+                            handle, runId, TagsHandlerBase.checkEntityTagsLength(tags))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
@@ -418,7 +442,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> tagsHandler.deleteTags(runId, maybeTags), executor)
+        .thenCompose(
+            unused -> jdbi.useHandle(handle -> tagsHandler.deleteTags(handle, runId, maybeTags)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -631,7 +657,11 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.logArtifacts(runId, artifacts, false), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> artifactHandler.logArtifacts(handle, runId, artifacts, false)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -681,7 +711,10 @@ public class FutureExperimentRunDAO {
             executor)
         .thenCompose(
             privilegedDatasets ->
-                datasetHandler.logArtifacts(runId, privilegedDatasets, request.getOverwrite()),
+                jdbi.useHandle(
+                    handle ->
+                        datasetHandler.logArtifacts(
+                            handle, runId, privilegedDatasets, request.getOverwrite())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
@@ -706,7 +739,9 @@ public class FutureExperimentRunDAO {
     final var now = Calendar.getInstance().getTimeInMillis();
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> codeVersionHandler.logCodeVersion(request), executor)
+        .thenCompose(
+            unused -> jdbi.useHandle(handle -> codeVersionHandler.logCodeVersion(handle, request)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
   }
@@ -776,21 +811,27 @@ public class FutureExperimentRunDAO {
               localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
-                localQueryContext.getConditions().add("project_id=:request_project_id");
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.project_id=:request_project_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_project_id", request.getProjectId()));
               }
 
               if (!request.getExperimentId().isEmpty()) {
-                localQueryContext.getConditions().add("experiment_id=:request_experiment_id");
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.experiment_id=:request_experiment_id");
                 localQueryContext
                     .getBinds()
                     .add(q -> q.bind("request_experiment_id", request.getExperimentId()));
               }
 
               if (!request.getExperimentRunIdsList().isEmpty()) {
-                localQueryContext.getConditions().add("id in (<request_experiment_run_ids>)");
+                localQueryContext
+                    .getConditions()
+                    .add("experiment_run.id in (<request_experiment_run_ids>)");
                 localQueryContext
                     .getBinds()
                     .add(
@@ -848,75 +889,17 @@ public class FutureExperimentRunDAO {
                                     sql +=
                                         " inner join experiment e ON e.id = experiment_run.experiment_id ";
 
-                                    // Add the sorting tables
-                                    for (final var item :
-                                        new EnumerateList<>(queryContext.getOrderItems())
-                                            .getList()) {
-                                      if (item.getValue().getTable() != null) {
-                                        sql +=
-                                            String.format(
-                                                " left join (%s) as join_table_%d on id=join_table_%d.runId ",
-                                                item.getValue().getTable(),
-                                                item.getIndex(),
-                                                item.getIndex());
-                                      }
-                                    }
-
-                                    if (!queryContext.getConditions().isEmpty()) {
-                                      sql +=
-                                          " WHERE "
-                                              + String.join(" AND ", queryContext.getConditions());
-                                    }
-
-                                    if (!queryContext.getOrderItems().isEmpty()) {
-                                      sql += " ORDER BY ";
-                                      List<String> orderColumnQueryString = new ArrayList<>();
-                                      for (final var item :
-                                          new EnumerateList<>(queryContext.getOrderItems())
-                                              .getList()) {
-                                        if (item.getValue().getTable() != null) {
-                                          for (OrderColumn orderColumn :
-                                              item.getValue().getColumns()) {
-                                            var orderColumnStr =
-                                                String.format(
-                                                    " join_table_%d.%s ",
-                                                    item.getIndex(), orderColumn.getColumn());
-                                            orderColumnStr +=
-                                                String.format(
-                                                    " %s ",
-                                                    orderColumn.getAscending() ? "ASC" : "DESC");
-                                            orderColumnQueryString.add(orderColumnStr);
-                                          }
-                                        } else if (item.getValue().getColumn() != null) {
-                                          var orderColumnStr =
-                                              String.format(" %s ", item.getValue().getColumn());
-                                          orderColumnStr +=
-                                              String.format(
-                                                  " %s ",
-                                                  item.getValue().getAscending() ? "ASC" : "DESC");
-                                          orderColumnQueryString.add(orderColumnStr);
-                                        }
-                                      }
-                                      sql += String.join(",", orderColumnQueryString);
-                                    }
-
-                                    // Backwards compatibility: fetch everything
-                                    if (request.getPageNumber() != 0
-                                        && request.getPageLimit() != 0) {
-                                      final var offset =
-                                          (request.getPageNumber() - 1) * request.getPageLimit();
-                                      final var limit = request.getPageLimit();
-                                      if (config.getDatabase().getRdbConfiguration().isMssql()) {
-                                        sql += " OFFSET :offset ROWS FETCH NEXT :limit ROWS ONLY ";
-                                      } else {
-                                        sql += " LIMIT :limit OFFSET :offset";
-                                      }
-                                      queryContext.addBind(q -> q.bind("limit", limit));
-                                      queryContext.addBind(q -> q.bind("offset", offset));
-                                    }
-
-                                    var query = handle.createQuery(sql);
-                                    queryContext.getBinds().forEach(b -> b.accept(query));
+                                    Query query =
+                                        CommonUtils.buildQueryFromQueryContext(
+                                            "experiment_run",
+                                            Pagination.newBuilder()
+                                                .setPageNumber(request.getPageNumber())
+                                                .setPageLimit(request.getPageLimit())
+                                                .build(),
+                                            queryContext,
+                                            handle,
+                                            sql,
+                                            config.getDatabase().getRdbConfiguration().isMssql());
 
                                     return query
                                         .map(
@@ -1528,13 +1511,7 @@ public class FutureExperimentRunDAO {
                             .setIdsOnly(true)
                             .setProjectId(experimentRun.getProjectId())
                             .build())
-                    .thenApply(
-                        runsResponse -> {
-                          TrialUtils.validateExperimentRunPerWorkspaceForTrial(
-                              trialConfig, Long.valueOf(runsResponse.getTotalRecords()).intValue());
-                          return experimentRun;
-                        },
-                        executor),
+                    .thenApply(runsResponse -> experimentRun, executor),
             executor)
         .thenCompose(
             experimentRun ->
@@ -1587,9 +1564,17 @@ public class FutureExperimentRunDAO {
             },
             executor)
         .thenCompose(
-            unused ->
-                versionInputHandler.validateAndInsertVersionedInputs(
-                    request.getId(), request.getVersionedInputs()),
+            unused -> versionInputHandler.validateVersioningEntity(request.getVersionedInputs()),
+            executor)
+        .thenCompose(
+            locationBlobWithHashMap ->
+                jdbi.useHandle(
+                    handle ->
+                        versionInputHandler.validateAndInsertVersionedInputs(
+                            handle,
+                            request.getId(),
+                            request.getVersionedInputs(),
+                            locationBlobWithHashMap)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
@@ -1805,14 +1790,7 @@ public class FutureExperimentRunDAO {
                                         .setIdsOnly(true)
                                         .setProjectId(experimentRun.getProjectId())
                                         .build())
-                                .thenApply(
-                                    runsResponse -> {
-                                      TrialUtils.validateExperimentRunPerWorkspaceForTrial(
-                                          trialConfig,
-                                          Long.valueOf(runsResponse.getTotalRecords()).intValue());
-                                      return experimentRun;
-                                    },
-                                    executor),
+                                .thenApply(runsResponse -> experimentRun, executor),
                         executor)
                     .thenCompose(
                         cloneExperimentRunBuilder ->

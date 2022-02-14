@@ -12,11 +12,13 @@ import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -108,64 +110,54 @@ public abstract class KeyValueHandler<T> {
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
                     .list())
+        .thenApply(
+            simpleEntries ->
+                simpleEntries.stream()
+                    .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
+                    .collect(Collectors.toList()),
+            executor)
         .thenApply(MapSubtypes::from, executor);
   }
 
   protected abstract AbstractMap.SimpleEntry<T, KeyValue> getSimpleEntryFromResultSet(ResultSet rs)
       throws SQLException;
 
-  public InternalFuture<Void> logKeyValues(T entityId, List<KeyValue> kvs) {
+  public void logKeyValues(Handle handle, T entityId, List<KeyValue> kvs) {
     // Validate input
-    return InternalFuture.runAsync(
-            () -> {
-              Set<String> keySet = new HashSet<>();
-              for (final var kv : kvs) {
-                if (kv.getKey().isEmpty()) {
-                  throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT);
-                }
-                if (keySet.contains(kv.getKey())) {
-                  throw new ModelDBException(
-                      "Multiple key " + kv.getKey() + " found in request", Code.INVALID_ARGUMENT);
-                }
-                keySet.add(kv.getKey());
-              }
-            },
-            executor)
-        .thenCompose(
-            unused ->
-                // Check for conflicts
-                jdbi.useHandle(
-                    handle -> {
-                      for (final var kv : kvs) {
-                        handle
-                            .createQuery(
-                                String.format(
-                                    "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
-                                    getTableName(), entityIdReferenceColumn))
-                            .bind(KEY_QUERY_PARAM, kv.getKey())
-                            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-                            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                            .bind(ENTITY_ID_PARAM_QUERY, entityId)
-                            .mapTo(Long.class)
-                            .findOne()
-                            .ifPresent(
-                                present -> {
-                                  throw new AlreadyExistsException(
-                                      "Key " + kv.getKey() + " already exists");
-                                });
-                      }
-                    }),
-            executor)
-        .thenCompose(
-            unused ->
-                // Log
-                jdbi.useHandle(
-                    handle -> {
-                      for (final var kv : kvs) {
-                        insertKeyValue(entityId, handle, kv);
-                      }
-                    }),
-            executor);
+    Set<String> keySet = new HashSet<>();
+    for (final var kv : kvs) {
+      if (kv.getKey().isEmpty()) {
+        throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT);
+      }
+      if (keySet.contains(kv.getKey())) {
+        throw new ModelDBException(
+            "Multiple key " + kv.getKey() + " found in request", Code.INVALID_ARGUMENT);
+      }
+      keySet.add(kv.getKey());
+    }
+
+    // Check for conflicts
+    for (final var kv : kvs) {
+      handle
+          .createQuery(
+              String.format(
+                  "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
+                  getTableName(), entityIdReferenceColumn))
+          .bind(KEY_QUERY_PARAM, kv.getKey())
+          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+          .bind(ENTITY_ID_PARAM_QUERY, entityId)
+          .mapTo(Long.class)
+          .findOne()
+          .ifPresent(
+              present -> {
+                throw new AlreadyExistsException("Key " + kv.getKey() + " already exists");
+              });
+    }
+
+    for (final var kv : kvs) {
+      insertKeyValue(entityId, handle, kv);
+    }
   }
 
   private void insertKeyValue(T entityId, Handle handle, KeyValue kv) {
@@ -188,31 +180,28 @@ public abstract class KeyValueHandler<T> {
     }
   }
 
-  public InternalFuture<Void> deleteKeyValues(T entityId, Optional<List<String>> maybeKeys) {
-    return jdbi.useHandle(
-        handle -> {
-          var sql =
-              String.format(
-                  "delete from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
-                  getTableName(), entityIdReferenceColumn);
+  public void deleteKeyValues(Handle handle, T entityId, Optional<List<String>> maybeKeys) {
+    var sql =
+        String.format(
+            "delete from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
+            getTableName(), entityIdReferenceColumn);
 
-          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-            sql += " and kv_key in (<keys>)";
-          }
+    if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+      sql += " and kv_key in (<keys>)";
+    }
 
-          var query =
-              handle
-                  .createUpdate(sql)
-                  .bind(ENTITY_ID_PARAM_QUERY, entityId)
-                  .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-                  .bind(ENTITY_NAME_QUERY_PARAM, entityName);
+    var query =
+        handle
+            .createUpdate(sql)
+            .bind(ENTITY_ID_PARAM_QUERY, entityId)
+            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+            .bind(ENTITY_NAME_QUERY_PARAM, entityName);
 
-          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-            query = query.bindList("keys", maybeKeys.get());
-          }
+    if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+      query = query.bindList("keys", maybeKeys.get());
+    }
 
-          query.execute();
-        });
+    query.execute();
   }
 
   // TODO: We might end up removing this update since ERs don't have them.

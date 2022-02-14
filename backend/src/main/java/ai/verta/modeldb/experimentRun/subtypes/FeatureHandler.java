@@ -2,10 +2,10 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.modeldb.Feature;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import java.util.AbstractMap;
 import java.util.HashSet;
 import java.util.List;
@@ -14,6 +14,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 
 public class FeatureHandler {
   private static Logger LOGGER = LogManager.getLogger(FeatureHandler.class);
@@ -42,67 +43,50 @@ public class FeatureHandler {
     }
   }
 
-  public InternalFuture<List<String>> getFeatures(String entityId) {
-    return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery(
-                    "select feature from feature "
-                        + "where entity_name=:entity_name and "
-                        + entityIdReferenceColumn
-                        + "=:entity_id")
-                .bind(ENTITY_ID_QUERY_PARAM, entityId)
-                .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                .mapTo(String.class)
-                .list());
+  private List<String> getFeatures(Handle handle, String entityId) {
+    return handle
+        .createQuery(
+            "select feature from feature "
+                + "where entity_name=:entity_name and "
+                + entityIdReferenceColumn
+                + "=:entity_id")
+        .bind(ENTITY_ID_QUERY_PARAM, entityId)
+        .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+        .mapTo(String.class)
+        .list();
   }
 
-  public InternalFuture<Void> logFeatures(String entityId, List<Feature> features) {
+  public void logFeatures(Handle handle, String entityId, List<Feature> features) {
     // Validate input
-    var currentFuture =
-        InternalFuture.runAsync(
-            () -> {
-              for (final var feature : features) {
-                if (feature.getName().isEmpty()) {
-                  throw new InvalidArgumentException("Empty feature");
-                }
-              }
-            },
-            executor);
+    for (final var feature : features) {
+      if (feature.getName().isEmpty()) {
+        throw new InvalidArgumentException("Empty feature");
+      }
+    }
 
     // TODO: is there a way to push this to the db?
-    return currentFuture
-        .thenCompose(unused -> getFeatures(entityId), executor)
-        .thenCompose(
-            existingFeatures -> {
-              final var featuresSet =
-                  features.stream()
-                      .map(Feature::getName)
-                      .collect(Collectors.toCollection(HashSet::new));
-              featuresSet.removeAll(existingFeatures);
-              if (featuresSet.isEmpty()) {
-                return InternalFuture.completedInternalFuture(null);
-              }
+    var existingFeatures = getFeatures(handle, entityId);
+    final var featuresSet =
+        features.stream().map(Feature::getName).collect(Collectors.toCollection(HashSet::new));
+    featuresSet.removeAll(existingFeatures);
+    if (featuresSet.isEmpty()) {
+      return;
+    }
 
-              return jdbi.useHandle(
-                  handle -> {
-                    final var batch =
-                        handle.prepareBatch(
-                            "insert into feature (entity_name, feature, "
-                                + entityIdReferenceColumn
-                                + ") VALUES(:entity_name, :feature, :entity_id)");
-                    for (final var feature : featuresSet) {
-                      batch
-                          .bind("feature", feature)
-                          .bind(ENTITY_ID_QUERY_PARAM, entityId)
-                          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                          .add();
-                    }
+    final var batch =
+        handle.prepareBatch(
+            "insert into feature (entity_name, feature, "
+                + entityIdReferenceColumn
+                + ") VALUES(:entity_name, :feature, :entity_id)");
+    for (final var feature : featuresSet) {
+      batch
+          .bind("feature", feature)
+          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+          .add();
+    }
 
-                    batch.execute();
-                  });
-            },
-            executor);
+    batch.execute();
   }
 
   public InternalFuture<MapSubtypes<String, Feature>> getFeaturesMap(Set<String> entityIds) {

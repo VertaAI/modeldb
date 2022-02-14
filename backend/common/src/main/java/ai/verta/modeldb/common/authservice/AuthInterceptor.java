@@ -39,6 +39,8 @@ public class AuthInterceptor implements ServerInterceptor {
       var devKey = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
       var bearerAccessToken =
           Metadata.Key.of("bearer_access_token", Metadata.ASCII_STRING_MARSHALLER);
+      var sessionId = Metadata.Key.of("sessionId", Metadata.ASCII_STRING_MARSHALLER);
+      var sessionIdSig = Metadata.Key.of("sessionIdSig", Metadata.ASCII_STRING_MARSHALLER);
       var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
       var parameterMissing = false;
@@ -52,6 +54,10 @@ public class AuthInterceptor implements ServerInterceptor {
           if (!requestHeaders.containsKey(emailKey)
               || !(requestHeaders.containsKey(devKeyUnderscore)
                   || requestHeaders.containsKey(devKey))) {
+            parameterMissing = true;
+          }
+        } else if (sourceValue.equals("SessionId")) {
+          if (!requestHeaders.containsKey(sessionId) || !requestHeaders.containsKey(sessionIdSig)) {
             parameterMissing = true;
           }
         } else if (!requestHeaders.containsKey(bearerAccessToken)) {

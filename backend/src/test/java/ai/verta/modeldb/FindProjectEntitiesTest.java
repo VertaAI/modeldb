@@ -727,8 +727,6 @@ public class FindProjectEntitiesTest extends TestsInit {
         "Project not match with expected project",
         project2.getId(),
         response.getProjectsList().get(0).getId());
-    assertNotEquals(
-        "Project not match with expected project", project2, response.getProjectsList().get(0));
     assertEquals(
         "Total records count not matched with expected records count",
         1,
@@ -1061,15 +1059,12 @@ public class FindProjectEntitiesTest extends TestsInit {
     for (int index = 0; index < response.getProjectsCount(); index++) {
       Project project = response.getProjectsList().get(index);
       if (index == 0) {
-        assertNotEquals("Project not match with expected project", project3, project);
         assertEquals(
             "Project Id not match with expected project Id", project3.getId(), project.getId());
       } else if (index == 1) {
-        assertNotEquals("Project not match with expected project", project2, project);
         assertEquals(
             "Project Id not match with expected project Id", project2.getId(), project.getId());
       } else if (index == 2) {
-        assertNotEquals("Project not match with expected project", project1, project);
         assertEquals(
             "Project Id not match with expected project Id", project1.getId(), project.getId());
       }
@@ -1305,10 +1300,6 @@ public class FindProjectEntitiesTest extends TestsInit {
         "Experiment not match with expected experiment",
         experiment2.getId(),
         response.getExperimentsList().get(0).getId());
-    assertNotEquals(
-        "Experiment not match with expected experiment",
-        experiment2,
-        response.getExperimentsList().get(0));
     assertEquals(
         "Total records count not matched with expected records count",
         1,
@@ -1649,19 +1640,16 @@ public class FindProjectEntitiesTest extends TestsInit {
     for (int index = 0; index < response.getExperimentsCount(); index++) {
       Experiment experiment = response.getExperimentsList().get(index);
       if (index == 0) {
-        assertNotEquals("Experiment not match with expected experiment", experiment3, experiment);
         assertEquals(
             "Experiment Id not match with expected experiment Id",
             experiment3.getId(),
             experiment.getId());
       } else if (index == 1) {
-        assertNotEquals("Experiment not match with expected experiment", experiment2, experiment);
         assertEquals(
             "Experiment Id not match with expected experiment Id",
             experiment2.getId(),
             experiment.getId());
       } else if (index == 2) {
-        assertNotEquals("Experiment not match with expected experiment", experiment1, experiment);
         assertEquals(
             "Experiment Id not match with expected experiment Id",
             experiment1.getId(),

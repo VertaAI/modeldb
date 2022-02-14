@@ -13,7 +13,6 @@ public class MDBConfig extends Config {
   public String starterProject;
   public MDBArtifactStoreConfig artifactStoreConfig;
   public TelemetryConfig telemetry;
-  public TrialConfig trial;
   public List<MigrationConfig> migrations;
   protected FutureJdbi jdbi;
 
@@ -38,10 +37,6 @@ public class MDBConfig extends Config {
 
     if (telemetry == null) telemetry = new TelemetryConfig();
     telemetry.Validate("telemetry");
-
-    if (trial != null) {
-      trial.Validate("trial");
-    }
 
     if (migrations != null) {
       for (MigrationConfig migrationConfig : migrations) {

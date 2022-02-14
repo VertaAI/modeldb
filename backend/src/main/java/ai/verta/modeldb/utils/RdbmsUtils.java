@@ -8,13 +8,13 @@ import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
-import ai.verta.modeldb.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.metadata.IDTypeEnum;
@@ -2135,14 +2135,14 @@ public class RdbmsUtils {
       String entityName,
       List<String> accessibleEntityIds,
       KeyValueQuery predicate,
-      MDBRoleService mdbRoleService) {
+      boolean roleServiceImplemented) {
     if (predicate.getKey().equals(ModelDBConstants.ID)) {
       if (!predicate.getOperator().equals(OperatorEnum.Operator.EQ)) {
         throw new InvalidArgumentException(ModelDBConstants.NON_EQ_ID_PRED_ERROR_MESSAGE);
       }
       var entityId = predicate.getValue().getStringValue();
       if ((accessibleEntityIds.isEmpty() || !accessibleEntityIds.contains(entityId))
-          && mdbRoleService.IsImplemented()) {
+          && roleServiceImplemented) {
         throw new PermissionDeniedException(
             "Access is denied. User is unauthorized for given "
                 + entityName

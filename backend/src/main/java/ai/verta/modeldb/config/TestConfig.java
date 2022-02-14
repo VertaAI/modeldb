@@ -41,10 +41,6 @@ public class TestConfig extends MDBConfig {
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
     artifactStoreConfig.Validate("artifactStoreConfig");
 
-    if (trial != null) {
-      trial.Validate("trial");
-    }
-
     if (migrations != null) {
       for (MigrationConfig migrationConfig : migrations) {
         migrationConfig.Validate("migration");

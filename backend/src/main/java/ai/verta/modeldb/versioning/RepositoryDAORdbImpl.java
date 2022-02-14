@@ -1143,7 +1143,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               ModelDBConstants.REPOSITORY,
               new ArrayList<>(accessibleResourceIdsWithCollaborator),
               predicate,
-              mdbRoleService);
+              mdbRoleService.IsImplemented());
         }
 
         var findRepositoriesQuery =
@@ -1344,7 +1344,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             ModelDBConstants.DATASETS,
             new ArrayList<>(accessibleDatasetIds),
             predicate,
-            mdbRoleService);
+            mdbRoleService.IsImplemented());
       }
 
       if (!accessibleDatasetIds.isEmpty()) {

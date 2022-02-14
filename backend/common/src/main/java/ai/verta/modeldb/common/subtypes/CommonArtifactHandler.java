@@ -12,6 +12,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
@@ -81,82 +82,61 @@ public abstract class CommonArtifactHandler<T> {
               Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
               return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
             })
+        .thenApply(
+            simpleEntries ->
+                simpleEntries.stream()
+                    .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
+                    .collect(Collectors.toList()),
+            executor)
         .thenApply(MapSubtypes::from, executor);
   }
 
   protected abstract AbstractMap.SimpleEntry<T, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
       throws SQLException;
 
-  public InternalFuture<Void> logArtifacts(
-      T entityId, List<Artifact> artifacts, boolean overwrite) {
+  public void logArtifacts(Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
     // Validate input
-    return InternalFuture.runAsync(
-            () -> {
-              validateField(entityId);
+    validateField(entityId);
 
-              for (final var artifact : artifacts) {
-                String errorMessage = null;
-                if (artifact.getKey().isEmpty()
-                    && (artifact.getPathOnly() && artifact.getPath().isEmpty())) {
-                  errorMessage = "Artifact key and Artifact path not found in request";
-                } else if (artifact.getKey().isEmpty()) {
-                  errorMessage = "Artifact key not found in request";
-                } else if (artifact.getPathOnly() && artifact.getPath().isEmpty()) {
-                  errorMessage = "Artifact path not found in request";
-                }
+    for (final var artifact : artifacts) {
+      String errorMessage = null;
+      if (artifact.getKey().isEmpty() && (artifact.getPathOnly() && artifact.getPath().isEmpty())) {
+        errorMessage = "Artifact key and Artifact path not found in request";
+      } else if (artifact.getKey().isEmpty()) {
+        errorMessage = "Artifact key not found in request";
+      } else if (artifact.getPathOnly() && artifact.getPath().isEmpty()) {
+        errorMessage = "Artifact path not found in request";
+      }
 
-                if (errorMessage != null) {
-                  throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
-                }
-              }
-            },
-            executor)
-        .thenCompose(
-            unused ->
-                // Check for conflicts
-                jdbi.useHandle(
-                    handle -> {
-                      if (overwrite) {
-                        deleteArtifactsWithHandle(
-                            entityId,
-                            Optional.of(
-                                artifacts.stream()
-                                    .map(Artifact::getKey)
-                                    .collect(Collectors.toList())),
-                            handle);
-                      } else {
-                        validateAndThrowErrorAlreadyExistsArtifacts(entityId, artifacts, handle);
-                      }
-                    }),
-            executor)
-        .thenAccept(unused -> validateArtifactsForTrial(entityId, artifacts), executor)
-        .thenCompose(
-            unused ->
-                // Log
-                jdbi.useHandle(
-                    handle -> {
-                      for (final var artifact : artifacts) {
-                        var uploadCompleted =
-                            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-                        if (artifact.getUploadCompleted()) {
-                          uploadCompleted = true;
-                        }
-                        var storeTypePath =
-                            !artifact.getPathOnly()
-                                ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
-                                : "";
-                        insertArtifactInDB(
-                            entityId, handle, artifact, uploadCompleted, storeTypePath);
-                      }
-                    }),
-            executor);
+      if (errorMessage != null) {
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      }
+    }
+
+    if (overwrite) {
+      deleteArtifactsWithHandle(
+          entityId,
+          Optional.of(artifacts.stream().map(Artifact::getKey).collect(Collectors.toList())),
+          handle);
+    } else {
+      validateAndThrowErrorAlreadyExistsArtifacts(entityId, artifacts, handle);
+    }
+
+    for (final var artifact : artifacts) {
+      var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+      if (artifact.getUploadCompleted()) {
+        uploadCompleted = true;
+      }
+      var storeTypePath =
+          !artifact.getPathOnly()
+              ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
+              : "";
+      insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
+    }
   }
 
   protected abstract void insertArtifactInDB(
       T entityId, Handle handle, Artifact artifact, boolean uploadCompleted, String storeTypePath);
-
-  protected abstract InternalFuture<Void> validateArtifactsForTrial(
-      T entityId, List<Artifact> artifacts);
 
   protected abstract void validateAndThrowErrorAlreadyExistsArtifacts(
       T entityId, List<Artifact> artifacts, Handle handle);

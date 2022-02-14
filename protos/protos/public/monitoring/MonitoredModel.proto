@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "uac/Collaborator.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+
+import "monitoring/MonitoredEntity.proto";
+
+message MonitoredModel {
+  uint64 id = 1;
+  reserved 2;  // Previously deleted field
+  string name = 3;
+  string json = 4;
+  string type = 5;
+  string version = 6;
+  uint64 createdAtMillis = 7;
+  string workspaceName = 8;
+  repeated uint64 monitored_entity_ids = 9;
+}
+
+message CreateMonitoredModel {
+  reserved 1;  // Previously deleted field
+  string name = 2;
+  string json = 3;
+  string type = 4;
+  string version = 5;
+  string workspaceName = 6;
+  repeated uint64 monitored_entity_ids = 7;
+
+  message Response {
+    MonitoredModel model = 1;
+  }
+}
+
+message UpdateMonitoredModel {
+  MonitoredModel model = 1;
+
+  message Response {
+    MonitoredModel model = 1;
+  }
+}
+
+message FindMonitoredModels {
+  repeated uint64 ids = 1;
+  FindMonitoredEntityRequest find_entities = 2;
+
+  message Response {
+    repeated MonitoredModel models = 1;
+  }
+}
+
+message DeleteMonitoredModel {
+  uint64 modelId = 1;
+
+  message Response {
+  }
+}
+
+service MonitoredModelService {
+  rpc createMonitoredModel(CreateMonitoredModel) returns (MonitoredModel) {
+    option (google.api.http) = {
+      post: "/api/v1/monitoring/model/createMonitoredModel"
+      body: "*"
+    };
+  };
+
+  rpc updateMonitoredModel(UpdateMonitoredModel) returns (MonitoredModel) {
+    option (google.api.http) = {
+      post: "/api/v1/monitoring/model/updateMonitoredModel"
+      body: "*"
+    };
+  };
+
+  rpc findMonitoredModel(FindMonitoredModels) returns (FindMonitoredModels.Response) {
+    option (google.api.http) = {
+      post: "/api/v1/monitoring/model/findMonitoredModel"
+      body: "*"
+    };
+  };
+
+  rpc deleteMonitoredModel(DeleteMonitoredModel) returns (Empty) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitoring/model/deleteMonitoredModel"
+      body: "*"
+    };
+  };
+}
