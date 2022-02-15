@@ -720,7 +720,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
               RdbmsUtils.generateArtifactEntity(
                   experimentEntity,
                   ModelDBConstants.CODE_ARCHIVE,
-                  updatedCodeVersion.getCodeArchive()));
+                  updatedCodeVersion.getCodeArchive(),
+                  CodeVersionEntity.class.getSimpleName(),
+                  Optional.empty()));
           existingCodeVersionEntity.setGit_snapshot(null);
         }
       }
@@ -953,7 +955,11 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
       experimentEntity.setArtifactMapping(
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
-              experimentEntity, ModelDBConstants.ARTIFACTS, newArtifacts));
+              experimentEntity,
+              ModelDBConstants.ARTIFACTS,
+              newArtifacts,
+              ExperimentEntity.class.getSimpleName(),
+              experimentEntity.getId()));
       experimentEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       experimentEntity.increaseVersionNumber();
       session.update(experimentEntity);

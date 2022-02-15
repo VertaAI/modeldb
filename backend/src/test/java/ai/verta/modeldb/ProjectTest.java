@@ -1641,8 +1641,8 @@ public class ProjectTest extends TestsInit {
 
       assertEquals(
           "ExperimentRun does not match with expected experimentRun",
-          lastModifiedExperimentRun,
-          experimentRun);
+          lastModifiedExperimentRun.getId(),
+          experimentRun.getId());
 
       assertTrue(
           "last modified experimentRun summary does not match",
@@ -2561,10 +2561,19 @@ public class ProjectTest extends TestsInit {
       LogProjectCodeVersion.Response logProjectCodeVersionResponse =
           projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
       CodeVersion codeVersion = logProjectCodeVersionResponse.getProject().getCodeVersionSnapshot();
-      assertEquals(
-          "Project codeVersion not match with expected project codeVersion",
-          logProjectCodeVersionRequest.getCodeVersion(),
-          codeVersion);
+      var isS3 = testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+      if (isS3) {
+        assertNotEquals(
+            "Project codeVersion not match with expected project codeVersion",
+            logProjectCodeVersionRequest.getCodeVersion(),
+            codeVersion);
+      } else {
+        assertEquals(
+            "Project codeVersion not match with expected project codeVersion",
+            logProjectCodeVersionRequest.getCodeVersion(),
+            codeVersion);
+      }
+
       project = logProjectCodeVersionResponse.getProject();
 
       try {
@@ -2628,10 +2637,19 @@ public class ProjectTest extends TestsInit {
     LogProjectCodeVersion.Response logProjectCodeVersionResponse =
         projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
     project = logProjectCodeVersionResponse.getProject();
-    assertEquals(
-        "Project codeVersion not match with expected project codeVersion",
-        logProjectCodeVersionRequest.getCodeVersion(),
-        project.getCodeVersionSnapshot());
+    var isS3 = testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+    if (isS3) {
+      assertNotEquals(
+          "Project codeVersion not match with expected project codeVersion",
+          logProjectCodeVersionRequest.getCodeVersion(),
+          project.getCodeVersionSnapshot());
+    } else {
+      assertEquals(
+          "Project codeVersion not match with expected project codeVersion",
+          logProjectCodeVersionRequest.getCodeVersion(),
+          project.getCodeVersionSnapshot());
+    }
+
     project = logProjectCodeVersionResponse.getProject();
     projectMap.put(project.getId(), project);
 

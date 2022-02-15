@@ -927,7 +927,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       List<ArtifactEntity> newDatasetList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
-              experimentRunEntityObj, ModelDBConstants.DATASETS, newDatasets);
+              experimentRunEntityObj,
+              ModelDBConstants.DATASETS,
+              newDatasets,
+              ExperimentRunEntity.class.getSimpleName(),
+              experimentRunEntityObj.getId());
       experimentRunEntityObj.setArtifactMapping(newDatasetList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);
@@ -966,7 +970,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
       List<ArtifactEntity> newArtifactList =
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
-              experimentRunEntityObj, ModelDBConstants.ARTIFACTS, newArtifacts);
+              experimentRunEntityObj,
+              ModelDBConstants.ARTIFACTS,
+              newArtifacts,
+              ExperimentRunEntity.class.getSimpleName(),
+              experimentRunEntityObj.getId());
       experimentRunEntityObj.setArtifactMapping(newArtifactList);
       long currentTimestamp = Calendar.getInstance().getTimeInMillis();
       experimentRunEntityObj.setDate_updated(currentTimestamp);

@@ -14,6 +14,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
+import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
@@ -267,7 +268,9 @@ public class ProjectDAORdbImpl implements ProjectDAO {
               RdbmsUtils.generateArtifactEntity(
                   projectEntity,
                   ModelDBConstants.CODE_ARCHIVE,
-                  updatedCodeVersion.getCodeArchive()));
+                  updatedCodeVersion.getCodeArchive(),
+                  CodeVersionEntity.class.getSimpleName(),
+                  Optional.empty()));
           existingCodeVersionEntity.setGit_snapshot(null);
         }
       }
@@ -1004,7 +1007,11 @@ public class ProjectDAORdbImpl implements ProjectDAO {
 
       projectEntity.setArtifactMapping(
           RdbmsUtils.convertArtifactsFromArtifactEntityList(
-              projectEntity, ModelDBConstants.ARTIFACTS, newArtifacts));
+              projectEntity,
+              ModelDBConstants.ARTIFACTS,
+              newArtifacts,
+              ProjectEntity.class.getSimpleName(),
+              projectEntity.getId()));
       projectEntity.setDate_updated(Calendar.getInstance().getTimeInMillis());
       projectEntity.increaseVersionNumber();
       var transaction = session.beginTransaction();

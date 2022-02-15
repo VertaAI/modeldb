@@ -4,6 +4,7 @@ import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.CommonConstants;
 import java.io.Serializable;
+import java.util.Optional;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -21,14 +22,15 @@ public class ArtifactEntity implements Serializable {
 
   public ArtifactEntity() {}
 
-  public ArtifactEntity(Object entity, String fieldType, Artifact artifact) {
+  public ArtifactEntity(
+      Object entity,
+      String fieldType,
+      Artifact artifact,
+      String entityName,
+      Optional<String> entityId) {
     var app = App.getInstance();
     var artifactStoreConfig = app.mdbConfig.artifactStoreConfig;
     setKey(artifact.getKey());
-    setPath(artifact.getPath());
-    if (!artifact.getPathOnly()) {
-      setStore_type_path(artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
-    }
     setArtifact_type(artifact.getArtifactTypeValue());
     setPath_only(artifact.getPathOnly());
     setLinked_artifact_id(artifact.getLinkedArtifactId());
@@ -51,9 +53,21 @@ public class ArtifactEntity implements Serializable {
     }
 
     this.field_type = fieldType;
+    var path = artifact.getPath();
     var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
     if (artifact.getUploadCompleted()) {
       uploadCompleted = true;
+    } else {
+      path =
+          artifactStoreConfig.storeTypePathPrefix()
+              + entityName
+              + (entityId.map(id -> "/" + id + "/").orElse("/"))
+              + artifact.getKey();
+    }
+
+    setPath(path);
+    if (!artifact.getPathOnly()) {
+      setStore_type_path(path);
     }
     setUploadCompleted(uploadCompleted);
   }
