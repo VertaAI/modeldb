@@ -17,10 +17,10 @@ public class S3Config {
 
   public String storeTypePathPrefix() {
     var pathPrefix = String.format("s3://%s/", cloudBucketName);
-    if (cloudBucketPrefix != null && !cloudBucketPrefix.isEmpty()){
+    if (cloudBucketPrefix != null && !cloudBucketPrefix.isEmpty()) {
       pathPrefix += cloudBucketPrefix + "/";
     }
-    return  pathPrefix;
+    return pathPrefix;
   }
 
   public String getCloudBucketName() {

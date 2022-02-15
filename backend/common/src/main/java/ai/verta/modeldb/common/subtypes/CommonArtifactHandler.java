@@ -33,7 +33,10 @@ public abstract class CommonArtifactHandler<T> {
   }
 
   public CommonArtifactHandler(
-      Executor executor, FutureJdbi jdbi, ArtifactStoreConfig artifactStoreConfig, String entityName) {
+      Executor executor,
+      FutureJdbi jdbi,
+      ArtifactStoreConfig artifactStoreConfig,
+      String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.artifactStoreConfig = artifactStoreConfig;
@@ -122,14 +125,16 @@ public abstract class CommonArtifactHandler<T> {
       if (artifact.getUploadCompleted()) {
         uploadCompleted = true;
       } else {
-        path = artifactStoreConfig.storeTypePathPrefix() + this.entityName + "/" + entityId + "/"
-            + artifact.getKey();
+        path =
+            artifactStoreConfig.storeTypePathPrefix()
+                + this.entityName
+                + "/"
+                + entityId
+                + "/"
+                + artifact.getKey();
         artifact = artifact.toBuilder().setPath(path).build();
       }
-      var storeTypePath =
-          !artifact.getPathOnly()
-              ? path
-              : "";
+      var storeTypePath = !artifact.getPathOnly() ? path : "";
       insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
     }
   }
