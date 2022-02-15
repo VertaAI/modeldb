@@ -233,20 +233,20 @@ public abstract class KeyValueHandler<T> {
     }
   }
 
-  private boolean keyValueExists(Handle handle, T entityId,
-      KeyValue kv) {
+  private boolean keyValueExists(Handle handle, T entityId, KeyValue kv) {
     // Check for conflicts
-    Optional<Long> count = handle
-        .createQuery(
-            String.format(
-                "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
-                getTableName(), entityIdReferenceColumn))
-        .bind(KEY_QUERY_PARAM, kv.getKey())
-        .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-        .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-        .bind(ENTITY_ID_PARAM_QUERY, entityId)
-        .mapTo(Long.class)
-        .findOne();
+    Optional<Long> count =
+        handle
+            .createQuery(
+                String.format(
+                    "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
+                    getTableName(), entityIdReferenceColumn))
+            .bind(KEY_QUERY_PARAM, kv.getKey())
+            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+            .bind(ENTITY_ID_PARAM_QUERY, entityId)
+            .mapTo(Long.class)
+            .findOne();
     return (count.isPresent() && count.get() > 0);
   }
 }
