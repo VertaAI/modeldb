@@ -55,7 +55,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
   }
 
   @Override
-  protected ReconcileResult reconcile(Set<CreateEventRequest> eventUUIDs) {
+  public ReconcileResult reconcile(Set<CreateEventRequest> eventUUIDs) {
     return InternalFuture.completedInternalFuture(eventUUIDs)
         .thenCompose(
             createEventRequests -> {

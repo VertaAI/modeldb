@@ -42,8 +42,8 @@ public abstract class Reconciler<T> {
 
     if (!config.isTestReconciler()) {
       startResync();
+      startWorkers();
     }
-    startWorkers();
   }
 
   private void startResync() {
@@ -143,7 +143,7 @@ public abstract class Reconciler<T> {
 
   public abstract void resync();
 
-  protected abstract ReconcileResult reconcile(Set<T> objs);
+  public abstract ReconcileResult reconcile(Set<T> objs);
 
   public boolean isNotEmpty() {
     return !processingIdSet.isEmpty();

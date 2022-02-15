@@ -70,7 +70,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
   }
 
   @Override
-  protected ReconcileResult reconcile(Set<String> ids) {
+  public ReconcileResult reconcile(Set<String> ids) {
     logger.debug("Reconciling repositories " + ids.toString());
 
     if (isDataset) {
