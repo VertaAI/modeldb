@@ -244,7 +244,11 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE),
             executor)
-        .thenCompose(unused -> attributeHandler.updateKeyValue(projectId, attribute), executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> attributeHandler.updateKeyValue(handle, projectId, attribute)),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
