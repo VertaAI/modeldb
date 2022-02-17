@@ -503,9 +503,10 @@ public class FutureExperimentDAO {
                         Optional<Long> countOptional =
                             handle
                                 .createQuery(
-                                    "select count(id) from experiment where project_id = :projectId and name = :name")
+                                    "select count(id) from experiment where project_id = :projectId and name = :name and deleted = :deleted")
                                 .bind("projectId", projectId)
                                 .bind("name", finalName)
+                                .bind("deleted", false)
                                 .mapTo(Long.class)
                                 .findOne();
                         if (countOptional.isPresent() && countOptional.get() > 0) {
