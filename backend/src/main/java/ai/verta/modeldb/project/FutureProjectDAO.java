@@ -1365,10 +1365,7 @@ public class FutureProjectDAO {
     InternalFuture<Void> validateParamFuture =
         InternalFuture.runAsync(
             () -> {
-              if (request.getId().isEmpty() && request.getShortName().isEmpty()) {
-                throw new InvalidArgumentException(
-                    "Project ID and Project shortName not found in SetProjectShortName request");
-              } else if (request.getId().isEmpty()) {
+              if (request.getId().isEmpty()) {
                 throw new InvalidArgumentException(
                     "Project ID not found in SetProjectShortName request");
               } else if (request.getShortName().isEmpty()) {
