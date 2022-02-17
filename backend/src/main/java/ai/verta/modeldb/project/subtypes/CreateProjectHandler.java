@@ -4,6 +4,7 @@ import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.Project;
+import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -22,10 +23,10 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.Executor;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateProjectHandler extends HandlerUtil {
@@ -135,58 +136,53 @@ public class CreateProjectHandler extends HandlerUtil {
     valueMap.put("created", false);
     valueMap.put("visibility_migration", true);
 
-    return jdbi.useHandle(
-            handle ->
-                handle.useTransaction(
-                    TransactionIsolationLevel.SERIALIZABLE,
-                    handleForTransaction -> {
-                      String queryString = buildInsertQuery(valueMap, "project");
+    Supplier<InternalFuture<Void>> insertFutureSupplier =
+        () ->
+            jdbi.useHandle(
+                handle ->
+                    handle.useTransaction(
+                        TransactionIsolationLevel.SERIALIZABLE,
+                        handleForTransaction -> {
+                          String queryString = buildInsertQuery(valueMap, "project");
 
-                      LOGGER.trace("insert project query string: " + queryString);
-                      var query = handleForTransaction.createUpdate(queryString);
+                          LOGGER.trace("insert project query string: " + queryString);
+                          var query = handleForTransaction.createUpdate(queryString);
 
-                      // Inserting fields arguments based on the keys and value of map
-                      for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
-                        query.bind(objectEntry.getKey(), objectEntry.getValue());
-                      }
+                          // Inserting fields arguments based on the keys and value of map
+                          for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+                            query.bind(objectEntry.getKey(), objectEntry.getValue());
+                          }
 
-                      try {
-                        int count = query.execute();
-                        LOGGER.trace("Project Inserted : " + (count > 0));
-                      } catch (UnableToExecuteStatementException exception) {
-                        // take a brief pause before resubmitting its query/transaction
-                        Thread.sleep(config.getJdbi_retry_time()); // Time in ms
-                        LOGGER.trace("Retry to insert Project");
-                        int count = query.execute();
-                        LOGGER.trace("Project Inserted after retry : " + (count > 0));
-                      }
+                          int count = query.execute();
+                          LOGGER.trace("Project Inserted : " + (count > 0));
 
-                      if (!newProject.getTagsList().isEmpty()) {
-                        tagsHandler.addTags(
-                            handleForTransaction, newProject.getId(), newProject.getTagsList());
-                      }
-                      if (!newProject.getAttributesList().isEmpty()) {
-                        attributeHandler.logKeyValues(
-                            handleForTransaction,
-                            newProject.getId(),
-                            newProject.getAttributesList());
-                      }
-                      if (!newProject.getArtifactsList().isEmpty()) {
-                        artifactHandler.logArtifacts(
-                            handleForTransaction,
-                            newProject.getId(),
-                            newProject.getArtifactsList(),
-                            false);
-                      }
-                      if (newProject.getCodeVersionSnapshot().hasCodeArchive()
-                          || newProject.getCodeVersionSnapshot().hasGitSnapshot()) {
-                        codeVersionHandler.logCodeVersion(
-                            handleForTransaction,
-                            newProject.getId(),
-                            false,
-                            newProject.getCodeVersionSnapshot());
-                      }
-                    }))
+                          if (!newProject.getTagsList().isEmpty()) {
+                            tagsHandler.addTags(
+                                handleForTransaction, newProject.getId(), newProject.getTagsList());
+                          }
+                          if (!newProject.getAttributesList().isEmpty()) {
+                            attributeHandler.logKeyValues(
+                                handleForTransaction,
+                                newProject.getId(),
+                                newProject.getAttributesList());
+                          }
+                          if (!newProject.getArtifactsList().isEmpty()) {
+                            artifactHandler.logArtifacts(
+                                handleForTransaction,
+                                newProject.getId(),
+                                newProject.getArtifactsList(),
+                                false);
+                          }
+                          if (newProject.getCodeVersionSnapshot().hasCodeArchive()
+                              || newProject.getCodeVersionSnapshot().hasGitSnapshot()) {
+                            codeVersionHandler.logCodeVersion(
+                                handleForTransaction,
+                                newProject.getId(),
+                                false,
+                                newProject.getCodeVersionSnapshot());
+                          }
+                        }));
+    return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
         .thenApply(unused -> newProject, executor);
   }
 }
