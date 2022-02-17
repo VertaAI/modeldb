@@ -113,14 +113,14 @@ public class S3Client {
     AmazonS3 newS3Client = null;
     try {
       final var stsClientBuilder =
-              AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion);
+          AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion);
       if (!CommonUtils.appendOptionalTelepresencePath("foo").equals("foo")) {
         stsClientBuilder.setCredentials(
-                WebIdentityTokenCredentialsProvider.builder()
-                        .webIdentityTokenFile(
-                                CommonUtils.appendOptionalTelepresencePath(
-                                        System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
-                        .build());
+            WebIdentityTokenCredentialsProvider.builder()
+                .webIdentityTokenFile(
+                    CommonUtils.appendOptionalTelepresencePath(
+                        System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
+                .build());
       }
       stsClient = stsClientBuilder.build();
 
