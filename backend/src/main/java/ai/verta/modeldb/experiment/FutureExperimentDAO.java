@@ -10,6 +10,7 @@ import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -480,19 +481,43 @@ public class FutureExperimentDAO {
   public InternalFuture<Experiment> updateExperimentName(UpdateExperimentName request) {
     return getProjectIdByExperimentId(Collections.singletonList(request.getId()))
         .thenCompose(
-            projectIdFromExperimentMap ->
-                futureProjectDAO.checkProjectPermission(
-                    projectIdFromExperimentMap.get(request.getId()), ModelDBServiceActions.UPDATE),
+            projectIdFromExperimentMap -> {
+              var projectId = projectIdFromExperimentMap.get(request.getId());
+              return futureProjectDAO
+                  .checkProjectPermission(projectId, ModelDBServiceActions.UPDATE)
+                  .thenApply(unused -> projectId, executor);
+            },
             executor)
         .thenCompose(
-            unused -> {
+            projectId -> {
               var name = request.getName();
               if (request.getName().isEmpty()) {
                 name = MetadataServiceImpl.createRandomName();
               }
 
-              return updateExperimentField(
-                  request.getId(), "name", ModelDBUtils.checkEntityNameLength(name));
+              name = ModelDBUtils.checkEntityNameLength(name);
+
+              String finalName = name;
+              return jdbi.useHandle(
+                      handle -> {
+                        Optional<Long> countOptional =
+                            handle
+                                .createQuery(
+                                    "select count(id) from experiment where project_id = :projectId and name = :name")
+                                .bind("projectId", projectId)
+                                .bind("name", finalName)
+                                .mapTo(Long.class)
+                                .findOne();
+                        if (countOptional.isPresent() && countOptional.get() > 0) {
+                          throw new AlreadyExistsException(
+                              String.format(
+                                  "Experiment with name '%s' already exists in project",
+                                  finalName));
+                        }
+                      })
+                  .thenApply(
+                      unused -> updateExperimentField(request.getId(), "name", finalName),
+                      executor);
             },
             executor)
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
