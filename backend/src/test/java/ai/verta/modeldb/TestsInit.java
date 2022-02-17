@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
@@ -15,10 +14,6 @@ import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
-import ai.verta.modeldb.reconcilers.SoftDeleteRepositories;
-import ai.verta.modeldb.reconcilers.UpdateExperimentTimestampReconcile;
-import ai.verta.modeldb.reconcilers.UpdateProjectTimestampReconcile;
-import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconcile;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
@@ -28,8 +23,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.util.Date;
-import java.util.HashSet;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -171,152 +164,62 @@ public class TestsInit {
   }
 
   @AfterClass
-  public static void removeServerAndService() {
+  public static void removeServerAndService() throws InterruptedException {
     App.initiateShutdown(0);
 
-    // cleanUpResources();
+    cleanUpResources();
 
     // shutdown test server
     serverBuilder.build().shutdownNow();
   }
 
-  protected static void cleanUpResources() {
+  protected static void cleanUpResources() throws InterruptedException {
     // Remove all entities
     // removeEntities();
     // Delete entities by cron job
-    cleanUpProjects();
-    cleanUpExperiments();
-    cleanUpExperimentRuns();
-    // clean up datasets
-    cleanUpRepositories(true);
-    // clean up repositories
-    cleanUpRepositories(false);
-  }
+    SoftDeleteProjects softDeleteProjects = ReconcilerInitializer.softDeleteProjects;
+    SoftDeleteExperiments softDeleteExperiments = ReconcilerInitializer.softDeleteExperiments;
+    SoftDeleteExperimentRuns softDeleteExperimentRuns =
+        ReconcilerInitializer.softDeleteExperimentRuns;
 
-  protected static void updateTimestampOfResources() {
-    ReconcilerConfig reconcilerConfig = new ReconcilerConfig(true);
-    var repoTimestampReconcile =
-        new UpdateRepositoryTimestampReconcile(
-            reconcilerConfig, testConfig.getJdbi(), handleExecutor);
-    repoTimestampReconcile.reconcile(
-        new HashSet<>(repoTimestampReconcile.getEntriesForDateUpdate()));
-
-    var expTimestampReconcile =
-        new UpdateExperimentTimestampReconcile(
-            reconcilerConfig, testConfig.getJdbi(), handleExecutor);
-    expTimestampReconcile.reconcile(
-        new HashSet<>(expTimestampReconcile.getEntitiesForDateUpdate()));
-
-    var projTimestampReconcile =
-        new UpdateProjectTimestampReconcile(reconcilerConfig, testConfig.getJdbi(), handleExecutor);
-    projTimestampReconcile.reconcile(
-        new HashSet<>(projTimestampReconcile.getEntitiesForDateUpdate()));
-  }
-
-  private static void cleanUpProjects() {
-    var queryString =
-        "select id from project where deleted=:deleted OR (created=:created AND date_created < :dateCreated) ";
-
-    testConfig
-        .getJdbi()
-        .withHandle(
-            handle ->
-                handle
-                    .createQuery(queryString)
-                    .bind("deleted", true)
-                    .bind("created", false)
-                    .bind("dateCreated", new Date().getTime() - 60000L) // before 1 min
-                    .mapTo(String.class)
-                    .list())
-        .thenApply(
-            deletedProjects -> {
-              ReconcilerConfig reconcilerConfig = new ReconcilerConfig(true);
-              var softDeleteProjects =
-                  new SoftDeleteProjects(
-                      reconcilerConfig,
-                      services.mdbRoleService,
-                      testConfig.getJdbi(),
-                      handleExecutor);
-              return softDeleteProjects.reconcile(new HashSet<>(deletedProjects));
-            },
-            handleExecutor)
-        .get();
-  }
-
-  private static void cleanUpExperiments() {
-    var queryString = "select id from experiment where deleted=:deleted ";
-
-    testConfig
-        .getJdbi()
-        .withHandle(
-            handle ->
-                handle.createQuery(queryString).bind("deleted", true).mapTo(String.class).list())
-        .thenApply(
-            deletedExperiments -> {
-              ReconcilerConfig reconcilerConfig = new ReconcilerConfig(true);
-              var softDeleteExperiments =
-                  new SoftDeleteExperiments(
-                      reconcilerConfig,
-                      services.mdbRoleService,
-                      testConfig.getJdbi(),
-                      handleExecutor);
-              return softDeleteExperiments.reconcile(new HashSet<>(deletedExperiments));
-            },
-            handleExecutor)
-        .get();
-  }
-
-  private static void cleanUpExperimentRuns() {
-    var queryString = "select id from experiment_run where deleted=:deleted ";
-
-    testConfig
-        .getJdbi()
-        .withHandle(
-            handle ->
-                handle.createQuery(queryString).bind("deleted", true).mapTo(String.class).list())
-        .thenApply(
-            deletedERs -> {
-              ReconcilerConfig reconcilerConfig = new ReconcilerConfig(true);
-              var softDeleteExperimentRuns =
-                  new SoftDeleteExperimentRuns(
-                      reconcilerConfig,
-                      services.mdbRoleService,
-                      testConfig.getJdbi(),
-                      handleExecutor);
-              return softDeleteExperimentRuns.reconcile(new HashSet<>(deletedERs));
-            },
-            handleExecutor)
-        .get();
-  }
-
-  private static void cleanUpRepositories(boolean isDataset) {
-    String queryString;
-    if (isDataset) {
-      queryString =
-          "select rp.id from repository rp where rp.deleted=:deleted AND rp.repository_access_modifier = 2";
-    } else {
-      queryString =
-          "select rp.id from repository rp where rp.deleted=:deleted AND rp.repository_access_modifier = 1";
+    softDeleteProjects.resync();
+    while (!softDeleteProjects.isEmpty()) {
+      LOGGER.trace("Project deletion is still in progress");
+      Thread.sleep(10);
+    }
+    softDeleteExperiments.resync();
+    while (!softDeleteExperiments.isEmpty()) {
+      LOGGER.trace("Experiment deletion is still in progress");
+      Thread.sleep(10);
+    }
+    softDeleteExperimentRuns.resync();
+    while (!softDeleteExperimentRuns.isEmpty()) {
+      LOGGER.trace("ExperimentRun deletion is still in progress");
+      Thread.sleep(10);
     }
 
-    testConfig
-        .getJdbi()
-        .withHandle(
-            handle ->
-                handle.createQuery(queryString).bind("deleted", true).mapTo(String.class).list())
-        .thenApply(
-            deletedRepositories -> {
-              ReconcilerConfig reconcilerConfig = new ReconcilerConfig(true);
-              var softDeleteRepositories =
-                  new SoftDeleteRepositories(
-                      reconcilerConfig,
-                      services.mdbRoleService,
-                      isDataset,
-                      testConfig.getJdbi(),
-                      handleExecutor);
-              return softDeleteRepositories.reconcile(new HashSet<>(deletedRepositories));
-            },
-            handleExecutor)
-        .get();
+    ReconcilerInitializer.softDeleteDatasets.resync();
+    ReconcilerInitializer.softDeleteRepositories.resync();
+  }
+
+  protected static void updateTimestampOfResources() throws InterruptedException {
+    var updateTimestampRepo = ReconcilerInitializer.updateRepositoryTimestampReconcile;
+    updateTimestampRepo.resync();
+    while (!updateTimestampRepo.isEmpty()) {
+      LOGGER.trace("Update repository timestamp is still in progress");
+      Thread.sleep(10);
+    }
+    var updateTimestampExp = ReconcilerInitializer.updateExperimentTimestampReconcile;
+    updateTimestampExp.resync();
+    while (!updateTimestampExp.isEmpty()) {
+      LOGGER.trace("Update experiment timestamp is still in progress");
+      Thread.sleep(10);
+    }
+    var updateTimestampProject = ReconcilerInitializer.updateProjectTimestampReconcile;
+    updateTimestampProject.resync();
+    while (!updateTimestampProject.isEmpty()) {
+      LOGGER.trace("Update project timestamp is still in progress");
+      Thread.sleep(10);
+    }
   }
 }

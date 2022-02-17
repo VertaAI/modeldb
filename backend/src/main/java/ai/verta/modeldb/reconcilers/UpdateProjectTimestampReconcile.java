@@ -30,7 +30,7 @@ public class UpdateProjectTimestampReconcile
     getEntitiesForDateUpdate().forEach(this::insert);
   }
 
-  public List<SimpleEntry<String, Long>> getEntitiesForDateUpdate() {
+  private List<SimpleEntry<String, Long>> getEntitiesForDateUpdate() {
     var fetchUpdatedProjectIds =
         new StringBuilder("SELECT ex.project_id, MAX(ex.date_updated) AS max_date ")
             .append(" FROM experiment ex INNER JOIN project p ")
@@ -55,7 +55,8 @@ public class UpdateProjectTimestampReconcile
   }
 
   @Override
-  public ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<String, Long>> updatedMaxDateMap) {
+  protected ReconcileResult reconcile(
+      Set<AbstractMap.SimpleEntry<String, Long>> updatedMaxDateMap) {
     logger.debug(
         "Reconciling update timestamp for projects: "
             + updatedMaxDateMap.stream()

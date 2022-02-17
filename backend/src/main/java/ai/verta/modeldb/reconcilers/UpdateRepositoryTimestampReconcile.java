@@ -30,7 +30,7 @@ public class UpdateRepositoryTimestampReconcile
     getEntriesForDateUpdate().forEach(this::insert);
   }
 
-  public List<SimpleEntry<Long, Long>> getEntriesForDateUpdate() {
+  private List<SimpleEntry<Long, Long>> getEntriesForDateUpdate() {
     var fetchUpdatedDatasetIds =
         new StringBuilder("SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
             .append(" FROM commit cm INNER JOIN repository_commit rc ")
@@ -60,7 +60,7 @@ public class UpdateRepositoryTimestampReconcile
   }
 
   @Override
-  public ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap) {
+  protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap) {
     logger.debug(
         "Reconciling update timestamp for repositories: "
             + updatedMaxDateMap.stream()

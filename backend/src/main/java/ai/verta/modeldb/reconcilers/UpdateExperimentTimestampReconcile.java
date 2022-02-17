@@ -30,7 +30,7 @@ public class UpdateExperimentTimestampReconcile
     getEntitiesForDateUpdate().forEach(this::insert);
   }
 
-  public List<SimpleEntry<String, Long>> getEntitiesForDateUpdate() {
+  private List<SimpleEntry<String, Long>> getEntitiesForDateUpdate() {
     var fetchUpdatedExperimentIds =
         new StringBuilder("SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
             .append(" FROM experiment_run expr INNER JOIN experiment e ")
@@ -55,7 +55,8 @@ public class UpdateExperimentTimestampReconcile
   }
 
   @Override
-  public ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<String, Long>> updatedMaxDateMap) {
+  protected ReconcileResult reconcile(
+      Set<AbstractMap.SimpleEntry<String, Long>> updatedMaxDateMap) {
     logger.debug(
         "Reconciling update timestamp for experiments: "
             + updatedMaxDateMap.stream()

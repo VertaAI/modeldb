@@ -45,7 +45,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -1211,9 +1210,7 @@ public class RepositoryTest extends TestsInit {
   public void createdRepositoryWithDeletedRepositoryName() {
     LOGGER.info("createdRepositoryWithDeletedRepositoryName test start....");
 
-    Repository repository =
-        createRepository(
-            "Test-" + new Random().nextLong() + Calendar.getInstance().getTimeInMillis());
+    Repository repository = createRepository("Test-" + Calendar.getInstance().getTimeInMillis());
 
     CreateDataset createDatasetRequest = DatasetTest.getDatasetRequest(repository.getName());
     CreateDataset.Response createDatasetResponse =
