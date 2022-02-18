@@ -112,7 +112,17 @@ public class S3Client {
     AWSSecurityTokenService stsClient = null;
     AmazonS3 newS3Client = null;
     try {
-      stsClient = AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion).build();
+      final var stsClientBuilder =
+          AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion);
+      if (!CommonUtils.appendOptionalTelepresencePath("foo").equals("foo")) {
+        stsClientBuilder.setCredentials(
+            WebIdentityTokenCredentialsProvider.builder()
+                .webIdentityTokenFile(
+                    CommonUtils.appendOptionalTelepresencePath(
+                        System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
+                .build());
+      }
+      stsClient = stsClientBuilder.build();
 
       String roleArn = System.getenv(ModelDBConstants.AWS_ROLE_ARN);
 
