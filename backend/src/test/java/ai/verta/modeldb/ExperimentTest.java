@@ -1888,7 +1888,7 @@ public class ExperimentTest extends TestsInit {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.info("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
     } finally {
       if (experiment2 != null) {
