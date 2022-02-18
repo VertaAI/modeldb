@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -55,6 +56,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -673,14 +676,109 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void addAttribute(
       AddAttributes request, StreamObserver<AddAttributes.Response> responseObserver) {
-    super.addAttribute(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in AddAttributes request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.logAttributes(
+                          request.getId(), Collections.singletonList(request.getAttribute())),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                          updatedExperiment.getId(),
+                          updatedExperiment.getProjectId(),
+                          UPDATE_EVENT_TYPE,
+                          Optional.of("attributes"),
+                          Collections.singletonMap(
+                              "attribute_keys",
+                              new Gson()
+                                  .toJsonTree(
+                                      Stream.of(request.getAttribute())
+                                          .map(KeyValue::getKey)
+                                          .collect(Collectors.toSet()),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
+                          "experiment attribute added successfully"),
+                  executor)
+              .thenApply(
+                  unused -> AddAttributes.Response.newBuilder().setStatus(true).build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void addExperimentAttributes(
       AddExperimentAttributes request,
       StreamObserver<AddExperimentAttributes.Response> responseObserver) {
-    super.addExperimentAttributes(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                String errorMessage = null;
+                if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
+                  errorMessage =
+                      "Experiment ID and Experiment Attributes not found in AddExperimentAttributes request";
+                } else if (request.getId().isEmpty()) {
+                  errorMessage = "Experiment ID not found in AddExperimentAttributes request";
+                } else if (request.getAttributesList().isEmpty()) {
+                  errorMessage =
+                      "Experiment Attributes not found in AddExperimentAttributes request";
+                }
+
+                if (errorMessage != null) {
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.logAttributes(
+                          request.getId(), request.getAttributesList()),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("attributes"),
+                              Collections.singletonMap(
+                                  "attribute_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getAttributesList().stream()
+                                              .map(KeyValue::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment attributes added successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      AddExperimentAttributes.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
