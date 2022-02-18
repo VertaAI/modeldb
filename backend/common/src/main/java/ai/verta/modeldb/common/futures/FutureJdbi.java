@@ -16,8 +16,10 @@ public class FutureJdbi {
   public FutureJdbi(Jdbi jdbi, Executor executor) {
     this.executor = executor;
     this.jdbi = jdbi;
-      // Ensure that we do not log any sensitive/private data when exceptions are logged
-      this.jdbi.getConfig(StatementExceptions.class).setMessageRendering(StatementExceptions.MessageRendering.NONE);
+    // Ensure that we do not log any sensitive/private data when exceptions are logged
+    this.jdbi
+        .getConfig(StatementExceptions.class)
+        .setMessageRendering(StatementExceptions.MessageRendering.NONE);
   }
 
   @FunctionalInterface
