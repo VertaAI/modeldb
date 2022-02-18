@@ -8,7 +8,10 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
+import java.util.Locale;
 import java.util.Properties;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -23,6 +26,9 @@ import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.result.ResultSetException;
+import org.jdbi.v3.core.statement.UnableToCreateStatementException;
+import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 
 public abstract class CommonDBUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonDBUtil.class);
@@ -321,5 +327,23 @@ public abstract class CommonDBUtil {
         LOGGER.info("the database {} created successfully", rdb.getRdbDatabaseName());
       }
     }
+  }
+
+  public static Throwable logError(Throwable e) {
+    if (e instanceof ExecutionException || e instanceof CompletionException) {
+      return logError(e.getCause());
+    }
+    return e;
+  }
+
+  public static boolean needToRetry(Throwable e) {
+    Throwable cause = logError(e);
+    if (cause instanceof UnableToCreateStatementException
+        || cause instanceof UnableToExecuteStatementException) {
+      return cause.getMessage().toLowerCase(Locale.ROOT).contains("deadlock");
+    } else if (cause instanceof ResultSetException) {
+      return cause.getMessage().toLowerCase(Locale.ROOT).contains("unable to advance");
+    }
+    return false;
   }
 }
