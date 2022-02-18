@@ -2580,4 +2580,71 @@ public class FindProjectEntitiesTest extends TestsInit {
 
     LOGGER.info("FindExperimentRuns by experiment test stop.........");
   }
+
+  @Test
+  public void findExperimentRunsByExperimentNameTest() {
+    LOGGER.info("FindExperimentRuns by experiment name test start.........");
+
+    FindExperimentRuns findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(
+                KeyValueQuery.newBuilder()
+                    .setKey("experiment.name")
+                    .setValue(Value.newBuilder().setStringValue(experiment1.getName()).build())
+                    .build())
+            .build();
+
+    FindExperimentRuns.Response response =
+        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        2,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun not match with expected experimentRun",
+        experiment1.getId(),
+        response.getExperimentRunsList().get(0).getExperimentId());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        2,
+        response.getTotalRecords());
+
+    LOGGER.info("FindExperimentRuns by experiment name test stop.........");
+  }
+
+  @Test
+  public void findExperimentsByNameTest() {
+    LOGGER.info("Find Experiments by name test start................................");
+
+    Value stringValue = Value.newBuilder().setStringValue(experiment1.getName()).build();
+    KeyValueQuery keyValueQueryAttribute_1 =
+        KeyValueQuery.newBuilder()
+            .setKey("name")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.CONTAIN)
+            .build();
+
+    FindExperiments findExperiments =
+        FindExperiments.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQueryAttribute_1)
+            .setAscending(false)
+            .setIdsOnly(true)
+            .build();
+
+    FindExperiments.Response response = experimentServiceStub.findExperiments(findExperiments);
+
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+    assertEquals(
+        "experiment Id not match with expected experiment Id",
+        experiment1.getId(),
+        response.getExperiments(0).getId());
+
+    LOGGER.info("Find Experiments by name test stop................................");
+  }
 }
