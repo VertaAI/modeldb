@@ -65,14 +65,14 @@ public class FindProjectEntitiesTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (String projectId : projectMap.keySet()) {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-    }
+    DeleteProjects deleteProjects =
+        DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
+    DeleteProjects.Response deleteProjectsResponse =
+        projectServiceStub.deleteProjects(deleteProjects);
+    LOGGER.info("Projects deleted successfully");
+    LOGGER.info(deleteProjectsResponse.toString());
+    assertTrue(deleteProjectsResponse.getStatus());
+
     projectMap = new HashMap<>();
     experimentMap = new HashMap<>();
     experimentRunMap = new HashMap<>();

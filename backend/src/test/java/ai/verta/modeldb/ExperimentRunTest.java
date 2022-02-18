@@ -91,22 +91,19 @@ public class ExperimentRunTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (ExperimentRun run : new ExperimentRun[] {experimentRun, experimentRun2}) {
-      DeleteExperimentRun deleteExperimentRun =
-          DeleteExperimentRun.newBuilder().setId(run.getId()).build();
-      DeleteExperimentRun.Response deleteExperimentRunResponse =
-          experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
-      assertTrue(deleteExperimentRunResponse.getStatus());
-    }
+    DeleteExperimentRuns deleteExperimentRun =
+        DeleteExperimentRuns.newBuilder().addAllIds(experimentRunMap.keySet()).build();
+    DeleteExperimentRuns.Response deleteExperimentRunResponse =
+        experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRun);
+    assertTrue(deleteExperimentRunResponse.getStatus());
 
-    for (String projectId : projectMap.keySet()) {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-    }
+    DeleteProjects deleteProjects =
+        DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
+    DeleteProjects.Response deleteProjectsResponse =
+        projectServiceStub.deleteProjects(deleteProjects);
+    LOGGER.info("Projects deleted successfully");
+    LOGGER.info(deleteProjectsResponse.toString());
+    assertTrue(deleteProjectsResponse.getStatus());
 
     project = null;
     project2 = null;
