@@ -12,7 +12,6 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -340,7 +339,7 @@ public abstract class CommonDBUtil {
   public static boolean needToRetry(Throwable e) {
     Throwable cause = logError(e);
     if (cause instanceof UnableToCreateStatementException
-            || cause instanceof UnableToExecuteStatementException) {
+        || cause instanceof UnableToExecuteStatementException) {
       return cause.getMessage().toLowerCase(Locale.ROOT).contains("deadlock");
     } else if (cause instanceof ResultSetException) {
       return cause.getMessage().toLowerCase(Locale.ROOT).contains("unable to advance");
