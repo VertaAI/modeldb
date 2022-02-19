@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 
+import ast
 import json
 import logging
 import os
@@ -945,6 +946,51 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         self._refresh_cache()
         return self._msg.labels
+
+    def log_setup_script(self, script, overwrite=False):
+        """
+        Associate a model deployment setup script with this Experiment Run.
+
+        .. versionadded:: 0.13.8
+
+        Parameters
+        ----------
+        script : str
+            String composed of valid Python code for executing setup steps at the beginning of model
+            deployment. An on-disk file can be passed in using ``open("path/to/file.py", 'r').read()``.
+        overwrite : bool, default False
+            Whether to allow overwriting an existing setup script.
+
+        Raises
+        ------
+        SyntaxError
+            If `script` contains invalid Python.
+
+        """
+        # validate `script`'s syntax
+        try:
+            ast.parse(script)
+        except SyntaxError as e:
+            # clarify that the syntax error comes from `script`, and propagate details
+            reason = e.args[0]
+            line_no = e.args[1][1]
+            line = script.splitlines()[line_no-1]
+            six.raise_from(SyntaxError("{} in provided script on line {}:\n{}"
+                                       .format(reason, line_no, line)),
+                           e)
+
+        # convert into bytes for upload
+        script = six.ensure_binary(script)
+
+        # convert to file-like for `_log_artifact()`
+        script = six.BytesIO(script)
+
+        self.log_artifact(
+            "setup_script",
+            script,
+            overwrite,
+            "py",
+        )
 
     def download_docker_context(self, download_to_path, self_contained=False):
         """
