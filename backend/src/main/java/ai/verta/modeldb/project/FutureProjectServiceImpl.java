@@ -33,8 +33,6 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.SetProjectShortName;
@@ -43,9 +41,6 @@ import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.gson.Gson;
@@ -110,41 +105,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
     eventMetadata.addProperty("message", eventMessage);
     return futureEventDAO.addLocalEventWithAsync(
         ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
-  }
-
-  private InternalFuture<Project> getProjectById(String projectId) {
-    try {
-      var validateArgumentFuture =
-          InternalFuture.runAsync(
-              () -> {
-                if (projectId.isEmpty()) {
-                  throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
-                }
-              },
-              executor);
-      return validateArgumentFuture
-          .thenCompose(
-              unused ->
-                  futureProjectDAO.findProjects(
-                      FindProjects.newBuilder()
-                          .addProjectIds(projectId)
-                          .setPageLimit(1)
-                          .setPageNumber(1)
-                          .build()),
-              executor)
-          .thenApply(
-              response -> {
-                if (response.getProjectsList().isEmpty()) {
-                  throw new NotFoundException("Project not found for given Id");
-                } else if (response.getProjectsCount() > 1) {
-                  throw new InternalErrorException("More then one projects found");
-                }
-                return response.getProjects(0);
-              },
-              executor);
-    } catch (Exception e) {
-      return InternalFuture.failedStage(e);
-    }
   }
 
   @Override
@@ -556,7 +516,8 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {
     try {
       final var response =
-          getProjectById(request.getId())
+          futureProjectDAO
+              .getProjectById(request.getId())
               .thenApply(
                   project -> GetProjectById.Response.newBuilder().setProject(project).build(),
                   executor);
@@ -649,7 +610,31 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void setProjectShortName(
       SetProjectShortName request, StreamObserver<SetProjectShortName.Response> responseObserver) {
-    super.setProjectShortName(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .setProjectShortName(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("short_name"),
+                              Collections.singletonMap("short_name", updatedProject.getShortName()),
+                              "project short_name updated successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      SetProjectShortName.Response.newBuilder().setProject(updatedProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
