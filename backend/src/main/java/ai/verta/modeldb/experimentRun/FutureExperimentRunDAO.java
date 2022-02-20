@@ -737,7 +737,14 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> jdbi.useHandle(handle -> codeVersionHandler.logCodeVersion(handle, request)),
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        codeVersionHandler.logCodeVersion(
+                            handle,
+                            request.getId(),
+                            request.getOverwrite(),
+                            request.getCodeVersion())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
