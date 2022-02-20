@@ -1,7 +1,6 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.CodeVersion;
-import ai.verta.modeldb.LogExperimentRunCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -63,7 +62,8 @@ public class CodeVersionHandler {
             executor);
   }
 
-  public void logCodeVersion(Handle handle, LogExperimentRunCodeVersion request) {
+  public void logCodeVersion(
+      Handle handle, String entityId, boolean overwrite, CodeVersion codeVersion) {
     // TODO: input validation
     // Check if it existed before
     var maybeSnapshotId =
@@ -71,13 +71,13 @@ public class CodeVersionHandler {
             .createQuery(
                 String.format(
                     "select code_version_snapshot_id from %s where id=:entity_id", entityTableName))
-            .bind(ENTITY_ID_QUERY_PARAM, request.getId())
+            .bind(ENTITY_ID_QUERY_PARAM, entityId)
             .mapTo(Long.class)
             .findOne();
 
     // Check if we can overwrite
     if (maybeSnapshotId.isPresent()) {
-      if (request.getOverwrite()) {
+      if (overwrite) {
         try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
           var transaction = session.beginTransaction();
           session
@@ -85,7 +85,7 @@ public class CodeVersionHandler {
                   String.format(
                       "UPDATE %s SET code_version_snapshot_id = null WHERE id=:entity_id",
                       entityTableName))
-              .setParameter(ENTITY_ID_QUERY_PARAM, request.getId())
+              .setParameter(ENTITY_ID_QUERY_PARAM, entityId)
               .executeUpdate();
           final CodeVersionEntity entity =
               session.get(
@@ -101,8 +101,7 @@ public class CodeVersionHandler {
     // Create the new snapshot using hibernate
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       final var snapshot =
-          RdbmsUtils.generateCodeVersionEntity(
-              ModelDBConstants.CODE_VERSION, request.getCodeVersion());
+          RdbmsUtils.generateCodeVersionEntity(ModelDBConstants.CODE_VERSION, codeVersion);
       var transaction = session.beginTransaction();
       session.saveOrUpdate(snapshot);
       transaction.commit();
@@ -115,7 +114,7 @@ public class CodeVersionHandler {
                   "update %s set code_version_snapshot_id=:code_id where id=:entity_id",
                   entityTableName))
           .bind("code_id", snapshotId)
-          .bind(ENTITY_ID_QUERY_PARAM, request.getId())
+          .bind(ENTITY_ID_QUERY_PARAM, entityId)
           .execute();
     }
   }
