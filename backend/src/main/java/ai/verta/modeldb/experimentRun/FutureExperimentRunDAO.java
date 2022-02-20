@@ -84,6 +84,7 @@ import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
+import ai.verta.modeldb.project.UACApisUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
@@ -158,7 +159,8 @@ public class FutureExperimentRunDAO {
       DatasetVersionDAO datasetVersionDAO,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
-      BlobDAO blobDAO) {
+      BlobDAO blobDAO,
+      UACApisUtil uacApisUtil) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -182,7 +184,8 @@ public class FutureExperimentRunDAO {
             artifactStoreDAO,
             datasetVersionDAO,
             config);
-    predicatesHandler = new PredicatesHandler("experiment_run", "experiment_run");
+    predicatesHandler =
+        new PredicatesHandler(executor, "experiment_run", "experiment_run", uacApisUtil);
     sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
@@ -1568,11 +1571,17 @@ public class FutureExperimentRunDAO {
             },
             executor)
         .thenCompose(
-            unused ->
+            unused -> versionInputHandler.validateVersioningEntity(request.getVersionedInputs()),
+            executor)
+        .thenCompose(
+            locationBlobWithHashMap ->
                 jdbi.useHandle(
                     handle ->
                         versionInputHandler.validateAndInsertVersionedInputs(
-                            handle, request.getId(), request.getVersionedInputs())),
+                            handle,
+                            request.getId(),
+                            request.getVersionedInputs(),
+                            locationBlobWithHashMap)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);

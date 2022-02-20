@@ -333,12 +333,15 @@
     }
   },
   "definitions": {
-    "AggregationQuerySummaryAggregationOperation": {
+    "AggregationWindowEnumAggregationWindow": {
       "type": "string",
       "enum": [
-        "SUM"
+        "UNKNOWN",
+        "FIVE_MINUTES",
+        "HOUR",
+        "DAY"
       ],
-      "default": "SUM"
+      "default": "UNKNOWN"
     },
     "AlertStatusEnumAlertStatus": {
       "type": "string",
@@ -356,6 +359,16 @@
         "FIXED",
         "REFERENCE",
         "RANGE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "EvaluationFrequencyEnumEvaluationFrequency": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "FIVE_MINUTES",
+        "HOUR",
+        "DAY"
       ],
       "default": "UNKNOWN"
     },
@@ -381,24 +394,6 @@
         "IN"
       ],
       "default": "EQ"
-    },
-    "monitoringAggregationQuerySummary": {
-      "type": "object",
-      "properties": {
-        "time_granularity_millis": {
-          "type": "string",
-          "format": "uint64",
-          "title": "Optional time granularity for aggregation\nThis applies to time_window_start_at_millis and time_window_end_at_millis\nThe time window precision is reduced to this granularity\nFor example, if time_granularity_millis = \"1 day\", we will group samples that fall in the same\nday and aggregate them to create a single \"aggregated sample\""
-        },
-        "operation": {
-          "$ref": "#/definitions/AggregationQuerySummaryAggregationOperation"
-        },
-        "exclude_values": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      },
-      "description": "If any of the fields are not provided, we assume that the original value from the sample is kept.\nFor example, if time_granularity_millis=0, then time for the \"aggregated sample\" must match the\ntime of all the original samples associated with it.\nBy default the aggregation will include any logged values for the time window.  This\nbehavior can be disable to exclude the observations."
     },
     "monitoringAlert": {
       "type": "object",
@@ -435,21 +430,9 @@
           },
           "title": "Use a map instead of a list to represent that this is a set"
         },
-        "sample_find_base": {
-          "$ref": "#/definitions/monitoringFindSummarySampleRequest",
-          "description": "Base for finding samples to be evaluated. The time will be the only field changing here\nIf the base defines an aggregation, the alert is an aggregate alert."
-        },
         "status": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus",
           "title": "Current status of this alert"
-        },
-        "violating_summary_sample_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          },
-          "title": "If the alert is triggering right now, then this contains the list of sample ids that are making it trigger"
         },
         "alerter_type": {
           "$ref": "#/definitions/AlerterTypeEnumAlerterType",
@@ -467,6 +450,25 @@
         "version_number": {
           "type": "string",
           "format": "uint64"
+        },
+        "feature": {
+          "type": "string"
+        },
+        "aggregation_window": {
+          "$ref": "#/definitions/AggregationWindowEnumAggregationWindow"
+        },
+        "evaluation_frequency": {
+          "$ref": "#/definitions/EvaluationFrequencyEnumEvaluationFrequency"
+        },
+        "aggregation_type": {
+          "type": "string"
+        },
+        "aggregation_algorithm": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -476,7 +478,7 @@
         "threshold": {
           "type": "number",
           "format": "float",
-          "title": "Alert is fired if summary sample is $operator $threshold"
+          "title": "Alert is fired if value is $operator $threshold"
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
@@ -506,11 +508,7 @@
         "threshold": {
           "type": "number",
           "format": "float",
-          "title": "Alert is fired if summary sample is $operator $threshold"
-        },
-        "reference_sample_id": {
-          "type": "string",
-          "format": "uint64"
+          "title": "Alert is fired if value $operator $threshold"
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
@@ -583,40 +581,6 @@
       },
       "title": "Delete notification channels"
     },
-    "monitoringFilterQuerySummarySample": {
-      "type": "object",
-      "properties": {
-        "find_summaries": {
-          "$ref": "#/definitions/monitoringFindSummaryRequest"
-        },
-        "sample_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "labels": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/monitoringLabelFilterQuerySummarySample"
-          }
-        },
-        "time_window_start_at_millis": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "time_window_end_at_millis": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "created_at_after_millis": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "description": "Filters the caller wants to apply to selectively summary samples."
-    },
     "monitoringFindAlertRequest": {
       "type": "object",
       "properties": {
@@ -685,47 +649,6 @@
         }
       }
     },
-    "monitoringFindMonitoredEntityRequest": {
-      "type": "object",
-      "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "names": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "fuzzy_names": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "Add names to find with a fuzzy (non-exact) search"
-        },
-        "workspace_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "workspace_name": {
-          "type": "string"
-        },
-        "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Pagination"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
     "monitoringFindNotificationChannelRequest": {
       "type": "object",
       "properties": {
@@ -782,93 +705,6 @@
         }
       }
     },
-    "monitoringFindSummaryRequest": {
-      "type": "object",
-      "properties": {
-        "find_monitored_entities": {
-          "$ref": "#/definitions/monitoringFindMonitoredEntityRequest"
-        },
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "names": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "type_names": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "monitored_entity_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Pagination"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "Request to fetch multiple summaries"
-    },
-    "monitoringFindSummarySampleRequest": {
-      "type": "object",
-      "properties": {
-        "filter": {
-          "$ref": "#/definitions/monitoringFilterQuerySummarySample"
-        },
-        "aggregation": {
-          "$ref": "#/definitions/monitoringAggregationQuerySummary"
-        },
-        "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Pagination"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "store_aggregate": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "If there is an aggregation defined and this value is true, the aggregation will be stored to the database"
-        },
-        "allow_aggregate_samples": {
-          "type": "boolean",
-          "format": "boolean",
-          "description": "If true aggregate samples will be included in the results.  If false, only raw samples are returned."
-        }
-      },
-      "description": "Request to fetch multiple summary samples, potentially with aggregation."
-    },
-    "monitoringLabelFilterQuerySummarySample": {
-      "type": "object",
-      "properties": {
-        "label_value": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        }
-      },
-      "description": "Filter details for a given label."
-    },
     "monitoringListAlertHistoryItem": {
       "type": "object",
       "properties": {
@@ -879,16 +715,12 @@
         "status": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus"
         },
-        "violating_summary_sample_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
         "event_id": {
           "type": "string",
-          "title": "Optional. Doesn't need to be output on the response"
+          "title": "Optional. ID of this item. Doesn't need to be output on the response"
+        },
+        "alert": {
+          "$ref": "#/definitions/monitoringAlert"
         }
       },
       "title": "Tracks previous calls to (UpdateAlertStatusRequest) based on its arguments"
@@ -978,27 +810,9 @@
         },
         "status": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus"
-        },
-        "alerting_sample_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "ok_sample_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "clear_alerting_sample_ids": {
-          "type": "boolean",
-          "format": "boolean"
         }
       },
-      "title": "Allow the alerter to trigger an alert (in which case it shares what is the sample that failed)\nor change the status (most likely to OK if was triggering before)\nWe provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically"
+      "title": "Allow the alerter to trigger an alert or change the status (most likely to OK if was triggering before)\nWe provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically"
     },
     "monitoringUpdateNotificationChannelRequest": {
       "type": "object",
