@@ -301,7 +301,7 @@ public class App implements ApplicationContextAware {
 
   public static void initializeBackendServices(
       ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor executor) {
-    wrapService(serverBuilder, new FutureProjectServiceImpl(services, daos, executor));
+    wrapService(serverBuilder, new FutureProjectServiceImpl(daos, executor));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(serverBuilder, new ExperimentServiceImpl(services, daos));
     LOGGER.trace("Experiment serviceImpl initialized");

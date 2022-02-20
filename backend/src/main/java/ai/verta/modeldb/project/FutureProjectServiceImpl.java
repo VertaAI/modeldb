@@ -33,7 +33,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
-import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.SetProjectShortName;
 import ai.verta.modeldb.UpdateProjectAttributes;
@@ -58,17 +58,19 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FutureProjectServiceImpl extends ProjectServiceImpl {
+public class FutureProjectServiceImpl extends ProjectServiceImplBase {
   private final Executor executor;
   private final FutureProjectDAO futureProjectDAO;
-  private final ProjectDAO projectDAO;
   private final FutureEventDAO futureEventDAO;
 
-  public FutureProjectServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
-    super(serviceSet, daoSet);
+  private static final String DELETE_PROJECT_EVENT_TYPE =
+      "delete.resource.project.delete_project_succeeded";
+  private static final String UPDATE_PROJECT_EVENT_TYPE =
+      "update.resource.project.update_project_succeeded";
+
+  public FutureProjectServiceImpl(DAOSet daoSet, Executor executor) {
     this.executor = executor;
     this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.projectDAO = daoSet.projectDAO;
     this.futureEventDAO = daoSet.futureEventDAO;
   }
 
