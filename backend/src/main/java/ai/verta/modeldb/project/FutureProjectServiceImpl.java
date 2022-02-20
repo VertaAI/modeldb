@@ -33,7 +33,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
-import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.SetProjectShortName;
 import ai.verta.modeldb.UpdateProjectAttributes;
@@ -58,17 +58,19 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FutureProjectServiceImpl extends ProjectServiceImpl {
+public class FutureProjectServiceImpl extends ProjectServiceImplBase {
   private final Executor executor;
   private final FutureProjectDAO futureProjectDAO;
-  private final ProjectDAO projectDAO;
   private final FutureEventDAO futureEventDAO;
 
-  public FutureProjectServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
-    super(serviceSet, daoSet);
+  private static final String DELETE_PROJECT_EVENT_TYPE =
+      "delete.resource.project.delete_project_succeeded";
+  private static final String UPDATE_PROJECT_EVENT_TYPE =
+      "update.resource.project.update_project_succeeded";
+
+  public FutureProjectServiceImpl(DAOSet daoSet, Executor executor) {
     this.executor = executor;
     this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.projectDAO = daoSet.projectDAO;
     this.futureEventDAO = daoSet.futureEventDAO;
   }
 
@@ -110,7 +112,29 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void createProject(
       CreateProject request, StreamObserver<CreateProject.Response> responseObserver) {
-    super.createProject(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .createProject(request)
+              .thenCompose(
+                  createdProject ->
+                      addEvent(
+                              createdProject.getId(),
+                              createdProject.getWorkspaceServiceId(),
+                              "add.resource.project.add_project_succeeded",
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "project logged successfully")
+                          .thenApply(eventLoggedStatus -> createdProject, executor),
+                  executor)
+              .thenApply(
+                  createdProject ->
+                      CreateProject.Response.newBuilder().setProject(createdProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -652,14 +676,45 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   public void logProjectCodeVersion(
       LogProjectCodeVersion request,
       StreamObserver<LogProjectCodeVersion.Response> responseObserver) {
-    super.logProjectCodeVersion(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .logProjectCodeVersion(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("code_version"),
+                              Collections.emptyMap(),
+                              "code_version logged successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      LogProjectCodeVersion.Response.newBuilder()
+                          .setProject(updatedProject)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getProjectCodeVersion(
       GetProjectCodeVersion request,
       StreamObserver<GetProjectCodeVersion.Response> responseObserver) {
-    super.getProjectCodeVersion(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getProjectCodeVersion(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
