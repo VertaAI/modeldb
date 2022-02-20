@@ -48,7 +48,7 @@ class TestLogModel:
         custom_modules_dir = "."
 
         deployable_entity.log_model(
-            model_for_deployment['model'],
+            model_for_deployment["model"],
             custom_modules=["."],
         )
 
@@ -57,13 +57,19 @@ class TestLogModel:
             # skip venvs
             #     This logic is from _utils.find_filepaths().
             exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-            dirnames[:] = [dirname for dirname in dirnames if not glob.glob(exec_path_glob.format(dirname))]
+            dirnames[:] = [
+                dirname
+                for dirname in dirnames
+                if not glob.glob(exec_path_glob.format(dirname))
+            ]
 
             custom_module_filenames.update(map(os.path.basename, filenames))
 
         custom_modules = deployable_entity.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
-        with zipfile.ZipFile(custom_modules, 'r') as zipf:
-            assert custom_module_filenames == set(map(os.path.basename, zipf.namelist()))
+        with zipfile.ZipFile(custom_modules, "r") as zipf:
+            assert custom_module_filenames == set(
+                map(os.path.basename, zipf.namelist())
+            )
 
     def test_no_custom_modules(self, deployable_entity, model_for_deployment):
         deployable_entity.log_model(model_for_deployment['model'])
@@ -184,6 +190,7 @@ class TestLogModel:
                 artifacts=strs[1:],
             )
 
+    @pytest.mark.deployment
     def test_overwrite_artifacts(self, deployable_entity, endpoint, in_tempdir):
         key = "foo"
         val = {'a': 1}
@@ -422,18 +429,6 @@ class TestEnvironment:
         deployable_entity.log_environment(environment, overwrite=True)
         assert environment == deployable_entity.get_environment()
 
-    def test_del_environment(self, deployable_entity, environment):
-        deployable_entity.log_environment(environment)
-
-        deployable_entity.del_environment()
-        assert not deployable_entity.has_environment
-
-        with pytest.raises(
-            RuntimeError,
-            match="environment was not previously set",
-        ):
-            deployable_entity.get_environment()
-
 
 class TestDeployability:
     """Deployment-related functionality"""
@@ -520,33 +515,7 @@ class TestDeployability:
 
         assert downloaded_model.get_params() == model.get_params()
 
-    def test_log_model_with_custom_modules(self, deployable_entity, model_for_deployment):
-        custom_modules_dir = "."
-
-        deployable_entity.log_model(
-            model_for_deployment["model"],
-            custom_modules=["."],
-        )
-
-        custom_module_filenames = {"__init__.py", "_verta_config.py"}
-        for parent_dir, dirnames, filenames in os.walk(custom_modules_dir):
-            # skip venvs
-            #     This logic is from _utils.find_filepaths().
-            exec_path_glob = os.path.join(parent_dir, "{}", "bin", "python*")
-            dirnames[:] = [
-                dirname
-                for dirname in dirnames
-                if not glob.glob(exec_path_glob.format(dirname))
-            ]
-
-            custom_module_filenames.update(map(os.path.basename, filenames))
-
-        custom_modules = deployable_entity.get_artifact(_artifact_utils.CUSTOM_MODULES_KEY)
-        with zipfile.ZipFile(custom_modules, "r") as zipf:
-            assert custom_module_filenames == set(
-                map(os.path.basename, zipf.namelist())
-            )
-
+    @pytest.mark.deployment
     def test_download_docker_context(
         self, deployable_entity, model_for_deployment, in_tempdir, registered_model
     ):
@@ -588,6 +557,7 @@ class TestDeployability:
         finally:
             shutil.rmtree(_CACHE_DIR, ignore_errors=True)
 
+    @pytest.mark.deployment
     def test_model_artifacts(self, deployable_entity, endpoint, in_tempdir):
         key = "foo"
         val = {"a": 1}
