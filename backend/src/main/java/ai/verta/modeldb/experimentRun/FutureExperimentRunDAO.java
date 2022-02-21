@@ -744,10 +744,7 @@ public class FutureExperimentRunDAO {
                 jdbi.useHandle(
                     handle ->
                         codeVersionHandler.logCodeVersion(
-                            handle,
-                            runId,
-                            request.getOverwrite(),
-                            request.getCodeVersion())),
+                            handle, runId, request.getOverwrite(), request.getCodeVersion())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);

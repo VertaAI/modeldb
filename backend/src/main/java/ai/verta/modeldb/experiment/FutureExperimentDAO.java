@@ -12,6 +12,7 @@ import ai.verta.modeldb.experimentRun.subtypes.DatasetHandler;
 import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
+import ai.verta.modeldb.project.UACApisUtil;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -37,7 +38,8 @@ public class FutureExperimentDAO {
       UAC uac,
       MDBConfig mdbConfig,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO) {
+      DatasetVersionDAO datasetVersionDAO,
+      UACApisUtil uacApisUtil) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
@@ -58,7 +60,7 @@ public class FutureExperimentDAO {
             artifactStoreDAO,
             datasetVersionDAO,
             mdbConfig);
-    predicatesHandler = new PredicatesHandler("experiment", "exp");
+    predicatesHandler = new PredicatesHandler(executor, "experiment", "exp", uacApisUtil);
     sortingHandler = new SortingHandler("experiment");
   }
 }

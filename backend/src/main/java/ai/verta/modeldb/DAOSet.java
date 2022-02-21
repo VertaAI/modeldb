@@ -63,7 +63,13 @@ public class DAOSet {
     set.experimentDAO = new ExperimentDAORdbImpl(services.authService, services.mdbRoleService);
     set.futureExperimentDAO =
         new FutureExperimentDAO(
-            executor, jdbi, services.uac, mdbConfig, set.artifactStoreDAO, set.datasetVersionDAO);
+            executor,
+            jdbi,
+            services.uac,
+            mdbConfig,
+            set.artifactStoreDAO,
+            set.datasetVersionDAO,
+            uacApisUtil);
     set.experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             mdbConfig,
