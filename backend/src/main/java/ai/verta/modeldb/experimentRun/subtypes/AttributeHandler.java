@@ -27,6 +27,9 @@ public class AttributeHandler extends KeyValueHandler<String> {
       case "ProjectEntity":
         this.entityIdReferenceColumn = "project_id";
         break;
+      case "ExperimentEntity":
+        this.entityIdReferenceColumn = "experiment_id";
+        break;
       case "ExperimentRunEntity":
         this.entityIdReferenceColumn = "experiment_run_id";
         break;
