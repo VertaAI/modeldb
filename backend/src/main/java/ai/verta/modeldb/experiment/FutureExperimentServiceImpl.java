@@ -265,7 +265,12 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void findExperiments(
       FindExperiments request, StreamObserver<FindExperiments.Response> responseObserver) {
-    super.findExperiments(request, responseObserver);
+    try {
+      final var futureResponse = futureExperimentDAO.findExperiments(request);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

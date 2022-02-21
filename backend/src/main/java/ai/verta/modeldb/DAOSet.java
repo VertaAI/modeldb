@@ -25,7 +25,7 @@ import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.project.ProjectDAORdbImpl;
-import ai.verta.modeldb.project.UACApisUtil;
+import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ServiceEnum;
 import java.util.concurrent.Executor;
@@ -47,11 +47,12 @@ public class DAOSet {
   public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
   public FutureEventDAO futureEventDAO;
+  public UACApisUtil uacApisUtil;
 
   public static DAOSet fromServices(
       ServiceSet services, FutureJdbi jdbi, Executor executor, MDBConfig mdbConfig) {
     var set = new DAOSet();
-    UACApisUtil uacApisUtil = new UACApisUtil(executor, services.uac);
+    set.uacApisUtil = new UACApisUtil(executor, services.uac);
 
     set.metadataDAO = new MetadataDAORdbImpl();
     set.commitDAO = new CommitDAORdbImpl(services.authService, services.mdbRoleService);
@@ -95,7 +96,7 @@ public class DAOSet {
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO,
-            uacApisUtil);
+            set.uacApisUtil);
     set.futureProjectDAO =
         new FutureProjectDAO(
             executor,
@@ -105,11 +106,10 @@ public class DAOSet {
             set.datasetVersionDAO,
             mdbConfig,
             set.futureExperimentRunDAO,
-            uacApisUtil);
+            set.uacApisUtil);
     set.futureEventDAO =
         new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
-    set.futureExperimentDAO =
-        new FutureExperimentDAO(executor, jdbi, services.uac, mdbConfig, set, uacApisUtil);
+    set.futureExperimentDAO = new FutureExperimentDAO(executor, jdbi, services.uac, mdbConfig, set);
 
     return set;
   }

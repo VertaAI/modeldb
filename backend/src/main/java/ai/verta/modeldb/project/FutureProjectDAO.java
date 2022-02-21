@@ -65,6 +65,7 @@ import ai.verta.modeldb.project.subtypes.CreateProjectHandler;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.Action;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;

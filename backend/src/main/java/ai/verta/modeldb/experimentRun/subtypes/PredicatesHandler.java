@@ -13,7 +13,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.exceptions.UnimplementedException;
-import ai.verta.modeldb.project.UACApisUtil;
+import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
