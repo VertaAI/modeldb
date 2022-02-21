@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -36,23 +37,28 @@ import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.uac.GetResourcesResponseItem;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -212,24 +218,10 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       final var response =
           requestValidationFuture
               .thenCompose(
-                  unused ->
-                      futureExperimentDAO.findExperiments(
-                          FindExperiments.newBuilder().addExperimentIds(request.getId()).build()),
-                  executor)
+                  unused -> futureExperimentDAO.getExperimentById(request.getId()), executor)
               .thenApply(
-                  findResponse -> {
-                    if (findResponse.getExperimentsCount() > 1) {
-                      throw new InternalErrorException(
-                          "More than one Experiment found for ID: " + request.getId());
-                    } else if (findResponse.getExperimentsCount() == 0) {
-                      throw new NotFoundException(
-                          "Experiment not found for the ID: " + request.getId());
-                    } else {
-                      return GetExperimentById.Response.newBuilder()
-                          .setExperiment(findResponse.getExperiments(0))
-                          .build();
-                    }
-                  },
+                  experiment ->
+                      GetExperimentById.Response.newBuilder().setExperiment(experiment).build(),
                   executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
@@ -309,71 +301,501 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   public void updateExperimentNameOrDescription(
       UpdateExperimentNameOrDescription request,
       StreamObserver<UpdateExperimentNameOrDescription.Response> responseObserver) {
-    super.updateExperimentNameOrDescription(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage =
+                      "Experiment ID not found in UpdateExperimentNameOrDescription request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused -> futureExperimentDAO.updateExperimentNameOrDescription(request),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "experiment updated successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      UpdateExperimentNameOrDescription.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void updateExperimentName(
       UpdateExperimentName request,
       StreamObserver<UpdateExperimentName.Response> responseObserver) {
-    super.updateExperimentName(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in UpdateExperimentName request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.updateExperimentName(request), executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("name"),
+                              Collections.singletonMap("name", updatedExperiment.getName()),
+                              "experiment name updated successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      UpdateExperimentName.Response.newBuilder().setExperiment(experiment).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void updateExperimentDescription(
       UpdateExperimentDescription request,
       StreamObserver<UpdateExperimentDescription.Response> responseObserver) {
-    super.updateExperimentDescription(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage =
+                      "Experiment ID not found in UpdateExperimentDescription request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused -> futureExperimentDAO.updateExperimentDescription(request), executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("description"),
+                              Collections.emptyMap(),
+                              "experiment description updated successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      UpdateExperimentDescription.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void addExperimentTags(
       AddExperimentTags request, StreamObserver<AddExperimentTags.Response> responseObserver) {
-    super.addExperimentTags(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in AddExperimentTags request";
+                  throw new InvalidArgumentException(errorMessage);
+                } else if (request.getTagsList().isEmpty()) {
+                  var errorMessage = "Experiment tags not found in AddExperimentTags request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused -> futureExperimentDAO.addTags(request.getId(), request.getTagsList()),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getTagsList(),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment tags added successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      AddExperimentTags.Response.newBuilder().setExperiment(experiment).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void addExperimentTag(
       AddExperimentTag request, StreamObserver<AddExperimentTag.Response> responseObserver) {
-    super.addExperimentTag(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in AddExperimentTag request";
+                  throw new InvalidArgumentException(errorMessage);
+                } else if (request.getTag().isEmpty()) {
+                  var errorMessage = "Experiment Tag not found in AddExperimentTag request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.addTags(
+                          request.getId(), Collections.singletonList(request.getTag())),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getTag()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment tag added successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      AddExperimentTag.Response.newBuilder().setExperiment(experiment).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getExperimentTags(
       GetTags request, StreamObserver<GetTags.Response> responseObserver) {
-    super.getExperimentTags(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in GetTags request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture.thenCompose(
+              unused -> futureExperimentDAO.getTags(request.getId()), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteExperimentTags(
       DeleteExperimentTags request,
       StreamObserver<DeleteExperimentTags.Response> responseObserver) {
-    super.deleteExperimentTags(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                String errorMessage = null;
+                if (request.getId().isEmpty()
+                    && request.getTagsList().isEmpty()
+                    && !request.getDeleteAll()) {
+                  errorMessage =
+                      "Experiment ID and Experiment tags not found in DeleteExperimentTags request";
+                } else if (request.getId().isEmpty()) {
+                  errorMessage = "Experiment ID not found in DeleteExperimentTags request";
+                } else if (request.getTagsList().isEmpty() && !request.getDeleteAll()) {
+                  errorMessage = "Experiment tags not found in DeleteExperimentTags request";
+                }
+
+                if (errorMessage != null) {
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.deleteTags(
+                          request.getId(), request.getTagsList(), request.getDeleteAll()),
+                  executor)
+              .thenCompose(
+                  updatedExperiment -> {
+                    Map<String, Object> extraField = new HashMap<>();
+                    if (request.getDeleteAll()) {
+                      extraField.put("tags_delete_all", true);
+                    } else {
+                      extraField.put(
+                          "tags",
+                          new Gson()
+                              .toJsonTree(
+                                  request.getTagsList(),
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
+                    }
+                    // Add succeeded event in local DB
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            extraField,
+                            "experiment tags deleted successfully")
+                        .thenApply(unused -> updatedExperiment, executor);
+                  },
+                  executor)
+              .thenApply(
+                  experiment ->
+                      DeleteExperimentTags.Response.newBuilder().setExperiment(experiment).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void deleteExperimentTag(
       DeleteExperimentTag request, StreamObserver<DeleteExperimentTag.Response> responseObserver) {
-    super.deleteExperimentTag(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                String errorMessage = null;
+                if (request.getId().isEmpty() && request.getTag().isEmpty()) {
+                  errorMessage =
+                      "Experiment ID and Experiment tag not found in DeleteExperimentTag request";
+                } else if (request.getId().isEmpty()) {
+                  errorMessage = "Experiment ID not found in DeleteExperimentTag request";
+                } else if (request.getTag().isEmpty()) {
+                  errorMessage = "Experiment tag not found in DeleteExperimentTag request";
+                }
+
+                if (errorMessage != null) {
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.deleteTags(
+                          request.getId(), Collections.singletonList(request.getTag()), false),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("tags"),
+                              Collections.singletonMap(
+                                  "tags",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getTag()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment tag deleted successfully")
+                          .thenApply(unused -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      DeleteExperimentTag.Response.newBuilder().setExperiment(experiment).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void addAttribute(
       AddAttributes request, StreamObserver<AddAttributes.Response> responseObserver) {
-    super.addAttribute(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in AddAttributes request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.logAttributes(
+                          request.getId(), Collections.singletonList(request.getAttribute())),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                          updatedExperiment.getId(),
+                          updatedExperiment.getProjectId(),
+                          UPDATE_EVENT_TYPE,
+                          Optional.of("attributes"),
+                          Collections.singletonMap(
+                              "attribute_keys",
+                              new Gson()
+                                  .toJsonTree(
+                                      Stream.of(request.getAttribute())
+                                          .map(KeyValue::getKey)
+                                          .collect(Collectors.toSet()),
+                                      new TypeToken<ArrayList<String>>() {}.getType())),
+                          "experiment attribute added successfully"),
+                  executor)
+              .thenApply(
+                  unused -> AddAttributes.Response.newBuilder().setStatus(true).build(), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void addExperimentAttributes(
       AddExperimentAttributes request,
       StreamObserver<AddExperimentAttributes.Response> responseObserver) {
-    super.addExperimentAttributes(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                String errorMessage = null;
+                if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
+                  errorMessage =
+                      "Experiment ID and Experiment Attributes not found in AddExperimentAttributes request";
+                } else if (request.getId().isEmpty()) {
+                  errorMessage = "Experiment ID not found in AddExperimentAttributes request";
+                } else if (request.getAttributesList().isEmpty()) {
+                  errorMessage =
+                      "Experiment Attributes not found in AddExperimentAttributes request";
+                }
+
+                if (errorMessage != null) {
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.logAttributes(
+                          request.getId(), request.getAttributesList()),
+                  executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("attributes"),
+                              Collections.singletonMap(
+                                  "attribute_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getAttributesList().stream()
+                                              .map(KeyValue::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment attributes added successfully")
+                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      AddExperimentAttributes.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getExperimentAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    super.getExperimentAttributes(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                List<String> errorMessages = new ArrayList<>();
+                if (request.getId().isEmpty()) {
+                  errorMessages.add("Experiment ID not found in GetAttributes request");
+                }
+                if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
+                  errorMessages.add("Experiment Attribute keys not found in GetAttributes request");
+                }
+                if (!errorMessages.isEmpty()) {
+                  throw new InvalidArgumentException(String.join("\n", errorMessages));
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture.thenCompose(
+              unused -> futureExperimentDAO.getExperimentAttributes(request), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
