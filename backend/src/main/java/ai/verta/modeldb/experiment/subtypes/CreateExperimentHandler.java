@@ -31,6 +31,7 @@ import ai.verta.uac.RoleScope;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.UserInfo;
+import java.time.Instant;
 import java.util.Calendar;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
@@ -91,15 +92,13 @@ public class CreateExperimentHandler extends HandlerUtil {
    */
   private Experiment getExperimentFromRequest(CreateExperiment request, UserInfo userInfo) {
 
-    String errorMessage = null;
     if (request.getProjectId().isEmpty()) {
-      errorMessage = "Project ID not found in CreateExperiment request";
-    } else if (request.getName().isEmpty()) {
-      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
+      var errorMessage = "Project ID not found in CreateExperiment request";
+      throw new InvalidArgumentException(errorMessage);
     }
 
-    if (errorMessage != null) {
-      throw new InvalidArgumentException(errorMessage);
+    if (request.getName().isEmpty()) {
+      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
     }
 
     /*
@@ -129,8 +128,8 @@ public class CreateExperimentHandler extends HandlerUtil {
           .setDateUpdated(request.getDateCreated());
     } else {
       experimentBuilder
-          .setDateCreated(Calendar.getInstance().getTimeInMillis())
-          .setDateUpdated(Calendar.getInstance().getTimeInMillis());
+          .setDateCreated(Instant.now().toEpochMilli())
+          .setDateUpdated(Instant.now().toEpochMilli());
     }
     if (userInfo != null) {
       experimentBuilder.setOwner(userInfo.getVertaInfo().getUserId());
