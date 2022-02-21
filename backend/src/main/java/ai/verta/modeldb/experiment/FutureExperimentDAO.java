@@ -79,7 +79,7 @@ public class FutureExperimentDAO {
             daoSet.artifactStoreDAO,
             daoSet.datasetVersionDAO,
             mdbConfig);
-    predicatesHandler = new PredicatesHandler("experiment", "experiment");
+    predicatesHandler = new PredicatesHandler(executor, "experiment", "exp", uacApisUtil);
     sortingHandler = new SortingHandler("experiment");
 
     createExperimentHandler =

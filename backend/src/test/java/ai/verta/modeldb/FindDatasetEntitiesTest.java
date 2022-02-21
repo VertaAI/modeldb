@@ -69,14 +69,15 @@ public class FindDatasetEntitiesTest extends TestsInit {
       LOGGER.info("Dataset deleted successfully");
       LOGGER.info(deleteDatasetResponse.toString());
     }
-    for (String datasetId : datasetMap.keySet()) {
-      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(datasetId).build();
-      DeleteDataset.Response deleteDatasetResponse =
-          datasetServiceStub.deleteDataset(deleteDataset);
-      LOGGER.info("Dataset deleted successfully");
-      LOGGER.info(deleteDatasetResponse.toString());
-      assertTrue(deleteDatasetResponse.getStatus());
-    }
+
+    DeleteDatasets deleteDatasets =
+        DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
+    DeleteDatasets.Response deleteDatasetsResponse =
+        datasetServiceStub.deleteDatasets(deleteDatasets);
+    LOGGER.info("Datasets deleted successfully");
+    LOGGER.info(deleteDatasetsResponse.toString());
+    assertTrue(deleteDatasetsResponse.getStatus());
+
     dataset1 = null;
     dataset2 = null;
     dataset3 = null;

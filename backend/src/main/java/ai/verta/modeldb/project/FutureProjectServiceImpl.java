@@ -33,9 +33,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.SetProjectShortName;
 import ai.verta.modeldb.UpdateProjectAttributes;
@@ -43,9 +41,6 @@ import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.gson.Gson;
@@ -63,17 +58,19 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FutureProjectServiceImpl extends ProjectServiceImpl {
+public class FutureProjectServiceImpl extends ProjectServiceImplBase {
   private final Executor executor;
   private final FutureProjectDAO futureProjectDAO;
-  private final ProjectDAO projectDAO;
   private final FutureEventDAO futureEventDAO;
 
-  public FutureProjectServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
-    super(serviceSet, daoSet);
+  private static final String DELETE_PROJECT_EVENT_TYPE =
+      "delete.resource.project.delete_project_succeeded";
+  private static final String UPDATE_PROJECT_EVENT_TYPE =
+      "update.resource.project.update_project_succeeded";
+
+  public FutureProjectServiceImpl(DAOSet daoSet, Executor executor) {
     this.executor = executor;
     this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.projectDAO = daoSet.projectDAO;
     this.futureEventDAO = daoSet.futureEventDAO;
   }
 
@@ -112,45 +109,32 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
         ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
   }
 
-  private InternalFuture<Project> getProjectById(String projectId) {
-    try {
-      var validateArgumentFuture =
-          InternalFuture.runAsync(
-              () -> {
-                if (projectId.isEmpty()) {
-                  throw new InvalidArgumentException(ModelDBMessages.PROJECT_ID_NOT_PRESENT_ERROR);
-                }
-              },
-              executor);
-      return validateArgumentFuture
-          .thenCompose(
-              unused ->
-                  futureProjectDAO.findProjects(
-                      FindProjects.newBuilder()
-                          .addProjectIds(projectId)
-                          .setPageLimit(1)
-                          .setPageNumber(1)
-                          .build()),
-              executor)
-          .thenApply(
-              response -> {
-                if (response.getProjectsList().isEmpty()) {
-                  throw new NotFoundException("Project not found for given Id");
-                } else if (response.getProjectsCount() > 1) {
-                  throw new InternalErrorException("More then one projects found");
-                }
-                return response.getProjects(0);
-              },
-              executor);
-    } catch (Exception e) {
-      return InternalFuture.failedStage(e);
-    }
-  }
-
   @Override
   public void createProject(
       CreateProject request, StreamObserver<CreateProject.Response> responseObserver) {
-    super.createProject(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureProjectDAO
+              .createProject(request)
+              .thenCompose(
+                  createdProject ->
+                      addEvent(
+                              createdProject.getId(),
+                              createdProject.getWorkspaceServiceId(),
+                              "add.resource.project.add_project_succeeded",
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "project logged successfully")
+                          .thenApply(eventLoggedStatus -> createdProject, executor),
+                  executor)
+              .thenApply(
+                  createdProject ->
+                      CreateProject.Response.newBuilder().setProject(createdProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -556,7 +540,8 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
       GetProjectById request, StreamObserver<GetProjectById.Response> responseObserver) {
     try {
       final var response =
-          getProjectById(request.getId())
+          futureProjectDAO
+              .getProjectById(request.getId())
               .thenApply(
                   project -> GetProjectById.Response.newBuilder().setProject(project).build(),
                   executor);
@@ -649,27 +634,87 @@ public class FutureProjectServiceImpl extends ProjectServiceImpl {
   @Override
   public void setProjectShortName(
       SetProjectShortName request, StreamObserver<SetProjectShortName.Response> responseObserver) {
-    super.setProjectShortName(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .setProjectShortName(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("short_name"),
+                              Collections.singletonMap("short_name", updatedProject.getShortName()),
+                              "project short_name updated successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      SetProjectShortName.Response.newBuilder().setProject(updatedProject).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getProjectShortName(
       GetProjectShortName request, StreamObserver<GetProjectShortName.Response> responseObserver) {
-    super.getProjectShortName(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getProjectShortName(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void logProjectCodeVersion(
       LogProjectCodeVersion request,
       StreamObserver<LogProjectCodeVersion.Response> responseObserver) {
-    super.logProjectCodeVersion(request, responseObserver);
+    try {
+      final var response =
+          futureProjectDAO
+              .logProjectCodeVersion(request)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
+              .thenCompose(
+                  updatedProject ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedProject.getId(),
+                              updatedProject.getWorkspaceServiceId(),
+                              UPDATE_PROJECT_EVENT_TYPE,
+                              Optional.of("code_version"),
+                              Collections.emptyMap(),
+                              "code_version logged successfully")
+                          .thenApply(unused -> updatedProject, executor),
+                  executor)
+              .thenApply(
+                  updatedProject ->
+                      LogProjectCodeVersion.Response.newBuilder()
+                          .setProject(updatedProject)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
   public void getProjectCodeVersion(
       GetProjectCodeVersion request,
       StreamObserver<GetProjectCodeVersion.Response> responseObserver) {
-    super.getProjectCodeVersion(request, responseObserver);
+    try {
+      final var response = futureProjectDAO.getProjectCodeVersion(request);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
