@@ -1,11 +1,13 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
@@ -37,7 +39,9 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -461,6 +465,11 @@ public class FutureExperimentDAO {
           for (var result : experimentEntitiesMap) {
             projectIdFromExperimentMap.putAll(result);
           }
+          for (var expId : experimentIds) {
+            if (!projectIdFromExperimentMap.containsKey(expId)) {
+              projectIdFromExperimentMap.put(expId, "");
+            }
+          }
           return projectIdFromExperimentMap;
         });
   }
@@ -571,5 +580,72 @@ public class FutureExperimentDAO {
         .thenCompose(unused -> tagsHandler.getTags(expId), executor)
         .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor)
         .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
+  }
+
+  public InternalFuture<Experiment> deleteTags(String expId, List<String> tags, boolean deleteAll) {
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    final Optional<List<String>> maybeTags = deleteAll ? Optional.empty() : Optional.of(tags);
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      tagsHandler.deleteTags(handle, expId, maybeTags);
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<Experiment> logAttributes(String expId, List<KeyValue> attributes) {
+    final var now = new Date().getTime();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      attributeHandler.logKeyValues(handle, expId, attributes);
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<GetAttributes.Response> getExperimentAttributes(GetAttributes request) {
+    final var expId = request.getId();
+    final var keys = request.getAttributeKeysList();
+    final var getAll = request.getGetAll();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> attributeHandler.getKeyValues(expId, keys, getAll), executor)
+        .thenApply(
+            attributes ->
+                attributes.stream()
+                    .sorted(Comparator.comparing(KeyValue::getKey))
+                    .collect(Collectors.toList()),
+            executor)
+        .thenApply(
+            keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
+            executor);
   }
 }
