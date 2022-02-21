@@ -413,14 +413,15 @@ public class FutureExperimentDAO {
         .thenCompose(
             unused -> {
               var name = request.getName();
-              if (request.getName().isEmpty()) {
+              if (name.isEmpty()) {
                 name = MetadataServiceImpl.createRandomName();
               }
-
-              if (!name.isEmpty()) {
-                return updateExperimentField(
-                    request.getId(), "name", ModelDBUtils.checkEntityNameLength(name));
-              }
+              return updateExperimentField(
+                  request.getId(), "name", ModelDBUtils.checkEntityNameLength(name));
+            },
+            executor)
+        .thenCompose(
+            unused -> {
               // FIXME: this code never allows us to set the description as an empty string
               if (!request.getDescription().isEmpty()) {
                 return updateExperimentField(
