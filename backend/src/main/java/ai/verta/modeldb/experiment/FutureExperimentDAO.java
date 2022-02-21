@@ -1,11 +1,15 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
@@ -16,6 +20,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.experiment.subtypes.CreateExperimentHandler;
@@ -35,7 +40,9 @@ import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -46,6 +53,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentDAO {
@@ -458,6 +466,11 @@ public class FutureExperimentDAO {
           for (var result : experimentEntitiesMap) {
             projectIdFromExperimentMap.putAll(result);
           }
+          for (var expId : experimentIds) {
+            if (!projectIdFromExperimentMap.containsKey(expId)) {
+              projectIdFromExperimentMap.put(expId, "");
+            }
+          }
           return projectIdFromExperimentMap;
         });
   }
@@ -522,5 +535,143 @@ public class FutureExperimentDAO {
             },
             executor)
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
+  }
+
+  public InternalFuture<Experiment> updateExperimentDescription(
+      UpdateExperimentDescription request) {
+    return getProjectIdByExperimentId(Collections.singletonList(request.getId()))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(request.getId()), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                updateExperimentField(request.getId(), "description", request.getDescription()),
+            executor)
+        .thenCompose(unused -> getExperimentById(request.getId()), executor);
+  }
+
+  public InternalFuture<Experiment> addTags(String expId, List<String> tags) {
+    final var now = new Date().getTime();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      tagsHandler.addTags(
+                          handle, expId, TagsHandlerBase.checkEntityTagsLength(tags));
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  private void updateModifiedTimestamp(Handle handle, String experimentId, Long now) {
+    final var currentDateUpdated =
+        handle
+            .createQuery("SELECT date_updated FROM experiment WHERE id=:exp_id")
+            .bind("exp_id", experimentId)
+            .mapTo(Long.class)
+            .one();
+    final var dateUpdated = Math.max(currentDateUpdated, now);
+    handle
+        .createUpdate("update experiment set date_updated=:date_updated where id=:exp_id")
+        .bind("exp_id", experimentId)
+        .bind("date_updated", dateUpdated)
+        .execute();
+  }
+
+  private void updateVersionNumber(Handle handle, String expId) {
+    handle
+        .createUpdate("update experiment set version_number=(version_number + 1) where id=:exp_id")
+        .bind("exp_id", expId)
+        .execute();
+  }
+
+  public InternalFuture<GetTags.Response> getTags(String expId) {
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> tagsHandler.getTags(expId), executor)
+        .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor)
+        .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
+  }
+
+  public InternalFuture<Experiment> deleteTags(String expId, List<String> tags, boolean deleteAll) {
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    final Optional<List<String>> maybeTags = deleteAll ? Optional.empty() : Optional.of(tags);
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      tagsHandler.deleteTags(handle, expId, maybeTags);
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<Experiment> logAttributes(String expId, List<KeyValue> attributes) {
+    final var now = new Date().getTime();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      attributeHandler.logKeyValues(handle, expId, attributes);
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<GetAttributes.Response> getExperimentAttributes(GetAttributes request) {
+    final var expId = request.getId();
+    final var keys = request.getAttributeKeysList();
+    final var getAll = request.getGetAll();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> attributeHandler.getKeyValues(expId, keys, getAll), executor)
+        .thenApply(
+            attributes ->
+                attributes.stream()
+                    .sorted(Comparator.comparing(KeyValue::getKey))
+                    .collect(Collectors.toList()),
+            executor)
+        .thenApply(
+            keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
+            executor);
   }
 }
