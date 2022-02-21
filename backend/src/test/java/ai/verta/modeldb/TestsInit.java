@@ -183,17 +183,17 @@ public class TestsInit {
         ReconcilerInitializer.softDeleteExperimentRuns;
 
     softDeleteProjects.resync();
-    while (softDeleteProjects.isNotEmpty()) {
+    while (!softDeleteProjects.isEmpty()) {
       LOGGER.trace("Project deletion is still in progress");
       Thread.sleep(10);
     }
     softDeleteExperiments.resync();
-    while (softDeleteExperiments.isNotEmpty()) {
+    while (!softDeleteExperiments.isEmpty()) {
       LOGGER.trace("Experiment deletion is still in progress");
       Thread.sleep(10);
     }
     softDeleteExperimentRuns.resync();
-    while (softDeleteExperimentRuns.isNotEmpty()) {
+    while (!softDeleteExperimentRuns.isEmpty()) {
       LOGGER.trace("ExperimentRun deletion is still in progress");
       Thread.sleep(10);
     }
@@ -202,9 +202,24 @@ public class TestsInit {
     ReconcilerInitializer.softDeleteRepositories.resync();
   }
 
-  protected static void updateTimestampOfResources() {
-    ReconcilerInitializer.updateRepositoryTimestampReconcile.resync();
-    ReconcilerInitializer.updateExperimentTimestampReconcile.resync();
-    ReconcilerInitializer.updateProjectTimestampReconcile.resync();
+  protected static void updateTimestampOfResources() throws InterruptedException {
+    var updateTimestampRepo = ReconcilerInitializer.updateRepositoryTimestampReconcile;
+    updateTimestampRepo.resync();
+    while (!updateTimestampRepo.isEmpty()) {
+      LOGGER.trace("Update repository timestamp is still in progress");
+      Thread.sleep(10);
+    }
+    var updateTimestampExp = ReconcilerInitializer.updateExperimentTimestampReconcile;
+    updateTimestampExp.resync();
+    while (!updateTimestampExp.isEmpty()) {
+      LOGGER.trace("Update experiment timestamp is still in progress");
+      Thread.sleep(10);
+    }
+    var updateTimestampProject = ReconcilerInitializer.updateProjectTimestampReconcile;
+    updateTimestampProject.resync();
+    while (!updateTimestampProject.isEmpty()) {
+      LOGGER.trace("Update project timestamp is still in progress");
+      Thread.sleep(10);
+    }
   }
 }

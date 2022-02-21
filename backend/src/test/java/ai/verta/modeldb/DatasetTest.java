@@ -10,7 +10,6 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
-import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -62,14 +61,14 @@ public class DatasetTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (String datasetId : datasetMap.keySet()) {
-      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(datasetId).build();
-      DeleteDataset.Response deleteDatasetResponse =
-          datasetServiceStub.deleteDataset(deleteDataset);
-      LOGGER.info("Dataset deleted successfully");
-      LOGGER.info(deleteDatasetResponse.toString());
-      assertTrue(deleteDatasetResponse.getStatus());
-    }
+    DeleteDatasets deleteDatasets =
+        DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
+    DeleteDatasets.Response deleteDatasetsResponse =
+        datasetServiceStub.deleteDatasets(deleteDatasets);
+    LOGGER.info("Datasets deleted successfully");
+    LOGGER.info(deleteDatasetsResponse.toString());
+    assertTrue(deleteDatasetsResponse.getStatus());
+
     dataset1 = null;
     dataset2 = null;
     dataset3 = null;
@@ -1417,8 +1416,6 @@ public class DatasetTest extends TestsInit {
           experimentRun.getDateUpdated(),
           response.getExperimentRun().getDateUpdated());
 
-      ReconcilerInitializer.initialize(
-          testConfig, services, daos, testConfig.getJdbi(), handleExecutor);
       updateTimestampOfResources();
 
       LastExperimentByDatasetId lastExperimentByDatasetId =
