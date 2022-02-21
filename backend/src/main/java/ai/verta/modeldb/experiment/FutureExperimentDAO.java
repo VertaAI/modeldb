@@ -407,18 +407,14 @@ public class FutureExperimentDAO {
     return getProjectIdByExperimentId(Collections.singletonList(request.getId()))
         .thenCompose(
             projectIdFromExperimentMap ->
-                futureProjectDAO.checkProjectPermission(
-                    projectIdFromExperimentMap.get(request.getId()), ModelDBServiceActions.UPDATE),
+                futureProjectDAO
+                    .checkProjectPermission(
+                        projectIdFromExperimentMap.get(request.getId()),
+                        ModelDBServiceActions.UPDATE)
+                    .thenApply(unused -> projectIdFromExperimentMap.get(request.getId()), executor),
             executor)
         .thenCompose(
-            unused -> {
-              var name = request.getName();
-              if (name.isEmpty()) {
-                name = MetadataServiceImpl.createRandomName();
-              }
-              return updateExperimentField(
-                  request.getId(), "name", ModelDBUtils.checkEntityNameLength(name));
-            },
+            projectId -> updateExperimentName(request.getName(), projectId, request.getId()),
             executor)
         .thenCompose(
             unused -> {
@@ -503,39 +499,38 @@ public class FutureExperimentDAO {
             },
             executor)
         .thenCompose(
-            projectId -> {
-              var name = request.getName();
-              if (request.getName().isEmpty()) {
-                name = MetadataServiceImpl.createRandomName();
-              }
-
-              name = ModelDBUtils.checkEntityNameLength(name);
-
-              String finalName = name;
-              return jdbi.useHandle(
-                      handle -> {
-                        Optional<Long> countOptional =
-                            handle
-                                .createQuery(
-                                    "select count(id) from experiment where project_id = :projectId and name = :name and deleted = :deleted")
-                                .bind("projectId", projectId)
-                                .bind("name", finalName)
-                                .bind("deleted", false)
-                                .mapTo(Long.class)
-                                .findOne();
-                        if (countOptional.isPresent() && countOptional.get() > 0) {
-                          throw new AlreadyExistsException(
-                              String.format(
-                                  "Experiment with name '%s' already exists in project",
-                                  finalName));
-                        }
-                      })
-                  .thenApply(
-                      unused -> updateExperimentField(request.getId(), "name", finalName),
-                      executor);
-            },
+            projectId -> updateExperimentName(request.getName(), projectId, request.getId()),
             executor)
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
+  }
+
+  private InternalFuture<InternalFuture<Void>> updateExperimentName(
+      String name, String projectId, String experimentId) {
+    if (name.isEmpty()) {
+      name = MetadataServiceImpl.createRandomName();
+    }
+
+    name = ModelDBUtils.checkEntityNameLength(name);
+
+    String finalName = name;
+    return jdbi.useHandle(
+            handle -> {
+              Optional<Long> countOptional =
+                  handle
+                      .createQuery(
+                          "select count(id) from experiment where project_id = :projectId and name = :name and deleted = :deleted")
+                      .bind("projectId", projectId)
+                      .bind("name", finalName)
+                      .bind("deleted", false)
+                      .mapTo(Long.class)
+                      .findOne();
+              if (countOptional.isPresent() && countOptional.get() > 0) {
+                throw new AlreadyExistsException(
+                    String.format(
+                        "Experiment with name '%s' already exists in project", finalName));
+              }
+            })
+        .thenApply(unused -> updateExperimentField(experimentId, "name", finalName), executor);
   }
 
   public InternalFuture<Experiment> updateExperimentDescription(
