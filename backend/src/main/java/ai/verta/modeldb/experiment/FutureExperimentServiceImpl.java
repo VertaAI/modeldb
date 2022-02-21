@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.AddAttributes;
 import ai.verta.modeldb.AddExperimentAttributes;
@@ -31,14 +32,19 @@ import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
+import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
+import ai.verta.uac.GetResourcesResponseItem;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import io.grpc.stub.StreamObserver;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -49,13 +55,15 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       "update.resource.experiment.update_experiment_succeeded";
   private static final String DELETE_EXPERIMENT_EVENT_TYPE =
       "delete.resource.experiment.delete_experiment_succeeded";
+  private final Executor executor;
   private final FutureProjectDAO futureProjectDAO;
   private final FutureExperimentDAO futureExperimentDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
   private final FutureEventDAO futureEventDAO;
 
-  public FutureExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
+  public FutureExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
     super(serviceSet, daoSet);
+    this.executor = executor;
     this.futureProjectDAO = daoSet.futureProjectDAO;
     this.futureExperimentDAO = daoSet.futureExperimentDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
@@ -65,7 +73,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   private InternalFuture<Void> addEvent(
       String entityId,
       String projectId,
-      long workspaceId,
       String eventType,
       Optional<String> updatedField,
       Map<String, Object> extraFieldsMap,
@@ -96,14 +103,47 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
     }
     eventMetadata.addProperty("message", eventMessage);
 
+    GetResourcesResponseItem projectResource =
+        mdbRoleService.getEntityResource(
+            Optional.of(projectId),
+            Optional.empty(),
+            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+
     return futureEventDAO.addLocalEventWithAsync(
-        ModelDBServiceResourceTypes.EXPERIMENT.name(), eventType, workspaceId, eventMetadata);
+        ModelDBServiceResourceTypes.EXPERIMENT.name(),
+        eventType,
+        projectResource.getWorkspaceId(),
+        eventMetadata);
   }
 
   @Override
   public void createExperiment(
       CreateExperiment request, StreamObserver<CreateExperiment.Response> responseObserver) {
-    super.createExperiment(request, responseObserver);
+    try {
+      final var futureResponse =
+          futureExperimentDAO
+              .createExperiment(request)
+              .thenCompose(
+                  createdExperiment ->
+                      addEvent(
+                              createdExperiment.getId(),
+                              createdExperiment.getProjectId(),
+                              "add.resource.experiment.add_experiment_succeeded",
+                              Optional.empty(),
+                              Collections.emptyMap(),
+                              "experiment logged successfully")
+                          .thenApply(eventLoggedStatus -> createdExperiment, executor),
+                  executor)
+              .thenApply(
+                  createdExperiment ->
+                      CreateExperiment.Response.newBuilder()
+                          .setExperiment(createdExperiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
