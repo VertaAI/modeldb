@@ -329,6 +329,13 @@ public abstract class CommonDBUtil {
     }
   }
 
+  public static Throwable logError(Throwable e) {
+    if (e instanceof ExecutionException || e instanceof CompletionException) {
+      return logError(e.getCause());
+    }
+    return e;
+  }
+
   public static boolean needToRetry(Throwable e) {
     Throwable cause = logError(e);
     if (cause instanceof UnableToCreateStatementException
@@ -338,12 +345,5 @@ public abstract class CommonDBUtil {
       return cause.getMessage().toLowerCase(Locale.ROOT).contains("unable to advance");
     }
     return false;
-  }
-
-  public static Throwable logError(Throwable e) {
-    if (e instanceof ExecutionException || e instanceof CompletionException) {
-      return logError(e.getCause());
-    }
-    return e;
   }
 }
