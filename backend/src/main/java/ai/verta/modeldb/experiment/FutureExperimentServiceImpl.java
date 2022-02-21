@@ -427,17 +427,11 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       final var requestValidationFuture =
           InternalFuture.runAsync(
               () -> {
-                String errorMessage = null;
-                if (request.getId().isEmpty() && request.getTagsList().isEmpty()) {
-                  errorMessage =
-                      "Experiment ID and Experiment tags not found in AddExperimentTags request";
-                } else if (request.getId().isEmpty()) {
-                  errorMessage = "Experiment ID not found in AddExperimentTags request";
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in AddExperimentTags request";
+                  throw new InvalidArgumentException(errorMessage);
                 } else if (request.getTagsList().isEmpty()) {
-                  errorMessage = "Experiment tags not found in AddExperimentTags request";
-                }
-
-                if (errorMessage != null) {
+                  var errorMessage = "Experiment tags not found in AddExperimentTags request";
                   throw new InvalidArgumentException(errorMessage);
                 }
               },
@@ -481,17 +475,11 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       final var requestValidationFuture =
           InternalFuture.runAsync(
               () -> {
-                String errorMessage = null;
-                if (request.getId().isEmpty() && request.getTag().isEmpty()) {
-                  errorMessage =
-                      "Experiment ID and Experiment Tag not found in AddExperimentTag request";
-                } else if (request.getId().isEmpty()) {
-                  errorMessage = "Experiment ID not found in AddExperimentTag request";
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in AddExperimentTag request";
+                  throw new InvalidArgumentException(errorMessage);
                 } else if (request.getTag().isEmpty()) {
-                  errorMessage = "Experiment Tag not found in AddExperimentTag request";
-                }
-
-                if (errorMessage != null) {
+                  var errorMessage = "Experiment Tag not found in AddExperimentTag request";
                   throw new InvalidArgumentException(errorMessage);
                 }
               },
