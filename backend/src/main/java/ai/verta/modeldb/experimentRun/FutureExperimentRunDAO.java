@@ -182,7 +182,8 @@ public class FutureExperimentRunDAO {
             artifactStoreDAO,
             datasetVersionDAO,
             config);
-    predicatesHandler = new PredicatesHandler("experiment_run", "experiment_run");
+    predicatesHandler =
+        new PredicatesHandler(executor, "experiment_run", "experiment_run", uacApisUtil);
     sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
@@ -693,7 +694,7 @@ public class FutureExperimentRunDAO {
                 jdbi.useHandle(
                     handle ->
                         codeVersionHandler.logCodeVersion(
-                            handle, runId, false, request.getCodeVersion())),
+                            handle, runId, request.getOverwrite(), request.getCodeVersion())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);

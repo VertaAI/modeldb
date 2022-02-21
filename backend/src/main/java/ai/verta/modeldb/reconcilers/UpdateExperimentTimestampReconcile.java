@@ -5,6 +5,8 @@ import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -25,6 +27,10 @@ public class UpdateExperimentTimestampReconcile
 
   @Override
   public void resync() {
+    getEntitiesForDateUpdate().forEach(this::insert);
+  }
+
+  private List<SimpleEntry<String, Long>> getEntitiesForDateUpdate() {
     var fetchUpdatedExperimentIds =
         new StringBuilder("SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
             .append(" FROM experiment_run expr INNER JOIN experiment e ")
@@ -32,20 +38,20 @@ public class UpdateExperimentTimestampReconcile
             .append(" GROUP BY expr.experiment_id")
             .toString();
 
-    futureJdbi.useHandle(
-        handle -> {
-          handle
-              .createQuery(fetchUpdatedExperimentIds)
-              .setFetchSize(config.getMaxSync())
-              .map(
-                  (rs, ctx) -> {
-                    var experimentId = rs.getString("experiment_id");
-                    var maxUpdatedDate = rs.getLong("max_date");
-                    this.insert(new AbstractMap.SimpleEntry<>(experimentId, maxUpdatedDate));
-                    return rs;
-                  })
-              .list();
-        });
+    return futureJdbi
+        .withHandle(
+            handle ->
+                handle
+                    .createQuery(fetchUpdatedExperimentIds)
+                    .setFetchSize(config.getMaxSync())
+                    .map(
+                        (rs, ctx) -> {
+                          var experimentId = rs.getString("experiment_id");
+                          var maxUpdatedDate = rs.getLong("max_date");
+                          return new SimpleEntry<>(experimentId, maxUpdatedDate);
+                        })
+                    .list())
+        .get();
   }
 
   @Override

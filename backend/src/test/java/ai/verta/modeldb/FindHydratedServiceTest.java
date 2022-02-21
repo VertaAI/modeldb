@@ -58,14 +58,13 @@ public class FindHydratedServiceTest extends TestsInit {
   @After
   public void removeEntities() {
     // Delete all data related to project
-    for (Project project : projectMap.values()) {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
-      LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
-    }
+    DeleteProjects deleteProjects =
+        DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
+    DeleteProjects.Response deleteProjectsResponse =
+        projectServiceStub.deleteProjects(deleteProjects);
+    LOGGER.info("Projects deleted successfully");
+    LOGGER.info(deleteProjectsResponse.toString());
+    assertTrue(deleteProjectsResponse.getStatus());
 
     projectMap = new HashMap<>();
     experimentRunMap = new HashMap<>();

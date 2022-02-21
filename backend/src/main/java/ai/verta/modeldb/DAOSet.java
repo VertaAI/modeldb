@@ -105,7 +105,8 @@ public class DAOSet {
             set.artifactStoreDAO,
             set.datasetVersionDAO,
             mdbConfig,
-            set.futureExperimentRunDAO);
+            set.futureExperimentRunDAO,
+            set.uacApisUtil);
     set.futureEventDAO =
         new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
     set.futureExperimentDAO = new FutureExperimentDAO(executor, jdbi, services.uac, mdbConfig, set);
