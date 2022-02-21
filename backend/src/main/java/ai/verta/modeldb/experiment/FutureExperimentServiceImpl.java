@@ -53,6 +53,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -784,7 +785,29 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void getExperimentAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
-    super.getExperimentAttributes(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                List<String> errorMessages = new ArrayList<>();
+                if (request.getId().isEmpty()) {
+                  errorMessages.add("Experiment ID not found in GetAttributes request");
+                }
+                if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
+                  errorMessages.add("Experiment Attribute keys not found in GetAttributes request");
+                }
+                if (!errorMessages.isEmpty()) {
+                  throw new InvalidArgumentException(String.join("\n", errorMessages));
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture.thenCompose(
+              unused -> futureExperimentDAO.getExperimentAttributes(request), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

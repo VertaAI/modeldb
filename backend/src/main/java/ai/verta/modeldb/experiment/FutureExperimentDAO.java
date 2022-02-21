@@ -7,6 +7,7 @@ import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
@@ -40,6 +41,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -463,6 +465,11 @@ public class FutureExperimentDAO {
           for (var result : experimentEntitiesMap) {
             projectIdFromExperimentMap.putAll(result);
           }
+          for (var expId : experimentIds) {
+            if (!projectIdFromExperimentMap.containsKey(expId)) {
+              projectIdFromExperimentMap.put(expId, "");
+            }
+          }
           return projectIdFromExperimentMap;
         });
   }
@@ -617,5 +624,28 @@ public class FutureExperimentDAO {
                     }),
             executor)
         .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<GetAttributes.Response> getExperimentAttributes(GetAttributes request) {
+    final var expId = request.getId();
+    final var keys = request.getAttributeKeysList();
+    final var getAll = request.getGetAll();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> attributeHandler.getKeyValues(expId, keys, getAll), executor)
+        .thenApply(
+            attributes ->
+                attributes.stream()
+                    .sorted(Comparator.comparing(KeyValue::getKey))
+                    .collect(Collectors.toList()),
+            executor)
+        .thenApply(
+            keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
+            executor);
   }
 }
