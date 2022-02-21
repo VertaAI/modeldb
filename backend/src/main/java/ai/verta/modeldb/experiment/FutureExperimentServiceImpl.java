@@ -53,6 +53,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -788,20 +789,15 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       final var requestValidationFuture =
           InternalFuture.runAsync(
               () -> {
-                String errorMessage = null;
-                if (request.getId().isEmpty()
-                    && request.getAttributeKeysList().isEmpty()
-                    && !request.getGetAll()) {
-                  errorMessage =
-                      "Experiment ID and Experiment Attribute keys not found in GetAttributes request";
-                } else if (request.getId().isEmpty()) {
-                  errorMessage = "Experiment ID not found in GetAttributes request";
-                } else if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
-                  errorMessage = "Experiment Attribute keys not found in GetAttributes request";
+                List<String> errorMessages = new ArrayList<>();
+                if (request.getId().isEmpty()) {
+                  errorMessages.add("Experiment ID not found in GetAttributes request");
                 }
-
-                if (errorMessage != null) {
-                  throw new InvalidArgumentException(errorMessage);
+                if (request.getAttributeKeysList().isEmpty() && !request.getGetAll()) {
+                  errorMessages.add("Experiment Attribute keys not found in GetAttributes request");
+                }
+                if (!errorMessages.isEmpty()) {
+                  throw new InvalidArgumentException(String.join("\n", errorMessages));
                 }
               },
               executor);
