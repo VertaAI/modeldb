@@ -327,13 +327,7 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true), executor)
-        .thenApply(
-            keyValues ->
-                keyValues.stream()
-                    .sorted(Comparator.comparing(KeyValue::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true), executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
@@ -343,12 +337,6 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
             unused -> hyperparametersHandler.getKeyValues(runId, Collections.emptyList(), true),
-            executor)
-        .thenApply(
-            hyperparameters ->
-                hyperparameters.stream()
-                    .sorted(Comparator.comparing(KeyValue::getKey))
-                    .collect(Collectors.toList()),
             executor);
   }
 
@@ -359,13 +347,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor)
-        .thenApply(
-            attributes ->
-                attributes.stream()
-                    .sorted(Comparator.comparing(KeyValue::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor);
   }
 
   public InternalFuture<Void> logMetrics(LogMetrics request) {
@@ -452,8 +434,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> tagsHandler.getTags(runId), executor)
-        .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor);
+        .thenCompose(unused -> tagsHandler.getTags(runId), executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
@@ -623,13 +604,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor)
-        .thenApply(
-            artifacts ->
-                artifacts.stream()
-                    .sorted(Comparator.comparing(Artifact::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(DeleteArtifact request) {
@@ -675,13 +650,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor)
-        .thenApply(
-            datasets ->
-                datasets.stream()
-                    .sorted(Comparator.comparing(Artifact::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
   }
 
   public InternalFuture<Void> logCodeVersion(LogExperimentRunCodeVersion request) {

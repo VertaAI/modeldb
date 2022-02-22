@@ -1103,13 +1103,7 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> artifactHandler.getArtifacts(projectId, maybeKey), executor)
-        .thenApply(
-            artifacts ->
-                artifacts.stream()
-                    .sorted(Comparator.comparing(Artifact::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+        .thenCompose(unused -> artifactHandler.getArtifacts(projectId, maybeKey), executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(DeleteProjectArtifact request) {
