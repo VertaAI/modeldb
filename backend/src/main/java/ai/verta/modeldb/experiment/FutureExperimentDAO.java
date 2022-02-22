@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
@@ -98,7 +99,7 @@ public class FutureExperimentDAO {
             daoSet.artifactStoreDAO,
             daoSet.datasetVersionDAO,
             mdbConfig);
-    predicatesHandler = new PredicatesHandler("experiment", "experiment");
+    predicatesHandler = new PredicatesHandler(executor, "experiment", "exp", uacApisUtil);
     sortingHandler = new SortingHandler("experiment");
 
     createExperimentHandler =
@@ -291,6 +292,9 @@ public class FutureExperimentDAO {
                                                           builder.getId())) {
                                                         builder.setCodeVersionSnapshot(
                                                             codeVersionsMap.get(builder.getId()));
+                                                      } else {
+                                                        builder.setCodeVersionSnapshot(
+                                                            CodeVersion.getDefaultInstance());
                                                       }
                                                     }),
                                             executor);

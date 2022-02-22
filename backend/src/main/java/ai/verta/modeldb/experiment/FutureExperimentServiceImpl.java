@@ -37,8 +37,10 @@ import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -218,10 +220,24 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       final var response =
           requestValidationFuture
               .thenCompose(
-                  unused -> futureExperimentDAO.getExperimentById(request.getId()), executor)
+                  unused ->
+                      futureExperimentDAO.findExperiments(
+                          FindExperiments.newBuilder().addExperimentIds(request.getId()).build()),
+                  executor)
               .thenApply(
-                  experiment ->
-                      GetExperimentById.Response.newBuilder().setExperiment(experiment).build(),
+                  findResponse -> {
+                    if (findResponse.getExperimentsCount() > 1) {
+                      throw new InternalErrorException(
+                          "More than one Experiment found for ID: " + request.getId());
+                    } else if (findResponse.getExperimentsCount() == 0) {
+                      throw new NotFoundException(
+                          "Experiment not found for the ID: " + request.getId());
+                    } else {
+                      return GetExperimentById.Response.newBuilder()
+                          .setExperiment(findResponse.getExperiments(0))
+                          .build();
+                    }
+                  },
                   executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {

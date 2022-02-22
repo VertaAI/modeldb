@@ -425,7 +425,7 @@ class TestEndpoint:
         deployed_model_curl = deployed_model.get_curl()
         assert endpoint.path in deployed_model_curl
         token = endpoint.get_access_token()
-        assert "-H \"Access-token: {}\"".format(token) in deployed_model_curl
+        assert "-H \"Access-token: {}\"".format(token).lower() in deployed_model_curl.lower()
 
         new_model = model_for_deployment['model'].fit(
             np.random.random(model_for_deployment['train_features'].shape),

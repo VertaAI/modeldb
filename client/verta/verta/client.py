@@ -231,18 +231,17 @@ class Client(object):
     def _get_with_fallback(self, parameter, env_var=None, config_var=None):
         if parameter:
             return parameter
-        elif env_var:
+        if env_var:
             from_env = os.environ.get(env_var)
             if from_env:
                 print("got {} from environment".format(env_var))
                 return from_env
-        elif config_var:
+        if config_var:
             from_config = self._config.get(config_var)
             if from_config:
                 print("got {} from config file".format(config_var))
                 return from_config
-        else:
-            return None
+        return None
 
     @staticmethod
     def _validate_visibility(visibility):

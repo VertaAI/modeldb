@@ -9,3 +9,6 @@ config.k8s.yaml
 .factorypath
 .idea/
 *.iml
+
+telepresence-env.json
+telepresence.log

@@ -114,24 +114,36 @@ public abstract class CommonArtifactHandler<T> {
     }
 
     if (overwrite) {
-      deleteArtifactsWithHandle(
-          entityId,
-          Optional.of(artifacts.stream().map(Artifact::getKey).collect(Collectors.toList())),
-          handle);
+      for (final var artifact : artifacts) {
+        var uploadCompleted =
+            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+        if (artifact.getUploadCompleted()) {
+          uploadCompleted = true;
+        }
+        var storeTypePath =
+            !artifact.getPathOnly()
+                ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
+                : "";
+        if (isExists(entityId, artifact.getKey(), handle)) {
+          updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
+        } else {
+          insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
+        }
+      }
     } else {
       validateAndThrowErrorAlreadyExistsArtifacts(entityId, artifacts, handle);
-    }
-
-    for (final var artifact : artifacts) {
-      var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-      if (artifact.getUploadCompleted()) {
-        uploadCompleted = true;
+      for (final var artifact : artifacts) {
+        var uploadCompleted =
+            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+        if (artifact.getUploadCompleted()) {
+          uploadCompleted = true;
+        }
+        var storeTypePath =
+            !artifact.getPathOnly()
+                ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
+                : "";
+        insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
       }
-      var storeTypePath =
-          !artifact.getPathOnly()
-              ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
-              : "";
-      insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
     }
   }
 
@@ -141,9 +153,14 @@ public abstract class CommonArtifactHandler<T> {
   protected abstract void validateAndThrowErrorAlreadyExistsArtifacts(
       T entityId, List<Artifact> artifacts, Handle handle);
 
+  protected abstract boolean isExists(T entityId, String key, Handle handle);
+
   protected abstract void deleteArtifactsWithHandle(
       T entityId, Optional<List<String>> maybeKeys, Handle handle);
 
   public abstract InternalFuture<Void> deleteArtifacts(
       T entityId, Optional<List<String>> maybeKeys);
+
+  protected abstract void updateArtifactWithHandle(
+      T entityId, Handle handle, Artifact artifact, boolean uploadCompleted, String storeTypePath);
 }

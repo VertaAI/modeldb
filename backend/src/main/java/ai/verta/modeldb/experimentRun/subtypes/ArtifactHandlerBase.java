@@ -12,10 +12,13 @@ import com.google.rpc.Code;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
@@ -200,5 +203,66 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
             .setArtifactSubtype(rs.getString("ast"))
             .setUploadCompleted(rs.getBoolean("uc"))
             .build());
+  }
+
+  @Override
+  protected boolean isExists(String entityId, String key, Handle handle) {
+    return handle
+            .createQuery(
+                String.format(
+                    "select id from %s where entity_name=:entity_name and field_type=:field_type and ar_key=:key and %s =:entity_id",
+                    getTableName(), entityIdReferenceColumn))
+            .bind("key", key)
+            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+            .bind(ENTITY_ID_QUERY_PARAM, entityId)
+            .mapTo(Long.class)
+            .one()
+        > 0;
+  }
+
+  @Override
+  protected void updateArtifactWithHandle(
+      String entityId,
+      Handle handle,
+      Artifact artifact,
+      boolean uploadCompleted,
+      String storeTypePath) {
+    Map<String, Object> valueMap = new HashMap<>();
+    valueMap.put("ar_key", artifact.getKey());
+    valueMap.put("ar_path", artifact.getPath());
+    valueMap.put("artifact_type", artifact.getArtifactTypeValue());
+    valueMap.put("path_only", artifact.getPathOnly());
+    valueMap.put("linked_artifact_id", artifact.getLinkedArtifactId());
+    valueMap.put("filename_extension", artifact.getFilenameExtension());
+    valueMap.put("store_type_path", storeTypePath);
+    valueMap.put("upload_completed", uploadCompleted);
+    valueMap.put("serialization", artifact.getSerialization());
+    valueMap.put("artifact_subtype", artifact.getArtifactSubtype());
+
+    StringBuilder queryStrBuilder =
+        new StringBuilder(String.format("UPDATE %s SET ", getTableName()));
+
+    AtomicInteger count = new AtomicInteger();
+    valueMap.forEach(
+        (key, value) -> {
+          queryStrBuilder.append(key).append(" = :").append(key);
+          if (count.get() < valueMap.size() - 1) {
+            queryStrBuilder.append(", ");
+          }
+          count.getAndIncrement();
+        });
+
+    queryStrBuilder.append(
+        String.format(" WHERE ar_key = :ar_key and %s =:entity_id  ", entityIdReferenceColumn));
+
+    var query = handle.createUpdate(queryStrBuilder.toString());
+
+    // Inserting fields arguments based on the keys and value of map
+    for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+      query.bind(objectEntry.getKey(), objectEntry.getValue());
+    }
+
+    query.bind("entity_id", entityId).execute();
   }
 }
