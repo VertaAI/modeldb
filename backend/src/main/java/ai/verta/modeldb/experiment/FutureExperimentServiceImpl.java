@@ -236,16 +236,11 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
       final var requestValidationFuture =
           InternalFuture.runAsync(
               () -> {
-                String errorMessage = null;
-                if (request.getProjectId().isEmpty() || request.getName().isEmpty()) {
-                  errorMessage =
-                      "Experiment name and Project ID is not found in GetExperimentByName request";
-                } else if (request.getProjectId().isEmpty()) {
-                  errorMessage = "Project ID not found in GetExperimentByName request";
+                if (request.getProjectId().isEmpty()) {
+                  var errorMessage = "Project ID not found in GetExperimentByName request";
+                  throw new InvalidArgumentException(errorMessage);
                 } else if (request.getName().isEmpty()) {
-                  errorMessage = "Experiment name not found in GetExperimentByName request";
-                }
-                if (errorMessage != null) {
+                  var errorMessage = "Experiment name not found in GetExperimentByName request";
                   throw new InvalidArgumentException(errorMessage);
                 }
               },
