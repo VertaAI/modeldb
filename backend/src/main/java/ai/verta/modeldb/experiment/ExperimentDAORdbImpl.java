@@ -722,7 +722,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
                   ModelDBConstants.CODE_ARCHIVE,
                   updatedCodeVersion.getCodeArchive(),
                   CodeVersionEntity.class.getSimpleName(),
-                  Optional.empty()));
+                  UUID.randomUUID().toString()));
           existingCodeVersionEntity.setGit_snapshot(null);
         }
       }

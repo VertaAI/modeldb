@@ -4,7 +4,7 @@ import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import java.io.Serializable;
-import java.util.Optional;
+import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -35,7 +35,7 @@ public class CodeVersionEntity implements Serializable {
               ModelDBConstants.CODE_ARCHIVE,
               codeVersion.getCodeArchive(),
               CodeVersionEntity.class.getSimpleName(),
-              Optional.empty()));
+              UUID.randomUUID().toString()));
     }
     this.field_type = fieldType;
   }

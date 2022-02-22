@@ -172,11 +172,7 @@ public class RdbmsUtils {
   }
 
   public static ArtifactEntity generateArtifactEntity(
-      Object entity,
-      String fieldType,
-      Artifact artifact,
-      String entityName,
-      Optional<String> entityId) {
+      Object entity, String fieldType, Artifact artifact, String entityName, String entityId) {
     return new ArtifactEntity(entity, fieldType, artifact, entityName, entityId);
   }
 
@@ -190,9 +186,7 @@ public class RdbmsUtils {
     if (artifactList != null) {
       return artifactList.stream()
           .map(
-              artifact ->
-                  generateArtifactEntity(
-                      entity, fieldType, artifact, entityName, Optional.of(entityId)))
+              artifact -> generateArtifactEntity(entity, fieldType, artifact, entityName, entityId))
           .collect(Collectors.toList());
     }
     return artifactEntityList;

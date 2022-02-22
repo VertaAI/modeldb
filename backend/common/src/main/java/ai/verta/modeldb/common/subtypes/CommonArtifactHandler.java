@@ -112,20 +112,19 @@ public abstract class CommonArtifactHandler<T> {
 
     if (overwrite) {
       for (final var artifact : artifacts) {
-        var path = artifact.getPath();
         var uploadCompleted =
             !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
         if (artifact.getUploadCompleted()) {
           uploadCompleted = true;
-        } else {
-          path =
-              artifactStoreConfig.storeTypePathPrefix()
-                  + this.entityName
-                  + "/"
-                  + entityId
-                  + "/"
-                  + artifact.getKey();
         }
+
+        var path =
+            artifactStoreConfig.storeTypePathPrefix()
+                + this.entityName
+                + "/"
+                + entityId
+                + "/"
+                + artifact.getKey();
         var storeTypePath = !artifact.getPathOnly() ? path : "";
         if (isExists(entityId, artifact.getKey(), handle)) {
           updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
@@ -138,20 +137,19 @@ public abstract class CommonArtifactHandler<T> {
     }
 
     for (var artifact : artifacts) {
-      var path = artifact.getPath();
       var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
       if (artifact.getUploadCompleted()) {
         uploadCompleted = true;
-      } else {
-        path =
-            artifactStoreConfig.storeTypePathPrefix()
-                + this.entityName
-                + "/"
-                + entityId
-                + "/"
-                + artifact.getKey();
-        artifact = artifact.toBuilder().setPath(path).build();
       }
+
+      var path =
+          artifactStoreConfig.storeTypePathPrefix()
+              + this.entityName
+              + "/"
+              + entityId
+              + "/"
+              + artifact.getKey();
+      artifact = artifact.toBuilder().setPath(path).build();
       var storeTypePath = !artifact.getPathOnly() ? path : "";
       insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
     }
