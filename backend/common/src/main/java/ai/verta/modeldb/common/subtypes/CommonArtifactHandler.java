@@ -113,7 +113,8 @@ public abstract class CommonArtifactHandler<T> {
     if (overwrite) {
       for (final var artifact : artifacts) {
         var path = artifact.getPath();
-        var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+        var uploadCompleted =
+            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
         if (artifact.getUploadCompleted()) {
           uploadCompleted = true;
         } else {
