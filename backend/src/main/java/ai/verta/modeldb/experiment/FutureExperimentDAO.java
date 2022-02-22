@@ -99,7 +99,7 @@ public class FutureExperimentDAO {
             daoSet.artifactStoreDAO,
             daoSet.datasetVersionDAO,
             mdbConfig);
-    predicatesHandler = new PredicatesHandler(executor, "experiment", "exp", uacApisUtil);
+    predicatesHandler = new PredicatesHandler(executor, "experiment", "experiment", uacApisUtil);
     sortingHandler = new SortingHandler("experiment");
 
     createExperimentHandler =
@@ -292,9 +292,6 @@ public class FutureExperimentDAO {
                                                           builder.getId())) {
                                                         builder.setCodeVersionSnapshot(
                                                             codeVersionsMap.get(builder.getId()));
-                                                      } else {
-                                                        builder.setCodeVersionSnapshot(
-                                                            CodeVersion.getDefaultInstance());
                                                       }
                                                     }),
                                             executor);
