@@ -66,40 +66,41 @@ public abstract class KeyValueHandler<T> {
   public InternalFuture<List<KeyValue>> getKeyValues(
       T entityId, List<String> attrKeys, boolean getAll) {
     return jdbi.withHandle(
-        handle -> {
-          var queryString =
-              String.format(
-                  "select kv_key as k, kv_value as v, value_type as t from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
-                  getTableName(), entityIdReferenceColumn);
+            handle -> {
+              var queryString =
+                  String.format(
+                      "select kv_key as k, kv_value as v, value_type as t from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id",
+                      getTableName(), entityIdReferenceColumn);
 
-          if (!attrKeys.isEmpty() && !getAll) {
-            queryString += " AND kv_key IN (<keys>)";
-          }
-          var query = handle.createQuery(queryString);
-          if (!attrKeys.isEmpty() && !getAll) {
-            query.bindList("keys", attrKeys);
-          }
-          return query
-              .bind(ENTITY_ID_PARAM_QUERY, entityId)
-              .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-              .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-              .map(
-                  (rs, ctx) ->
-                      KeyValue.newBuilder()
-                          .setKey(rs.getString("k"))
-                          .setValue(
-                              (Value.Builder)
-                                  CommonUtils.getProtoObjectFromString(
-                                      rs.getString("v"), Value.newBuilder()))
-                          .setValueTypeValue(rs.getInt("t"))
-                          .build())
-              .list();
-        }).thenApply(
-        attributes ->
-            attributes.stream()
-                .sorted(Comparator.comparing(KeyValue::getKey))
-                .collect(Collectors.toList()),
-        executor);
+              if (!attrKeys.isEmpty() && !getAll) {
+                queryString += " AND kv_key IN (<keys>)";
+              }
+              var query = handle.createQuery(queryString);
+              if (!attrKeys.isEmpty() && !getAll) {
+                query.bindList("keys", attrKeys);
+              }
+              return query
+                  .bind(ENTITY_ID_PARAM_QUERY, entityId)
+                  .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+                  .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+                  .map(
+                      (rs, ctx) ->
+                          KeyValue.newBuilder()
+                              .setKey(rs.getString("k"))
+                              .setValue(
+                                  (Value.Builder)
+                                      CommonUtils.getProtoObjectFromString(
+                                          rs.getString("v"), Value.newBuilder()))
+                              .setValueTypeValue(rs.getInt("t"))
+                              .build())
+                  .list();
+            })
+        .thenApply(
+            attributes ->
+                attributes.stream()
+                    .sorted(Comparator.comparing(KeyValue::getKey))
+                    .collect(Collectors.toList()),
+            executor);
   }
 
   public InternalFuture<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
