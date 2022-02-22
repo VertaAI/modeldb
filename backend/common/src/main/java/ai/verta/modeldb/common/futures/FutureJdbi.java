@@ -6,6 +6,7 @@ import java.util.concurrent.Executor;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.Jdbi;
+import org.jdbi.v3.core.statement.StatementExceptions;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class FutureJdbi {
@@ -15,6 +16,10 @@ public class FutureJdbi {
   public FutureJdbi(Jdbi jdbi, Executor executor) {
     this.executor = executor;
     this.jdbi = jdbi;
+    // Ensure that we do not log any sensitive/private data when exceptions are logged
+    this.jdbi
+        .getConfig(StatementExceptions.class)
+        .setMessageRendering(StatementExceptions.MessageRendering.NONE);
   }
 
   @FunctionalInterface
