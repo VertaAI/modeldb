@@ -94,7 +94,12 @@ public abstract class KeyValueHandler<T> {
                           .setValueTypeValue(rs.getInt("t"))
                           .build())
               .list();
-        });
+        }).thenApply(
+        attributes ->
+            attributes.stream()
+                .sorted(Comparator.comparing(KeyValue::getKey))
+                .collect(Collectors.toList()),
+        executor);
   }
 
   public InternalFuture<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {

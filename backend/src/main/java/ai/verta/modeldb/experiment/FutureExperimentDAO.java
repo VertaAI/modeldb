@@ -42,7 +42,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -600,7 +599,6 @@ public class FutureExperimentDAO {
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
         .thenCompose(unused -> tagsHandler.getTags(expId), executor)
-        .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor)
         .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
   }
 
@@ -660,12 +658,6 @@ public class FutureExperimentDAO {
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
         .thenCompose(unused -> attributeHandler.getKeyValues(expId, keys, getAll), executor)
-        .thenApply(
-            attributes ->
-                attributes.stream()
-                    .sorted(Comparator.comparing(KeyValue::getKey))
-                    .collect(Collectors.toList()),
-            executor)
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
             executor);

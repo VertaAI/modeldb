@@ -62,6 +62,11 @@ public abstract class CommonArtifactHandler<T> {
                                   .build())
                       .list();
                 }),
+        executor).thenApply(
+        artifacts ->
+            artifacts.stream()
+                .sorted(Comparator.comparing(Artifact::getKey))
+                .collect(Collectors.toList()),
         executor);
   }
 
