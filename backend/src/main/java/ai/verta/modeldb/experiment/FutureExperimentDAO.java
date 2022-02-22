@@ -1,6 +1,5 @@
 package ai.verta.modeldb.experiment;
 
-import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
