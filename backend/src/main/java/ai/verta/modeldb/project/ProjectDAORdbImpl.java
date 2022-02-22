@@ -11,7 +11,6 @@ import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.dto.ProjectPaginationDTO;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.CodeVersionEntity;
@@ -20,7 +19,6 @@ import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryUtils;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -95,58 +93,12 @@ public class ProjectDAORdbImpl implements ProjectDAO {
     this.starterProjectID = app.mdbConfig.starterProject;
   }
 
-  /**
-   * Method to convert createProject request to Project object. This method generates the project Id
-   * using UUID and puts it in Project object.
-   *
-   * @param request : CreateProject
-   * @param userInfo : UserInfo
-   * @return Project
-   */
-  private Project getProjectFromRequest(CreateProject request, UserInfo userInfo) {
-
-    if (request.getName().isEmpty()) {
-      request = request.toBuilder().setName(MetadataServiceImpl.createRandomName()).build();
-    }
-
-    String projectShortName = ModelDBUtils.convertToProjectShortName(request.getName());
-
-    /*
-     * Create Project entity from given CreateProject request. generate UUID and put as id in
-     * project for uniqueness. set above created List<KeyValue> attributes in project entity.
-     */
-    var projectBuilder =
-        Project.newBuilder()
-            .setId(UUID.randomUUID().toString())
-            .setName(ModelDBUtils.checkEntityNameLength(request.getName()))
-            .setShortName(projectShortName)
-            .setDescription(request.getDescription())
-            .addAllAttributes(request.getAttributesList())
-            .addAllTags(TagsHandlerBase.checkEntityTagsLength(request.getTagsList()))
-            .setProjectVisibility(request.getProjectVisibility())
-            .setVisibility(request.getVisibility())
-            .addAllArtifacts(request.getArtifactsList())
-            .setReadmeText(request.getReadmeText())
-            .setCustomPermission(request.getCustomPermission())
-            .setVersionNumber(1L);
-
-    if (request.getDateCreated() != 0L) {
-      projectBuilder
-          .setDateCreated(request.getDateCreated())
-          .setDateUpdated(request.getDateCreated());
-    } else {
-      projectBuilder
-          .setDateCreated(Calendar.getInstance().getTimeInMillis())
-          .setDateUpdated(Calendar.getInstance().getTimeInMillis());
-    }
-
-    return projectBuilder.build();
-  }
-
   @Override
   public Project insertProject(CreateProject createProjectRequest, UserInfo userInfo) {
-    var project = getProjectFromRequest(createProjectRequest, userInfo);
-    return insertProject(project, createProjectRequest.getWorkspaceName(), userInfo);
+    // TODO: this function will not in used anymore and will removed while we delete this class
+    /*var project = getProjectFromRequest(createProjectRequest, userInfo);
+    return insertProject(project, createProjectRequest.getWorkspaceName(), userInfo);*/
+    throw new ModelDBException("You are using old code please update it");
   }
 
   private Project insertProject(Project project, String workspaceName, UserInfo userInfo) {

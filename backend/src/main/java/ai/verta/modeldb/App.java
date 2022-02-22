@@ -19,7 +19,7 @@ import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
-import ai.verta.modeldb.experiment.ExperimentServiceImpl;
+import ai.verta.modeldb.experiment.FutureExperimentServiceImpl;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunServiceImpl;
 import ai.verta.modeldb.health.HealthServiceImpl;
 import ai.verta.modeldb.health.HealthStatusManager;
@@ -301,9 +301,9 @@ public class App implements ApplicationContextAware {
 
   public static void initializeBackendServices(
       ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor executor) {
-    wrapService(serverBuilder, new FutureProjectServiceImpl(services, daos, executor));
+    wrapService(serverBuilder, new FutureProjectServiceImpl(daos, executor));
     LOGGER.trace("Project serviceImpl initialized");
-    wrapService(serverBuilder, new ExperimentServiceImpl(services, daos));
+    wrapService(serverBuilder, new FutureExperimentServiceImpl(services, daos, executor));
     LOGGER.trace("Experiment serviceImpl initialized");
     wrapService(serverBuilder, new FutureExperimentRunServiceImpl(services, daos, executor));
     LOGGER.trace("ExperimentRun serviceImpl initialized");

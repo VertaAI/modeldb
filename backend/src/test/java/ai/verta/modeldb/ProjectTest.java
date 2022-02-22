@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -70,14 +71,16 @@ public class ProjectTest extends TestsInit {
 
   @After
   public void removeEntities() {
-    for (String projectId : projectMap.keySet()) {
-      DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
-      DeleteProject.Response deleteProjectResponse =
-          projectServiceStub.deleteProject(deleteProject);
+    if (!projectMap.isEmpty()) {
+      DeleteProjects deleteProjects =
+          DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
+      DeleteProjects.Response deleteProjectsResponse =
+          projectServiceStub.deleteProjects(deleteProjects);
       LOGGER.info("Project deleted successfully");
-      LOGGER.info(deleteProjectResponse.toString());
-      assertTrue(deleteProjectResponse.getStatus());
+      LOGGER.info(deleteProjectsResponse.toString());
+      assertTrue(deleteProjectsResponse.getStatus());
     }
+
     project = null;
     project2 = null;
     project3 = null;
@@ -450,14 +453,15 @@ public class ProjectTest extends TestsInit {
       projects.add(response.getProject());
 
     } finally {
-      for (Project project : projects) {
-        // Delete all data related to project
-        DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-        DeleteProject.Response deleteProjectResponse =
-            projectServiceStub.deleteProject(deleteProject);
-        LOGGER.info("Project delete successfully. Status : {}", deleteProjectResponse.toString());
-        assertTrue(deleteProjectResponse.getStatus());
-      }
+      DeleteProjects deleteProjects =
+          DeleteProjects.newBuilder()
+              .addAllIds(projects.stream().map(Project::getId).collect(Collectors.toList()))
+              .build();
+      DeleteProjects.Response deleteProjectsResponse =
+          projectServiceStub.deleteProjects(deleteProjects);
+      LOGGER.info("Projects deleted successfully");
+      LOGGER.info(deleteProjectsResponse.toString());
+      assertTrue(deleteProjectsResponse.getStatus());
     }
 
     LOGGER.info("Create Project with MD5 logic test stop................................");

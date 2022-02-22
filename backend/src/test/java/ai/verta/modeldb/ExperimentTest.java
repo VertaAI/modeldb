@@ -1882,4 +1882,42 @@ public class ExperimentTest extends TestsInit {
 
     LOGGER.info("Batch Delete Experiment test stop................................");
   }
+
+  @Test
+  public void updateExperimentName() {
+    LOGGER.info("Update Experiment Name test start................................");
+
+    Experiment experiment2 = null;
+    try {
+      CreateExperiment createExperimentRequest =
+          getCreateExperimentRequest(project.getId(), "Experiment-" + new Date().getTime());
+      CreateExperiment.Response createExperimentResponse =
+          experimentServiceStub.createExperiment(createExperimentRequest);
+      experiment2 = createExperimentResponse.getExperiment();
+
+      UpdateExperimentName updateNameRequest =
+          UpdateExperimentName.newBuilder()
+              .setId(experiment.getId())
+              .setName(experiment2.getName())
+              .build();
+
+      experimentServiceStub.updateExperimentName(updateNameRequest);
+      fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.info("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+    } finally {
+      if (experiment2 != null) {
+        DeleteExperiments deleteExperimentsRequest =
+            DeleteExperiments.newBuilder().addIds(experiment2.getId()).build();
+        DeleteExperiments.Response response =
+            experimentServiceStub.deleteExperiments(deleteExperimentsRequest);
+        LOGGER.info("DeleteExperiment Response : " + response.getStatus());
+        assertTrue(response.getStatus());
+      }
+    }
+
+    LOGGER.info("Update Experiment Name & Description test stop................................");
+  }
 }

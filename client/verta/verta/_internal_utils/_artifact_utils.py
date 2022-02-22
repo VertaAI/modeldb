@@ -329,7 +329,7 @@ def serialize_model(model):
             model_type = "xgboost"
             bytestream, method = ensure_bytestream(model)
             break
-        elif module_name.startswith("tensorflow.python.keras"):
+        elif module_name.startswith("tensorflow.python.keras") or module_name.startswith("keras"):
             model_type = "tensorflow"
             tempf = tempfile.NamedTemporaryFile()
             try:

@@ -5,6 +5,8 @@ import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import java.util.AbstractMap;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -25,6 +27,10 @@ public class UpdateRepositoryTimestampReconcile
 
   @Override
   public void resync() {
+    getEntriesForDateUpdate().forEach(this::insert);
+  }
+
+  private List<SimpleEntry<Long, Long>> getEntriesForDateUpdate() {
     var fetchUpdatedDatasetIds =
         new StringBuilder("SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
             .append(" FROM commit cm INNER JOIN repository_commit rc ")
@@ -37,20 +43,20 @@ public class UpdateRepositoryTimestampReconcile
             .append(" GROUP BY rc.repository_id")
             .toString();
 
-    futureJdbi.useHandle(
-        handle -> {
-          handle
-              .createQuery(fetchUpdatedDatasetIds)
-              .setFetchSize(config.getMaxSync())
-              .map(
-                  (rs, ctx) -> {
-                    Long datasetId = rs.getLong("rc.repository_id");
-                    Long maxUpdatedDate = rs.getLong("max_date");
-                    this.insert(new AbstractMap.SimpleEntry<>(datasetId, maxUpdatedDate));
-                    return rs;
-                  })
-              .list();
-        });
+    return futureJdbi
+        .withHandle(
+            handle ->
+                handle
+                    .createQuery(fetchUpdatedDatasetIds)
+                    .setFetchSize(config.getMaxSync())
+                    .map(
+                        (rs, ctx) -> {
+                          Long datasetId = rs.getLong("rc.repository_id");
+                          Long maxUpdatedDate = rs.getLong("max_date");
+                          return new SimpleEntry<>(datasetId, maxUpdatedDate);
+                        })
+                    .list())
+        .get();
   }
 
   @Override

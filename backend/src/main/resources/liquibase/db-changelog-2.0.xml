@@ -1034,4 +1034,29 @@
         <tagDatabase tag="db_version_2.37"/>
     </changeSet>
 
+    <changeSet id="add-created-on-experiment" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <columnExists tableName="experiment" columnName="created"/>
+            </not>
+        </preConditions>
+        <addColumn tableName="experiment">
+            <column name="created" type="boolean" defaultValue="false"/>
+        </addColumn>
+        <rollback>
+            <dropColumn tableName="experiment" columnName="created"/>
+        </rollback>
+    </changeSet>
+
+    <changeSet id="set-created-true-based-on-column-type-existing-experiment" author="anandJ">
+        <update tableName="experiment">
+            <column name="created" valueBoolean="true"/>
+            <where>created=0 AND deleted=0</where>
+        </update>
+    </changeSet>
+
+    <changeSet id="db_version_2.38" author="anandJ">
+        <tagDatabase tag="db_version_2.38"/>
+    </changeSet>
+
 </databaseChangeLog>

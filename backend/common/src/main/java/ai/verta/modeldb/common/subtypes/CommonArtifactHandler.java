@@ -105,16 +105,33 @@ public abstract class CommonArtifactHandler<T> {
 
     for (final var artifact : artifacts) {
       if (artifact.getKey().isEmpty()) {
-        String errorMessage = "Artifact key not found in request";
+        var errorMessage = "Artifact key not found in request";
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
     }
 
     if (overwrite) {
-      deleteArtifactsWithHandle(
-          entityId,
-          Optional.of(artifacts.stream().map(Artifact::getKey).collect(Collectors.toList())),
-          handle);
+      for (final var artifact : artifacts) {
+        var path = artifact.getPath();
+        var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+        if (artifact.getUploadCompleted()) {
+          uploadCompleted = true;
+        } else {
+          path =
+              artifactStoreConfig.storeTypePathPrefix()
+                  + this.entityName
+                  + "/"
+                  + entityId
+                  + "/"
+                  + artifact.getKey();
+        }
+        var storeTypePath = !artifact.getPathOnly() ? path : "";
+        if (isExists(entityId, artifact.getKey(), handle)) {
+          updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
+        } else {
+          insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
+        }
+      }
     } else {
       validateAndThrowErrorAlreadyExistsArtifacts(entityId, artifacts, handle);
     }
@@ -145,9 +162,14 @@ public abstract class CommonArtifactHandler<T> {
   protected abstract void validateAndThrowErrorAlreadyExistsArtifacts(
       T entityId, List<Artifact> artifacts, Handle handle);
 
+  protected abstract boolean isExists(T entityId, String key, Handle handle);
+
   protected abstract void deleteArtifactsWithHandle(
       T entityId, Optional<List<String>> maybeKeys, Handle handle);
 
   public abstract InternalFuture<Void> deleteArtifacts(
       T entityId, Optional<List<String>> maybeKeys);
+
+  protected abstract void updateArtifactWithHandle(
+      T entityId, Handle handle, Artifact artifact, boolean uploadCompleted, String storeTypePath);
 }

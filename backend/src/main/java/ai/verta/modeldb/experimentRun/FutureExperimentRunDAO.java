@@ -84,18 +84,14 @@ import ai.verta.modeldb.experimentRun.subtypes.PredicatesHandler;
 import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
-import ai.verta.modeldb.project.UACApisUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.Action;
 import ai.verta.uac.Empty;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ResourceType;
@@ -149,6 +145,7 @@ public class FutureExperimentRunDAO {
   private final HyperparametersFromConfigHandler hyperparametersFromConfigHandler;
   private final MDBConfig config;
   private final CodeVersionFromBlobHandler codeVersionFromBlobHandler;
+  private final UACApisUtil uacApisUtil;
 
   public FutureExperimentRunDAO(
       Executor executor,
@@ -165,6 +162,7 @@ public class FutureExperimentRunDAO {
     this.jdbi = jdbi;
     this.uac = uac;
     this.config = config;
+    this.uacApisUtil = uacApisUtil;
 
     attributeHandler = new AttributeHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     hyperparametersHandler =
@@ -566,54 +564,6 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
-  private InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
-      ModelDBActionEnum.ModelDBServiceActions action,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return FutureGrpc.ClientRequest(
-            uac.getAuthzService()
-                .getSelfAllowedResources(
-                    GetSelfAllowedResources.newBuilder()
-                        .addActions(
-                            Action.newBuilder()
-                                .setModeldbServiceAction(action)
-                                .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                        .setResourceType(
-                            ResourceType.newBuilder()
-                                .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                        .build()),
-            executor)
-        .thenApply(GetSelfAllowedResources.Response::getResourcesList, executor);
-  }
-
-  private InternalFuture<List<GetResourcesResponseItem>> getAllowedResourceItems(
-      Optional<List<String>> resourceIds,
-      Long workspaceId,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    var resourceType =
-        ResourceType.newBuilder()
-            .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-            .build();
-    Resources.Builder resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-    if (resourceIds.isPresent() && !resourceIds.get().isEmpty()) {
-      resources.addAllResourceIds(resourceIds.get());
-    }
-
-    return FutureGrpc.ClientRequest(
-            uac.getCollaboratorService()
-                .getResources(
-                    GetResources.newBuilder()
-                        .setResources(resources.build())
-                        .setWorkspaceId(workspaceId)
-                        .build()),
-            executor)
-        .thenApply(GetResources.Response::getItemList, executor);
-  }
-
   public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
     final var runIds = request.getIdsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -740,7 +690,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> jdbi.useHandle(handle -> codeVersionHandler.logCodeVersion(handle, request)),
+            unused ->
+                jdbi.useHandle(
+                    handle ->
+                        codeVersionHandler.logCodeVersion(
+                            handle, runId, request.getOverwrite(), request.getCodeVersion())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor);
@@ -1299,11 +1253,12 @@ public class FutureExperimentRunDAO {
   private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
       String workspaceName, String requestedProjectId) {
     if (workspaceName.isEmpty()) {
-      return getAllowedEntitiesByResourceType(
+      return uacApisUtil
+          .getAllowedEntitiesByResourceType(
               ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
           .thenApply(
               resources -> {
-                boolean allowedAllResources = checkAllResourceAllowed(resources);
+                boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
                   return new QueryFilterContext();
                 } else {
@@ -1323,7 +1278,8 @@ public class FutureExperimentRunDAO {
               executor);
     } else {
       // futureProjectIds based on workspace
-      return getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
+      return uacApisUtil
+          .getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
           .thenApply(
               accessibleProjectIds -> {
                 if (accessibleProjectIds.isEmpty()) {
@@ -1338,47 +1294,12 @@ public class FutureExperimentRunDAO {
     }
   }
 
-  private InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
-      String workspaceName, Optional<String> projectId) {
-    var requestProjectIds = new ArrayList<String>();
-    if (projectId.isPresent() && !projectId.get().isEmpty()) {
-      requestProjectIds.add(projectId.get());
-    }
-    return FutureGrpc.ClientRequest(
-            uac.getWorkspaceService()
-                .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
-            executor)
-        .thenCompose(
-            workspace ->
-                getAllowedResourceItems(
-                        Optional.of(requestProjectIds),
-                        workspace.getId(),
-                        ModelDBServiceResourceTypes.PROJECT)
-                    .thenCompose(
-                        getResourcesItems ->
-                            InternalFuture.completedInternalFuture(
-                                getResourcesItems.stream()
-                                    .map(GetResourcesResponseItem::getResourceId)
-                                    .collect(Collectors.toList())),
-                        executor),
-            executor);
-  }
-
-  private boolean checkAllResourceAllowed(List<Resources> resources) {
-    var allowedAllResources = false;
-    if (!resources.isEmpty()) {
-      // This should always MODEL_DB_SERVICE be the case unless we have a bug.
-      allowedAllResources = resources.get(0).getAllResourceIds();
-    }
-    return allowedAllResources;
-  }
-
   private InternalFuture<MapSubtypes<String, KeyValue>> getFutureHyperparamsFromConfigBlobs(
       Set<String> ids) {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
-              boolean allowedAllResources = checkAllResourceAllowed(resources);
+              boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
               // For all repositories are accessible
               if (allowedAllResources) {
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
@@ -1404,7 +1325,7 @@ public class FutureExperimentRunDAO {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
-              boolean allowedAllResources = checkAllResourceAllowed(resources);
+              boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
               // For all repositories are accessible
               if (allowedAllResources) {
                 return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
@@ -1433,7 +1354,7 @@ public class FutureExperimentRunDAO {
               // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
               // repositories from UAC
               if (populateConnectionsBasedOnPrivileges) {
-                return getAllowedEntitiesByResourceType(
+                return uacApisUtil.getAllowedEntitiesByResourceType(
                     ModelDBActionEnum.ModelDBServiceActions.READ,
                     ModelDBServiceResourceTypes.REPOSITORY);
               } else {
