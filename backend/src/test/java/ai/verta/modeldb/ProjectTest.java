@@ -2565,18 +2565,10 @@ public class ProjectTest extends TestsInit {
       LogProjectCodeVersion.Response logProjectCodeVersionResponse =
           projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
       CodeVersion codeVersion = logProjectCodeVersionResponse.getProject().getCodeVersionSnapshot();
-      var isS3 = testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-      if (isS3) {
-        assertNotEquals(
-            "Project codeVersion not match with expected project codeVersion",
-            logProjectCodeVersionRequest.getCodeVersion(),
-            codeVersion);
-      } else {
-        assertEquals(
-            "Project codeVersion not match with expected project codeVersion",
-            logProjectCodeVersionRequest.getCodeVersion(),
-            codeVersion);
-      }
+      assertNotEquals(
+          "Project codeVersion not match with expected project codeVersion",
+          logProjectCodeVersionRequest.getCodeVersion(),
+          codeVersion);
 
       project = logProjectCodeVersionResponse.getProject();
 
@@ -2641,18 +2633,10 @@ public class ProjectTest extends TestsInit {
     LogProjectCodeVersion.Response logProjectCodeVersionResponse =
         projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
     project = logProjectCodeVersionResponse.getProject();
-    var isS3 = testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-    if (isS3) {
-      assertNotEquals(
-          "Project codeVersion not match with expected project codeVersion",
-          logProjectCodeVersionRequest.getCodeVersion(),
-          project.getCodeVersionSnapshot());
-    } else {
-      assertEquals(
-          "Project codeVersion not match with expected project codeVersion",
-          logProjectCodeVersionRequest.getCodeVersion(),
-          project.getCodeVersionSnapshot());
-    }
+    assertNotEquals(
+        "Project codeVersion not match with expected project codeVersion",
+        logProjectCodeVersionRequest.getCodeVersion(),
+        project.getCodeVersionSnapshot());
 
     project = logProjectCodeVersionResponse.getProject();
     projectMap.put(project.getId(), project);

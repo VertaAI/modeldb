@@ -5012,18 +5012,10 @@ public class ExperimentRunTest extends TestsInit {
     GetExperimentRunById.Response response =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     CodeVersion codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
-    var isS3 = testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-    if (isS3) {
-      assertNotEquals(
-          "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
-          logExperimentRunCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    } else {
-      assertEquals(
-          "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
-          logExperimentRunCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    }
+    assertNotEquals(
+        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
+        logExperimentRunCodeVersionRequest.getCodeVersion(),
+        codeVersion);
 
     try {
       experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
@@ -5057,17 +5049,10 @@ public class ExperimentRunTest extends TestsInit {
 
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
-    if (isS3) {
-      assertNotEquals(
-          "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
-          logExperimentRunCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    } else {
-      assertEquals(
-          "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
-          logExperimentRunCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    }
+    assertNotEquals(
+        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
+        logExperimentRunCodeVersionRequest.getCodeVersion(),
+        codeVersion);
 
     logExperimentRunCodeVersionRequest =
         LogExperimentRunCodeVersion.newBuilder()
@@ -5128,18 +5113,10 @@ public class ExperimentRunTest extends TestsInit {
     GetExperimentRunById.Response response =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     CodeVersion codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
-    var isS3 = testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-    if (isS3) {
-      assertNotEquals(
-          "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
-          logExperimentRunCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    } else {
-      assertEquals(
-          "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
-          logExperimentRunCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    }
+    assertNotEquals(
+        "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
+        logExperimentRunCodeVersionRequest.getCodeVersion(),
+        codeVersion);
 
     GetExperimentRunCodeVersion getExperimentRunCodeVersionRequest =
         GetExperimentRunCodeVersion.newBuilder().setId(experimentRun.getId()).build();

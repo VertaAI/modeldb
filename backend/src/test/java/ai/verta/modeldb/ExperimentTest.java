@@ -1437,18 +1437,10 @@ public class ExperimentTest extends TestsInit {
         experimentServiceStub.logExperimentCodeVersion(logExperimentCodeVersionRequest);
     CodeVersion codeVersion =
         logExperimentCodeVersionResponse.getExperiment().getCodeVersionSnapshot();
-    var isS3 = testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-    if (isS3) {
-      assertNotEquals(
-          "Experiment codeVersion not match with expected experiment codeVersion",
-          logExperimentCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    } else {
-      assertEquals(
-          "Experiment codeVersion not match with expected experiment codeVersion",
-          logExperimentCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    }
+    assertNotEquals(
+        "Experiment codeVersion not match with expected experiment codeVersion",
+        logExperimentCodeVersionRequest.getCodeVersion(),
+        codeVersion);
     experiment = logExperimentCodeVersionResponse.getExperiment();
 
     try {
@@ -1503,18 +1495,10 @@ public class ExperimentTest extends TestsInit {
     CodeVersion codeVersion =
         logExperimentCodeVersionResponse.getExperiment().getCodeVersionSnapshot();
 
-    var isS3 = testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-    if (isS3) {
-      assertNotEquals(
-          "Experiment codeVersion not match with expected experiment codeVersion",
-          logExperimentCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    } else {
-      assertEquals(
-          "Experiment codeVersion not match with expected experiment codeVersion",
-          logExperimentCodeVersionRequest.getCodeVersion(),
-          codeVersion);
-    }
+    assertNotEquals(
+        "Experiment codeVersion not match with expected experiment codeVersion",
+        logExperimentCodeVersionRequest.getCodeVersion(),
+        codeVersion);
     experiment = logExperimentCodeVersionResponse.getExperiment();
 
     GetExperimentCodeVersion getExperimentCodeVersionRequest =
