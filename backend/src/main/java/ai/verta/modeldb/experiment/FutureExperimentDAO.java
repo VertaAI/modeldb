@@ -9,6 +9,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
@@ -661,5 +662,40 @@ public class FutureExperimentDAO {
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
             executor);
+  }
+
+  public InternalFuture<Experiment> logCodeVersion(LogExperimentCodeVersion request) {
+    final var expId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    return getExperimentById(expId)
+        .thenApply(
+            experiment -> {
+              futureProjectDAO.checkProjectPermission(
+                  experiment.getProjectId(), ModelDBServiceActions.UPDATE);
+              return experiment;
+            },
+            executor)
+        .thenApply(
+            existingExperiment -> {
+              if (existingExperiment.getCodeVersionSnapshot().hasCodeArchive()
+                  || existingExperiment.getCodeVersionSnapshot().hasGitSnapshot()) {
+                var errorMessage =
+                    "Code version already logged for experiment " + existingExperiment.getId();
+                throw new AlreadyExistsException(errorMessage);
+              }
+              return existingExperiment;
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      codeVersionHandler.logCodeVersion(
+                          handle, expId, true, request.getCodeVersion());
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
   }
 }
