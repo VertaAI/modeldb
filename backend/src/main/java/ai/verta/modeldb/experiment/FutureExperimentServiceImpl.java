@@ -869,7 +869,49 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   public void deleteArtifact(
       DeleteExperimentArtifact request,
       StreamObserver<DeleteExperimentArtifact.Response> responseObserver) {
-    super.deleteArtifact(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in DeleteArtifact request";
+                  throw new InvalidArgumentException(errorMessage);
+                } else if (request.getKey().isEmpty()) {
+                  var errorMessage = "Artifact key not found in DeleteArtifact request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var futureResponse =
+          requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.deleteArtifacts(request), executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifact_keys",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getKey()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment artifact deleted successfully")
+                          .thenApply(unused -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      DeleteExperimentArtifact.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

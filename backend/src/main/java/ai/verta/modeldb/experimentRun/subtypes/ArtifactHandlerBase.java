@@ -109,7 +109,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
   }
 
   @Override
-  protected void deleteArtifactsWithHandle(
+  public void deleteArtifactsWithHandle(
       String entityId, Optional<List<String>> maybeKeys, Handle handle) {
     var sql =
         String.format(
