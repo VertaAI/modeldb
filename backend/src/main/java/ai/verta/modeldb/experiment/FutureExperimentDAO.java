@@ -503,7 +503,7 @@ public class FutureExperimentDAO {
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
   }
 
-  private InternalFuture<InternalFuture<Void>> updateExperimentName(
+  private InternalFuture<Void> updateExperimentName(
       String name, String projectId, String experimentId) {
     if (name.isEmpty()) {
       name = MetadataServiceImpl.createRandomName();
@@ -529,7 +529,7 @@ public class FutureExperimentDAO {
                         "Experiment with name '%s' already exists in project", finalName));
               }
             })
-        .thenApply(unused -> updateExperimentField(experimentId, "name", finalName), executor);
+        .thenCompose(unused -> updateExperimentField(experimentId, "name", finalName), executor);
   }
 
   public InternalFuture<Experiment> updateExperimentDescription(
