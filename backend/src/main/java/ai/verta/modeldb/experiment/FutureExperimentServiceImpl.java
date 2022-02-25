@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
@@ -856,7 +857,51 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   public void logArtifacts(
       LogExperimentArtifacts request,
       StreamObserver<LogExperimentArtifacts.Response> responseObserver) {
-    super.logArtifacts(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in LogArtifacts request";
+                  throw new InvalidArgumentException(errorMessage);
+                } else if (request.getArtifactsList().isEmpty()) {
+                  var errorMessage = "Artifacts not found in LogArtifacts request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var futureResponse =
+          requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.logArtifacts(request), executor)
+              .thenCompose(
+                  updatedExperiment ->
+                      // Add succeeded event in local DB
+                      addEvent(
+                              updatedExperiment.getId(),
+                              updatedExperiment.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifacts",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getArtifactsList().stream()
+                                              .map(Artifact::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment artifacts added successfully")
+                          .thenApply(unused -> updatedExperiment, executor),
+                  executor)
+              .thenApply(
+                  experiment ->
+                      LogExperimentArtifacts.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
