@@ -168,7 +168,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>9.2.1.jre11</version>
+            <version>9.5.0-SNAPSHOT.jre8-preview</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
