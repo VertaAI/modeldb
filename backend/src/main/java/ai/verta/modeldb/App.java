@@ -303,7 +303,7 @@ public class App implements ApplicationContextAware {
       ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor executor) {
     wrapService(serverBuilder, new FutureProjectServiceImpl(daos, executor));
     LOGGER.trace("Project serviceImpl initialized");
-    wrapService(serverBuilder, new FutureExperimentServiceImpl(services, daos, executor));
+    wrapService(serverBuilder, new FutureExperimentServiceImpl(daos, executor));
     LOGGER.trace("Experiment serviceImpl initialized");
     wrapService(serverBuilder, new FutureExperimentRunServiceImpl(daos, executor));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
