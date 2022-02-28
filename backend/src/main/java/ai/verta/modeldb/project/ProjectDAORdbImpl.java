@@ -222,7 +222,7 @@ public class ProjectDAORdbImpl implements ProjectDAO {
                   ModelDBConstants.CODE_ARCHIVE,
                   updatedCodeVersion.getCodeArchive(),
                   CodeVersionEntity.class.getSimpleName(),
-                  UUID.randomUUID().toString()));
+                  "fake-" + UUID.randomUUID().toString()));
           existingCodeVersionEntity.setGit_snapshot(null);
         }
       }

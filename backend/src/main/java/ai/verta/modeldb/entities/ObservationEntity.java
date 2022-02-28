@@ -42,7 +42,7 @@ public class ObservationEntity implements Serializable {
               ModelDBConstants.ARTIFACTS,
               observation.getArtifact(),
               ObservationEntity.class.getSimpleName(),
-              UUID.randomUUID().toString()));
+              "fake-" + UUID.randomUUID().toString()));
     }
 
     if (entity instanceof ProjectEntity) {

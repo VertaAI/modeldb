@@ -35,7 +35,7 @@ public class CodeVersionEntity implements Serializable {
               ModelDBConstants.CODE_ARCHIVE,
               codeVersion.getCodeArchive(),
               CodeVersionEntity.class.getSimpleName(),
-              UUID.randomUUID().toString()));
+              "fake-" + UUID.randomUUID().toString()));
     }
     this.field_type = fieldType;
   }
