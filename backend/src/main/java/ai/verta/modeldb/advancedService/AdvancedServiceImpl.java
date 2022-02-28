@@ -13,7 +13,6 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
@@ -28,7 +27,7 @@ import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.experiment.ExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
-import ai.verta.modeldb.project.ProjectDAO;
+import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -48,7 +47,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private static final Logger LOGGER = LogManager.getLogger(AdvancedServiceImpl.class);
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
-  private final ProjectDAO projectDAO;
+  private final FutureProjectDAO futureProjectDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final CommentDAO commentDAO;
@@ -60,7 +59,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   public AdvancedServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
     this.authService = serviceSet.authService;
     this.mdbRoleService = serviceSet.mdbRoleService;
-    this.projectDAO = daoSet.projectDAO;
+    this.futureProjectDAO = daoSet.futureProjectDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.commentDAO = daoSet.commentDAO;
     this.experimentDAO = daoSet.experimentDAO;
@@ -175,19 +174,18 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               .setSortKey(request.getSortKey())
               .setWorkspaceName(request.getWorkspaceName())
               .build();
-      projectPaginationDTO =
-          projectDAO.findProjects(findProjects, null, userInfo, ResourceVisibility.PRIVATE);
-      List<Project> projects = projectPaginationDTO.getProjects();
+      var response = futureProjectDAO.findProjects(findProjects).get();
+      List<Project> projects = response.getProjectsList();
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
-      if (projects != null && !projects.isEmpty()) {
+      if (!projects.isEmpty()) {
         hydratedProjects = getHydratedProjects(projects);
       }
 
       responseObserver.onNext(
           GetHydratedProjects.Response.newBuilder()
               .addAllHydratedProjects(hydratedProjects)
-              .setTotalRecords(projectPaginationDTO.getTotalRecords())
+              .setTotalRecords(response.getTotalRecords())
               .build());
       responseObserver.onCompleted();
 
@@ -210,7 +208,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getId(), ModelDBServiceActions.READ);
 
-      var project = projectDAO.getProjectByID(request.getId());
+      var project = futureProjectDAO.getProjectById(request.getId()).get();
       responseObserver.onNext(
           GetHydratedProjectById.Response.newBuilder()
               .setHydratedProject(getHydratedProjects(Collections.singletonList(project)).get(0))
@@ -238,7 +236,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
       var experimentPaginationDTO =
           experimentDAO.getExperimentsInProject(
-              projectDAO,
+              futureProjectDAO,
               request.getProjectId(),
               request.getPageNumber(),
               request.getPageLimit(),
@@ -280,7 +278,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
       var experimentRunPaginationDTO =
           experimentRunDAO.getExperimentRunsFromEntity(
-              projectDAO,
               ModelDBConstants.PROJECT_ID,
               request.getProjectId(),
               request.getPageNumber(),
@@ -548,7 +545,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      var experimentRunPaginationDTO = experimentRunDAO.sortExperimentRuns(projectDAO, request);
+      var experimentRunPaginationDTO = experimentRunDAO.sortExperimentRuns(request);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
@@ -591,8 +588,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      List<ExperimentRun> experimentRuns =
-          experimentRunDAO.getTopExperimentRuns(projectDAO, request);
+      List<ExperimentRun> experimentRuns = experimentRunDAO.getTopExperimentRuns(request);
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
       if (!experimentRuns.isEmpty()) {
         hydratedExperimentRuns = getHydratedExperimentRuns(experimentRuns);
@@ -679,7 +675,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       var userInfo = authService.getCurrentLoginUserInfo();
-      var experimentPaginationDTO = experimentDAO.findExperiments(projectDAO, userInfo, request);
+      var experimentPaginationDTO =
+          experimentDAO.findExperiments(futureProjectDAO, userInfo, request);
       LOGGER.debug(
           "ExperimentPaginationDTO record count : {}", experimentPaginationDTO.getTotalRecords());
 
@@ -715,24 +712,22 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       // Get the user info from the Context
       var userInfo = authService.getCurrentLoginUserInfo();
 
-      var projectPaginationDTO =
-          projectDAO.findProjects(request, null, userInfo, ResourceVisibility.PRIVATE);
-      LOGGER.debug(
-          ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
+      var projectResponse = futureProjectDAO.findProjects(request).get();
+      LOGGER.debug(ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectResponse.getTotalRecords());
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
       if (request.getIdsOnly()) {
-        for (Project project : projectPaginationDTO.getProjects()) {
+        for (Project project : projectResponse.getProjectsList()) {
           hydratedProjects.add(HydratedProject.newBuilder().setProject(project).build());
         }
-      } else if (!projectPaginationDTO.getProjects().isEmpty()) {
-        hydratedProjects = getHydratedProjects(projectPaginationDTO.getProjects());
+      } else if (!projectResponse.getProjectsList().isEmpty()) {
+        hydratedProjects = getHydratedProjects(projectResponse.getProjectsList());
       }
 
       responseObserver.onNext(
           AdvancedQueryProjectsResponse.newBuilder()
               .addAllHydratedProjects(hydratedProjects)
-              .setTotalRecords(projectPaginationDTO.getTotalRecords())
+              .setTotalRecords(projectResponse.getTotalRecords())
               .build());
       responseObserver.onCompleted();
 
@@ -1020,26 +1015,22 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   }
 
   private AdvancedQueryProjectsResponse createQueryProjectsResponse(
-      FindProjects findProjectsRequest,
-      UserInfo currentLoginUserInfo,
-      CollaboratorBase host,
-      ResourceVisibility visibility) {
+      FindProjects findProjectsRequest) {
 
-    var projectPaginationDTO =
-        projectDAO.findProjects(findProjectsRequest, host, currentLoginUserInfo, visibility);
-    LOGGER.debug(ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectPaginationDTO.getTotalRecords());
+    var projectResponse = futureProjectDAO.findProjects(findProjectsRequest).get();
+    LOGGER.debug(ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectResponse.getTotalRecords());
 
     List<HydratedProject> hydratedProjects = new ArrayList<>();
     if (findProjectsRequest.getIdsOnly()) {
-      for (Project project : projectPaginationDTO.getProjects()) {
+      for (Project project : projectResponse.getProjectsList()) {
         hydratedProjects.add(HydratedProject.newBuilder().setProject(project).build());
       }
-    } else if (!projectPaginationDTO.getProjects().isEmpty()) {
-      hydratedProjects = getHydratedProjects(projectPaginationDTO.getProjects());
+    } else if (!projectResponse.getProjectsList().isEmpty()) {
+      hydratedProjects = getHydratedProjects(projectResponse.getProjectsList());
     }
     return AdvancedQueryProjectsResponse.newBuilder()
         .addAllHydratedProjects(hydratedProjects)
-        .setTotalRecords(projectPaginationDTO.getTotalRecords())
+        .setTotalRecords(projectResponse.getTotalRecords())
         .build();
   }
 
@@ -1071,12 +1062,16 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      responseObserver.onNext(
-          createQueryProjectsResponse(
-              request.getFindProjects(),
-              authService.getCurrentLoginUserInfo(),
-              hostCollaboratorBase,
-              ResourceVisibility.PRIVATE));
+      var findProjects = request.toBuilder().getFindProjects();
+      CollaboratorUserInfo.Builder builder = CollaboratorUserInfo.newBuilder();
+      hostCollaboratorBase.addToResponse(builder);
+      findProjects =
+          findProjects
+              .toBuilder()
+              .setWorkspaceName(builder.getCollaboratorUserInfo().getVertaInfo().getUsername())
+              .build();
+
+      responseObserver.onNext(createQueryProjectsResponse(findProjects));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1105,12 +1100,17 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         hostOrgInfo = mdbRoleService.getOrgByName(request.getName());
       }
 
-      responseObserver.onNext(
-          createQueryProjectsResponse(
-              request.getFindProjects(),
-              null,
-              new CollaboratorOrg(hostOrgInfo),
-              ResourceVisibility.PRIVATE));
+      var findProjects = request.toBuilder().getFindProjects();
+      CollaboratorOrg collaboratorOrg = new CollaboratorOrg(hostOrgInfo);
+      CollaboratorUserInfo.Builder builder = CollaboratorUserInfo.newBuilder();
+      collaboratorOrg.addToResponse(builder);
+      findProjects =
+          findProjects
+              .toBuilder()
+              .setWorkspaceName(builder.getCollaboratorOrganization().getName())
+              .build();
+
+      responseObserver.onNext(createQueryProjectsResponse(findProjects));
       responseObserver.onCompleted();
 
     } catch (Exception e) {
@@ -1140,12 +1140,17 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         hostTeamInfo = mdbRoleService.getTeamByName(request.getOrgId(), request.getName());
       }
 
-      responseObserver.onNext(
-          createQueryProjectsResponse(
-              request.getFindProjects(),
-              null,
-              new CollaboratorTeam(hostTeamInfo),
-              ResourceVisibility.PRIVATE));
+      var findProjects = request.toBuilder().getFindProjects();
+      CollaboratorTeam collaboratorTeam = new CollaboratorTeam(hostTeamInfo);
+      CollaboratorUserInfo.Builder builder = CollaboratorUserInfo.newBuilder();
+      collaboratorTeam.addToResponse(builder);
+      findProjects =
+          findProjects
+              .toBuilder()
+              .setWorkspaceName(builder.getCollaboratorTeam().getName())
+              .build();
+
+      responseObserver.onNext(createQueryProjectsResponse(findProjects));
       responseObserver.onCompleted();
 
     } catch (Exception e) {

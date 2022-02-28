@@ -19,7 +19,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.project.ProjectDAO;
+import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -47,7 +47,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
   private final AuthService authService;
   public final MDBRoleService mdbRoleService;
   private final ExperimentDAO experimentDAO;
-  private final ProjectDAO projectDAO;
+  private final FutureProjectDAO futureProjectDAO;
   private final ArtifactStoreDAO artifactStoreDAO;
   private final FutureEventDAO futureEventDAO;
 
@@ -55,7 +55,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
     this.authService = serviceSet.authService;
     this.mdbRoleService = serviceSet.mdbRoleService;
     this.experimentDAO = daoSet.experimentDAO;
-    this.projectDAO = daoSet.projectDAO;
+    this.futureProjectDAO = daoSet.futureProjectDAO;
     this.artifactStoreDAO = daoSet.artifactStoreDAO;
     this.futureEventDAO = daoSet.futureEventDAO;
   }
@@ -209,7 +209,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      if (!projectDAO.projectExistsInDB(request.getProjectId())) {
+      if (futureProjectDAO.getProjectById(request.getProjectId()).get() != null) {
         var errorMessage = "Project ID not found.";
         throw new NotFoundException(errorMessage);
       }
@@ -220,7 +220,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
 
       var experimentPaginationDTO =
           experimentDAO.getExperimentsInProject(
-              projectDAO,
+              futureProjectDAO,
               request.getProjectId(),
               request.getPageNumber(),
               request.getPageLimit(),
@@ -1091,7 +1091,8 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
       }
 
       var userInfo = authService.getCurrentLoginUserInfo();
-      var experimentPaginationDTO = experimentDAO.findExperiments(projectDAO, userInfo, request);
+      var experimentPaginationDTO =
+          experimentDAO.findExperiments(futureProjectDAO, userInfo, request);
       List<Experiment> experiments = experimentPaginationDTO.getExperiments();
       var response =
           FindExperiments.Response.newBuilder()
@@ -1170,7 +1171,7 @@ public class ExperimentServiceImpl extends ExperimentServiceImplBase {
         && expr.getCodeVersionSnapshot().getCodeArchive() != null) {
       s3Key = expr.getCodeVersionSnapshot().getCodeArchive().getPath();
     } else {
-      var proj = projectDAO.getProjectByID(expr.getProjectId());
+      var proj = futureProjectDAO.getProjectById(expr.getProjectId()).get();
       if (proj.getCodeVersionSnapshot() != null
           && proj.getCodeVersionSnapshot().getCodeArchive() != null) {
         s3Key = proj.getCodeVersionSnapshot().getCodeArchive().getPath();

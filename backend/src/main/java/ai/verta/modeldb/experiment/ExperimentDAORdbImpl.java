@@ -16,7 +16,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.exceptions.*;
-import ai.verta.modeldb.project.ProjectDAO;
+import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -313,7 +313,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
   @Override
   public ExperimentPaginationDTO getExperimentsInProject(
-      ProjectDAO projectDAO,
+      FutureProjectDAO futureProjectDAO,
       String projectId,
       Integer pageNumber,
       Integer pageLimit,
@@ -330,7 +330,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
             .setAscending(order)
             .setSortKey(sortKey)
             .build();
-    return findExperiments(projectDAO, userInfo, findExperiments);
+    return findExperiments(futureProjectDAO, userInfo, findExperiments);
   }
 
   @Override
@@ -743,7 +743,9 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
 
   @Override
   public ExperimentPaginationDTO findExperiments(
-      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperiments queryParameters)
+      FutureProjectDAO futureProjectDAO,
+      UserInfo currentLoginUserInfo,
+      FindExperiments queryParameters)
       throws PermissionDeniedException {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
@@ -797,8 +799,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
         projectIds.add(queryParameters.getProjectId());
       } else if (accessibleExperimentIds.isEmpty()) {
         List<String> workspaceProjectIDs =
-            projectDAO.getWorkspaceProjectIDs(
-                queryParameters.getWorkspaceName(), currentLoginUserInfo);
+            futureProjectDAO.getWorkspaceProjectIDs(queryParameters.getWorkspaceName()).get();
         if (workspaceProjectIDs == null || workspaceProjectIDs.isEmpty()) {
           LOGGER.info(
               "accessible project for the experiments not found for given workspace : {}",
@@ -917,7 +918,7 @@ public class ExperimentDAORdbImpl implements ExperimentDAO {
       return experimentPaginationDTO;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findExperiments(projectDAO, currentLoginUserInfo, queryParameters);
+        return findExperiments(futureProjectDAO, currentLoginUserInfo, queryParameters);
       } else {
         throw ex;
       }

@@ -9,7 +9,7 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dto.ExperimentPaginationDTO;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.project.ProjectDAO;
+import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.uac.UserInfo;
 import java.util.List;
 import java.util.Map;
@@ -64,7 +64,7 @@ public interface ExperimentDAO {
    *     total_pages count
    */
   ExperimentPaginationDTO getExperimentsInProject(
-      ProjectDAO projectDAO,
+      FutureProjectDAO futureProjectDAO,
       String projectId,
       Integer pageNumber,
       Integer pageLimit,
@@ -186,7 +186,7 @@ public interface ExperimentDAO {
    *     based on filter queryParameters & total_pages count
    */
   ExperimentPaginationDTO findExperiments(
-      ProjectDAO projectDAO, UserInfo userInfo, FindExperiments queryParameters)
+      FutureProjectDAO futureProjectDAO, UserInfo userInfo, FindExperiments queryParameters)
       throws PermissionDeniedException;
 
   /**

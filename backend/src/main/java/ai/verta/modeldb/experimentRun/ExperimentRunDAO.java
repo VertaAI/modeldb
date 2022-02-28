@@ -8,7 +8,6 @@ import ai.verta.modeldb.CommitArtifactPart.Response;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.dto.ExperimentRunPaginationDTO;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.versioning.CommitFunction;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryFunction;
@@ -28,8 +27,7 @@ public interface ExperimentRunDAO {
    * @param userInfo
    * @return ExperimentRun insertedExperimentRun
    */
-  ExperimentRun insertExperimentRun(
-      ProjectDAO projectDAO, ExperimentRun experimentRun, UserInfo userInfo)
+  ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws ModelDBException, NoSuchAlgorithmException;
 
   /**
@@ -53,7 +51,6 @@ public interface ExperimentRunDAO {
    *     total_pages count
    */
   ExperimentRunPaginationDTO getExperimentRunsFromEntity(
-      ProjectDAO projectDAO,
       String entityKey,
       String entityValue,
       Integer pageNumber,
@@ -241,7 +238,7 @@ public interface ExperimentRunDAO {
    *     experimentRuns based on filter queryParameters & total_pages count
    */
   ExperimentRunPaginationDTO findExperimentRuns(
-      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
+      UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
       throws PermissionDeniedException;
 
   /**
@@ -251,8 +248,8 @@ public interface ExperimentRunDAO {
    * @return ExperimentRunPaginationDTO -- experimentRunPaginationDTO contains the list of
    *     experimentRuns based on filter queryParameters & total_pages count
    */
-  ExperimentRunPaginationDTO sortExperimentRuns(
-      ProjectDAO projectDAO, SortExperimentRuns queryParameters) throws PermissionDeniedException;
+  ExperimentRunPaginationDTO sortExperimentRuns(SortExperimentRuns queryParameters)
+      throws PermissionDeniedException;
 
   /**
    * Return "Top n" (e.g. Top 5) experimentRuns after applying the sort queryParameters
@@ -262,8 +259,7 @@ public interface ExperimentRunDAO {
    * @return List<ExperimentRun> -- return list of experimentRuns based on top selector
    *     queryParameters
    */
-  List<ExperimentRun> getTopExperimentRuns(
-      ProjectDAO projectDAO, TopExperimentRunsSelector queryParameters)
+  List<ExperimentRun> getTopExperimentRuns(TopExperimentRunsSelector queryParameters)
       throws PermissionDeniedException;
 
   /**
@@ -388,14 +384,12 @@ public interface ExperimentRunDAO {
   GetVersionedInput.Response getVersionedInputs(GetVersionedInput request);
 
   ListCommitExperimentRunsRequest.Response listCommitExperimentRuns(
-      ProjectDAO projectDAO,
       ListCommitExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
       throws ModelDBException;
 
   ListBlobExperimentRunsRequest.Response listBlobExperimentRuns(
-      ProjectDAO projectDAO,
       ListBlobExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
@@ -424,10 +418,9 @@ public interface ExperimentRunDAO {
       String experimentRunId, List<String> experimentRunObservationsKeys, Boolean deleteAll);
 
   ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
-      ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request) throws ModelDBException;
+      GetExperimentRunsByDatasetVersionId request) throws ModelDBException;
 
-  ExperimentRun cloneExperimentRun(
-      ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
+  ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws ModelDBException;
 
   void logEnvironment(String experimentRunId, EnvironmentBlob environmentBlob);

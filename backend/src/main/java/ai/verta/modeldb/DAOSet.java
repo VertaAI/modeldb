@@ -23,8 +23,6 @@ import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
-import ai.verta.modeldb.project.ProjectDAO;
-import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ServiceEnum;
@@ -44,7 +42,6 @@ public class DAOSet {
   public FutureProjectDAO futureProjectDAO;
   public LineageDAO lineageDAO;
   public MetadataDAO metadataDAO;
-  public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
   public FutureEventDAO futureEventDAO;
   public UACApisUtil uacApisUtil;
@@ -71,9 +68,6 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    set.projectDAO =
-        new ProjectDAORdbImpl(
-            services.authService, services.mdbRoleService, set.experimentDAO, set.experimentRunDAO);
     if (services.artifactStoreService != null) {
       set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService, mdbConfig);
     } else {
