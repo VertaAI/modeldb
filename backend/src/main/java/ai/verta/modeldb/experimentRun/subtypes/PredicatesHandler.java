@@ -105,7 +105,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     switch (key) {
       case "id":
       case "name":
-        return getContextFilterForSingleStringFields(predicate, key, value.getStringValue(), bindingName);
+        return getContextFilterForSingleStringFields(predicate, key, value, bindingName);
       case "date_created":
         var date =
             value.getKindCase().equals(Value.KindCase.STRING_VALUE)
