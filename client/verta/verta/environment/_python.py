@@ -65,7 +65,10 @@ class Python(_environment._Environment):
         env2 = Python(requirements=Python.read_pip_file("../requirements.txt"))
 
         env3 = Python(
-            requirements=["tensorflow"],
+            requirements=[
+                "scikit-learn==1.0.2",
+                "tensorflow",
+            ],
             env_vars=["CUDA_VISIBLE_DEVICES"],
             apt_packages=["python3-opencv"]
         )
