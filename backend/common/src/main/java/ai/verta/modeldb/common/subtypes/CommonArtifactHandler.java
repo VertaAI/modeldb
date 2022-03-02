@@ -45,29 +45,36 @@ public abstract class CommonArtifactHandler<T> {
 
   public InternalFuture<List<Artifact>> getArtifacts(T entityId, Optional<String> maybeKey) {
     var currentFuture = InternalFuture.runAsync(() -> validateField(entityId), executor);
-    return currentFuture.thenCompose(
-        unused ->
-            jdbi.withHandle(
-                handle -> {
-                  Query query =
-                      buildGetArtifactsQuery(Collections.singleton(entityId), maybeKey, handle);
-                  return query
-                      .map(
-                          (rs, ctx) ->
-                              Artifact.newBuilder()
-                                  .setKey(rs.getString("k"))
-                                  .setPath(rs.getString("p"))
-                                  .setArtifactTypeValue(rs.getInt("at"))
-                                  .setPathOnly(rs.getBoolean("po"))
-                                  .setLinkedArtifactId(rs.getString("lai"))
-                                  .setFilenameExtension(rs.getString("fe"))
-                                  .setSerialization(rs.getString("ser"))
-                                  .setArtifactSubtype(rs.getString("ast"))
-                                  .setUploadCompleted(rs.getBoolean("uc"))
-                                  .build())
-                      .list();
-                }),
-        executor);
+    return currentFuture
+        .thenCompose(
+            unused ->
+                jdbi.withHandle(
+                    handle -> {
+                      Query query =
+                          buildGetArtifactsQuery(Collections.singleton(entityId), maybeKey, handle);
+                      return query
+                          .map(
+                              (rs, ctx) ->
+                                  Artifact.newBuilder()
+                                      .setKey(rs.getString("k"))
+                                      .setPath(rs.getString("p"))
+                                      .setArtifactTypeValue(rs.getInt("at"))
+                                      .setPathOnly(rs.getBoolean("po"))
+                                      .setLinkedArtifactId(rs.getString("lai"))
+                                      .setFilenameExtension(rs.getString("fe"))
+                                      .setSerialization(rs.getString("ser"))
+                                      .setArtifactSubtype(rs.getString("ast"))
+                                      .setUploadCompleted(rs.getBoolean("uc"))
+                                      .build())
+                          .list();
+                    }),
+            executor)
+        .thenApply(
+            artifacts ->
+                artifacts.stream()
+                    .sorted(Comparator.comparing(Artifact::getKey))
+                    .collect(Collectors.toList()),
+            executor);
   }
 
   private void validateField(T entityId) {

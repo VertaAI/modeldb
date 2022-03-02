@@ -57,7 +57,8 @@ public abstract class TagsHandlerBase<T> {
   protected abstract void setEntityIdReferenceColumn(String entityName);
 
   public InternalFuture<List<String>> getTags(T entityId) {
-    return jdbi.withHandle(handle -> getTags(entityId, handle));
+    return jdbi.withHandle(handle -> getTags(entityId, handle))
+        .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor);
   }
 
   private List<String> getTags(T entityId, Handle handle) {
