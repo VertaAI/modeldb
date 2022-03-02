@@ -117,29 +117,7 @@ public abstract class CommonArtifactHandler<T> {
       }
     }
 
-    if (overwrite) {
-      for (final var artifact : artifacts) {
-        var uploadCompleted =
-            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-        if (artifact.getUploadCompleted()) {
-          uploadCompleted = true;
-        }
-
-        var path =
-            artifactStoreConfig.storeTypePathPrefix()
-                + this.entityName
-                + "/"
-                + entityId
-                + "/"
-                + artifact.getKey();
-        var storeTypePath = !artifact.getPathOnly() ? path : "";
-        if (isExists(entityId, artifact.getKey(), handle)) {
-          updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
-        } else {
-          insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
-        }
-      }
-    } else {
+    if (!overwrite) {
       validateAndThrowErrorAlreadyExistsArtifacts(entityId, artifacts, handle);
     }
 
@@ -158,7 +136,12 @@ public abstract class CommonArtifactHandler<T> {
               + artifact.getKey();
       artifact = artifact.toBuilder().setPath(path).build();
       var storeTypePath = !artifact.getPathOnly() ? path : "";
-      insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
+
+      if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
+        updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
+      } else {
+        insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
+      }
     }
   }
 
