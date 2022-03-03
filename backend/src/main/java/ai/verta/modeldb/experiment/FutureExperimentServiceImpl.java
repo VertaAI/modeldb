@@ -812,7 +812,60 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void deleteExperimentAttributes(
       DeleteExperimentAttributes request, StreamObserver<Response> responseObserver) {
-    super.deleteExperimentAttributes(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage =
+                      "Experiment ID not found in DeleteExperimentAttributes request";
+                  throw new InvalidArgumentException(errorMessage);
+                } else if (request.getAttributeKeysList().isEmpty() && !request.getDeleteAll()) {
+                  var errorMessage =
+                      "Experiment Attribute keys not found in DeleteExperimentAttributes request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.deleteAttributes(request), executor)
+              .thenCompose(
+                  updatedExperiment ->
+                  // Add succeeded event in local DB
+                  {
+                    // Add succeeded event in local DB
+                    Map<String, Object> extraFieldValue = new HashMap<>();
+                    if (request.getDeleteAll()) {
+                      extraFieldValue.put("attributes_deleted_all", true);
+                    } else {
+                      extraFieldValue.put(
+                          "attribute_keys",
+                          new Gson()
+                              .toJsonTree(
+                                  request.getAttributeKeysList(),
+                                  new TypeToken<ArrayList<String>>() {}.getType()));
+                    }
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("attributes"),
+                            extraFieldValue,
+                            "Experiment attributes deleted successfully")
+                        .thenApply(unused -> updatedExperiment, executor);
+                  },
+                  executor)
+              .thenApply(
+                  experiment ->
+                      DeleteExperimentAttributes.Response.newBuilder()
+                          .setExperiment(experiment)
+                          .build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
