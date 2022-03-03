@@ -39,9 +39,9 @@ public abstract class CommonDBUtil {
     var loopIndex = 0;
     var dbConnectionLive = false;
     while (!dbConnectionLive) {
-      if (loopIndex < 10 || isStartUpTime) {
+      if (loopIndex < 10 || (isStartUpTime && loopBackTime < 2560)) {
         Thread.sleep(loopBackTime);
-        LOGGER.debug(
+        LOGGER.warn(
             "CommonDBUtil checkDBConnectionInLoop() retrying for DB connection after {} millisecond ",
             loopBackTime);
         loopBackTime = loopBackTime * 2;
@@ -72,7 +72,7 @@ public abstract class CommonDBUtil {
     try (var con = getDBConnection(rdb)) {
       return con.isValid(timeout);
     } catch (Exception ex) {
-      LOGGER.warn("JdbiUtil checkDBConnection() got error ", ex);
+      LOGGER.error("JdbiUtil checkDBConnection() got error ", ex);
       return false;
     }
   }

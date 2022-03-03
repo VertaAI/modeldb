@@ -2,9 +2,12 @@ package ai.verta.modeldb.experiment;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.DeleteExperimentAttributes;
+import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetAttributes;
@@ -504,7 +507,7 @@ public class FutureExperimentDAO {
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
   }
 
-  private InternalFuture<InternalFuture<Void>> updateExperimentName(
+  private InternalFuture<Void> updateExperimentName(
       String name, String projectId, String experimentId) {
     if (name.isEmpty()) {
       name = MetadataServiceImpl.createRandomName();
@@ -530,7 +533,7 @@ public class FutureExperimentDAO {
                         "Experiment with name '%s' already exists in project", finalName));
               }
             })
-        .thenApply(unused -> updateExperimentField(experimentId, "name", finalName), executor);
+        .thenCompose(unused -> updateExperimentField(experimentId, "name", finalName), executor);
   }
 
   public InternalFuture<Experiment> updateExperimentDescription(
@@ -662,6 +665,62 @@ public class FutureExperimentDAO {
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
             executor);
+  }
+
+  public InternalFuture<Experiment> deleteAttributes(DeleteExperimentAttributes request) {
+    final var experimentId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    final Optional<List<String>> maybeKeys =
+        request.getDeleteAll() ? Optional.empty() : Optional.of(request.getAttributeKeysList());
+
+    return getProjectIdByExperimentId(Collections.singletonList(experimentId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      attributeHandler.deleteKeyValues(handle, experimentId, maybeKeys);
+                      updateModifiedTimestamp(handle, experimentId, now);
+                      updateVersionNumber(handle, experimentId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(experimentId), executor);
+  }
+
+  public InternalFuture<Map<String, String>> deleteExperiments(DeleteExperiments request) {
+    final var experimentIds = request.getIdsList();
+
+    return getProjectIdByExperimentId(experimentIds)
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                uacApisUtil
+                    .getResourceItemsForWorkspace(
+                        Optional.empty(),
+                        Optional.of(new ArrayList<>(projectIdFromExperimentMap.values())),
+                        Optional.empty(),
+                        ModelDBServiceResourceTypes.PROJECT)
+                    .thenCompose(unused -> deleteExperiments(experimentIds), executor)
+                    .thenApply(unused -> projectIdFromExperimentMap, executor),
+            executor);
+  }
+
+  private InternalFuture<Void> deleteExperiments(List<String> experimentIds) {
+    return InternalFuture.runAsync(
+        () ->
+            jdbi.withHandle(
+                handle ->
+                    handle
+                        .createUpdate(
+                            "Update experiment SET deleted = :deleted WHERE id IN (<ids>)")
+                        .bindList("ids", experimentIds)
+                        .bind("deleted", true)
+                        .execute()),
+        executor);
   }
 
   public InternalFuture<Experiment> logCodeVersion(LogExperimentCodeVersion request) {

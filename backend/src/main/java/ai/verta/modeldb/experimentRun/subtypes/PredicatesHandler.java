@@ -104,32 +104,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     // TODO: don't assume that the operator is equality for these
     switch (key) {
       case "id":
-        return InternalFuture.completedInternalFuture(
-            new QueryFilterContext()
-                .addCondition(String.format("%s.id = :%s", alias, bindingName))
-                .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "name":
-        var sql = String.format("select distinct id from %s where ", tableName);
-        sql += applyOperator(predicate.getOperator(), "name", ":" + bindingName);
-
-        var queryContext =
-            new QueryFilterContext()
-                .addBind(
-                    q ->
-                        q.bind(
-                            bindingName,
-                            wrapValue(predicate.getOperator(), value.getStringValue())));
-        if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-            || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
-          queryContext =
-              queryContext.addCondition(
-                  String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
-        } else {
-          queryContext =
-              queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
-        }
-
-        return InternalFuture.completedInternalFuture(queryContext);
+        return getContextFilterForSingleStringFields(predicate, key, value, bindingName);
       case "date_created":
         var date =
             value.getKindCase().equals(Value.KindCase.STRING_VALUE)
@@ -201,6 +177,27 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     // TODO: handle arbitrary key
 
     return InternalFuture.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
+  }
+
+  private InternalFuture<QueryFilterContext> getContextFilterForSingleStringFields(
+      KeyValueQuery predicate, String key, Value value, String bindingName) {
+    var sql = String.format("select distinct id from %s where ", tableName);
+    sql += applyOperator(predicate.getOperator(), key, ":" + bindingName);
+    var queryContext =
+        new QueryFilterContext()
+            .addBind(
+                q ->
+                    q.bind(
+                        bindingName, wrapValue(predicate.getOperator(), value.getStringValue())));
+    if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+        || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+      queryContext =
+          queryContext.addCondition(String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
+    } else {
+      queryContext =
+          queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
+    }
+    return InternalFuture.completedInternalFuture(queryContext);
   }
 
   private InternalFuture<QueryFilterContext> processEntityNameBasedPredicates(
