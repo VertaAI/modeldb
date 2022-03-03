@@ -1018,7 +1018,27 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
-    super.getArtifacts(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in GetArtifacts request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.getArtifacts(request), executor)
+              .thenApply(
+                  artifacts ->
+                      GetArtifacts.Response.newBuilder().addAllArtifacts(artifacts).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override

@@ -11,6 +11,7 @@ import ai.verta.modeldb.DeleteExperimentAttributes;
 import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogExperimentArtifacts;
@@ -798,5 +799,19 @@ public class FutureExperimentDAO {
                     }),
             executor)
         .thenCompose(unused -> getExperimentById(experimentId), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
+    final var expId = request.getId();
+    final var key = request.getKey();
+    Optional<String> maybeKey = key.isEmpty() ? Optional.empty() : Optional.of(key);
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> artifactHandler.getArtifacts(expId, maybeKey), executor);
   }
 }
