@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.DeleteExperimentArtifact;
 import ai.verta.modeldb.DeleteExperimentAttributes;
 import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
@@ -813,5 +814,32 @@ public class FutureExperimentDAO {
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
         .thenCompose(unused -> artifactHandler.getArtifacts(expId, maybeKey), executor);
+  }
+
+  public InternalFuture<Experiment> deleteArtifacts(DeleteExperimentArtifact request) {
+    final var expId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    final var keys =
+        request.getKey().isEmpty()
+            ? new ArrayList<String>()
+            : Collections.singletonList(request.getKey());
+    Optional<List<String>> optionalKeys = keys.isEmpty() ? Optional.empty() : Optional.of(keys);
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      artifactHandler.deleteArtifactsWithHandle(expId, optionalKeys, handle);
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
   }
 }
