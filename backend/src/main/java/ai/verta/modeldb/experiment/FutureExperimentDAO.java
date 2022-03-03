@@ -5,6 +5,7 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.DeleteExperimentAttributes;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetAttributes;
@@ -661,5 +662,30 @@ public class FutureExperimentDAO {
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
             executor);
+  }
+
+  public InternalFuture<Experiment> deleteAttributes(DeleteExperimentAttributes request) {
+    final var experimentId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    final Optional<List<String>> maybeKeys =
+        request.getDeleteAll() ? Optional.empty() : Optional.of(request.getAttributeKeysList());
+
+    return getProjectIdByExperimentId(Collections.singletonList(experimentId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      attributeHandler.deleteKeyValues(handle, experimentId, maybeKeys);
+                      updateModifiedTimestamp(handle, experimentId, now);
+                      updateVersionNumber(handle, experimentId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(experimentId), executor);
   }
 }
