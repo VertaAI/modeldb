@@ -1,15 +1,22 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.DAOSet;
+import ai.verta.modeldb.DeleteExperimentAttributes;
+import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.DeleteExperimentArtifact;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.LogExperimentArtifacts;
+import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
@@ -662,6 +669,151 @@ public class FutureExperimentDAO {
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
             executor);
+  }
+
+  public InternalFuture<Experiment> deleteAttributes(DeleteExperimentAttributes request) {
+    final var experimentId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+
+    final Optional<List<String>> maybeKeys =
+        request.getDeleteAll() ? Optional.empty() : Optional.of(request.getAttributeKeysList());
+
+    return getProjectIdByExperimentId(Collections.singletonList(experimentId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      attributeHandler.deleteKeyValues(handle, experimentId, maybeKeys);
+                      updateModifiedTimestamp(handle, experimentId, now);
+                      updateVersionNumber(handle, experimentId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(experimentId), executor);
+  }
+
+  public InternalFuture<Map<String, String>> deleteExperiments(DeleteExperiments request) {
+    final var experimentIds = request.getIdsList();
+
+    return getProjectIdByExperimentId(experimentIds)
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                uacApisUtil
+                    .getResourceItemsForWorkspace(
+                        Optional.empty(),
+                        Optional.of(new ArrayList<>(projectIdFromExperimentMap.values())),
+                        Optional.empty(),
+                        ModelDBServiceResourceTypes.PROJECT)
+                    .thenCompose(unused -> deleteExperiments(experimentIds), executor)
+                    .thenApply(unused -> projectIdFromExperimentMap, executor),
+            executor);
+  }
+
+  private InternalFuture<Void> deleteExperiments(List<String> experimentIds) {
+    return InternalFuture.runAsync(
+        () ->
+            jdbi.withHandle(
+                handle ->
+                    handle
+                        .createUpdate(
+                            "Update experiment SET deleted = :deleted WHERE id IN (<ids>)")
+                        .bindList("ids", experimentIds)
+                        .bind("deleted", true)
+                        .execute()),
+        executor);
+  }
+
+  public InternalFuture<Experiment> logCodeVersion(LogExperimentCodeVersion request) {
+    final var expId = request.getId();
+    final var now = Calendar.getInstance().getTimeInMillis();
+    return getExperimentById(expId)
+        .thenApply(
+            experiment -> {
+              futureProjectDAO.checkProjectPermission(
+                  experiment.getProjectId(), ModelDBServiceActions.UPDATE);
+              return experiment;
+            },
+            executor)
+        .thenApply(
+            existingExperiment -> {
+              if (existingExperiment.getCodeVersionSnapshot().hasCodeArchive()
+                  || existingExperiment.getCodeVersionSnapshot().hasGitSnapshot()) {
+                var errorMessage =
+                    "Code version already logged for experiment " + existingExperiment.getId();
+                throw new AlreadyExistsException(errorMessage);
+              }
+              return existingExperiment;
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      codeVersionHandler.logCodeVersion(
+                          handle, expId, true, request.getCodeVersion());
+                      updateModifiedTimestamp(handle, expId, now);
+                      updateVersionNumber(handle, expId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<Experiment> logArtifacts(LogExperimentArtifacts request) {
+    final var experimentId = request.getId();
+    final var artifacts = request.getArtifactsList();
+    final var now = new Date().getTime();
+
+    return getProjectIdByExperimentId(Collections.singletonList(experimentId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused -> artifactHandler.getArtifacts(experimentId, Optional.empty()), executor)
+        .thenAccept(
+            existingArtifacts -> {
+              for (Artifact existingArtifact : existingArtifacts) {
+                for (Artifact newArtifact : artifacts) {
+                  if (existingArtifact.getKey().equals(newArtifact.getKey())) {
+                    throw new AlreadyExistsException(
+                        "Artifact being logged already exists. existing artifact key : "
+                            + newArtifact.getKey());
+                  }
+                }
+              }
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      List<Artifact> artifactList =
+                          ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), artifacts);
+                      artifactHandler.logArtifacts(handle, experimentId, artifactList, false);
+                      updateModifiedTimestamp(handle, experimentId, now);
+                      updateVersionNumber(handle, experimentId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(experimentId), executor);
+  }
+
+  public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
+    final var expId = request.getId();
+    final var key = request.getKey();
+    Optional<String> maybeKey = key.isEmpty() ? Optional.empty() : Optional.of(key);
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> artifactHandler.getArtifacts(expId, maybeKey), executor);
   }
 
   public InternalFuture<Experiment> deleteArtifacts(DeleteExperimentArtifact request) {

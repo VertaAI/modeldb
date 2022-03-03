@@ -5,6 +5,7 @@ import static org.junit.Assert.*;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
+import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
@@ -1954,6 +1955,147 @@ public class FindProjectEntitiesTest extends TestsInit {
 
     LOGGER.info(
         "FindExperimentRuns by ExperimentRun EndTime test stop................................");
+  }
+
+  @Test
+  public void findExperimentRunsByIdTest() {
+    LOGGER.info(
+        "FindExperimentRuns by ExperimentRun ID test start................................");
+
+    // For NE operator
+    Value stringValue = Value.newBuilder().setStringValue(experimentRun22.getId()).build();
+    KeyValueQuery keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("id")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.NE)
+            .build();
+
+    FindExperimentRuns findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    FindExperimentRuns.Response response =
+        experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        3,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
+        response.getTotalRecords());
+
+    for (var er : response.getExperimentRunsList()) {
+      assertNotEquals(
+          "ExperimentRun not match with expected experimentRun",
+          experimentRun22.getId(),
+          er.getId());
+    }
+
+    // For NOT_CONTAIN operator
+    stringValue =
+        Value.newBuilder().setStringValue(experimentRun22.getId().substring(0, 5)).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("id")
+            .setValue(stringValue)
+            .setOperator(Operator.NOT_CONTAIN)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        3,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
+        response.getTotalRecords());
+
+    for (var er : response.getExperimentRunsList()) {
+      assertNotEquals(
+          "ExperimentRun not match with expected experimentRun",
+          experimentRun22.getId(),
+          er.getId());
+    }
+
+    // For CONTAIN operator
+    stringValue =
+        Value.newBuilder().setStringValue(experimentRun22.getId().substring(0, 5)).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("id")
+            .setValue(stringValue)
+            .setOperator(Operator.CONTAIN)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        1,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+
+    for (var er : response.getExperimentRunsList()) {
+      assertEquals(
+          "ExperimentRun not match with expected experimentRun",
+          experimentRun22.getId(),
+          er.getId());
+    }
+
+    // For CONTAIN operator
+    stringValue = Value.newBuilder().setStringValue(experimentRun22.getId()).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("id")
+            .setValue(stringValue)
+            .setOperator(Operator.EQ)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        1,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+
+    assertEquals(
+        "ExperimentRun not match with expected experimentRun",
+        experimentRun22.getId(),
+        response.getExperimentRuns(0).getId());
+
+    LOGGER.info("FindExperimentRuns by ExperimentRun ID test stop................................");
   }
 
   /** Find experimentRun by metrics and sort by code_version with pagination */
