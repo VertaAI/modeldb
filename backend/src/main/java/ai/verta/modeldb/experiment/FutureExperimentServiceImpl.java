@@ -871,7 +871,31 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void deleteExperiment(
       DeleteExperiment request, StreamObserver<DeleteExperiment.Response> responseObserver) {
-    super.deleteExperiment(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessages = "Experiment ID not found in request";
+                  throw new InvalidArgumentException(errorMessages);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(
+                  unused ->
+                      futureExperimentDAO.deleteExperiments(
+                          DeleteExperiments.newBuilder().addIds(request.getId()).build()),
+                  executor)
+              .thenApply(this::loggedDeleteExperimentEvents, executor)
+              .thenApply(
+                  unused -> DeleteExperiment.Response.newBuilder().setStatus(true).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
@@ -928,6 +952,42 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   @Override
   public void deleteExperiments(
       DeleteExperiments request, StreamObserver<DeleteExperiments.Response> responseObserver) {
-    super.deleteExperiments(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getIdsList().isEmpty()) {
+                  var errorMessages = "Experiment IDs not found in request";
+                  throw new InvalidArgumentException(errorMessages);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.deleteExperiments(request), executor)
+              .thenApply(this::loggedDeleteExperimentEvents, executor)
+              .thenApply(
+                  unused -> DeleteExperiments.Response.newBuilder().setStatus(true).build(),
+                  executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
+  }
+
+  private InternalFuture<List<Void>> loggedDeleteExperimentEvents(
+      Map<String, String> experimentIdsMap) {
+    // Add succeeded event in local DB
+    List<InternalFuture<Void>> futureList = new ArrayList<>();
+    for (var entry : experimentIdsMap.entrySet()) {
+      addEvent(
+          entry.getKey(),
+          entry.getValue(),
+          DELETE_EXPERIMENT_EVENT_TYPE,
+          Optional.empty(),
+          Collections.emptyMap(),
+          "experiment deleted successfully");
+    }
+    return InternalFuture.sequence(futureList, executor);
   }
 }
