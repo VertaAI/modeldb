@@ -1,5 +1,6 @@
 package ai.verta.modeldb.experiment;
 
+import ai.verta.common.Artifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -12,6 +13,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
@@ -756,5 +758,45 @@ public class FutureExperimentDAO {
                     }),
             executor)
         .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<Experiment> logArtifacts(LogExperimentArtifacts request) {
+    final var experimentId = request.getId();
+    final var artifacts = request.getArtifactsList();
+    final var now = new Date().getTime();
+
+    return getProjectIdByExperimentId(Collections.singletonList(experimentId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.UPDATE),
+            executor)
+        .thenCompose(
+            unused -> artifactHandler.getArtifacts(experimentId, Optional.empty()), executor)
+        .thenAccept(
+            existingArtifacts -> {
+              for (Artifact existingArtifact : existingArtifacts) {
+                for (Artifact newArtifact : artifacts) {
+                  if (existingArtifact.getKey().equals(newArtifact.getKey())) {
+                    throw new AlreadyExistsException(
+                        "Artifact being logged already exists. existing artifact key : "
+                            + newArtifact.getKey());
+                  }
+                }
+              }
+            },
+            executor)
+        .thenCompose(
+            unused ->
+                jdbi.useHandle(
+                    handle -> {
+                      List<Artifact> artifactList =
+                          ModelDBUtils.getArtifactsWithUpdatedPath(request.getId(), artifacts);
+                      artifactHandler.logArtifacts(handle, experimentId, artifactList, false);
+                      updateModifiedTimestamp(handle, experimentId, now);
+                      updateVersionNumber(handle, experimentId);
+                    }),
+            executor)
+        .thenCompose(unused -> getExperimentById(experimentId), executor);
   }
 }
