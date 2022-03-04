@@ -24,7 +24,7 @@ import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.*;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.experiment.ExperimentDAO;
+import ai.verta.modeldb.experiment.FutureExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -51,7 +51,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private final ExperimentRunDAO experimentRunDAO;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final CommentDAO commentDAO;
-  private final ExperimentDAO experimentDAO;
+  private final FutureExperimentDAO futureExperimentDAO;
   private final DatasetDAO datasetDAO;
   private final DatasetVersionDAO datasetVersionDAO;
   private final Executor executor;
@@ -62,7 +62,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     this.futureProjectDAO = daoSet.futureProjectDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.commentDAO = daoSet.commentDAO;
-    this.experimentDAO = daoSet.experimentDAO;
+    this.futureExperimentDAO = daoSet.futureExperimentDAO;
     this.datasetDAO = daoSet.datasetDAO;
     this.datasetVersionDAO = daoSet.datasetVersionDAO;
     this.futureExperimentRunDAO = daoSet.futureExperimentRunDAO;
@@ -234,16 +234,19 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
-      var experimentPaginationDTO =
-          experimentDAO.getExperimentsInProject(
-              futureProjectDAO,
-              request.getProjectId(),
-              request.getPageNumber(),
-              request.getPageLimit(),
-              request.getAscending(),
-              request.getSortKey());
+      var findExperimentResponse =
+          futureExperimentDAO
+              .findExperiments(
+                  FindExperiments.newBuilder()
+                      .setProjectId(request.getProjectId())
+                      .setPageLimit(request.getPageLimit())
+                      .setPageNumber(request.getPageNumber())
+                      .setAscending(request.getAscending())
+                      .setSortKey(request.getSortKey())
+                      .build())
+              .get();
 
-      List<Experiment> experiments = experimentPaginationDTO.getExperiments();
+      List<Experiment> experiments = findExperimentResponse.getExperimentsList();
 
       List<HydratedExperiment> hydratedExperiments = new ArrayList<>();
       if (!experiments.isEmpty()) {
@@ -253,7 +256,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       responseObserver.onNext(
           GetHydratedExperimentsByProjectId.Response.newBuilder()
               .addAllHydratedExperiments(hydratedExperiments)
-              .setTotalRecords(experimentPaginationDTO.getTotalRecords())
+              .setTotalRecords(findExperimentResponse.getTotalRecords())
               .build());
       responseObserver.onCompleted();
 
@@ -333,7 +336,12 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("experimentIds {}", experimentIds);
     List<Experiment> experimentList = new ArrayList<>();
     if (!experimentIds.isEmpty()) {
-      experimentList = experimentDAO.getExperimentsByBatchIds(experimentIds);
+      var findExperimentResponse =
+          futureExperimentDAO
+              .findExperiments(
+                  FindExperiments.newBuilder().addAllExperimentIds(experimentIds).build())
+              .get();
+      experimentList = findExperimentResponse.getExperimentsList();
     }
     LOGGER.trace("experimentList {}", experimentList);
     // key: experiment.id, value: experiment
@@ -480,7 +488,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
         LOGGER.trace("Validated project accessibility");
       } else if (!request.getExperimentId().isEmpty()) {
-        var experiment = experimentDAO.getExperiment(request.getExperimentId());
+        var experiment = futureExperimentDAO.getExperimentById(request.getExperimentId()).get();
         // Validate if current user has access to the entity or not
         mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
@@ -580,7 +588,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             request.getProjectId(),
             ModelDBServiceActions.READ);
       } else if (!request.getExperimentId().isEmpty()) {
-        var experiment = experimentDAO.getExperiment(request.getExperimentId());
+        var experiment = futureExperimentDAO.getExperimentById(request.getExperimentId()).get();
         // Validate if current user has access to the entity or not
         mdbRoleService.validateEntityUserWithUserInfo(
             ModelDBServiceResourceTypes.PROJECT,
@@ -675,27 +683,36 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       var userInfo = authService.getCurrentLoginUserInfo();
-      var experimentPaginationDTO =
-          experimentDAO.findExperiments(futureProjectDAO, userInfo, request);
+      var findExperimentResponse =
+          futureExperimentDAO
+              .findExperiments(
+                  FindExperiments.newBuilder()
+                      .setProjectId(request.getProjectId())
+                      .setPageLimit(request.getPageLimit())
+                      .setPageNumber(request.getPageNumber())
+                      .setAscending(request.getAscending())
+                      .setSortKey(request.getSortKey())
+                      .build())
+              .get();
       LOGGER.debug(
-          "ExperimentPaginationDTO record count : {}", experimentPaginationDTO.getTotalRecords());
+          "ExperimentPaginationDTO record count : {}", findExperimentResponse.getTotalRecords());
 
       List<HydratedExperiment> hydratedExperiments = new ArrayList<>();
       if (request.getIdsOnly()) {
-        for (Experiment experiment : experimentPaginationDTO.getExperiments()) {
+        for (Experiment experiment : findExperimentResponse.getExperimentsList()) {
           hydratedExperiments.add(
               HydratedExperiment.newBuilder().setExperiment(experiment).build());
         }
-      } else if (!experimentPaginationDTO.getExperiments().isEmpty()) {
+      } else if (!findExperimentResponse.getExperimentsList().isEmpty()) {
         hydratedExperiments =
             getHydratedExperiments(
-                request.getProjectId(), experimentPaginationDTO.getExperiments());
+                request.getProjectId(), findExperimentResponse.getExperimentsList());
       }
 
       responseObserver.onNext(
           AdvancedQueryExperimentsResponse.newBuilder()
               .addAllHydratedExperiments(hydratedExperiments)
-              .setTotalRecords(experimentPaginationDTO.getTotalRecords())
+              .setTotalRecords(findExperimentResponse.getTotalRecords())
               .build());
       responseObserver.onCompleted();
 

@@ -12,8 +12,6 @@ import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAORdbImpl;
-import ai.verta.modeldb.experiment.ExperimentDAO;
-import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
 import ai.verta.modeldb.experiment.FutureExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
@@ -35,7 +33,6 @@ public class DAOSet {
   public CommitDAO commitDAO;
   public DatasetDAO datasetDAO;
   public DatasetVersionDAO datasetVersionDAO;
-  public ExperimentDAO experimentDAO;
   public FutureExperimentDAO futureExperimentDAO;
   public ExperimentRunDAO experimentRunDAO;
   public FutureExperimentRunDAO futureExperimentRunDAO;
@@ -58,7 +55,6 @@ public class DAOSet {
             services.authService, services.mdbRoleService, set.commitDAO, set.metadataDAO);
     set.blobDAO = new BlobDAORdbImpl(services.authService, services.mdbRoleService);
 
-    set.experimentDAO = new ExperimentDAORdbImpl(services.authService, services.mdbRoleService);
     set.experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             mdbConfig,
