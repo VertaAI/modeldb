@@ -21,7 +21,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
-import ai.verta.modeldb.experiment.ExperimentDAO;
+import ai.verta.modeldb.experiment.FutureExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
@@ -69,7 +69,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final FutureProjectDAO futureProjectDAO;
-  private final ExperimentDAO experimentDAO;
+  private final FutureExperimentDAO futureExperimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final FutureEventDAO futureEventDAO;
   private final boolean isEventSystemEnabled;
@@ -78,7 +78,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     this.authService = serviceSet.authService;
     this.mdbRoleService = serviceSet.mdbRoleService;
     this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.experimentDAO = daoSet.experimentDAO;
+    this.futureExperimentDAO = daoSet.futureExperimentDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.repositoryDAO = daoSet.repositoryDAO;
     this.commitDAO = daoSet.commitDAO;
@@ -884,11 +884,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                   .setSortKey(ModelDBConstants.DATE_UPDATED)
                   .setAscending(false)
                   .build();
-          var experimentPaginationDTO =
-              experimentDAO.findExperiments(futureProjectDAO, userInfo, findExperiments);
-          if (experimentPaginationDTO.getExperiments() != null
-              && !experimentPaginationDTO.getExperiments().isEmpty()) {
-            lastUpdatedExperiment = experimentPaginationDTO.getExperiments().get(0);
+          var findExperimentResponse = futureExperimentDAO.findExperiments(findExperiments).get();
+          if (!findExperimentResponse.getExperimentsList().isEmpty()) {
+            lastUpdatedExperiment = findExperimentResponse.getExperiments(0);
           }
         }
       }
