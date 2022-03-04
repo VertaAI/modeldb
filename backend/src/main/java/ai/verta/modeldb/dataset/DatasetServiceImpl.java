@@ -21,11 +21,11 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
-import ai.verta.modeldb.experiment.ExperimentDAO;
+import ai.verta.modeldb.experiment.FutureExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.project.ProjectDAO;
+import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
@@ -68,8 +68,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final MetadataDAO metadataDAO;
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
-  private final ProjectDAO projectDAO;
-  private final ExperimentDAO experimentDAO;
+  private final FutureProjectDAO futureProjectDAO;
+  private final FutureExperimentDAO futureExperimentDAO;
   private final ExperimentRunDAO experimentRunDAO;
   private final FutureEventDAO futureEventDAO;
   private final boolean isEventSystemEnabled;
@@ -77,8 +77,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.authService = serviceSet.authService;
     this.mdbRoleService = serviceSet.mdbRoleService;
-    this.projectDAO = daoSet.projectDAO;
-    this.experimentDAO = daoSet.experimentDAO;
+    this.futureProjectDAO = daoSet.futureProjectDAO;
+    this.futureExperimentDAO = daoSet.futureExperimentDAO;
     this.experimentRunDAO = daoSet.experimentRunDAO;
     this.repositoryDAO = daoSet.repositoryDAO;
     this.commitDAO = daoSet.commitDAO;
@@ -867,7 +867,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         var findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         var experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(userInfo, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
             && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
@@ -884,11 +884,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                   .setSortKey(ModelDBConstants.DATE_UPDATED)
                   .setAscending(false)
                   .build();
-          var experimentPaginationDTO =
-              experimentDAO.findExperiments(projectDAO, userInfo, findExperiments);
-          if (experimentPaginationDTO.getExperiments() != null
-              && !experimentPaginationDTO.getExperiments().isEmpty()) {
-            lastUpdatedExperiment = experimentPaginationDTO.getExperiments().get(0);
+          var findExperimentResponse = futureExperimentDAO.findExperiments(findExperiments).get();
+          if (!findExperimentResponse.getExperimentsList().isEmpty()) {
+            lastUpdatedExperiment = findExperimentResponse.getExperiments(0);
           }
         }
       }
@@ -966,7 +964,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         var findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         var experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(projectDAO, userInfo, findExperimentRuns);
+            experimentRunDAO.findExperimentRuns(userInfo, findExperimentRuns);
         if (experimentRunPaginationDTO != null
             && experimentRunPaginationDTO.getExperimentRuns() != null
             && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {

@@ -1,9 +1,11 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.Action;
@@ -229,6 +231,41 @@ public class UACApisUtil {
                 useInfoMap.put(userInfo.getVertaInfo().getUserId(), userInfo);
               }
               return useInfoMap;
+            },
+            executor);
+  }
+
+  public InternalFuture<GetResourcesResponseItem> getEntityResource(
+      String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
+    return getResourceItemsForWorkspace(
+            Optional.empty(),
+            Optional.of(Collections.singletonList(entityId)),
+            Optional.empty(),
+            modelDBServiceResourceTypes)
+        .thenApply(
+            responseItems -> {
+              if (responseItems.size() > 1) {
+                var mdbServiceTypeName = modelDBServiceResourceTypes.name();
+                LOGGER.warn(
+                    "Role service returned {}"
+                        + " resource response items fetching {} resource, but only expected 1. ID: {}",
+                    responseItems.size(),
+                    mdbServiceTypeName,
+                    entityId);
+              }
+              Optional<GetResourcesResponseItem> responseItem = responseItems.stream().findFirst();
+              if (responseItem.isPresent()) {
+                return responseItem.get();
+              } else {
+                StringBuilder errorMessage =
+                    new StringBuilder("Failed to locate ")
+                        .append(modelDBServiceResourceTypes.name())
+                        .append(" resources in UAC for ")
+                        .append(modelDBServiceResourceTypes.name())
+                        .append(" ID ")
+                        .append(entityId);
+                throw new NotFoundException(errorMessage.toString());
+              }
             },
             executor);
   }

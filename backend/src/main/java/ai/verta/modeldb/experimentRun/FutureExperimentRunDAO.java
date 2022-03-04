@@ -215,7 +215,7 @@ public class FutureExperimentRunDAO {
             executor, jdbi, config.isPopulateConnectionsBasedOnPrivileges());
   }
 
-  public InternalFuture<Void> deleteObservations(DeleteObservations request) {
+  public InternalFuture<ExperimentRun> deleteObservations(DeleteObservations request) {
     // TODO: support artifacts?
 
     final var runId = request.getId();
@@ -228,7 +228,8 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> observationHandler.deleteObservations(runId, maybeKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<List<Observation>> getObservations(GetObservations request) {
@@ -248,7 +249,7 @@ public class FutureExperimentRunDAO {
             executor);
   }
 
-  public InternalFuture<Void> logObservations(LogObservations request) {
+  public InternalFuture<ExperimentRun> logObservations(LogObservations request) {
     // TODO: support artifacts?
 
     final var runId = request.getId();
@@ -263,10 +264,11 @@ public class FutureExperimentRunDAO {
                     handle -> observationHandler.logObservations(handle, runId, observations, now)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> deleteMetrics(DeleteMetrics request) {
+  public InternalFuture<ExperimentRun> deleteMetrics(DeleteMetrics request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -280,10 +282,11 @@ public class FutureExperimentRunDAO {
                 jdbi.useHandle(handle -> metricsHandler.deleteKeyValues(handle, runId, maybeKeys)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> deleteHyperparameters(DeleteHyperparameters request) {
+  public InternalFuture<ExperimentRun> deleteHyperparameters(DeleteHyperparameters request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -300,10 +303,11 @@ public class FutureExperimentRunDAO {
                     handle -> hyperparametersHandler.deleteKeyValues(handle, runId, maybeKeys)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> deleteAttributes(DeleteExperimentRunAttributes request) {
+  public InternalFuture<ExperimentRun> deleteAttributes(DeleteExperimentRunAttributes request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -318,7 +322,8 @@ public class FutureExperimentRunDAO {
                     handle -> attributeHandler.deleteKeyValues(handle, runId, maybeKeys)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<List<KeyValue>> getMetrics(GetMetrics request) {
@@ -350,7 +355,7 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor);
   }
 
-  public InternalFuture<Void> logMetrics(LogMetrics request) {
+  public InternalFuture<ExperimentRun> logMetrics(LogMetrics request) {
     final var runId = request.getId();
     final var metrics = request.getMetricsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -361,10 +366,11 @@ public class FutureExperimentRunDAO {
             unused -> jdbi.useHandle(handle -> metricsHandler.logKeyValues(handle, runId, metrics)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> logHyperparameters(LogHyperparameters request) {
+  public InternalFuture<ExperimentRun> logHyperparameters(LogHyperparameters request) {
     final var runId = request.getId();
     final var hyperparameters = request.getHyperparametersList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -377,10 +383,11 @@ public class FutureExperimentRunDAO {
                     handle -> hyperparametersHandler.logKeyValues(handle, runId, hyperparameters)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> logAttributes(LogAttributes request) {
+  public InternalFuture<ExperimentRun> logAttributes(LogAttributes request) {
     final var runId = request.getId();
     final var attributes = request.getAttributesList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -392,10 +399,11 @@ public class FutureExperimentRunDAO {
                 jdbi.useHandle(handle -> attributeHandler.logKeyValues(handle, runId, attributes)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> addTags(AddExperimentRunTags request) {
+  public InternalFuture<ExperimentRun> addTags(AddExperimentRunTags request) {
     final var runId = request.getId();
     final var tags = request.getTagsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -410,10 +418,11 @@ public class FutureExperimentRunDAO {
                             handle, runId, TagsHandlerBase.checkEntityTagsLength(tags))),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> deleteTags(DeleteExperimentRunTags request) {
+  public InternalFuture<ExperimentRun> deleteTags(DeleteExperimentRunTags request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -426,7 +435,8 @@ public class FutureExperimentRunDAO {
             unused -> jdbi.useHandle(handle -> tagsHandler.deleteTags(handle, runId, maybeTags)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<List<String>> getTags(GetTags request) {
@@ -581,7 +591,7 @@ public class FutureExperimentRunDAO {
         executor);
   }
 
-  public InternalFuture<Void> logArtifacts(LogArtifacts request) {
+  public InternalFuture<ExperimentRun> logArtifacts(LogArtifacts request) {
     final var runId = request.getId();
     final var artifacts = request.getArtifactsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -594,7 +604,8 @@ public class FutureExperimentRunDAO {
                     handle -> artifactHandler.logArtifacts(handle, runId, artifacts, false)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
@@ -607,7 +618,7 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor);
   }
 
-  public InternalFuture<Void> deleteArtifacts(DeleteArtifact request) {
+  public InternalFuture<ExperimentRun> deleteArtifacts(DeleteArtifact request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
     final var keys =
@@ -620,10 +631,11 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> logDatasets(LogDatasets request) {
+  public InternalFuture<ExperimentRun> logDatasets(LogDatasets request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -642,7 +654,8 @@ public class FutureExperimentRunDAO {
                             handle, runId, privilegedDatasets, request.getOverwrite())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<List<Artifact>> getDatasets(GetDatasets request) {
@@ -653,7 +666,7 @@ public class FutureExperimentRunDAO {
         .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
   }
 
-  public InternalFuture<Void> logCodeVersion(LogExperimentRunCodeVersion request) {
+  public InternalFuture<ExperimentRun> logCodeVersion(LogExperimentRunCodeVersion request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
     return checkPermission(
@@ -666,7 +679,8 @@ public class FutureExperimentRunDAO {
                             handle, runId, request.getOverwrite(), request.getCodeVersion())),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<Optional<CodeVersion>> getCodeVersion(GetExperimentRunCodeVersion request) {
@@ -1415,7 +1429,7 @@ public class FutureExperimentRunDAO {
             executor);
   }
 
-  public InternalFuture<Void> logEnvironment(LogEnvironment request) {
+  public InternalFuture<ExperimentRun> logEnvironment(LogEnvironment request) {
     final var runId = request.getId();
 
     if (!request.hasEnvironment()) {
@@ -1427,10 +1441,11 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
             unused -> environmentHandler.logEnvironment(request.getId(), request.getEnvironment()),
-            executor);
+            executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
-  public InternalFuture<Void> logVersionedInputs(LogVersionedInput request) {
+  public InternalFuture<ExperimentRun> logVersionedInputs(LogVersionedInput request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
     return checkPermission(
@@ -1467,7 +1482,8 @@ public class FutureExperimentRunDAO {
                             locationBlobWithHashMap)),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<VersioningEntry> getVersionedInputs(GetVersionedInput request) {
@@ -1569,7 +1585,7 @@ public class FutureExperimentRunDAO {
             executor);
   }
 
-  public InternalFuture<Void> updateExperimentRunDescription(
+  public InternalFuture<ExperimentRun> updateExperimentRunDescription(
       UpdateExperimentRunDescription request) {
     final var runId = request.getId();
     final var description = request.getDescription();
@@ -1589,7 +1605,8 @@ public class FutureExperimentRunDAO {
                             .execute()),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor);
+        .thenCompose(unused -> updateVersionNumber(runId), executor)
+        .thenCompose(unused -> getExperimentRunById(runId), executor);
   }
 
   public InternalFuture<GetExperimentRunsInExperiment.Response> getExperimentRunsInExperiment(
@@ -1767,5 +1784,50 @@ public class FutureExperimentRunDAO {
       }
     }
     return InternalFuture.completedInternalFuture(cloneExperimentRunBuilder);
+  }
+
+  private InternalFuture<ExperimentRun> getExperimentRunById(String experimentRunId) {
+    try {
+      var validateArgumentFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (experimentRunId.isEmpty()) {
+                  throw new InvalidArgumentException("ExperimentRun ID not present");
+                }
+              },
+              executor);
+      return validateArgumentFuture
+          .thenCompose(
+              unused ->
+                  findExperimentRuns(
+                      FindExperimentRuns.newBuilder()
+                          .addExperimentRunIds(experimentRunId)
+                          .setPageLimit(1)
+                          .setPageNumber(1)
+                          .build()),
+              executor)
+          .thenApply(
+              response -> {
+                if (response.getExperimentRunsList().isEmpty()) {
+                  throw new NotFoundException("ExperimentRun not found for given Id");
+                } else if (response.getExperimentRunsCount() > 1) {
+                  throw new InternalErrorException("More then one experiments found");
+                }
+                return response.getExperimentRuns(0);
+              },
+              executor);
+    } catch (Exception e) {
+      return InternalFuture.failedStage(e);
+    }
+  }
+
+  public InternalFuture<String> getProjectIdByExperimentRunId(String experimentRunId) {
+    return jdbi.withHandle(
+        handle ->
+            handle
+                .createQuery("SELECT project_id from experiment_run where id = :id ")
+                .bind("id", experimentRunId)
+                .mapTo(String.class)
+                .one());
   }
 }

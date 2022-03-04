@@ -19,6 +19,7 @@ import ai.verta.modeldb.DeleteExperimentAttributes.Response;
 import ai.verta.modeldb.DeleteExperimentTag;
 import ai.verta.modeldb.DeleteExperimentTags;
 import ai.verta.modeldb.DeleteExperiments;
+import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceImplBase;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
@@ -31,11 +32,9 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -45,7 +44,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
-import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.modeldb.utils.UACApisUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -65,7 +64,7 @@ import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
+public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(FutureExperimentServiceImpl.class);
   private static final String UPDATE_EVENT_TYPE =
@@ -75,16 +74,15 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
   private final Executor executor;
   private final FutureProjectDAO futureProjectDAO;
   private final FutureExperimentDAO futureExperimentDAO;
-  private final ArtifactStoreDAO artifactStoreDAO;
   private final FutureEventDAO futureEventDAO;
+  private final UACApisUtil uacApisUtil;
 
-  public FutureExperimentServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
-    super(serviceSet, daoSet);
+  public FutureExperimentServiceImpl(DAOSet daoSet, Executor executor) {
     this.executor = executor;
     this.futureProjectDAO = daoSet.futureProjectDAO;
     this.futureExperimentDAO = daoSet.futureExperimentDAO;
-    this.artifactStoreDAO = daoSet.artifactStoreDAO;
     this.futureEventDAO = daoSet.futureEventDAO;
+    this.uacApisUtil = daoSet.uacApisUtil;
   }
 
   private InternalFuture<Void> addEvent(
@@ -120,17 +118,16 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImpl {
     }
     eventMetadata.addProperty("message", eventMessage);
 
-    GetResourcesResponseItem projectResource =
-        mdbRoleService.getEntityResource(
-            Optional.of(projectId),
-            Optional.empty(),
-            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-
-    return futureEventDAO.addLocalEventWithAsync(
-        ModelDBServiceResourceTypes.EXPERIMENT.name(),
-        eventType,
-        projectResource.getWorkspaceId(),
-        eventMetadata);
+    return uacApisUtil
+        .getEntityResource(projectId, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+        .thenCompose(
+            projectResource ->
+                futureEventDAO.addLocalEventWithAsync(
+                    ModelDBServiceResourceTypes.EXPERIMENT.name(),
+                    eventType,
+                    projectResource.getWorkspaceId(),
+                    eventMetadata),
+            executor);
   }
 
   @Override

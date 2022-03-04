@@ -28,7 +28,6 @@ import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.project.ProjectDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -242,8 +241,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun insertExperimentRun(
-      ProjectDAO projectDAO, ExperimentRun experimentRun, UserInfo userInfo)
+  public ExperimentRun insertExperimentRun(ExperimentRun experimentRun, UserInfo userInfo)
       throws ModelDBException {
     checkIfEntityAlreadyExists(experimentRun, true);
     createRoleBindingsForExperimentRun(experimentRun, userInfo);
@@ -280,7 +278,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return experimentRun;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return insertExperimentRun(projectDAO, experimentRun, userInfo);
+        return insertExperimentRun(experimentRun, userInfo);
       } else {
         throw ex;
       }
@@ -365,7 +363,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRunPaginationDTO getExperimentRunsFromEntity(
-      ProjectDAO projectDAO,
       String entityKey,
       String entityValue,
       Integer pageNumber,
@@ -389,7 +386,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .addPredicates(entityKeyValuePredicate)
             .build();
     var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-    return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+    return findExperimentRuns(currentLoginUserInfo, findExperimentRuns);
   }
 
   @Override
@@ -1222,7 +1219,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRunPaginationDTO findExperimentRuns(
-      ProjectDAO projectDAO, UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
+      UserInfo currentLoginUserInfo, FindExperimentRuns queryParameters)
       throws PermissionDeniedException {
 
     LOGGER.trace("trying to open session");
@@ -1491,7 +1488,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       return experimentRunPaginationDTO;
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return findExperimentRuns(projectDAO, currentLoginUserInfo, queryParameters);
+        return findExperimentRuns(currentLoginUserInfo, queryParameters);
       } else {
         throw ex;
       }
@@ -1699,8 +1696,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRunPaginationDTO sortExperimentRuns(
-      ProjectDAO projectDAO, SortExperimentRuns queryParameters) throws PermissionDeniedException {
+  public ExperimentRunPaginationDTO sortExperimentRuns(SortExperimentRuns queryParameters)
+      throws PermissionDeniedException {
     var findExperimentRuns =
         FindExperimentRuns.newBuilder()
             .addAllExperimentRunIds(queryParameters.getExperimentRunIdsList())
@@ -1709,12 +1706,11 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setIdsOnly(queryParameters.getIdsOnly())
             .build();
     var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-    return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+    return findExperimentRuns(currentLoginUserInfo, findExperimentRuns);
   }
 
   @Override
-  public List<ExperimentRun> getTopExperimentRuns(
-      ProjectDAO projectDAO, TopExperimentRunsSelector queryParameters)
+  public List<ExperimentRun> getTopExperimentRuns(TopExperimentRunsSelector queryParameters)
       throws PermissionDeniedException {
     var findExperimentRuns =
         FindExperimentRuns.newBuilder()
@@ -1728,8 +1724,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             .setPageLimit(queryParameters.getTopK())
             .build();
     var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-    return findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns)
-        .getExperimentRuns();
+    return findExperimentRuns(currentLoginUserInfo, findExperimentRuns).getExperimentRuns();
   }
 
   @Override
@@ -2201,7 +2196,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ListCommitExperimentRunsRequest.Response listCommitExperimentRuns(
-      ProjectDAO projectDAO,
       ListCommitExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
@@ -2252,14 +2246,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         }
       }
       var experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
+          findExperimentRuns(currentLoginUserInfo, findExperimentRuns.build());
       return ListCommitExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
           .setTotalRecords(experimentRunPaginationDTO.getTotalRecords())
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return listCommitExperimentRuns(projectDAO, request, repositoryFunction, commitFunction);
+        return listCommitExperimentRuns(request, repositoryFunction, commitFunction);
       } else {
         throw ex;
       }
@@ -2268,7 +2262,6 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ListBlobExperimentRunsRequest.Response listBlobExperimentRuns(
-      ProjectDAO projectDAO,
       ListBlobExperimentRunsRequest request,
       RepositoryFunction repositoryFunction,
       CommitFunction commitFunction)
@@ -2332,7 +2325,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
 
       var experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns.build());
+          findExperimentRuns(currentLoginUserInfo, findExperimentRuns.build());
 
       return ListBlobExperimentRunsRequest.Response.newBuilder()
           .addAllRuns(experimentRunPaginationDTO.getExperimentRuns())
@@ -2340,7 +2333,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
-        return listBlobExperimentRuns(projectDAO, request, repositoryFunction, commitFunction);
+        return listBlobExperimentRuns(request, repositoryFunction, commitFunction);
       } else {
         throw ex;
       }
@@ -2655,7 +2648,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
   @Override
   public ExperimentRunPaginationDTO getExperimentRunsByDatasetVersionId(
-      ProjectDAO projectDAO, GetExperimentRunsByDatasetVersionId request) throws ModelDBException {
+      GetExperimentRunsByDatasetVersionId request) throws ModelDBException {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       var commitEntity = session.get(CommitEntity.class, request.getDatasetVersionId());
       if (commitEntity == null) {
@@ -2692,8 +2685,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .addPredicates(entityKeyValuePredicate)
               .build();
       var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-      var experimentRunPaginationDTO =
-          findExperimentRuns(projectDAO, currentLoginUserInfo, findExperimentRuns);
+      var experimentRunPaginationDTO = findExperimentRuns(currentLoginUserInfo, findExperimentRuns);
       LOGGER.debug(
           "Final return ExperimentRun count : {}",
           experimentRunPaginationDTO.getExperimentRuns().size());
@@ -2704,8 +2696,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   @Override
-  public ExperimentRun cloneExperimentRun(
-      ProjectDAO projectDAO, CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
+  public ExperimentRun cloneExperimentRun(CloneExperimentRun cloneExperimentRun, UserInfo userInfo)
       throws ModelDBException {
     var srcExperimentRun = getExperimentRun(cloneExperimentRun.getSrcExperimentRunId());
 
@@ -2750,7 +2741,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
 
     desExperimentRunBuilder.clearOwner().setOwner(authService.getVertaIdFromUserInfo(userInfo));
-    return insertExperimentRun(projectDAO, desExperimentRunBuilder.build(), userInfo);
+    return insertExperimentRun(desExperimentRunBuilder.build(), userInfo);
   }
 
   @Override
