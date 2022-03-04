@@ -12,8 +12,6 @@ import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAORdbImpl;
-import ai.verta.modeldb.experiment.ExperimentDAO;
-import ai.verta.modeldb.experiment.ExperimentDAORdbImpl;
 import ai.verta.modeldb.experiment.FutureExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
@@ -23,8 +21,6 @@ import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
-import ai.verta.modeldb.project.ProjectDAO;
-import ai.verta.modeldb.project.ProjectDAORdbImpl;
 import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ServiceEnum;
@@ -37,14 +33,12 @@ public class DAOSet {
   public CommitDAO commitDAO;
   public DatasetDAO datasetDAO;
   public DatasetVersionDAO datasetVersionDAO;
-  public ExperimentDAO experimentDAO;
   public FutureExperimentDAO futureExperimentDAO;
   public ExperimentRunDAO experimentRunDAO;
   public FutureExperimentRunDAO futureExperimentRunDAO;
   public FutureProjectDAO futureProjectDAO;
   public LineageDAO lineageDAO;
   public MetadataDAO metadataDAO;
-  public ProjectDAO projectDAO;
   public RepositoryDAO repositoryDAO;
   public FutureEventDAO futureEventDAO;
   public UACApisUtil uacApisUtil;
@@ -61,7 +55,6 @@ public class DAOSet {
             services.authService, services.mdbRoleService, set.commitDAO, set.metadataDAO);
     set.blobDAO = new BlobDAORdbImpl(services.authService, services.mdbRoleService);
 
-    set.experimentDAO = new ExperimentDAORdbImpl(services.authService, services.mdbRoleService);
     set.experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             mdbConfig,
@@ -71,9 +64,6 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    set.projectDAO =
-        new ProjectDAORdbImpl(
-            services.authService, services.mdbRoleService, set.experimentDAO, set.experimentRunDAO);
     if (services.artifactStoreService != null) {
       set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService, mdbConfig);
     } else {
