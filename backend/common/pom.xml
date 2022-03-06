@@ -162,7 +162,7 @@
         <dependency>
             <groupId>io.opentracing.contrib</groupId>
             <artifactId>opentracing-jdbc</artifactId>
-            <version>0.2.10</version>
+            <version>0.2.15</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.microsoft.sqlserver/mssql-jdbc -->
         <dependency>
