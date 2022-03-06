@@ -147,7 +147,7 @@
         <dependency>
             <groupId>io.jaegertracing</groupId>
             <artifactId>jaeger-core</artifactId>
-            <version>1.2.0</version>
+            <version>1.8.0</version>
         </dependency>
         <dependency>
             <groupId>io.jaegertracing</groupId>
