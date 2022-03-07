@@ -1734,4 +1734,35 @@ public class FutureProjectDAO {
             },
             executor);
   }
+
+  public InternalFuture<List<String>> getWorkspaceProjectIDs(String workspaceName) {
+    if (uac == null) {
+      return jdbi.withHandle(
+          handle ->
+              handle
+                  .createQuery("select id from project where deleted = :deleted")
+                  .bind("deleted", false)
+                  .mapTo(String.class)
+                  .list());
+    } else {
+
+      // get list of accessible projects
+      return uacApisUtil
+          .getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.empty())
+          .thenCompose(
+              accessibleProjectIds -> {
+                LOGGER.debug("accessibleAllWorkspaceProjectIds : {}", accessibleProjectIds);
+                return jdbi.withHandle(
+                    handle ->
+                        handle
+                            .createQuery(
+                                "select id from project where deleted = :deleted and id IN (<ids>)")
+                            .bind("deleted", false)
+                            .bindList("ids", accessibleProjectIds)
+                            .mapTo(String.class)
+                            .list());
+              },
+              executor);
+    }
+  }
 }

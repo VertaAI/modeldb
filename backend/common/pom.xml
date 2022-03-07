@@ -19,11 +19,11 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <hibernate.version>5.4.24.Final</hibernate.version>
+        <hibernate.version>5.6.5.Final</hibernate.version>
         <log4j.version>2.17.1</log4j.version>
         <grpc.version>1.41.2</grpc.version>
         <postgres.version>42.2.25</postgres.version>
-        <liquibase.version>3.8.1</liquibase.version>
+        <liquibase.version>3.10.3</liquibase.version>
         <protobuf.version>3.19.2</protobuf.version>
         <prometheus.version>0.10.0</prometheus.version>
     </properties>
@@ -95,7 +95,7 @@
         <dependency>
             <groupId>org.jdbi</groupId>
             <artifactId>jdbi3-core</artifactId>
-            <version>3.16.0</version>
+            <version>3.27.1</version>
         </dependency>
         <dependency>
             <groupId>io.opentracing.contrib</groupId>
@@ -168,7 +168,7 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-            <version>9.2.1.jre11</version>
+            <version>9.5.0-SNAPSHOT.jre8-preview</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -184,7 +184,7 @@
         <dependency>
             <groupId>org.apache.tomcat.embed</groupId>
             <artifactId>tomcat-embed-core</artifactId>
-            <version>9.0.55</version>
+            <version>9.0.58</version>
         </dependency>
         <dependency>
             <groupId>org.glassfish</groupId>

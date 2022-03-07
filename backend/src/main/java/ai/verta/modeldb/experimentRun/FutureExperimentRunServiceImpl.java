@@ -8,16 +8,15 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
+import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceImplBase;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.modeldb.utils.UACApisUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -32,24 +31,28 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
+public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
+  private static final String DELETE_EXPERIMENT_RUN_EVENT_TYPE =
+      "delete.resource.experiment_run.delete_experiment_run_succeeded";
+  private final String UPDATE_EVENT_TYPE =
+      "update.resource.experiment_run.update_experiment_run_succeeded";
+  private final String ADD_EVENT_TYPE = "add.resource.experiment_run.add_experiment_run_succeeded";
+
   private final Executor executor;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
-  private final ExperimentRunDAO experimentRunDAO;
   private final FutureEventDAO futureEventDAO;
-  private final UAC uac;
+  private final UACApisUtil uacApisUtil;
 
-  public FutureExperimentRunServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
-    super(serviceSet, daoSet);
+  public FutureExperimentRunServiceImpl(DAOSet daoSet, Executor executor) {
     this.executor = executor;
     this.futureExperimentRunDAO = daoSet.futureExperimentRunDAO;
-    this.experimentRunDAO = daoSet.experimentRunDAO;
     this.futureEventDAO = daoSet.futureEventDAO;
-    this.uac = serviceSet.uac;
+    this.uacApisUtil = daoSet.uacApisUtil;
   }
 
   private InternalFuture<Void> addEvent(
@@ -89,17 +92,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
     }
     eventMetadata.addProperty("message", eventMessage);
 
-    GetResourcesResponseItem projectResource =
-        mdbRoleService.getEntityResource(
-            Optional.of(projectId),
-            Optional.empty(),
-            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-
-    return futureEventDAO.addLocalEventWithAsync(
-        ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name(),
-        eventType,
-        projectResource.getWorkspaceId(),
-        eventMetadata);
+    return uacApisUtil
+        .getEntityResource(projectId, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+        .thenCompose(
+            projectResource ->
+                futureEventDAO.addLocalEventWithAsync(
+                    ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name(),
+                    eventType,
+                    projectResource.getWorkspaceId(),
+                    eventMetadata),
+            executor);
   }
 
   @Override
@@ -158,16 +160,36 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
   private InternalFuture<List<Void>> loggedDeleteExperimentRunEvents(List<String> runIds) {
     // Add succeeded event in local DB
     List<InternalFuture<Void>> futureList = new ArrayList<>();
+    Map<String, String> cacheMap = new ConcurrentHashMap<>();
+    InternalFuture<String> projectIdFuture;
     for (String runId : runIds) {
-      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(runId);
-      addEvent(
-          runId,
-          Optional.empty(),
-          projectId,
-          DELETE_EXPERIMENT_RUN_EVENT_TYPE,
-          Optional.empty(),
-          Collections.emptyMap(),
-          "experiment_run deleted successfully");
+      if (cacheMap.containsKey(runId)) {
+        projectIdFuture = InternalFuture.completedInternalFuture(cacheMap.get(runId));
+      } else {
+        projectIdFuture =
+            futureExperimentRunDAO
+                .getProjectIdByExperimentRunId(runId)
+                .thenApply(
+                    projectId -> {
+                      cacheMap.put(runId, projectId);
+                      return projectId;
+                    },
+                    executor);
+      }
+
+      var eventFuture =
+          projectIdFuture.thenCompose(
+              projectId ->
+                  addEvent(
+                      runId,
+                      Optional.empty(),
+                      projectId,
+                      DELETE_EXPERIMENT_RUN_EVENT_TYPE,
+                      Optional.empty(),
+                      Collections.emptyMap(),
+                      "experiment_run deleted successfully"),
+              executor);
+      futureList.add(eventFuture);
     }
     return InternalFuture.sequence(futureList, executor);
   }
@@ -338,15 +360,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .updateExperimentRunDescription(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -380,15 +393,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .addTags(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -441,15 +445,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .deleteTags(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -498,15 +493,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addTags(request.getTag())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -549,15 +535,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addTags(request.getTag())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -599,15 +576,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addObservations(request.getObservation())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -648,15 +616,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .logObservations(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -716,15 +675,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .deleteObservations(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -766,15 +716,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addMetrics(request.getMetric())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -807,15 +748,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .logMetrics(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -864,15 +796,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .deleteMetrics(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -915,15 +838,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .addDatasets(request.getDataset())
                       .setOverwrite(request.getOverwrite())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -964,15 +878,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .logDatasets(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -1033,15 +938,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addHyperparameters(request.getHyperparameter())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1075,15 +971,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .logHyperparameters(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1137,15 +1024,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .deleteHyperparameters(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -1188,15 +1066,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addAttributes(request.getAttribute())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1230,15 +1099,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .logAttributes(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1294,15 +1154,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addAllAttributes(request.getAttributesList())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1338,15 +1189,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .deleteAttributes(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun -> {
                     // Add succeeded event in local DB
@@ -1386,15 +1228,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .logEnvironment(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1422,15 +1255,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .logCodeVersion(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1483,15 +1307,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
                       .setId(request.getId())
                       .addArtifacts(request.getArtifact())
                       .build())
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1525,15 +1340,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var futureResponse =
           futureExperimentRunDAO
               .logArtifacts(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1584,15 +1390,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var futureResponse =
           futureExperimentRunDAO
               .deleteArtifacts(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
@@ -1761,15 +1558,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImpl {
       final var response =
           futureExperimentRunDAO
               .logVersionedInputs(request)
-              .thenApply(
-                  unused -> {
-                    try {
-                      return experimentRunDAO.getExperimentRun(request.getId());
-                    } catch (Exception e) {
-                      throw new ModelDBException(e);
-                    }
-                  },
-                  executor)
               .thenCompose(
                   experimentRun ->
                       // Add succeeded event in local DB
