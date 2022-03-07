@@ -109,11 +109,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             predicate, key, value.getStringValue(), bindingName);
       case "date_created":
       case "date_updated":
-        Object date =
-            value.getKindCase().equals(Value.KindCase.STRING_VALUE)
-                ? value.getStringValue()
-                : value.getNumberValue();
-        return getContextFilterForSingleStringFields(predicate, key, date, bindingName);
+        if (value.getKindCase().equals(Value.KindCase.STRING_VALUE)) {
+          return getContextFilterForSingleStringFields(
+              predicate, key, value.getStringValue(), bindingName);
+        } else {
+          return getContextFilterForSingleStringFields(
+              predicate, key, value.getNumberValue(), bindingName);
+        }
       case "owner":
         return setOwnerPredicate(index, predicate);
         // case visibility:
@@ -169,8 +171,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     return InternalFuture.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
   }
 
-  private InternalFuture<QueryFilterContext> getContextFilterForSingleStringFields(
-      KeyValueQuery predicate, String key, Object value, String bindingName) {
+  private <T> InternalFuture<QueryFilterContext> getContextFilterForSingleStringFields(
+      KeyValueQuery predicate, String key, T value, String bindingName) {
     var sql = String.format("select distinct id from %s where ", tableName);
     sql += applyOperator(predicate.getOperator(), key, ":" + bindingName);
     var queryContext =
