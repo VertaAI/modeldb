@@ -26,6 +26,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
 
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
+  protected final String entityName;
   protected final String fieldType;
   protected String entityIdReferenceColumn;
 
@@ -35,8 +36,9 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
       String fieldType,
       String entityName,
       ArtifactStoreConfig artifactStoreConfig) {
-    super(executor, jdbi, artifactStoreConfig, entityName);
+    super(executor, jdbi, artifactStoreConfig);
     this.fieldType = fieldType;
+    this.entityName = entityName;
 
     switch (entityName) {
       case "ProjectEntity":

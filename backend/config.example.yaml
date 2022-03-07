@@ -26,7 +26,6 @@ artifactStoreConfig:
     cloudAccessKey: #for s3 aws account access-key
     cloudSecretKey: #for s3 aws account secret-key
     cloudBucketName: # if nfs then root dir. Note: bucket needs to exist already
-    cloudBucketPrefix: # optional
     aws_region: us-east-1
     s3presignedURLEnabled: false
     minioEndpoint:
@@ -34,7 +33,6 @@ artifactStoreConfig:
     nfsServerHost: localhost #IF 'artifactStoreServerHost' found then this value will be ignore
     nfsUrlProtocol: https #IF 'artifactStoreUrlProtocol' found then this value will be ignore
     nfsRootPath:
-    nfsPathPrefix: # optional
     artifactEndpoint: #IF 'artifactEndpoint' found with parallel to 'artifactStoreType' then this value will be ignore
       getArtifact: "/v1/artifact1/getArtifact"
       storeArtifact: "/v1/artifact/storeArtifact"

@@ -58,18 +58,10 @@ public class ExperimentRunEntity implements Serializable {
             this, ModelDBConstants.HYPERPARAMETERS, experimentRun.getHyperparametersList()));
     setArtifactMapping(
         RdbmsUtils.convertArtifactsFromArtifactEntityList(
-            this,
-            ModelDBConstants.ARTIFACTS,
-            experimentRun.getArtifactsList(),
-            ExperimentRunEntity.class.getSimpleName(),
-            experimentRun.getId()));
+            this, ModelDBConstants.ARTIFACTS, experimentRun.getArtifactsList()));
     setArtifactMapping(
         RdbmsUtils.convertArtifactsFromArtifactEntityList(
-            this,
-            ModelDBConstants.DATASETS,
-            experimentRun.getDatasetsList(),
-            ExperimentRunEntity.class.getSimpleName(),
-            experimentRun.getId()));
+            this, ModelDBConstants.DATASETS, experimentRun.getDatasetsList()));
     setKeyValueMapping(
         RdbmsUtils.convertKeyValuesFromKeyValueEntityList(
             this, ModelDBConstants.METRICS, experimentRun.getMetricsList()));

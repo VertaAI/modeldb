@@ -21,11 +21,14 @@ public class ArtifactEntity implements Serializable {
 
   public ArtifactEntity() {}
 
-  public ArtifactEntity(
-      Object entity, String fieldType, Artifact artifact, String entityName, String entityId) {
+  public ArtifactEntity(Object entity, String fieldType, Artifact artifact) {
     var app = App.getInstance();
     var artifactStoreConfig = app.mdbConfig.artifactStoreConfig;
     setKey(artifact.getKey());
+    setPath(artifact.getPath());
+    if (!artifact.getPathOnly()) {
+      setStore_type_path(artifactStoreConfig.storeTypePathPrefix() + artifact.getPath());
+    }
     setArtifact_type(artifact.getArtifactTypeValue());
     setPath_only(artifact.getPathOnly());
     setLinked_artifact_id(artifact.getLinkedArtifactId());
@@ -51,19 +54,6 @@ public class ArtifactEntity implements Serializable {
     var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
     if (artifact.getUploadCompleted()) {
       uploadCompleted = true;
-    }
-
-    var path =
-        artifactStoreConfig.storeTypePathPrefix()
-            + entityName
-            + "/"
-            + entityId
-            + "/"
-            + artifact.getKey();
-
-    setPath(path);
-    if (!artifact.getPathOnly()) {
-      setStore_type_path(path);
     }
     setUploadCompleted(uploadCompleted);
   }
