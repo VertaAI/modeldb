@@ -958,7 +958,29 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
   @Override
   public void getUrlForArtifact(
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
-    super.getUrlForArtifact(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in GetUrlForArtifact request";
+                  throw new InvalidArgumentException(errorMessage);
+                } else if (request.getKey().isEmpty()) {
+                  var errorMessage = "Artifact Key not found in GetUrlForArtifact request";
+                  throw new InvalidArgumentException(errorMessage);
+                } else if (request.getMethod().isEmpty()) {
+                  var errorMessage = "Method is not found in GetUrlForArtifact request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var futureResponse =
+          requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.getUrlForArtifact(request), executor);
+      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
