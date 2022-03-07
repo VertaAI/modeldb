@@ -16,7 +16,6 @@ import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.GetUrlForArtifact.Response;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.UpdateExperimentDescription;
@@ -848,12 +847,13 @@ public class FutureExperimentDAO {
   public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
     final var experimentId = request.getId();
 
-    var permissionCheck = getProjectIdByExperimentId(Collections.singletonList(experimentId))
-        .thenCompose(
-            projectIdFromExperimentMap ->
-                futureProjectDAO.checkProjectPermission(
-                    projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.READ),
-            executor);
+    var permissionCheck =
+        getProjectIdByExperimentId(Collections.singletonList(experimentId))
+            .thenCompose(
+                projectIdFromExperimentMap ->
+                    futureProjectDAO.checkProjectPermission(
+                        projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.READ),
+                executor);
 
     return permissionCheck.thenCompose(
         unused -> artifactHandler.getUrlForArtifact(request), executor);

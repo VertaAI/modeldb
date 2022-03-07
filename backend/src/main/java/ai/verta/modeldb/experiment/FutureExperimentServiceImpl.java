@@ -975,8 +975,8 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
               },
               executor);
       final var futureResponse =
-          requestValidationFuture
-              .thenCompose(unused -> futureExperimentDAO.getUrlForArtifact(request), executor);
+          requestValidationFuture.thenCompose(
+              unused -> futureExperimentDAO.getUrlForArtifact(request), executor);
       FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
