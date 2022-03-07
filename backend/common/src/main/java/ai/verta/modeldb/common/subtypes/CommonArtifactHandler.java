@@ -26,16 +26,21 @@ public abstract class CommonArtifactHandler<T> {
   protected final Executor executor;
   protected final FutureJdbi jdbi;
   private final ArtifactStoreConfig artifactStoreConfig;
+  protected final String entityName;
 
   protected String getTableName() {
     return "artifact";
   }
 
   public CommonArtifactHandler(
-      Executor executor, FutureJdbi jdbi, ArtifactStoreConfig artifactStoreConfig) {
+      Executor executor,
+      FutureJdbi jdbi,
+      ArtifactStoreConfig artifactStoreConfig,
+      String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.artifactStoreConfig = artifactStoreConfig;
+    this.entityName = entityName;
   }
 
   public InternalFuture<List<Artifact>> getArtifacts(T entityId, Optional<String> maybeKey) {
@@ -106,49 +111,35 @@ public abstract class CommonArtifactHandler<T> {
     validateField(entityId);
 
     for (final var artifact : artifacts) {
-      String errorMessage = null;
-      if (artifact.getKey().isEmpty() && (artifact.getPathOnly() && artifact.getPath().isEmpty())) {
-        errorMessage = "Artifact key and Artifact path not found in request";
-      } else if (artifact.getKey().isEmpty()) {
-        errorMessage = "Artifact key not found in request";
-      } else if (artifact.getPathOnly() && artifact.getPath().isEmpty()) {
-        errorMessage = "Artifact path not found in request";
-      }
-
-      if (errorMessage != null) {
+      if (artifact.getKey().isEmpty()) {
+        var errorMessage = "Artifact key not found in request";
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
     }
 
-    if (overwrite) {
-      for (final var artifact : artifacts) {
-        var uploadCompleted =
-            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-        if (artifact.getUploadCompleted()) {
-          uploadCompleted = true;
-        }
-        var storeTypePath =
-            !artifact.getPathOnly()
-                ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
-                : "";
-        if (isExists(entityId, artifact.getKey(), handle)) {
-          updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
-        } else {
-          insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
-        }
-      }
-    } else {
+    if (!overwrite) {
       validateAndThrowErrorAlreadyExistsArtifacts(entityId, artifacts, handle);
-      for (final var artifact : artifacts) {
-        var uploadCompleted =
-            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-        if (artifact.getUploadCompleted()) {
-          uploadCompleted = true;
-        }
-        var storeTypePath =
-            !artifact.getPathOnly()
-                ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
-                : "";
+    }
+
+    for (var artifact : artifacts) {
+      var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+      if (artifact.getUploadCompleted()) {
+        uploadCompleted = true;
+      }
+
+      var path =
+          artifactStoreConfig.storeTypePathPrefix()
+              + this.entityName
+              + "/"
+              + entityId
+              + "/"
+              + artifact.getKey();
+      artifact = artifact.toBuilder().setPath(path).build();
+      var storeTypePath = !artifact.getPathOnly() ? path : "";
+
+      if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
+        updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
+      } else {
         insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
       }
     }

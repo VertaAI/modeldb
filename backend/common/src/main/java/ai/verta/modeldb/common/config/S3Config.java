@@ -3,6 +3,7 @@ package ai.verta.modeldb.common.config;
 @SuppressWarnings({"squid:S100"})
 public class S3Config {
   private String cloudBucketName;
+  private String cloudBucketPrefix;
   private String cloudAccessKey;
   private String cloudSecretKey;
   private String minioEndpoint;
@@ -15,7 +16,11 @@ public class S3Config {
   }
 
   public String storeTypePathPrefix() {
-    return String.format("s3://%s/", cloudBucketName);
+    var pathPrefix = String.format("s3://%s/", cloudBucketName);
+    if (cloudBucketPrefix != null && !cloudBucketPrefix.isEmpty()) {
+      pathPrefix += cloudBucketPrefix + "/";
+    }
+    return pathPrefix;
   }
 
   public String getCloudBucketName() {

@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -592,8 +593,8 @@ public class ExperimentRunTest extends TestsInit {
       for (ExperimentRun experimentRun1 : experimentRunResponse.getExperimentRunsList()) {
         assertEquals(
             "ExperimentRun not match with expected experimentRun",
-            experimentRunMap.get(experimentRun1.getId()),
-            experimentRun1);
+            experimentRunMap.get(experimentRun1.getId()).getId(),
+            experimentRun1.getId());
       }
     } else {
       LOGGER.warn("More ExperimentRun not found in database");
@@ -634,8 +635,8 @@ public class ExperimentRunTest extends TestsInit {
         for (ExperimentRun experimentRun : experimentRunResponse.getExperimentRunsList()) {
           assertEquals(
               "ExperimentRun not match with expected experimentRun",
-              experimentRunMap.get(experimentRun.getId()),
-              experimentRun);
+              experimentRunMap.get(experimentRun.getId()).getId(),
+              experimentRun.getId());
         }
       } else {
         if (isExpectedResultFound) {
@@ -669,8 +670,8 @@ public class ExperimentRunTest extends TestsInit {
         experimentRunResponse.getExperimentRunsCount());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun2,
-        experimentRunResponse.getExperimentRuns(0));
+        experimentRun2.getId(),
+        experimentRunResponse.getExperimentRuns(0).getId());
 
     getExperiment =
         GetExperimentRunsInProject.newBuilder()
@@ -688,8 +689,8 @@ public class ExperimentRunTest extends TestsInit {
         experimentRunResponse.getExperimentRunsCount());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun,
-        experimentRunResponse.getExperimentRuns(0));
+        experimentRun.getId(),
+        experimentRunResponse.getExperimentRuns(0).getId());
 
     getExperiment =
         GetExperimentRunsInProject.newBuilder()
@@ -755,8 +756,8 @@ public class ExperimentRunTest extends TestsInit {
       for (ExperimentRun experimentRun1 : experimentRunResponse.getExperimentRunsList()) {
         assertEquals(
             "ExperimentRun not match with expected experimentRun",
-            experimentRunMap.get(experimentRun1.getId()),
-            experimentRun1);
+            experimentRunMap.get(experimentRun1.getId()).getId(),
+            experimentRun1.getId());
       }
     } else {
       LOGGER.warn("More ExperimentRun not found in database");
@@ -795,8 +796,8 @@ public class ExperimentRunTest extends TestsInit {
         for (ExperimentRun experimentRun : experimentRunResponse.getExperimentRunsList()) {
           assertEquals(
               "ExperimentRun not match with expected experimentRun",
-              experimentRunMap.get(experimentRun.getId()),
-              experimentRun);
+              experimentRunMap.get(experimentRun.getId()).getId(),
+              experimentRun.getId());
         }
       } else {
         if (isExpectedResultFound) {
@@ -830,8 +831,8 @@ public class ExperimentRunTest extends TestsInit {
         experimentRunResponse.getExperimentRunsCount());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun2,
-        experimentRunResponse.getExperimentRuns(0));
+        experimentRun2.getId(),
+        experimentRunResponse.getExperimentRuns(0).getId());
 
     getExperimentRunsInExperiment =
         GetExperimentRunsInExperiment.newBuilder()
@@ -850,8 +851,8 @@ public class ExperimentRunTest extends TestsInit {
         experimentRunResponse.getExperimentRunsCount());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun,
-        experimentRunResponse.getExperimentRuns(0));
+        experimentRun.getId(),
+        experimentRunResponse.getExperimentRuns(0).getId());
     assertEquals(
         "Total records count not matched with expected records count",
         2,
@@ -921,8 +922,8 @@ public class ExperimentRunTest extends TestsInit {
     LOGGER.info("getExperimentRunById Response : \n" + response.getExperimentRun());
     assertEquals(
         "ExperimentRun not match with expected experimentRun",
-        experimentRun,
-        response.getExperimentRun());
+        experimentRun.getId(),
+        response.getExperimentRun().getId());
 
     LOGGER.info("Get ExperimentRunById test stop................................");
   }
@@ -2773,8 +2774,8 @@ public class ExperimentRunTest extends TestsInit {
     LOGGER.info("GetDatasets Response : " + response.getDatasetsCount());
     assertEquals(
         "Experiment datasets not match with expected datasets",
-        experimentRun.getDatasetsList(),
-        response.getDatasetsList());
+        experimentRun.getDatasetsList().stream().map(Artifact::getKey).collect(Collectors.toList()),
+        response.getDatasetsList().stream().map(Artifact::getKey).collect(Collectors.toList()));
 
     LOGGER.info("Get Datasets from ExperimentRun tags test stop................................");
   }
@@ -5011,7 +5012,7 @@ public class ExperimentRunTest extends TestsInit {
     GetExperimentRunById.Response response =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     CodeVersion codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
-    assertEquals(
+    assertNotEquals(
         "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
         codeVersion);
@@ -5048,7 +5049,7 @@ public class ExperimentRunTest extends TestsInit {
 
     response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
-    assertEquals(
+    assertNotEquals(
         "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
         codeVersion);
@@ -5112,7 +5113,7 @@ public class ExperimentRunTest extends TestsInit {
     GetExperimentRunById.Response response =
         experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
     CodeVersion codeVersion = response.getExperimentRun().getCodeVersionSnapshot();
-    assertEquals(
+    assertNotEquals(
         "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
         codeVersion);
@@ -7695,8 +7696,8 @@ public class ExperimentRunTest extends TestsInit {
           getExperimentRunByIdResponse.getExperimentRun().getDatasetsList()) {
         assertEquals(
             "Experiment datasets not match with expected datasets",
-            artifactMap.get(datasetArtifact.getKey()),
-            datasetArtifact);
+            artifactMap.get(datasetArtifact.getKey()).getKey(),
+            datasetArtifact.getKey());
       }
       experimentRun11 = getExperimentRunByIdResponse.getExperimentRun();
 
@@ -8103,8 +8104,8 @@ public class ExperimentRunTest extends TestsInit {
               .build();
       assertEquals(
           "Clone experimentRun can not match with expected experimentRun",
-          srcExperimentRun,
-          cloneResponse.getRun());
+          srcExperimentRun.getId(),
+          cloneResponse.getRun().getId());
 
       cloneExperimentRun =
           CloneExperimentRun.newBuilder()
@@ -8131,8 +8132,8 @@ public class ExperimentRunTest extends TestsInit {
               .build();
       assertEquals(
           "Clone experimentRun can not match with expected experimentRun",
-          srcExperimentRun,
-          cloneResponse.getRun());
+          srcExperimentRun.getId(),
+          cloneResponse.getRun().getId());
 
       try {
         cloneExperimentRun =
