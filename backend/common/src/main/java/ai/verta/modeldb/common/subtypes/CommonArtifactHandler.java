@@ -107,7 +107,8 @@ public abstract class CommonArtifactHandler<T> {
   protected abstract AbstractMap.SimpleEntry<T, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
       throws SQLException;
 
-  public List<Artifact> logArtifacts(Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
+  public List<Artifact> logArtifacts(
+      Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
     // Validate input
     validateField(entityId);
 
@@ -129,13 +130,10 @@ public abstract class CommonArtifactHandler<T> {
         uploadCompleted = true;
       }
 
-      var path = this.entityName
-              + "/"
-              + entityId
-              + "/"
-              + artifact.getKey();
+      var path = this.entityName + "/" + entityId + "/" + artifact.getKey();
       artifact = artifact.toBuilder().setPath(path).build();
-      var storeTypePath = !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
+      var storeTypePath =
+          !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
       pathUpdatedArtifacts.add(artifact);
 
       if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
@@ -145,8 +143,8 @@ public abstract class CommonArtifactHandler<T> {
       }
     }
     return pathUpdatedArtifacts.stream()
-                .sorted(Comparator.comparing(Artifact::getKey))
-                .collect(Collectors.toList());
+        .sorted(Comparator.comparing(Artifact::getKey))
+        .collect(Collectors.toList());
   }
 
   protected abstract void insertArtifactInDB(
