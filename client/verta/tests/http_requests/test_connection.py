@@ -78,3 +78,24 @@ class TestConnection:
         }
         assert_dictionary_is_subset(custom_headers, conn_headers)
         assert_dictionary_is_subset(expected, conn_headers)
+
+    def test_jwt_auth_without_sig(self):
+        fake_token = "token"
+        jwt_credentials = credentials._build(
+            jwt_token=fake_token
+        )
+        conn = Connection(
+            scheme=https_scheme,
+            socket=fake_socket,
+            credentials=jwt_credentials,
+            headers=custom_headers,
+        )
+        conn_headers = conn.headers
+        expected = {
+            _GRPC_PREFIX + "scheme": https_scheme,
+            _GRPC_PREFIX + "source": "JWT",
+            _GRPC_PREFIX + "bearer_access_token": fake_token,
+            _GRPC_PREFIX + "bearer-access-token": fake_token,
+        }
+        assert_dictionary_is_subset(custom_headers, conn_headers)
+        assert_dictionary_is_subset(expected, conn_headers)
