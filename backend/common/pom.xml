@@ -19,7 +19,6 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <hibernate.version>5.6.5.Final</hibernate.version>
         <log4j.version>2.17.1</log4j.version>
         <grpc.version>1.41.2</grpc.version>
         <postgres.version>42.2.25</postgres.version>
@@ -73,19 +72,6 @@
             <groupId>com.google.protobuf</groupId>
             <artifactId>protobuf-java-util</artifactId>
             <version>${protobuf.version}</version>
-        </dependency>
-
-        <!-- HibernateFinal 5.4.1 -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-core</artifactId>
-            <version>${hibernate.version}</version>
-        </dependency>
-        <!-- Hibernate hikari connection pool -->
-        <dependency>
-            <groupId>org.hibernate</groupId>
-            <artifactId>hibernate-hikaricp</artifactId>
-            <version>${hibernate.version}</version>
         </dependency>
         <dependency>
             <groupId>com.zaxxer</groupId>
