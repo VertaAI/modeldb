@@ -107,7 +107,8 @@ public abstract class CommonArtifactHandler<T> {
   protected abstract AbstractMap.SimpleEntry<T, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
       throws SQLException;
 
-  public List<Artifact> logArtifacts(Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
+  public List<Artifact> logArtifacts(
+      Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
     // Validate input
     validateField(entityId);
 
@@ -146,8 +147,8 @@ public abstract class CommonArtifactHandler<T> {
       pathUpdatedArtifacts.add(artifact);
     }
     return pathUpdatedArtifacts.stream()
-                .sorted(Comparator.comparing(Artifact::getKey))
-                .collect(Collectors.toList());
+        .sorted(Comparator.comparing(Artifact::getKey))
+        .collect(Collectors.toList());
   }
 
   protected abstract void insertArtifactInDB(
