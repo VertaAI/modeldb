@@ -11,6 +11,7 @@ import com.google.rpc.Code;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -106,7 +107,7 @@ public abstract class CommonArtifactHandler<T> {
   protected abstract AbstractMap.SimpleEntry<T, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
       throws SQLException;
 
-  public void logArtifacts(Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
+  public List<Artifact> logArtifacts(Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
     // Validate input
     validateField(entityId);
 
@@ -121,21 +122,21 @@ public abstract class CommonArtifactHandler<T> {
       validateAndThrowErrorAlreadyExistsArtifacts(entityId, artifacts, handle);
     }
 
+    List<Artifact> pathUpdatedArtifacts = new ArrayList<>();
     for (var artifact : artifacts) {
       var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
       if (artifact.getUploadCompleted()) {
         uploadCompleted = true;
       }
 
-      var path =
-          artifactStoreConfig.storeTypePathPrefix()
-              + this.entityName
+      var path = this.entityName
               + "/"
               + entityId
               + "/"
               + artifact.getKey();
       artifact = artifact.toBuilder().setPath(path).build();
-      var storeTypePath = !artifact.getPathOnly() ? path : "";
+      var storeTypePath = !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
+      pathUpdatedArtifacts.add(artifact);
 
       if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
         updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
@@ -143,6 +144,9 @@ public abstract class CommonArtifactHandler<T> {
         insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
       }
     }
+    return pathUpdatedArtifacts.stream()
+                .sorted(Comparator.comparing(Artifact::getKey))
+                .collect(Collectors.toList());
   }
 
   protected abstract void insertArtifactInDB(

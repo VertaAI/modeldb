@@ -46,4 +46,8 @@ public class S3Config {
   public Boolean getS3presignedURLEnabled() {
     return s3presignedURLEnabled;
   }
+
+  public String getCloudBucketPrefix() {
+    return cloudBucketPrefix;
+  }
 }

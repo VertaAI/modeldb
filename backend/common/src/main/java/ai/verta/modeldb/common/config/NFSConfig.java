@@ -31,4 +31,8 @@ public class NFSConfig {
   public NFSEndpointConfig getArtifactEndpoint() {
     return artifactEndpoint;
   }
+
+  public String getNfsPathPrefix() {
+    return nfsPathPrefix;
+  }
 }

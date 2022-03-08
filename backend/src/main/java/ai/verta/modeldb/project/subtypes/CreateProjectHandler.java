@@ -136,13 +136,14 @@ public class CreateProjectHandler extends HandlerUtil {
     valueMap.put("created", false);
     valueMap.put("visibility_migration", true);
 
-    Supplier<InternalFuture<Void>> insertFutureSupplier =
+    Supplier<InternalFuture<Project>> insertFutureSupplier =
         () ->
-            jdbi.useHandle(
+            jdbi.withHandle(
                 handle ->
-                    handle.useTransaction(
+                    handle.inTransaction(
                         TransactionIsolationLevel.SERIALIZABLE,
                         handleForTransaction -> {
+                          final var builder = newProject.toBuilder();
                           String queryString = buildInsertQuery(valueMap, "project");
 
                           LOGGER.trace("insert project query string: " + queryString);
@@ -156,33 +157,34 @@ public class CreateProjectHandler extends HandlerUtil {
                           int count = query.execute();
                           LOGGER.trace("Project Inserted : " + (count > 0));
 
-                          if (!newProject.getTagsList().isEmpty()) {
+                          if (!builder.getTagsList().isEmpty()) {
                             tagsHandler.addTags(
-                                handleForTransaction, newProject.getId(), newProject.getTagsList());
+                                handleForTransaction, builder.getId(), builder.getTagsList());
                           }
-                          if (!newProject.getAttributesList().isEmpty()) {
+                          if (!builder.getAttributesList().isEmpty()) {
                             attributeHandler.logKeyValues(
-                                handleForTransaction,
-                                newProject.getId(),
-                                newProject.getAttributesList());
+                                handleForTransaction, builder.getId(), builder.getAttributesList());
                           }
-                          if (!newProject.getArtifactsList().isEmpty()) {
-                            artifactHandler.logArtifacts(
-                                handleForTransaction,
-                                newProject.getId(),
-                                newProject.getArtifactsList(),
-                                false);
+                          if (!builder.getArtifactsList().isEmpty()) {
+                            var updatedArtifacts =
+                                artifactHandler.logArtifacts(
+                                    handleForTransaction,
+                                    builder.getId(),
+                                    builder.getArtifactsList(),
+                                    false);
+                            builder.clearArtifacts().addAllArtifacts(updatedArtifacts);
                           }
-                          if (newProject.getCodeVersionSnapshot().hasCodeArchive()
-                              || newProject.getCodeVersionSnapshot().hasGitSnapshot()) {
+                          if (builder.getCodeVersionSnapshot().hasCodeArchive()
+                              || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
                             codeVersionHandler.logCodeVersion(
                                 handleForTransaction,
-                                newProject.getId(),
+                                builder.getId(),
                                 false,
-                                newProject.getCodeVersionSnapshot());
+                                builder.getCodeVersionSnapshot());
                           }
+                          return builder.build();
                         }));
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
-        .thenApply(unused -> newProject, executor);
+        .thenApply(createdProject -> createdProject, executor);
   }
 }

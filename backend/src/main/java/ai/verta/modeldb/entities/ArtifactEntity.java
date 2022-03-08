@@ -53,17 +53,11 @@ public class ArtifactEntity implements Serializable {
       uploadCompleted = true;
     }
 
-    var path =
-        artifactStoreConfig.storeTypePathPrefix()
-            + entityName
-            + "/"
-            + entityId
-            + "/"
-            + artifact.getKey();
+    var path = entityName + "/" + entityId + "/" + artifact.getKey();
 
     setPath(path);
     if (!artifact.getPathOnly()) {
-      setStore_type_path(path);
+      setStore_type_path(artifactStoreConfig.storeTypePathPrefix() + path);
     }
     setUploadCompleted(uploadCompleted);
   }
