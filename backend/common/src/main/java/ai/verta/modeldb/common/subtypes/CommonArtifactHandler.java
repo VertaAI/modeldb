@@ -129,20 +129,21 @@ public abstract class CommonArtifactHandler<T> {
         uploadCompleted = true;
       }
 
-      var path = this.entityName
-              + "/"
-              + entityId
-              + "/"
-              + artifact.getKey();
-      artifact = artifact.toBuilder().setPath(path).build();
-      var storeTypePath = !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
-      pathUpdatedArtifacts.add(artifact);
+      var validPrefix = artifactStoreConfig.getPathPrefix() +  this.entityName + "/";
+      var path = validPrefix + entityId + "/" + artifact.getKey();
+      var storeTypePath =
+          !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
 
       if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
+        if (!artifact.getPath().startsWith(validPrefix)){
+          artifact = artifact.toBuilder().setPath(path).build();
+        }
         updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
       } else {
+        artifact = artifact.toBuilder().setPath(path).build();
         insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
       }
+      pathUpdatedArtifacts.add(artifact);
     }
     return pathUpdatedArtifacts.stream()
                 .sorted(Comparator.comparing(Artifact::getKey))

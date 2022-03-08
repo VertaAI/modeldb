@@ -16,11 +16,7 @@ public class S3Config {
   }
 
   public String storeTypePathPrefix() {
-    var pathPrefix = String.format("s3://%s/", cloudBucketName);
-    if (cloudBucketPrefix != null && !cloudBucketPrefix.isEmpty()) {
-      pathPrefix += cloudBucketPrefix + "/";
-    }
-    return pathPrefix;
+    return String.format("s3://%s/", cloudBucketName);
   }
 
   public String getCloudBucketName() {
@@ -48,6 +44,6 @@ public class S3Config {
   }
 
   public String getCloudBucketPrefix() {
-    return cloudBucketPrefix;
+    return cloudBucketPrefix == null ? "" : cloudBucketPrefix + "/";
   }
 }

@@ -45,4 +45,16 @@ public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
         throw new ModelDBException("Unknown artifact store type", Code.INTERNAL);
     }
   }
+
+  @Override
+  public String getPathPrefix() {
+    switch (getArtifactStoreType()) {
+      case "S3":
+        return S3.getCloudBucketPrefix();
+      case "NFS":
+        return getNFS().getNfsPathPrefix();
+      default:
+        return "";
+    }
+  }
 }

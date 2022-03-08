@@ -41,4 +41,6 @@ public abstract class ArtifactStoreConfig {
   }
 
   public abstract String storeTypePathPrefix();
+
+  public abstract String getPathPrefix();
 }

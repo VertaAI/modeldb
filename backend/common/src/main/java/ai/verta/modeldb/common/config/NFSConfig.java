@@ -17,11 +17,7 @@ public class NFSConfig {
   }
 
   public String storeTypePathPrefix() {
-    var pathPrefix = String.format("nfs://%s/", nfsRootPath);
-    if (nfsPathPrefix != null && !nfsPathPrefix.isEmpty()) {
-      pathPrefix += nfsPathPrefix + "/";
-    }
-    return pathPrefix;
+    return String.format("nfs://%s/", nfsRootPath);
   }
 
   public String getNfsRootPath() {
@@ -33,6 +29,6 @@ public class NFSConfig {
   }
 
   public String getNfsPathPrefix() {
-    return nfsPathPrefix;
+    return nfsPathPrefix == null ? "" : nfsPathPrefix + "/";
   }
 }
