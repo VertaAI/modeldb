@@ -14,6 +14,7 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetExperimentCodeVersion;
 import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
@@ -841,5 +842,25 @@ public class FutureExperimentDAO {
                     }),
             executor)
         .thenCompose(unused -> getExperimentById(expId), executor);
+  }
+
+  public InternalFuture<GetExperimentCodeVersion.Response> getExperimentCodeVersion(
+      GetExperimentCodeVersion request) {
+    final var expId = request.getId();
+
+    return getProjectIdByExperimentId(Collections.singletonList(expId))
+        .thenCompose(
+            projectIdFromExperimentMap ->
+                futureProjectDAO.checkProjectPermission(
+                    projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
+            executor)
+        .thenCompose(unused -> codeVersionHandler.getCodeVersion(expId), executor)
+        .thenApply(
+            codeVersion -> {
+              var builder = GetExperimentCodeVersion.Response.newBuilder();
+              codeVersion.ifPresent(builder::setCodeVersion);
+              return builder.build();
+            },
+            executor);
   }
 }

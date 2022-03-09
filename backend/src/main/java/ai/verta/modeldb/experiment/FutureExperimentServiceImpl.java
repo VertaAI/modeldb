@@ -941,7 +941,23 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
   public void getExperimentCodeVersion(
       GetExperimentCodeVersion request,
       StreamObserver<GetExperimentCodeVersion.Response> responseObserver) {
-    super.getExperimentCodeVersion(request, responseObserver);
+    try {
+      final var requestValidationFuture =
+          InternalFuture.runAsync(
+              () -> {
+                if (request.getId().isEmpty()) {
+                  var errorMessage = "Experiment ID not found in GetExperimentCodeVersion request";
+                  throw new InvalidArgumentException(errorMessage);
+                }
+              },
+              executor);
+      final var response =
+          requestValidationFuture.thenCompose(
+              unused -> futureExperimentDAO.getExperimentCodeVersion(request), executor);
+      FutureGrpc.ServerResponse(responseObserver, response, executor);
+    } catch (Exception e) {
+      CommonUtils.observeError(responseObserver, e);
+    }
   }
 
   @Override
