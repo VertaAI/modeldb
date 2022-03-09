@@ -3,6 +3,7 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -191,8 +192,15 @@ public abstract class CommonDBUtil {
       // Initialize Liquibase and run the update
       var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
       String rootPath = System.getProperty(CommonConstants.USER_DIR);
-      rootPath = rootPath + liquibaseRootPath;
-      var liquibase = new Liquibase(rootPath, new FileSystemResourceAccessor(), database);
+
+      // LiquiBase no longer supports absolute paths. Try to save people from themselves.
+      if (liquibaseRootPath.startsWith("/") || liquibaseRootPath.startsWith("\\")) {
+        liquibaseRootPath = liquibaseRootPath.substring(1);
+      }
+
+      var liquibase =
+          new Liquibase(
+              liquibaseRootPath, new FileSystemResourceAccessor(new File(rootPath)), database);
 
       var liquibaseExecuted = false;
       while (!liquibaseExecuted) {
