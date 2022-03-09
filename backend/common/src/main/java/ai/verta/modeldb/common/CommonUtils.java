@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.exception.LockAcquisitionException;
 import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
@@ -120,6 +121,14 @@ public class CommonUtils {
         status =
             Status.newBuilder()
                 .setCode(Code.UNAVAILABLE_VALUE)
+                .setMessage(errorMessage + throwable.getMessage())
+                .build();
+      } else if (e instanceof LockAcquisitionException) {
+        var errorMessage = "Encountered deadlock in database connection.";
+        LOGGER.info(" {} {}", errorMessage, e.getMessage());
+        status =
+            Status.newBuilder()
+                .setCode(Code.ABORTED_VALUE)
                 .setMessage(errorMessage + throwable.getMessage())
                 .build();
       } else if (e instanceof ModelDBException) {
