@@ -130,8 +130,8 @@ public abstract class CommonArtifactHandler<T> {
         uploadCompleted = true;
       }
 
-      var validPrefix = artifactStoreConfig.getPathPrefix() + this.entityName + "/";
-      var path = validPrefix + entityId + "/" + artifact.getKey();
+      var validPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
+      var path = validPrefix + "/" + entityId + "/" + artifact.getKey();
       var storeTypePath =
           !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
 

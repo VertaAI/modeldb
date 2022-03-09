@@ -110,10 +110,6 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
-    var prefix = mdbConfig.artifactStoreConfig.S3.getCloudBucketPrefix();
-    if (prefix != null && !prefix.isEmpty()) {
-      s3Key = prefix + "/" + s3Key;
-    }
     if (mdbConfig.artifactStoreConfig.S3.getS3presignedURLEnabled()) {
       return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {

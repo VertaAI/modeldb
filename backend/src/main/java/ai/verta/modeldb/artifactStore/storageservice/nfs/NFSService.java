@@ -189,10 +189,6 @@ public class NFSService implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(
       String artifactPath, String method, long partNumber, String uploadId) {
-    var prefix = mdbConfig.artifactStoreConfig.getNFS().getNfsPathPrefix();
-    if (prefix != null && !prefix.isEmpty()) {
-      artifactPath = prefix + "/" + artifactPath;
-    }
     return generatePresignedUrl(artifactPath, method);
   }
 

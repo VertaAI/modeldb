@@ -47,7 +47,7 @@ public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
   }
 
   @Override
-  public String getPathPrefix() {
+  public String getPathPrefixWithSeparator() {
     switch (getArtifactStoreType()) {
       case "S3":
         return S3.getCloudBucketPrefix();
