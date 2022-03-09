@@ -3,6 +3,9 @@ package ai.verta.modeldb.common.config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.dialect.MySQL5Dialect;
+import org.hibernate.dialect.PostgreSQL82Dialect;
+import org.hibernate.dialect.SQLServer2008Dialect;
 
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public class RdbConfig {
@@ -37,15 +40,15 @@ public class RdbConfig {
   }
 
   public boolean isPostgres() {
-    return RdbDialect.equals("PostgreSQL82Dialect");
+    return RdbDialect.equals(PostgreSQL82Dialect.class.getName());
   }
 
   public boolean isMysql() {
-    return RdbDialect.equals("MySQL5Dialect");
+    return RdbDialect.equals(MySQL5Dialect.class.getName());
   }
 
   public boolean isMssql() {
-    return RdbDialect.equals("SQLServer2008Dialect");
+    return RdbDialect.equals(SQLServer2008Dialect.class.getName());
   }
 
   public static String buildDatabaseConnectionString(RdbConfig rdb) {
