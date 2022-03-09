@@ -1645,8 +1645,8 @@ public class ProjectTest extends TestsInit {
 
       assertEquals(
           "ExperimentRun does not match with expected experimentRun",
-          lastModifiedExperimentRun.getId(),
-          experimentRun.getId());
+          lastModifiedExperimentRun,
+          experimentRun);
 
       assertTrue(
           "last modified experimentRun summary does not match",
@@ -2565,11 +2565,10 @@ public class ProjectTest extends TestsInit {
       LogProjectCodeVersion.Response logProjectCodeVersionResponse =
           projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
       CodeVersion codeVersion = logProjectCodeVersionResponse.getProject().getCodeVersionSnapshot();
-      assertNotEquals(
+      assertEquals(
           "Project codeVersion not match with expected project codeVersion",
           logProjectCodeVersionRequest.getCodeVersion(),
           codeVersion);
-
       project = logProjectCodeVersionResponse.getProject();
 
       try {
@@ -2633,11 +2632,10 @@ public class ProjectTest extends TestsInit {
     LogProjectCodeVersion.Response logProjectCodeVersionResponse =
         projectServiceStub.logProjectCodeVersion(logProjectCodeVersionRequest);
     project = logProjectCodeVersionResponse.getProject();
-    assertNotEquals(
+    assertEquals(
         "Project codeVersion not match with expected project codeVersion",
         logProjectCodeVersionRequest.getCodeVersion(),
         project.getCodeVersionSnapshot());
-
     project = logProjectCodeVersionResponse.getProject();
     projectMap.put(project.getId(), project);
 
