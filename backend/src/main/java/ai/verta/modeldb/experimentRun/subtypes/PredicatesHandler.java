@@ -105,25 +105,17 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     switch (key) {
       case "id":
       case "name":
-        return getContextFilterForSingleStringFields(predicate, key, value, bindingName);
+        return getContextFilterForSingleStringFields(
+            predicate, key, value.getStringValue(), bindingName);
       case "date_created":
-        var date =
-            value.getKindCase().equals(Value.KindCase.STRING_VALUE)
-                ? Double.parseDouble(value.getStringValue())
-                : value.getNumberValue();
-        return InternalFuture.completedInternalFuture(
-            new QueryFilterContext()
-                .addCondition(String.format("%s.date_created = :%s", alias, bindingName))
-                .addBind(q -> q.bind(bindingName, date)));
       case "date_updated":
-        var dateUpdated =
-            value.getKindCase().equals(Value.KindCase.STRING_VALUE)
-                ? Double.parseDouble(value.getStringValue())
-                : value.getNumberValue();
-        return InternalFuture.completedInternalFuture(
-            new QueryFilterContext()
-                .addCondition(String.format("%s.date_updated = :%s", alias, bindingName))
-                .addBind(q -> q.bind(bindingName, dateUpdated)));
+        if (value.getKindCase().equals(Value.KindCase.STRING_VALUE)) {
+          return getContextFilterForSingleStringFields(
+              predicate, key, value.getStringValue(), bindingName);
+        } else {
+          return getContextFilterForSingleStringFields(
+              predicate, key, value.getNumberValue(), bindingName);
+        }
       case "owner":
         return setOwnerPredicate(index, predicate);
         // case visibility:
@@ -179,16 +171,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     return InternalFuture.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
   }
 
-  private InternalFuture<QueryFilterContext> getContextFilterForSingleStringFields(
-      KeyValueQuery predicate, String key, Value value, String bindingName) {
+  private <T> InternalFuture<QueryFilterContext> getContextFilterForSingleStringFields(
+      KeyValueQuery predicate, String key, T value, String bindingName) {
     var sql = String.format("select distinct id from %s where ", tableName);
     sql += applyOperator(predicate.getOperator(), key, ":" + bindingName);
     var queryContext =
         new QueryFilterContext()
-            .addBind(
-                q ->
-                    q.bind(
-                        bindingName, wrapValue(predicate.getOperator(), value.getStringValue())));
+            .addBind(q -> q.bind(bindingName, wrapValue(predicate.getOperator(), value)));
     if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
         || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
       queryContext =

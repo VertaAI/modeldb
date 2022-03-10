@@ -49,7 +49,7 @@ public class PredicateHandlerUtils {
     }
   }
 
-  protected String wrapValue(OperatorEnum.Operator operator, String value) {
+  protected <T> Object wrapValue(OperatorEnum.Operator operator, T value) {
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.CONTAIN_VALUE:
       case OperatorEnum.Operator.NOT_CONTAIN_VALUE:
