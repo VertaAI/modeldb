@@ -158,6 +158,7 @@
         </createTable>
     </changeSet>
     <changeSet author="anand" id="create-commit_parent">
+        <validCheckSum>8:a948978fce54da3ca67c5ec548b19323</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="commit_parent"/>
