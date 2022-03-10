@@ -37,15 +37,15 @@ public class RdbConfig {
   }
 
   public boolean isPostgres() {
-    return RdbDialect.equals("PostgreSQL82Dialect");
+    return RdbDialect.equals("org.hibernate.dialect.PostgreSQL82Dialect");
   }
 
   public boolean isMysql() {
-    return RdbDialect.equals("MySQL5Dialect");
+    return RdbDialect.equals("org.hibernate.dialect.MySQL5Dialect");
   }
 
   public boolean isMssql() {
-    return RdbDialect.equals("SQLServer2008Dialect");
+    return RdbDialect.equals("org.hibernate.dialect.SQLServer2008Dialect");
   }
 
   public static String buildDatabaseConnectionString(RdbConfig rdb) {
