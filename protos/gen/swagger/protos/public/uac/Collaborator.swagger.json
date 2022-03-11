@@ -2179,6 +2179,10 @@
         },
         "secondary_dev_key": {
           "type": "string"
+        },
+        "disabled": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
