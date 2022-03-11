@@ -164,11 +164,11 @@
             </not>
         </preConditions>
         <createTable tableName="commit_parent">
-            <column name="parent_hash " type="varchar(64)">
+            <column name="parent_hash" type="varchar(64)">
                 <constraints foreignKeyName="fk_parent_hash_commit_parent" referencedTableName="commit"
                              referencedColumnNames="commit_hash"/>
             </column>
-            <column name="child_hash " type="varchar(64)">
+            <column name="child_hash" type="varchar(64)">
                 <constraints foreignKeyName="fk_child_hash_commit_parent" referencedTableName="commit"
                              referencedColumnNames="commit_hash"/>
             </column>
