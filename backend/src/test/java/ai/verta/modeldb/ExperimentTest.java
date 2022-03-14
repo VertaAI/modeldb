@@ -1437,7 +1437,7 @@ public class ExperimentTest extends TestsInit {
         experimentServiceStub.logExperimentCodeVersion(logExperimentCodeVersionRequest);
     CodeVersion codeVersion =
         logExperimentCodeVersionResponse.getExperiment().getCodeVersionSnapshot();
-    assertEquals(
+    assertNotEquals(
         "Experiment codeVersion not match with expected experiment codeVersion",
         logExperimentCodeVersionRequest.getCodeVersion(),
         codeVersion);
@@ -1494,7 +1494,8 @@ public class ExperimentTest extends TestsInit {
         experimentServiceStub.logExperimentCodeVersion(logExperimentCodeVersionRequest);
     CodeVersion codeVersion =
         logExperimentCodeVersionResponse.getExperiment().getCodeVersionSnapshot();
-    assertEquals(
+
+    assertNotEquals(
         "Experiment codeVersion not match with expected experiment codeVersion",
         logExperimentCodeVersionRequest.getCodeVersion(),
         codeVersion);

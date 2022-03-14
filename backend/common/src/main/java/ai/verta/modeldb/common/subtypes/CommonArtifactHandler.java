@@ -11,6 +11,7 @@ import com.google.rpc.Code;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -26,16 +27,21 @@ public abstract class CommonArtifactHandler<T> {
   protected final Executor executor;
   protected final FutureJdbi jdbi;
   private final ArtifactStoreConfig artifactStoreConfig;
+  protected final String entityName;
 
   protected String getTableName() {
     return "artifact";
   }
 
   public CommonArtifactHandler(
-      Executor executor, FutureJdbi jdbi, ArtifactStoreConfig artifactStoreConfig) {
+      Executor executor,
+      FutureJdbi jdbi,
+      ArtifactStoreConfig artifactStoreConfig,
+      String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.artifactStoreConfig = artifactStoreConfig;
+    this.entityName = entityName;
   }
 
   public InternalFuture<List<Artifact>> getArtifacts(T entityId, Optional<String> maybeKey) {
@@ -101,57 +107,48 @@ public abstract class CommonArtifactHandler<T> {
   protected abstract AbstractMap.SimpleEntry<T, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
       throws SQLException;
 
-  public void logArtifacts(Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
+  public List<Artifact> logArtifacts(
+      Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
     // Validate input
     validateField(entityId);
 
     for (final var artifact : artifacts) {
-      String errorMessage = null;
-      if (artifact.getKey().isEmpty() && (artifact.getPathOnly() && artifact.getPath().isEmpty())) {
-        errorMessage = "Artifact key and Artifact path not found in request";
-      } else if (artifact.getKey().isEmpty()) {
-        errorMessage = "Artifact key not found in request";
-      } else if (artifact.getPathOnly() && artifact.getPath().isEmpty()) {
-        errorMessage = "Artifact path not found in request";
-      }
-
-      if (errorMessage != null) {
+      if (artifact.getKey().isEmpty()) {
+        var errorMessage = "Artifact key not found in request";
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
     }
 
-    if (overwrite) {
-      for (final var artifact : artifacts) {
-        var uploadCompleted =
-            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-        if (artifact.getUploadCompleted()) {
-          uploadCompleted = true;
-        }
-        var storeTypePath =
-            !artifact.getPathOnly()
-                ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
-                : "";
-        if (isExists(entityId, artifact.getKey(), handle)) {
-          updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
-        } else {
-          insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
-        }
-      }
-    } else {
+    if (!overwrite) {
       validateAndThrowErrorAlreadyExistsArtifacts(entityId, artifacts, handle);
-      for (final var artifact : artifacts) {
-        var uploadCompleted =
-            !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
-        if (artifact.getUploadCompleted()) {
-          uploadCompleted = true;
+    }
+
+    List<Artifact> pathUpdatedArtifacts = new ArrayList<>();
+    for (var artifact : artifacts) {
+      var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+      if (artifact.getUploadCompleted()) {
+        uploadCompleted = true;
+      }
+
+      var validPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
+      var path = validPrefix + "/" + entityId + "/" + artifact.getKey();
+      var storeTypePath =
+          !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
+
+      if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
+        if (!artifact.getPath().startsWith(validPrefix)) {
+          artifact = artifact.toBuilder().setPath(path).build();
         }
-        var storeTypePath =
-            !artifact.getPathOnly()
-                ? artifactStoreConfig.storeTypePathPrefix() + artifact.getPath()
-                : "";
+        updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
+      } else {
+        artifact = artifact.toBuilder().setPath(path).build();
         insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
       }
+      pathUpdatedArtifacts.add(artifact);
     }
+    return pathUpdatedArtifacts.stream()
+        .sorted(Comparator.comparing(Artifact::getKey))
+        .collect(Collectors.toList());
   }
 
   protected abstract void insertArtifactInDB(

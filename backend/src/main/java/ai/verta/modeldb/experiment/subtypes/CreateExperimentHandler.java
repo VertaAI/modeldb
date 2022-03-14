@@ -153,19 +153,20 @@ public class CreateExperimentHandler extends HandlerUtil {
     valueMap.put("deleted", false);
     valueMap.put("created", false);
 
-    Supplier<InternalFuture<Void>> insertFutureSupplier =
+    Supplier<InternalFuture<Experiment>> insertFutureSupplier =
         () ->
-            jdbi.useHandle(
+            jdbi.withHandle(
                 handle ->
-                    handle.useTransaction(
+                    handle.inTransaction(
                         TransactionIsolationLevel.SERIALIZABLE,
                         handleForTransaction -> {
+                          final var builder = newExperiment.toBuilder();
                           Boolean exists =
                               checkInsertedEntityAlreadyExists(handleForTransaction, newExperiment);
                           if (exists) {
                             throw new AlreadyExistsException(
                                 "Experiment '"
-                                    + newExperiment.getName()
+                                    + builder.getName()
                                     + "' already exists in database");
                           }
 
@@ -182,47 +183,50 @@ public class CreateExperimentHandler extends HandlerUtil {
                           int count = query.execute();
                           LOGGER.trace("Experiment Inserted : " + (count > 0));
 
-                          if (!newExperiment.getTagsList().isEmpty()) {
+                          if (!builder.getTagsList().isEmpty()) {
                             tagsHandler.addTags(
-                                handleForTransaction,
-                                newExperiment.getId(),
-                                newExperiment.getTagsList());
+                                handleForTransaction, builder.getId(), builder.getTagsList());
                           }
-                          if (!newExperiment.getAttributesList().isEmpty()) {
+                          if (!builder.getAttributesList().isEmpty()) {
                             attributeHandler.logKeyValues(
-                                handleForTransaction,
-                                newExperiment.getId(),
-                                newExperiment.getAttributesList());
+                                handleForTransaction, builder.getId(), builder.getAttributesList());
                           }
-                          if (!newExperiment.getArtifactsList().isEmpty()) {
-                            artifactHandler.logArtifacts(
-                                handleForTransaction,
-                                newExperiment.getId(),
-                                newExperiment.getArtifactsList(),
-                                false);
+                          if (!builder.getArtifactsList().isEmpty()) {
+                            var updatedArtifacts =
+                                artifactHandler.logArtifacts(
+                                    handleForTransaction,
+                                    builder.getId(),
+                                    builder.getArtifactsList(),
+                                    false);
+                            builder.clearArtifacts().addAllArtifacts(updatedArtifacts).build();
                           }
-                          if (newExperiment.getCodeVersionSnapshot().hasCodeArchive()
-                              || newExperiment.getCodeVersionSnapshot().hasGitSnapshot()) {
+                          if (builder.getCodeVersionSnapshot().hasCodeArchive()
+                              || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
                             codeVersionHandler.logCodeVersion(
                                 handleForTransaction,
-                                newExperiment.getId(),
+                                builder.getId(),
                                 false,
-                                newExperiment.getCodeVersionSnapshot());
+                                builder.getCodeVersionSnapshot());
                           }
+                          return builder.build();
                         }));
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
-        .thenCompose(unused2 -> createRoleBindingsForExperiment(newExperiment), executor)
         .thenCompose(
-            unused2 ->
-                jdbi.useHandle(
-                    handle ->
-                        handle
-                            .createUpdate("UPDATE experiment SET created=:created WHERE id=:id")
-                            .bind("created", true)
-                            .bind("id", newExperiment.getId())
-                            .execute()),
+            createdExperiment ->
+                createRoleBindingsForExperiment(createdExperiment)
+                    .thenApply(unused -> createdExperiment, executor),
             executor)
-        .thenApply(unused -> newExperiment, executor);
+        .thenCompose(
+            createdExperiment ->
+                jdbi.useHandle(
+                        handle ->
+                            handle
+                                .createUpdate("UPDATE experiment SET created=:created WHERE id=:id")
+                                .bind("created", true)
+                                .bind("id", createdExperiment.getId())
+                                .execute())
+                    .thenApply(unused -> createdExperiment, executor),
+            executor);
   }
 
   private Boolean checkInsertedEntityAlreadyExists(Handle handle, Experiment experiment) {
