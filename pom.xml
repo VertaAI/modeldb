@@ -24,7 +24,7 @@
         <prometheus.version>0.15.0</prometheus.version>
         <protobuf.version>3.19.2</protobuf.version>
         <aws.version>1.12.180</aws.version>
-        <jackson.version>2.12.6</jackson.version>
+        <jackson.version>2.13.2</jackson.version>
         <os-maven-plugin.version>1.6.2</os-maven-plugin.version>
 
         <jacoco.version>0.8.6</jacoco.version>
