@@ -40,7 +40,11 @@ public class ExperimentEntity implements Serializable {
     setTags(RdbmsUtils.convertTagListFromTagMappingList(this, experiment.getTagsList()));
     setArtifactMapping(
         RdbmsUtils.convertArtifactsFromArtifactEntityList(
-            this, ModelDBConstants.ARTIFACTS, experiment.getArtifactsList()));
+            this,
+            ModelDBConstants.ARTIFACTS,
+            experiment.getArtifactsList(),
+            ExperimentEntity.class.getSimpleName(),
+            experiment.getId()));
     setOwner(experiment.getOwner());
     if (experiment.getCodeVersionSnapshot().hasCodeArchive()
         || experiment.getCodeVersionSnapshot().hasGitSnapshot()) {
