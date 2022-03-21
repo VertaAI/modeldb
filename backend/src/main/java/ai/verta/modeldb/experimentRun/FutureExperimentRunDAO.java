@@ -1422,8 +1422,8 @@ public class FutureExperimentRunDAO {
                 createExperimentRunHandler
                     .insertExperimentRun(experimentRun)
                     .thenApply(
-                        unused2 ->
-                            sortExperimentRunFields(Collections.singletonList(experimentRun))
+                        createdExperimentRun ->
+                            sortExperimentRunFields(Collections.singletonList(createdExperimentRun))
                                 .get(0),
                         executor),
             executor);

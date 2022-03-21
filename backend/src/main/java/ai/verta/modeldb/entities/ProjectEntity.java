@@ -38,7 +38,11 @@ public class ProjectEntity implements Serializable {
     setTags(RdbmsUtils.convertTagListFromTagMappingList(this, project.getTagsList()));
     setArtifactMapping(
         RdbmsUtils.convertArtifactsFromArtifactEntityList(
-            this, ModelDBConstants.ARTIFACTS, project.getArtifactsList()));
+            this,
+            ModelDBConstants.ARTIFACTS,
+            project.getArtifactsList(),
+            ProjectEntity.class.getSimpleName(),
+            project.getId()));
     setOwner(project.getOwner());
     setReadme_text(project.getReadmeText());
     if (project.getCodeVersionSnapshot().hasCodeArchive()
