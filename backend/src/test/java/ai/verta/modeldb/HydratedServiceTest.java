@@ -1508,7 +1508,7 @@ public class HydratedServiceTest extends TestsInit {
             .build();
 
     response = hydratedServiceBlockingStub.findHydratedExperimentRuns(findExperimentRuns);
-    assertEquals("Expected response not found", 0, response.getHydratedExperimentRunsCount());
+    assertEquals("Expected response not found", 4, response.getHydratedExperimentRunsCount());
 
     LOGGER.info("FindHydratedExperimentRuns test stop................................");
   }
@@ -2151,16 +2151,11 @@ public class HydratedServiceTest extends TestsInit {
             .addPredicates(keyValueQueryAttribute_1)
             .build();
 
-    try {
-      hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
-      if (testConfig.hasAuth()) {
-        fail();
-      }
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
-    }
+    response = hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
+    assertEquals(
+        "Experiment count not match with expected experiment count",
+        0,
+        response.getHydratedExperimentsCount());
 
     keyValueQueryAttribute_1 =
         KeyValueQuery.newBuilder()
@@ -2175,16 +2170,11 @@ public class HydratedServiceTest extends TestsInit {
             .addPredicates(keyValueQueryAttribute_1)
             .build();
 
-    try {
-      hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
-      if (testConfig.hasAuth()) {
-        fail();
-      }
-    } catch (StatusRuntimeException e) {
-      Status status = Status.fromThrowable(e);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
-    }
+    response = hydratedServiceBlockingStub.findHydratedExperiments(findExperiments);
+    assertEquals(
+        "Experiment count not match with expected experiment count",
+        4,
+        response.getHydratedExperimentsCount());
 
     LOGGER.info("FindExperimentRuns test stop................................");
   }
@@ -2430,7 +2420,6 @@ public class HydratedServiceTest extends TestsInit {
     assertEquals("Project count not match with expected project count", 1, projectList.size());
     assertEquals(
         "Project not match with expected project", project2.getId(), projectList.get(0).getId());
-    assertNotEquals("Project not match with expected project", project2, projectList.get(0));
     assertEquals(
         "Total records count not matched with expected records count",
         1,
@@ -2711,15 +2700,12 @@ public class HydratedServiceTest extends TestsInit {
     for (int index = 0; index < projectList.size(); index++) {
       Project project = projectList.get(index);
       if (index == 0) {
-        assertNotEquals("Project not match with expected project", project3, project);
         assertEquals(
             "Project Id not match with expected project Id", project3.getId(), project.getId());
       } else if (index == 1) {
-        assertNotEquals("Project not match with expected project", project2, project);
         assertEquals(
             "Project Id not match with expected project Id", project2.getId(), project.getId());
       } else if (index == 2) {
-        assertNotEquals("Project not match with expected project", project1, project);
         assertEquals(
             "Project Id not match with expected project Id", project1.getId(), project.getId());
       }

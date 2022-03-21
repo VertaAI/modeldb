@@ -894,7 +894,18 @@ public class FutureProjectDAO {
                   resourcesIds.addAll(resources.getResourceIdsList());
                 }
                 // Validate if current user has access to the entity or not
-                resourcesIds.retainAll(requestedResourcesIds);
+                // resourcesIds.retainAll(requestedResourcesIds);
+                if (requestedResourcesIds.isEmpty()) {
+                  return resourcesIds;
+                } else if (resourcesIds.containsAll(requestedResourcesIds)) {
+                  return requestedResourcesIds;
+                } else {
+                  for (var requestedId : requestedResourcesIds) {
+                    if (!resourcesIds.contains(requestedId)) {
+                      resourcesIds.remove(requestedId);
+                    }
+                  }
+                }
               }
               return resourcesIds;
             },

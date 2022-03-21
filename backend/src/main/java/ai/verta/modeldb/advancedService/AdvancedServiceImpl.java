@@ -24,6 +24,8 @@ import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.dto.*;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
+import ai.verta.modeldb.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.exceptions.UnimplementedException;
 import ai.verta.modeldb.experiment.FutureExperimentDAO;
 import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
@@ -234,17 +236,29 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
-      var findExperimentResponse =
-          futureExperimentDAO
-              .findExperiments(
-                  FindExperiments.newBuilder()
-                      .setProjectId(request.getProjectId())
-                      .setPageLimit(request.getPageLimit())
-                      .setPageNumber(request.getPageNumber())
-                      .setAscending(request.getAscending())
-                      .setSortKey(request.getSortKey())
-                      .build())
-              .get();
+      FindExperiments.Response findExperimentResponse;
+      try {
+        findExperimentResponse =
+            futureExperimentDAO
+                .findExperiments(
+                    FindExperiments.newBuilder()
+                        .setProjectId(request.getProjectId())
+                        .setPageLimit(request.getPageLimit())
+                        .setPageNumber(request.getPageNumber())
+                        .setAscending(request.getAscending())
+                        .setSortKey(request.getSortKey())
+                        .build())
+                .get();
+      } catch (Exception ex) {
+        if (ex.getCause() != null && ex.getCause().getCause() != null) {
+          if (ex.getCause().getCause() instanceof InvalidArgumentException) {
+            throw (InvalidArgumentException) ex.getCause().getCause();
+          } else if (ex.getCause().getCause() instanceof UnimplementedException) {
+            throw (UnimplementedException) ex.getCause().getCause();
+          }
+        }
+        throw ex;
+      }
 
       List<Experiment> experiments = findExperimentResponse.getExperimentsList();
 
@@ -683,17 +697,30 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       }
 
       var userInfo = authService.getCurrentLoginUserInfo();
-      var findExperimentResponse =
-          futureExperimentDAO
-              .findExperiments(
-                  FindExperiments.newBuilder()
-                      .setProjectId(request.getProjectId())
-                      .setPageLimit(request.getPageLimit())
-                      .setPageNumber(request.getPageNumber())
-                      .setAscending(request.getAscending())
-                      .setSortKey(request.getSortKey())
-                      .build())
-              .get();
+      FindExperiments.Response findExperimentResponse;
+      try {
+        findExperimentResponse =
+            futureExperimentDAO
+                .findExperiments(
+                    FindExperiments.newBuilder()
+                        .setProjectId(request.getProjectId())
+                        .addAllPredicates(request.getPredicatesList())
+                        .setPageLimit(request.getPageLimit())
+                        .setPageNumber(request.getPageNumber())
+                        .setAscending(request.getAscending())
+                        .setSortKey(request.getSortKey())
+                        .build())
+                .get();
+      } catch (Exception ex) {
+        if (ex.getCause() != null && ex.getCause().getCause() != null) {
+          if (ex.getCause().getCause() instanceof InvalidArgumentException) {
+            throw (InvalidArgumentException) ex.getCause().getCause();
+          } else if (ex.getCause().getCause() instanceof UnimplementedException) {
+            throw (UnimplementedException) ex.getCause().getCause();
+          }
+        }
+        throw ex;
+      }
       LOGGER.debug(
           "ExperimentPaginationDTO record count : {}", findExperimentResponse.getTotalRecords());
 
@@ -729,7 +756,21 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
       // Get the user info from the Context
       var userInfo = authService.getCurrentLoginUserInfo();
 
-      var projectResponse = futureProjectDAO.findProjects(request).get();
+      FindProjects.Response projectResponse;
+      try {
+        projectResponse = futureProjectDAO.findProjects(request).get();
+      } catch (Exception ex) {
+        if (ex.getCause() != null && ex.getCause().getCause() != null) {
+          if (ex.getCause().getCause() instanceof InvalidArgumentException) {
+            throw (InvalidArgumentException) ex.getCause().getCause();
+          } else if (ex.getCause().getCause() instanceof UnimplementedException) {
+            throw (UnimplementedException) ex.getCause().getCause();
+          } else if (ex.getCause().getCause() instanceof PermissionDeniedException) {
+            throw (PermissionDeniedException) ex.getCause().getCause();
+          }
+        }
+        throw ex;
+      }
       LOGGER.debug(ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectResponse.getTotalRecords());
 
       List<HydratedProject> hydratedProjects = new ArrayList<>();
