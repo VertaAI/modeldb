@@ -130,18 +130,20 @@ public abstract class CommonArtifactHandler<T> {
         uploadCompleted = true;
       }
 
-      var validPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
-      var path = validPrefix + "/" + entityId + "/" + artifact.getKey();
+      var path = artifact.getPath();
+      var validEntityPrefix = path.split("/")[0];
+      if (!startPrefixWithValidEntity(validEntityPrefix)) {
+        validEntityPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
+        path = validEntityPrefix + "/" + entityId + "/" + artifact.getKey();
+      }
+
+      artifact = artifact.toBuilder().setPath(path).build();
       var storeTypePath =
           !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
 
       if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
-        if (!artifact.getPath().startsWith(validPrefix)) {
-          artifact = artifact.toBuilder().setPath(path).build();
-        }
         updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
       } else {
-        artifact = artifact.toBuilder().setPath(path).build();
         insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
       }
       pathUpdatedArtifacts.add(artifact);
@@ -149,6 +151,16 @@ public abstract class CommonArtifactHandler<T> {
     return pathUpdatedArtifacts.stream()
         .sorted(Comparator.comparing(Artifact::getKey))
         .collect(Collectors.toList());
+  }
+
+  public static boolean startPrefixWithValidEntity(String entityNamePrefix) {
+    return entityNamePrefix.equals("ModelVersionEntity")
+        || entityNamePrefix.equals("RegisteredModelEntity")
+        || entityNamePrefix.equals("CodeVersionEntity")
+        || entityNamePrefix.equals("ObservationEntity")
+        || entityNamePrefix.equals("ProjectEntity")
+        || entityNamePrefix.equals("ExperimentEntity")
+        || entityNamePrefix.equals("ExperimentRunEntity");
   }
 
   protected abstract void insertArtifactInDB(
