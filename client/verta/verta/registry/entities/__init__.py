@@ -4,6 +4,7 @@
 from tempfile import NamedTemporaryFile
 
 from verta._internal_utils import documentation
+import pandas as pd
 
 from ._model import RegisteredModel
 from ._models import RegisteredModels

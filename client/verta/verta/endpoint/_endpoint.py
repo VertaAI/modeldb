@@ -243,34 +243,6 @@ class Endpoint(object):
         return None
 
 
-    def update(self, model, *args, **kwargs):
-        ret = self._update(self, model, *args, **kwargs)
-        if isinstance(model, RegisteredModelVersion):
-            from urllib.parse import urlparse
-            from verta._internal_utils import _utils
-            from utils.get_data import chunks
-
-            model_version = model
-
-            try:
-                # TODO: make exception catching more specific
-                local_path = model_version._get_artifact_msg("reference_data").path
-            except:
-                return ret
-            bucket = urlparse(model_version._get_url_for_artifact("reference_data", "GET").url).hostname.split('.')[0]
-            conn = self._conn
-            url = "{}://{}/api/v1/monitoring/ingest/reference/endpoint/{}".format(
-                conn.scheme, conn.socket, self.id
-            )
-            ingestRequest = {
-                "bucket": bucket,
-                "path": local_path
-            }
-            response = _utils.make_request("POST", url, conn, json=ingestRequest)
-            _utils.raise_for_http_error(response)
-        return ret
-
-
     def log_ground_truth(self, id, labels, colname):
         conn = self._conn
         url = "{}://{}/api/v1/monitoring/ingest/decorate/batch/endpoint/{}".format(
@@ -296,7 +268,7 @@ class Endpoint(object):
         _utils.raise_for_http_error(response)
 
 
-    def _update(
+    def update(
         self,
         model_reference,
         strategy=None,
@@ -336,6 +308,7 @@ class Endpoint(object):
 
         """
         if not isinstance(model_reference, (RegisteredModelVersion, ExperimentRun, Build)):
+            print("type is {}".format(type(model_reference)))
             raise TypeError(
                 "`model_reference` must be an ExperimentRun, RegisteredModelVersion, or Build"
             )
@@ -356,7 +329,30 @@ class Endpoint(object):
             build = self._create_build(model_reference)
             update_body["build_id"] = build.id
 
-        return self._update_from_build(update_body, wait)
+        ret = self._update_from_build(update_body, wait)
+        if isinstance(model_reference, RegisteredModelVersion):
+            from urllib.parse import urlparse
+            from verta._internal_utils import _utils
+            
+            model_version = model_reference
+
+            try:
+                # TODO: make exception catching more specific
+                local_path = model_version._get_artifact_msg("reference_data").path
+            except:
+                return ret
+            bucket = urlparse(model_version._get_url_for_artifact("reference_data", "GET").url).hostname.split('.')[0]
+            conn = self._conn
+            url = "{}://{}/api/v1/monitoring/ingest/reference/endpoint/{}".format(
+                conn.scheme, conn.socket, self.id
+            )
+            ingestRequest = {
+                "bucket": bucket,
+                "path": local_path
+            }
+            response = _utils.make_request("POST", url, conn, json=ingestRequest)
+            _utils.raise_for_http_error(response)
+        return ret
 
     def _update_from_build(self, update_body, wait=False):
         # Update stages with new build
