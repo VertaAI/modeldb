@@ -1,7 +1,5 @@
 package ai.verta.modeldb.entities;
 
-import static ai.verta.modeldb.common.subtypes.CommonArtifactHandler.startPrefixWithValidEntity;
-
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.CommonConstants;
@@ -55,12 +53,8 @@ public class ArtifactEntity implements Serializable {
       uploadCompleted = true;
     }
 
-    var path = artifact.getPath();
-    var validEntityPrefix = path.split("/")[0];
-    if (!startPrefixWithValidEntity(validEntityPrefix)) {
-      validEntityPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
-      path = validEntityPrefix + "/" + entityId + "/" + artifact.getKey();
-    }
+    var validPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
+    var path = validPrefix + "/" + entityId + "/" + artifact.getKey();
 
     setPath(path);
     if (!artifact.getPathOnly()) {

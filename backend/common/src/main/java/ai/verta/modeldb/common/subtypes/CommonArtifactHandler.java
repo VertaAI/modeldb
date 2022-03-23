@@ -108,7 +108,11 @@ public abstract class CommonArtifactHandler<T> {
       throws SQLException;
 
   public List<Artifact> logArtifacts(
-      Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
+      Handle handle,
+      T entityId,
+      List<Artifact> artifacts,
+      boolean overwrite,
+      boolean isPopulateFromOtherEntity) {
     // Validate input
     validateField(entityId);
 
@@ -131,15 +135,12 @@ public abstract class CommonArtifactHandler<T> {
       }
 
       var path = artifact.getPath();
-      var validEntityPrefix = path.split("/")[0];
-      if (!startPrefixWithValidEntity(validEntityPrefix)) {
-        validEntityPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
-        path = validEntityPrefix + "/" + entityId + "/" + artifact.getKey();
+      if (!isPopulateFromOtherEntity) {
+        var validPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
+        path = validPrefix + "/" + entityId + "/" + artifact.getKey();
+        artifact = artifact.toBuilder().setPath(path).build();
       }
-
-      artifact = artifact.toBuilder().setPath(path).build();
-      var storeTypePath =
-          !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
+      var storeTypePath = !artifact.getPathOnly() ? path : "";
 
       if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
         updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
@@ -151,16 +152,6 @@ public abstract class CommonArtifactHandler<T> {
     return pathUpdatedArtifacts.stream()
         .sorted(Comparator.comparing(Artifact::getKey))
         .collect(Collectors.toList());
-  }
-
-  public static boolean startPrefixWithValidEntity(String entityNamePrefix) {
-    return entityNamePrefix.equals("ModelVersionEntity")
-        || entityNamePrefix.equals("RegisteredModelEntity")
-        || entityNamePrefix.equals("CodeVersionEntity")
-        || entityNamePrefix.equals("ObservationEntity")
-        || entityNamePrefix.equals("ProjectEntity")
-        || entityNamePrefix.equals("ExperimentEntity")
-        || entityNamePrefix.equals("ExperimentRunEntity");
   }
 
   protected abstract void insertArtifactInDB(
