@@ -138,6 +138,12 @@ public abstract class CommonArtifactHandler<T> {
       if (!isPopulateFromOtherEntity) {
         var validPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
         path = validPrefix + "/" + entityId + "/" + artifact.getKey();
+
+        var filenameExtension = artifact.getFilenameExtension();
+        if (!filenameExtension.isEmpty() && !filenameExtension.endsWith("." + filenameExtension)) {
+          path += "." + filenameExtension;
+        }
+
         artifact = artifact.toBuilder().setPath(path).build();
       }
       var storeTypePath = !artifact.getPathOnly() ? path : "";
