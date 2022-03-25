@@ -243,6 +243,8 @@ public class ExperimentRunTest extends TestsInit {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
+    checkValidArtifactPath(
+        experimentRun.getId(), "ExperimentRunEntity", experimentRun.getArtifactsList());
 
     createExperimentRunRequest =
         getCreateExperimentRunRequest(
@@ -278,6 +280,8 @@ public class ExperimentRunTest extends TestsInit {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun2.getName());
+    checkValidArtifactPath(
+        experimentRun2.getId(), "ExperimentRunEntity", experimentRun2.getArtifactsList());
   }
 
   private void checkEqualsAssert(StatusRuntimeException e) {
@@ -370,6 +374,7 @@ public class ExperimentRunTest extends TestsInit {
             .setArtifactType(ArtifactType.IMAGE)
             .setUploadCompleted(
                 !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
+            .setFilenameExtension("png")
             .build());
 
     List<Artifact> datasets = new ArrayList<>();
@@ -380,6 +385,7 @@ public class ExperimentRunTest extends TestsInit {
             .setArtifactType(ArtifactType.MODEL)
             .setUploadCompleted(
                 !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
+            .setFilenameExtension("pkl")
             .build());
     datasets.add(
         Artifact.newBuilder()
@@ -388,6 +394,7 @@ public class ExperimentRunTest extends TestsInit {
             .setArtifactType(ArtifactType.DATA)
             .setUploadCompleted(
                 !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
+            .setFilenameExtension("json")
             .build());
 
     List<KeyValue> metrics = new ArrayList<>();
@@ -2820,6 +2827,7 @@ public class ExperimentRunTest extends TestsInit {
             .setKey("Google Pay Artifact " + Calendar.getInstance().getTimeInMillis())
             .setPath("46513216546" + Calendar.getInstance().getTimeInMillis())
             .setArtifactType(ArtifactType.TENSORBOARD)
+            .setFilenameExtension("tf")
             .build();
 
     LogArtifact logArtifactRequest =
@@ -2837,6 +2845,11 @@ public class ExperimentRunTest extends TestsInit {
         experimentRun.getArtifactsCount() + 1,
         response.getExperimentRun().getArtifactsCount());
 
+    checkValidArtifactPath(
+        response.getExperimentRun().getId(),
+        "ExperimentRunEntity",
+        response.getExperimentRun().getArtifactsList());
+
     assertNotEquals(
         "ExperimentRun date_updated field not update on database",
         experimentRun.getDateUpdated(),
@@ -2846,6 +2859,24 @@ public class ExperimentRunTest extends TestsInit {
     experimentRunMap.put(experimentRun.getId(), experimentRun);
 
     LOGGER.info("Log Artifact in ExperimentRun tags test stop................................");
+  }
+
+  private static void checkValidArtifactPath(
+      String entityId, String entityName, List<Artifact> artifacts) {
+    for (var responseArtifact : artifacts) {
+      var validPrefix = testConfig.artifactStoreConfig.getPathPrefixWithSeparator() + entityName;
+      var path = validPrefix + "/" + entityId + "/" + responseArtifact.getKey();
+
+      var filenameExtension = responseArtifact.getFilenameExtension();
+      if (!filenameExtension.isEmpty() && !filenameExtension.endsWith("." + filenameExtension)) {
+        path += "." + filenameExtension;
+      }
+
+      assertEquals(
+          "ExperimentRun artifact path not match with expected artifact path",
+          path,
+          responseArtifact.getPath());
+    }
   }
 
   @Test
@@ -4997,6 +5028,7 @@ public class ExperimentRunTest extends TestsInit {
                             .setKey("code_version_image")
                             .setPath("https://xyz_path_string.com/image.png")
                             .setArtifactType(ArtifactType.CODE)
+                            .setFilenameExtension("png")
                             .setUploadCompleted(
                                 !testConfig
                                     .artifactStoreConfig
@@ -5016,6 +5048,23 @@ public class ExperimentRunTest extends TestsInit {
         "ExperimentRun codeVersion not match with expected ExperimentRun codeVersion",
         logExperimentRunCodeVersionRequest.getCodeVersion(),
         codeVersion);
+
+    var validPrefix =
+        testConfig.artifactStoreConfig.getPathPrefixWithSeparator() + "CodeVersionEntity";
+    assertTrue(
+        "ExperimentRun artifact path not match with expected artifact path",
+        codeVersion.getCodeArchive().getPath().startsWith(validPrefix));
+
+    assertTrue(
+        "ExperimentRun artifact path not match with expected artifact path",
+        codeVersion.getCodeArchive().getPath().contains("fake-"));
+
+    assertTrue(
+        "ExperimentRun artifact path not match with expected artifact path",
+        codeVersion
+            .getCodeArchive()
+            .getPath()
+            .endsWith("." + codeVersion.getCodeArchive().getFilenameExtension()));
 
     try {
       experimentRunServiceStub.logExperimentRunCodeVersion(logExperimentRunCodeVersionRequest);
