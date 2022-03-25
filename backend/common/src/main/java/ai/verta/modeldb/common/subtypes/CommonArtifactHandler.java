@@ -140,7 +140,7 @@ public abstract class CommonArtifactHandler<T> {
         path = validPrefix + "/" + entityId + "/" + artifact.getKey();
 
         var filenameExtension = artifact.getFilenameExtension();
-        if (!filenameExtension.isEmpty() && !filenameExtension.endsWith("." + filenameExtension)) {
+        if (!filenameExtension.isEmpty() && !path.endsWith("." + filenameExtension)) {
           path += "." + filenameExtension;
         }
 
