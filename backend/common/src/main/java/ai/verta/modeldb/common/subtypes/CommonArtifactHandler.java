@@ -108,7 +108,11 @@ public abstract class CommonArtifactHandler<T> {
       throws SQLException;
 
   public List<Artifact> logArtifacts(
-      Handle handle, T entityId, List<Artifact> artifacts, boolean overwrite) {
+      Handle handle,
+      T entityId,
+      List<Artifact> artifacts,
+      boolean overwrite,
+      boolean isPopulateFromOtherEntity) {
     // Validate input
     validateField(entityId);
 
@@ -130,18 +134,23 @@ public abstract class CommonArtifactHandler<T> {
         uploadCompleted = true;
       }
 
-      var validPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
-      var path = validPrefix + "/" + entityId + "/" + artifact.getKey();
-      var storeTypePath =
-          !artifact.getPathOnly() ? artifactStoreConfig.storeTypePathPrefix() + path : "";
+      var path = artifact.getPath();
+      if (!isPopulateFromOtherEntity) {
+        var validPrefix = artifactStoreConfig.getPathPrefixWithSeparator() + this.entityName;
+        path = validPrefix + "/" + entityId + "/" + artifact.getKey();
+
+        var filenameExtension = artifact.getFilenameExtension();
+        if (!filenameExtension.isEmpty() && !path.endsWith("." + filenameExtension)) {
+          path += "." + filenameExtension;
+        }
+
+        artifact = artifact.toBuilder().setPath(path).build();
+      }
+      var storeTypePath = !artifact.getPathOnly() ? path : "";
 
       if (overwrite && isExists(entityId, artifact.getKey(), handle)) {
-        if (!artifact.getPath().startsWith(validPrefix)) {
-          artifact = artifact.toBuilder().setPath(path).build();
-        }
         updateArtifactWithHandle(entityId, handle, artifact, uploadCompleted, storeTypePath);
       } else {
-        artifact = artifact.toBuilder().setPath(path).build();
         insertArtifactInDB(entityId, handle, artifact, uploadCompleted, storeTypePath);
       }
       pathUpdatedArtifacts.add(artifact);
