@@ -1399,12 +1399,16 @@ public class DatasetTest extends TestsInit {
       GetExperimentRunById.Response response =
           experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
-      checkValidArtifactPath(response.getExperimentRun().getId(), "ExperimentRunEntity", response.getExperimentRun().getDatasetsList());
-      var keys = response.getExperimentRun().getDatasetsList().stream().map(Artifact::getKey).collect(
-          Collectors.toList());
+      checkValidArtifactPath(
+          response.getExperimentRun().getId(),
+          "ExperimentRunEntity",
+          response.getExperimentRun().getDatasetsList());
+      var keys =
+          response.getExperimentRun().getDatasetsList().stream()
+              .map(Artifact::getKey)
+              .collect(Collectors.toList());
       assertTrue(
-          "Experiment dataset not match with expected dataset",
-          keys.contains(artifact.getKey()));
+          "Experiment dataset not match with expected dataset", keys.contains(artifact.getKey()));
 
       assertNotEquals(
           "ExperimentRun date_updated field not update on database",
@@ -1429,12 +1433,16 @@ public class DatasetTest extends TestsInit {
       getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
       response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
-      checkValidArtifactPath(response.getExperimentRun().getId(), "ExperimentRunEntity", response.getExperimentRun().getDatasetsList());
-      keys = response.getExperimentRun().getDatasetsList().stream().map(Artifact::getKey).collect(
-          Collectors.toList());
+      checkValidArtifactPath(
+          response.getExperimentRun().getId(),
+          "ExperimentRunEntity",
+          response.getExperimentRun().getDatasetsList());
+      keys =
+          response.getExperimentRun().getDatasetsList().stream()
+              .map(Artifact::getKey)
+              .collect(Collectors.toList());
       assertTrue(
-          "Experiment dataset not match with expected dataset",
-          keys.contains(artifact.getKey()));
+          "Experiment dataset not match with expected dataset", keys.contains(artifact.getKey()));
 
       assertNotEquals(
           "ExperimentRun date_updated field not update on database",
@@ -1610,12 +1618,16 @@ public class DatasetTest extends TestsInit {
       GetExperimentRunById.Response response =
           experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
-      checkValidArtifactPath(response.getExperimentRun().getId(), "ExperimentRunEntity", response.getExperimentRun().getDatasetsList());
-      var keys = response.getExperimentRun().getDatasetsList().stream().map(Artifact::getKey).collect(
-          Collectors.toList());
+      checkValidArtifactPath(
+          response.getExperimentRun().getId(),
+          "ExperimentRunEntity",
+          response.getExperimentRun().getDatasetsList());
+      var keys =
+          response.getExperimentRun().getDatasetsList().stream()
+              .map(Artifact::getKey)
+              .collect(Collectors.toList());
       assertTrue(
-          "Experiment dataset not match with expected dataset",
-          keys.contains(artifact.getKey()));
+          "Experiment dataset not match with expected dataset", keys.contains(artifact.getKey()));
 
       assertNotEquals(
           "ExperimentRun date_updated field not update on database",
@@ -1640,12 +1652,16 @@ public class DatasetTest extends TestsInit {
       getExperimentRunById = GetExperimentRunById.newBuilder().setId(experimentRun.getId()).build();
       response = experimentRunServiceStub.getExperimentRunById(getExperimentRunById);
       LOGGER.info("LogDataset Response : \n" + response.getExperimentRun());
-      checkValidArtifactPath(response.getExperimentRun().getId(), "ExperimentRunEntity", response.getExperimentRun().getDatasetsList());
-      keys = response.getExperimentRun().getDatasetsList().stream().map(Artifact::getKey).collect(
-          Collectors.toList());
+      checkValidArtifactPath(
+          response.getExperimentRun().getId(),
+          "ExperimentRunEntity",
+          response.getExperimentRun().getDatasetsList());
+      keys =
+          response.getExperimentRun().getDatasetsList().stream()
+              .map(Artifact::getKey)
+              .collect(Collectors.toList());
       assertTrue(
-          "Experiment dataset not match with expected dataset",
-          keys.contains(artifact.getKey()));
+          "Experiment dataset not match with expected dataset", keys.contains(artifact.getKey()));
 
       assertNotEquals(
           "ExperimentRun date_updated field not update on database",
