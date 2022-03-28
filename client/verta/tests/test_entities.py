@@ -122,16 +122,13 @@ class TestEntities:
             assert not os.path.isfile(filepath)
             assert not entity._get_cached_file(filename)
 
-            try:
-                assert entity._cache_file(filename, contents) == filepath
+            assert entity._cache_file(filename, contents) == filepath
 
-                assert os.path.isfile(filepath)
-                assert entity._get_cached_file(filename)
+            assert os.path.isfile(filepath)
+            assert entity._get_cached_file(filename)
 
-                with open(filepath, 'rb') as f:
-                    assert f.read() == contents
-            finally:
-                shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+            with open(filepath, 'rb') as f:
+                assert f.read() == contents
 
     def test_context(self, client, strs):
         strs = iter(strs)
