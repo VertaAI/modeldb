@@ -53,6 +53,9 @@ message IdServiceProviderEnum {
         SAML = 5;
         AD_OAUTH2 = 6;
         LDAP = 7;
+        OKTA_SCIM = 8; // Not currently used as there is no way to tell SCIM sources apart
+        AD_SCIM = 9;   // Not currently used as there is no way to tell SCIM sources apart
+        SCIM = 10;
     }
 }
 
@@ -97,11 +100,6 @@ message UserInfo {
     bool disabled = 12;
     bool has_primary_dev_key = 13;
     bool has_secondary_dev_key = 14;
-}
-
-message UserWithDevKey {
-    string dev_key = 1;
-    UserInfo user = 2;
 }
 
 message CreateUser {
