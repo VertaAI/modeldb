@@ -50,6 +50,7 @@ message AuthzActionEnum {
         CREATE_SERVICE_ACCOUNT = 9;
         CREATE_CONTAINER_REGISTRY = 10;
         CREATE_WEBHOOK = 11;
+        READ_DEVKEY = 12;
     }
 
 };
@@ -127,6 +128,7 @@ message AuthzResourceEnum {
         WEBHOOK = 9;
         SYSTEM_ADMIN = 10;
         PYPI_CONFIGURATION = 11;
+        KAFKA_CONFIGURATION = 12;
     }
 };
 
