@@ -91,33 +91,17 @@ message UserInfo {
     IdServiceProviderEnum.IdServiceProvider id_service_provider = 6;
     repeated string roles = 7;
     string image_url = 8;
-    VertaUserInfo verta_info = 10;
-    bool has_primary_dev_key = 12;
-    bool has_secondary_dev_key = 13;
-}
-
-message UserInfoForConfig {
-    string user_id = 1;
-    string full_name = 2;
-    string first_name = 3;
-    string last_name = 4;
-    string email = 5;
-    IdServiceProviderEnum.IdServiceProvider id_service_provider = 6;
-    repeated string roles = 7;
-    string image_url = 8;
-    VertaUserInfo verta_info = 10;
     string dev_key = 9;
+    VertaUserInfo verta_info = 10;
     string secondary_dev_key = 11;
+    bool disabled = 12;
+    bool has_primary_dev_key = 13;
+    bool has_secondary_dev_key = 14;
 }
 
 message UserWithDevKey {
     string dev_key = 1;
     UserInfo user = 2;
-}
-
-message UserWithDevKeyCreate {
-    UserInfoForConfig info = 1;
-    string password = 2; // If empty, create one.
 }
 
 message CreateUser {
