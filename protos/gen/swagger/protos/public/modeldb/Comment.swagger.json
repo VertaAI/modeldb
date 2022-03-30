@@ -331,8 +331,18 @@
         "image_url": {
           "type": "string"
         },
+        "dev_key": {
+          "type": "string"
+        },
         "verta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
+        },
+        "secondary_dev_key": {
+          "type": "string"
+        },
+        "disabled": {
+          "type": "boolean",
+          "format": "boolean"
         },
         "has_primary_dev_key": {
           "type": "boolean",
