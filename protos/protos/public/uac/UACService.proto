@@ -102,6 +102,11 @@ message UserInfo {
     bool has_secondary_dev_key = 14;
 }
 
+message UserWithDevKey {
+    string dev_key = 1;
+    UserInfo user = 2;
+}
+
 message CreateUser {
     UserInfo info = 1;
     string password = 2; // If empty, create one.
