@@ -315,7 +315,8 @@
         "READ_SECRETS",
         "CREATE_SERVICE_ACCOUNT",
         "CREATE_CONTAINER_REGISTRY",
-        "CREATE_WEBHOOK"
+        "CREATE_WEBHOOK",
+        "READ_DEVKEY"
       ],
       "default": "UNKNOWN"
     },
@@ -333,7 +334,8 @@
         "EVENT",
         "WEBHOOK",
         "SYSTEM_ADMIN",
-        "PYPI_CONFIGURATION"
+        "PYPI_CONFIGURATION",
+        "KAFKA_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },

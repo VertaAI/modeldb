@@ -822,7 +822,8 @@
         "READ_SECRETS",
         "CREATE_SERVICE_ACCOUNT",
         "CREATE_CONTAINER_REGISTRY",
-        "CREATE_WEBHOOK"
+        "CREATE_WEBHOOK",
+        "READ_DEVKEY"
       ],
       "default": "UNKNOWN"
     },
