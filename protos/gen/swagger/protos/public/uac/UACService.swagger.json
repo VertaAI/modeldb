@@ -450,7 +450,10 @@
         "VERTA",
         "SAML",
         "AD_OAUTH2",
-        "LDAP"
+        "LDAP",
+        "OKTA_SCIM",
+        "AD_SCIM",
+        "SCIM"
       ],
       "default": "UNKNOWN"
     },
