@@ -244,7 +244,16 @@
                 <artifactId>spring-core</artifactId>
                 <version>${springframework.version}</version>
             </dependency>
-            <!-- End Snyk vulnerability mitigation -->
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-beans</artifactId>
+                <version>${springframework.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-expression</artifactId>
+                <version>${springframework.version}</version>
+            </dependency>
 
             <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_servlet -->
             <dependency>
