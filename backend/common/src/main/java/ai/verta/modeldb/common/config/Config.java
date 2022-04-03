@@ -5,6 +5,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
 import io.jaegertracing.Configuration;
@@ -125,7 +126,7 @@ public abstract class Config {
     return new FutureJdbi(jdbi, dbExecutor);
   }
 
-  public Jdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
+  public InternalJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
     initializeTracing();
     final var hikariDataSource = new HikariDataSource();
     final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.getRdbConfiguration());
@@ -140,7 +141,7 @@ public abstract class Config {
     hikariDataSource.setPoolName(poolName);
     hikariDataSource.setLeakDetectionThreshold(databaseConfig.getLeakDetectionThresholdMs());
 
-    return Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get()));
+    return new InternalJdbi(Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get())));
   }
 
   public ServiceConfig getAuthService() {
