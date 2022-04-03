@@ -141,7 +141,8 @@ public abstract class Config {
     hikariDataSource.setPoolName(poolName);
     hikariDataSource.setLeakDetectionThreshold(databaseConfig.getLeakDetectionThresholdMs());
 
-    return new InternalJdbi(Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get())));
+    return new InternalJdbi(
+        Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get())));
   }
 
   public ServiceConfig getAuthService() {

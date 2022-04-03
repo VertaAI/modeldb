@@ -5,9 +5,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
-import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.statement.StatementExceptions;
-import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class FutureJdbi {
   private final Executor executor;
@@ -38,9 +36,8 @@ public class FutureJdbi {
   }
 
   public <R, T extends Exception> InternalFuture<R> withTransaction(HandleCallback<R, T> callback) {
-      SupplierWithException<R, T> supplierWithException =
-              () -> jdbi.inTransaction(callback);
-      return withHandleOrTransaction(supplierWithException);
+    SupplierWithException<R, T> supplierWithException = () -> jdbi.inTransaction(callback);
+    return withHandleOrTransaction(supplierWithException);
   }
 
   private <R, T extends Exception> InternalFuture<R> withHandleOrTransaction(
@@ -82,8 +79,7 @@ public class FutureJdbi {
 
   public <T extends Exception> InternalFuture<Void> useTransaction(
       final HandleConsumer<T> consumer) {
-    RunnableWithException<T> runnableWithException =
-        () -> jdbi.useTransaction(consumer);
+    RunnableWithException<T> runnableWithException = () -> jdbi.useTransaction(consumer);
     return useHandleOrTransaction(runnableWithException);
   }
 
