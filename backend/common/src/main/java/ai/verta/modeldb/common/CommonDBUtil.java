@@ -321,17 +321,20 @@ public abstract class CommonDBUtil {
     }
 
     var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-    LOGGER.info("Connecting to DB server url: {} ", dbUrl);
+    LOGGER.info("Connecting to DB server url: {}", dbUrl);
 
     if (rdb.isMssql()) {
       Pattern pattern = Pattern.compile("jdbc:sqlserver://([^;]*)", Pattern.CASE_INSENSITIVE);
+      String connectionURL = rdb.getDBConnectionURL();
+      LOGGER.info("Cleaning up SQL Server connection url from: {}", connectionURL);
       dbUrl =
           pattern
-              .matcher(rdb.getDBConnectionURL())
+              .matcher(connectionURL)
               .results()
               .map(mr -> mr.group(1))
               .map(hostPort -> "jdbc:sqlserver://" + hostPort)
               .collect(Collectors.joining());
+      LOGGER.info("Cleaned up SQL Server connection url result: {}", dbUrl);
     }
 
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
