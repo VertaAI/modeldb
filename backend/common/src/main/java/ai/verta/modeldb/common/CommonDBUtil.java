@@ -334,8 +334,6 @@ public abstract class CommonDBUtil {
               .map(mr -> mr.group(1))
               .map(hostPort -> "jdbc:sqlserver://" + hostPort)
               .collect(Collectors.joining());
-    } else {
-      LOGGER.info("Connecting to DB server url: {}", dbUrl);
     }
 
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
