@@ -3,6 +3,8 @@
 
 from tempfile import NamedTemporaryFile
 
+import pandas as pd
+
 from verta._internal_utils import documentation
 import pandas as pd
 
