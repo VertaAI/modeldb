@@ -316,17 +316,16 @@ public abstract class CommonDBUtil {
     properties.put("user", rdb.getRdbUsername());
     properties.put("password", rdb.getRdbPassword());
 
-    if (rdb.getDBConnectionURL() == null) {
+    String dbConnectionURL = rdb.getDBConnectionURL();
+    if (dbConnectionURL == null) {
       properties.put("sslMode", rdb.getSslMode());
     }
 
     var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-    LOGGER.info("Connecting to DB server url: {}", dbUrl);
-
-    if (rdb.isMssql()) {
+    
+    if (rdb.isMssql() && dbConnectionURL != null) {
+      LOGGER.info("Sanitizing custom SQL Server connection url: {}", connectionURL);
       Pattern pattern = Pattern.compile("jdbc:sqlserver://([^;]*)", Pattern.CASE_INSENSITIVE);
-      String connectionURL = rdb.getDBConnectionURL();
-      LOGGER.info("Cleaning up SQL Server connection url from: {}", connectionURL);
       dbUrl =
           pattern
               .matcher(connectionURL)
@@ -334,8 +333,9 @@ public abstract class CommonDBUtil {
               .map(mr -> mr.group(1))
               .map(hostPort -> "jdbc:sqlserver://" + hostPort)
               .collect(Collectors.joining());
-      LOGGER.info("Cleaned up SQL Server connection url result: {}", dbUrl);
     }
+    
+    LOGGER.info("Connecting to DB server url: {}", dbUrl);
 
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
       var resultSet = connection.getMetaData().getCatalogs();
