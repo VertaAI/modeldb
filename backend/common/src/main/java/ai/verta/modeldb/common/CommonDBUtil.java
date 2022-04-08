@@ -322,7 +322,7 @@ public abstract class CommonDBUtil {
     }
 
     var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-    
+
     if (rdb.isMssql() && dbConnectionURL != null) {
       LOGGER.info("Sanitizing custom SQL Server connection url: {}", connectionURL);
       Pattern pattern = Pattern.compile("jdbc:sqlserver://([^;]*)", Pattern.CASE_INSENSITIVE);
@@ -334,7 +334,7 @@ public abstract class CommonDBUtil {
               .map(hostPort -> "jdbc:sqlserver://" + hostPort)
               .collect(Collectors.joining());
     }
-    
+
     LOGGER.info("Connecting to DB server url: {}", dbUrl);
 
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
