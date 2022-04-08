@@ -336,8 +336,7 @@ public abstract class CommonDBUtil {
               .collect(Collectors.joining());
     } else {
       LOGGER.info("Connecting to DB server url: {}", dbUrl);
-    }  
-
+    }
 
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
       var resultSet = connection.getMetaData().getCatalogs();
