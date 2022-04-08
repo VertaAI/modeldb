@@ -316,18 +316,20 @@ public abstract class CommonDBUtil {
     properties.put("user", rdb.getRdbUsername());
     properties.put("password", rdb.getRdbPassword());
 
-    if (rdb.getDBConnectionURL() == null) {
+    String dbConnectionURL = rdb.getDBConnectionURL();
+    if (dbConnectionURL == null) {
       properties.put("sslMode", rdb.getSslMode());
     }
 
     var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-    LOGGER.info("Connecting to DB server url: {} ", dbUrl);
 
-    if (rdb.isMssql()) {
+    if (rdb.isMssql() && dbConnectionURL != null) {
+      // Do not log the custom connection URL as it may contain username and password
+      LOGGER.info("Connecting to using custom SQL Server connection string");
       Pattern pattern = Pattern.compile("jdbc:sqlserver://([^;]*)", Pattern.CASE_INSENSITIVE);
       dbUrl =
           pattern
-              .matcher(rdb.getDBConnectionURL())
+              .matcher(dbConnectionURL)
               .results()
               .map(mr -> mr.group(1))
               .map(hostPort -> "jdbc:sqlserver://" + hostPort)
