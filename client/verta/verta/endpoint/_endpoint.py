@@ -309,7 +309,6 @@ class Endpoint(object):
 
         """
         if not isinstance(model_reference, (RegisteredModelVersion, ExperimentRun, Build)):
-            print("type is {}".format(type(model_reference)))
             raise TypeError(
                 "`model_reference` must be an ExperimentRun, RegisteredModelVersion, or Build"
             )
