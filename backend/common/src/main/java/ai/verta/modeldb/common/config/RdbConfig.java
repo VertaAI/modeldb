@@ -1,8 +1,6 @@
 package ai.verta.modeldb.common.config;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import java.util.Arrays;
-import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -138,9 +136,12 @@ public class RdbConfig {
       regex = "^jdbc:mysql:(?://[^/]+/)?(\\w+)";
     }
     Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
-    var dbName = pattern.matcher(rdb.DBConnectionURL)
-        .results()
-        .map(mr -> mr.group(1)).collect(Collectors.joining());
+    var dbName =
+        pattern
+            .matcher(rdb.DBConnectionURL)
+            .results()
+            .map(mr -> mr.group(1))
+            .collect(Collectors.joining());
 
     if (dbName.isEmpty()) {
       throw new ModelDBException("Database name not found in the database connection URL");
