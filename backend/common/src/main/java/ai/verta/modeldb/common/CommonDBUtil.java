@@ -325,10 +325,13 @@ public abstract class CommonDBUtil {
 
     if (rdb.isMssql()) {
       Pattern pattern = Pattern.compile("jdbc:sqlserver://([^;]*)", Pattern.CASE_INSENSITIVE);
-      dbUrl = pattern.matcher(rdb.getDBConnectionURL())
-          .results()
-          .map(mr -> mr.group(1)).map(hostPort -> "jdbc:sqlserver://" + hostPort)
-          .collect(Collectors.joining());
+      dbUrl =
+          pattern
+              .matcher(rdb.getDBConnectionURL())
+              .results()
+              .map(mr -> mr.group(1))
+              .map(hostPort -> "jdbc:sqlserver://" + hostPort)
+              .collect(Collectors.joining());
     }
 
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
