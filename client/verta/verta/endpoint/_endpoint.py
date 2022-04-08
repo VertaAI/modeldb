@@ -9,6 +9,7 @@ import yaml
 from verta.external import six
 
 from verta.deployment import DeployedModel
+from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 from verta._internal_utils import _utils, arg_handler
 from verta.tracking.entities import ExperimentRun
 from verta.registry.entities import RegisteredModelVersion
@@ -331,9 +332,6 @@ class Endpoint(object):
 
         ret = self._update_from_build(update_body, wait)
         if isinstance(model_reference, RegisteredModelVersion):
-            from urllib.parse import urlparse
-            from verta._internal_utils import _utils
-            
             model_version = model_reference
 
             try:
