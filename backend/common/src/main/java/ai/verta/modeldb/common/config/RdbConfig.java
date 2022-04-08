@@ -106,7 +106,7 @@ public class RdbConfig {
     return url;
   }
 
-  public static String getDatabaseName(RdbConfig rdb) {
+  public static String buildDatabaseName(RdbConfig rdb) {
     String dbName = rdb.getRdbDatabaseName();
     if (rdb.getDBConnectionURL() != null) {
       dbName = getDBNameFromDBConnectionURL(rdb);

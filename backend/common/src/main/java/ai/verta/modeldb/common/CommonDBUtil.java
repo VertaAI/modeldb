@@ -171,7 +171,7 @@ public abstract class CommonDBUtil {
       // TODO: make postgres implementation multitenant as well.
       return conn.getMetaData().getTables(null, null, tableName, null);
     } else {
-      return conn.getMetaData().getTables(RdbConfig.getDatabaseName(rdb), null, tableName, null);
+      return conn.getMetaData().getTables(RdbConfig.buildDatabaseName(rdb), null, tableName, null);
     }
   }
 
@@ -334,7 +334,7 @@ public abstract class CommonDBUtil {
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
       var resultSet = connection.getMetaData().getCatalogs();
 
-      var dbName = RdbConfig.getDatabaseName(rdb);
+      var dbName = RdbConfig.buildDatabaseName(rdb);
       while (resultSet.next()) {
         var databaseNameRes = resultSet.getString(1);
         if (dbName.equals(databaseNameRes)) {
