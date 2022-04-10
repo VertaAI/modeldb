@@ -13,6 +13,8 @@ import java.util.Locale;
 import java.util.Properties;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -32,6 +34,7 @@ import org.jdbi.v3.core.statement.UnableToCreateStatementException;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 
 public abstract class CommonDBUtil {
+
   private static final Logger LOGGER = LogManager.getLogger(CommonDBUtil.class);
 
   protected static void checkDBConnectionInLoop(
@@ -168,7 +171,7 @@ public abstract class CommonDBUtil {
       // TODO: make postgres implementation multitenant as well.
       return conn.getMetaData().getTables(null, null, tableName, null);
     } else {
-      return conn.getMetaData().getTables(rdb.getRdbDatabaseName(), null, tableName, null);
+      return conn.getMetaData().getTables(RdbConfig.buildDatabaseName(rdb), null, tableName, null);
     }
   }
 
@@ -309,30 +312,46 @@ public abstract class CommonDBUtil {
   }
 
   protected static void createDBIfNotExists(RdbConfig rdb) throws SQLException {
-    LOGGER.info("Checking DB: {}", rdb.getRdbUrl());
     var properties = new Properties();
     properties.put("user", rdb.getRdbUsername());
     properties.put("password", rdb.getRdbPassword());
-    properties.put("sslMode", rdb.getSslMode());
-    final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-    LOGGER.info("Connecting to DB server url: {} ", dbUrl);
+
+    String dbConnectionURL = rdb.getDBConnectionURL();
+    if (dbConnectionURL == null) {
+      properties.put("sslMode", rdb.getSslMode());
+    }
+
+    var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
+
+    if (rdb.isMssql() && dbConnectionURL != null) {
+      // Do not log the custom connection URL as it may contain username and password
+      LOGGER.info("Connecting to using custom SQL Server connection string");
+      Pattern pattern = Pattern.compile("jdbc:sqlserver://([^;]*)", Pattern.CASE_INSENSITIVE);
+      dbUrl =
+          pattern
+              .matcher(dbConnectionURL)
+              .results()
+              .map(mr -> mr.group(1))
+              .map(hostPort -> "jdbc:sqlserver://" + hostPort)
+              .collect(Collectors.joining());
+    }
+
     try (var connection = DriverManager.getConnection(dbUrl, properties)) {
       var resultSet = connection.getMetaData().getCatalogs();
 
+      var dbName = RdbConfig.buildDatabaseName(rdb);
       while (resultSet.next()) {
         var databaseNameRes = resultSet.getString(1);
-        if (rdb.getRdbDatabaseName().equals(databaseNameRes)) {
-          LOGGER.info("the database {} exists", rdb.getRdbDatabaseName());
+        if (dbName.equals(databaseNameRes)) {
+          LOGGER.info("the database {} exists", dbName);
           return;
         }
       }
 
-      var dbName = RdbConfig.buildDatabaseName(rdb);
-
-      LOGGER.info("the database {} does not exists", rdb.getRdbDatabaseName());
+      LOGGER.info("the database {} does not exists", dbName);
       try (var statement = connection.createStatement()) {
         statement.executeUpdate(String.format("CREATE DATABASE %s", dbName));
-        LOGGER.info("the database {} created successfully", rdb.getRdbDatabaseName());
+        LOGGER.info("the database {} created successfully", dbName);
       }
     }
   }
