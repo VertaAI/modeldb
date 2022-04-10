@@ -20,11 +20,12 @@
         <log4j.version>2.17.1</log4j.version>
         <grpc.version>1.45.0</grpc.version>
         <postgres.version>42.3.3</postgres.version>
-        <liquibase.version>4.6.0</liquibase.version>
+        <liquibase.version>4.9.1</liquibase.version>
         <prometheus.version>0.15.0</prometheus.version>
         <protobuf.version>3.19.2</protobuf.version>
         <aws.version>1.12.187</aws.version>
         <jackson.version>2.13.2</jackson.version>
+        <jaegertracing.version>1.8.0</jaegertracing.version>
         <os-maven-plugin.version>1.6.2</os-maven-plugin.version>
         <springframework.version>5.3.18</springframework.version>
 
@@ -198,7 +199,7 @@
             <dependency>
                 <groupId>com.google.cloud</groupId>
                 <artifactId>google-cloud-storage</artifactId>
-                <version>1.117.1</version>
+                <version>1.118.1</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
             <dependency>
@@ -292,17 +293,17 @@
             <dependency>
                 <groupId>io.jaegertracing</groupId>
                 <artifactId>jaeger-core</artifactId>
-                <version>1.6.0</version>
+                <version>${jaegertracing.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.jaegertracing</groupId>
                 <artifactId>jaeger-thrift</artifactId>
-                <version>1.6.0</version>
+                <version>${jaegertracing.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.jaegertracing</groupId>
                 <artifactId>jaeger-client</artifactId>
-                <version>1.6.0</version>
+                <version>${jaegertracing.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.opentracing.contrib</groupId>

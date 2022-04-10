@@ -2,7 +2,7 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
         logicalFilePath="src/main/resources/liquibase/create-tables-changelog-1.0.xml">
     <changeSet author="anand" id="create-commit">
         <preConditions onFail="MARK_RAN">
