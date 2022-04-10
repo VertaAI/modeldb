@@ -25,6 +25,7 @@
         <protobuf.version>3.19.2</protobuf.version>
         <aws.version>1.12.187</aws.version>
         <jackson.version>2.13.2</jackson.version>
+        <jaegertracing.version>1.8.0</jaegertracing.version>
         <os-maven-plugin.version>1.6.2</os-maven-plugin.version>
         <springframework.version>5.3.18</springframework.version>
 
@@ -292,17 +293,17 @@
             <dependency>
                 <groupId>io.jaegertracing</groupId>
                 <artifactId>jaeger-core</artifactId>
-                <version>1.6.0</version>
+                <version>${jaegertracing.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.jaegertracing</groupId>
                 <artifactId>jaeger-thrift</artifactId>
-                <version>1.6.0</version>
+                <version>${jaegertracing.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.jaegertracing</groupId>
                 <artifactId>jaeger-client</artifactId>
-                <version>1.6.0</version>
+                <version>${jaegertracing.version}</version>
             </dependency>
             <dependency>
                 <groupId>io.opentracing.contrib</groupId>
