@@ -224,44 +224,38 @@ class TestFetchArtifacts:
         for key, artifact in zip(strs, flat_dicts):
             deployable_entity.log_artifact(key, artifact)
 
-        try:
-            artifacts = deployable_entity.fetch_artifacts(strs)
+        artifacts = deployable_entity.fetch_artifacts(strs)
 
-            assert set(six.viewkeys(artifacts)) == set(strs)
-            assert all(
-                filepath.startswith(_CACHE_DIR)
-                for filepath in six.viewvalues(artifacts)
-            )
+        assert set(six.viewkeys(artifacts)) == set(strs)
+        assert all(
+            filepath.startswith(_CACHE_DIR)
+            for filepath in six.viewvalues(artifacts)
+        )
 
-            for key, filepath in six.viewitems(artifacts):
-                artifact_contents = deployable_entity._get_artifact(key)
-                if type(artifact_contents) is tuple:
-                    # ER returns (contents, path_only)
-                    # TODO: ER & RMV _get_artifact() should return the same thing
-                    artifact_contents, _ = artifact_contents
+        for key, filepath in six.viewitems(artifacts):
+            artifact_contents = deployable_entity._get_artifact(key)
+            if type(artifact_contents) is tuple:
+                # ER returns (contents, path_only)
+                # TODO: ER & RMV _get_artifact() should return the same thing
+                artifact_contents, _ = artifact_contents
 
-                with open(filepath, 'rb') as f:
-                    file_contents = f.read()
+            with open(filepath, 'rb') as f:
+                file_contents = f.read()
 
-                assert file_contents == artifact_contents
-        finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+            assert file_contents == artifact_contents
 
     def test_cached_fetch_artifacts(self, deployable_entity, strs, flat_dicts):
         key = strs[0]
 
         deployable_entity.log_artifact(key, flat_dicts[0])
 
-        try:
-            filepath = deployable_entity.fetch_artifacts([key])[key]
-            last_modified = os.path.getmtime(filepath)
+        filepath = deployable_entity.fetch_artifacts([key])[key]
+        last_modified = os.path.getmtime(filepath)
 
-            time.sleep(3)
-            assert deployable_entity.fetch_artifacts([key])[key] == filepath
+        time.sleep(3)
+        assert deployable_entity.fetch_artifacts([key])[key] == filepath
 
-            assert os.path.getmtime(filepath) == last_modified
-        finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+        assert os.path.getmtime(filepath) == last_modified
 
     def test_fetch_zip(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -269,21 +263,18 @@ class TestFetchArtifacts:
 
         deployable_entity.log_artifact(key, dirpath)
 
-        try:
-            dirpath = deployable_entity.fetch_artifacts([key])[key]
+        dirpath = deployable_entity.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(_CACHE_DIR)
+        assert dirpath.startswith(_CACHE_DIR)
 
-            retrieved_filepaths = set()
-            for root, _, files in os.walk(dirpath):
-                for filename in files:
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.relpath(filepath, dirpath)
-                    retrieved_filepaths.add(filepath)
+        retrieved_filepaths = set()
+        for root, _, files in os.walk(dirpath):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                filepath = os.path.relpath(filepath, dirpath)
+                retrieved_filepaths.add(filepath)
 
-            assert filepaths == retrieved_filepaths
-        finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+        assert filepaths == retrieved_filepaths
 
     def test_cached_fetch_zip(self, deployable_entity, strs, dir_and_files):
         dirpath, _ = dir_and_files
@@ -291,16 +282,13 @@ class TestFetchArtifacts:
 
         deployable_entity.log_artifact(key, dirpath)
 
-        try:
-            dirpath = deployable_entity.fetch_artifacts([key])[key]
-            last_modified = os.path.getmtime(dirpath)
+        dirpath = deployable_entity.fetch_artifacts([key])[key]
+        last_modified = os.path.getmtime(dirpath)
 
-            time.sleep(3)
-            assert deployable_entity.fetch_artifacts([key])[key] == dirpath
+        time.sleep(3)
+        assert deployable_entity.fetch_artifacts([key])[key] == dirpath
 
-            assert os.path.getmtime(dirpath) == last_modified
-        finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+        assert os.path.getmtime(dirpath) == last_modified
 
     def test_fetch_tgz(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -316,21 +304,18 @@ class TestFetchArtifacts:
 
             deployable_entity.log_artifact(key, tempf.name)
 
-        try:
-            dirpath = deployable_entity.fetch_artifacts([key])[key]
+        dirpath = deployable_entity.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(_CACHE_DIR)
+        assert dirpath.startswith(_CACHE_DIR)
 
-            retrieved_filepaths = set()
-            for root, _, files in os.walk(dirpath):
-                for filename in files:
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.relpath(filepath, dirpath)
-                    retrieved_filepaths.add(filepath)
+        retrieved_filepaths = set()
+        for root, _, files in os.walk(dirpath):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                filepath = os.path.relpath(filepath, dirpath)
+                retrieved_filepaths.add(filepath)
 
-            assert filepaths == retrieved_filepaths
-        finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+        assert filepaths == retrieved_filepaths
 
     def test_fetch_tar(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -346,21 +331,18 @@ class TestFetchArtifacts:
 
             deployable_entity.log_artifact(key, tempf.name)
 
-        try:
-            dirpath = deployable_entity.fetch_artifacts([key])[key]
+        dirpath = deployable_entity.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(_CACHE_DIR)
+        assert dirpath.startswith(_CACHE_DIR)
 
-            retrieved_filepaths = set()
-            for root, _, files in os.walk(dirpath):
-                for filename in files:
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.relpath(filepath, dirpath)
-                    retrieved_filepaths.add(filepath)
+        retrieved_filepaths = set()
+        for root, _, files in os.walk(dirpath):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                filepath = os.path.relpath(filepath, dirpath)
+                retrieved_filepaths.add(filepath)
 
-            assert filepaths == retrieved_filepaths
-        finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+        assert filepaths == retrieved_filepaths
 
     def test_fetch_tar_gz(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -376,21 +358,18 @@ class TestFetchArtifacts:
 
             deployable_entity.log_artifact(key, tempf.name)
 
-        try:
-            dirpath = deployable_entity.fetch_artifacts([key])[key]
+        dirpath = deployable_entity.fetch_artifacts([key])[key]
 
-            assert dirpath.startswith(_CACHE_DIR)
+        assert dirpath.startswith(_CACHE_DIR)
 
-            retrieved_filepaths = set()
-            for root, _, files in os.walk(dirpath):
-                for filename in files:
-                    filepath = os.path.join(root, filename)
-                    filepath = os.path.relpath(filepath, dirpath)
-                    retrieved_filepaths.add(filepath)
+        retrieved_filepaths = set()
+        for root, _, files in os.walk(dirpath):
+            for filename in files:
+                filepath = os.path.join(root, filename)
+                filepath = os.path.relpath(filepath, dirpath)
+                retrieved_filepaths.add(filepath)
 
-            assert filepaths == retrieved_filepaths
-        finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+        assert filepaths == retrieved_filepaths
 
     def test_wrong_type_artifacts_error(self, deployable_entity, all_values):
         # remove lists of strings and empty lists, because they're valid arguments
@@ -539,23 +518,20 @@ class TestDeployability:
         for key, artifact in zip(strs, flat_dicts):
             model_version.log_artifact(key, artifact)
 
-        try:
-            artifacts = model_version.fetch_artifacts(strs)
+        artifacts = model_version.fetch_artifacts(strs)
 
-            assert set(six.viewkeys(artifacts)) == set(strs)
-            assert all(
-                filepath.startswith(_CACHE_DIR)
-                for filepath in six.viewvalues(artifacts)
-            )
+        assert set(six.viewkeys(artifacts)) == set(strs)
+        assert all(
+            filepath.startswith(_CACHE_DIR)
+            for filepath in six.viewvalues(artifacts)
+        )
 
-            for key, filepath in six.viewitems(artifacts):
-                artifact_contents = model_version._get_artifact(key)
-                with open(filepath, "rb") as f:
-                    file_contents = f.read()
+        for key, filepath in six.viewitems(artifacts):
+            artifact_contents = model_version._get_artifact(key)
+            with open(filepath, "rb") as f:
+                file_contents = f.read()
 
-                assert file_contents == artifact_contents
-        finally:
-            shutil.rmtree(_CACHE_DIR, ignore_errors=True)
+            assert file_contents == artifact_contents
 
     @pytest.mark.deployment
     def test_model_artifacts(self, deployable_entity, endpoint, in_tempdir):

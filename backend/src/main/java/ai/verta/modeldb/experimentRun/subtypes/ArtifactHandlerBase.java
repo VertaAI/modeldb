@@ -154,6 +154,11 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
     }
   }
 
+  public List<Artifact> logArtifacts(
+      Handle handle, String entityId, List<Artifact> artifacts, boolean overwrite) {
+    return super.logArtifacts(handle, entityId, artifacts, overwrite, false);
+  }
+
   @Override
   protected void insertArtifactInDB(
       String entityId,

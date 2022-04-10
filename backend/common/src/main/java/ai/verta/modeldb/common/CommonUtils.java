@@ -220,9 +220,9 @@ public class CommonUtils {
     return rootCause;
   }
 
-  public static void printStackTrace(Logger logger, Exception e) {
-    StackTraceElement[] stack = e.getStackTrace();
-    logger.error("Stacktrace with {} elements for {}", stack.length, e);
+  public static void printStackTrace(Logger logger, Throwable t) {
+    StackTraceElement[] stack = t.getStackTrace();
+    logger.error("Stacktrace with {} elements for {}", stack.length, t);
     int n = 0;
     boolean isLongStack = stack.length > STACKTRACE_LENGTH;
     if (isLongStack) {

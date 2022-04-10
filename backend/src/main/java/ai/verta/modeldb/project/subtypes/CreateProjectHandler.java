@@ -95,7 +95,10 @@ public class CreateProjectHandler extends HandlerUtil {
                 request.getAttributesList().stream()
                     .sorted(Comparator.comparing(KeyValue::getKey))
                     .collect(Collectors.toList()))
-            .addAllTags(TagsHandlerBase.checkEntityTagsLength(request.getTagsList()))
+            .addAllTags(
+                TagsHandlerBase.checkEntityTagsLength(request.getTagsList()).stream()
+                    .sorted()
+                    .collect(Collectors.toList()))
             .setProjectVisibility(request.getProjectVisibility())
             .setVisibility(request.getVisibility())
             .addAllArtifacts(
