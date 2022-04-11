@@ -37,6 +37,24 @@ Changelog
      (`# <>`__)
 
 
+v0.20.1 (2022-04-11)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add model monitoring interface to deployment
+  (`#2962 <https://github.com/VertaAI/modeldb/pull/2962>`__)
+
+
+v0.20.0.post0 (2022-04-11)
+--------------------------
+
+Bug Fixes
+^^^^^^^^^
+- fix issue where the package couldn't be built from source
+  (`#2986 <https://github.com/VertaAI/modeldb/pull/2986>`__)
+
+
 v0.20.0 (2022-04-08)
 --------------------
 
