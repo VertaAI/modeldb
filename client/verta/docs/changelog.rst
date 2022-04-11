@@ -42,7 +42,7 @@ v0.20.1 (2022-04-11)
 
 New Features
 ^^^^^^^^^^^^
-- add data monitoring interface to deployment
+- add model monitoring interface to deployment
   (`#2962 <https://github.com/VertaAI/modeldb/pull/2962>`__)
 
 
