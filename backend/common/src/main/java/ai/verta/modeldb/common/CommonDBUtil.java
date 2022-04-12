@@ -4,10 +4,7 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.Properties;
@@ -311,49 +308,28 @@ public abstract class CommonDBUtil {
         config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath);
   }
 
-  protected static void createDBIfNotExists(RdbConfig rdb) throws SQLException {
-    var properties = new Properties();
-    properties.put("user", rdb.getRdbUsername());
-    properties.put("password", rdb.getRdbPassword());
+  protected static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
+    final var databaseName = RdbConfig.buildDatabaseName(rdbConfiguration);
+    final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
+    LOGGER.debug("Connecting to DB URL " + dbUrl);
+    Connection connection =
+            DriverManager.getConnection(
+                    dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
+    ResultSet resultSet = connection.getMetaData().getCatalogs();
 
-    String dbConnectionURL = rdb.getDBConnectionURL();
-    if (dbConnectionURL == null) {
-      properties.put("sslMode", rdb.getSslMode());
-    }
-
-    var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-
-    if (rdb.isMssql() && dbConnectionURL != null) {
-      // Do not log the custom connection URL as it may contain username and password
-      LOGGER.info("Connecting to using custom SQL Server connection string");
-      Pattern pattern = Pattern.compile("jdbc:sqlserver://([^;]*)", Pattern.CASE_INSENSITIVE);
-      dbUrl =
-          pattern
-              .matcher(dbConnectionURL)
-              .results()
-              .map(mr -> mr.group(1))
-              .map(hostPort -> "jdbc:sqlserver://" + hostPort)
-              .collect(Collectors.joining());
-    }
-
-    try (var connection = DriverManager.getConnection(dbUrl, properties)) {
-      var resultSet = connection.getMetaData().getCatalogs();
-
-      var dbName = RdbConfig.buildDatabaseName(rdb);
-      while (resultSet.next()) {
-        var databaseNameRes = resultSet.getString(1);
-        if (dbName.equals(databaseNameRes)) {
-          LOGGER.info("the database {} exists", dbName);
-          return;
-        }
-      }
-
-      LOGGER.info("the database {} does not exists", dbName);
-      try (var statement = connection.createStatement()) {
-        statement.executeUpdate(String.format("CREATE DATABASE %s", dbName));
-        LOGGER.info("the database {} created successfully", dbName);
+    while (resultSet.next()) {
+      String databaseNameRes = resultSet.getString(1);
+      var dbName = RdbConfig.buildDatabaseName(rdbConfiguration);
+      if (dbName.equals(databaseNameRes)) {
+        LOGGER.debug("the database " + databaseName + " exists");
+        return;
       }
     }
+
+    LOGGER.debug("the database " + databaseName + " does not exist");
+    Statement statement = connection.createStatement();
+    statement.executeUpdate("CREATE DATABASE " + databaseName);
+    LOGGER.debug("the database " + databaseName + " was created successfully");
   }
 
   public static Throwable logError(Throwable e) {
