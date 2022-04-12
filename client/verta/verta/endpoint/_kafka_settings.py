@@ -14,6 +14,8 @@ class KafkaSettings(object):
 
     Attributes
     ----------
+    cluster_config_id: str
+        The ID of the chosen kafka configuration to use.
     input_topic : str
         The input topic for an endpoint to subscribe to.
     output_topic : str
@@ -28,6 +30,7 @@ class KafkaSettings(object):
         from verta.endpoint import KafkaSettings
 
         kafka_settings = KafkaSettings(
+            cluster_config_id="kafka_config_id",
             input_topic="my_input_data",
             output_topic="my_predictions",
             error_topic="my_endpoint_errors",
@@ -38,12 +41,13 @@ class KafkaSettings(object):
 
     """
 
-    def __init__(self, input_topic, output_topic, error_topic):
+    def __init__(self, cluster_config_id, input_topic, output_topic, error_topic):
         if input_topic == output_topic or input_topic == error_topic:
             raise ValueError(
                 "input_topic must not be equal to either the output or error topics"
             )
 
+        self._cluster_config_id = self._check_non_empty_str("cluster_config_id", cluster_config_id)
         self._input_topic = self._check_non_empty_str("input_topic", input_topic)
         self._output_topic = self._check_non_empty_str("output_topic", output_topic)
         self._error_topic = self._check_non_empty_str("error_topic", error_topic)
@@ -53,15 +57,20 @@ class KafkaSettings(object):
             return NotImplemented
 
         return (
-            self._input_topic == other._input_topic
+            self._cluster_config_id == other._cluster_config_id
+            and self._input_topic == other._input_topic
             and self._output_topic == other._output_topic
             and self._error_topic == other._error_topic
         )
 
     def __repr__(self):
-        return "KafkaSettings({}, {}, {})".format(
-            repr(self.input_topic), repr(self.output_topic), repr(self.error_topic)
+        return "KafkaSettings({}, {}, {}, {})".format(
+            repr(self.cluster_config_id), repr(self.input_topic), repr(self.output_topic), repr(self.error_topic)
         )
+
+    @property
+    def cluster_config_id(self):
+        return self._cluster_config_id
 
     @property
     def input_topic(self):
@@ -86,6 +95,7 @@ class KafkaSettings(object):
     def _as_dict(self):
         return {
             "disabled": False,
+            "cluster_config_id": self.cluster_config_id,
             "input_topic": self.input_topic,
             "output_topic": self.output_topic,
             "error_topic": self.error_topic,
@@ -95,6 +105,7 @@ class KafkaSettings(object):
     def _from_dict(cls, d):
         # NOTE: ignores extraneous keys in `d`
         try:
+            cluster_config_id = d["cluster_config_id"]
             input_topic = d["input_topic"]
             output_topic = d["output_topic"]
             error_topic = d["error_topic"]
@@ -102,4 +113,4 @@ class KafkaSettings(object):
             msg = 'expected but did not find key "{}"'.format(e.args[0])
             six.raise_from(RuntimeError(msg), None)
 
-        return cls(input_topic, output_topic, error_topic)
+        return cls(cluster_config_id, input_topic, output_topic, error_topic)

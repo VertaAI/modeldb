@@ -33,7 +33,7 @@ class _Environment(_blob.Blob):
         self._msg = _EnvironmentService.EnvironmentBlob()
 
         if env_vars:
-            self.add_env_vars(env_vars)
+            self.add_env_vars(env_vars)/app/app/api/predict_resource.py
         if autocapture:
             self._capture_cmd_line_args()
 
