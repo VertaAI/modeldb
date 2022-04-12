@@ -7,11 +7,8 @@ import java.io.File;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -313,8 +310,8 @@ public abstract class CommonDBUtil {
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
     LOGGER.debug("Connecting to DB URL " + dbUrl);
     Connection connection =
-            DriverManager.getConnection(
-                    dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
+        DriverManager.getConnection(
+            dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
     ResultSet resultSet = connection.getMetaData().getCatalogs();
 
     while (resultSet.next()) {
