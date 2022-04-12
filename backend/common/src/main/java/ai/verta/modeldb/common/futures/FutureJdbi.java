@@ -50,8 +50,8 @@ public class FutureJdbi {
 
   private <R, T extends Exception> InternalFuture<R> withHandleOrTransaction(
       SupplierWithException<R, T> supplier) {
-    return InternalFuture.trace(
-        () -> {
+//    return InternalFuture.trace(
+//        () -> {
           CompletableFuture<R> promise = new CompletableFuture<>();
 
           executor.execute(
@@ -64,15 +64,15 @@ public class FutureJdbi {
               });
 
           return InternalFuture.from(promise);
-        },
-        "jdbi.withHandle",
-        Map.of(
-            "caller",
-            String.format(
-                "%s:%d",
-                Thread.currentThread().getStackTrace()[2].getFileName(),
-                Thread.currentThread().getStackTrace()[2].getLineNumber())),
-        executor);
+//        },
+//        "jdbi.withHandle",
+//        Map.of(
+//            "caller",
+//            String.format(
+//                "%s:%d",
+//                Thread.currentThread().getStackTrace()[2].getFileName(),
+//                Thread.currentThread().getStackTrace()[2].getLineNumber())),
+//        executor);
   }
 
   public <R, T extends Exception> InternalFuture<R> withHandleCompose(
@@ -99,8 +99,8 @@ public class FutureJdbi {
 
   private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(
       final RunnableWithException<T> runnableWithException) {
-    return InternalFuture.trace(
-        () -> {
+//    return InternalFuture.trace(
+//        () -> {
           CompletableFuture<Void> promise = new CompletableFuture<>();
 
           executor.execute(
@@ -114,14 +114,14 @@ public class FutureJdbi {
               });
 
           return InternalFuture.from(promise);
-        },
-        "jdbi.useHandle",
-        Map.of(
-            "caller",
-            String.format(
-                "%s:%d",
-                Thread.currentThread().getStackTrace()[2].getFileName(),
-                Thread.currentThread().getStackTrace()[2].getLineNumber())),
-        executor);
+//        },
+//        "jdbi.useHandle",
+//        Map.of(
+//            "caller",
+//            String.format(
+//                "%s:%d",
+//                Thread.currentThread().getStackTrace()[2].getFileName(),
+//                Thread.currentThread().getStackTrace()[2].getLineNumber())),
+//        executor);
   }
 }
