@@ -12,15 +12,15 @@ from verta._internal_utils import _utils
 class TestKafkaSettings:
 
     @hypothesis.given(
-        cluster_config_id=st.text(min_size=1),
         input_topic=st.text(min_size=1),
         output_topic=st.text(min_size=1),
         error_topic=st.text(min_size=1),
+        cluster_config_id=st.text(min_size=1),
     )
-    def test_kafka_settings(self, cluster_config_id, input_topic, output_topic, error_topic):
+    def test_kafka_settings(self, input_topic, output_topic, error_topic, cluster_config_id):
         hypothesis.assume(input_topic != output_topic and input_topic != error_topic)
 
-        kafka_settings = KafkaSettings(cluster_config_id, input_topic, output_topic, error_topic)
+        kafka_settings = KafkaSettings(input_topic, output_topic, error_topic, cluster_config_id)
         assert kafka_settings.cluster_config_id == cluster_config_id
         assert kafka_settings.input_topic == input_topic
         assert kafka_settings.output_topic == output_topic
@@ -42,9 +42,9 @@ class TestKafkaSettings:
         }
 
     @hypothesis.given(
-        cluster_config_id=st.text(min_size=1),
         input_topic=st.text(min_size=1),
         other_topic=st.text(min_size=1),
+        cluster_config_id=st.text(min_size=1),
     )
     def test_different_topics(self, cluster_config_id, input_topic, other_topic):
         hypothesis.assume(input_topic != other_topic)
@@ -56,17 +56,17 @@ class TestKafkaSettings:
             KafkaSettings(cluster_config_id, input_topic, other_topic, input_topic)
 
     @hypothesis.given(
-        cluster_config_id=st.text(),
         input_topic=st.text(),
         output_topic=st.text(),
         error_topic=st.text(),
+        cluster_config_id=st.text(),
     )
-    def test_nonempty_topics(self, cluster_config_id, input_topic, output_topic, error_topic):
+    def test_nonempty_topics(self, input_topic, output_topic, error_topic, cluster_config_id):
         hypothesis.assume(input_topic != output_topic and input_topic != error_topic)
-        hypothesis.assume(any(len(string_value) == 0 for string_value in (cluster_config_id, input_topic, output_topic, error_topic)))
+        hypothesis.assume(any(len(string_value) == 0 for string_value in (input_topic, output_topic, error_topic, cluster_config_id)))
 
         with pytest.raises(ValueError, match="must be a non-empty string"):
-            KafkaSettings(cluster_config_id, input_topic, output_topic, error_topic)
+            KafkaSettings(input_topic, output_topic, error_topic, cluster_config_id)
 
 
 @pytest.mark.deployment
