@@ -23,6 +23,8 @@ import liquibase.exception.DatabaseException;
 import liquibase.exception.LiquibaseException;
 import liquibase.exception.LockException;
 import liquibase.lockservice.LockServiceFactory;
+import liquibase.resource.ClassLoaderResourceAccessor;
+import liquibase.resource.CompositeResourceAccessor;
 import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -200,7 +202,11 @@ public abstract class CommonDBUtil {
 
       var liquibase =
           new Liquibase(
-              liquibaseRootPath, new FileSystemResourceAccessor(new File(rootPath)), database);
+              liquibaseRootPath,
+              new CompositeResourceAccessor(
+                  new FileSystemResourceAccessor(new File(rootPath)),
+                  new ClassLoaderResourceAccessor()),
+              database);
 
       var liquibaseExecuted = false;
       while (!liquibaseExecuted) {
