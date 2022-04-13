@@ -94,7 +94,7 @@ public abstract class Config {
     if (tracingServerInterceptor == null) {
       Tracer tracer = Configuration.fromEnv().getTracer();
       tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
-      GlobalTracer.registerIfAbsent(tracer);
+      GlobalTracer.register(tracer);
       TracingDriver.load();
 //      TracingDriver.setInterceptorMode(true);
       TracingDriver.setInterceptorProperty(true);
