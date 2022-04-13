@@ -126,7 +126,7 @@ public abstract class Config {
   }
 
   public InternalJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
-//    initializeTracing();
+    //    initializeTracing();
     final var hikariDataSource = new HikariDataSource();
     final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.getRdbConfiguration());
     hikariDataSource.setJdbcUrl(dbUrl);
