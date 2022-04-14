@@ -37,8 +37,8 @@ public class GracefulShutdown
 
         while (springServerActiveRequestCount > 0) {
           springServerActiveRequestCount = threadPoolExecutor.getActiveCount();
-          LOGGER.info("Spring server active Request Count in while: {}",
-              springServerActiveRequestCount);
+          LOGGER.info(
+              "Spring server active Request Count in while: {}", springServerActiveRequestCount);
           waitForSomeTime();
         }
 
