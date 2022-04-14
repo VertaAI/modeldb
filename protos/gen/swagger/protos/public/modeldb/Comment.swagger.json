@@ -292,15 +292,6 @@
       ],
       "default": "UNDEFINED"
     },
-    "uacTrialUserInfo": {
-      "type": "object",
-      "properties": {
-        "days_remaining": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
     "uacUserInfo": {
       "type": "object",
       "properties": {
@@ -368,9 +359,6 @@
         },
         "workspace_id": {
           "type": "string"
-        },
-        "trial_info": {
-          "$ref": "#/definitions/uacTrialUserInfo"
         },
         "default_workspace_id": {
           "type": "string",
