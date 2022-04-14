@@ -6,15 +6,20 @@ import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBArtifactStoreConfig;
 import ai.verta.modeldb.config.MDBConfig;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.ApplicationPidFileWriter;
 
 public class ServiceSet {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
@@ -41,7 +46,7 @@ public class ServiceSet {
       set.artifactStoreService = initializeArtifactStore(mdbArtifactStoreConfig);
     } else {
       System.getProperties().put(SCAN_PACKAGES, "dummyPackageName");
-      SpringApplication.run(App.class);
+      startSpringServer();
     }
 
     return set;
@@ -82,12 +87,12 @@ public class ServiceSet {
               ModelDBConstants.CLOUD_BUCKET_NAME, mdbArtifactStoreConfig.S3.getCloudBucketName());
           System.getProperties()
               .put(SCAN_PACKAGES, "ai.verta.modeldb.artifactStore.storageservice.s3");
-          SpringApplication.run(App.class);
+          startSpringServer();
           artifactStoreService = App.getInstance().applicationContext.getBean(S3Service.class);
         } else {
           artifactStoreService = new S3Service(mdbArtifactStoreConfig.S3.getCloudBucketName());
           System.getProperties().put(SCAN_PACKAGES, "dummyPackageName");
-          SpringApplication.run(App.class);
+          startSpringServer();
         }
         break;
       case "NFS":
@@ -97,7 +102,7 @@ public class ServiceSet {
         System.getProperties().put("file.upload-dir", rootDir);
         System.getProperties()
             .put(SCAN_PACKAGES, "ai.verta.modeldb.artifactStore.storageservice.nfs");
-        SpringApplication.run(App.class);
+        startSpringServer();
 
         artifactStoreService = App.getInstance().applicationContext.getBean(NFSService.class);
         break;
@@ -109,6 +114,31 @@ public class ServiceSet {
     LOGGER.info(
         "ArtifactStore service initialized and resolved storage dependency before server start");
     return artifactStoreService;
+  }
+
+  private static void startSpringServer() {
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + ModelDBConstants.BACKEND_PID;
+    try {
+      File pidFile = new File(path);
+      if (pidFile.exists()) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {
+          String pidString = reader.readLine();
+          var pid = Long.parseLong(pidString);
+          var process = ProcessHandle.of(pid);
+          if (process.isPresent()) {
+            LOGGER.warn("Port is already used by modeldb_backend PID: {}", pid);
+            boolean destroyed = process.get().destroy();
+            LOGGER.warn("Process kill for PID `{}` is destroyed: {}", pid, destroyed);
+          }
+        }
+      }
+
+      SpringApplication application = new SpringApplication(App.class);
+      application.addListeners(new ApplicationPidFileWriter(path));
+      application.run();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
   }
 
   private ServiceSet() {}
