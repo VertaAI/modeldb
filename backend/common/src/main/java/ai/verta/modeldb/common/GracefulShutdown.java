@@ -37,11 +37,8 @@ public class GracefulShutdown
         long pollInterval = 5L;
         long timeoutRemaining = shutdownTimeout;
         while (timeoutRemaining > pollInterval
-            && !executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
-          int springServerActiveRequestCount = executorService.getActiveCount();
-          LOGGER.info(
-              "Spring server active request count after shutdown: {}",
-              springServerActiveRequestCount);
+            && !executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {            
+          LOGGER.info("Spring server executor service awaiting termination after shutdown");
           timeoutRemaining -= pollInterval;
         }
 
@@ -49,13 +46,13 @@ public class GracefulShutdown
           LOGGER.warn(
               "Spring server executor service did not shut down gracefully within "
                   + "{} seconds. Proceeding with forceful shutdown",
-              shutdownTimeout,
-              springServerActiveRequestCount);
+              shutdownTimeout);
 
           executorService.shutdownNow();
 
+          // Give the service one more poll interval to finish shutting down
           if (!executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
-            LOGGER.error("Spring server thread pool did not terminate");
+            LOGGER.error("Spring server executor service did not terminate");
           }
         } else {
           LOGGER.info("*** Spring server Shutdown ***");
