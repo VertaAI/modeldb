@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 import org.apache.catalina.connector.Connector;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.tomcat.util.threads.ThreadPoolExecutor;
 import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
@@ -37,11 +36,12 @@ public class GracefulShutdown
         executorService.shutdown();
         long pollInterval = 5L;
         long timeoutRemaining = shutdownTimeout;
-        while (timeoutRemaining > pollInterval &&
-          !executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+        while (timeoutRemaining > pollInterval
+            && !executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
           int springServerActiveRequestCount = executorService.getActiveCount();
           LOGGER.info(
-              "Spring server active request count after shutdown: {}", springServerActiveRequestCount);
+              "Spring server active request count after shutdown: {}",
+              springServerActiveRequestCount);
           timeoutRemaining -= pollInterval;
         }
 
@@ -49,10 +49,11 @@ public class GracefulShutdown
           LOGGER.warn(
               "Spring server executor service did not shut down gracefully within "
                   + "{} seconds. Proceeding with forceful shutdown",
-              shutdownTimeout, springServerActiveRequestCount);
+              shutdownTimeout,
+              springServerActiveRequestCount);
 
           executorService.shutdownNow();
-          
+
           if (!executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
             LOGGER.error("Spring server thread pool did not terminate");
           }
