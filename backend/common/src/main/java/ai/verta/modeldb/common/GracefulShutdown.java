@@ -37,7 +37,7 @@ public class GracefulShutdown
         long pollInterval = 5L;
         long timeoutRemaining = shutdownTimeout;
         while (timeoutRemaining > pollInterval
-            && !executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {            
+            && !executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
           LOGGER.info("Spring server executor service awaiting termination after shutdown");
           timeoutRemaining -= pollInterval;
         }
