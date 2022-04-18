@@ -13,6 +13,9 @@ public interface CommonConstants {
   String EMPTY_STRING = "";
   String S3 = "S3";
   Integer TAG_LENGTH = 40;
+  Integer THREAD_COUNT = 256;
+  String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
+  String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
 
   enum UserIdentifier {
     VERTA_ID,

@@ -49,47 +49,6 @@ public class RdbmsUtils {
       "' and  entity_name IS NULL) k where o.keyvaluemapping_id = k.id ";
   private static final String AND_QUERY_OPERATOR = " AND ";
 
-  public static JobEntity generateJobEntity(Job job) {
-    return new JobEntity(job);
-  }
-
-  public static ProjectEntity generateProjectEntity(Project project) {
-    return new ProjectEntity(project);
-  }
-
-  // TODO: delete as it seems unused
-  public static List<Project> convertProjectsFromProjectEntityList(
-      MDBRoleService mdbRoleService,
-      AuthService authService,
-      List<ProjectEntity> projectEntityList) {
-    List<Project> projects = new ArrayList<>();
-    if (projectEntityList != null) {
-      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
-      Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
-      for (ProjectEntity projectEntity : projectEntityList) {
-        projects.add(
-            projectEntity.getProtoObject(
-                mdbRoleService, authService, cacheWorkspaceMap, getResourcesMap));
-      }
-    }
-    return projects;
-  }
-
-  public static ExperimentEntity generateExperimentEntity(Experiment experiment) {
-    return new ExperimentEntity(experiment);
-  }
-
-  public static List<Experiment> convertExperimentsFromExperimentEntityList(
-      List<ExperimentEntity> experimentEntityList) {
-    List<Experiment> experiments = new ArrayList<>();
-    if (experimentEntityList != null) {
-      for (ExperimentEntity experimentEntity : experimentEntityList) {
-        experiments.add(experimentEntity.getProtoObject());
-      }
-    }
-    return experiments;
-  }
-
   public static List<ExperimentRun> convertExperimentRunsFromExperimentRunEntityList(
       List<ExperimentRunEntity> experimentRunEntityList) {
     List<ExperimentRun> experimentRuns = new ArrayList<>();

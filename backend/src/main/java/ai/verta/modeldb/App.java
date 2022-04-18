@@ -1,21 +1,22 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
+import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
+import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSController;
+import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
+import ai.verta.modeldb.artifactStore.storageservice.s3.S3Controller;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.common.CommonApp;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.GracefulShutdown;
-import ai.verta.modeldb.common.MssqlMigrationUtil;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
-import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
@@ -29,41 +30,33 @@ import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.FutureProjectServiceImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryCron;
+import ai.verta.modeldb.utils.JdbiUtil;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.BindableService;
+import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.prometheus.client.Gauge;
-import io.prometheus.client.exporter.MetricsServlet;
-import io.prometheus.client.hotspot.DefaultExports;
-import io.prometheus.jmx.BuildInfoCollector;
-import io.prometheus.jmx.JmxCollector;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.util.List;
 import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
-import javax.management.MalformedObjectNameException;
-import liquibase.exception.LiquibaseException;
+import javax.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
-import org.springframework.boot.web.servlet.ServletRegistrationBean;
-import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -72,24 +65,13 @@ import org.springframework.context.annotation.ComponentScan;
 @EnableAutoConfiguration
 @EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
-@ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
-public class App implements ApplicationContextAware {
-  public ApplicationContext applicationContext;
-
-  /**
-   * Shut down the spring boot server
-   *
-   * @param returnCode : for system exit - 0
-   */
-  public static void initiateShutdown(int returnCode) {
-    var app = App.getInstance();
-    SpringApplication.exit(app.applicationContext, () -> returnCode);
-  }
-
+@ComponentScan(basePackages = "ai.verta.modeldb.config, ai.verta.modeldb.health")
+public class App extends CommonApp {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
 
   private static App app = null;
   public MDBConfig mdbConfig;
+  private Optional<Server> server = Optional.empty();
 
   // metric for prometheus monitoring
   private static final Gauge up =
@@ -97,46 +79,6 @@ public class App implements ApplicationContextAware {
           .name("verta_backend_up")
           .help("Binary signal indicating that the service is up and working.")
           .register();
-
-  @Override
-  public void setApplicationContext(ApplicationContext applicationContext) {
-    app.applicationContext = applicationContext;
-  }
-
-  public static ApplicationContext getContext() {
-    return app.applicationContext;
-  }
-
-  // Export all JMX metrics to Prometheus
-  private static final String JMX_RULES = "---\n" + "rules:\n" + "  - pattern: \".*\"";
-  private static final AtomicBoolean metricsInitialized = new AtomicBoolean(false);
-
-  @Bean
-  public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
-      throws MalformedObjectNameException {
-    if (!metricsInitialized.getAndSet(true)) {
-      DefaultExports.initialize();
-      new BuildInfoCollector().register();
-      new JmxCollector(JMX_RULES).register();
-    }
-    return new ServletRegistrationBean<>(new MetricsServlet(), "/metrics");
-  }
-
-  @Bean
-  public GracefulShutdown gracefulShutdown() {
-    MDBConfig mdbConfig = App.getInstance().mdbConfig;
-    if (mdbConfig == null || mdbConfig.getSpringServer().getShutdownTimeout() == null) {
-      return new GracefulShutdown(30L);
-    }
-    return new GracefulShutdown(mdbConfig.getSpringServer().getShutdownTimeout());
-  }
-
-  @Bean
-  public ServletWebServerFactory servletContainer(final GracefulShutdown gracefulShutdown) {
-    var factory = new TomcatServletWebServerFactory();
-    factory.addConnectorCustomizers(gracefulShutdown);
-    return factory;
-  }
 
   @Bean
   public S3Service getS3Service() throws ModelDBException, IOException {
@@ -154,149 +96,229 @@ public class App implements ApplicationContextAware {
     return app;
   }
 
-  public static boolean migrate(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
-      throws SQLException, LiquibaseException, InterruptedException {
-    var liquibaseMigration =
-        Boolean.parseBoolean(
-            Optional.ofNullable(System.getenv(ModelDBConstants.LIQUIBASE_MIGRATION))
-                .orElse("false"));
-    var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-    MDBConfig mdbConfig = App.getInstance().mdbConfig;
-    modelDBHibernateUtil.initializedConfigAndDatabase(mdbConfig, databaseConfig);
-    if (liquibaseMigration) {
-      LOGGER.info("Liquibase migration starting");
-      modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
-      LOGGER.info("Liquibase migration done");
+  @Bean
+  public MDBConfig config() {
+    var config = MDBConfig.getInstance();
+    App.getInstance().mdbConfig = config;
+    return config;
+  }
 
-      modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
+  @Bean
+  public JdbiUtil jdbiUtil(MDBConfig config) throws SQLException, InterruptedException {
+    return JdbiUtil.getInstance(config);
+  }
 
-      LOGGER.info("Code migration starting");
-      modelDBHibernateUtil.runMigration(databaseConfig, migrations);
-      LOGGER.info("Code migration done");
+  @Bean
+  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService)
+      throws IOException {
+    // Initialize services that we depend on
+    return ServiceSet.fromConfig(config, artifactStoreService);
+  }
 
-      if (databaseConfig.getRdbConfiguration().isMssql()) {
-        MssqlMigrationUtil.migrateToUTF16ForMssql(mdbConfig.getJdbi());
+  @Bean
+  public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor handleExecutor) {
+    if (config.isMigration()) {
+      return null;
+    }
+
+    // Initialize data access
+    return DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
+  }
+
+  @Bean
+  public ArtifactStoreService artifactStoreService(MDBConfig config) throws IOException {
+
+    final var artifactStoreConfig = config.artifactStoreConfig;
+    if (artifactStoreConfig.isEnabled()) {
+      //
+      // TODO: This is backwards, these values can be extracted from the environment or injected
+      // using profiles instead
+      // ------------- Start Initialize Cloud storage base on configuration ------------------
+      ArtifactStoreService artifactStoreService;
+
+      if (artifactStoreConfig.getArtifactEndpoint() != null) {
+        System.getProperties()
+            .put(
+                "artifactEndpoint.storeArtifact",
+                artifactStoreConfig.getArtifactEndpoint().getStoreArtifact());
+        System.getProperties()
+            .put(
+                "artifactEndpoint.getArtifact",
+                artifactStoreConfig.getArtifactEndpoint().getGetArtifact());
       }
 
-      var runLiquibaseSeparate =
+      if (artifactStoreConfig.getArtifactStoreType().equals("NFS")
+          && artifactStoreConfig.getNFS() != null
+          && artifactStoreConfig.getNFS().getArtifactEndpoint() != null) {
+        System.getProperties()
+            .put(
+                "artifactEndpoint.storeArtifact",
+                artifactStoreConfig.getNFS().getArtifactEndpoint().getStoreArtifact());
+        System.getProperties()
+            .put(
+                "artifactEndpoint.getArtifact",
+                artifactStoreConfig.getNFS().getArtifactEndpoint().getGetArtifact());
+      }
+
+      switch (artifactStoreConfig.getArtifactStoreType()) {
+        case "S3":
+          if (!artifactStoreConfig.S3.getS3presignedURLEnabled()) {
+            registeredBean("s3Controller", S3Controller.class);
+          }
+          artifactStoreService = new S3Service(artifactStoreConfig.S3.getCloudBucketName());
+          break;
+        case "NFS":
+          registeredBean("nfsController", NFSController.class);
+          String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
+          LOGGER.trace("NFS server root path {}", rootDir);
+          final var props = new FileStorageProperties();
+          props.setUploadDir(rootDir);
+          artifactStoreService = new NFSService(props);
+          break;
+        default:
+          throw new ModelDBException("Configure valid artifact store name in config.yaml file.");
+      }
+      // ------------- Finish Initialize Cloud storage base on configuration ------------------
+
+      LOGGER.info(
+          "ArtifactStore service initialized and resolved storage dependency before server start");
+      return artifactStoreService;
+    } else {
+      LOGGER.info("Artifact store service is disabled.");
+      return null;
+    }
+  }
+
+  public static boolean migrate(MDBConfig mdbConfig, JdbiUtil jdbiUtil, Executor handleExecutor)
+      throws Exception {
+    var liquibaseMigration =
+        Boolean.parseBoolean(
+            Optional.ofNullable(System.getenv(CommonConstants.LIQUIBASE_MIGRATION))
+                .orElse("false"));
+
+    var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+    modelDBHibernateUtil.initializedConfigAndDatabase(mdbConfig, mdbConfig.getDatabase());
+
+    if (liquibaseMigration) {
+      LOGGER.info("Liquibase migration starting");
+      jdbiUtil.runLiquibaseMigration();
+      LOGGER.info("Liquibase migration done");
+
+      modelDBHibernateUtil.createOrGetSessionFactory(mdbConfig.getDatabase());
+      LOGGER.info("Old code migration using hibernate starting");
+      modelDBHibernateUtil.runMigration(mdbConfig.getDatabase(), mdbConfig.migrations);
+      LOGGER.info("Old code migration using hibernate done");
+
+      LOGGER.info("Code migration starting");
+      jdbiUtil.runMigration(handleExecutor);
+      LOGGER.info("Code migration done");
+
+      boolean runLiquibaseSeparate =
           Boolean.parseBoolean(
-              Optional.ofNullable(System.getenv(ModelDBConstants.RUN_LIQUIBASE_SEPARATE))
+              Optional.ofNullable(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
-      LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         return true;
       }
     }
 
-    modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
+    modelDBHibernateUtil.createOrGetSessionFactory(mdbConfig.getDatabase());
+    jdbiUtil.setIsReady();
+
     return false;
   }
 
   public static void main(String[] args) {
-    try {
-      LOGGER.info("Backend server starting.");
-      final var logger =
-          java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
-      logger.setLevel(Level.WARNING);
-      // --------------- Start reading properties --------------------------
-      var config = MDBConfig.getInstance();
+    SpringApplication.run(App.class, args);
+  }
 
-      // Configure spring HTTP server
-      LOGGER.info(
-          "Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
-      System.getProperties().put("server.port", config.getSpringServer().getPort());
+  @Bean
+  public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
+    return args -> {
+      try {
+        LOGGER.info("Backend server starting.");
+        final var logger =
+            java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
+        logger.setLevel(Level.WARNING);
 
-      // Initialize services that we depend on
-      var services = ServiceSet.fromConfig(config, config.artifactStoreConfig);
+        final var config = ctx.getBean(MDBConfig.class);
 
-      // Initialize database configuration and maybe run migration
-      if (migrate(config.getDatabase(), config.migrations)) {
-        LOGGER.info("Migrations have completed.  System exiting.");
+        // Configure spring HTTP server
+        LOGGER.info(
+            "Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
+        System.getProperties().put("server.port", config.getSpringServer().getPort());
+
+        // Configure server
+        final var services = ctx.getBean(ServiceSet.class);
+        final var jdbiUtil = ctx.getBean(JdbiUtil.class);
+
+        // Initialize executor so we don't lose context using Futures
+        final var handleExecutor = ctx.getBean(Executor.class);
+
+        // Initialize database configuration and maybe run migration
+        if (migrate(config, jdbiUtil, handleExecutor)) {
+          LOGGER.info("Migrations have completed.  System exiting.");
+          initiateShutdown(0);
+          return;
+        }
+
+        LOGGER.info("Migration disabled, starting server.");
+        final var daos = ctx.getBean(DAOSet.class);
+
+        // Initialize telemetry
+        initializeTelemetryBasedOnConfig(config);
+
+        // Initialize cron jobs
+        CronJobUtils.initializeCronJobs(config, services);
+        ReconcilerInitializer.initialize(config, services, daos, config.getJdbi(), handleExecutor);
+
+        // Initialize grpc server
+        ServerBuilder<?> serverBuilder =
+            ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(handleExecutor);
+        if (config.getGrpcServer().getMaxInboundMessageSize() != null) {
+          serverBuilder.maxInboundMessageSize(config.getGrpcServer().getMaxInboundMessageSize());
+        }
+
+        // Initialize health check
+        HealthServiceImpl healthService = ctx.getBean(HealthServiceImpl.class);
+        HealthStatusManager healthStatusManager = new HealthStatusManager(healthService);
+        serverBuilder.addService(healthStatusManager.getHealthService());
+
+        // Add middleware/interceptors
+        LOGGER.info(
+            "Tracing is "
+                + (config.getTracingServerInterceptor().isEmpty() ? "disabled" : "enabled"));
+        config.getTracingServerInterceptor().map(serverBuilder::intercept);
+        serverBuilder.intercept(new MetadataForwarder());
+        serverBuilder.intercept(new ExceptionInterceptor());
+        serverBuilder.intercept(new MonitoringInterceptor());
+        serverBuilder.intercept(new AuthInterceptor());
+
+        // Add APIs
+        LOGGER.info("Initializing backend services.");
+        initializeBackendServices(serverBuilder, services, daos, handleExecutor);
+
+        // Create the server
+        final var server = serverBuilder.build();
+
+        // --------------- Start modelDB gRPC server --------------------------
+        server.start();
+        this.server = Optional.of(server);
+        healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
+        up.inc();
+        LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
+
+        // ----------- Don't exit the main thread. Wait until server is terminated -----------
+        server.awaitTermination();
+        up.dec();
+      } catch (Exception ex) {
+        CommonUtils.printStackTrace(LOGGER, ex);
         initiateShutdown(0);
-        return;
+        System.exit(1);
+        // Restore interrupted state...
+        Thread.currentThread().interrupt();
       }
-      LOGGER.info("Migrations are disabled, starting application.");
-
-      // Initialize executor so we don't lose context using Futures
-      final var handleExecutor =
-          FutureGrpc.initializeExecutor(config.getGrpcServer().getThreadCount());
-
-      // Initialize data access
-      var daos = DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
-
-      // Initialize telemetry
-      initializeTelemetryBasedOnConfig(config);
-
-      // Initialize cron jobs
-      CronJobUtils.initializeCronJobs(config, services);
-      ReconcilerInitializer.initialize(config, services, daos, config.getJdbi(), handleExecutor);
-
-      // Initialize grpc server
-      ServerBuilder<?> serverBuilder =
-          ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(handleExecutor);
-      if (config.getGrpcServer().getMaxInboundMessageSize() != null) {
-        serverBuilder.maxInboundMessageSize(config.getGrpcServer().getMaxInboundMessageSize());
-      }
-
-      // Initialize health check
-      HealthServiceImpl healthService = getContext().getBean(HealthServiceImpl.class);
-      var healthStatusManager = new HealthStatusManager(healthService);
-      serverBuilder.addService(healthStatusManager.getHealthService());
-
-      // Add middleware/interceptors
-      config.getTracingServerInterceptor().ifPresent(serverBuilder::intercept);
-      serverBuilder.intercept(new MetadataForwarder());
-      serverBuilder.intercept(new ExceptionInterceptor());
-      serverBuilder.intercept(new MonitoringInterceptor());
-      serverBuilder.intercept(new AuthInterceptor());
-
-      // Add APIs
-      LOGGER.info("Initializing backend services.");
-      initializeBackendServices(serverBuilder, services, daos, handleExecutor);
-
-      // Create the server
-      var server = serverBuilder.build();
-
-      // --------------- Start modelDB gRPC server --------------------------
-      server.start();
-      healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
-      up.inc();
-      LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
-
-      Runtime.getRuntime()
-          .addShutdownHook(
-              new Thread(
-                  () -> {
-                    try {
-                      int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-                      while (activeRequestCount > 0) {
-                        activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-                        LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
-                        Thread.sleep(1000); // wait for 1s
-                      }
-                      // Use stderr here since the logger may have been reset by its JVM shutdown
-                      // hook.
-                      LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
-                      server.shutdown();
-                      server.awaitTermination();
-                      LOGGER.info("*** Server Shutdown ***");
-                    } catch (InterruptedException e) {
-                      LOGGER.error("Getting error while graceful shutdown", e);
-                      // Restore interrupted state...
-                      Thread.currentThread().interrupt();
-                    }
-                  }));
-
-      // ----------- Don't exit the main thread. Wait until server is terminated -----------
-      server.awaitTermination();
-      up.dec();
-    } catch (Exception ex) {
-      CommonUtils.printStackTrace(LOGGER, ex);
-      initiateShutdown(0);
-      System.exit(1);
-      // Restore interrupted state...
-      Thread.currentThread().interrupt();
-    }
+    };
   }
 
   public static void initializeBackendServices(
@@ -340,5 +362,35 @@ public class App implements ApplicationContextAware {
     } else {
       LOGGER.info("Telemetry opt out by user");
     }
+  }
+
+  @PreDestroy
+  public void shutdown() {
+    LOGGER.info("*** Beginning Server Shutdown ***");
+    int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+    while (activeRequestCount > 0) {
+      activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+      System.err.println("Active Request Count in while: " + activeRequestCount);
+      try {
+        Thread.sleep(1000); // wait for 1s
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+    // Use stderr here since the logger may have been reset by its JVM shutdown
+    // hook.
+    if (server.isPresent()) {
+      LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
+      final var s = server.get();
+      s.shutdown();
+      try {
+        s.awaitTermination();
+      } catch (InterruptedException e) {
+        e.printStackTrace();
+      }
+    }
+
+    LOGGER.info("*** Server Shutdown ***");
+    up.dec();
   }
 }

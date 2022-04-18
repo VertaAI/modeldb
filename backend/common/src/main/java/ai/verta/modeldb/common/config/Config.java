@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.config;
 
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -179,5 +180,10 @@ public abstract class Config {
 
   public boolean isEvent_system_enabled() {
     return event_system_enabled;
+  }
+
+  public boolean isMigration() {
+    return Boolean.parseBoolean(
+        Optional.ofNullable(System.getenv(CommonConstants.LIQUIBASE_MIGRATION)).orElse("false"));
   }
 }

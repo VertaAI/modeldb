@@ -14,6 +14,7 @@ import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
+import ai.verta.modeldb.utils.JdbiUtil;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
@@ -83,13 +84,14 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
+    JdbiUtil jdbiUtil = JdbiUtil.getInstance(testConfig);
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
     // Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
+    services = ServiceSet.fromConfig(testConfig, null);
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    App.migrate(testConfig.getDatabase(), testConfig.migrations);
+    App.migrate(testConfig, jdbiUtil, handleExecutor);
 
     App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new MetadataForwarder());
