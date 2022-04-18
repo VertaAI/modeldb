@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.catalina.connector.Connector;
 import org.apache.logging.log4j.LogManager;
@@ -30,29 +31,30 @@ public class GracefulShutdown
     LOGGER.info("GracefulShutdown starting for Spring server");
     this.connector.pause();
     var executor = this.connector.getProtocolHandler().getExecutor();
-    if (executor instanceof ThreadPoolExecutor) {
+    if (executor instanceof ExecutorService) {
       try {
-        var threadPoolExecutor = (ThreadPoolExecutor) executor;
-        int springServerActiveRequestCount = threadPoolExecutor.getActiveCount();
-
-        while (springServerActiveRequestCount > 0) {
-          springServerActiveRequestCount = threadPoolExecutor.getActiveCount();
+        var executorService = (ExecutorService) executor;
+        executorService.shutdown();
+        long pollInterval = 5L;
+        long timeoutRemaining = shutdownTimeout;
+        while (timeoutRemaining > pollInterval &&
+          !executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+          int springServerActiveRequestCount = executorService.getActiveCount();
           LOGGER.info(
-              "Spring server active Request Count in while: {}", springServerActiveRequestCount);
-          waitForSomeTime();
+              "Spring server active request count after shutdown: {}", springServerActiveRequestCount);
+          timeoutRemaining -= pollInterval;
         }
 
-        threadPoolExecutor.shutdown();
-        if (!threadPoolExecutor.awaitTermination(shutdownTimeout, TimeUnit.SECONDS)) {
-          LOGGER.info(
-              "Spring server thread pool did not shut down gracefully within "
+        if (!executorService.awaitTermination(timeoutRemaining, TimeUnit.SECONDS)) {
+          LOGGER.warn(
+              "Spring server executor service did not shut down gracefully within "
                   + "{} seconds. Proceeding with forceful shutdown",
-              shutdownTimeout);
+              shutdownTimeout, springServerActiveRequestCount);
 
-          threadPoolExecutor.shutdownNow();
-
-          if (!threadPoolExecutor.awaitTermination(shutdownTimeout, TimeUnit.SECONDS)) {
-            LOGGER.info("Spring server thread pool did not terminate");
+          executorService.shutdownNow();
+          
+          if (!executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+            LOGGER.error("Spring server thread pool did not terminate");
           }
         } else {
           LOGGER.info("*** Spring server Shutdown ***");
@@ -62,15 +64,5 @@ public class GracefulShutdown
       }
     }
     LOGGER.info("GracefulShutdown finished for Spring server");
-  }
-
-  private void waitForSomeTime() {
-    try {
-      Thread.sleep(1000); // wait for 1s
-    } catch (InterruptedException e) {
-      LOGGER.error(e.getMessage(), e);
-      // Restore interrupted state...
-      Thread.currentThread().interrupt();
-    }
   }
 }
