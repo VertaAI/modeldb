@@ -59,6 +59,7 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.lang.NonNull;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
@@ -94,6 +95,21 @@ public class App extends CommonApp {
       app = new App();
     }
     return app;
+  }
+
+  /**
+   * Shut down the spring boot server
+   *
+   * @param returnCode : for system exit - 0
+   */
+  public static void initiateShutdown(int returnCode) {
+    SpringApplication.exit(App.getInstance().applicationContext, () -> returnCode);
+  }
+
+  @Override
+  public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
+    App app = App.getInstance();
+    app.applicationContext = applicationContext;
   }
 
   @Bean
@@ -163,12 +179,12 @@ public class App extends CommonApp {
       switch (artifactStoreConfig.getArtifactStoreType()) {
         case "S3":
           if (!artifactStoreConfig.S3.getS3presignedURLEnabled()) {
-            registeredBean("s3Controller", S3Controller.class);
+            registeredBean(app.applicationContext, "s3Controller", S3Controller.class);
           }
           artifactStoreService = new S3Service(artifactStoreConfig.S3.getCloudBucketName());
           break;
         case "NFS":
-          registeredBean("nfsController", NFSController.class);
+          registeredBean(app.applicationContext, "nfsController", NFSController.class);
           String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
           LOGGER.trace("NFS server root path {}", rootDir);
           final var props = new FileStorageProperties();

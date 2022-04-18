@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.Server;
@@ -36,22 +35,6 @@ public abstract class CommonApp implements ApplicationContextAware {
   private static final String JMX_RULES = "---\n" + "rules:\n" + "  - pattern: \".*\"";
   private static final AtomicBoolean metricsInitialized = new AtomicBoolean(false);
 
-  /**
-   * Shut down the spring boot server
-   *
-   * @param returnCode : for system exit - 0
-   */
-  public static void initiateShutdown(int returnCode) {
-    var app = App.getInstance();
-    SpringApplication.exit(app.applicationContext, () -> returnCode);
-  }
-
-  @Override
-  public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
-    var app = App.getInstance();
-    app.applicationContext = applicationContext;
-  }
-
   @Bean
   public ServletRegistrationBean<MetricsServlet> servletRegistrationBean()
       throws MalformedObjectNameException {
@@ -84,9 +67,9 @@ public abstract class CommonApp implements ApplicationContextAware {
     return FutureGrpc.initializeExecutor(config.getGrpcServer().getThreadCount());
   }
 
-  protected void registeredBean(String controllerBeanName, Class<?> className) {
+  protected void registeredBean(ApplicationContext applicationContext, String controllerBeanName, Class<?> className) {
     AutowireCapableBeanFactory factory =
-        App.getInstance().applicationContext.getAutowireCapableBeanFactory();
+        applicationContext.getAutowireCapableBeanFactory();
     BeanDefinitionRegistry registry = (BeanDefinitionRegistry) factory;
 
     // Remove nfsController bean if exists
