@@ -3,7 +3,6 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureGrpc;
-import ai.verta.modeldb.config.MDBConfig;
 import io.grpc.Server;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -99,5 +98,4 @@ public abstract class CommonApp implements ApplicationContextAware {
     gbd.setBeanClass(className);
     registry.registerBeanDefinition(controllerBeanName, gbd);
   }
-
 }
