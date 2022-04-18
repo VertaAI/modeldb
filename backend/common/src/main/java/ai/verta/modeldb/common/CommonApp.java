@@ -16,14 +16,12 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.boot.SpringApplication;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
-import org.springframework.lang.NonNull;
 
 public abstract class CommonApp implements ApplicationContextAware {
   private static final Logger LOGGER = LogManager.getLogger(CommonApp.class);
@@ -67,9 +65,9 @@ public abstract class CommonApp implements ApplicationContextAware {
     return FutureGrpc.initializeExecutor(config.getGrpcServer().getThreadCount());
   }
 
-  protected void registeredBean(ApplicationContext applicationContext, String controllerBeanName, Class<?> className) {
-    AutowireCapableBeanFactory factory =
-        applicationContext.getAutowireCapableBeanFactory();
+  protected void registeredBean(
+      ApplicationContext applicationContext, String controllerBeanName, Class<?> className) {
+    AutowireCapableBeanFactory factory = applicationContext.getAutowireCapableBeanFactory();
     BeanDefinitionRegistry registry = (BeanDefinitionRegistry) factory;
 
     // Remove nfsController bean if exists
