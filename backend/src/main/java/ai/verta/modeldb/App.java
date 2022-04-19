@@ -182,12 +182,14 @@ public class App extends CommonApp {
       switch (artifactStoreConfig.getArtifactStoreType()) {
         case "S3":
           if (!artifactStoreConfig.S3.getS3presignedURLEnabled()) {
-            registeredBean(App.getInstance().applicationContext, "s3Controller", S3Controller.class);
+            registeredBean(
+                App.getInstance().applicationContext, "s3Controller", S3Controller.class);
           }
           artifactStoreService = new S3Service(artifactStoreConfig.S3.getCloudBucketName());
           break;
         case "NFS":
-          registeredBean(App.getInstance().applicationContext, "nfsController", NFSController.class);
+          registeredBean(
+              App.getInstance().applicationContext, "nfsController", NFSController.class);
           String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
           LOGGER.trace("NFS server root path {}", rootDir);
           final var props = new FileStorageProperties();
