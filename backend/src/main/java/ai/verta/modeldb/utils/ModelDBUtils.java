@@ -30,7 +30,6 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.exceptions.*;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.*;
-import com.amazonaws.AmazonServiceException;
 import com.google.protobuf.*;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -433,11 +432,6 @@ public class ModelDBUtils {
     return String.join("#", location);
   }
 
-  public static boolean isEnvSet(String envVar) {
-    String envVarVal = System.getenv(envVar);
-    return envVarVal != null && !envVarVal.isEmpty();
-  }
-
   public static void validateEntityNameWithColonAndSlash(String name) throws ModelDBException {
     if (name != null
         && !name.isEmpty()
@@ -458,13 +452,6 @@ public class ModelDBUtils {
           "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     }
     throw ex;
-  }
-
-  public static void logAmazonServiceExceptionErrorCodes(Logger LOGGER, AmazonServiceException e) {
-    LOGGER.info("Amazon Service Status Code: " + e.getStatusCode());
-    LOGGER.info("Amazon Service Error Code: " + e.getErrorCode());
-    LOGGER.info("Amazon Service Error Type: " + e.getErrorType());
-    LOGGER.info("Amazon Service Error Message: " + e.getErrorMessage());
   }
 
   public static ResourceVisibility getResourceVisibility(

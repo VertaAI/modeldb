@@ -7,6 +7,7 @@ import ai.verta.common.ArtifactPart;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ValueTypeEnum.ValueType;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.versioning.DatasetBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
@@ -1174,7 +1175,7 @@ public class DatasetVersionTest extends TestsInit {
               .setDatasetId(dataset.getId())
               .setDatasetVersionId(datasetVersion1.getId())
               .setPathDatasetComponentBlobPath(path1)
-              .setMethod(ModelDBConstants.PUT)
+              .setMethod(CommonConstants.PUT)
               .setPartNumber(1)
               .build();
       GetUrlForDatasetBlobVersioned.Response getUrlForVersionedDatasetBlobResponse =

@@ -2,8 +2,8 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.ArtifactTypeEnum;
 import ai.verta.modeldb.*;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;

@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.Pagination;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
 import ai.verta.modeldb.metadata.DeleteLabelsRequest;
@@ -2365,7 +2366,7 @@ public class CommitTest extends TestsInit {
               .setCommitSha(commitResponse.getCommit().getCommitSha())
               .addAllLocation(location)
               .setPathDatasetComponentBlobPath(path1)
-              .setMethod(ModelDBConstants.PUT)
+              .setMethod(CommonConstants.PUT)
               .setPartNumber(1)
               .build();
       GetUrlForBlobVersioned.Response getUrlForVersionedBlobResponse =

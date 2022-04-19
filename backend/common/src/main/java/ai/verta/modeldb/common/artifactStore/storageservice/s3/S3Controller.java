@@ -1,7 +1,7 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.UploadFileResponse;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.UploadFileResponse;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -51,7 +51,7 @@ public class S3Controller {
 
   @GetMapping(value = {"${artifactEndpoint.getArtifact}/{FileName}"})
   public ResponseEntity<Resource> getArtifact(
-      @PathVariable(value = ModelDBConstants.FILENAME) String fileName,
+      @PathVariable(value = CommonConstants.FILENAME) String fileName,
       @RequestParam("artifact_path") String artifactPath)
       throws ModelDBException {
     LOGGER.debug("getArtifact called");

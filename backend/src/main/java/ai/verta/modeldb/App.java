@@ -1,20 +1,15 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSController;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3Controller;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.CommonApp;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
@@ -79,15 +74,6 @@ public class App extends CommonApp {
           .help("Binary signal indicating that the service is up and working.")
           .register();
 
-  @Bean
-  public S3Service getS3Service() throws ModelDBException, IOException {
-    String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
-    if (bucketName != null && !bucketName.isEmpty()) {
-      return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
-    }
-    return null;
-  }
-
   public static App getInstance() {
     if (app == null) {
       app = new App();
@@ -142,72 +128,6 @@ public class App extends CommonApp {
 
     // Initialize data access
     return DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
-  }
-
-  @Bean
-  public ArtifactStoreService artifactStoreService(MDBConfig config) throws IOException {
-
-    final var artifactStoreConfig = config.artifactStoreConfig;
-    if (artifactStoreConfig.isEnabled()) {
-      //
-      // TODO: This is backwards, these values can be extracted from the environment or injected
-      // using profiles instead
-      // ------------- Start Initialize Cloud storage base on configuration ------------------
-      ArtifactStoreService artifactStoreService;
-
-      if (artifactStoreConfig.getArtifactEndpoint() != null) {
-        System.getProperties()
-            .put(
-                "artifactEndpoint.storeArtifact",
-                artifactStoreConfig.getArtifactEndpoint().getStoreArtifact());
-        System.getProperties()
-            .put(
-                "artifactEndpoint.getArtifact",
-                artifactStoreConfig.getArtifactEndpoint().getGetArtifact());
-      }
-
-      if (artifactStoreConfig.getArtifactStoreType().equals("NFS")
-          && artifactStoreConfig.getNFS() != null
-          && artifactStoreConfig.getNFS().getArtifactEndpoint() != null) {
-        System.getProperties()
-            .put(
-                "artifactEndpoint.storeArtifact",
-                artifactStoreConfig.getNFS().getArtifactEndpoint().getStoreArtifact());
-        System.getProperties()
-            .put(
-                "artifactEndpoint.getArtifact",
-                artifactStoreConfig.getNFS().getArtifactEndpoint().getGetArtifact());
-      }
-
-      switch (artifactStoreConfig.getArtifactStoreType()) {
-        case "S3":
-          if (!artifactStoreConfig.S3.getS3presignedURLEnabled()) {
-            registeredBean(
-                App.getInstance().applicationContext, "s3Controller", S3Controller.class);
-          }
-          artifactStoreService = new S3Service(artifactStoreConfig.S3.getCloudBucketName());
-          break;
-        case "NFS":
-          registeredBean(
-              App.getInstance().applicationContext, "nfsController", NFSController.class);
-          String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
-          LOGGER.trace("NFS server root path {}", rootDir);
-          final var props = new FileStorageProperties();
-          props.setUploadDir(rootDir);
-          artifactStoreService = new NFSService(props);
-          break;
-        default:
-          throw new ModelDBException("Configure valid artifact store name in config.yaml file.");
-      }
-      // ------------- Finish Initialize Cloud storage base on configuration ------------------
-
-      LOGGER.info(
-          "ArtifactStore service initialized and resolved storage dependency before server start");
-      return artifactStoreService;
-    } else {
-      LOGGER.info("Artifact store service is disabled.");
-      return null;
-    }
   }
 
   public static boolean migrate(MDBConfig mdbConfig, JdbiUtil jdbiUtil, Executor handleExecutor)
@@ -367,7 +287,7 @@ public class App extends CommonApp {
     serverBuilder.addService(bindableService);
   }
 
-  public static void initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
+  private static void initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
       throws FileNotFoundException, InvalidConfigException {
     if (!mdbConfig.telemetry.opt_out) {
       // creating an instance of task to be scheduled

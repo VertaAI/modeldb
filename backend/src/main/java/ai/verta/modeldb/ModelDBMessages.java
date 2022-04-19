@@ -20,8 +20,6 @@ public abstract class ModelDBMessages {
   public static final String DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST = "Dataset id not found";
   public static final String ACCESSIBLE_DATASET_IN_SERVICE = "Accessible datasets in service : {}";
   public static final String PROJECT_NOT_FOUND_FOR_ID = "Project not found for given ID";
-  public static final String ARTIFACT_STORE_DISABLED_LOGS = "Artifact store is disabled";
-  public static final String BUCKET_DOES_NOT_EXISTS = "Bucket does not exists";
   public static final String ACCESS_IS_DENIED_EXPERIMENT_NOT_FOUND_FOR_GIVEN_ID =
       "Access is denied. Experiment not found for given id : ";
   public static final String PERMISSION_DENIED = "Permission denied";

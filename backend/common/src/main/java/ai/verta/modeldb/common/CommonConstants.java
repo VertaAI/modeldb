@@ -16,6 +16,12 @@ public interface CommonConstants {
   Integer THREAD_COUNT = 256;
   String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
   String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
+  String FILENAME = "FileName";
+  String PUT = "put";
+  String GET = "get";
+  // AWS Releated Constants
+  String AWS_ROLE_ARN = "AWS_ROLE_ARN";
+  String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
 
   enum UserIdentifier {
     VERTA_ID,

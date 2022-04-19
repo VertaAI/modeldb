@@ -6,8 +6,9 @@ import static java.util.stream.Collectors.toMap;
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
@@ -1728,7 +1729,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                     repositoryDAO,
                     datasetId,
                     request.getDatasetVersionId(),
-                    request.getMethod().equalsIgnoreCase(ModelDBConstants.PUT)),
+                    request.getMethod().equalsIgnoreCase(CommonConstants.PUT)),
             commitFunction,
             getUrlForBlobVersionedRequest);
     return GetUrlForDatasetBlobVersioned.Response.newBuilder()

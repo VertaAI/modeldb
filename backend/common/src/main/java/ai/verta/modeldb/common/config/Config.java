@@ -42,6 +42,7 @@ public abstract class Config {
   private ServiceUserConfig service_user;
   private int jdbi_retry_time = 100; // Time in ms
   private boolean event_system_enabled = false;
+  public ArtifactStoreConfig artifactStoreConfig;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
@@ -79,6 +80,10 @@ public abstract class Config {
 
     if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
     springServer.Validate("springServer");
+
+    if (artifactStoreConfig == null)
+      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    artifactStoreConfig.Validate("artifactStoreConfig");
   }
 
   public boolean hasAuth() {

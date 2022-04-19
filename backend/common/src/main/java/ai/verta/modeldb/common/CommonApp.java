@@ -1,12 +1,21 @@
 package ai.verta.modeldb.common;
 
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSController;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Controller;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.Server;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import io.prometheus.jmx.BuildInfoCollector;
 import io.prometheus.jmx.JmxCollector;
+import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -78,5 +87,71 @@ public abstract class CommonApp implements ApplicationContextAware {
     GenericBeanDefinition gbd = new GenericBeanDefinition();
     gbd.setBeanClass(className);
     registry.registerBeanDefinition(controllerBeanName, gbd);
+  }
+
+  @Bean
+  public ArtifactStoreService artifactStoreService(
+      ApplicationContext applicationContext, final Config config) throws IOException {
+
+    final var artifactStoreConfig = config.artifactStoreConfig;
+    if (artifactStoreConfig.isEnabled()) {
+      //
+      // TODO: This is backwards, these values can be extracted from the environment or injected
+      // using profiles instead
+      // ------------- Start Initialize Cloud storage base on configuration ------------------
+      ArtifactStoreService artifactStoreService;
+
+      if (artifactStoreConfig.getArtifactEndpoint() != null) {
+        System.getProperties()
+            .put(
+                "artifactEndpoint.storeArtifact",
+                artifactStoreConfig.getArtifactEndpoint().getStoreArtifact());
+        System.getProperties()
+            .put(
+                "artifactEndpoint.getArtifact",
+                artifactStoreConfig.getArtifactEndpoint().getGetArtifact());
+      }
+
+      if (artifactStoreConfig.getArtifactStoreType().equals("NFS")
+          && artifactStoreConfig.getNFS() != null
+          && artifactStoreConfig.getNFS().getArtifactEndpoint() != null) {
+        System.getProperties()
+            .put(
+                "artifactEndpoint.storeArtifact",
+                artifactStoreConfig.getNFS().getArtifactEndpoint().getStoreArtifact());
+        System.getProperties()
+            .put(
+                "artifactEndpoint.getArtifact",
+                artifactStoreConfig.getNFS().getArtifactEndpoint().getGetArtifact());
+      }
+
+      switch (artifactStoreConfig.getArtifactStoreType()) {
+        case "S3":
+          if (!artifactStoreConfig.getS3().getS3presignedURLEnabled()) {
+            registeredBean(applicationContext, "s3Controller", S3Controller.class);
+          }
+          artifactStoreService =
+              new S3Service(artifactStoreConfig, artifactStoreConfig.getS3().getCloudBucketName());
+          break;
+        case "NFS":
+          registeredBean(applicationContext, "nfsController", NFSController.class);
+          String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
+          LOGGER.trace("NFS server root path {}", rootDir);
+          final var props = new FileStorageProperties();
+          props.setUploadDir(rootDir);
+          artifactStoreService = new NFSService(props, artifactStoreConfig);
+          break;
+        default:
+          throw new ModelDBException("Configure valid artifact store name in config.yaml file.");
+      }
+      // ------------- Finish Initialize Cloud storage base on configuration ------------------
+
+      LOGGER.info(
+          "ArtifactStore service initialized and resolved storage dependency before server start");
+      return artifactStoreService;
+    } else {
+      LOGGER.info("Artifact store service is disabled.");
+      return new NoopArtifactStoreService();
+    }
   }
 }
