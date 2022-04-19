@@ -116,6 +116,12 @@ public class App extends CommonApp {
   public MDBConfig config() {
     var config = MDBConfig.getInstance();
     App.getInstance().mdbConfig = config;
+
+    // Configure spring HTTP server
+    LOGGER.info(
+        "Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
+    System.getProperties().put("server.port", config.getSpringServer().getPort());
+
     return config;
   }
 
@@ -258,11 +264,6 @@ public class App extends CommonApp {
         logger.setLevel(Level.WARNING);
 
         final var config = ctx.getBean(MDBConfig.class);
-
-        // Configure spring HTTP server
-        LOGGER.info(
-            "Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
-        System.getProperties().put("server.port", config.getSpringServer().getPort());
 
         // Configure server
         final var services = ctx.getBean(ServiceSet.class);
