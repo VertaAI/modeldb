@@ -247,7 +247,9 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
 
   public void runLiquibaseMigration(DatabaseConfig config)
       throws InterruptedException, LiquibaseException, SQLException {
-    runLiquibaseMigration(config, liquibaseRootFilePath, new FileSystemResourceAccessor(new File(
-        System.getProperty(CommonConstants.USER_DIR))));
+    runLiquibaseMigration(
+        config,
+        liquibaseRootFilePath,
+        new FileSystemResourceAccessor(new File(System.getProperty(CommonConstants.USER_DIR))));
   }
 }

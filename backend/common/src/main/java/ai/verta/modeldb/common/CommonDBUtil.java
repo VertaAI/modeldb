@@ -171,7 +171,9 @@ public abstract class CommonDBUtil {
   }
 
   protected void createTablesLiquibaseMigration(
-      DatabaseConfig config, String changeSetToRevertUntilTag, String liquibaseRootPath,
+      DatabaseConfig config,
+      String changeSetToRevertUntilTag,
+      String liquibaseRootPath,
       ResourceAccessor resourceAccessor)
       throws LiquibaseException, SQLException, InterruptedException {
     var rdb = config.getRdbConfiguration();
@@ -199,9 +201,7 @@ public abstract class CommonDBUtil {
       var liquibase =
           new Liquibase(
               liquibaseRootPath,
-              new CompositeResourceAccessor(
-                  resourceAccessor,
-                  new ClassLoaderResourceAccessor()),
+              new CompositeResourceAccessor(resourceAccessor, new ClassLoaderResourceAccessor()),
               database);
 
       var liquibaseExecuted = false;
@@ -284,8 +284,8 @@ public abstract class CommonDBUtil {
     }
   }
 
-  protected void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath,
-      ResourceAccessor resourceAccessor)
+  protected void runLiquibaseMigration(
+      DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
     System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
@@ -308,8 +308,7 @@ public abstract class CommonDBUtil {
 
     // Run tables liquibase migration
     createTablesLiquibaseMigration(
-        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath,
-        resourceAccessor);
+        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath, resourceAccessor);
   }
 
   protected static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
