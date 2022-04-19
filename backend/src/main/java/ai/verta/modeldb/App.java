@@ -336,18 +336,17 @@ public class App implements ApplicationContextAware {
         LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
         server.shutdown();
 
-        int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
         long pollInterval = 5L;
         long timeoutRemaining = mdbConfig.getGrpcServer().getRequestTimeout();
-        while (activeRequestCount > 0 && timeoutRemaining > pollInterval) {
-          activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+        while (timeoutRemaining > pollInterval 
+            && !server.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+          int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
           LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
-          Thread.sleep(1000); // wait for 1s
 
           timeoutRemaining -= pollInterval;
         }
 
-        server.awaitTermination(mdbConfig.getGrpcServer().getRequestTimeout(), TimeUnit.SECONDS);
+        server.awaitTermination(pollInterval, TimeUnit.SECONDS);
         LOGGER.info("*** Server Shutdown ***");
       } catch (InterruptedException e) {
         LOGGER.error("Getting error while graceful shutdown", e);
