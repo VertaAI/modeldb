@@ -27,7 +27,7 @@ public abstract class CommonApp implements ApplicationContextAware {
   private static final Logger LOGGER = LogManager.getLogger(CommonApp.class);
 
   protected ApplicationContext applicationContext;
-  private Optional<Server> server = Optional.empty();
+  protected Optional<Server> server = Optional.empty();
 
   // Export all JMX metrics to Prometheus
   private static final String JMX_RULES = "---\n" + "rules:\n" + "  - pattern: \".*\"";

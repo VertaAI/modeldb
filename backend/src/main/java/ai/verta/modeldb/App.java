@@ -72,7 +72,6 @@ public class App extends CommonApp {
 
   private static App app = null;
   public MDBConfig mdbConfig;
-  private Optional<Server> server = Optional.empty();
 
   // metric for prometheus monitoring
   private static final Gauge up =
