@@ -36,7 +36,6 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.BindableService;
-import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.prometheus.client.Gauge;
