@@ -126,9 +126,12 @@ public class ServiceSet {
           var pid = Long.parseLong(pidString);
           var process = ProcessHandle.of(pid);
           if (process.isPresent()) {
+            var processHandle = process.get();
             LOGGER.warn("Port is already used by modeldb_backend PID: {}", pid);
-            boolean destroyed = process.get().destroy();
-            LOGGER.warn("Process kill for PID `{}` is destroyed: {}", pid, destroyed);
+            boolean destroyed = processHandle.destroy();
+            LOGGER.warn("Process kill completed `{}` for PID: {}", destroyed, pid);
+            processHandle = processHandle.onExit().get();
+            LOGGER.warn("Process is alive after kill: `{}`", processHandle.isAlive());
           }
         }
       }

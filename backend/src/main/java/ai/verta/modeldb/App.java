@@ -331,17 +331,23 @@ public class App implements ApplicationContextAware {
     if (App.getInstance().server.isPresent()) {
       var server = App.getInstance().server.get();
       try {
-        int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-        while (activeRequestCount > 0) {
-          activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-          LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
-          Thread.sleep(1000); // wait for 1s
-        }
         // Use stderr here since the logger may have been reset by its JVM shutdown
         // hook.
         LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
         server.shutdown();
-        server.awaitTermination();
+
+        int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+        long pollInterval = 5L;
+        long timeoutRemaining = mdbConfig.getGrpcServer().getRequestTimeout();
+        while (activeRequestCount > 0 && timeoutRemaining > pollInterval) {
+          activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+          LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
+          Thread.sleep(1000); // wait for 1s
+
+          timeoutRemaining -= pollInterval;
+        }
+
+        server.awaitTermination(mdbConfig.getGrpcServer().getRequestTimeout(), TimeUnit.SECONDS);
         LOGGER.info("*** Server Shutdown ***");
       } catch (InterruptedException e) {
         LOGGER.error("Getting error while graceful shutdown", e);
@@ -360,7 +366,7 @@ public class App implements ApplicationContextAware {
     File pidFile = new File(path);
     if (pidFile.exists()) {
       pidFile.deleteOnExit();
-      LOGGER.error(ModelDBConstants.BACKEND_PID + " file is deleted: {}", pidFile.exists());
+      LOGGER.trace(ModelDBConstants.BACKEND_PID + " file is deleted: {}", pidFile.exists());
     }
   }
 }
