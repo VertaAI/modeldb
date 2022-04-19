@@ -118,8 +118,7 @@ public class App extends CommonApp {
     App.getInstance().mdbConfig = config;
 
     // Configure spring HTTP server
-    LOGGER.info(
-        "Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
+    LOGGER.info("Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
     System.getProperties().put("server.port", config.getSpringServer().getPort());
 
     return config;
