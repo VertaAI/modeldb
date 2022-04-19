@@ -338,7 +338,7 @@ public class App implements ApplicationContextAware {
 
         long pollInterval = 5L;
         long timeoutRemaining = mdbConfig.getGrpcServer().getRequestTimeout();
-        while (timeoutRemaining > pollInterval 
+        while (timeoutRemaining > pollInterval
             && !server.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
           int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
           LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
