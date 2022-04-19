@@ -38,10 +38,10 @@
         <Logger name="org.apache.http.headers" level="INFO" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
         </Logger>
-        <Logger name="com.amazonaws" level="INFO" additivity="false">
+        <Logger name="com.amazonaws" level="trace" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
         </Logger>
-        <Logger name="org.apache.http.impl" level="INFO" additivity="false">
+        <Logger name="org.apache.http" level="DEBUG" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
         </Logger>
         <Logger name="io.jaegertracing" level="WARN" additivity="false">
