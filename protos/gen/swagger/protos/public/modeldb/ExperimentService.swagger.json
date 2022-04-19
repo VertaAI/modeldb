@@ -685,7 +685,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/modeldbGetUrlForArtifactResponse"
+              "$ref": "#/definitions/commonGetUrlForArtifactResponse"
             }
           },
           "default": {
@@ -701,7 +701,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/modeldbGetUrlForArtifact"
+              "$ref": "#/definitions/commonGetUrlForArtifact"
             }
           }
         ],
@@ -971,6 +971,45 @@
         }
       },
       "title": "code version"
+    },
+    "commonGetUrlForArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "commonGetUrlForArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
     },
     "commonGitSnapshot": {
       "type": "object",
@@ -1446,45 +1485,6 @@
           "items": {
             "type": "string"
           }
-        }
-      }
-    },
-    "modeldbGetUrlForArtifact": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "modeldbGetUrlForArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },

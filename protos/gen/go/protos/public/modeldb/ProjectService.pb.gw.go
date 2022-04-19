@@ -13,6 +13,7 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
 	"github.com/golang/protobuf/descriptor"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -920,7 +921,7 @@ func local_request_ProjectService_GetProjectDatasetCount_0(ctx context.Context, 
 }
 
 func request_ProjectService_GetUrlForArtifact_0(ctx context.Context, marshaler runtime.Marshaler, client ProjectServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetUrlForArtifact
+	var protoReq common.GetUrlForArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -937,7 +938,7 @@ func request_ProjectService_GetUrlForArtifact_0(ctx context.Context, marshaler r
 }
 
 func local_request_ProjectService_GetUrlForArtifact_0(ctx context.Context, marshaler runtime.Marshaler, server ProjectServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetUrlForArtifact
+	var protoReq common.GetUrlForArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)

@@ -148,7 +148,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/modeldbCommitArtifactPartResponse"
+              "$ref": "#/definitions/commonCommitArtifactPartResponse"
             }
           },
           "default": {
@@ -164,7 +164,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/modeldbCommitArtifactPart"
+              "$ref": "#/definitions/commonCommitArtifactPart"
             }
           }
         ],
@@ -180,7 +180,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/modeldbCommitMultipartArtifactResponse"
+              "$ref": "#/definitions/commonCommitMultipartArtifactResponse"
             }
           },
           "default": {
@@ -196,7 +196,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/modeldbCommitMultipartArtifact"
+              "$ref": "#/definitions/commonCommitMultipartArtifact"
             }
           }
         ],
@@ -705,7 +705,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/modeldbGetCommittedArtifactPartsResponse"
+              "$ref": "#/definitions/commonGetCommittedArtifactPartsResponse"
             }
           },
           "default": {
@@ -1268,7 +1268,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/modeldbGetUrlForArtifactResponse"
+              "$ref": "#/definitions/commonGetUrlForArtifactResponse"
             }
           },
           "default": {
@@ -1284,7 +1284,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/modeldbGetUrlForArtifact"
+              "$ref": "#/definitions/commonGetUrlForArtifact"
             }
           }
         ],
@@ -2391,6 +2391,87 @@
       },
       "title": "code version"
     },
+    "commonCommitArtifactPart": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/commonArtifactPart"
+        }
+      }
+    },
+    "commonCommitArtifactPartResponse": {
+      "type": "object"
+    },
+    "commonCommitMultipartArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "commonCommitMultipartArtifactResponse": {
+      "type": "object"
+    },
+    "commonGetCommittedArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifactPart"
+          }
+        }
+      }
+    },
+    "commonGetUrlForArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "commonGetUrlForArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "commonGitSnapshot": {
       "type": "object",
       "properties": {
@@ -2525,37 +2606,6 @@
           "$ref": "#/definitions/modeldbExperimentRun"
         }
       }
-    },
-    "modeldbCommitArtifactPart": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
-        "artifact_part": {
-          "$ref": "#/definitions/commonArtifactPart"
-        }
-      }
-    },
-    "modeldbCommitArtifactPartResponse": {
-      "type": "object"
-    },
-    "modeldbCommitMultipartArtifact": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        }
-      }
-    },
-    "modeldbCommitMultipartArtifactResponse": {
-      "type": "object"
     },
     "modeldbCreateExperimentRun": {
       "type": "object",
@@ -3071,17 +3121,6 @@
         }
       }
     },
-    "modeldbGetCommittedArtifactPartsResponse": {
-      "type": "object",
-      "properties": {
-        "artifact_parts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonArtifactPart"
-          }
-        }
-      }
-    },
     "modeldbGetDatasetsResponse": {
       "type": "object",
       "properties": {
@@ -3211,45 +3250,6 @@
           "items": {
             "type": "string"
           }
-        }
-      }
-    },
-    "modeldbGetUrlForArtifact": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "modeldbGetUrlForArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },
