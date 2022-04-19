@@ -3,7 +3,6 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import java.io.File;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Locale;
@@ -22,7 +21,7 @@ import liquibase.exception.LockException;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import liquibase.resource.CompositeResourceAccessor;
-import liquibase.resource.FileSystemResourceAccessor;
+import liquibase.resource.ResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultSetException;
@@ -172,7 +171,8 @@ public abstract class CommonDBUtil {
   }
 
   protected void createTablesLiquibaseMigration(
-      DatabaseConfig config, String changeSetToRevertUntilTag, String liquibaseRootPath)
+      DatabaseConfig config, String changeSetToRevertUntilTag, String liquibaseRootPath,
+      ResourceAccessor resourceAccessor)
       throws LiquibaseException, SQLException, InterruptedException {
     var rdb = config.getRdbConfiguration();
 
@@ -190,7 +190,6 @@ public abstract class CommonDBUtil {
 
       // Initialize Liquibase and run the update
       var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-      String rootPath = System.getProperty(CommonConstants.USER_DIR);
 
       // LiquiBase no longer supports absolute paths. Try to save people from themselves.
       if (liquibaseRootPath.startsWith("/") || liquibaseRootPath.startsWith("\\")) {
@@ -201,7 +200,7 @@ public abstract class CommonDBUtil {
           new Liquibase(
               liquibaseRootPath,
               new CompositeResourceAccessor(
-                  new FileSystemResourceAccessor(new File(rootPath)),
+                  resourceAccessor,
                   new ClassLoaderResourceAccessor()),
               database);
 
@@ -285,7 +284,8 @@ public abstract class CommonDBUtil {
     }
   }
 
-  protected void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath)
+  protected void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath,
+      ResourceAccessor resourceAccessor)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
     System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
@@ -308,7 +308,8 @@ public abstract class CommonDBUtil {
 
     // Run tables liquibase migration
     createTablesLiquibaseMigration(
-        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath);
+        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath,
+        resourceAccessor);
   }
 
   protected static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
