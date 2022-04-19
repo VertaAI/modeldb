@@ -5,6 +5,7 @@ import static org.junit.Assume.assumeTrue;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
+import ai.verta.common.GetUrlForArtifact;
 import ai.verta.modeldb.authservice.*;
 import com.google.api.client.util.IOUtils;
 import io.grpc.Status;
