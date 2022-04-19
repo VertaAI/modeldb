@@ -1,7 +1,7 @@
 package ai.verta.modeldb.common.artifactStore;
 
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.GetUrlForArtifact.Response;
+import ai.verta.common.GetUrlForArtifact;
+import ai.verta.common.GetUrlForArtifact.Response;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;

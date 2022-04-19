@@ -4,6 +4,7 @@ import static ai.verta.modeldb.ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION
 import static java.util.stream.Collectors.toMap;
 
 import ai.verta.common.ArtifactPart;
+import ai.verta.common.GetUrlForArtifact;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.MDBRoleService;

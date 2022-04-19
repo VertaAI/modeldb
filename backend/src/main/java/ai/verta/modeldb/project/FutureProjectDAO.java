@@ -1,6 +1,7 @@
 package ai.verta.modeldb.project;
 
 import ai.verta.common.Artifact;
+import ai.verta.common.GetUrlForArtifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
@@ -23,7 +24,6 @@ import ai.verta.modeldb.GetProjectReadme;
 import ai.verta.modeldb.GetProjectShortName;
 import ai.verta.modeldb.GetSummary;
 import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LastModifiedExperimentRunSummary;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;

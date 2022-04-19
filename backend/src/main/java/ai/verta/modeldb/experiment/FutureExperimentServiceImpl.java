@@ -1,6 +1,7 @@
 package ai.verta.modeldb.experiment;
 
 import ai.verta.common.Artifact;
+import ai.verta.common.GetUrlForArtifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
@@ -28,7 +29,6 @@ import ai.verta.modeldb.GetExperimentByName;
 import ai.verta.modeldb.GetExperimentCodeVersion;
 import ai.verta.modeldb.GetExperimentsInProject;
 import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
