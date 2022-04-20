@@ -1,6 +1,6 @@
-package ai.verta.modeldb.monitoring;
+package ai.verta.modeldb.common.monitoring;
 
-import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.common.CommonMessages;
 import io.grpc.*;
 import io.grpc.ServerCall.Listener;
 import io.prometheus.client.Counter;
@@ -15,23 +15,25 @@ public class MonitoringInterceptor implements ServerInterceptor {
   public static final AtomicInteger ACTIVE_REQUEST_COUNT = new AtomicInteger();
   public static final Context.Key<String> METHOD_NAME = Context.key("method_name");
   private static final String GRPC_METHOD_LABEL = "grpc_method";
+  private static final String serviceName =
+      System.getProperties().getProperty("BACKEND_SERVICE_NAME");
   private static final Counter qpsCountRequests =
       Counter.build()
           .labelNames(GRPC_METHOD_LABEL)
-          .name("verta_backend_query_per_second_total")
+          .name(serviceName + "_query_per_second_total")
           .help("Total QPS requests started on the server.")
           .register();
   private static final Histogram requestLatency =
       Histogram.build()
           .labelNames(GRPC_METHOD_LABEL)
-          .name("verta_backend_requests_latency_seconds")
+          .name(serviceName + "_requests_latency_seconds")
           .help("Request latency in seconds.")
           .register();
 
   private static final Counter failed_4XX_Requests =
       Counter.build()
           .labelNames(GRPC_METHOD_LABEL)
-          .name("verta_backend_4XX_failed_requests_total")
+          .name(serviceName + "_4XX_failed_requests_total")
           .help("Total 4XX failed requests on the server.")
           .register();
 
@@ -58,7 +60,7 @@ public class MonitoringInterceptor implements ServerInterceptor {
     var context = Context.current().withValue(METHOD_NAME, methodName);
     ServerCall.Listener<R> delegate = Contexts.interceptCall(context, call, requestHeaders, next);
     ACTIVE_REQUEST_COUNT.incrementAndGet();
-    LOGGER.trace(ModelDBMessages.ACTIVE_REQUEST_COUNT_TRACE, ACTIVE_REQUEST_COUNT.get());
+    LOGGER.trace(CommonMessages.ACTIVE_REQUEST_COUNT_TRACE, ACTIVE_REQUEST_COUNT.get());
 
     qpsCountRequests.labels(methodName).inc();
     final var timer = requestLatency.labels(methodName).startTimer();
@@ -68,7 +70,7 @@ public class MonitoringInterceptor implements ServerInterceptor {
       public void onCancel() {
         ACTIVE_REQUEST_COUNT.decrementAndGet();
         LOGGER.trace("Decrease Request count on onCancel()");
-        LOGGER.trace(ModelDBMessages.ACTIVE_REQUEST_COUNT_TRACE, ACTIVE_REQUEST_COUNT.get());
+        LOGGER.trace(CommonMessages.ACTIVE_REQUEST_COUNT_TRACE, ACTIVE_REQUEST_COUNT.get());
         try {
           super.onCancel();
         } finally {
@@ -80,7 +82,7 @@ public class MonitoringInterceptor implements ServerInterceptor {
       public void onComplete() {
         ACTIVE_REQUEST_COUNT.decrementAndGet();
         LOGGER.trace("Decrease Request count on onComplete()");
-        LOGGER.trace(ModelDBMessages.ACTIVE_REQUEST_COUNT_TRACE, ACTIVE_REQUEST_COUNT.get());
+        LOGGER.trace(CommonMessages.ACTIVE_REQUEST_COUNT_TRACE, ACTIVE_REQUEST_COUNT.get());
         try {
           super.onComplete();
         } finally {

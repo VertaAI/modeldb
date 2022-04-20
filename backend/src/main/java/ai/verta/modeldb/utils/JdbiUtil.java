@@ -5,7 +5,6 @@ import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.MssqlMigrationUtil;
 import ai.verta.modeldb.config.MDBConfig;
-import io.grpc.health.v1.HealthCheckResponse;
 import java.io.File;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
@@ -19,7 +18,6 @@ public class JdbiUtil extends CommonDBUtil {
   private static final Logger LOGGER = LogManager.getLogger(JdbiUtil.class);
   private static JdbiUtil jdbiUtil;
   private static String liquibaseRootFilePath;
-  private static boolean isReady = false;
   private static MDBConfig config;
 
   private JdbiUtil() {}
@@ -47,7 +45,8 @@ public class JdbiUtil extends CommonDBUtil {
     return jdbiUtil;
   }
 
-  public static boolean ping() {
+  @Override
+  public boolean ping() {
     boolean isValid = false;
     try (var connection = getDBConnection(config.getDatabase().getRdbConfiguration())) {
       isValid = connection.isValid(config.getDatabase().getTimeout());
@@ -57,22 +56,6 @@ public class JdbiUtil extends CommonDBUtil {
     }
 
     return isValid;
-  }
-
-  public static HealthCheckResponse.ServingStatus checkReady() {
-    try {
-      if (isReady && ping()) {
-        return HealthCheckResponse.ServingStatus.SERVING;
-      }
-      return HealthCheckResponse.ServingStatus.NOT_SERVING;
-    } catch (Exception ex) {
-      LOGGER.error("Getting error on health checkReady: {}", ex.getMessage(), ex);
-      return HealthCheckResponse.ServingStatus.NOT_SERVING;
-    }
-  }
-
-  public static HealthCheckResponse.ServingStatus checkLive() {
-    return HealthCheckResponse.ServingStatus.SERVING;
   }
 
   public void runLiquibaseMigration()

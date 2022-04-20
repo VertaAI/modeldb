@@ -4,23 +4,20 @@ import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.CommonApp;
 import ai.verta.modeldb.common.CommonConstants;
-import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.CommonDAOSet;
+import ai.verta.modeldb.common.CommonDBUtil;
+import ai.verta.modeldb.common.CommonServiceSet;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.common.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.InvalidConfigException;
-import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.experiment.FutureExperimentServiceImpl;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunServiceImpl;
-import ai.verta.modeldb.health.HealthServiceImpl;
-import ai.verta.modeldb.health.HealthStatusManager;
 import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.FutureProjectServiceImpl;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.telemetry.TelemetryCron;
@@ -29,10 +26,7 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
-import io.grpc.BindableService;
 import io.grpc.ServerBuilder;
-import io.grpc.health.v1.HealthCheckResponse;
-import io.prometheus.client.Gauge;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -40,37 +34,24 @@ import java.util.Optional;
 import java.util.TimerTask;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import javax.annotation.PreDestroy;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.ApplicationPidFileWriter;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.lang.NonNull;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
 @EnableAutoConfiguration
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
-@ComponentScan(basePackages = "ai.verta.modeldb.config, ai.verta.modeldb.health")
+@ComponentScan(basePackages = "ai.verta.modeldb.config")
 public class App extends CommonApp {
   private static final Logger LOGGER = LogManager.getLogger(App.class);
 
   private static App app = null;
   public MDBConfig mdbConfig;
-
-  // metric for prometheus monitoring
-  private static final Gauge up =
-      Gauge.build()
-          .name("verta_backend_up")
-          .help("Binary signal indicating that the service is up and working.")
-          .register();
 
   public static App getInstance() {
     if (app == null) {
@@ -79,56 +60,51 @@ public class App extends CommonApp {
     return app;
   }
 
-  /**
-   * Shut down the spring boot server
-   *
-   * @param returnCode : for system exit - 0
-   */
-  public static void initiateShutdown(int returnCode) {
-    SpringApplication.exit(App.getInstance().applicationContext, () -> returnCode);
+  public static void main(String[] args) throws Exception {
+    System.getProperties().setProperty("BACKEND_SERVICE_NAME", "verta_backend");
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
+    resolvePortCollisionIfExists(path);
+    SpringApplication application = new SpringApplication(App.class);
+    application.addListeners(new ApplicationPidFileWriter(path));
+    application.run(args);
   }
 
   @Override
-  public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
-    App app = App.getInstance();
-    app.applicationContext = applicationContext;
-  }
-
-  @Bean
-  public MDBConfig config() {
+  protected Config initConfig() {
     var config = MDBConfig.getInstance();
     App.getInstance().mdbConfig = config;
-
-    // Configure spring HTTP server
-    LOGGER.info("Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
-    System.getProperties().put("server.port", config.getSpringServer().getPort());
-
     return config;
   }
 
-  @Bean
-  public JdbiUtil jdbiUtil(MDBConfig config) throws SQLException, InterruptedException {
-    return JdbiUtil.getInstance(config);
+  @Override
+  public CommonDBUtil initJdbiUtil() throws SQLException, InterruptedException {
+    return JdbiUtil.getInstance(App.getInstance().mdbConfig);
   }
 
-  @Bean
-  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService)
+  @Override
+  public CommonServiceSet initServiceSet(
+      Config config, ArtifactStoreService artifactStoreService, Executor handleExecutor)
       throws IOException {
+    var mdbConfig = (MDBConfig) config;
     // Initialize services that we depend on
-    return ServiceSet.fromConfig(config, artifactStoreService);
+    return ServiceSet.fromConfig(mdbConfig, artifactStoreService);
   }
 
-  @Bean
-  public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor handleExecutor) {
+  @Override
+  public CommonDAOSet initDAOSet(
+      Config config, CommonServiceSet serviceSet, Executor handleExecutor) {
+    var mdbConfig = (MDBConfig) config;
     if (config.isMigration()) {
       return null;
     }
 
     // Initialize data access
-    return DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);
+    return DAOSet.fromServices(
+        (ServiceSet) serviceSet, mdbConfig.getJdbi(), handleExecutor, mdbConfig);
   }
 
-  public static boolean migrate(MDBConfig mdbConfig, JdbiUtil jdbiUtil, Executor handleExecutor)
+  @Override
+  public boolean runMigration(Config config, CommonDBUtil commonDBUtil, Executor handleExecutor)
       throws Exception {
     var liquibaseMigration =
         Boolean.parseBoolean(
@@ -136,16 +112,18 @@ public class App extends CommonApp {
                 .orElse("false"));
 
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-    modelDBHibernateUtil.initializedConfigAndDatabase(mdbConfig, mdbConfig.getDatabase());
+    modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
 
+    JdbiUtil jdbiUtil = (JdbiUtil) commonDBUtil;
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
       jdbiUtil.runLiquibaseMigration();
       LOGGER.info("Liquibase migration done");
 
-      modelDBHibernateUtil.createOrGetSessionFactory(mdbConfig.getDatabase());
+      modelDBHibernateUtil.createOrGetSessionFactory(config.getDatabase());
       LOGGER.info("Old code migration using hibernate starting");
-      modelDBHibernateUtil.runMigration(mdbConfig.getDatabase(), mdbConfig.migrations);
+      modelDBHibernateUtil.runMigration(
+          config.getDatabase(), App.getInstance().mdbConfig.migrations);
       LOGGER.info("Old code migration using hibernate done");
 
       LOGGER.info("Code migration starting");
@@ -162,107 +140,32 @@ public class App extends CommonApp {
       }
     }
 
-    modelDBHibernateUtil.createOrGetSessionFactory(mdbConfig.getDatabase());
+    modelDBHibernateUtil.createOrGetSessionFactory(config.getDatabase());
     jdbiUtil.setIsReady();
 
     return false;
   }
 
-  public static void main(String[] args) throws Exception {
-    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
-    resolvePortCollisionIfExists(path);
-    SpringApplication application = new SpringApplication(App.class);
-    application.addListeners(new ApplicationPidFileWriter(path));
-    application.run(args);
+  @Override
+  protected void initReconcilers(
+      Config commonConfig, CommonServiceSet services, CommonDAOSet daos, Executor handleExecutor) {
+    var config = (MDBConfig) commonConfig;
+
+    // Initialize cron jobs
+    CronJobUtils.initializeCronJobs(config, (ServiceSet) services);
+
+    ReconcilerInitializer.initialize(
+        config, (ServiceSet) services, (DAOSet) daos, config.getJdbi(), handleExecutor);
   }
 
-  @Bean
-  public CommandLineRunner commandLineRunner(ApplicationContext ctx) {
-    return args -> {
-      try {
-        LOGGER.info("Backend server starting.");
-        final var logger =
-            java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
-        logger.setLevel(Level.WARNING);
-
-        final var config = ctx.getBean(MDBConfig.class);
-
-        // Configure server
-        final var services = ctx.getBean(ServiceSet.class);
-        final var jdbiUtil = ctx.getBean(JdbiUtil.class);
-
-        // Initialize executor so we don't lose context using Futures
-        final var handleExecutor = ctx.getBean(Executor.class);
-
-        // Initialize database configuration and maybe run migration
-        if (migrate(config, jdbiUtil, handleExecutor)) {
-          LOGGER.info("Migrations have completed.  System exiting.");
-          initiateShutdown(0);
-          return;
-        }
-
-        LOGGER.info("Migration disabled, starting server.");
-        final var daos = ctx.getBean(DAOSet.class);
-
-        // Initialize telemetry
-        initializeTelemetryBasedOnConfig(config);
-
-        // Initialize cron jobs
-        CronJobUtils.initializeCronJobs(config, services);
-        ReconcilerInitializer.initialize(config, services, daos, config.getJdbi(), handleExecutor);
-
-        // Initialize grpc server
-        ServerBuilder<?> serverBuilder =
-            ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(handleExecutor);
-        if (config.getGrpcServer().getMaxInboundMessageSize() != null) {
-          serverBuilder.maxInboundMessageSize(config.getGrpcServer().getMaxInboundMessageSize());
-        }
-
-        // Initialize health check
-        HealthServiceImpl healthService = ctx.getBean(HealthServiceImpl.class);
-        HealthStatusManager healthStatusManager = new HealthStatusManager(healthService);
-        serverBuilder.addService(healthStatusManager.getHealthService());
-
-        // Add middleware/interceptors
-        LOGGER.info(
-            "Tracing is "
-                + (config.getTracingServerInterceptor().isEmpty() ? "disabled" : "enabled"));
-        config.getTracingServerInterceptor().map(serverBuilder::intercept);
-        serverBuilder.intercept(new MetadataForwarder());
-        serverBuilder.intercept(new ExceptionInterceptor());
-        serverBuilder.intercept(new MonitoringInterceptor());
-        serverBuilder.intercept(new AuthInterceptor());
-
-        // Add APIs
-        LOGGER.info("Initializing backend services.");
-        initializeBackendServices(serverBuilder, services, daos, handleExecutor);
-
-        // Create the server
-        final var server = serverBuilder.build();
-
-        // --------------- Start modelDB gRPC server --------------------------
-        server.start();
-        App.getInstance().server = Optional.of(server);
-        healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
-        up.inc();
-        LOGGER.info("Current PID: {}", ProcessHandle.current().pid());
-        LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
-
-        // ----------- Don't exit the main thread. Wait until server is terminated -----------
-        server.awaitTermination();
-        up.dec();
-      } catch (Exception ex) {
-        CommonUtils.printStackTrace(LOGGER, ex);
-        initiateShutdown(0);
-        System.exit(1);
-        // Restore interrupted state...
-        Thread.currentThread().interrupt();
-      }
-    };
-  }
-
-  public static void initializeBackendServices(
-      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor executor) {
+  @Override
+  public void initGRPCServices(
+      ServerBuilder<?> serverBuilder,
+      CommonServiceSet serviceSet,
+      CommonDAOSet daoSet,
+      Executor executor) {
+    var services = (ServiceSet) serviceSet;
+    var daos = (DAOSet) daoSet;
     wrapService(serverBuilder, new FutureProjectServiceImpl(daos, executor));
     LOGGER.trace("Project serviceImpl initialized");
     wrapService(serverBuilder, new FutureExperimentServiceImpl(daos, executor));
@@ -287,11 +190,14 @@ public class App extends CommonApp {
     LOGGER.info("All services initialized and dependencies resolved");
   }
 
-  private static void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
-    serverBuilder.addService(bindableService);
+  @Override
+  protected void initServiceSpecificThings(Config config) throws Exception {
+    var mdbConfig = (MDBConfig) config;
+    // Initialize telemetry
+    initializeTelemetryBasedOnConfig(mdbConfig);
   }
 
-  private static void initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
+  private void initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
       throws FileNotFoundException, InvalidConfigException {
     if (!mdbConfig.telemetry.opt_out) {
       // creating an instance of task to be scheduled
@@ -302,39 +208,5 @@ public class App extends CommonApp {
     } else {
       LOGGER.info("Telemetry opt out by user");
     }
-  }
-
-  @PreDestroy
-  public void onShutDown() {
-    if (App.getInstance().server.isPresent()) {
-      var server = App.getInstance().server.get();
-      try {
-        // Use stderr here since the logger may have been reset by its JVM shutdown
-        // hook.
-        LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
-        server.shutdown();
-
-        long pollInterval = 5L;
-        long timeoutRemaining = mdbConfig.getGrpcServer().getRequestTimeout();
-        while (timeoutRemaining > pollInterval
-            && !server.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
-          int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-          LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
-
-          timeoutRemaining -= pollInterval;
-        }
-
-        server.awaitTermination(pollInterval, TimeUnit.SECONDS);
-        LOGGER.info("*** Server Shutdown ***");
-      } catch (InterruptedException e) {
-        LOGGER.error("Getting error while graceful shutdown", e);
-        // Restore interrupted state...
-        Thread.currentThread().interrupt();
-      }
-    }
-
-    initiateShutdown(0);
-
-    cleanUpPIDFile();
   }
 }

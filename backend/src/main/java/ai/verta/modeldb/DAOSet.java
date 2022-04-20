@@ -2,6 +2,7 @@ package ai.verta.modeldb;
 
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
+import ai.verta.modeldb.common.CommonDAOSet;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAORdbImpl;
@@ -23,11 +24,16 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.UACApisUtil;
-import ai.verta.modeldb.versioning.*;
+import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.BlobDAORdbImpl;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.CommitDAORdbImpl;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.ServiceEnum;
 import java.util.concurrent.Executor;
 
-public class DAOSet {
+public class DAOSet extends CommonDAOSet {
 
   public ArtifactStoreDAO artifactStoreDAO;
   public BlobDAO blobDAO;

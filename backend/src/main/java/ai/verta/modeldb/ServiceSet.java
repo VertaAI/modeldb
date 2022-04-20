@@ -3,13 +3,14 @@ package ai.verta.modeldb;
 import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
+import ai.verta.modeldb.common.CommonServiceSet;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.MDBConfig;
 import java.io.IOException;
 
-public class ServiceSet {
+public class ServiceSet extends CommonServiceSet {
   public ArtifactStoreService artifactStoreService = null;
   public AuthService authService;
   public UAC uac;

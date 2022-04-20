@@ -3,6 +3,7 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import io.grpc.health.v1.HealthCheckResponse;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Locale;
@@ -31,6 +32,7 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 public abstract class CommonDBUtil {
 
   private static final Logger LOGGER = LogManager.getLogger(CommonDBUtil.class);
+  protected static boolean isReady = false;
 
   protected static void checkDBConnectionInLoop(
       DatabaseConfig databaseConfig, boolean isStartUpTime) throws InterruptedException {
@@ -74,6 +76,24 @@ public abstract class CommonDBUtil {
       LOGGER.error("JdbiUtil checkDBConnection() got error ", ex);
       return false;
     }
+  }
+
+  public abstract boolean ping();
+
+  public HealthCheckResponse.ServingStatus checkReady() {
+    try {
+      if (isReady && ping()) {
+        return HealthCheckResponse.ServingStatus.SERVING;
+      }
+      return HealthCheckResponse.ServingStatus.NOT_SERVING;
+    } catch (Exception ex) {
+      LOGGER.error("Getting error on health checkReady: {}", ex.getMessage(), ex);
+      return HealthCheckResponse.ServingStatus.NOT_SERVING;
+    }
+  }
+
+  public HealthCheckResponse.ServingStatus checkLive() {
+    return HealthCheckResponse.ServingStatus.SERVING;
   }
 
   protected void releaseLiquibaseLock(DatabaseConfig config)

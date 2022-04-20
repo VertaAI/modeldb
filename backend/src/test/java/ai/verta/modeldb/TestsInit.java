@@ -11,10 +11,10 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
+import ai.verta.modeldb.common.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
-import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
@@ -106,9 +106,10 @@ public class TestsInit {
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    App.migrate(testConfig, jdbiUtil, handleExecutor);
+    // TODO: FIXME as per new App.java initialization changes
+    // App.migrate(testConfig, jdbiUtil, handleExecutor);
 
-    App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
+    // App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
@@ -182,7 +183,7 @@ public class TestsInit {
 
   @AfterClass
   public static void removeServerAndService() throws InterruptedException {
-    App.initiateShutdown(0);
+    // App.initiateShutdown(0);
 
     cleanUpResources();
 

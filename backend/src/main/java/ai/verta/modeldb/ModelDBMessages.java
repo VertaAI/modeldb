@@ -27,7 +27,6 @@ public abstract class ModelDBMessages {
   public static final String UNKNOWN_VALUE_TYPE_RECOGNIZED_ERROR =
       "Unknown 'Value' type recognized";
   public static final String ITEMS_NOT_SPECIFIED_ERROR = "Items not specified";
-  public static final String ACTIVE_REQUEST_COUNT_TRACE = "Active Request count {}";
   public static final String PROJECT_ID_NOT_PRESENT_ERROR = "Project ID not present";
   public static final String PROJECT_NOT_FOUND_FOR_GIVEN_ID_ERROR =
       "Project not found for given ID: ";

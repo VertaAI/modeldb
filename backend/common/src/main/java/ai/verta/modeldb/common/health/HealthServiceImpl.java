@@ -17,11 +17,10 @@
  * Verta changes: check ready status in uacservice
  */
 
-package ai.verta.modeldb.health;
+package ai.verta.modeldb.common.health;
 
+import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.utils.JdbiUtil;
-import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import io.grpc.Status;
 import io.grpc.StatusException;
 import io.grpc.health.v1.HealthCheckRequest;
@@ -51,9 +50,10 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
    * putting two keys with a colliding hashCode into the map.*/
   private final Map<String, ServingStatus> statusMap = new ConcurrentHashMap<>();
   private static final Logger LOGGER = LogManager.getLogger(HealthServiceImpl.class);
-  private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+  private final CommonDBUtil commonDBUtil;
 
-  public HealthServiceImpl() {
+  public HealthServiceImpl(CommonDBUtil commonDBUtil) {
+    this.commonDBUtil = commonDBUtil;
     setStatus("", ServingStatus.NOT_SERVING);
   }
 
@@ -78,27 +78,13 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       globalStatus = getStatus("");
       if (request.getService().equals("ready")) {
         if (globalStatus == ServingStatus.SERVING) {
-          ServingStatus hibernateConnectionStatus = modelDBHibernateUtil.checkReady();
-          ServingStatus jdbiConnectionStatus = JdbiUtil.checkReady();
-          if (hibernateConnectionStatus.equals(ServingStatus.SERVING)
-              && jdbiConnectionStatus.equals(ServingStatus.SERVING)) {
-            setStatus("ready", ServingStatus.SERVING);
-          } else {
-            setStatus("ready", ServingStatus.NOT_SERVING);
-          }
+          setStatus("ready", commonDBUtil.checkReady());
         } else {
           // Return default NOT_SERVING status
           return globalStatus;
         }
       } else if (request.getService().equals("live")) {
-        ServingStatus hibernateConnectionStatus = modelDBHibernateUtil.checkLive();
-        ServingStatus jdbiConnectionStatus = JdbiUtil.checkLive();
-        if (hibernateConnectionStatus.equals(ServingStatus.SERVING)
-            && jdbiConnectionStatus.equals(ServingStatus.SERVING)) {
-          setStatus("live", ServingStatus.SERVING);
-        } else {
-          setStatus("live", ServingStatus.NOT_SERVING);
-        }
+        setStatus("live", ServingStatus.SERVING);
       }
     }
     return getStatus(request.getService());

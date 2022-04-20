@@ -17,7 +17,7 @@
  * Verta changes: use custom health service
  */
 
-package ai.verta.modeldb.health;
+package ai.verta.modeldb.common.health;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

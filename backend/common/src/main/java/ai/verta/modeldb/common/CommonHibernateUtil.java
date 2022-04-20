@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
-import io.grpc.health.v1.HealthCheckResponse;
 import java.io.File;
 import java.sql.*;
 import java.util.EnumSet;
@@ -209,6 +208,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
     }
   }
 
+  @Override
   public boolean ping() {
     if (sessionFactory != null) {
       try (var session = sessionFactory.openSession()) {
@@ -227,22 +227,6 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
       }
     }
     return false;
-  }
-
-  public HealthCheckResponse.ServingStatus checkReady() {
-    try {
-      if (isReady && ping()) {
-        return HealthCheckResponse.ServingStatus.SERVING;
-      }
-      return HealthCheckResponse.ServingStatus.NOT_SERVING;
-    } catch (Exception ex) {
-      LOGGER.error("Getting error on health checkReady: {}", ex.getMessage(), ex);
-      return HealthCheckResponse.ServingStatus.NOT_SERVING;
-    }
-  }
-
-  public HealthCheckResponse.ServingStatus checkLive() {
-    return HealthCheckResponse.ServingStatus.SERVING;
   }
 
   public void runLiquibaseMigration(DatabaseConfig config)
