@@ -206,4 +206,6 @@ public abstract class ModelDBConstants {
   public static final String DATASET = "DATASET";
   public static final String DATASET_VERSION = "DATASET_VERSION";
   public static final String COMMENT = "COMMENT";
+
+  public static final String BACKEND_PID = "verta-mdb-backend.pid";
 }

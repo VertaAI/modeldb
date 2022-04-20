@@ -39,7 +39,10 @@ import io.grpc.BindableService;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.prometheus.client.Gauge;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.util.Optional;
@@ -54,6 +57,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -238,6 +242,7 @@ public class App extends CommonApp {
           Boolean.parseBoolean(
               Optional.ofNullable(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE))
                   .orElse("false"));
+      LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         return true;
       }
@@ -249,8 +254,31 @@ public class App extends CommonApp {
     return false;
   }
 
-  public static void main(String[] args) {
-    SpringApplication.run(App.class, args);
+  public static void main(String[] args) throws Exception {
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + ModelDBConstants.BACKEND_PID;
+    resolvePortCollisionIfExists(path);
+    SpringApplication application = new SpringApplication(App.class);
+    application.addListeners(new ApplicationPidFileWriter(path));
+    application.run(args);
+  }
+
+  private static void resolvePortCollisionIfExists(String path) throws Exception {
+    File pidFile = new File(path);
+    if (pidFile.exists()) {
+      try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {
+        String pidString = reader.readLine();
+        var pid = Long.parseLong(pidString);
+        var process = ProcessHandle.of(pid);
+        if (process.isPresent()) {
+          var processHandle = process.get();
+          LOGGER.warn("Port is already used by modeldb_backend PID: {}", pid);
+          boolean destroyed = processHandle.destroy();
+          LOGGER.warn("Process kill completed `{}` for PID: {}", destroyed, pid);
+          processHandle = processHandle.onExit().get();
+          LOGGER.warn("Process is alive after kill: `{}`", processHandle.isAlive());
+        }
+      }
+    }
   }
 
   @Bean
@@ -319,9 +347,10 @@ public class App extends CommonApp {
 
         // --------------- Start modelDB gRPC server --------------------------
         server.start();
-        this.server = Optional.of(server);
+        App.getInstance().server = Optional.of(server);
         healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
         up.inc();
+        LOGGER.info("Current PID: {}", ProcessHandle.current().pid());
         LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
 
         // ----------- Don't exit the main thread. Wait until server is terminated -----------
@@ -381,32 +410,45 @@ public class App extends CommonApp {
   }
 
   @PreDestroy
-  public void shutdown() {
-    LOGGER.info("*** Beginning Server Shutdown ***");
-    int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-    while (activeRequestCount > 0) {
-      activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-      System.err.println("Active Request Count in while: " + activeRequestCount);
+  public void onShutDown() {
+    if (App.getInstance().server.isPresent()) {
+      var server = App.getInstance().server.get();
       try {
-        Thread.sleep(1000); // wait for 1s
+        // Use stderr here since the logger may have been reset by its JVM shutdown
+        // hook.
+        LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
+        server.shutdown();
+
+        long pollInterval = 5L;
+        long timeoutRemaining = mdbConfig.getGrpcServer().getRequestTimeout();
+        while (timeoutRemaining > pollInterval
+            && !server.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+          int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+          LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
+
+          timeoutRemaining -= pollInterval;
+        }
+
+        server.awaitTermination(pollInterval, TimeUnit.SECONDS);
+        LOGGER.info("*** Server Shutdown ***");
       } catch (InterruptedException e) {
-        e.printStackTrace();
-      }
-    }
-    // Use stderr here since the logger may have been reset by its JVM shutdown
-    // hook.
-    if (server.isPresent()) {
-      LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
-      final var s = server.get();
-      s.shutdown();
-      try {
-        s.awaitTermination();
-      } catch (InterruptedException e) {
-        e.printStackTrace();
+        LOGGER.error("Getting error while graceful shutdown", e);
+        // Restore interrupted state...
+        Thread.currentThread().interrupt();
       }
     }
 
-    LOGGER.info("*** Server Shutdown ***");
-    up.dec();
+    initiateShutdown(0);
+
+    cleanUpPIDFile();
+  }
+
+  private void cleanUpPIDFile() {
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + ModelDBConstants.BACKEND_PID;
+    File pidFile = new File(path);
+    if (pidFile.exists()) {
+      pidFile.deleteOnExit();
+      LOGGER.trace(ModelDBConstants.BACKEND_PID + " file is deleted: {}", pidFile.exists());
+    }
   }
 }

@@ -1,6 +1,6 @@
 package ai.verta.modeldb.common;
 
-import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import org.apache.catalina.connector.Connector;
 import org.apache.logging.log4j.LogManager;
@@ -13,7 +13,7 @@ public class GracefulShutdown
     implements TomcatConnectorCustomizer, ApplicationListener<ContextClosedEvent> {
 
   private Connector connector;
-  private long shutdownTimeout;
+  private final long shutdownTimeout;
   private static final Logger LOGGER = LogManager.getLogger(GracefulShutdown.class);
 
   public GracefulShutdown(Long shutdownTimeout) {
@@ -27,47 +27,40 @@ public class GracefulShutdown
 
   @Override
   public void onApplicationEvent(ContextClosedEvent event) {
+    LOGGER.info("GracefulShutdown starting for Spring server");
     this.connector.pause();
     var executor = this.connector.getProtocolHandler().getExecutor();
-    if (executor instanceof ThreadPoolExecutor) {
+    if (executor instanceof ExecutorService) {
       try {
-        var threadPoolExecutor = (ThreadPoolExecutor) executor;
-        int nfsActiveRequestCount = threadPoolExecutor.getActiveCount();
-
-        while (nfsActiveRequestCount > 0) {
-          nfsActiveRequestCount = threadPoolExecutor.getActiveCount();
-          LOGGER.info("NFS Active Request Count in while: {}", nfsActiveRequestCount);
-          waitForSomeTime();
+        var executorService = (ExecutorService) executor;
+        executorService.shutdown();
+        long pollInterval = 5L;
+        long timeoutRemaining = shutdownTimeout;
+        while (timeoutRemaining > pollInterval
+            && !executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+          LOGGER.info("Spring server executor service awaiting termination after shutdown");
+          timeoutRemaining -= pollInterval;
         }
 
-        threadPoolExecutor.shutdown();
-        if (!threadPoolExecutor.awaitTermination(shutdownTimeout, TimeUnit.SECONDS)) {
-          LOGGER.info(
-              "NFS Server thread pool did not shut down gracefully within "
+        if (!executorService.awaitTermination(timeoutRemaining, TimeUnit.SECONDS)) {
+          LOGGER.warn(
+              "Spring server executor service did not shut down gracefully within "
                   + "{} seconds. Proceeding with forceful shutdown",
               shutdownTimeout);
 
-          threadPoolExecutor.shutdownNow();
+          executorService.shutdownNow();
 
-          if (!threadPoolExecutor.awaitTermination(shutdownTimeout, TimeUnit.SECONDS)) {
-            LOGGER.info("NFS Server thread pool did not terminate");
+          // Give the service one more poll interval to finish shutting down
+          if (!executorService.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+            LOGGER.error("Spring server executor service did not terminate");
           }
         } else {
-          LOGGER.info("*** NFS Server Shutdown ***");
+          LOGGER.info("*** Spring server Shutdown ***");
         }
       } catch (InterruptedException ex) {
         Thread.currentThread().interrupt();
       }
     }
-  }
-
-  private void waitForSomeTime() {
-    try {
-      Thread.sleep(1000); // wait for 1s
-    } catch (InterruptedException e) {
-      LOGGER.error(e.getMessage(), e);
-      // Restore interrupted state...
-      Thread.currentThread().interrupt();
-    }
+    LOGGER.info("GracefulShutdown finished for Spring server");
   }
 }
