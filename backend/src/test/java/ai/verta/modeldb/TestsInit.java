@@ -1,6 +1,11 @@
 package ai.verta.modeldb;
 
 import ai.verta.artifactstore.ArtifactStoreGrpc;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
@@ -87,7 +92,14 @@ public class TestsInit {
     JdbiUtil jdbiUtil = JdbiUtil.getInstance(testConfig);
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
     // Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, null);
+    var artifactStoreConfig = testConfig.artifactStoreConfig;
+    ArtifactStoreService artifactStoreService = new NoopArtifactStoreService();
+    if (artifactStoreConfig.getArtifactStoreType().equals("S3")){
+      artifactStoreService = new S3Service(artifactStoreConfig, artifactStoreConfig.getS3().getCloudBucketName());
+    } else if (artifactStoreConfig.getArtifactStoreType().equals("NFS")){
+      artifactStoreService = new NFSService(new FileStorageProperties(), artifactStoreConfig);
+    }
+    services = ServiceSet.fromConfig(testConfig, artifactStoreService);
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);

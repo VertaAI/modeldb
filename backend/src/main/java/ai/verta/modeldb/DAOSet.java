@@ -28,6 +28,7 @@ import ai.verta.uac.ServiceEnum;
 import java.util.concurrent.Executor;
 
 public class DAOSet {
+
   public ArtifactStoreDAO artifactStoreDAO;
   public BlobDAO blobDAO;
   public CommentDAO commentDAO;
@@ -65,7 +66,8 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    if (services.artifactStoreService instanceof NoopArtifactStoreService) {
+    if (services.artifactStoreService == null
+        || services.artifactStoreService instanceof NoopArtifactStoreService) {
       set.artifactStoreDAO = new ArtifactStoreDAODisabled();
     } else {
       set.artifactStoreDAO =
@@ -106,5 +108,6 @@ public class DAOSet {
     return set;
   }
 
-  private DAOSet() {}
+  private DAOSet() {
+  }
 }
