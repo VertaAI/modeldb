@@ -13,5 +13,4 @@ public class FileStorageProperties {
   public String getUploadDir() {
     return uploadDir;
   }
-
 }
