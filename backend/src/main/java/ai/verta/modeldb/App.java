@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.CommonApp;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
@@ -49,7 +48,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -58,7 +56,6 @@ import org.springframework.lang.NonNull;
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
 @EnableAutoConfiguration
-@EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
 @ComponentScan(basePackages = "ai.verta.modeldb.config, ai.verta.modeldb.health")
 public class App extends CommonApp {

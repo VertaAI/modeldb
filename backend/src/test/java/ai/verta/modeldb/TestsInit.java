@@ -98,7 +98,9 @@ public class TestsInit {
       artifactStoreService =
           new S3Service(artifactStoreConfig, artifactStoreConfig.getS3().getCloudBucketName());
     } else if (artifactStoreConfig.getArtifactStoreType().equals("NFS")) {
-      artifactStoreService = new NFSService(new FileStorageProperties(), artifactStoreConfig);
+      String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
+      artifactStoreService =
+          new NFSService(new FileStorageProperties(rootDir), artifactStoreConfig);
     }
     services = ServiceSet.fromConfig(testConfig, artifactStoreService);
     authService = services.authService;

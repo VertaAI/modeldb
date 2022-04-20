@@ -137,8 +137,7 @@ public abstract class CommonApp implements ApplicationContextAware {
           registeredBean(applicationContext, "nfsController", NFSController.class);
           String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
           LOGGER.trace("NFS server root path {}", rootDir);
-          final var props = new FileStorageProperties();
-          props.setUploadDir(rootDir);
+          final var props = new FileStorageProperties(rootDir);
           artifactStoreService = new NFSService(props, artifactStoreConfig);
           break;
         default:
