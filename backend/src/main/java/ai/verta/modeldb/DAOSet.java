@@ -108,6 +108,5 @@ public class DAOSet {
     return set;
   }
 
-  private DAOSet() {
-  }
+  private DAOSet() {}
 }

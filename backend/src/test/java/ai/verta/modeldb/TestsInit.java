@@ -94,9 +94,10 @@ public class TestsInit {
     // Initialize services that we depend on
     var artifactStoreConfig = testConfig.artifactStoreConfig;
     ArtifactStoreService artifactStoreService = new NoopArtifactStoreService();
-    if (artifactStoreConfig.getArtifactStoreType().equals("S3")){
-      artifactStoreService = new S3Service(artifactStoreConfig, artifactStoreConfig.getS3().getCloudBucketName());
-    } else if (artifactStoreConfig.getArtifactStoreType().equals("NFS")){
+    if (artifactStoreConfig.getArtifactStoreType().equals("S3")) {
+      artifactStoreService =
+          new S3Service(artifactStoreConfig, artifactStoreConfig.getS3().getCloudBucketName());
+    } else if (artifactStoreConfig.getArtifactStoreType().equals("NFS")) {
       artifactStoreService = new NFSService(new FileStorageProperties(), artifactStoreConfig);
     }
     services = ServiceSet.fromConfig(testConfig, artifactStoreService);
