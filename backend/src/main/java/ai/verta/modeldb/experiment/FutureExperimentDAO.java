@@ -1,7 +1,6 @@
 package ai.verta.modeldb.experiment;
 
 import ai.verta.common.Artifact;
-import ai.verta.common.GetUrlForArtifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -17,6 +16,7 @@ import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
 import ai.verta.modeldb.GetExperimentCodeVersion;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
 import ai.verta.modeldb.UpdateExperimentDescription;
@@ -876,7 +876,24 @@ public class FutureExperimentDAO {
                         projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.READ),
                 executor);
 
-    return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request), executor);
+    return permissionCheck
+        .thenCompose(
+            unused ->
+                artifactHandler.getUrlForArtifact(
+                    ai.verta.common.GetUrlForArtifact.newBuilder()
+                        .setId(request.getId())
+                        .setKey(request.getKey())
+                        .setMethod(request.getMethod())
+                        .setPartNumber(request.getPartNumber())
+                        .setArtifactType(request.getArtifactType())
+                        .build()),
+            executor)
+        .thenApply(
+            response ->
+                GetUrlForArtifact.Response.newBuilder()
+                    .setUrl(response.getUrl())
+                    .setMultipartUploadOk(response.getMultipartUploadOk())
+                    .build(),
+            executor);
   }
 }

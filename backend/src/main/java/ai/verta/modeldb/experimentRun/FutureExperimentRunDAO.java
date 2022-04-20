@@ -2,10 +2,6 @@ package ai.verta.modeldb.experimentRun;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.CodeVersion;
-import ai.verta.common.CommitArtifactPart;
-import ai.verta.common.CommitMultipartArtifact;
-import ai.verta.common.GetCommittedArtifactParts;
-import ai.verta.common.GetUrlForArtifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -14,6 +10,8 @@ import ai.verta.common.Pagination;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CloneExperimentRun;
+import ai.verta.modeldb.CommitArtifactPart;
+import ai.verta.modeldb.CommitMultipartArtifact;
 import ai.verta.modeldb.CreateExperimentRun;
 import ai.verta.modeldb.DeleteArtifact;
 import ai.verta.modeldb.DeleteExperimentRunAttributes;
@@ -27,6 +25,7 @@ import ai.verta.modeldb.Feature;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
+import ai.verta.modeldb.GetCommittedArtifactParts;
 import ai.verta.modeldb.GetDatasets;
 import ai.verta.modeldb.GetExperimentRunCodeVersion;
 import ai.verta.modeldb.GetExperimentRunsByDatasetVersionId;
@@ -35,6 +34,7 @@ import ai.verta.modeldb.GetHyperparameters;
 import ai.verta.modeldb.GetMetrics;
 import ai.verta.modeldb.GetObservations;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.GetVersionedInput;
 import ai.verta.modeldb.LogArtifacts;
 import ai.verta.modeldb.LogAttributes;
@@ -119,6 +119,7 @@ import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentRunDAO {
+
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
   private static final String EXPERIMENT_RUN_ENTITY_NAME = "ExperimentRunEntity";
 
@@ -704,8 +705,25 @@ public class FutureExperimentRunDAO {
               Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE);
     }
 
-    return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request), executor);
+    return permissionCheck
+        .thenCompose(
+            unused ->
+                artifactHandler.getUrlForArtifact(
+                    ai.verta.common.GetUrlForArtifact.newBuilder()
+                        .setId(request.getId())
+                        .setKey(request.getKey())
+                        .setMethod(request.getMethod())
+                        .setPartNumber(request.getPartNumber())
+                        .setArtifactType(request.getArtifactType())
+                        .build()),
+            executor)
+        .thenApply(
+            response ->
+                GetUrlForArtifact.Response.newBuilder()
+                    .setUrl(response.getUrl())
+                    .setMultipartUploadOk(response.getMultipartUploadOk())
+                    .build(),
+            executor);
   }
 
   public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
@@ -714,7 +732,20 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getCommittedArtifactParts(request), executor);
+        .thenCompose(
+            unused ->
+                artifactHandler.getCommittedArtifactParts(
+                    ai.verta.common.GetCommittedArtifactParts.newBuilder()
+                        .setId(request.getId())
+                        .setKey(request.getKey())
+                        .build()),
+            executor)
+        .thenApply(
+            response ->
+                GetCommittedArtifactParts.Response.newBuilder()
+                    .addAllArtifactParts(response.getArtifactPartsList())
+                    .build(),
+            executor);
   }
 
   public InternalFuture<Void> commitArtifactPart(CommitArtifactPart request) {
@@ -722,7 +753,15 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.commitArtifactPart(request), executor);
+        .thenCompose(
+            unused ->
+                artifactHandler.commitArtifactPart(
+                    ai.verta.common.CommitArtifactPart.newBuilder()
+                        .setId(request.getId())
+                        .setKey(request.getKey())
+                        .setArtifactPart(request.getArtifactPart())
+                        .build()),
+            executor);
   }
 
   public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
@@ -730,7 +769,14 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.commitMultipartArtifact(request), executor);
+        .thenCompose(
+            unused ->
+                artifactHandler.commitMultipartArtifact(
+                    ai.verta.common.CommitMultipartArtifact.newBuilder()
+                        .setId(request.getId())
+                        .setKey(request.getKey())
+                        .build()),
+            executor);
   }
 
   public InternalFuture<FindExperimentRuns.Response> findExperimentRuns(

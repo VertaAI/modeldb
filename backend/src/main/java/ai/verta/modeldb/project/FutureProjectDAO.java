@@ -1,7 +1,6 @@
 package ai.verta.modeldb.project;
 
 import ai.verta.common.Artifact;
-import ai.verta.common.GetUrlForArtifact;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
@@ -24,6 +23,7 @@ import ai.verta.modeldb.GetProjectReadme;
 import ai.verta.modeldb.GetProjectShortName;
 import ai.verta.modeldb.GetSummary;
 import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LastModifiedExperimentRunSummary;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
@@ -439,8 +439,25 @@ public class FutureProjectDAO {
           checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
     }
 
-    return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request), executor);
+    return permissionCheck
+        .thenCompose(
+            unused ->
+                artifactHandler.getUrlForArtifact(
+                    ai.verta.common.GetUrlForArtifact.newBuilder()
+                        .setId(request.getId())
+                        .setKey(request.getKey())
+                        .setMethod(request.getMethod())
+                        .setPartNumber(request.getPartNumber())
+                        .setArtifactType(request.getArtifactType())
+                        .build()),
+            executor)
+        .thenApply(
+            response ->
+                ai.verta.modeldb.GetUrlForArtifact.Response.newBuilder()
+                    .setUrl(response.getUrl())
+                    .setMultipartUploadOk(response.getMultipartUploadOk())
+                    .build(),
+            executor);
   }
 
   public InternalFuture<VerifyConnectionResponse> verifyConnection(Empty request) {

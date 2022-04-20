@@ -1,12 +1,12 @@
 package ai.verta.modeldb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
-import ai.verta.common.GetUrlForArtifact;
-import ai.verta.modeldb.authservice.*;
 import com.google.api.client.util.IOUtils;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
