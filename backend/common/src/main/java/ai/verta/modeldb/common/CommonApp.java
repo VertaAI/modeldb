@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common;
 
-import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.Server;
@@ -20,8 +19,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
-import org.springframework.boot.SpringApplication;
-import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
@@ -86,15 +83,7 @@ public abstract class CommonApp implements ApplicationContextAware {
     registry.registerBeanDefinition(controllerBeanName, gbd);
   }
 
-  public static void main(String[] args) throws Exception {
-    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
-    resolvePortCollisionIfExists(path);
-    SpringApplication application = new SpringApplication(App.class);
-    application.addListeners(new ApplicationPidFileWriter(path));
-    application.run(args);
-  }
-
-  private static void resolvePortCollisionIfExists(String path) throws Exception {
+  protected static void resolvePortCollisionIfExists(String path) throws Exception {
     File pidFile = new File(path);
     if (pidFile.exists()) {
       try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {

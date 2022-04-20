@@ -54,6 +54,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
@@ -248,6 +249,14 @@ public class App extends CommonApp {
     jdbiUtil.setIsReady();
 
     return false;
+  }
+
+  public static void main(String[] args) throws Exception {
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
+    resolvePortCollisionIfExists(path);
+    SpringApplication application = new SpringApplication(App.class);
+    application.addListeners(new ApplicationPidFileWriter(path));
+    application.run(args);
   }
 
   @Bean
