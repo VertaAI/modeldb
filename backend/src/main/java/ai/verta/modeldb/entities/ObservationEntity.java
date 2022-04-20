@@ -5,6 +5,7 @@ import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import com.google.protobuf.Value;
 import java.io.Serializable;
+import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -37,7 +38,11 @@ public class ObservationEntity implements Serializable {
     if (observation.getArtifact() != null && !observation.getArtifact().getKey().isEmpty()) {
       setArtifactMapping(
           RdbmsUtils.generateArtifactEntity(
-              this, ModelDBConstants.ARTIFACTS, observation.getArtifact()));
+              this,
+              ModelDBConstants.ARTIFACTS,
+              observation.getArtifact(),
+              ObservationEntity.class.getSimpleName(),
+              "fake-" + UUID.randomUUID().toString()));
     }
 
     if (entity instanceof ProjectEntity) {

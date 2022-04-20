@@ -1395,6 +1395,71 @@ public class FindProjectEntitiesTest extends TestsInit {
         1,
         response.getTotalRecords());
 
+    // get experiment with value of endTime
+    stringValue =
+        Value.newBuilder().setStringValue(String.valueOf(experiment4.getDateCreated())).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey(ModelDBConstants.DATE_CREATED)
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.NE)
+            .build();
+
+    findExperiments =
+        FindExperiments.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = experimentServiceStub.findExperiments(findExperiments);
+    LOGGER.info("FindExperiments Response : " + response.getExperimentsCount());
+    assertEquals(
+        "Experiment count not match with expected experiment count",
+        3,
+        response.getExperimentsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
+        response.getTotalRecords());
+
+    for (var experiment : response.getExperimentsList()) {
+      assertNotEquals(
+          "ExperimentRun not match with expected experimentRun",
+          experiment4.getId(),
+          experiment.getId());
+    }
+
+    // get experiment with value of endTime
+    stringValue =
+        Value.newBuilder().setStringValue(String.valueOf(experiment4.getDateCreated())).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey(ModelDBConstants.DATE_CREATED)
+            .setValue(stringValue)
+            .setOperator(Operator.CONTAIN)
+            .build();
+
+    findExperiments =
+        FindExperiments.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = experimentServiceStub.findExperiments(findExperiments);
+    LOGGER.info("FindExperiments Response : " + response.getExperimentsCount());
+    assertEquals(
+        "Experiment count not match with expected experiment count",
+        1,
+        response.getExperimentsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+    assertEquals(
+        "ExperimentRun not match with expected experimentRun",
+        experiment4.getId(),
+        response.getExperiments(0).getId());
+
     LOGGER.info("FindExperiments by experiment endtime test stop................................");
   }
 
@@ -1952,6 +2017,69 @@ public class FindProjectEntitiesTest extends TestsInit {
         "Total records count not matched with expected records count",
         1,
         response.getTotalRecords());
+
+    stringValue =
+        Value.newBuilder().setStringValue(String.valueOf(experimentRun22.getDateCreated())).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("date_created")
+            .setValue(stringValue)
+            .setOperator(OperatorEnum.Operator.NE)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        3,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        3,
+        response.getTotalRecords());
+
+    for (var er : response.getExperimentRunsList()) {
+      assertNotEquals(
+          "ExperimentRun not match with expected experimentRun",
+          experimentRun22.getId(),
+          response.getExperimentRunsList().get(0).getId());
+    }
+
+    stringValue =
+        Value.newBuilder().setStringValue(String.valueOf(experimentRun22.getDateCreated())).build();
+    keyValueQuery =
+        KeyValueQuery.newBuilder()
+            .setKey("date_created")
+            .setValue(stringValue)
+            .setOperator(Operator.CONTAIN)
+            .build();
+
+    findExperimentRuns =
+        FindExperimentRuns.newBuilder()
+            .setProjectId(project1.getId())
+            .addPredicates(keyValueQuery)
+            .build();
+
+    response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
+    LOGGER.info("FindExperimentRuns Response : " + response.getExperimentRunsCount());
+    assertEquals(
+        "ExperimentRun count not match with expected experimentRun count",
+        1,
+        response.getExperimentRunsCount());
+    assertEquals(
+        "Total records count not matched with expected records count",
+        1,
+        response.getTotalRecords());
+    assertEquals(
+        "ExperimentRun not match with expected experimentRun",
+        experimentRun22.getId(),
+        response.getExperimentRuns(0).getId());
 
     LOGGER.info(
         "FindExperimentRuns by ExperimentRun EndTime test stop................................");

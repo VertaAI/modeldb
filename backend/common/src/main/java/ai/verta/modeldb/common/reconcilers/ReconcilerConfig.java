@@ -1,7 +1,7 @@
 package ai.verta.modeldb.common.reconcilers;
 
 public class ReconcilerConfig {
-  private int resyncPeriodSeconds = 60;
+  private long resyncPeriodSeconds = 60L;
   private int batchSize = 10;
   private int workerCount = 10;
   private int maxSync = 10000;
@@ -11,7 +11,7 @@ public class ReconcilerConfig {
     this.isTestReconciler = isTestReconciler;
   }
 
-  public int getResyncPeriodSeconds() {
+  public long getResyncPeriodSeconds() {
     return resyncPeriodSeconds;
   }
 
@@ -33,5 +33,9 @@ public class ReconcilerConfig {
 
   public boolean isTestReconciler() {
     return isTestReconciler;
+  }
+
+  public void setResyncPeriodSeconds(long resyncPeriodSeconds) {
+    this.resyncPeriodSeconds = resyncPeriodSeconds;
   }
 }

@@ -8,6 +8,7 @@ import logging
 import os
 import pathlib2
 import pickle
+import tempfile
 import warnings
 
 from google.protobuf.struct_pb2 import Value
@@ -1436,3 +1437,44 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             code_versions[key] = content
 
         return code_versions
+
+    def log_reference_data(self, X, Y, overwrite=False):
+        """Log tabular reference data.
+
+        Parameters
+        ----------
+        X : pd.DataFrame
+            Reference data inputs.
+        Y : pd.DataFrame
+            Reference data outputs.
+        overwrite : bool, default False
+            Whether to allow overwriting existing reference data.
+
+        """
+        pd = importer.maybe_dependency("pandas")
+        if pd is None:
+            raise ImportError("pandas is not installed; try `pip install pandas`")
+
+        if isinstance(X, pd.Series):
+            X = X.to_frame()
+        if isinstance(Y, pd.Series):
+            Y = Y.to_frame()
+        if not isinstance(X, pd.DataFrame):
+            raise TypeError("`X` must be a DataFrame, not {}".format(type(X)))
+        if not isinstance(Y, pd.DataFrame):
+            raise TypeError("`Y` must be a DataFrame, not {}".format(type(Y)))
+
+        df = pd.DataFrame()
+        for c in X.columns:
+            df["input." + str(c)] = X[c]
+        for c in Y.columns:
+            df["output." + str(c)] = Y[c]
+        df["source"] = "reference"
+        df["model_version_id"] = self.id
+
+        tempf = tempfile.NamedTemporaryFile(suffix=".csv", delete=False)
+        try:
+            df.to_csv(tempf.name, encoding="utf-8", index=False)
+            self.log_artifact("reference_data", tempf.name, overwrite=overwrite)
+        finally:
+            os.remove(tempf.name)

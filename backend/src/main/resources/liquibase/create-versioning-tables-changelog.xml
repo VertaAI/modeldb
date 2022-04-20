@@ -2,7 +2,7 @@
         xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.4.xsd"
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
         logicalFilePath="src/main/resources/liquibase/create-tables-changelog-1.0.xml">
     <changeSet author="anand" id="create-commit">
         <preConditions onFail="MARK_RAN">
@@ -158,17 +158,18 @@
         </createTable>
     </changeSet>
     <changeSet author="anand" id="create-commit_parent">
+        <validCheckSum>8:7984b0df7fdb4c5b97a1a0b2209eac73</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="commit_parent"/>
             </not>
         </preConditions>
         <createTable tableName="commit_parent">
-            <column name="parent_hash " type="varchar(64)">
+            <column name="parent_hash" type="varchar(64)">
                 <constraints foreignKeyName="fk_parent_hash_commit_parent" referencedTableName="commit"
                              referencedColumnNames="commit_hash"/>
             </column>
-            <column name="child_hash " type="varchar(64)">
+            <column name="child_hash" type="varchar(64)">
                 <constraints foreignKeyName="fk_child_hash_commit_parent" referencedTableName="commit"
                              referencedColumnNames="commit_hash"/>
             </column>

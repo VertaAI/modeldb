@@ -7,6 +7,7 @@ import json
 import yaml
 
 from verta.external import six
+from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from verta.deployment import DeployedModel
 from verta._internal_utils import _utils, arg_handler
@@ -242,6 +243,32 @@ class Endpoint(object):
                 return endpoint
         return None
 
+
+    def log_ground_truth(self, id, labels, colname):
+        conn = self._conn
+        url = "{}://{}/api/v1/monitoring/ingest/decorate/batch/endpoint/{}".format(
+            conn.scheme, conn.socket, self.id
+        )
+
+        if len(labels) == 0:
+            # TODO: raise an error
+            pass
+
+        data = [
+            {
+                "id": "{}[{}]".format(id, i),
+                "attributes": {
+                    "ground_truth.output."+colname: val,
+                    "source": "ground_truth",
+                }
+            }
+            for i, val in enumerate(labels)
+        ]
+
+        response = _utils.make_request("POST", url, conn, json=data)
+        _utils.raise_for_http_error(response)
+
+
     def update(
         self,
         model_reference,
@@ -302,7 +329,27 @@ class Endpoint(object):
             build = self._create_build(model_reference)
             update_body["build_id"] = build.id
 
-        return self._update_from_build(update_body, wait)
+        ret = self._update_from_build(update_body, wait)
+        if isinstance(model_reference, RegisteredModelVersion):
+            model_version = model_reference
+
+            try:
+                # TODO: make exception catching more specific
+                local_path = model_version._get_artifact_msg("reference_data").path
+            except:
+                return ret
+            bucket = urlparse(model_version._get_url_for_artifact("reference_data", "GET").url).hostname.split('.')[0]
+            conn = self._conn
+            url = "{}://{}/api/v1/monitoring/ingest/reference/endpoint/{}".format(
+                conn.scheme, conn.socket, self.id
+            )
+            ingestRequest = {
+                "bucket": bucket,
+                "path": local_path
+            }
+            response = _utils.make_request("POST", url, conn, json=ingestRequest)
+            _utils.raise_for_http_error(response)
+        return ret
 
     def _update_from_build(self, update_body, wait=False):
         # Update stages with new build

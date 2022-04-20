@@ -102,18 +102,20 @@ class JWTCredentials(Credentials):
 
     def export_env_vars_to_os(self):
         os.environ[self.JWT_TOKEN_ENV] = self.jwt_token
-        os.environ[self.JWT_TOKEN_SIG_ENV] = self.jwt_token_sig
+        if self.jwt_token_sig:
+            os.environ[self.JWT_TOKEN_SIG_ENV] = self.jwt_token_sig
 
     def headers(self):
-        return {
+        headers = {
             'source': 'JWT',
             'bearer_access_token': self.jwt_token,
-            'bearer_access_token_sig': self.jwt_token_sig,
             # without underscore, for NGINX support
             # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
             'bearer-access-token': self.jwt_token,
-            'bearer-access-token-sig': self.jwt_token_sig,
         }
+        if self.jwt_token_sig:
+            headers['bearer_access_token_sig'] = headers['bearer-access-token-sig'] = self.jwt_token_sig
+        return headers
 
     def __repr__(self):
         token = self.jwt_token[:8] + re.sub(r"[^-]", '*', self.jwt_token[8:])
@@ -150,11 +152,9 @@ def load_from_os_env():
 def _build(email=None, dev_key=None, jwt_token=None, jwt_token_sig=None):
     if email and dev_key:
         return EmailCredentials(email, dev_key)
-    elif jwt_token and jwt_token_sig:
+    elif jwt_token:
         return JWTCredentials(jwt_token, jwt_token_sig)
     elif email or dev_key:
         raise ValueError("`email` and `dev_key` must be provided together")
-    elif jwt_token or jwt_token_sig:
-        raise ValueError("`jwt_token` and `jwt_token_sig` must be provided together")
     else:
         return None

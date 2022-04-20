@@ -37,6 +37,83 @@ Changelog
      (`# <>`__)
 
 
+v0.20.1 (2022-04-11)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add model monitoring interface to deployment
+  (`#2962 <https://github.com/VertaAI/modeldb/pull/2962>`__)
+
+
+v0.20.0.post0 (2022-04-11)
+--------------------------
+
+Bug Fixes
+^^^^^^^^^
+- fix issue where the package couldn't be built from source
+  (`#2986 <https://github.com/VertaAI/modeldb/pull/2986>`__)
+
+
+v0.20.0 (2022-04-08)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- ``DeployedModel`` can no longer be directly instantiated from a run ID
+  (though it usually shouldn't be directly instantiated anyway)
+  (`#2727 <https://github.com/VertaAI/modeldb/pull/2727>`__)
+- ``ExperimentRun.deploy()`` and related methods have been removed in favor of
+  ``Endpoint``
+  (`#2740 <https://github.com/VertaAI/modeldb/pull/2740>`__)
+- custom module collection now favors pip-installed libraries over local
+  directories with the same name
+  (`#2805 <https://github.com/VertaAI/modeldb/pull/2805>`__)
+- ``verta.monitoring`` and ``Client.monitoring`` have been removed
+  (`#2812 <https://github.com/VertaAI/modeldb/pull/2812>`__)
+
+New Features
+^^^^^^^^^^^^
+- support JWT cookies as an authn mechanism
+  (`#2716 <https://github.com/VertaAI/modeldb/pull/2716>`__,
+  `#2738 <https://github.com/VertaAI/modeldb/pull/2738>`__,
+  `#2737 <https://github.com/VertaAI/modeldb/pull/2737>`__,
+  `#2928 <https://github.com/VertaAI/modeldb/pull/2928>`__)
+- add explicit credentials parameter to ``get_deployed_model()``
+  (`#2727 <https://github.com/VertaAI/modeldb/pull/2727>`__)
+- add ``ModelError`` exception for use in Verta Standard Models
+  (`#2735 <https://github.com/VertaAI/modeldb/pull/2735>`__)
+- support ``pip install verta[unit_tests]`` for optional testing dependencies
+  (`#2788 <https://github.com/VertaAI/modeldb/pull/2788>`__)
+- add ``RegisteredModelVersion.log_setup_script()``
+  (`#2873 <https://github.com/VertaAI/modeldb/pull/2873>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- don't include spaCy models and ``anaconda-client`` in
+  ``read_pip_environment()``
+  (`#2709 <https://github.com/VertaAI/modeldb/pull/2709>`__)
+- bump PyYAML version constraint to ``<6.0``
+  (`#2718 <https://github.com/VertaAI/modeldb/pull/2718>`__)
+- warn instead of error on version mismatch of ``verta`` and ``cloudpickle``
+  in environment versioning
+  (`#2723 <https://github.com/VertaAI/modeldb/pull/2723>`__)
+
+Bug Fixes
+^^^^^^^^^
+- make sure everything subclasses ``object``
+  (`#2748 <https://github.com/VertaAI/modeldb/pull/2748>`__)
+- add validation for the ``artifacts`` parameter in
+  ``RegisteredModelVersion.log_model()``
+  (`#2783 <https://github.com/VertaAI/modeldb/pull/2783>`__)
+- support directly deploying models that come from ``keras`` rather than
+  ``tensorflow.python.keras``
+  (`#2872 <https://github.com/VertaAI/modeldb/pull/2872>`__)
+- properly fall back to client config file if an environment variable isn't
+  set
+  (`#2875 <https://github.com/VertaAI/modeldb/pull/2875>`__)
+
+
 v0.19.3 (2021-10-29)
 --------------------
 

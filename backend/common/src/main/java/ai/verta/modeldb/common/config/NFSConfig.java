@@ -5,6 +5,7 @@ public class NFSConfig {
   private String nfsRootPath;
   private String nfsServerHost = "";
   private NFSEndpointConfig artifactEndpoint;
+  private String nfsPathPrefix;
 
   public void Validate(String base) throws InvalidConfigException {
     if (nfsRootPath == null || nfsRootPath.isEmpty())
@@ -25,5 +26,9 @@ public class NFSConfig {
 
   public NFSEndpointConfig getArtifactEndpoint() {
     return artifactEndpoint;
+  }
+
+  public String getNfsPathPrefix() {
+    return nfsPathPrefix == null ? "" : nfsPathPrefix + "/";
   }
 }

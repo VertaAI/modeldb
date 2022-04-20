@@ -3,6 +3,7 @@ package ai.verta.modeldb.common.config;
 @SuppressWarnings({"squid:S100"})
 public class S3Config {
   private String cloudBucketName;
+  private String cloudBucketPrefix;
   private String cloudAccessKey;
   private String cloudSecretKey;
   private String minioEndpoint;
@@ -40,5 +41,9 @@ public class S3Config {
 
   public Boolean getS3presignedURLEnabled() {
     return s3presignedURLEnabled;
+  }
+
+  public String getCloudBucketPrefix() {
+    return cloudBucketPrefix == null ? "" : cloudBucketPrefix + "/";
   }
 }
