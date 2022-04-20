@@ -282,6 +282,56 @@ message DeleteModelVersionRequest {
     message Response { }
 }
 
+message GetUrlForArtifact {
+    // id of model version
+    uint64 model_version_id = 1;
+    //artifact key
+    string key = 2;
+    //GET or PUT
+    string method = 3;
+    //type of artifact
+    common.ArtifactTypeEnum.ArtifactType artifact_type = 4;
+    // 0 if the url is not required to be multi part
+    uint64 part_number = 5;
+
+    message Response {
+        // URL based on action
+        string url = 1;
+        bool multipart_upload_ok = 2;
+        map<string, string> fields = 3;
+    }
+}
+
+message CommitArtifactPart {
+    // id of model version
+    uint64 model_version_id = 1;
+    //artifact key
+    string key = 2;
+    common.ArtifactPart artifact_part = 3;
+
+    message Response{ }
+}
+
+message GetCommittedArtifactParts {
+    // id of model version
+    uint64 model_version_id = 1;
+    //artifact key
+    string key = 2;
+
+    message Response {
+        repeated common.ArtifactPart artifact_parts = 1;
+    }
+}
+
+message CommitMultipartArtifact {
+    // id of model version
+    uint64 model_version_id = 1;
+    //artifact key
+    string key = 2;
+
+    message Response { }
+}
+
 message LogDatasetsInModelVersion {
     uint64 model_version_id = 1;
     repeated common.Artifact datasets = 2;
@@ -469,29 +519,29 @@ service RegistryService {
         };
     }
 
-    rpc getUrlForArtifact(common.GetUrlForArtifact) returns (common.GetUrlForArtifact.Response) {
+    rpc getUrlForArtifact(GetUrlForArtifact) returns (GetUrlForArtifact.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/model_versions/{id}/getUrlForArtifact"
+            post: "/v1/registry/model_versions/{model_version_id}/getUrlForArtifact"
             body: "*"
         };
     };
 
-    rpc commitArtifactPart(common.CommitArtifactPart) returns (common.CommitArtifactPart.Response) {
+    rpc commitArtifactPart(CommitArtifactPart) returns (CommitArtifactPart.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/model_versions/{id}/commitArtifactPart"
+            post: "/v1/registry/model_versions/{model_version_id}/commitArtifactPart"
             body: "*"
         };
     };
 
-    rpc getCommittedArtifactParts(common.GetCommittedArtifactParts) returns (common.GetCommittedArtifactParts.Response) {
+    rpc getCommittedArtifactParts(GetCommittedArtifactParts) returns (GetCommittedArtifactParts.Response) {
         option (google.api.http) = {
-            get: "/v1/registry/model_versions/{id}/getCommittedArtifactParts"
+            get: "/v1/registry/model_versions/{model_version_id}/getCommittedArtifactParts"
         };
     };
 
-    rpc commitMultipartArtifact(common.CommitMultipartArtifact) returns (common.CommitMultipartArtifact.Response) {
+    rpc commitMultipartArtifact(CommitMultipartArtifact) returns (CommitMultipartArtifact.Response) {
         option (google.api.http) = {
-            post: "/v1/registry/model_versions/{id}/commitMultipartArtifact"
+            post: "/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact"
             body: "*"
         };
     };

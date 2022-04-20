@@ -529,7 +529,7 @@ service ProjectService {
     };
 
     // artifacts
-    rpc getUrlForArtifact(common.GetUrlForArtifact) returns (common.GetUrlForArtifact.Response) {
+    rpc getUrlForArtifact(GetUrlForArtifact) returns (GetUrlForArtifact.Response) {
         option (google.api.http) = {
             post: "/v1/project/getUrlForArtifact"
             body: "*"

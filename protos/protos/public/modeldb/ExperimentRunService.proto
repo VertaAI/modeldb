@@ -859,27 +859,27 @@ service ExperimentRunService {
         };
     };
 
-    rpc getUrlForArtifact(common.GetUrlForArtifact) returns (common.GetUrlForArtifact.Response) {
+    rpc getUrlForArtifact(GetUrlForArtifact) returns (GetUrlForArtifact.Response) {
         option (google.api.http) = {
             post: "/v1/experiment-run/getUrlForArtifact"
             body: "*"
         };
     };
 
-    rpc commitArtifactPart(common.CommitArtifactPart) returns (common.CommitArtifactPart.Response) {
+    rpc commitArtifactPart(CommitArtifactPart) returns (CommitArtifactPart.Response) {
         option (google.api.http) = {
             post: "/v1/experiment-run/commitArtifactPart"
             body: "*"
         };
     };
 
-    rpc getCommittedArtifactParts(common.GetCommittedArtifactParts) returns (common.GetCommittedArtifactParts.Response) {
+    rpc getCommittedArtifactParts(GetCommittedArtifactParts) returns (GetCommittedArtifactParts.Response) {
         option (google.api.http) = {
             get: "/v1/experiment-run/getCommittedArtifactParts"
         };
     };
 
-    rpc commitMultipartArtifact(common.CommitMultipartArtifact) returns (common.CommitMultipartArtifact.Response) {
+    rpc commitMultipartArtifact(CommitMultipartArtifact) returns (CommitMultipartArtifact.Response) {
         option (google.api.http) = {
             post: "/v1/experiment-run/commitMultipartArtifact"
             body: "*"
