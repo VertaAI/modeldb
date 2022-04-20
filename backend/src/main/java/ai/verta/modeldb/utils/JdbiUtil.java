@@ -1,13 +1,16 @@
 package ai.verta.modeldb.utils;
 
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.MssqlMigrationUtil;
 import ai.verta.modeldb.config.MDBConfig;
 import io.grpc.health.v1.HealthCheckResponse;
+import java.io.File;
 import java.sql.SQLException;
 import java.util.concurrent.Executor;
 import liquibase.exception.LiquibaseException;
+import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.JDBCConnectionException;
@@ -74,7 +77,10 @@ public class JdbiUtil extends CommonDBUtil {
 
   public void runLiquibaseMigration()
       throws InterruptedException, LiquibaseException, SQLException {
-    runLiquibaseMigration(config.getDatabase(), liquibaseRootFilePath);
+    runLiquibaseMigration(
+        config.getDatabase(),
+        liquibaseRootFilePath,
+        new FileSystemResourceAccessor(new File(System.getProperty(CommonConstants.USER_DIR))));
 
     if (config.getDatabase().getRdbConfiguration().isMssql()) {
       MssqlMigrationUtil.migrateToUTF16ForMssql(config.getJdbi());

@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common;
 
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.Server;
@@ -7,6 +8,9 @@ import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import io.prometheus.jmx.BuildInfoCollector;
 import io.prometheus.jmx.JmxCollector;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -16,6 +20,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
 import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
@@ -78,5 +84,41 @@ public abstract class CommonApp implements ApplicationContextAware {
     GenericBeanDefinition gbd = new GenericBeanDefinition();
     gbd.setBeanClass(className);
     registry.registerBeanDefinition(controllerBeanName, gbd);
+  }
+
+  public static void main(String[] args) throws Exception {
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
+    resolvePortCollisionIfExists(path);
+    SpringApplication application = new SpringApplication(App.class);
+    application.addListeners(new ApplicationPidFileWriter(path));
+    application.run(args);
+  }
+
+  private static void resolvePortCollisionIfExists(String path) throws Exception {
+    File pidFile = new File(path);
+    if (pidFile.exists()) {
+      try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {
+        String pidString = reader.readLine();
+        var pid = Long.parseLong(pidString);
+        var process = ProcessHandle.of(pid);
+        if (process.isPresent()) {
+          var processHandle = process.get();
+          LOGGER.warn("Port is already used by backend PID: {}", pid);
+          boolean destroyed = processHandle.destroy();
+          LOGGER.warn("Process kill completed `{}` for PID: {}", destroyed, pid);
+          processHandle = processHandle.onExit().get();
+          LOGGER.warn("Process is alive after kill: `{}`", processHandle.isAlive());
+        }
+      }
+    }
+  }
+
+  protected void cleanUpPIDFile() {
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
+    File pidFile = new File(path);
+    if (pidFile.exists()) {
+      pidFile.deleteOnExit();
+      LOGGER.trace(CommonConstants.BACKEND_PID + " file is deleted: {}", pidFile.exists());
+    }
   }
 }

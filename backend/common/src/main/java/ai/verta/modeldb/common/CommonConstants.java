@@ -16,6 +16,7 @@ public interface CommonConstants {
   Integer THREAD_COUNT = 256;
   String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
   String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
+  String BACKEND_PID = "verta-backend.pid";
 
   enum UserIdentifier {
     VERTA_ID,
