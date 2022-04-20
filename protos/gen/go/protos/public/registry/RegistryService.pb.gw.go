@@ -13,7 +13,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
 	"github.com/golang/protobuf/descriptor"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -2909,7 +2908,7 @@ func local_request_RegistryService_DeleteModelVersion_2(ctx context.Context, mar
 }
 
 func request_RegistryService_GetUrlForArtifact_0(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.GetUrlForArtifact
+	var protoReq GetUrlForArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -2927,15 +2926,15 @@ func request_RegistryService_GetUrlForArtifact_0(ctx context.Context, marshaler 
 		_   = err
 	)
 
-	val, ok = pathParams["id"]
+	val, ok = pathParams["model_version_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.Id, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
 	}
 
 	msg, err := client.GetUrlForArtifact(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -2944,7 +2943,7 @@ func request_RegistryService_GetUrlForArtifact_0(ctx context.Context, marshaler 
 }
 
 func local_request_RegistryService_GetUrlForArtifact_0(ctx context.Context, marshaler runtime.Marshaler, server RegistryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.GetUrlForArtifact
+	var protoReq GetUrlForArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -2962,15 +2961,15 @@ func local_request_RegistryService_GetUrlForArtifact_0(ctx context.Context, mars
 		_   = err
 	)
 
-	val, ok = pathParams["id"]
+	val, ok = pathParams["model_version_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.Id, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
 	}
 
 	msg, err := server.GetUrlForArtifact(ctx, &protoReq)
@@ -2979,7 +2978,7 @@ func local_request_RegistryService_GetUrlForArtifact_0(ctx context.Context, mars
 }
 
 func request_RegistryService_CommitArtifactPart_0(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.CommitArtifactPart
+	var protoReq CommitArtifactPart
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -2997,15 +2996,15 @@ func request_RegistryService_CommitArtifactPart_0(ctx context.Context, marshaler
 		_   = err
 	)
 
-	val, ok = pathParams["id"]
+	val, ok = pathParams["model_version_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.Id, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
 	}
 
 	msg, err := client.CommitArtifactPart(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -3014,7 +3013,7 @@ func request_RegistryService_CommitArtifactPart_0(ctx context.Context, marshaler
 }
 
 func local_request_RegistryService_CommitArtifactPart_0(ctx context.Context, marshaler runtime.Marshaler, server RegistryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.CommitArtifactPart
+	var protoReq CommitArtifactPart
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -3032,15 +3031,15 @@ func local_request_RegistryService_CommitArtifactPart_0(ctx context.Context, mar
 		_   = err
 	)
 
-	val, ok = pathParams["id"]
+	val, ok = pathParams["model_version_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.Id, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
 	}
 
 	msg, err := server.CommitArtifactPart(ctx, &protoReq)
@@ -3049,11 +3048,11 @@ func local_request_RegistryService_CommitArtifactPart_0(ctx context.Context, mar
 }
 
 var (
-	filter_RegistryService_GetCommittedArtifactParts_0 = &utilities.DoubleArray{Encoding: map[string]int{"id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
+	filter_RegistryService_GetCommittedArtifactParts_0 = &utilities.DoubleArray{Encoding: map[string]int{"model_version_id": 0}, Base: []int{1, 1, 0}, Check: []int{0, 1, 2}}
 )
 
 func request_RegistryService_GetCommittedArtifactParts_0(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.GetCommittedArtifactParts
+	var protoReq GetCommittedArtifactParts
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -3063,15 +3062,15 @@ func request_RegistryService_GetCommittedArtifactParts_0(ctx context.Context, ma
 		_   = err
 	)
 
-	val, ok = pathParams["id"]
+	val, ok = pathParams["model_version_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.Id, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -3087,7 +3086,7 @@ func request_RegistryService_GetCommittedArtifactParts_0(ctx context.Context, ma
 }
 
 func local_request_RegistryService_GetCommittedArtifactParts_0(ctx context.Context, marshaler runtime.Marshaler, server RegistryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.GetCommittedArtifactParts
+	var protoReq GetCommittedArtifactParts
 	var metadata runtime.ServerMetadata
 
 	var (
@@ -3097,15 +3096,15 @@ func local_request_RegistryService_GetCommittedArtifactParts_0(ctx context.Conte
 		_   = err
 	)
 
-	val, ok = pathParams["id"]
+	val, ok = pathParams["model_version_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.Id, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
 	}
 
 	if err := req.ParseForm(); err != nil {
@@ -3121,7 +3120,7 @@ func local_request_RegistryService_GetCommittedArtifactParts_0(ctx context.Conte
 }
 
 func request_RegistryService_CommitMultipartArtifact_0(ctx context.Context, marshaler runtime.Marshaler, client RegistryServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.CommitMultipartArtifact
+	var protoReq CommitMultipartArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -3139,15 +3138,15 @@ func request_RegistryService_CommitMultipartArtifact_0(ctx context.Context, mars
 		_   = err
 	)
 
-	val, ok = pathParams["id"]
+	val, ok = pathParams["model_version_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.Id, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
 	}
 
 	msg, err := client.CommitMultipartArtifact(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -3156,7 +3155,7 @@ func request_RegistryService_CommitMultipartArtifact_0(ctx context.Context, mars
 }
 
 func local_request_RegistryService_CommitMultipartArtifact_0(ctx context.Context, marshaler runtime.Marshaler, server RegistryServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.CommitMultipartArtifact
+	var protoReq CommitMultipartArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -3174,15 +3173,15 @@ func local_request_RegistryService_CommitMultipartArtifact_0(ctx context.Context
 		_   = err
 	)
 
-	val, ok = pathParams["id"]
+	val, ok = pathParams["model_version_id"]
 	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "id")
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "model_version_id")
 	}
 
-	protoReq.Id, err = runtime.String(val)
+	protoReq.ModelVersionId, err = runtime.Uint64(val)
 
 	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "id", err)
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "model_version_id", err)
 	}
 
 	msg, err := server.CommitMultipartArtifact(ctx, &protoReq)
@@ -5184,13 +5183,13 @@ var (
 
 	pattern_RegistryService_DeleteModelVersion_2 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"v1", "registry", "model_versions", "id.model_version_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_GetUrlForArtifact_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "id", "getUrlForArtifact"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_GetUrlForArtifact_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "getUrlForArtifact"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_CommitArtifactPart_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "id", "commitArtifactPart"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_CommitArtifactPart_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "commitArtifactPart"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_GetCommittedArtifactParts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "id", "getCommittedArtifactParts"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_GetCommittedArtifactParts_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "getCommittedArtifactParts"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_RegistryService_CommitMultipartArtifact_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "id", "commitMultipartArtifact"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_RegistryService_CommitMultipartArtifact_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "commitMultipartArtifact"}, "", runtime.AssumeColonVerbOpt(true)))
 
 	pattern_RegistryService_LogDatasetsInModelVersion_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4}, []string{"v1", "registry", "model_versions", "model_version_id", "logDatasets"}, "", runtime.AssumeColonVerbOpt(true)))
 

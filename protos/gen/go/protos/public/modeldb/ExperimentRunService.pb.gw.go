@@ -13,7 +13,6 @@ import (
 	"io"
 	"net/http"
 
-	"github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
 	"github.com/golang/protobuf/descriptor"
 	"github.com/golang/protobuf/proto"
 	"github.com/grpc-ecosystem/grpc-gateway/runtime"
@@ -1315,7 +1314,7 @@ func local_request_ExperimentRunService_DeleteArtifact_0(ctx context.Context, ma
 }
 
 func request_ExperimentRunService_GetUrlForArtifact_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.GetUrlForArtifact
+	var protoReq GetUrlForArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -1332,7 +1331,7 @@ func request_ExperimentRunService_GetUrlForArtifact_0(ctx context.Context, marsh
 }
 
 func local_request_ExperimentRunService_GetUrlForArtifact_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.GetUrlForArtifact
+	var protoReq GetUrlForArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -1349,7 +1348,7 @@ func local_request_ExperimentRunService_GetUrlForArtifact_0(ctx context.Context,
 }
 
 func request_ExperimentRunService_CommitArtifactPart_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.CommitArtifactPart
+	var protoReq CommitArtifactPart
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -1366,7 +1365,7 @@ func request_ExperimentRunService_CommitArtifactPart_0(ctx context.Context, mars
 }
 
 func local_request_ExperimentRunService_CommitArtifactPart_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.CommitArtifactPart
+	var protoReq CommitArtifactPart
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -1387,7 +1386,7 @@ var (
 )
 
 func request_ExperimentRunService_GetCommittedArtifactParts_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.GetCommittedArtifactParts
+	var protoReq GetCommittedArtifactParts
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -1403,7 +1402,7 @@ func request_ExperimentRunService_GetCommittedArtifactParts_0(ctx context.Contex
 }
 
 func local_request_ExperimentRunService_GetCommittedArtifactParts_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.GetCommittedArtifactParts
+	var protoReq GetCommittedArtifactParts
 	var metadata runtime.ServerMetadata
 
 	if err := req.ParseForm(); err != nil {
@@ -1419,7 +1418,7 @@ func local_request_ExperimentRunService_GetCommittedArtifactParts_0(ctx context.
 }
 
 func request_ExperimentRunService_CommitMultipartArtifact_0(ctx context.Context, marshaler runtime.Marshaler, client ExperimentRunServiceClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.CommitMultipartArtifact
+	var protoReq CommitMultipartArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)
@@ -1436,7 +1435,7 @@ func request_ExperimentRunService_CommitMultipartArtifact_0(ctx context.Context,
 }
 
 func local_request_ExperimentRunService_CommitMultipartArtifact_0(ctx context.Context, marshaler runtime.Marshaler, server ExperimentRunServiceServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq common.CommitMultipartArtifact
+	var protoReq CommitMultipartArtifact
 	var metadata runtime.ServerMetadata
 
 	newReader, berr := utilities.IOReaderFactory(req.Body)

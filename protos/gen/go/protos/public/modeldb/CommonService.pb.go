@@ -241,6 +241,258 @@ func (x *GetTags) GetId() string {
 	return ""
 }
 
+type GetUrlForArtifact struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id           string                               `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // can be Proj, Expt, or Run depending on handling service
+	Key          string                               `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	Method       string                               `protobuf:"bytes,3,opt,name=method,proto3" json:"method,omitempty"`                                                                                     //This is either GET or PUT
+	ArtifactType common.ArtifactTypeEnum_ArtifactType `protobuf:"varint,4,opt,name=artifact_type,json=artifactType,proto3,enum=ai.verta.common.ArtifactTypeEnum_ArtifactType" json:"artifact_type,omitempty"` //can inform which slot to check
+	PartNumber   uint64                               `protobuf:"varint,5,opt,name=part_number,json=partNumber,proto3" json:"part_number,omitempty"`                                                          // if 0, don’t do multipart
+}
+
+func (x *GetUrlForArtifact) Reset() {
+	*x = GetUrlForArtifact{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_CommonService_proto_msgTypes[4]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetUrlForArtifact) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUrlForArtifact) ProtoMessage() {}
+
+func (x *GetUrlForArtifact) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_CommonService_proto_msgTypes[4]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUrlForArtifact.ProtoReflect.Descriptor instead.
+func (*GetUrlForArtifact) Descriptor() ([]byte, []int) {
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{4}
+}
+
+func (x *GetUrlForArtifact) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GetUrlForArtifact) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *GetUrlForArtifact) GetMethod() string {
+	if x != nil {
+		return x.Method
+	}
+	return ""
+}
+
+func (x *GetUrlForArtifact) GetArtifactType() common.ArtifactTypeEnum_ArtifactType {
+	if x != nil {
+		return x.ArtifactType
+	}
+	return common.ArtifactTypeEnum_IMAGE
+}
+
+func (x *GetUrlForArtifact) GetPartNumber() uint64 {
+	if x != nil {
+		return x.PartNumber
+	}
+	return 0
+}
+
+type CommitArtifactPart struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id           string               `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // Run ID
+	Key          string               `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+	ArtifactPart *common.ArtifactPart `protobuf:"bytes,3,opt,name=artifact_part,json=artifactPart,proto3" json:"artifact_part,omitempty"`
+}
+
+func (x *CommitArtifactPart) Reset() {
+	*x = CommitArtifactPart{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_CommonService_proto_msgTypes[5]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommitArtifactPart) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitArtifactPart) ProtoMessage() {}
+
+func (x *CommitArtifactPart) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_CommonService_proto_msgTypes[5]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitArtifactPart.ProtoReflect.Descriptor instead.
+func (*CommitArtifactPart) Descriptor() ([]byte, []int) {
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{5}
+}
+
+func (x *CommitArtifactPart) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CommitArtifactPart) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+func (x *CommitArtifactPart) GetArtifactPart() *common.ArtifactPart {
+	if x != nil {
+		return x.ArtifactPart
+	}
+	return nil
+}
+
+type GetCommittedArtifactParts struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id  string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // Run ID
+	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *GetCommittedArtifactParts) Reset() {
+	*x = GetCommittedArtifactParts{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_CommonService_proto_msgTypes[6]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCommittedArtifactParts) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCommittedArtifactParts) ProtoMessage() {}
+
+func (x *GetCommittedArtifactParts) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_CommonService_proto_msgTypes[6]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCommittedArtifactParts.ProtoReflect.Descriptor instead.
+func (*GetCommittedArtifactParts) Descriptor() ([]byte, []int) {
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *GetCommittedArtifactParts) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *GetCommittedArtifactParts) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
+type CommitMultipartArtifact struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Id  string `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"` // Run ID
+	Key string `protobuf:"bytes,2,opt,name=key,proto3" json:"key,omitempty"`
+}
+
+func (x *CommitMultipartArtifact) Reset() {
+	*x = CommitMultipartArtifact{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_CommonService_proto_msgTypes[7]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommitMultipartArtifact) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitMultipartArtifact) ProtoMessage() {}
+
+func (x *CommitMultipartArtifact) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_CommonService_proto_msgTypes[7]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitMultipartArtifact.ProtoReflect.Descriptor instead.
+func (*CommitMultipartArtifact) Descriptor() ([]byte, []int) {
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{7}
+}
+
+func (x *CommitMultipartArtifact) GetId() string {
+	if x != nil {
+		return x.Id
+	}
+	return ""
+}
+
+func (x *CommitMultipartArtifact) GetKey() string {
+	if x != nil {
+		return x.Key
+	}
+	return ""
+}
+
 // TODO: add bulk and get_all
 type GetArtifacts struct {
 	state         protoimpl.MessageState
@@ -254,7 +506,7 @@ type GetArtifacts struct {
 func (x *GetArtifacts) Reset() {
 	*x = GetArtifacts{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_CommonService_proto_msgTypes[4]
+		mi := &file_modeldb_CommonService_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -267,7 +519,7 @@ func (x *GetArtifacts) String() string {
 func (*GetArtifacts) ProtoMessage() {}
 
 func (x *GetArtifacts) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_CommonService_proto_msgTypes[4]
+	mi := &file_modeldb_CommonService_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -280,7 +532,7 @@ func (x *GetArtifacts) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArtifacts.ProtoReflect.Descriptor instead.
 func (*GetArtifacts) Descriptor() ([]byte, []int) {
-	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{4}
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *GetArtifacts) GetId() string {
@@ -308,7 +560,7 @@ type GetAttributes_Response struct {
 func (x *GetAttributes_Response) Reset() {
 	*x = GetAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_CommonService_proto_msgTypes[5]
+		mi := &file_modeldb_CommonService_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -321,7 +573,7 @@ func (x *GetAttributes_Response) String() string {
 func (*GetAttributes_Response) ProtoMessage() {}
 
 func (x *GetAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_CommonService_proto_msgTypes[5]
+	mi := &file_modeldb_CommonService_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -355,7 +607,7 @@ type AddAttributes_Response struct {
 func (x *AddAttributes_Response) Reset() {
 	*x = AddAttributes_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_CommonService_proto_msgTypes[6]
+		mi := &file_modeldb_CommonService_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -368,7 +620,7 @@ func (x *AddAttributes_Response) String() string {
 func (*AddAttributes_Response) ProtoMessage() {}
 
 func (x *AddAttributes_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_CommonService_proto_msgTypes[6]
+	mi := &file_modeldb_CommonService_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -402,7 +654,7 @@ type GetTags_Response struct {
 func (x *GetTags_Response) Reset() {
 	*x = GetTags_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_CommonService_proto_msgTypes[7]
+		mi := &file_modeldb_CommonService_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -415,7 +667,7 @@ func (x *GetTags_Response) String() string {
 func (*GetTags_Response) ProtoMessage() {}
 
 func (x *GetTags_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_CommonService_proto_msgTypes[7]
+	mi := &file_modeldb_CommonService_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -438,6 +690,192 @@ func (x *GetTags_Response) GetTags() []string {
 	return nil
 }
 
+type GetUrlForArtifact_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Url               string            `protobuf:"bytes,1,opt,name=url,proto3" json:"url,omitempty"`
+	Fields            map[string]string `protobuf:"bytes,2,rep,name=fields,proto3" json:"fields,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
+	MultipartUploadOk bool              `protobuf:"varint,3,opt,name=multipart_upload_ok,json=multipartUploadOk,proto3" json:"multipart_upload_ok,omitempty"` // for backcompat: new Client, old Backend
+}
+
+func (x *GetUrlForArtifact_Response) Reset() {
+	*x = GetUrlForArtifact_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_CommonService_proto_msgTypes[12]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetUrlForArtifact_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetUrlForArtifact_Response) ProtoMessage() {}
+
+func (x *GetUrlForArtifact_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_CommonService_proto_msgTypes[12]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetUrlForArtifact_Response.ProtoReflect.Descriptor instead.
+func (*GetUrlForArtifact_Response) Descriptor() ([]byte, []int) {
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{4, 0}
+}
+
+func (x *GetUrlForArtifact_Response) GetUrl() string {
+	if x != nil {
+		return x.Url
+	}
+	return ""
+}
+
+func (x *GetUrlForArtifact_Response) GetFields() map[string]string {
+	if x != nil {
+		return x.Fields
+	}
+	return nil
+}
+
+func (x *GetUrlForArtifact_Response) GetMultipartUploadOk() bool {
+	if x != nil {
+		return x.MultipartUploadOk
+	}
+	return false
+}
+
+type CommitArtifactPart_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *CommitArtifactPart_Response) Reset() {
+	*x = CommitArtifactPart_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_CommonService_proto_msgTypes[14]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommitArtifactPart_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitArtifactPart_Response) ProtoMessage() {}
+
+func (x *CommitArtifactPart_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_CommonService_proto_msgTypes[14]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitArtifactPart_Response.ProtoReflect.Descriptor instead.
+func (*CommitArtifactPart_Response) Descriptor() ([]byte, []int) {
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{5, 0}
+}
+
+type GetCommittedArtifactParts_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ArtifactParts []*common.ArtifactPart `protobuf:"bytes,1,rep,name=artifact_parts,json=artifactParts,proto3" json:"artifact_parts,omitempty"`
+}
+
+func (x *GetCommittedArtifactParts_Response) Reset() {
+	*x = GetCommittedArtifactParts_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_CommonService_proto_msgTypes[15]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *GetCommittedArtifactParts_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*GetCommittedArtifactParts_Response) ProtoMessage() {}
+
+func (x *GetCommittedArtifactParts_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_CommonService_proto_msgTypes[15]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use GetCommittedArtifactParts_Response.ProtoReflect.Descriptor instead.
+func (*GetCommittedArtifactParts_Response) Descriptor() ([]byte, []int) {
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{6, 0}
+}
+
+func (x *GetCommittedArtifactParts_Response) GetArtifactParts() []*common.ArtifactPart {
+	if x != nil {
+		return x.ArtifactParts
+	}
+	return nil
+}
+
+type CommitMultipartArtifact_Response struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *CommitMultipartArtifact_Response) Reset() {
+	*x = CommitMultipartArtifact_Response{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_modeldb_CommonService_proto_msgTypes[16]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *CommitMultipartArtifact_Response) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*CommitMultipartArtifact_Response) ProtoMessage() {}
+
+func (x *CommitMultipartArtifact_Response) ProtoReflect() protoreflect.Message {
+	mi := &file_modeldb_CommonService_proto_msgTypes[16]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use CommitMultipartArtifact_Response.ProtoReflect.Descriptor instead.
+func (*CommitMultipartArtifact_Response) Descriptor() ([]byte, []int) {
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{7, 0}
+}
+
 type GetArtifacts_Response struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -449,7 +887,7 @@ type GetArtifacts_Response struct {
 func (x *GetArtifacts_Response) Reset() {
 	*x = GetArtifacts_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_modeldb_CommonService_proto_msgTypes[8]
+		mi := &file_modeldb_CommonService_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -462,7 +900,7 @@ func (x *GetArtifacts_Response) String() string {
 func (*GetArtifacts_Response) ProtoMessage() {}
 
 func (x *GetArtifacts_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_modeldb_CommonService_proto_msgTypes[8]
+	mi := &file_modeldb_CommonService_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -475,7 +913,7 @@ func (x *GetArtifacts_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetArtifacts_Response.ProtoReflect.Descriptor instead.
 func (*GetArtifacts_Response) Descriptor() ([]byte, []int) {
-	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{4, 0}
+	return file_modeldb_CommonService_proto_rawDescGZIP(), []int{8, 0}
 }
 
 func (x *GetArtifacts_Response) GetArtifacts() []*common.Artifact {
@@ -518,19 +956,68 @@ var file_modeldb_CommonService_proto_rawDesc = []byte{
 	0x39, 0x0a, 0x07, 0x47, 0x65, 0x74, 0x54, 0x61, 0x67, 0x73, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
 	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x1a, 0x1e, 0x0a, 0x08, 0x52, 0x65,
 	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x12, 0x0a, 0x04, 0x74, 0x61, 0x67, 0x73, 0x18, 0x01,
-	0x20, 0x03, 0x28, 0x09, 0x52, 0x04, 0x74, 0x61, 0x67, 0x73, 0x22, 0x75, 0x0a, 0x0c, 0x47, 0x65,
-	0x74, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x73, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65,
-	0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b, 0x65, 0x79, 0x1a, 0x43, 0x0a, 0x08,
-	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x37, 0x0a, 0x09, 0x61, 0x72, 0x74, 0x69,
-	0x66, 0x61, 0x63, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x61, 0x69,
-	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x72,
-	0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x52, 0x09, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74,
-	0x73, 0x42, 0x42, 0x50, 0x01, 0x5a, 0x3e, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f,
-	0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64,
-	0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x6d, 0x6f,
-	0x64, 0x65, 0x6c, 0x64, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x20, 0x03, 0x28, 0x09, 0x52, 0x04, 0x74, 0x61, 0x67, 0x73, 0x22, 0x9f, 0x03, 0x0a, 0x11, 0x47,
+	0x65, 0x74, 0x55, 0x72, 0x6c, 0x46, 0x6f, 0x72, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74,
+	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64,
+	0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b,
+	0x65, 0x79, 0x12, 0x16, 0x0a, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x06, 0x6d, 0x65, 0x74, 0x68, 0x6f, 0x64, 0x12, 0x53, 0x0a, 0x0d, 0x61, 0x72,
+	0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x04, 0x20, 0x01, 0x28,
+	0x0e, 0x32, 0x2e, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d,
+	0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x54, 0x79, 0x70, 0x65,
+	0x45, 0x6e, 0x75, 0x6d, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x54, 0x79, 0x70,
+	0x65, 0x52, 0x0c, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x54, 0x79, 0x70, 0x65, 0x12,
+	0x1f, 0x0a, 0x0b, 0x70, 0x61, 0x72, 0x74, 0x5f, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x18, 0x05,
+	0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x70, 0x61, 0x72, 0x74, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72,
+	0x1a, 0xd9, 0x01, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x10, 0x0a,
+	0x03, 0x75, 0x72, 0x6c, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x75, 0x72, 0x6c, 0x12,
+	0x50, 0x0a, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32,
+	0x38, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
+	0x64, 0x62, 0x2e, 0x47, 0x65, 0x74, 0x55, 0x72, 0x6c, 0x46, 0x6f, 0x72, 0x41, 0x72, 0x74, 0x69,
+	0x66, 0x61, 0x63, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x2e, 0x46, 0x69,
+	0x65, 0x6c, 0x64, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79, 0x52, 0x06, 0x66, 0x69, 0x65, 0x6c, 0x64,
+	0x73, 0x12, 0x2e, 0x0a, 0x13, 0x6d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x61, 0x72, 0x74, 0x5f, 0x75,
+	0x70, 0x6c, 0x6f, 0x61, 0x64, 0x5f, 0x6f, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x08, 0x52, 0x11,
+	0x6d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x61, 0x72, 0x74, 0x55, 0x70, 0x6c, 0x6f, 0x61, 0x64, 0x4f,
+	0x6b, 0x1a, 0x39, 0x0a, 0x0b, 0x46, 0x69, 0x65, 0x6c, 0x64, 0x73, 0x45, 0x6e, 0x74, 0x72, 0x79,
+	0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b,
+	0x65, 0x79, 0x12, 0x14, 0x0a, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28,
+	0x09, 0x52, 0x05, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x3a, 0x02, 0x38, 0x01, 0x22, 0x86, 0x01, 0x0a,
+	0x12, 0x43, 0x6f, 0x6d, 0x6d, 0x69, 0x74, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x50,
+	0x61, 0x72, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x02, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x03, 0x6b, 0x65, 0x79, 0x12, 0x42, 0x0a, 0x0d, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63,
+	0x74, 0x5f, 0x70, 0x61, 0x72, 0x74, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x61,
+	0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41,
+	0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x50, 0x61, 0x72, 0x74, 0x52, 0x0c, 0x61, 0x72, 0x74,
+	0x69, 0x66, 0x61, 0x63, 0x74, 0x50, 0x61, 0x72, 0x74, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73,
+	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x8f, 0x01, 0x0a, 0x19, 0x47, 0x65, 0x74, 0x43, 0x6f, 0x6d,
+	0x6d, 0x69, 0x74, 0x74, 0x65, 0x64, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x50, 0x61,
+	0x72, 0x74, 0x73, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x02, 0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09,
+	0x52, 0x03, 0x6b, 0x65, 0x79, 0x1a, 0x50, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
+	0x65, 0x12, 0x44, 0x0a, 0x0e, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x5f, 0x70, 0x61,
+	0x72, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1d, 0x2e, 0x61, 0x69, 0x2e, 0x76,
+	0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x72, 0x74, 0x69,
+	0x66, 0x61, 0x63, 0x74, 0x50, 0x61, 0x72, 0x74, 0x52, 0x0d, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61,
+	0x63, 0x74, 0x50, 0x61, 0x72, 0x74, 0x73, 0x22, 0x47, 0x0a, 0x17, 0x43, 0x6f, 0x6d, 0x6d, 0x69,
+	0x74, 0x4d, 0x75, 0x6c, 0x74, 0x69, 0x70, 0x61, 0x72, 0x74, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61,
+	0x63, 0x74, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02,
+	0x69, 0x64, 0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52,
+	0x03, 0x6b, 0x65, 0x79, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x22, 0x75, 0x0a, 0x0c, 0x47, 0x65, 0x74, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x73,
+	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x02, 0x69, 0x64,
+	0x12, 0x10, 0x0a, 0x03, 0x6b, 0x65, 0x79, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x03, 0x6b,
+	0x65, 0x79, 0x1a, 0x43, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x37,
+	0x0a, 0x09, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28,
+	0x0b, 0x32, 0x19, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d,
+	0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x52, 0x09, 0x61, 0x72,
+	0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x73, 0x42, 0x42, 0x50, 0x01, 0x5a, 0x3e, 0x67, 0x69, 0x74,
+	0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f,
+	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67,
+	0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62,
+	0x6c, 0x69, 0x63, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x33,
 }
 
 var (
@@ -545,29 +1032,44 @@ func file_modeldb_CommonService_proto_rawDescGZIP() []byte {
 	return file_modeldb_CommonService_proto_rawDescData
 }
 
-var file_modeldb_CommonService_proto_msgTypes = make([]protoimpl.MessageInfo, 9)
+var file_modeldb_CommonService_proto_msgTypes = make([]protoimpl.MessageInfo, 18)
 var file_modeldb_CommonService_proto_goTypes = []interface{}{
-	(*Feature)(nil),                // 0: ai.verta.modeldb.Feature
-	(*GetAttributes)(nil),          // 1: ai.verta.modeldb.GetAttributes
-	(*AddAttributes)(nil),          // 2: ai.verta.modeldb.AddAttributes
-	(*GetTags)(nil),                // 3: ai.verta.modeldb.GetTags
-	(*GetArtifacts)(nil),           // 4: ai.verta.modeldb.GetArtifacts
-	(*GetAttributes_Response)(nil), // 5: ai.verta.modeldb.GetAttributes.Response
-	(*AddAttributes_Response)(nil), // 6: ai.verta.modeldb.AddAttributes.Response
-	(*GetTags_Response)(nil),       // 7: ai.verta.modeldb.GetTags.Response
-	(*GetArtifacts_Response)(nil),  // 8: ai.verta.modeldb.GetArtifacts.Response
-	(*common.KeyValue)(nil),        // 9: ai.verta.common.KeyValue
-	(*common.Artifact)(nil),        // 10: ai.verta.common.Artifact
+	(*Feature)(nil),                            // 0: ai.verta.modeldb.Feature
+	(*GetAttributes)(nil),                      // 1: ai.verta.modeldb.GetAttributes
+	(*AddAttributes)(nil),                      // 2: ai.verta.modeldb.AddAttributes
+	(*GetTags)(nil),                            // 3: ai.verta.modeldb.GetTags
+	(*GetUrlForArtifact)(nil),                  // 4: ai.verta.modeldb.GetUrlForArtifact
+	(*CommitArtifactPart)(nil),                 // 5: ai.verta.modeldb.CommitArtifactPart
+	(*GetCommittedArtifactParts)(nil),          // 6: ai.verta.modeldb.GetCommittedArtifactParts
+	(*CommitMultipartArtifact)(nil),            // 7: ai.verta.modeldb.CommitMultipartArtifact
+	(*GetArtifacts)(nil),                       // 8: ai.verta.modeldb.GetArtifacts
+	(*GetAttributes_Response)(nil),             // 9: ai.verta.modeldb.GetAttributes.Response
+	(*AddAttributes_Response)(nil),             // 10: ai.verta.modeldb.AddAttributes.Response
+	(*GetTags_Response)(nil),                   // 11: ai.verta.modeldb.GetTags.Response
+	(*GetUrlForArtifact_Response)(nil),         // 12: ai.verta.modeldb.GetUrlForArtifact.Response
+	nil,                                        // 13: ai.verta.modeldb.GetUrlForArtifact.Response.FieldsEntry
+	(*CommitArtifactPart_Response)(nil),        // 14: ai.verta.modeldb.CommitArtifactPart.Response
+	(*GetCommittedArtifactParts_Response)(nil), // 15: ai.verta.modeldb.GetCommittedArtifactParts.Response
+	(*CommitMultipartArtifact_Response)(nil),   // 16: ai.verta.modeldb.CommitMultipartArtifact.Response
+	(*GetArtifacts_Response)(nil),              // 17: ai.verta.modeldb.GetArtifacts.Response
+	(*common.KeyValue)(nil),                    // 18: ai.verta.common.KeyValue
+	(common.ArtifactTypeEnum_ArtifactType)(0),  // 19: ai.verta.common.ArtifactTypeEnum.ArtifactType
+	(*common.ArtifactPart)(nil),                // 20: ai.verta.common.ArtifactPart
+	(*common.Artifact)(nil),                    // 21: ai.verta.common.Artifact
 }
 var file_modeldb_CommonService_proto_depIdxs = []int32{
-	9,  // 0: ai.verta.modeldb.AddAttributes.attribute:type_name -> ai.verta.common.KeyValue
-	9,  // 1: ai.verta.modeldb.GetAttributes.Response.attributes:type_name -> ai.verta.common.KeyValue
-	10, // 2: ai.verta.modeldb.GetArtifacts.Response.artifacts:type_name -> ai.verta.common.Artifact
-	3,  // [3:3] is the sub-list for method output_type
-	3,  // [3:3] is the sub-list for method input_type
-	3,  // [3:3] is the sub-list for extension type_name
-	3,  // [3:3] is the sub-list for extension extendee
-	0,  // [0:3] is the sub-list for field type_name
+	18, // 0: ai.verta.modeldb.AddAttributes.attribute:type_name -> ai.verta.common.KeyValue
+	19, // 1: ai.verta.modeldb.GetUrlForArtifact.artifact_type:type_name -> ai.verta.common.ArtifactTypeEnum.ArtifactType
+	20, // 2: ai.verta.modeldb.CommitArtifactPart.artifact_part:type_name -> ai.verta.common.ArtifactPart
+	18, // 3: ai.verta.modeldb.GetAttributes.Response.attributes:type_name -> ai.verta.common.KeyValue
+	13, // 4: ai.verta.modeldb.GetUrlForArtifact.Response.fields:type_name -> ai.verta.modeldb.GetUrlForArtifact.Response.FieldsEntry
+	20, // 5: ai.verta.modeldb.GetCommittedArtifactParts.Response.artifact_parts:type_name -> ai.verta.common.ArtifactPart
+	21, // 6: ai.verta.modeldb.GetArtifacts.Response.artifacts:type_name -> ai.verta.common.Artifact
+	7,  // [7:7] is the sub-list for method output_type
+	7,  // [7:7] is the sub-list for method input_type
+	7,  // [7:7] is the sub-list for extension type_name
+	7,  // [7:7] is the sub-list for extension extendee
+	0,  // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_modeldb_CommonService_proto_init() }
@@ -625,7 +1127,7 @@ func file_modeldb_CommonService_proto_init() {
 			}
 		}
 		file_modeldb_CommonService_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetArtifacts); i {
+			switch v := v.(*GetUrlForArtifact); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -637,7 +1139,7 @@ func file_modeldb_CommonService_proto_init() {
 			}
 		}
 		file_modeldb_CommonService_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetAttributes_Response); i {
+			switch v := v.(*CommitArtifactPart); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -649,7 +1151,7 @@ func file_modeldb_CommonService_proto_init() {
 			}
 		}
 		file_modeldb_CommonService_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*AddAttributes_Response); i {
+			switch v := v.(*GetCommittedArtifactParts); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -661,7 +1163,7 @@ func file_modeldb_CommonService_proto_init() {
 			}
 		}
 		file_modeldb_CommonService_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetTags_Response); i {
+			switch v := v.(*CommitMultipartArtifact); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -673,6 +1175,102 @@ func file_modeldb_CommonService_proto_init() {
 			}
 		}
 		file_modeldb_CommonService_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetArtifacts); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_CommonService_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetAttributes_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_CommonService_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*AddAttributes_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_CommonService_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetTags_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_CommonService_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetUrlForArtifact_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_CommonService_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommitArtifactPart_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_CommonService_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*GetCommittedArtifactParts_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_CommonService_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*CommitMultipartArtifact_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_modeldb_CommonService_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetArtifacts_Response); i {
 			case 0:
 				return &v.state
@@ -691,7 +1289,7 @@ func file_modeldb_CommonService_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_modeldb_CommonService_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   9,
+			NumMessages:   18,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

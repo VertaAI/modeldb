@@ -148,7 +148,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/commonCommitArtifactPartResponse"
+              "$ref": "#/definitions/vertamodeldbCommitArtifactPartResponse"
             }
           },
           "default": {
@@ -164,7 +164,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/commonCommitArtifactPart"
+              "$ref": "#/definitions/vertamodeldbCommitArtifactPart"
             }
           }
         ],
@@ -180,7 +180,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/commonCommitMultipartArtifactResponse"
+              "$ref": "#/definitions/vertamodeldbCommitMultipartArtifactResponse"
             }
           },
           "default": {
@@ -196,7 +196,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/commonCommitMultipartArtifact"
+              "$ref": "#/definitions/vertamodeldbCommitMultipartArtifact"
             }
           }
         ],
@@ -705,7 +705,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/commonGetCommittedArtifactPartsResponse"
+              "$ref": "#/definitions/vertamodeldbGetCommittedArtifactPartsResponse"
             }
           },
           "default": {
@@ -1268,7 +1268,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/commonGetUrlForArtifactResponse"
+              "$ref": "#/definitions/vertamodeldbGetUrlForArtifactResponse"
             }
           },
           "default": {
@@ -1284,7 +1284,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/commonGetUrlForArtifact"
+              "$ref": "#/definitions/vertamodeldbGetUrlForArtifact"
             }
           }
         ],
@@ -2390,87 +2390,6 @@
         }
       },
       "title": "code version"
-    },
-    "commonCommitArtifactPart": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
-        "artifact_part": {
-          "$ref": "#/definitions/commonArtifactPart"
-        }
-      }
-    },
-    "commonCommitArtifactPartResponse": {
-      "type": "object"
-    },
-    "commonCommitMultipartArtifact": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        }
-      }
-    },
-    "commonCommitMultipartArtifactResponse": {
-      "type": "object"
-    },
-    "commonGetCommittedArtifactPartsResponse": {
-      "type": "object",
-      "properties": {
-        "artifact_parts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonArtifactPart"
-          }
-        }
-      }
-    },
-    "commonGetUrlForArtifact": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "commonGetUrlForArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
     },
     "commonGitSnapshot": {
       "type": "object",
@@ -3859,6 +3778,87 @@
         }
       },
       "title": "For pagination"
+    },
+    "vertamodeldbCommitArtifactPart": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/commonArtifactPart"
+        }
+      }
+    },
+    "vertamodeldbCommitArtifactPartResponse": {
+      "type": "object"
+    },
+    "vertamodeldbCommitMultipartArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "vertamodeldbCommitMultipartArtifactResponse": {
+      "type": "object"
+    },
+    "vertamodeldbGetCommittedArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifactPart"
+          }
+        }
+      }
+    },
+    "vertamodeldbGetUrlForArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "vertamodeldbGetUrlForArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
     },
     "vertamodeldbLocation": {
       "type": "object",

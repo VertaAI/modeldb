@@ -790,7 +790,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/commonGetUrlForArtifactResponse"
+              "$ref": "#/definitions/vertamodeldbGetUrlForArtifactResponse"
             }
           },
           "default": {
@@ -806,7 +806,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/commonGetUrlForArtifact"
+              "$ref": "#/definitions/vertamodeldbGetUrlForArtifact"
             }
           }
         ],
@@ -1179,45 +1179,6 @@
         }
       },
       "title": "code version"
-    },
-    "commonGetUrlForArtifact": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "commonGetUrlForArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
     },
     "commonGitSnapshot": {
       "type": "object",
@@ -2047,6 +2008,45 @@
         "WORKSPACE_DEFAULT"
       ],
       "default": "UNKNOWN"
+    },
+    "vertamodeldbGetUrlForArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "vertamodeldbGetUrlForArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
     }
   },
   "basePath": "/v1"
