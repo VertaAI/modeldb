@@ -3,18 +3,11 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import java.io.File;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.Calendar;
 import java.util.Locale;
-import java.util.Properties;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -28,7 +21,7 @@ import liquibase.exception.LockException;
 import liquibase.lockservice.LockServiceFactory;
 import liquibase.resource.ClassLoaderResourceAccessor;
 import liquibase.resource.CompositeResourceAccessor;
-import liquibase.resource.FileSystemResourceAccessor;
+import liquibase.resource.ResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultSetException;
@@ -178,7 +171,10 @@ public abstract class CommonDBUtil {
   }
 
   protected void createTablesLiquibaseMigration(
-      DatabaseConfig config, String changeSetToRevertUntilTag, String liquibaseRootPath)
+      DatabaseConfig config,
+      String changeSetToRevertUntilTag,
+      String liquibaseRootPath,
+      ResourceAccessor resourceAccessor)
       throws LiquibaseException, SQLException, InterruptedException {
     var rdb = config.getRdbConfiguration();
 
@@ -196,7 +192,6 @@ public abstract class CommonDBUtil {
 
       // Initialize Liquibase and run the update
       var database = DatabaseFactory.getInstance().findCorrectDatabaseImplementation(jdbcCon);
-      String rootPath = System.getProperty(CommonConstants.USER_DIR);
 
       // LiquiBase no longer supports absolute paths. Try to save people from themselves.
       if (liquibaseRootPath.startsWith("/") || liquibaseRootPath.startsWith("\\")) {
@@ -206,9 +201,7 @@ public abstract class CommonDBUtil {
       var liquibase =
           new Liquibase(
               liquibaseRootPath,
-              new CompositeResourceAccessor(
-                  new FileSystemResourceAccessor(new File(rootPath)),
-                  new ClassLoaderResourceAccessor()),
+              new CompositeResourceAccessor(resourceAccessor, new ClassLoaderResourceAccessor()),
               database);
 
       var liquibaseExecuted = false;
@@ -291,7 +284,8 @@ public abstract class CommonDBUtil {
     }
   }
 
-  protected void runLiquibaseMigration(DatabaseConfig config, String liquibaseRootPath)
+  protected void runLiquibaseMigration(
+      DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
     System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
@@ -314,52 +308,31 @@ public abstract class CommonDBUtil {
 
     // Run tables liquibase migration
     createTablesLiquibaseMigration(
-        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath);
+        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath, resourceAccessor);
   }
 
-  protected static void createDBIfNotExists(RdbConfig rdb) throws SQLException {
-    var properties = new Properties();
-    properties.put("user", rdb.getRdbUsername());
-    properties.put("password", rdb.getRdbPassword());
+  protected static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
+    final var databaseName = RdbConfig.buildDatabaseName(rdbConfiguration);
+    final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
+    LOGGER.debug("Connecting to DB URL " + dbUrl);
+    Connection connection =
+        DriverManager.getConnection(
+            dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
+    ResultSet resultSet = connection.getMetaData().getCatalogs();
 
-    String dbConnectionURL = rdb.getDBConnectionURL();
-    if (dbConnectionURL == null) {
-      properties.put("sslMode", rdb.getSslMode());
-    }
-
-    var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdb);
-
-    if (rdb.isMssql() && dbConnectionURL != null) {
-      // Do not log the custom connection URL as it may contain username and password
-      LOGGER.info("Connecting to using custom SQL Server connection string");
-      Pattern pattern = Pattern.compile("jdbc:sqlserver://([^;]*)", Pattern.CASE_INSENSITIVE);
-      dbUrl =
-          pattern
-              .matcher(dbConnectionURL)
-              .results()
-              .map(mr -> mr.group(1))
-              .map(hostPort -> "jdbc:sqlserver://" + hostPort)
-              .collect(Collectors.joining());
-    }
-
-    try (var connection = DriverManager.getConnection(dbUrl, properties)) {
-      var resultSet = connection.getMetaData().getCatalogs();
-
-      var dbName = RdbConfig.buildDatabaseName(rdb);
-      while (resultSet.next()) {
-        var databaseNameRes = resultSet.getString(1);
-        if (dbName.equals(databaseNameRes)) {
-          LOGGER.info("the database {} exists", dbName);
-          return;
-        }
-      }
-
-      LOGGER.info("the database {} does not exists", dbName);
-      try (var statement = connection.createStatement()) {
-        statement.executeUpdate(String.format("CREATE DATABASE %s", dbName));
-        LOGGER.info("the database {} created successfully", dbName);
+    while (resultSet.next()) {
+      String databaseNameRes = resultSet.getString(1);
+      var dbName = RdbConfig.buildDatabaseName(rdbConfiguration);
+      if (dbName.equals(databaseNameRes)) {
+        LOGGER.debug("the database " + databaseName + " exists");
+        return;
       }
     }
+
+    LOGGER.debug("the database " + databaseName + " does not exist");
+    Statement statement = connection.createStatement();
+    statement.executeUpdate("CREATE DATABASE " + databaseName);
+    LOGGER.debug("the database " + databaseName + " was created successfully");
   }
 
   public static Throwable logError(Throwable e) {

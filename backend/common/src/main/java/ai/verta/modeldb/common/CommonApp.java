@@ -15,6 +15,9 @@ import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import io.prometheus.jmx.BuildInfoCollector;
 import io.prometheus.jmx.JmxCollector;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.Executor;
@@ -87,6 +90,34 @@ public abstract class CommonApp implements ApplicationContextAware {
     GenericBeanDefinition gbd = new GenericBeanDefinition();
     gbd.setBeanClass(className);
     registry.registerBeanDefinition(controllerBeanName, gbd);
+  }
+
+  protected static void resolvePortCollisionIfExists(String path) throws Exception {
+    File pidFile = new File(path);
+    if (pidFile.exists()) {
+      try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {
+        String pidString = reader.readLine();
+        var pid = Long.parseLong(pidString);
+        var process = ProcessHandle.of(pid);
+        if (process.isPresent()) {
+          var processHandle = process.get();
+          LOGGER.warn("Port is already used by backend PID: {}", pid);
+          boolean destroyed = processHandle.destroy();
+          LOGGER.warn("Process kill completed `{}` for PID: {}", destroyed, pid);
+          processHandle = processHandle.onExit().get();
+          LOGGER.warn("Process is alive after kill: `{}`", processHandle.isAlive());
+        }
+      }
+    }
+  }
+
+  protected void cleanUpPIDFile() {
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
+    File pidFile = new File(path);
+    if (pidFile.exists()) {
+      pidFile.deleteOnExit();
+      LOGGER.trace(CommonConstants.BACKEND_PID + " file is deleted: {}", pidFile.exists());
+    }
   }
 
   @Bean
