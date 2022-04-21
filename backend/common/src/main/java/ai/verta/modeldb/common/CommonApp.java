@@ -391,8 +391,6 @@ public abstract class CommonApp implements ApplicationContextAware {
       }
     }
 
-    initiateShutdown(0);
-
     cleanUpPIDFile();
   }
 }
