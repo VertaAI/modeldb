@@ -361,10 +361,6 @@ public abstract class CommonApp implements ApplicationContextAware {
   protected void wrapService(ServerBuilder<?> serverBuilder, BindableService bindableService) {
     serverBuilder.addService(bindableService);
   }
-  /*
-
-  protected abstract void startSpringServer();
-  protected abstract void startGRPCServer();*/
 
   @PreDestroy
   public void onShutDown() {
