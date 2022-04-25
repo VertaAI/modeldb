@@ -90,13 +90,18 @@ public abstract class CommonDBUtil {
 
       try (var stmt = jdbcCon.createStatement()) {
 
-        var sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
-        ResultSet rs = stmt.executeQuery(sql);
+        ResultSet rs;
+        try {
+          var sql = "SELECT * FROM database_change_log_lock WHERE ID = 1";
+          rs = stmt.executeQuery(sql);
+        } catch (Exception e) {
+          rs = null;
+        }
 
         var lastLockAcquireTimestamp = 0L;
         var locked = false;
         // Extract data from result set
-        while (rs.next()) {
+        while (rs != null && rs.next()) {
           // Retrieve by column name
           var id = rs.getInt("id");
           locked = rs.getBoolean("locked");
@@ -116,7 +121,9 @@ public abstract class CommonDBUtil {
           }
           LOGGER.debug("database locked by Liquibase: {}", locked);
         }
-        rs.close();
+        if (rs != null) {
+          rs.close();
+        }
 
         var currentCalender = Calendar.getInstance();
         long currentLockedTimeDiffSecond =
