@@ -55,7 +55,6 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.lang.NonNull;
 
 public abstract class CommonApp implements ApplicationContextAware {
@@ -113,16 +112,11 @@ public abstract class CommonApp implements ApplicationContextAware {
   }
 
   @Bean
-  @ConditionalOnProperty(
-      value="MDB_TEST_SERVICE",
-      havingValue = "false",
-      matchIfMissing = true)
+  @ConditionalOnProperty(value = "MDB_TEST_SERVICE", havingValue = "false", matchIfMissing = true)
   protected abstract Config initConfig();
 
   @Bean
-  @ConditionalOnProperty(
-      value="MDB_TEST_SERVICE",
-      havingValue = "true")
+  @ConditionalOnProperty(value = "MDB_TEST_SERVICE", havingValue = "true")
   protected abstract Config initTestConfig();
 
   @Bean
@@ -278,18 +272,13 @@ public abstract class CommonApp implements ApplicationContextAware {
   }
 
   @Bean
-  @ConditionalOnProperty(
-      value="MDB_TEST_SERVICE",
-      havingValue = "false",
-      matchIfMissing = true)
+  @ConditionalOnProperty(value = "MDB_TEST_SERVICE", havingValue = "false", matchIfMissing = true)
   protected ServerBuilder<?> serverBuilder(Config config, Executor handleExecutor) {
     return ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(handleExecutor);
   }
 
   @Bean
-  @ConditionalOnProperty(
-      value="MDB_TEST_SERVICE",
-      havingValue = "true")
+  @ConditionalOnProperty(value = "MDB_TEST_SERVICE", havingValue = "true")
   protected ServerBuilder<?> testServerBuilder() {
     var serverName = System.getProperties().getProperty("testGrpcServerName");
     return InProcessServerBuilder.forName(serverName).directExecutor();
@@ -331,7 +320,7 @@ public abstract class CommonApp implements ApplicationContextAware {
         // Initialize grpc server
         ServerBuilder<?> serverBuilder;
         if (System.getenv("MDB_TEST_SERVICE") != null
-            && Boolean.parseBoolean(System.getenv("MDB_TEST_SERVICE"))){
+            && Boolean.parseBoolean(System.getenv("MDB_TEST_SERVICE"))) {
           serverBuilder = ctx.getBean("testServerBuilder", ServerBuilder.class);
         } else {
           serverBuilder = ctx.getBean("serverBuilder", ServerBuilder.class);

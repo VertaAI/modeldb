@@ -134,8 +134,7 @@ public abstract class Config {
     final Executor dbExecutor =
         Boolean.parseBoolean(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE))
             ? Executors.newFixedThreadPool(
-            databaseConfig.getThreadCount(),
-            new ThreadFactoryBuilder().setDaemon(true).build())
+                databaseConfig.getThreadCount(), new ThreadFactoryBuilder().setDaemon(true).build())
             : FutureGrpc.initializeExecutor(databaseConfig.getThreadCount());
     return new FutureJdbi(jdbi, dbExecutor);
   }
