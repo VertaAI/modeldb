@@ -1,25 +1,13 @@
 package ai.verta.modeldb;
 
 import ai.verta.artifactstore.ArtifactStoreGrpc;
-import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
-import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
-import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
-import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.futures.FutureGrpc;
-import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import ai.verta.modeldb.common.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.config.TestConfig;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
-import ai.verta.modeldb.utils.JdbiUtil;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
@@ -29,7 +17,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
@@ -37,14 +24,11 @@ import org.junit.BeforeClass;
 
 public class TestsInit {
   private static final Logger LOGGER = LogManager.getLogger(TestsInit.class);
-  private static InProcessServerBuilder serverBuilder;
   protected static AuthClientInterceptor authClientInterceptor;
 
   protected static TestConfig testConfig;
+  protected static App app;
   protected static AuthService authService;
-  protected static Executor handleExecutor;
-  protected static ServiceSet services;
-  protected static DAOSet daos;
 
   // all service stubs
   protected static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
@@ -82,42 +66,15 @@ public class TestsInit {
 
   protected static void init() throws Exception {
     String serverName = InProcessServerBuilder.generateName();
-    serverBuilder = InProcessServerBuilder.forName(serverName).directExecutor();
+    System.getProperties().setProperty("testGrpcServerName", serverName);
     InProcessChannelBuilder client1ChannelBuilder =
         InProcessChannelBuilder.forName(serverName).directExecutor();
     InProcessChannelBuilder client2ChannelBuilder =
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
-    testConfig = TestConfig.getInstance();
-    JdbiUtil jdbiUtil = JdbiUtil.getInstance(testConfig);
-    handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
-    // Initialize services that we depend on
-    var artifactStoreConfig = testConfig.artifactStoreConfig;
-    ArtifactStoreService artifactStoreService = new NoopArtifactStoreService();
-    if (artifactStoreConfig.getArtifactStoreType().equals("S3")) {
-      artifactStoreService =
-          new S3Service(artifactStoreConfig, artifactStoreConfig.getS3().getCloudBucketName());
-    } else if (artifactStoreConfig.getArtifactStoreType().equals("NFS")) {
-      String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
-      artifactStoreService =
-          new NFSService(new FileStorageProperties(rootDir), artifactStoreConfig);
-    }
-    services = ServiceSet.fromConfig(testConfig, artifactStoreService);
-    authService = services.authService;
-    // Initialize data access
-    daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    // TODO: FIXME as per new App.java initialization changes
-    // App.migrate(testConfig, jdbiUtil, handleExecutor);
-
-    // App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
-    serverBuilder.intercept(new MetadataForwarder());
-    serverBuilder.intercept(new ExceptionInterceptor());
-    serverBuilder.intercept(new MonitoringInterceptor());
-    serverBuilder.intercept(new AuthInterceptor());
-    // Initialize cron jobs
-    CronJobUtils.initializeCronJobs(testConfig, services);
-    ReconcilerInitializer.initialize(
-        testConfig, services, daos, testConfig.getJdbi(), handleExecutor);
+    App.main(new String[] {});
+    app = App.getInstance();
+    testConfig = (TestConfig) app.mdbConfig;
 
     if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig.testUsers);
@@ -172,8 +129,6 @@ public class TestsInit {
     artifactStoreBlockingStub = ArtifactStoreGrpc.newBlockingStub(channel);
     hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
     hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(client2Channel);
-
-    serverBuilder.build().start();
   }
 
   @BeforeClass
@@ -183,12 +138,9 @@ public class TestsInit {
 
   @AfterClass
   public static void removeServerAndService() throws InterruptedException {
-    // App.initiateShutdown(0);
-
     cleanUpResources();
 
-    // shutdown test server
-    serverBuilder.build().shutdownNow();
+    app.initiateShutdown(0);
   }
 
   protected static void cleanUpResources() throws InterruptedException {

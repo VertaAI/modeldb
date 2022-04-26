@@ -11,6 +11,7 @@ import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
@@ -40,7 +41,9 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.ApplicationPidFileWriter;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.lang.NonNull;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
@@ -70,8 +73,21 @@ public class App extends CommonApp {
   }
 
   @Override
+  public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
+    App.getInstance().applicationContext = applicationContext;
+    this.applicationContext = applicationContext;
+  }
+
+  @Override
   protected Config initConfig() {
     var config = MDBConfig.getInstance();
+    App.getInstance().mdbConfig = config;
+    return config;
+  }
+
+  @Override
+  protected Config initTestConfig() {
+    var config = TestConfig.getInstance();
     App.getInstance().mdbConfig = config;
     return config;
   }
@@ -199,7 +215,7 @@ public class App extends CommonApp {
 
   private void initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
       throws FileNotFoundException, InvalidConfigException {
-    if (!mdbConfig.telemetry.opt_out) {
+    if (mdbConfig.telemetry != null && !mdbConfig.telemetry.opt_out) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(mdbConfig.telemetry.consumer);
       ModelDBUtils.scheduleTask(

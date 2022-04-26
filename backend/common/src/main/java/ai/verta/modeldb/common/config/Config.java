@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalJdbi;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
 import io.jaegertracing.Configuration;
@@ -23,6 +24,8 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -128,7 +131,12 @@ public abstract class Config {
 
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
     final var jdbi = initializeJdbi(databaseConfig, poolName);
-    final var dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.getThreadCount());
+    final Executor dbExecutor =
+        Boolean.parseBoolean(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE))
+            ? Executors.newFixedThreadPool(
+            databaseConfig.getThreadCount(),
+            new ThreadFactoryBuilder().setDaemon(true).build())
+            : FutureGrpc.initializeExecutor(databaseConfig.getThreadCount());
     return new FutureJdbi(jdbi, dbExecutor);
   }
 

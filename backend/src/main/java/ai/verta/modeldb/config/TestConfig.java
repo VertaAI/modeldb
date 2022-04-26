@@ -53,10 +53,6 @@ public class TestConfig extends MDBConfig {
   }
 
   @Override
-  public boolean hasServiceAccount() {
-    return getService_user() != null;
-  }
-
   public FutureJdbi getJdbi() {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi

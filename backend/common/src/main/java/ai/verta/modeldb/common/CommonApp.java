@@ -20,6 +20,7 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.grpc.inprocess.InProcessServerBuilder;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -44,6 +45,7 @@ import org.springframework.beans.factory.support.BeanDefinitionRegistry;
 import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -53,6 +55,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.DependsOn;
 import org.springframework.lang.NonNull;
 
 public abstract class CommonApp implements ApplicationContextAware {
@@ -73,10 +76,7 @@ public abstract class CommonApp implements ApplicationContextAware {
           .help("Binary signal indicating that the service is up and working.")
           .register();
 
-  @Override
-  public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
-    this.applicationContext = applicationContext;
-  }
+  public abstract void setApplicationContext(@NonNull ApplicationContext applicationContext);
 
   @Configuration
   public class SpringServerCustomizer
@@ -113,7 +113,17 @@ public abstract class CommonApp implements ApplicationContextAware {
   }
 
   @Bean
+  @ConditionalOnProperty(
+      value="MDB_TEST_SERVICE",
+      havingValue = "false",
+      matchIfMissing = true)
   protected abstract Config initConfig();
+
+  @Bean
+  @ConditionalOnProperty(
+      value="MDB_TEST_SERVICE",
+      havingValue = "true")
+  protected abstract Config initTestConfig();
 
   @Bean
   public GracefulShutdown gracefulShutdown(Config config) {
@@ -268,6 +278,24 @@ public abstract class CommonApp implements ApplicationContextAware {
   }
 
   @Bean
+  @ConditionalOnProperty(
+      value="MDB_TEST_SERVICE",
+      havingValue = "false",
+      matchIfMissing = true)
+  protected ServerBuilder<?> serverBuilder(Config config, Executor handleExecutor) {
+    return ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(handleExecutor);
+  }
+
+  @Bean
+  @ConditionalOnProperty(
+      value="MDB_TEST_SERVICE",
+      havingValue = "true")
+  protected ServerBuilder<?> testServerBuilder() {
+    var serverName = System.getProperties().getProperty("testGrpcServerName");
+    return InProcessServerBuilder.forName(serverName).directExecutor();
+  }
+
+  @Bean("commandLineRunner")
   protected CommandLineRunner commandLineRunner(ApplicationContext ctx) {
     return args -> {
       try {
@@ -301,8 +329,14 @@ public abstract class CommonApp implements ApplicationContextAware {
         initServiceSpecificThings(config);
 
         // Initialize grpc server
-        ServerBuilder<?> serverBuilder =
-            ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(handleExecutor);
+        ServerBuilder<?> serverBuilder;
+        if (System.getenv("MDB_TEST_SERVICE") != null
+            && Boolean.parseBoolean(System.getenv("MDB_TEST_SERVICE"))){
+          serverBuilder = ctx.getBean("testServerBuilder", ServerBuilder.class);
+        } else {
+          serverBuilder = ctx.getBean("serverBuilder", ServerBuilder.class);
+        }
+
         if (config.getGrpcServer().getMaxInboundMessageSize() != null) {
           serverBuilder.maxInboundMessageSize(config.getGrpcServer().getMaxInboundMessageSize());
         }
@@ -336,10 +370,6 @@ public abstract class CommonApp implements ApplicationContextAware {
         up.inc();
         LOGGER.info("Current PID: {}", ProcessHandle.current().pid());
         LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
-
-        // ----------- Don't exit the main thread. Wait until server is terminated -----------
-        server.awaitTermination();
-        up.dec();
       } catch (Exception ex) {
         CommonUtils.printStackTrace(LOGGER, ex);
         initiateShutdown(0);
@@ -390,6 +420,7 @@ public abstract class CommonApp implements ApplicationContextAware {
         Thread.currentThread().interrupt();
       }
     }
+    up.dec();
 
     cleanUpPIDFile();
   }
