@@ -61,7 +61,7 @@ import org.springframework.lang.NonNull;
 public abstract class CommonApp implements ApplicationContextAware {
   private static final Logger LOGGER = LogManager.getLogger(CommonApp.class);
 
-  protected ApplicationContext applicationContext;
+  public ApplicationContext applicationContext;
   private Optional<Server> server = Optional.empty();
   protected Config config;
 
