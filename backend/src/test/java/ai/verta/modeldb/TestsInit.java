@@ -73,8 +73,11 @@ public class TestsInit {
   protected static HydratedServiceGrpc.HydratedServiceBlockingStub
       hydratedServiceBlockingStubClient2;
   protected static ArtifactStoreGrpc.ArtifactStoreBlockingStub artifactStoreBlockingStub;
+  private static Boolean setServerAndServiceRan = false;
 
   protected static void init() throws Exception {
+    if (setServerAndServiceRan) return;
+
     String serverName = InProcessServerBuilder.generateName();
     serverBuilder = InProcessServerBuilder.forName(serverName).directExecutor();
     InProcessChannelBuilder client1ChannelBuilder =
@@ -156,6 +159,7 @@ public class TestsInit {
     hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(client2Channel);
 
     serverBuilder.build().start();
+    setServerAndServiceRan = true;
   }
 
   @BeforeClass
