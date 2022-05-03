@@ -1,5 +1,8 @@
-package ai.verta.modeldb.common;
+package ai.verta.modeldb.utils;
 
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.CommonDBUtil;
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
@@ -7,9 +10,11 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
+import java.io.File;
 import java.sql.*;
 import java.util.EnumSet;
 import liquibase.exception.LiquibaseException;
+import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -245,6 +250,9 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
 
   public void runLiquibaseMigration(DatabaseConfig config)
       throws InterruptedException, LiquibaseException, SQLException {
-    runLiquibaseMigration(config, liquibaseRootFilePath);
+    runLiquibaseMigration(
+        config,
+        liquibaseRootFilePath,
+        new FileSystemResourceAccessor(new File(System.getProperty(CommonConstants.USER_DIR))));
   }
 }

@@ -5,9 +5,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.dialect.MySQL5Dialect;
-import org.hibernate.dialect.PostgreSQL82Dialect;
-import org.hibernate.dialect.SQLServer2008Dialect;
 
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public class RdbConfig {
@@ -53,15 +50,15 @@ public class RdbConfig {
   }
 
   public boolean isPostgres() {
-    return RdbDialect.equals(PostgreSQL82Dialect.class.getName());
+    return RdbDialect.equals("org.hibernate.dialect.PostgreSQL82Dialect");
   }
 
   public boolean isMysql() {
-    return RdbDialect.equals(MySQL5Dialect.class.getName());
+    return RdbDialect.equals("org.hibernate.dialect.MySQL5Dialect");
   }
 
   public boolean isMssql() {
-    return RdbDialect.equals(SQLServer2008Dialect.class.getName());
+    return RdbDialect.equals("org.hibernate.dialect.SQLServer2008Dialect");
   }
 
   public static String buildDatabaseConnectionString(RdbConfig rdb) {

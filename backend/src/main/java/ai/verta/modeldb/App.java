@@ -4,6 +4,7 @@ import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.GracefulShutdown;
 import ai.verta.modeldb.common.MssqlMigrationUtil;
@@ -34,6 +35,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.BindableService;
+import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.prometheus.client.Gauge;
@@ -41,6 +43,7 @@ import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import io.prometheus.jmx.BuildInfoCollector;
 import io.prometheus.jmx.JmxCollector;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.SQLException;
@@ -51,6 +54,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
+import javax.annotation.PreDestroy;
 import javax.management.MalformedObjectNameException;
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
@@ -87,6 +91,7 @@ public class App implements ApplicationContextAware {
   }
 
   private static final Logger LOGGER = LogManager.getLogger(App.class);
+  private Optional<Server> server = Optional.empty();
 
   private static App app = null;
   public MDBConfig mdbConfig;
@@ -259,33 +264,12 @@ public class App implements ApplicationContextAware {
 
       // --------------- Start modelDB gRPC server --------------------------
       server.start();
+      App.getInstance().server = Optional.of(server);
       healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
       up.inc();
-      LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
 
-      Runtime.getRuntime()
-          .addShutdownHook(
-              new Thread(
-                  () -> {
-                    try {
-                      int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-                      while (activeRequestCount > 0) {
-                        activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
-                        LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
-                        Thread.sleep(1000); // wait for 1s
-                      }
-                      // Use stderr here since the logger may have been reset by its JVM shutdown
-                      // hook.
-                      LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
-                      server.shutdown();
-                      server.awaitTermination();
-                      LOGGER.info("*** Server Shutdown ***");
-                    } catch (InterruptedException e) {
-                      LOGGER.error("Getting error while graceful shutdown", e);
-                      // Restore interrupted state...
-                      Thread.currentThread().interrupt();
-                    }
-                  }));
+      LOGGER.info("Current PID: {}", ProcessHandle.current().pid());
+      LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
 
       // ----------- Don't exit the main thread. Wait until server is terminated -----------
       server.awaitTermination();
@@ -339,6 +323,49 @@ public class App implements ApplicationContextAware {
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");
+    }
+  }
+
+  @PreDestroy
+  public void onShutDown() {
+    if (App.getInstance().server.isPresent()) {
+      var server = App.getInstance().server.get();
+      try {
+        // Use stderr here since the logger may have been reset by its JVM shutdown
+        // hook.
+        LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
+        server.shutdown();
+
+        long pollInterval = 5L;
+        long timeoutRemaining = mdbConfig.getGrpcServer().getRequestTimeout();
+        while (timeoutRemaining > pollInterval
+            && !server.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+          int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+          LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
+
+          timeoutRemaining -= pollInterval;
+        }
+
+        server.awaitTermination(pollInterval, TimeUnit.SECONDS);
+        LOGGER.info("*** Server Shutdown ***");
+      } catch (InterruptedException e) {
+        LOGGER.error("Getting error while graceful shutdown", e);
+        // Restore interrupted state...
+        Thread.currentThread().interrupt();
+      }
+    }
+
+    initiateShutdown(0);
+
+    cleanUpPIDFile();
+  }
+
+  private void cleanUpPIDFile() {
+    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + ModelDBConstants.BACKEND_PID;
+    File pidFile = new File(path);
+    if (pidFile.exists()) {
+      pidFile.deleteOnExit();
+      LOGGER.trace(ModelDBConstants.BACKEND_PID + " file is deleted: {}", pidFile.exists());
     }
   }
 }
