@@ -76,7 +76,9 @@ public class TestsInit {
   private static Boolean setServerAndServiceRan = false;
 
   protected static void init() throws Exception {
-    if (setServerAndServiceRan) return;
+    if (setServerAndServiceRan) {
+      return;
+    }
 
     String serverName = InProcessServerBuilder.generateName();
     serverBuilder = InProcessServerBuilder.forName(serverName).directExecutor();
