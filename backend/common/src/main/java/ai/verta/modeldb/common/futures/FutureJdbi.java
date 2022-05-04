@@ -40,10 +40,11 @@ public class FutureJdbi {
   }
 
   public <R, T extends Exception> InternalFuture<R> withTransaction(HandleCallback<R, T> callback) {
-    SupplierWithException<R, T> supplierWithException = () -> {
-      LOGGER.debug("Creating transaction in thread {}", Thread.currentThread().getId());
-      return jdbi.inTransaction(callback);
-    };
+    SupplierWithException<R, T> supplierWithException =
+        () -> {
+          LOGGER.debug("Creating transaction in thread {}", Thread.currentThread().getId());
+          return jdbi.inTransaction(callback);
+        };
     return withHandleOrTransaction(supplierWithException);
   }
 
@@ -86,10 +87,11 @@ public class FutureJdbi {
 
   public <T extends Exception> InternalFuture<Void> useTransaction(
       final HandleConsumer<T> consumer) {
-    RunnableWithException<T> runnableWithException = () -> {
-      LOGGER.debug("Starting transaction in thread {}", Thread.currentThread().getId());
-      jdbi.useTransaction(consumer);
-    };
+    RunnableWithException<T> runnableWithException =
+        () -> {
+          LOGGER.debug("Starting transaction in thread {}", Thread.currentThread().getId());
+          jdbi.useTransaction(consumer);
+        };
     return useHandleOrTransaction(runnableWithException);
   }
 
