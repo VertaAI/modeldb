@@ -3,11 +3,15 @@ package ai.verta.modeldb.common.futures;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.HandleCallback;
 import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.statement.StatementExceptions;
 
 public class FutureJdbi {
+  private static final Logger LOGGER = LogManager.getLogger(FutureJdbi.class);
+
   private final Executor executor;
   private final InternalJdbi jdbi;
 
@@ -36,7 +40,10 @@ public class FutureJdbi {
   }
 
   public <R, T extends Exception> InternalFuture<R> withTransaction(HandleCallback<R, T> callback) {
-    SupplierWithException<R, T> supplierWithException = () -> jdbi.inTransaction(callback);
+    SupplierWithException<R, T> supplierWithException = () -> {
+      LOGGER.debug("Creating transaction in thread {}", Thread.currentThread().getId());
+      return jdbi.inTransaction(callback);
+    };
     return withHandleOrTransaction(supplierWithException);
   }
 
@@ -79,7 +86,10 @@ public class FutureJdbi {
 
   public <T extends Exception> InternalFuture<Void> useTransaction(
       final HandleConsumer<T> consumer) {
-    RunnableWithException<T> runnableWithException = () -> jdbi.useTransaction(consumer);
+    RunnableWithException<T> runnableWithException = () -> {
+      LOGGER.debug("Starting transaction in thread {}", Thread.currentThread().getId());
+      jdbi.useTransaction(consumer);
+    };
     return useHandleOrTransaction(runnableWithException);
   }
 
