@@ -37,6 +37,17 @@ Changelog
      (`# <>`__)
 
 
+v0.20.2 (2022-04-27)
+--------------------
+
+Enhancements
+^^^^^^^^^^^^
+- add ``cluster_config_id`` parameter to ``KafkaSettings``
+  (`#2988 <https://github.com/VertaAI/modeldb/pull/2988>`__)
+- bump click version constraint to ``<9.0``
+  (`#3014 <https://github.com/VertaAI/modeldb/pull/3014>`__)
+
+
 v0.20.1 (2022-04-11)
 --------------------
 

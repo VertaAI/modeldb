@@ -1,5 +1,8 @@
-package ai.verta.modeldb.common;
+package ai.verta.modeldb.utils;
 
+import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.CommonDBUtil;
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;

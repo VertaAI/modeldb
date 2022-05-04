@@ -111,6 +111,8 @@ message AlertStatusEnum {
         UNKNOWN = 0;
         OK = 1;
         ALERTING = 2;
+        PAUSE = 3;
+        NODATA = 4;
     }
 }
 
