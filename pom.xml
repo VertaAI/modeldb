@@ -201,7 +201,7 @@
                 <artifactId>google-cloud-storage</artifactId>
                 <version>1.118.1</version>
             </dependency>
-            <!-- pin this dependency of ^^^ to upgrade for a CVE (:  com.google.oauth-client:google-oauth-client 1.33.3-->
+            <!-- pin this dependency of ^^^ to upgrade for a CVE (https://snyk.io/vuln/SNYK-JAVA-COMGOOGLEOAUTHCLIENT-2807808) -->
             <dependency>
                 <groupId>com.google.oauth-client</groupId>
                 <artifactId>google-oauth-client</artifactId>
