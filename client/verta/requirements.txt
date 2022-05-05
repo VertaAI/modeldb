@@ -2,7 +2,7 @@ click >= 7.0
 cloudpickle >= 1.0
 googleapis-common-protos >= 1.5
 pathlib2 >= 2.2
-protobuf >= 3.8, < 3.20
+protobuf == 3.18
 pytimeparse >= 1.1.8
 pyyaml >= 5.1
 requests >= 2.21
