@@ -201,6 +201,12 @@
                 <artifactId>google-cloud-storage</artifactId>
                 <version>1.118.1</version>
             </dependency>
+            <!-- pin this dependency of ^^^ to upgrade for a CVE (:  com.google.oauth-client:google-oauth-client 1.33.3-->
+            <dependency>
+                <groupId>com.google.oauth-client</groupId>
+                <artifactId>google-oauth-client</artifactId>
+                <version>1.33.3</version>
+            </dependency>
             <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
