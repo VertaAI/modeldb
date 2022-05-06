@@ -34,11 +34,13 @@ public class InternalJdbi {
   }
 
   public <R, X extends Exception> R inTransaction(final HandleCallback<R, X> callback) throws X {
-    return jdbi.inTransaction(TransactionIsolationLevel.SERIALIZABLE, h -> callback.withHandle(new Handle(h)));
+    return jdbi.inTransaction(
+        TransactionIsolationLevel.SERIALIZABLE, h -> callback.withHandle(new Handle(h)));
   }
 
   public <X extends Exception> void useTransaction(final HandleConsumer<X> callback) throws X {
 
-    jdbi.useTransaction(TransactionIsolationLevel.SERIALIZABLE, h -> callback.useHandle(new Handle(h)));
+    jdbi.useTransaction(
+        TransactionIsolationLevel.SERIALIZABLE, h -> callback.useHandle(new Handle(h)));
   }
 }

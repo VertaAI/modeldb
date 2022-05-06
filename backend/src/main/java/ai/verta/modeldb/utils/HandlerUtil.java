@@ -1,10 +1,10 @@
 package ai.verta.modeldb.utils;
 
+import ai.verta.modeldb.common.futures.Handle;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.Logger;
-import ai.verta.modeldb.common.futures.Handle;
 
 public abstract class HandlerUtil {
 

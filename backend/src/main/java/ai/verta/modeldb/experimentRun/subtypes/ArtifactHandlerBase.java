@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.CommonArtifactHandler;
 import com.google.rpc.Code;
@@ -19,7 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
-import ai.verta.modeldb.common.futures.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> {

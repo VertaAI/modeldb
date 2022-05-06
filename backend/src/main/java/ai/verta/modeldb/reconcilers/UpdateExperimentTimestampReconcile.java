@@ -71,7 +71,11 @@ public class UpdateExperimentTimestampReconcile
               for (AbstractMap.SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
                 var id = updatedRecord.getKey();
                 long updatedDate = updatedRecord.getValue();
-                  handle.createUpdate(updateExperimentTimestampQuery).bind("id", id).bind("updatedDate", updatedDate).execute();
+                handle
+                    .createUpdate(updateExperimentTimestampQuery)
+                    .bind("id", id)
+                    .bind("updatedDate", updatedDate)
+                    .execute();
               }
             })
         .thenApply(unused -> new ReconcileResult(), executor)

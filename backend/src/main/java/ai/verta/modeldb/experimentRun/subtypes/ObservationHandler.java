@@ -5,6 +5,7 @@ import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
@@ -17,8 +18,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ai.verta.modeldb.common.futures.Handle;
-import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class ObservationHandler {
   private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
@@ -200,66 +199,66 @@ public class ObservationHandler {
   public InternalFuture<Void> deleteObservations(String runId, Optional<List<String>> maybeKeys) {
     return jdbi.useTransaction(
         handle -> {
-                // Delete from keyvalue
-                var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";
-                if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-                  fetchQueryString += " INNER JOIN keyvalue as kv ON o.keyvaluemapping_id = kv.id ";
-                }
-                fetchQueryString +=
-                    " WHERE o.experiment_run_id = :run_id " + " AND o.entity_name = :entityName";
+          // Delete from keyvalue
+          var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";
+          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+            fetchQueryString += " INNER JOIN keyvalue as kv ON o.keyvaluemapping_id = kv.id ";
+          }
+          fetchQueryString +=
+              " WHERE o.experiment_run_id = :run_id " + " AND o.entity_name = :entityName";
 
-                if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-                  fetchQueryString += " AND kv.kv_key IN (<keys>)";
-                }
-                var query =
-                    handle
-                        .createQuery(fetchQueryString)
-                        .bind(RUN_ID_QUERY_PARAM, runId)
-                        .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE);
+          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+            fetchQueryString += " AND kv.kv_key IN (<keys>)";
+          }
+          var query =
+              handle
+                  .createQuery(fetchQueryString)
+                  .bind(RUN_ID_QUERY_PARAM, runId)
+                  .bind("entityName", EXPERIMENT_RUN_ENTITY_QUERY_VALUE);
 
-                if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-                  query = query.bindList("keys", maybeKeys.get());
-                }
-                var observationKVMappingList =
-                    query
-                        .map(
-                            (rs, ctx) ->
-                                new AbstractMap.SimpleEntry<>(
-                                    rs.getLong("id"), rs.getLong("keyvaluemapping_id")))
-                        .list();
+          if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
+            query = query.bindList("keys", maybeKeys.get());
+          }
+          var observationKVMappingList =
+              query
+                  .map(
+                      (rs, ctx) ->
+                          new AbstractMap.SimpleEntry<>(
+                              rs.getLong("id"), rs.getLong("keyvaluemapping_id")))
+                  .list();
 
-                // Remove foreignKey constraint first
-                handle
-                    .createUpdate(
-                        "update observation set keyvaluemapping_id = null where id in (<ob_ids>)")
-                    .bindList(
-                        "ob_ids",
-                        observationKVMappingList.stream()
-                            .map(AbstractMap.SimpleEntry::getKey)
-                            .collect(Collectors.toList()))
-                    .execute();
+          // Remove foreignKey constraint first
+          handle
+              .createUpdate(
+                  "update observation set keyvaluemapping_id = null where id in (<ob_ids>)")
+              .bindList(
+                  "ob_ids",
+                  observationKVMappingList.stream()
+                      .map(AbstractMap.SimpleEntry::getKey)
+                      .collect(Collectors.toList()))
+              .execute();
 
-                // Delete KeyValue mapped with Observation by Ids
-                handle
-                    .createUpdate("delete from keyvalue where id in (<kv_ids>)")
-                    .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
-                    .bind(FIELD_TYPE_QUERY_PARAM, "observations")
-                    .bindList(
-                        "kv_ids",
-                        observationKVMappingList.stream()
-                            .map(AbstractMap.SimpleEntry::getValue)
-                            .collect(Collectors.toList()))
-                    .execute();
+          // Delete KeyValue mapped with Observation by Ids
+          handle
+              .createUpdate("delete from keyvalue where id in (<kv_ids>)")
+              .bind(ENTITY_NAME_QUERY_PARAM, EXPERIMENT_RUN_ENTITY_QUERY_VALUE)
+              .bind(FIELD_TYPE_QUERY_PARAM, "observations")
+              .bindList(
+                  "kv_ids",
+                  observationKVMappingList.stream()
+                      .map(AbstractMap.SimpleEntry::getValue)
+                      .collect(Collectors.toList()))
+              .execute();
 
-                // Delete from observations by Ids
-                handle
-                    .createUpdate("delete from observation where id in (<ob_ids>)")
-                    .bindList(
-                        "ob_ids",
-                        observationKVMappingList.stream()
-                            .map(AbstractMap.SimpleEntry::getKey)
-                            .collect(Collectors.toList()))
-                    .execute();
+          // Delete from observations by Ids
+          handle
+              .createUpdate("delete from observation where id in (<ob_ids>)")
+              .bindList(
+                  "ob_ids",
+                  observationKVMappingList.stream()
+                      .map(AbstractMap.SimpleEntry::getKey)
+                      .collect(Collectors.toList()))
+              .execute();
         });
   }
 }

@@ -1,6 +1,7 @@
 package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -10,8 +11,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ai.verta.modeldb.common.futures.Handle;
-import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class MssqlMigrationUtil {
 
@@ -22,78 +21,75 @@ public class MssqlMigrationUtil {
   public static void migrateToUTF16ForMssql(FutureJdbi futureJdbi) {
     futureJdbi
         .useTransaction(
-                handle -> {
-                      LOGGER.debug("Fetching column to change column type");
-                      List<Map<String, Object>> returnResults =
-                          fetchChangeColumnsListForMSSQL(handle);
-                      LOGGER.debug(
-                          "Fetched column to change column type: {}", returnResults.size());
+            handle -> {
+              LOGGER.debug("Fetching column to change column type");
+              List<Map<String, Object>> returnResults = fetchChangeColumnsListForMSSQL(handle);
+              LOGGER.debug("Fetched column to change column type: {}", returnResults.size());
 
-                      if (returnResults.isEmpty()) {
-                        return;
-                      }
+              if (returnResults.isEmpty()) {
+                return;
+              }
 
-                      Set<String> columnNames =
-                          returnResults.stream()
-                              .map(map -> (String) map.get("column_name"))
-                              .collect(Collectors.toSet());
+              Set<String> columnNames =
+                  returnResults.stream()
+                      .map(map -> (String) map.get("column_name"))
+                      .collect(Collectors.toSet());
 
-                      LOGGER.debug("Fetch foreign key constraints");
-                      Map<String, Map<String, Map.Entry<String, String>>> fkConstraintsMap =
-                          getAllTableForeignKeyConstraints(handle, columnNames);
-                      LOGGER.debug("foreign key constraints fetched: {}", fkConstraintsMap.size());
-                      LOGGER.debug("deleting foreign key constraints");
-                      deleteForeignKeyConstraints(handle, fkConstraintsMap);
-                      LOGGER.debug("foreign key constraints deleted");
+              LOGGER.debug("Fetch foreign key constraints");
+              Map<String, Map<String, Map.Entry<String, String>>> fkConstraintsMap =
+                  getAllTableForeignKeyConstraints(handle, columnNames);
+              LOGGER.debug("foreign key constraints fetched: {}", fkConstraintsMap.size());
+              LOGGER.debug("deleting foreign key constraints");
+              deleteForeignKeyConstraints(handle, fkConstraintsMap);
+              LOGGER.debug("foreign key constraints deleted");
 
-                      LOGGER.debug("Fetch default key constraints");
-                      Map<String, Map<String, Map.Entry<String, String>>> dkConstraintsMap =
-                          getAllTableDefaultKeyConstraints(handle, columnNames);
-                      LOGGER.debug("default key constraints fetched: {}", dkConstraintsMap.size());
+              LOGGER.debug("Fetch default key constraints");
+              Map<String, Map<String, Map.Entry<String, String>>> dkConstraintsMap =
+                  getAllTableDefaultKeyConstraints(handle, columnNames);
+              LOGGER.debug("default key constraints fetched: {}", dkConstraintsMap.size());
 
-                      LOGGER.debug("deleting default key constraints");
-                      deleteDefaultKeyConstraints(handle, dkConstraintsMap);
-                      LOGGER.debug("default key constraints deleted");
+              LOGGER.debug("deleting default key constraints");
+              deleteDefaultKeyConstraints(handle, dkConstraintsMap);
+              LOGGER.debug("default key constraints deleted");
 
-                      LOGGER.debug("Fetch primary key constraints");
-                      Map<String, Map.Entry<String, Set<String>>> tableWisePrimarySet =
-                          getAllTablePrimaryAndUniqueConstraints(handle, columnNames);
-                      LOGGER.debug(
-                          "primary key constraints fetched: {}", tableWisePrimarySet.size());
+              LOGGER.debug("Fetch primary key constraints");
+              Map<String, Map.Entry<String, Set<String>>> tableWisePrimarySet =
+                  getAllTablePrimaryAndUniqueConstraints(handle, columnNames);
+              LOGGER.debug("primary key constraints fetched: {}", tableWisePrimarySet.size());
 
-                      LOGGER.debug("deleting primary key constraints");
-                      deletePrimaryAndUniqueConstraints(handle, tableWisePrimarySet);
-                      LOGGER.debug("primary key constraints deleted");
+              LOGGER.debug("deleting primary key constraints");
+              deletePrimaryAndUniqueConstraints(handle, tableWisePrimarySet);
+              LOGGER.debug("primary key constraints deleted");
 
-                      LOGGER.debug("Fetch table indexes");
-                      Map<String, Map<String, Set<String>>> tableWiseIndexesMap =
-                          getAllTableIndexesForMSSQL(handle, columnNames);
-                      LOGGER.debug("table indexes fetched: {}", tableWiseIndexesMap.size());
+              LOGGER.debug("Fetch table indexes");
+              Map<String, Map<String, Set<String>>> tableWiseIndexesMap =
+                  getAllTableIndexesForMSSQL(handle, columnNames);
+              LOGGER.debug("table indexes fetched: {}", tableWiseIndexesMap.size());
 
-                      LOGGER.debug("deleting table indexes");
-                      dropAllTableIndexes(handle, tableWiseIndexesMap);
-                      LOGGER.debug("table indexes deleted");
+              LOGGER.debug("deleting table indexes");
+              dropAllTableIndexes(handle, tableWiseIndexesMap);
+              LOGGER.debug("table indexes deleted");
 
-                      LOGGER.debug("Migrating all string column with to support MSSQL");
-                      migrateAllColumnsToSupportMSSQL(handle, returnResults);
-                      LOGGER.debug("Migrated all string column with to support MSSQL");
+              LOGGER.debug("Migrating all string column with to support MSSQL");
+              migrateAllColumnsToSupportMSSQL(handle, returnResults);
+              LOGGER.debug("Migrated all string column with to support MSSQL");
 
-                      LOGGER.debug("recreating primary keys constraints");
-                      recreatePrimaryAndUniqueConstraints(handle, tableWisePrimarySet);
-                      LOGGER.debug("primary keys constraints recreated successfully");
+              LOGGER.debug("recreating primary keys constraints");
+              recreatePrimaryAndUniqueConstraints(handle, tableWisePrimarySet);
+              LOGGER.debug("primary keys constraints recreated successfully");
 
-                      LOGGER.debug("recreating foreign keys constraints");
-                      recreateAllForeignKeyConstraints(handle, fkConstraintsMap);
-                      LOGGER.debug("foreign keys constraints recreated successfully");
+              LOGGER.debug("recreating foreign keys constraints");
+              recreateAllForeignKeyConstraints(handle, fkConstraintsMap);
+              LOGGER.debug("foreign keys constraints recreated successfully");
 
-                      LOGGER.debug("recreating default keys constraints");
-                      recreateAllDefaultKeyConstraints(handle, dkConstraintsMap);
-                      LOGGER.debug("default keys constraints recreated successfully");
+              LOGGER.debug("recreating default keys constraints");
+              recreateAllDefaultKeyConstraints(handle, dkConstraintsMap);
+              LOGGER.debug("default keys constraints recreated successfully");
 
-                      LOGGER.debug("recreating all tables indexes");
-                      recreateAllTableIndexes(handle, tableWiseIndexesMap);
-                      LOGGER.debug("all tables indexes recreated successfully");
-                    })
+              LOGGER.debug("recreating all tables indexes");
+              recreateAllTableIndexes(handle, tableWiseIndexesMap);
+              LOGGER.debug("all tables indexes recreated successfully");
+            })
         .get();
   }
 

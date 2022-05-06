@@ -14,6 +14,7 @@ import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
@@ -42,8 +43,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ai.verta.modeldb.common.futures.Handle;
-import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateExperimentHandler extends HandlerUtil {
 
@@ -157,56 +156,46 @@ public class CreateExperimentHandler extends HandlerUtil {
         () ->
             jdbi.withTransaction(
                 handle -> {
-                          final var builder = newExperiment.toBuilder();
-                          Boolean exists =
-                              checkInsertedEntityAlreadyExists(handle, newExperiment);
-                          if (exists) {
-                            throw new AlreadyExistsException(
-                                "Experiment '"
-                                    + builder.getName()
-                                    + "' already exists in database");
-                          }
+                  final var builder = newExperiment.toBuilder();
+                  Boolean exists = checkInsertedEntityAlreadyExists(handle, newExperiment);
+                  if (exists) {
+                    throw new AlreadyExistsException(
+                        "Experiment '" + builder.getName() + "' already exists in database");
+                  }
 
-                          String queryString = buildInsertQuery(valueMap, "experiment");
+                  String queryString = buildInsertQuery(valueMap, "experiment");
 
-                          LOGGER.trace("insert experiment query string: " + queryString);
-                          var query = handle.createUpdate(queryString);
+                  LOGGER.trace("insert experiment query string: " + queryString);
+                  var query = handle.createUpdate(queryString);
 
-                          // Inserting fields arguments based on the keys and value of map
-                          for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
-                            query.bind(objectEntry.getKey(), objectEntry.getValue());
-                          }
+                  // Inserting fields arguments based on the keys and value of map
+                  for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+                    query.bind(objectEntry.getKey(), objectEntry.getValue());
+                  }
 
-                          int count = query.execute();
-                          LOGGER.trace("Experiment Inserted : " + (count > 0));
+                  int count = query.execute();
+                  LOGGER.trace("Experiment Inserted : " + (count > 0));
 
-                          if (!builder.getTagsList().isEmpty()) {
-                            tagsHandler.addTags(
-                                    handle, builder.getId(), builder.getTagsList());
-                          }
-                          if (!builder.getAttributesList().isEmpty()) {
-                            attributeHandler.logKeyValues(
-                                    handle, builder.getId(), builder.getAttributesList());
-                          }
-                          if (!builder.getArtifactsList().isEmpty()) {
-                            var updatedArtifacts =
-                                artifactHandler.logArtifacts(
-                                        handle,
-                                    builder.getId(),
-                                    builder.getArtifactsList(),
-                                    false);
-                            builder.clearArtifacts().addAllArtifacts(updatedArtifacts).build();
-                          }
-                          if (builder.getCodeVersionSnapshot().hasCodeArchive()
-                              || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
-                            codeVersionHandler.logCodeVersion(
-                                    handle,
-                                builder.getId(),
-                                false,
-                                builder.getCodeVersionSnapshot());
-                          }
-                          return builder.build();
-                        });
+                  if (!builder.getTagsList().isEmpty()) {
+                    tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
+                  }
+                  if (!builder.getAttributesList().isEmpty()) {
+                    attributeHandler.logKeyValues(
+                        handle, builder.getId(), builder.getAttributesList());
+                  }
+                  if (!builder.getArtifactsList().isEmpty()) {
+                    var updatedArtifacts =
+                        artifactHandler.logArtifacts(
+                            handle, builder.getId(), builder.getArtifactsList(), false);
+                    builder.clearArtifacts().addAllArtifacts(updatedArtifacts).build();
+                  }
+                  if (builder.getCodeVersionSnapshot().hasCodeArchive()
+                      || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
+                    codeVersionHandler.logCodeVersion(
+                        handle, builder.getId(), false, builder.getCodeVersionSnapshot());
+                  }
+                  return builder.build();
+                });
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
         .thenCompose(
             createdExperiment ->

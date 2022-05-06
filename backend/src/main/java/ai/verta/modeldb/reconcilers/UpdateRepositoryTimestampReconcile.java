@@ -75,7 +75,11 @@ public class UpdateRepositoryTimestampReconcile
               for (AbstractMap.SimpleEntry<Long, Long> updatedRecord : updatedMaxDateMap) {
                 long id = updatedRecord.getKey();
                 long updatedDate = updatedRecord.getValue();
-                  handle.createUpdate(updateDatasetTimestampQuery).bind("id", id).bind("updatedDate", updatedDate).execute();
+                handle
+                    .createUpdate(updateDatasetTimestampQuery)
+                    .bind("id", id)
+                    .bind("updatedDate", updatedDate)
+                    .execute();
               }
             })
         .thenApply(unused -> new ReconcileResult(), executor)

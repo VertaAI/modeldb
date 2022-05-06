@@ -3,6 +3,7 @@ package ai.verta.modeldb.common.handlers;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.rpc.Code;
@@ -18,7 +19,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import ai.verta.modeldb.common.futures.Handle;
 
 public abstract class TagsHandlerBase<T> {
   private static final Logger LOGGER = LogManager.getLogger(TagsHandlerBase.class);
@@ -119,10 +119,11 @@ public abstract class TagsHandlerBase<T> {
     }
 
     for (final var tag : tagsSet) {
-      handle.createUpdate(
+      handle
+          .createUpdate(
               String.format(
-                      "insert into tag_mapping (entity_name, tags, %s) VALUES(:entity_name, :tag, :entity_id)",
-                      entityIdReferenceColumn))
+                  "insert into tag_mapping (entity_name, tags, %s) VALUES(:entity_name, :tag, :entity_id)",
+                  entityIdReferenceColumn))
           .bind("tag", tag)
           .bind(ENTITY_ID_QUERY_PARAM, entityId)
           .bind(ENTITY_NAME_QUERY_PARAM, entityName)
