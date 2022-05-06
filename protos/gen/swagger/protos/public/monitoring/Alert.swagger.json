@@ -515,6 +515,79 @@
         }
       }
     },
+    "monitoringAlertSnapshot": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_evaluated_at_millis": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Add some robustness in case the alert isn't evaluated in a while"
+        },
+        "notification_channels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "boolean",
+            "format": "boolean"
+          },
+          "title": "Use a map instead of a list to represent that this is a set"
+        },
+        "status": {
+          "$ref": "#/definitions/AlertStatusEnumAlertStatus",
+          "title": "Current status of this alert"
+        },
+        "alerter_type": {
+          "$ref": "#/definitions/AlerterTypeEnumAlerterType",
+          "title": "Information about the alerter that should be used to evaluate this alert"
+        },
+        "alerter_fixed": {
+          "$ref": "#/definitions/monitoringAlertFixed"
+        },
+        "alerter_reference": {
+          "$ref": "#/definitions/monitoringAlertReference"
+        },
+        "alerter_range": {
+          "$ref": "#/definitions/monitoringAlertRange"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "feature": {
+          "type": "string"
+        },
+        "aggregation_window": {
+          "$ref": "#/definitions/AggregationWindowEnumAggregationWindow"
+        },
+        "evaluation_frequency": {
+          "$ref": "#/definitions/EvaluationFrequencyEnumEvaluationFrequency"
+        },
+        "aggregation_type": {
+          "type": "string"
+        },
+        "aggregation_algorithm": {
+          "type": "string"
+        },
+        "enabled": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
     "monitoringCreateAlertRequest": {
       "type": "object",
       "properties": {
@@ -721,6 +794,9 @@
         },
         "alert": {
           "$ref": "#/definitions/monitoringAlert"
+        },
+        "alertSnapshot": {
+          "$ref": "#/definitions/monitoringAlertSnapshot"
         }
       },
       "title": "Tracks previous calls to (UpdateAlertStatusRequest) based on its arguments"
