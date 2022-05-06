@@ -10,7 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
+import ai.verta.modeldb.common.futures.Handle;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class MssqlMigrationUtil {
@@ -21,11 +21,8 @@ public class MssqlMigrationUtil {
 
   public static void migrateToUTF16ForMssql(FutureJdbi futureJdbi) {
     futureJdbi
-        .useHandle(
-            handle1 ->
-                handle1.useTransaction(
-                    TransactionIsolationLevel.SERIALIZABLE,
-                    handle -> {
+        .useTransaction(
+                handle -> {
                       LOGGER.debug("Fetching column to change column type");
                       List<Map<String, Object>> returnResults =
                           fetchChangeColumnsListForMSSQL(handle);
@@ -96,7 +93,7 @@ public class MssqlMigrationUtil {
                       LOGGER.debug("recreating all tables indexes");
                       recreateAllTableIndexes(handle, tableWiseIndexesMap);
                       LOGGER.debug("all tables indexes recreated successfully");
-                    }))
+                    })
         .get();
   }
 

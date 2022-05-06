@@ -20,7 +20,7 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
+import ai.verta.modeldb.common.futures.Handle;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
@@ -205,14 +205,11 @@ public class CreateExperimentRunHandler extends HandlerUtil {
         .thenCompose(
             locationBlobWithHashMap ->
                 jdbi.withHandle(
-                    handle ->
-                        handle.inTransaction(
-                            TransactionIsolationLevel.SERIALIZABLE,
-                            handleForTransaction -> {
+                    handle -> {
                               final var builder = newExperimentRun.toBuilder();
                               Boolean exists =
                                   checkInsertedEntityAlreadyExists(
-                                      handleForTransaction, newExperimentRun);
+                                          handle, newExperimentRun);
                               if (exists) {
                                 throw new AlreadyExistsException(
                                     "ExperimentRun '"
@@ -223,7 +220,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                               String queryString = buildInsertQuery(runValueMap, "experiment_run");
 
                               LOGGER.trace("insert experiment run query string: " + queryString);
-                              var query = handleForTransaction.createUpdate(queryString);
+                              var query = handle.createUpdate(queryString);
 
                               // Inserting fields arguments based on the keys and value of map
                               for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
@@ -245,29 +242,29 @@ public class CreateExperimentRunHandler extends HandlerUtil {
 
                               if (!builder.getTagsList().isEmpty()) {
                                 tagsHandler.addTags(
-                                    handleForTransaction, builder.getId(), builder.getTagsList());
+                                    handle, builder.getId(), builder.getTagsList());
                               }
                               if (!builder.getAttributesList().isEmpty()) {
                                 attributeHandler.logKeyValues(
-                                    handleForTransaction,
+                                    handle,
                                     builder.getId(),
                                     builder.getAttributesList());
                               }
                               if (!builder.getHyperparametersList().isEmpty()) {
                                 hyperparametersHandler.logKeyValues(
-                                    handleForTransaction,
+                                    handle,
                                     builder.getId(),
                                     builder.getHyperparametersList());
                               }
                               if (!builder.getMetricsList().isEmpty()) {
                                 metricsHandler.logKeyValues(
-                                    handleForTransaction,
+                                    handle,
                                     builder.getId(),
                                     builder.getMetricsList());
                               }
                               if (!builder.getObservationsList().isEmpty()) {
                                 observationHandler.logObservations(
-                                    handleForTransaction,
+                                    handle,
                                     builder.getId(),
                                     builder.getObservationsList(),
                                     now);
@@ -275,7 +272,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                               if (!builder.getArtifactsList().isEmpty()) {
                                 var updatedArtifacts =
                                     artifactHandler.logArtifacts(
-                                        handleForTransaction,
+                                        handle,
                                         builder.getId(),
                                         builder.getArtifactsList(),
                                         false);
@@ -283,14 +280,14 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                               }
                               if (!builder.getFeaturesList().isEmpty()) {
                                 featureHandler.logFeatures(
-                                    handleForTransaction,
+                                    handle,
                                     builder.getId(),
                                     builder.getFeaturesList());
                               }
                               if (builder.getCodeVersionSnapshot().hasCodeArchive()
                                   || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
                                 codeVersionHandler.logCodeVersion(
-                                    handleForTransaction,
+                                    handle,
                                     builder.getId(),
                                     false,
                                     builder.getCodeVersionSnapshot());
@@ -298,7 +295,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                               if (!builder.getDatasetsList().isEmpty()) {
                                 var updatedDatasets =
                                     datasetHandler.logArtifacts(
-                                        handleForTransaction,
+                                        handle,
                                         builder.getId(),
                                         builder.getDatasetsList(),
                                         false);
@@ -307,13 +304,13 @@ public class CreateExperimentRunHandler extends HandlerUtil {
 
                               if (builder.getVersionedInputs().getRepositoryId() != 0) {
                                 versionInputHandler.validateAndInsertVersionedInputs(
-                                    handleForTransaction,
+                                    handle,
                                     builder.getId(),
                                     builder.getVersionedInputs(),
                                     locationBlobWithHashMap);
                               }
                               return builder.build();
-                            })),
+                            }),
             executor)
         .thenCompose(
             createdExperimentRun ->

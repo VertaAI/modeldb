@@ -17,7 +17,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
+import ai.verta.modeldb.common.futures.Handle;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class ObservationHandler {
@@ -200,9 +200,6 @@ public class ObservationHandler {
   public InternalFuture<Void> deleteObservations(String runId, Optional<List<String>> maybeKeys) {
     return jdbi.useHandle(
         handle -> {
-          handle.useTransaction(
-              TransactionIsolationLevel.SERIALIZABLE,
-              handle1 -> {
                 // Delete from keyvalue
                 var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";
                 if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
@@ -263,7 +260,6 @@ public class ObservationHandler {
                             .map(AbstractMap.SimpleEntry::getKey)
                             .collect(Collectors.toList()))
                     .execute();
-              });
         });
   }
 }

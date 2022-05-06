@@ -14,7 +14,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
+import ai.verta.modeldb.common.futures.Handle;
 
 public class FeatureHandler {
   private static Logger LOGGER = LogManager.getLogger(FeatureHandler.class);
@@ -73,20 +73,17 @@ public class FeatureHandler {
       return;
     }
 
-    final var batch =
-        handle.prepareBatch(
-            "insert into feature (entity_name, feature, "
-                + entityIdReferenceColumn
-                + ") VALUES(:entity_name, :feature, :entity_id)");
     for (final var feature : featuresSet) {
-      batch
+      handle.createUpdate(
+              "insert into feature (entity_name, feature, "
+                      + entityIdReferenceColumn
+                      + ") VALUES(:entity_name, :feature, :entity_id)")
           .bind("feature", feature)
           .bind(ENTITY_ID_QUERY_PARAM, entityId)
           .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-          .add();
+          .execute();
     }
 
-    batch.execute();
   }
 
   public InternalFuture<MapSubtypes<String, Feature>> getFeaturesMap(Set<String> entityIds) {

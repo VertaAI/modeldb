@@ -19,7 +19,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
-import org.jdbi.v3.core.Handle;
+import ai.verta.modeldb.common.futures.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> {

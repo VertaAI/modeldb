@@ -141,16 +141,13 @@ public class CreateProjectHandler extends HandlerUtil {
 
     Supplier<InternalFuture<Project>> insertFutureSupplier =
         () ->
-            jdbi.withHandle(
-                handle ->
-                    handle.inTransaction(
-                        TransactionIsolationLevel.SERIALIZABLE,
-                        handleForTransaction -> {
+            jdbi.withTransaction(
+                handle -> {
                           final var builder = newProject.toBuilder();
                           String queryString = buildInsertQuery(valueMap, "project");
 
                           LOGGER.trace("insert project query string: " + queryString);
-                          var query = handleForTransaction.createUpdate(queryString);
+                          var query = handle.createUpdate(queryString);
 
                           // Inserting fields arguments based on the keys and value of map
                           for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
@@ -162,16 +159,16 @@ public class CreateProjectHandler extends HandlerUtil {
 
                           if (!builder.getTagsList().isEmpty()) {
                             tagsHandler.addTags(
-                                handleForTransaction, builder.getId(), builder.getTagsList());
+                                    handle, builder.getId(), builder.getTagsList());
                           }
                           if (!builder.getAttributesList().isEmpty()) {
                             attributeHandler.logKeyValues(
-                                handleForTransaction, builder.getId(), builder.getAttributesList());
+                                    handle, builder.getId(), builder.getAttributesList());
                           }
                           if (!builder.getArtifactsList().isEmpty()) {
                             var updatedArtifacts =
                                 artifactHandler.logArtifacts(
-                                    handleForTransaction,
+                                        handle,
                                     builder.getId(),
                                     builder.getArtifactsList(),
                                     false);
@@ -180,13 +177,13 @@ public class CreateProjectHandler extends HandlerUtil {
                           if (builder.getCodeVersionSnapshot().hasCodeArchive()
                               || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
                             codeVersionHandler.logCodeVersion(
-                                handleForTransaction,
+                                    handle,
                                 builder.getId(),
                                 false,
                                 builder.getCodeVersionSnapshot());
                           }
                           return builder.build();
-                        }));
+                        });
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
         .thenApply(createdProject -> createdProject, executor);
   }

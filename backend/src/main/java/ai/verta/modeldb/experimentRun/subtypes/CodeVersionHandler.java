@@ -17,7 +17,7 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
-import org.jdbi.v3.core.Handle;
+import ai.verta.modeldb.common.futures.Handle;
 
 public class CodeVersionHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);

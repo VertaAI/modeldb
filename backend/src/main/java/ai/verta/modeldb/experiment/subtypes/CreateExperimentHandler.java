@@ -42,7 +42,7 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
+import ai.verta.modeldb.common.futures.Handle;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateExperimentHandler extends HandlerUtil {
@@ -156,13 +156,10 @@ public class CreateExperimentHandler extends HandlerUtil {
     Supplier<InternalFuture<Experiment>> insertFutureSupplier =
         () ->
             jdbi.withHandle(
-                handle ->
-                    handle.inTransaction(
-                        TransactionIsolationLevel.SERIALIZABLE,
-                        handleForTransaction -> {
+                handle -> {
                           final var builder = newExperiment.toBuilder();
                           Boolean exists =
-                              checkInsertedEntityAlreadyExists(handleForTransaction, newExperiment);
+                              checkInsertedEntityAlreadyExists(handle, newExperiment);
                           if (exists) {
                             throw new AlreadyExistsException(
                                 "Experiment '"
@@ -173,7 +170,7 @@ public class CreateExperimentHandler extends HandlerUtil {
                           String queryString = buildInsertQuery(valueMap, "experiment");
 
                           LOGGER.trace("insert experiment query string: " + queryString);
-                          var query = handleForTransaction.createUpdate(queryString);
+                          var query = handle.createUpdate(queryString);
 
                           // Inserting fields arguments based on the keys and value of map
                           for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
@@ -185,16 +182,16 @@ public class CreateExperimentHandler extends HandlerUtil {
 
                           if (!builder.getTagsList().isEmpty()) {
                             tagsHandler.addTags(
-                                handleForTransaction, builder.getId(), builder.getTagsList());
+                                    handle, builder.getId(), builder.getTagsList());
                           }
                           if (!builder.getAttributesList().isEmpty()) {
                             attributeHandler.logKeyValues(
-                                handleForTransaction, builder.getId(), builder.getAttributesList());
+                                    handle, builder.getId(), builder.getAttributesList());
                           }
                           if (!builder.getArtifactsList().isEmpty()) {
                             var updatedArtifacts =
                                 artifactHandler.logArtifacts(
-                                    handleForTransaction,
+                                        handle,
                                     builder.getId(),
                                     builder.getArtifactsList(),
                                     false);
@@ -203,13 +200,13 @@ public class CreateExperimentHandler extends HandlerUtil {
                           if (builder.getCodeVersionSnapshot().hasCodeArchive()
                               || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
                             codeVersionHandler.logCodeVersion(
-                                handleForTransaction,
+                                    handle,
                                 builder.getId(),
                                 false,
                                 builder.getCodeVersionSnapshot());
                           }
                           return builder.build();
-                        }));
+                        });
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
         .thenCompose(
             createdExperiment ->

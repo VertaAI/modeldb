@@ -18,7 +18,7 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
+import ai.verta.modeldb.common.futures.Handle;
 
 public abstract class TagsHandlerBase<T> {
   private static final Logger LOGGER = LogManager.getLogger(TagsHandlerBase.class);
@@ -118,20 +118,16 @@ public abstract class TagsHandlerBase<T> {
       return;
     }
 
-    final var batch =
-        handle.prepareBatch(
-            String.format(
-                "insert into tag_mapping (entity_name, tags, %s) VALUES(:entity_name, :tag, :entity_id)",
-                entityIdReferenceColumn));
     for (final var tag : tagsSet) {
-      batch
+      handle.createUpdate(
+              String.format(
+                      "insert into tag_mapping (entity_name, tags, %s) VALUES(:entity_name, :tag, :entity_id)",
+                      entityIdReferenceColumn))
           .bind("tag", tag)
           .bind(ENTITY_ID_QUERY_PARAM, entityId)
           .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-          .add();
+          .execute();
     }
-
-    batch.execute();
   }
 
   public void deleteTags(Handle handle, T entityId, Optional<List<String>> maybeTags) {
