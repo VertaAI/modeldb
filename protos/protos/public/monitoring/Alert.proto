@@ -111,8 +111,6 @@ message AlertStatusEnum {
         UNKNOWN = 0;
         OK = 1;
         ALERTING = 2;
-        PAUSE = 3;
-        NODATA = 4;
     }
 }
 
@@ -139,6 +137,40 @@ message Alert {
     reserved 10; // removed
 
     uint64 id = 1;
+    string name = 2; // Names are unique within a monitored entity
+    uint64 monitored_entity_id = 3;
+    uint64 created_at_millis = 4;
+    uint64 updated_at_millis = 5;
+
+    // Add some robustness in case the alert isn't evaluated in a while
+    uint64 last_evaluated_at_millis = 6;
+
+    // Use a map instead of a list to represent that this is a set
+    map<uint64,bool> notification_channels = 7;
+    // Current status of this alert
+    AlertStatusEnum.AlertStatus status = 9;
+
+    // Information about the alerter that should be used to evaluate this alert
+    AlerterTypeEnum.AlerterType alerter_type = 11;
+    oneof alerter {
+        AlertFixed alerter_fixed = 12;
+        AlertReference alerter_reference = 13;
+        AlertRange alerter_range = 14;
+    }
+    uint64 version_number = 15;
+
+    string feature = 16;
+    AggregationWindowEnum.AggregationWindow aggregation_window = 18;
+    EvaluationFrequencyEnum.EvaluationFrequency evaluation_frequency = 19;
+    string aggregation_type = 20;
+    string aggregation_algorithm = 21;
+    bool enabled = 22;
+}
+
+message AlertSnapshot {
+    reserved 8; // removed
+    reserved 10; // removed
+
     string name = 2; // Names are unique within a monitored entity
     uint64 monitored_entity_id = 3;
     uint64 created_at_millis = 4;
@@ -257,6 +289,7 @@ message ListAlertHistoryItem {
     // Optional. ID of this item. Doesn't need to be output on the response
     string event_id = 4;
     Alert alert = 5; // Deep copy of the original alert to preserve history
+    AlertSnapshot alertSnapshot = 6; // Deep copy of the original alert excluding ID
 }
 
 service AlertService {

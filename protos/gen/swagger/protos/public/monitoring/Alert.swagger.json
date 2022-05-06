@@ -348,9 +348,7 @@
       "enum": [
         "UNKNOWN",
         "OK",
-        "ALERTING",
-        "PAUSE",
-        "NODATA"
+        "ALERTING"
       ],
       "default": "UNKNOWN"
     },
