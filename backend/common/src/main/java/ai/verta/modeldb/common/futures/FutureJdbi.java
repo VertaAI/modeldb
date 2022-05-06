@@ -3,8 +3,6 @@ package ai.verta.modeldb.common.futures;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import org.jdbi.v3.core.HandleCallback;
-import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.statement.StatementExceptions;
 
 public class FutureJdbi {

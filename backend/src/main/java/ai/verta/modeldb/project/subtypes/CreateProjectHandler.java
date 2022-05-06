@@ -27,7 +27,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateProjectHandler extends HandlerUtil {
 
@@ -141,52 +140,42 @@ public class CreateProjectHandler extends HandlerUtil {
 
     Supplier<InternalFuture<Project>> insertFutureSupplier =
         () ->
-            jdbi.withHandle(
-                handle ->
-                    handle.inTransaction(
-                        TransactionIsolationLevel.SERIALIZABLE,
-                        handleForTransaction -> {
-                          final var builder = newProject.toBuilder();
-                          String queryString = buildInsertQuery(valueMap, "project");
+            jdbi.withTransaction(
+                handle -> {
+                  final var builder = newProject.toBuilder();
+                  String queryString = buildInsertQuery(valueMap, "project");
 
-                          LOGGER.trace("insert project query string: " + queryString);
-                          var query = handleForTransaction.createUpdate(queryString);
+                  LOGGER.trace("insert project query string: " + queryString);
+                  var query = handle.createUpdate(queryString);
 
-                          // Inserting fields arguments based on the keys and value of map
-                          for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
-                            query.bind(objectEntry.getKey(), objectEntry.getValue());
-                          }
+                  // Inserting fields arguments based on the keys and value of map
+                  for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+                    query.bind(objectEntry.getKey(), objectEntry.getValue());
+                  }
 
-                          int count = query.execute();
-                          LOGGER.trace("Project Inserted : " + (count > 0));
+                  int count = query.execute();
+                  LOGGER.trace("Project Inserted : " + (count > 0));
 
-                          if (!builder.getTagsList().isEmpty()) {
-                            tagsHandler.addTags(
-                                handleForTransaction, builder.getId(), builder.getTagsList());
-                          }
-                          if (!builder.getAttributesList().isEmpty()) {
-                            attributeHandler.logKeyValues(
-                                handleForTransaction, builder.getId(), builder.getAttributesList());
-                          }
-                          if (!builder.getArtifactsList().isEmpty()) {
-                            var updatedArtifacts =
-                                artifactHandler.logArtifacts(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    builder.getArtifactsList(),
-                                    false);
-                            builder.clearArtifacts().addAllArtifacts(updatedArtifacts);
-                          }
-                          if (builder.getCodeVersionSnapshot().hasCodeArchive()
-                              || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
-                            codeVersionHandler.logCodeVersion(
-                                handleForTransaction,
-                                builder.getId(),
-                                false,
-                                builder.getCodeVersionSnapshot());
-                          }
-                          return builder.build();
-                        }));
+                  if (!builder.getTagsList().isEmpty()) {
+                    tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
+                  }
+                  if (!builder.getAttributesList().isEmpty()) {
+                    attributeHandler.logKeyValues(
+                        handle, builder.getId(), builder.getAttributesList());
+                  }
+                  if (!builder.getArtifactsList().isEmpty()) {
+                    var updatedArtifacts =
+                        artifactHandler.logArtifacts(
+                            handle, builder.getId(), builder.getArtifactsList(), false);
+                    builder.clearArtifacts().addAllArtifacts(updatedArtifacts);
+                  }
+                  if (builder.getCodeVersionSnapshot().hasCodeArchive()
+                      || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
+                    codeVersionHandler.logCodeVersion(
+                        handle, builder.getId(), false, builder.getCodeVersionSnapshot());
+                  }
+                  return builder.build();
+                });
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
         .thenApply(createdProject -> createdProject, executor);
   }

@@ -4,6 +4,7 @@ import ai.verta.common.Pagination;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import com.google.protobuf.GeneratedMessageV3;
@@ -22,7 +23,6 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public class CommonUtils {

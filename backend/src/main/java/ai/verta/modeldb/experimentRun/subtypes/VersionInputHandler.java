@@ -13,6 +13,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.Blob;
@@ -33,7 +34,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
 
 public class VersionInputHandler {
   private static final String REPOSITORY_ID_QUERY_PARAM = "repository_id";
@@ -173,12 +173,7 @@ public class VersionInputHandler {
                 + " config_blob_entity_blob_hash, "
                 + " config_blob_entity_config_seq_number) "
                 + " VALUES (:repository_id, :commit, :versioning_key, :entityId, :entity_type, :blob_hash, :config_seq_number)";
-        var preparedBatch = handle.prepareBatch(blobMappingQueryStr);
-        argsMaps.forEach(preparedBatch::add);
-        int[] insertedCount = preparedBatch.execute();
-        LOGGER.trace(
-            "Inserted versioning_modeldb_entity_mapping_config_blob count: "
-                + insertedCount.length);
+        argsMaps.forEach(a -> handle.createUpdate(blobMappingQueryStr).bindMap(a).execute());
       }
     }
   }
@@ -241,10 +236,7 @@ public class VersionInputHandler {
             "INSERT INTO hyperparameter_element_mapping (name, int_value, float_value, string_value, entity_type, "
                 + entityIdReferenceColumn
                 + " ) VALUES (:name, :int_value, :float_value, :string_value, :entity_type, :entity_id )";
-        var preparedBatch = handle.prepareBatch(hemeStr);
-        argsMaps.forEach(preparedBatch::add);
-        int[] insertedCount = preparedBatch.execute();
-        LOGGER.trace("Inserted hyperparameter_element_mapping count: " + insertedCount.length);
+        argsMaps.forEach(a -> handle.createUpdate(hemeStr).bindMap(a).execute());
       }
     }
   }
@@ -325,10 +317,7 @@ public class VersionInputHandler {
       }
 
       if (!argsMaps.isEmpty()) {
-        var preparedBatch = handle.prepareBatch(queryStr);
-        argsMaps.forEach(preparedBatch::add);
-        int[] insertedCount = preparedBatch.execute();
-        LOGGER.trace("Inserted versioning_modeldb_entity_mapping count: " + insertedCount.length);
+        argsMaps.forEach(a -> handle.createUpdate(queryStr).bindMap(a).execute());
       }
     }
   }

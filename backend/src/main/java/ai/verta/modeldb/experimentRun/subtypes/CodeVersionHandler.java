@@ -4,6 +4,7 @@ import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -17,7 +18,6 @@ import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
-import org.jdbi.v3.core.Handle;
 
 public class CodeVersionHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);

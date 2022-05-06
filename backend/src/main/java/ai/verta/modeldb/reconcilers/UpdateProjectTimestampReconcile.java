@@ -68,14 +68,15 @@ public class UpdateProjectTimestampReconcile
               var updateProjectTimestampQuery =
                   "UPDATE project SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
 
-              final var batch = handle.prepareBatch(updateProjectTimestampQuery);
               for (AbstractMap.SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
                 var id = updatedRecord.getKey();
                 long updatedDate = updatedRecord.getValue();
-                batch.bind("id", id).bind("updatedDate", updatedDate).add();
+                handle
+                    .createUpdate(updateProjectTimestampQuery)
+                    .bind("id", id)
+                    .bind("updatedDate", updatedDate)
+                    .execute();
               }
-
-              batch.execute();
             })
         .thenApply(unused -> new ReconcileResult(), executor)
         .get();
