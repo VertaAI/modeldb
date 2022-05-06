@@ -204,7 +204,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
             executor)
         .thenCompose(
             locationBlobWithHashMap ->
-                jdbi.withHandle(
+                jdbi.withTransaction(
                     handle -> {
                               final var builder = newExperimentRun.toBuilder();
                               Boolean exists =

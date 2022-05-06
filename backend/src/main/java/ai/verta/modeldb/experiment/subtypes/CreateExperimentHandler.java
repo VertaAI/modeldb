@@ -155,7 +155,7 @@ public class CreateExperimentHandler extends HandlerUtil {
 
     Supplier<InternalFuture<Experiment>> insertFutureSupplier =
         () ->
-            jdbi.withHandle(
+            jdbi.withTransaction(
                 handle -> {
                           final var builder = newExperiment.toBuilder();
                           Boolean exists =

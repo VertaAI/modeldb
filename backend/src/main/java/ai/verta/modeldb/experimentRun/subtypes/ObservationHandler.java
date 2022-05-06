@@ -198,7 +198,7 @@ public class ObservationHandler {
   }
 
   public InternalFuture<Void> deleteObservations(String runId, Optional<List<String>> maybeKeys) {
-    return jdbi.useHandle(
+    return jdbi.useTransaction(
         handle -> {
                 // Delete from keyvalue
                 var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";
