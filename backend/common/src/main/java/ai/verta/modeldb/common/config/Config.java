@@ -1,5 +1,7 @@
 package ai.verta.modeldb.common.config;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -8,7 +10,21 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
-import io.jaegertracing.Configuration;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
+import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
+import io.opentelemetry.opentracingshim.OpenTracingShim;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.extension.resources.ContainerResource;
+import io.opentelemetry.sdk.extension.resources.HostResource;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
@@ -90,12 +106,41 @@ public abstract class Config {
   private TracingClientInterceptor tracingClientInterceptor = null;
 
   private void initializeTracing() {
-    if (!enableTrace) return;
+    if (!enableTrace) {
+      return;
+    }
 
     if (tracingServerInterceptor == null) {
-      Tracer tracer = Configuration.fromEnv().getTracer();
-      tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
-      GlobalTracer.registerIfAbsent(tracer);
+      JaegerThriftSpanExporter spanExporter =
+          JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
+      SdkTracerProvider tracerProvider =
+          SdkTracerProvider.builder()
+              .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+              .setResource(
+                  Resource.getDefault()
+                      .merge(
+                          Resource.create(
+                              Attributes.of(
+                                  stringKey("service.name"),
+                                  System.getenv("JAEGER_SERVICE_NAME"),
+                                  stringKey("kubernetes.namespace"),
+                                  System.getenv("POD_NAMESPACE"))))
+                      .merge(HostResource.get())
+                      .merge(ContainerResource.get()))
+              .build();
+      OpenTelemetry openTelemetry =
+          OpenTelemetrySdk.builder()
+              .setTracerProvider(tracerProvider)
+              .setPropagators(
+                  ContextPropagators.create(
+                      TextMapPropagator.composite(
+                          W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
+              .buildAndRegisterGlobal();
+      Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
+
+      tracingServerInterceptor =
+          TracingServerInterceptor.newBuilder().withTracer(tracerShim).build();
+      GlobalTracer.registerIfAbsent(tracerShim);
       TracingDriver.load();
       TracingDriver.setInterceptorMode(true);
       TracingDriver.setInterceptorProperty(true);
@@ -123,7 +168,9 @@ public abstract class Config {
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
     final var jdbi = initializeJdbi(databaseConfig, poolName);
     final var dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.getThreadCount());
-    return new FutureJdbi(jdbi, dbExecutor);
+    // wrap the executor in the OpenTelemetry context wrapper to make sure the context propagates
+    // into any jdbi threads.
+    return new FutureJdbi(jdbi, Context.taskWrapping(dbExecutor));
   }
 
   public InternalJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
