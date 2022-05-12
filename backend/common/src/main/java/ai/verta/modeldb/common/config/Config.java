@@ -1,5 +1,7 @@
 package ai.verta.modeldb.common.config;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -8,7 +10,6 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
-import io.jaegertracing.Configuration;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -41,8 +42,6 @@ import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
-
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public abstract class Config {
@@ -113,33 +112,34 @@ public abstract class Config {
 
     if (tracingServerInterceptor == null) {
       JaegerThriftSpanExporter spanExporter =
-              JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
+          JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
       SdkTracerProvider tracerProvider =
-              SdkTracerProvider.builder()
-                      .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
-                      .setResource(
-                              Resource.getDefault()
-                                      .merge(
-                                              Resource.create(
-                                                      Attributes.of(
-                                                              stringKey("service.name"),
-                                                              System.getenv("JAEGER_SERVICE_NAME"),
-                                                              stringKey("kubernetes.namespace"),
-                                                              System.getenv("POD_NAMESPACE"))))
-                                      .merge(HostResource.get())
-                                      .merge(ContainerResource.get()))
-                      .build();
+          SdkTracerProvider.builder()
+              .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+              .setResource(
+                  Resource.getDefault()
+                      .merge(
+                          Resource.create(
+                              Attributes.of(
+                                  stringKey("service.name"),
+                                  System.getenv("JAEGER_SERVICE_NAME"),
+                                  stringKey("kubernetes.namespace"),
+                                  System.getenv("POD_NAMESPACE"))))
+                      .merge(HostResource.get())
+                      .merge(ContainerResource.get()))
+              .build();
       OpenTelemetry openTelemetry =
-              OpenTelemetrySdk.builder()
-                      .setTracerProvider(tracerProvider)
-                      .setPropagators(
-                              ContextPropagators.create(
-                                      TextMapPropagator.composite(
-                                              W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
-                      .buildAndRegisterGlobal();
+          OpenTelemetrySdk.builder()
+              .setTracerProvider(tracerProvider)
+              .setPropagators(
+                  ContextPropagators.create(
+                      TextMapPropagator.composite(
+                          W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
+              .buildAndRegisterGlobal();
       Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
 
-      tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracerShim).build();
+      tracingServerInterceptor =
+          TracingServerInterceptor.newBuilder().withTracer(tracerShim).build();
       GlobalTracer.registerIfAbsent(tracerShim);
       TracingDriver.load();
       TracingDriver.setInterceptorMode(true);
