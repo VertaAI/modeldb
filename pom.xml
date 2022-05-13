@@ -168,11 +168,6 @@
                 <artifactId>jdbi3-core</artifactId>
                 <version>3.27.1</version>
             </dependency>
-            <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-jdbi3</artifactId>
-                <version>0.6.2</version>
-            </dependency>
 
             <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
             <dependency>

@@ -1,6 +1,7 @@
 package ai.verta.modeldb.common.futures;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import io.opentelemetry.context.Context;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -12,6 +13,10 @@ import java.util.stream.Collectors;
 public class InternalFuture<T> {
   private CompletionStage<T> stage;
 
+  // keep the calling OpenTelemetry context, so we can use it to wrap the actual invocation of the
+  // future's implementation
+  private final Context callingContext = Context.current();
+
   private InternalFuture() {}
 
   public static <T> InternalFuture<T> trace(
@@ -19,44 +24,12 @@ public class InternalFuture<T> {
       String operationName,
       Map<String, String> tags,
       Executor executor) {
+    // todo: implement me
+    //    SpanBuilder spanBuilder =
+    // GlobalOpenTelemetry.getTracer("verta_java").spanBuilder(operationName);
+    //    tags.forEach(spanBuilder::setAttribute);
+
     return supplier.get();
-    //
-    //        if (!GlobalTracer.isRegistered())
-    //            return supplier.get();
-    //
-    //        final var tracer = GlobalTracer.get();
-    //
-    //        final var currentSpan = tracer.scopeManager().activeSpan();
-    //        final var spanContext = TraceSupport.getActiveSpanContext(tracer);
-    //        final var spanCreator = TraceSupport.createSpanFromParent(tracer, spanContext,
-    // operationName, tags);
-    //        final var scopeCreator = tracer.scopeManager().activate(spanCreator);
-    //
-    //        final var promise = new CompletableFuture<T>();
-    //
-    //        executor.execute(() -> {
-    //            Context.current()
-    //                    .withValue(OpenTracingContextKey.getKey(), spanCreator)
-    //                    .withValue(OpenTracingContextKey.getSpanContextKey(),
-    // spanCreator.context())
-    //                    .attach();
-    //            supplier.get().stage.whenCompleteAsync(
-    //                (v, t) -> {
-    //                  scopeCreator.close();
-    //                  spanCreator.finish();
-    //                  if (t != null) {
-    //                    promise.completeExceptionally(t);
-    //                  } else {
-    //                    promise.complete(v);
-    //                  }
-    //                },
-    //                executor);
-    //
-    //        });
-    //
-    //        tracer.scopeManager().activate(currentSpan);
-    //
-    //        return InternalFuture.from(promise);
   }
 
   // Convert a list of futures to a future of a list
@@ -115,31 +88,38 @@ public class InternalFuture<T> {
   public <U> InternalFuture<U> thenCompose(
       Function<? super T, InternalFuture<U>> fn, Executor executor) {
     return from(
-        stage.thenComposeAsync(fn.andThen(internalFuture -> internalFuture.stage), executor));
+        stage.thenComposeAsync(
+            callingContext.wrapFunction(fn.andThen(internalFuture -> internalFuture.stage)),
+            executor));
   }
 
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
-    return from(stage.thenApplyAsync(fn, executor));
+    return from(stage.thenApplyAsync(callingContext.wrapFunction(fn), executor));
   }
 
   public <U> InternalFuture<U> handle(
       BiFunction<? super T, Throwable, ? extends U> fn, Executor executor) {
-    return from(stage.handleAsync(fn, executor));
+    return from(stage.handleAsync(callingContext.wrapFunction(fn), executor));
   }
 
   public <U, V> InternalFuture<V> thenCombine(
       InternalFuture<? extends U> other,
       BiFunction<? super T, ? super U, ? extends V> fn,
       Executor executor) {
-    return from(stage.thenCombineAsync(other.stage, fn, executor));
+    return from(stage.thenCombineAsync(other.stage, callingContext.wrapFunction(fn), executor));
   }
 
   public InternalFuture<Void> thenAccept(Consumer<? super T> action, Executor executor) {
-    return from(stage.thenAcceptAsync(action, executor));
+    return from(stage.thenAcceptAsync(callingContext.wrapConsumer(action), executor));
   }
 
   public <U> InternalFuture<Void> thenRun(Runnable runnable, Executor executor) {
-    return from(stage.thenRunAsync(runnable, executor));
+    return from(stage.thenRunAsync(callingContext.wrap(runnable), executor));
+  }
+
+  public InternalFuture<T> whenComplete(
+      BiConsumer<? super T, ? super Throwable> action, Executor executor) {
+    return from(stage.whenCompleteAsync(callingContext.wrapConsumer(action), executor));
   }
 
   public static <U> InternalFuture<Void> runAsync(Runnable runnable, Executor executor) {
@@ -191,11 +171,6 @@ public class InternalFuture<T> {
             executor);
 
     return InternalFuture.from(promise);
-  }
-
-  public InternalFuture<T> whenComplete(
-      BiConsumer<? super T, ? super Throwable> action, Executor executor) {
-    return from(stage.whenCompleteAsync(action, executor));
   }
 
   public T get() {
