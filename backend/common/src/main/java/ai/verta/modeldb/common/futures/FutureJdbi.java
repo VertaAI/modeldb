@@ -56,12 +56,13 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.withHandle",
-        Map.of(
-            "caller",
-            String.format(
-                "%s:%d",
-                Thread.currentThread().getStackTrace()[2].getFileName(),
-                Thread.currentThread().getStackTrace()[2].getLineNumber())),
+//         Map.of(
+//             "caller",
+//             String.format(
+//                 "%s:%d",
+//                 Thread.currentThread().getStackTrace()[2].getFileName(),
+//                 Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(),
         executor);
   }
 
