@@ -877,7 +877,7 @@ public class FutureProjectDAO {
                   RoleServiceUtils.checkAllResourceAllowed(getAllowedResourcesResponse);
               if (allowedAllResources) {
                 return new ArrayList<>(requestedResourcesIds);
-              } else {
+              }
                 Set<String> allowedProjectIds =
                     RoleServiceUtils.getResourceIds(getAllowedResourcesResponse);
                 // Validate if current user has access to the entity or not
@@ -894,7 +894,6 @@ public class FutureProjectDAO {
                   }
                 }
                 return allowedProjectIds;
-              }
             },
             executor);
   }

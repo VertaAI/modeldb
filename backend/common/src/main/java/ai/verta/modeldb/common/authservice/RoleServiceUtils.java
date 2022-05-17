@@ -33,7 +33,7 @@ public class RoleServiceUtils implements RoleService {
   }
 
   public static boolean checkAllResourceAllowed(Collection<Resources> resources) {
-    return resources.stream().allMatch(Resources::getAllResourceIds) && !resources.isEmpty();
+    return !resources.isEmpty() && resources.stream().allMatch(Resources::getAllResourceIds);
   }
 
   public static Set<String> getResourceIds(Collection<Resources> resources) {
