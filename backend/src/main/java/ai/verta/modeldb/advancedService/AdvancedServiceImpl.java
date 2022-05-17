@@ -14,6 +14,7 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
@@ -32,7 +33,6 @@ import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
@@ -169,9 +169,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
       Builder builder = FindProjects.newBuilder();
-      boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(allowedProjects);
+      boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(allowedProjects);
       if (!allowedAllResources) {
-        Set<String> allowedProjectIds = UACApisUtil.getResourceIds(allowedProjects);
+        Set<String> allowedProjectIds = RoleServiceUtils.getResourceIds(allowedProjects);
         builder.addAllProjectIds(allowedProjectIds);
       }
       var findProjects =

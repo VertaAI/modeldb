@@ -52,6 +52,7 @@ import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -1241,11 +1242,11 @@ public class FutureExperimentRunDAO {
               ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
           .thenApply(
               resources -> {
-                boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(resources);
+                boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
                   return new QueryFilterContext();
                 } else {
-                  Set<String> accessibleProjectIds = UACApisUtil.getResourceIds(resources);
+                  Set<String> accessibleProjectIds = RoleServiceUtils.getResourceIds(resources);
                   if (accessibleProjectIds.isEmpty()) {
                     return null;
                   } else {
@@ -1279,7 +1280,7 @@ public class FutureExperimentRunDAO {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
-              boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(resources);
+              boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
               // For all repositories are accessible
               if (allowedAllResources) {
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
@@ -1287,7 +1288,7 @@ public class FutureExperimentRunDAO {
               } else {
                 // If all repositories are not accessible then need to extract accessible from list
                 // of resources
-                Set<String> selfAllowedRepositoryIds = UACApisUtil.getResourceIds(resources);
+                Set<String> selfAllowedRepositoryIds = RoleServiceUtils.getResourceIds(resources);
                 // If self allowed repositories list is empty then return response by this method
                 // will return empty list otherwise return as per selfAllowedRepositoryIds
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
@@ -1302,7 +1303,7 @@ public class FutureExperimentRunDAO {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
-              boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(resources);
+              boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
               // For all repositories are accessible
               if (allowedAllResources) {
                 return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
@@ -1310,7 +1311,7 @@ public class FutureExperimentRunDAO {
               } else {
                 // If all repositories are not accessible then need to extract accessible from list
                 // of resources
-                Set<String> selfAllowedRepositoryIds = UACApisUtil.getResourceIds(resources);
+                Set<String> selfAllowedRepositoryIds = RoleServiceUtils.getResourceIds(resources);
                 // If self allowed repositories list is empty then return response by this method
                 // will return empty list otherwise return as per selfAllowedRepositoryIds
                 return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(

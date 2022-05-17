@@ -41,6 +41,7 @@ import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -813,8 +814,7 @@ public class FutureProjectDAO {
             unused -> {
               // Get self allowed resources id where user has delete permission
               return getSelfAllowedResources(
-                  ModelDBActionEnum.ModelDBServiceActions.DELETE,
-                  projectIds);
+                  ModelDBActionEnum.ModelDBServiceActions.DELETE, projectIds);
             },
             executor)
         .thenApply(
@@ -864,8 +864,7 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Collection<String>> getSelfAllowedResources(
-      ModelDBServiceActions modelDBServiceActions,
-      List<String> requestedResourcesIds) {
+      ModelDBServiceActions modelDBServiceActions, List<String> requestedResourcesIds) {
     return uacApisUtil
         .getAllowedEntitiesByResourceType(
             modelDBServiceActions, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
@@ -875,12 +874,12 @@ public class FutureProjectDAO {
               LOGGER.trace(
                   CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
               boolean allowedAllResources =
-                  UACApisUtil.checkAllResourceAllowed(getAllowedResourcesResponse);
+                  RoleServiceUtils.checkAllResourceAllowed(getAllowedResourcesResponse);
               if (allowedAllResources) {
                 return new ArrayList<>(requestedResourcesIds);
               } else {
                 Set<String> allowedProjectIds =
-                    UACApisUtil.getResourceIds(getAllowedResourcesResponse);
+                    RoleServiceUtils.getResourceIds(getAllowedResourcesResponse);
                 // Validate if current user has access to the entity or not
                 // resourcesIds.retainAll(requestedResourcesIds);
                 if (requestedResourcesIds.isEmpty()) {
@@ -1365,8 +1364,7 @@ public class FutureProjectDAO {
         .thenCompose(
             unused ->
                 getSelfAllowedResources(
-                    ModelDBActionEnum.ModelDBServiceActions.READ,
-                    Collections.emptyList()),
+                    ModelDBActionEnum.ModelDBServiceActions.READ, Collections.emptyList()),
             executor)
         .thenCompose(
             selfAllowedResources -> {

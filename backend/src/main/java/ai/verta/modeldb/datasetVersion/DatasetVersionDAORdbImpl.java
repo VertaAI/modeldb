@@ -10,6 +10,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -23,7 +24,6 @@ import ai.verta.modeldb.entities.TagsMapping;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Resources;
@@ -230,13 +230,13 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
       allowedDatasets =
           mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
-      boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(allowedDatasets);
+      boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(allowedDatasets);
       // Validate if current user has access to the entity or not
       Set<String> allowedDatasetIds;
       if (allowedAllResources) {
         allowedDatasetIds = new HashSet<>(datasetIdSet);
       } else {
-        allowedDatasetIds = UACApisUtil.getResourceIds(allowedDatasets);
+        allowedDatasetIds = RoleServiceUtils.getResourceIds(allowedDatasets);
         allowedDatasetIds.retainAll(datasetIdSet);
       }
       for (Map.Entry<String, String> entry : datasetIdDatasetVersionIdMap.entrySet()) {

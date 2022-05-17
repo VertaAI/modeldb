@@ -10,13 +10,13 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.StatusRuntimeException;
 import java.util.*;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -30,6 +30,16 @@ public class RoleServiceUtils implements RoleService {
     this.authService = authService;
     this.timeout = timeout;
     this.uac = uac;
+  }
+
+  public static boolean checkAllResourceAllowed(Collection<Resources> resources) {
+    return resources.stream().allMatch(Resources::getAllResourceIds) && !resources.isEmpty();
+  }
+
+  public static Set<String> getResourceIds(Collection<Resources> resources) {
+    return resources.stream()
+        .flatMap(resources1 -> resources1.getResourceIdsList().stream())
+        .collect(Collectors.toSet());
   }
 
   /**
@@ -449,12 +459,12 @@ public class RoleServiceUtils implements RoleService {
               false, currentLoginUserInfo, modelDBServiceResourceTypes);
     }
 
-    boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(accessibleResources);
+    boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
     Set<String> accessibleResourceIds;
     if (allowedAllResources) {
       accessibleResourceIds = new HashSet<>(requestedResourceIds);
     } else {
-      accessibleResourceIds = UACApisUtil.getResourceIds(accessibleResources);
+      accessibleResourceIds = getResourceIds(accessibleResources);
       if (requestedResourceIds != null && !requestedResourceIds.isEmpty()) {
         accessibleResourceIds.retainAll(requestedResourceIds);
       }
@@ -716,12 +726,12 @@ public class RoleServiceUtils implements RoleService {
     } else {
       List<Resources> accessibleResources = getSelfAllowedResources(modelDBServiceResourceTypes,
           modelDBServiceActions);
-      boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(accessibleResources);
+      boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
       Set<String> accessibleResourceIds;
       if (allowedAllResources) {
         accessibleResourceIds = new HashSet<>(requestedResourceIds);
       } else {
-        accessibleResourceIds = UACApisUtil.getResourceIds(accessibleResources);
+        accessibleResourceIds = getResourceIds(accessibleResources);
         if (!requestedResourceIds.isEmpty()) {
           accessibleResourceIds.retainAll(requestedResourceIds);
         }

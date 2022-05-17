@@ -45,12 +45,6 @@ public class UACApisUtil {
     this.uac = uac;
   }
 
-  public static Set<String> getResourceIds(Collection<Resources> resources) {
-    return resources.stream()
-        .flatMap(resources1 -> resources1.getResourceIdsList().stream())
-        .collect(Collectors.toSet());
-  }
-
   public InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
@@ -123,10 +117,6 @@ public class UACApisUtil {
                                     .collect(Collectors.toList())),
                         executor),
             executor);
-  }
-
-  public static boolean checkAllResourceAllowed(Collection<Resources> resources) {
-    return resources.stream().allMatch(Resources::getAllResourceIds) && !resources.isEmpty();
   }
 
   public InternalFuture<Workspace> getWorkspaceById(long workspaceId) {

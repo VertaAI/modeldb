@@ -10,6 +10,7 @@ import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -31,7 +32,6 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -1218,12 +1218,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           "Access is denied. ExperimentRun not found for given ids : " + requestedExperimentRunIds);
     }
     Set<String> projectIdSet = new HashSet<>(projectIdExperimentRunIdMap.values());
-    boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(allowedProjects);
+    boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(allowedProjects);
     Set<String> allowedProjectIds;
     if (allowedAllResources) {
       allowedProjectIds = projectIdSet;
     } else {
-      allowedProjectIds = UACApisUtil.getResourceIds(allowedProjects);
+      allowedProjectIds = RoleServiceUtils.getResourceIds(allowedProjects);
       allowedProjectIds.retainAll(projectIdSet);
     }
     for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
@@ -1559,11 +1559,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
     Set<String> accessibleResourceIds;
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(selfAllowedRepositories);
+      boolean allowedAllResources =
+          RoleServiceUtils.checkAllResourceAllowed(selfAllowedRepositories);
       if (allowedAllResources) {
         return new HashMap<>();
       } else {
-        accessibleResourceIds = UACApisUtil.getResourceIds(selfAllowedRepositories);
+        accessibleResourceIds = RoleServiceUtils.getResourceIds(selfAllowedRepositories);
         queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
       }
     } else {
@@ -1643,11 +1644,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
     Set<String> accessibleRepositoryIds;
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(selfAllowedRepositories);
+      boolean allowedAllResources =
+          RoleServiceUtils.checkAllResourceAllowed(selfAllowedRepositories);
       if (allowedAllResources) {
         return new HashMap<>();
       } else {
-        accessibleRepositoryIds = UACApisUtil.getResourceIds(selfAllowedRepositories);
+        accessibleRepositoryIds = RoleServiceUtils.getResourceIds(selfAllowedRepositories);
         queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
       }
     } else {
