@@ -2,6 +2,7 @@ package ai.verta.modeldb.common;
 
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.common.futures.Handle;
@@ -129,6 +130,14 @@ public class CommonUtils {
             Status.newBuilder()
                 .setCode(modelDBException.getCode().value())
                 .setMessage(modelDBException.getMessage())
+                .build();
+      } else if (e instanceof IllegalArgumentException) {
+        var illegalArgumentException = (IllegalArgumentException) e;
+        logBasedOnTheErrorCode(isClientError(Code.INVALID_ARGUMENT_VALUE), illegalArgumentException);
+        status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(illegalArgumentException.getMessage())
                 .build();
       } else {
         LOGGER.error(
