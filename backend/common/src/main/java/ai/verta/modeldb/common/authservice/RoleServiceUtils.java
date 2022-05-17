@@ -721,11 +721,12 @@ public class RoleServiceUtils implements RoleService {
       ModelDBServiceActions modelDBServiceActions,
       List<String> requestedResourceIds) {
     if (requestedResourceIds.size() == 1) {
-      isSelfAllowed(modelDBServiceResourceTypes, modelDBServiceActions, requestedResourceIds.get(0));
+      isSelfAllowed(
+          modelDBServiceResourceTypes, modelDBServiceActions, requestedResourceIds.get(0));
       return requestedResourceIds;
     } else {
-      List<Resources> accessibleResources = getSelfAllowedResources(modelDBServiceResourceTypes,
-          modelDBServiceActions);
+      List<Resources> accessibleResources =
+          getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
       boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
       Set<String> accessibleResourceIds;
       if (allowedAllResources) {
