@@ -58,7 +58,7 @@ public abstract class Config {
   private boolean event_system_enabled = false;
   private TracingServerInterceptor tracingServerInterceptor = null;
   private TracingClientInterceptor tracingClientInterceptor = null;
-  private final OpenTelemetry openTelemetry = initializeOpenTelemetry();
+  private volatile OpenTelemetry openTelemetry;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
@@ -232,6 +232,10 @@ public abstract class Config {
   }
 
   public OpenTelemetry getOpenTelemetry() {
+    if (openTelemetry == null) {
+      openTelemetry = initializeOpenTelemetry();
+    }
     return openTelemetry;
   }
+
 }
