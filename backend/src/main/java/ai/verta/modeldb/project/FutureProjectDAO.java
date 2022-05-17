@@ -878,22 +878,22 @@ public class FutureProjectDAO {
               if (allowedAllResources) {
                 return new ArrayList<>(requestedResourcesIds);
               }
-                Set<String> allowedProjectIds =
-                    RoleServiceUtils.getResourceIds(getAllowedResourcesResponse);
-                // Validate if current user has access to the entity or not
-                // resourcesIds.retainAll(requestedResourcesIds);
-                if (requestedResourcesIds.isEmpty()) {
-                  return allowedProjectIds;
-                } else if (allowedProjectIds.containsAll(requestedResourcesIds)) {
-                  return requestedResourcesIds;
-                } else {
-                  for (var requestedId : requestedResourcesIds) {
-                    if (!allowedProjectIds.contains(requestedId)) {
-                      allowedProjectIds.remove(requestedId);
-                    }
+              Set<String> allowedProjectIds =
+                  RoleServiceUtils.getResourceIds(getAllowedResourcesResponse);
+              // Validate if current user has access to the entity or not
+              // resourcesIds.retainAll(requestedResourcesIds);
+              if (requestedResourcesIds.isEmpty()) {
+                return allowedProjectIds;
+              } else if (allowedProjectIds.containsAll(requestedResourcesIds)) {
+                return requestedResourcesIds;
+              } else {
+                for (var requestedId : requestedResourcesIds) {
+                  if (!allowedProjectIds.contains(requestedId)) {
+                    allowedProjectIds.remove(requestedId);
                   }
                 }
-                return allowedProjectIds;
+              }
+              return allowedProjectIds;
             },
             executor);
   }
