@@ -56,6 +56,9 @@ public abstract class Config {
   private ServiceUserConfig service_user;
   private int jdbi_retry_time = 100; // Time in ms
   private boolean event_system_enabled = false;
+  private TracingServerInterceptor tracingServerInterceptor = null;
+  private TracingClientInterceptor tracingClientInterceptor = null;
+  private final OpenTelemetry openTelemetry = initializeOpenTelemetry();
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
@@ -74,7 +77,6 @@ public abstract class Config {
   }
 
   public void Validate() throws InvalidConfigException {
-
     if (authService != null) {
       authService.Validate("authService");
     }
@@ -101,40 +103,13 @@ public abstract class Config {
 
   public abstract boolean hasServiceAccount();
 
-  private TracingServerInterceptor tracingServerInterceptor = null;
-  private TracingClientInterceptor tracingClientInterceptor = null;
-
   private void initializeTracing() {
     if (!enableTrace) {
       return;
     }
 
     if (tracingServerInterceptor == null) {
-      JaegerThriftSpanExporter spanExporter =
-          JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
-      SdkTracerProvider tracerProvider =
-          SdkTracerProvider.builder()
-              .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
-              .setResource(
-                  Resource.getDefault()
-                      .merge(
-                          Resource.create(
-                              Attributes.of(
-                                  stringKey("service.name"),
-                                  System.getenv("JAEGER_SERVICE_NAME"),
-                                  stringKey("kubernetes.namespace"),
-                                  System.getenv("POD_NAMESPACE"))))
-                      .merge(HostResource.get())
-                      .merge(ContainerResource.get()))
-              .build();
-      OpenTelemetry openTelemetry =
-          OpenTelemetrySdk.builder()
-              .setTracerProvider(tracerProvider)
-              .setPropagators(
-                  ContextPropagators.create(
-                      TextMapPropagator.composite(
-                          W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
-              .buildAndRegisterGlobal();
+      OpenTelemetry openTelemetry = getOpenTelemetry();
       Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
 
       tracingServerInterceptor =
@@ -152,6 +127,36 @@ public abstract class Config {
               .withActiveSpanSource(ActiveSpanSource.GRPC_CONTEXT)
               .build();
     }
+  }
+
+  private OpenTelemetry initializeOpenTelemetry() {
+    if (!enableTrace) {
+      return OpenTelemetry.noop();
+    }
+    JaegerThriftSpanExporter spanExporter =
+        JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+            .setResource(
+                Resource.getDefault()
+                    .merge(
+                        Resource.create(
+                            Attributes.of(
+                                stringKey("service.name"),
+                                System.getenv("JAEGER_SERVICE_NAME"),
+                                stringKey("kubernetes.namespace"),
+                                System.getenv("POD_NAMESPACE"))))
+                    .merge(HostResource.get())
+                    .merge(ContainerResource.get()))
+            .build();
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(tracerProvider)
+        .setPropagators(
+            ContextPropagators.create(
+                TextMapPropagator.composite(
+                    W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
+        .buildAndRegisterGlobal();
   }
 
   public Optional<TracingServerInterceptor> getTracingServerInterceptor() {
@@ -224,5 +229,9 @@ public abstract class Config {
 
   public boolean isEvent_system_enabled() {
     return event_system_enabled;
+  }
+
+  public OpenTelemetry getOpenTelemetry() {
+    return openTelemetry;
   }
 }

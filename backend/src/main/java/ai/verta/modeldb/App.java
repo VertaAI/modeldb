@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.GracefulShutdown;
 import ai.verta.modeldb.common.MssqlMigrationUtil;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
@@ -38,6 +39,8 @@ import io.grpc.BindableService;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
 import io.prometheus.client.Gauge;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
@@ -56,6 +59,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.management.MalformedObjectNameException;
+import javax.servlet.Filter;
+
 import liquibase.exception.LiquibaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -73,7 +78,6 @@ import org.springframework.context.annotation.ComponentScan;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
-@EnableAutoConfiguration
 @EnableConfigurationProperties({FileStorageProperties.class})
 // Remove bracket () code if in future define any @component outside of the defined basePackages.
 @ComponentScan(basePackages = "${scan.packages}, ai.verta.modeldb.health")
@@ -141,6 +145,21 @@ public class App implements ApplicationContextAware {
     var factory = new TomcatServletWebServerFactory();
     factory.addConnectorCustomizers(gracefulShutdown);
     return factory;
+  }
+
+  @Bean
+  public Filter webMvcTracingFilter(OpenTelemetry openTelemetry) {
+    return SpringWebMvcTelemetry.builder(openTelemetry).build().newServletFilter();
+  }
+
+  @Bean
+  public OpenTelemetry openTelemetry(Config config) {
+    return config.getOpenTelemetry();
+  }
+
+  @Bean
+  public Config config() {
+    return MDBConfig.getInstance();
   }
 
   @Bean
