@@ -237,5 +237,4 @@ public abstract class Config {
     }
     return openTelemetry;
   }
-
 }
