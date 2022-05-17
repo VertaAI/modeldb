@@ -10,7 +10,9 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.*;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ServiceEnum.Service;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.StatusRuntimeException;
@@ -432,35 +434,42 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<String> getAccessibleResourceIds(
+  public Collection<String> getAccessibleResourceIds(
       CollaboratorBase hostUserInfo,
       CollaboratorBase currentLoginUserInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      List<String> requestedResourceIds) {
-    List<String> accessibleResourceIds;
+      Collection<String> requestedResourceIds) {
+    List<Resources> accessibleResources;
     if (hostUserInfo != null) {
-      accessibleResourceIds =
+      accessibleResources =
           getReadOnlyAccessibleResourceIds(true, hostUserInfo, modelDBServiceResourceTypes);
     } else {
-      accessibleResourceIds =
+      accessibleResources =
           getReadOnlyAccessibleResourceIds(
               false, currentLoginUserInfo, modelDBServiceResourceTypes);
     }
 
-    if (requestedResourceIds != null && !requestedResourceIds.isEmpty()) {
-      accessibleResourceIds.retainAll(requestedResourceIds);
+    boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(accessibleResources);
+    Set<String> accessibleResourceIds;
+    if (allowedAllResources) {
+      accessibleResourceIds = new HashSet<>(requestedResourceIds);
+    } else {
+      accessibleResourceIds = UACApisUtil.getResourceIds(accessibleResources);
+      if (requestedResourceIds != null && !requestedResourceIds.isEmpty()) {
+        accessibleResourceIds.retainAll(requestedResourceIds);
+      }
     }
     return accessibleResourceIds;
   }
 
-  private List<String> getReadOnlyAccessibleResourceIds(
+  private List<Resources> getReadOnlyAccessibleResourceIds(
       boolean isHostUser,
       CollaboratorBase userInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
 
-    Set<String> resourceIdsSet = new HashSet<>();
+    Set<Resources> resourceIdsSet = new HashSet<>();
     if (userInfo != null && userInfo.getVertaId() != null) {
-      List<String> accessibleResourceIds;
+      List<Resources> accessibleResourceIds;
       if (isHostUser) {
         accessibleResourceIds =
             getAllowedResources(
@@ -483,18 +492,18 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<String> getAllowedResources(
+  public List<Resources> getAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      ModelDBServiceActions modelDBServiceActions,
       CollaboratorBase collaboratorBase) {
     return getAllowedResources(
         true, modelDBServiceResourceTypes, modelDBServiceActions, collaboratorBase);
   }
 
-  private List<String> getAllowedResources(
+  private List<Resources> getAllowedResources(
       boolean retry,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      ModelDBServiceActions modelDBServiceActions,
       CollaboratorBase collaboratorBase) {
     var action =
         Action.newBuilder()
@@ -520,21 +529,13 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
-      if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
-        List<String> resourcesIds = new ArrayList<>();
-        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-          resourcesIds.addAll(resources.getResourceIdsList());
-        }
-        return resourcesIds;
-      } else {
-        return Collections.emptyList();
-      }
+      return getAllowedResourcesResponse.getResourcesList();
     } catch (StatusRuntimeException ex) {
-      return (List<String>)
+      return (List<Resources>)
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (CommonUtils.RetryCallInterface<List<String>>)
+              (CommonUtils.RetryCallInterface<List<Resources>>)
                   retry1 ->
                       getAllowedResources(
                           retry1,
@@ -546,16 +547,16 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<String> getSelfAllowedResources(
+  public List<Resources> getSelfAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+      ModelDBServiceActions modelDBServiceActions) {
     return getSelfAllowedResources(true, modelDBServiceResourceTypes, modelDBServiceActions);
   }
 
-  private List<String> getSelfAllowedResources(
+  private List<Resources> getSelfAllowedResources(
       boolean retry,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
+      ModelDBServiceActions modelDBServiceActions) {
     var action =
         Action.newBuilder()
             .setService(Service.MODELDB_SERVICE)
@@ -578,21 +579,13 @@ public class RoleServiceUtils implements RoleService {
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
       LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
 
-      if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
-        List<String> resourcesIds = new ArrayList<>();
-        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-          resourcesIds.addAll(resources.getResourceIdsList());
-        }
-        return resourcesIds;
-      } else {
-        return Collections.emptyList();
-      }
+      return getAllowedResourcesResponse.getResourcesList();
     } catch (StatusRuntimeException ex) {
-      return (List<String>)
+      return (List<Resources>)
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (CommonUtils.RetryCallInterface<List<String>>)
+              (CommonUtils.RetryCallInterface<List<Resources>>)
                   retry1 ->
                       getSelfAllowedResources(
                           retry1, modelDBServiceResourceTypes, modelDBServiceActions),
@@ -713,19 +706,28 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<String> getAccessibleResourceIdsByActions(
+  public Collection<String> getAccessibleResourceIdsByActions(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-      List<String> requestedIdList) {
-    if (requestedIdList.size() == 1) {
-      isSelfAllowed(modelDBServiceResourceTypes, modelDBServiceActions, requestedIdList.get(0));
-      return requestedIdList;
+      ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedResourceIds) {
+    if (requestedResourceIds.size() == 1) {
+      isSelfAllowed(modelDBServiceResourceTypes, modelDBServiceActions, requestedResourceIds.get(0));
+      return requestedResourceIds;
     } else {
-      List<String> allowedResourceIdList =
-          getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
+      List<Resources> accessibleResources = getSelfAllowedResources(modelDBServiceResourceTypes,
+          modelDBServiceActions);
+      boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(accessibleResources);
+      Set<String> accessibleResourceIds;
+      if (allowedAllResources) {
+        accessibleResourceIds = new HashSet<>(requestedResourceIds);
+      } else {
+        accessibleResourceIds = UACApisUtil.getResourceIds(accessibleResources);
+        if (!requestedResourceIds.isEmpty()) {
+          accessibleResourceIds.retainAll(requestedResourceIds);
+        }
+      }
       // Validate if current user has access to the entity or not
-      allowedResourceIdList.retainAll(requestedIdList);
-      return allowedResourceIdList;
+      return accessibleResourceIds;
     }
   }
 

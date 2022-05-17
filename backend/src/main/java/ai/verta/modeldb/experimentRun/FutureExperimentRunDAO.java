@@ -1241,14 +1241,11 @@ public class FutureExperimentRunDAO {
               ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
           .thenApply(
               resources -> {
-                boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+                boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
                   return new QueryFilterContext();
                 } else {
-                  List<String> accessibleProjectIds =
-                      resources.stream()
-                          .flatMap(x -> x.getResourceIdsList().stream())
-                          .collect(Collectors.toList());
+                  Set<String> accessibleProjectIds = UACApisUtil.getResourceIds(resources);
                   if (accessibleProjectIds.isEmpty()) {
                     return null;
                   } else {
@@ -1282,7 +1279,7 @@ public class FutureExperimentRunDAO {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
-              boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+              boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(resources);
               // For all repositories are accessible
               if (allowedAllResources) {
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
@@ -1290,10 +1287,7 @@ public class FutureExperimentRunDAO {
               } else {
                 // If all repositories are not accessible then need to extract accessible from list
                 // of resources
-                List<String> selfAllowedRepositoryIds =
-                    resources.stream()
-                        .flatMap(x -> x.getResourceIdsList().stream())
-                        .collect(Collectors.toList());
+                Set<String> selfAllowedRepositoryIds = UACApisUtil.getResourceIds(resources);
                 // If self allowed repositories list is empty then return response by this method
                 // will return empty list otherwise return as per selfAllowedRepositoryIds
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
@@ -1308,7 +1302,7 @@ public class FutureExperimentRunDAO {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
-              boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+              boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(resources);
               // For all repositories are accessible
               if (allowedAllResources) {
                 return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
@@ -1316,14 +1310,11 @@ public class FutureExperimentRunDAO {
               } else {
                 // If all repositories are not accessible then need to extract accessible from list
                 // of resources
-                List<String> selfAllowedRepositoryIds =
-                    resources.stream()
-                        .flatMap(x -> x.getResourceIdsList().stream())
-                        .collect(Collectors.toList());
+                Set<String> selfAllowedRepositoryIds = UACApisUtil.getResourceIds(resources);
                 // If self allowed repositories list is empty then return response by this method
                 // will return empty list otherwise return as per selfAllowedRepositoryIds
                 return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
-                    ids, Collections.emptyList(), false);
+                    ids, selfAllowedRepositoryIds, false);
               }
             },
             executor);

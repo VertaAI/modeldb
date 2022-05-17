@@ -31,8 +31,10 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.*;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
@@ -326,12 +328,12 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   @Override
   public List<String> deleteExperimentRuns(List<String> experimentRunIds) {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      List<String> allowedProjectIds =
+      List<Resources> allowedProjectIds =
           mdbRoleService.getSelfAllowedResources(
-              ModelDBServiceResourceTypes.PROJECT, ModelDBActionEnum.ModelDBServiceActions.UPDATE);
+              ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.UPDATE);
 
       List<String> accessibleExperimentRunIds =
-          getAccessibleExperimentRunIDs(experimentRunIds, new HashSet<>(allowedProjectIds));
+          getAccessibleExperimentRunIDs(experimentRunIds, allowedProjectIds);
       if (accessibleExperimentRunIds.isEmpty()) {
         throw new PermissionDeniedException(
             "Access is denied. User is unauthorized for given ExperimentRun entities : "
@@ -1206,7 +1208,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
    * @return List<String> : list of accessible ExperimentRun Id
    */
   public List<String> getAccessibleExperimentRunIDs(
-      List<String> requestedExperimentRunIds, Set<String> allowedProjectIds) {
+      List<String> requestedExperimentRunIds, Collection<Resources> allowedProjects) {
     List<String> accessibleExperimentRunIds = new ArrayList<>();
 
     Map<String, String> projectIdExperimentRunIdMap =
@@ -1216,7 +1218,14 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           "Access is denied. ExperimentRun not found for given ids : " + requestedExperimentRunIds);
     }
     Set<String> projectIdSet = new HashSet<>(projectIdExperimentRunIdMap.values());
-    allowedProjectIds.retainAll(projectIdSet);
+    boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(allowedProjects);
+    Set<String> allowedProjectIds;
+    if (allowedAllResources) {
+      allowedProjectIds = projectIdSet;
+    } else {
+      allowedProjectIds = UACApisUtil.getResourceIds(allowedProjects);
+      allowedProjectIds.retainAll(projectIdSet);
+    }
     for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
       if (allowedProjectIds.contains(entry.getValue())) {
         accessibleExperimentRunIds.add(entry.getKey());
@@ -1254,10 +1263,18 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
               .collect(Collectors.toSet());
 
       List<String> accessibleExperimentRunIds = new ArrayList<>();
+      List<Resources> accessibleProjects =
+          Collections.singletonList(
+              Resources.newBuilder()
+                  .addAllResourceIds(accessibleProjectIds)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT))
+                  .build());
       if (!queryParameters.getExperimentRunIdsList().isEmpty()) {
         accessibleExperimentRunIds.addAll(
             getAccessibleExperimentRunIDs(
-                queryParameters.getExperimentRunIdsList(), accessibleProjectIds));
+                queryParameters.getExperimentRunIdsList(), accessibleProjects));
         if (accessibleExperimentRunIds.isEmpty()) {
           throw new PermissionDeniedException(
               "Access is denied. User is unauthorized for given ExperimentRun IDs : "
@@ -1271,7 +1288,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           List<String> accessibleExperimentRunId =
               getAccessibleExperimentRunIDs(
                   Collections.singletonList(predicate.getValue().getStringValue()),
-                  accessibleProjectIds);
+                  accessibleProjects);
           accessibleExperimentRunIds.addAll(accessibleExperimentRunId);
           // Validate if current user has access to the entity or not where predicate key has an id
           RdbmsUtils.validatePredicates(
@@ -1415,9 +1432,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         LOGGER.trace("experimentRunList {}", experimentRunList);
         LOGGER.trace("Converted from Hibernate to proto");
 
-        List<String> selfAllowedRepositoryIds = new ArrayList<>();
+        List<Resources> selfAllowedRepositories = new ArrayList<>();
         if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-          selfAllowedRepositoryIds =
+          selfAllowedRepositories =
               mdbRoleService.getSelfAllowedResources(
                   ModelDBServiceResourceTypes.REPOSITORY,
                   ModelDBActionEnum.ModelDBServiceActions.READ);
@@ -1429,13 +1446,13 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                 .collect(Collectors.toList());
         Map<String, List<KeyValue>> expRunHyperparameterConfigBlobMap =
             getExperimentRunHyperparameterConfigBlobMap(
-                session, expRunIds, selfAllowedRepositoryIds);
+                session, expRunIds, selfAllowedRepositories);
 
         // Map<experimentRunID, Map<LocationString, CodeVersion>> : Map from experimentRunID to Map
         // of
         // LocationString to CodeBlob
         Map<String, Map<String, CodeVersion>> expRunCodeVersionMap =
-            getExperimentRunCodeVersionMap(session, expRunIds, selfAllowedRepositoryIds);
+            getExperimentRunCodeVersionMap(session, expRunIds, selfAllowedRepositories);
 
         Set<String> experimentRunIdsSet = new HashSet<>();
         Set<String> accessibleDatasetVersionIdsSet = new HashSet<>();
@@ -1535,26 +1552,29 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
   }
 
   private Map<String, List<KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
-      Session session, List<String> expRunIds, List<String> selfAllowedRepositoryIds) {
+      Session session, List<String> expRunIds, List<Resources> selfAllowedRepositories) {
 
     var queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
+    Set<String> accessibleResourceIds;
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+      boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(selfAllowedRepositories);
+      if (allowedAllResources) {
         return new HashMap<>();
       } else {
+        accessibleResourceIds = UACApisUtil.getResourceIds(selfAllowedRepositories);
         queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
       }
+    } else {
+      accessibleResourceIds = null;
     }
 
     var query = session.createQuery(queryBuilder);
     query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      query.setParameterList(
-          REPO_IDS_QUERY_PARAM,
-          selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+      query.setParameterList(REPO_IDS_QUERY_PARAM, accessibleResourceIds);
     }
 
     LOGGER.debug(
@@ -1612,7 +1632,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
    *     LocationString to CodeVersion
    */
   private Map<String, Map<String, CodeVersion>> getExperimentRunCodeVersionMap(
-      Session session, List<String> expRunIds, List<String> selfAllowedRepositoryIds) {
+      Session session, List<String> expRunIds, List<Resources> selfAllowedRepositories) {
 
     String queryBuilder =
         "SELECT vme.experimentRunEntity.id, vme.versioning_location, gcb, ncb, pdcb "
@@ -1621,21 +1641,24 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
             + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
+    Set<String> accessibleRepositoryIds;
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
+      boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(selfAllowedRepositories);
+      if (allowedAllResources) {
         return new HashMap<>();
       } else {
+        accessibleRepositoryIds = UACApisUtil.getResourceIds(selfAllowedRepositories);
         queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
       }
+    } else {
+      accessibleRepositoryIds = null;
     }
 
     var query = session.createQuery(queryBuilder);
     query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
     query.setParameterList("expRunIds", expRunIds);
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      query.setParameterList(
-          REPO_IDS_QUERY_PARAM,
-          selfAllowedRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
+      query.setParameterList(REPO_IDS_QUERY_PARAM, accessibleRepositoryIds);
     }
 
     LOGGER.debug("Final experimentRuns code config blob final query : {}", query.getQueryString());

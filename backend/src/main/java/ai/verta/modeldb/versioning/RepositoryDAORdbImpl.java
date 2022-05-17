@@ -427,7 +427,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       // Get self allowed resources id where user has delete permission
       var modelDBServiceResourceTypes =
           ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-      List<String> allowedRepositoryIds =
+      Collection<String> allowedRepositoryIds =
           mdbRoleService.getAccessibleResourceIdsByActions(
               modelDBServiceResourceTypes,
               ModelDBServiceActions.DELETE,
@@ -438,7 +438,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Code.PERMISSION_DENIED);
       }
 
-      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
+      deleteRepositoriesCollection(session, experimentRunDAO, allowedRepositoryIds);
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -453,6 +453,11 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public void deleteRepositories(
       Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds) {
+    deleteRepositoriesCollection(session, experimentRunDAO, allowedRepositoryIds);
+  }
+
+  public void deleteRepositoriesCollection(
+      Session session, ExperimentRunDAO experimentRunDAO, Collection<String> allowedRepositoryIds) {
     var deletedRepositoriesQuery =
         session
             .createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING)
@@ -473,7 +478,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException {
-    List<String> allowedRepositoryIds =
+    Collection<String> allowedRepositoryIds =
         mdbRoleService.getAccessibleResourceIdsByActions(
             ModelDBServiceResourceTypes.REPOSITORY,
             ModelDBServiceActions.DELETE,
@@ -484,7 +489,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           Code.PERMISSION_DENIED);
     }
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
+      deleteRepositoriesCollection(session, experimentRunDAO, allowedRepositoryIds);
     }
     return true;
   }

@@ -10,6 +10,7 @@ import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -30,7 +31,7 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
 
   public InternalFuture<MapSubtypes<String, KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
       List<String> expRunIds,
-      List<String> selfAllowedRepositoryIds,
+      Collection<String> selfAllowedRepositoryIds,
       boolean allowedAllRepositories) {
     if (!allowedAllRepositories) {
       // If all repositories are not allowed and some one send empty selfAllowedRepositoryIds list

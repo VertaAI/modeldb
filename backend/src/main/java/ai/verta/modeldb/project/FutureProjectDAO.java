@@ -70,10 +70,10 @@ import ai.verta.uac.Action;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;
 import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
@@ -84,6 +84,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Date;
@@ -812,7 +813,6 @@ public class FutureProjectDAO {
             unused -> {
               // Get self allowed resources id where user has delete permission
               return getSelfAllowedResources(
-                  ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
                   ModelDBActionEnum.ModelDBServiceActions.DELETE,
                   projectIds);
             },
@@ -863,51 +863,39 @@ public class FutureProjectDAO {
             executor);
   }
 
-  private InternalFuture<List<String>> getSelfAllowedResources(
-      ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+  private InternalFuture<Collection<String>> getSelfAllowedResources(
+      ModelDBServiceActions modelDBServiceActions,
       List<String> requestedResourcesIds) {
-    var action =
-        Action.newBuilder()
-            .setService(ServiceEnum.Service.MODELDB_SERVICE)
-            .setModeldbServiceAction(modelDBServiceActions)
-            .build();
-    GetSelfAllowedResources getAllowedResourcesRequest =
-        GetSelfAllowedResources.newBuilder()
-            .addActions(action)
-            .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-            .setService(ServiceEnum.Service.MODELDB_SERVICE)
-            .build();
-    return FutureGrpc.ClientRequest(
-            uac.getAuthzService().getSelfAllowedResources(getAllowedResourcesRequest), executor)
+    return uacApisUtil
+        .getAllowedEntitiesByResourceType(
+            modelDBServiceActions, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
         .thenApply(
             getAllowedResourcesResponse -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
               LOGGER.trace(
                   CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
-
-              var resourcesIds = new ArrayList<String>();
-              if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
-                for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-                  resourcesIds.addAll(resources.getResourceIdsList());
-                }
+              boolean allowedAllResources =
+                  UACApisUtil.checkAllResourceAllowed(getAllowedResourcesResponse);
+              if (allowedAllResources) {
+                return new ArrayList<>(requestedResourcesIds);
+              } else {
+                Set<String> allowedProjectIds =
+                    UACApisUtil.getResourceIds(getAllowedResourcesResponse);
                 // Validate if current user has access to the entity or not
                 // resourcesIds.retainAll(requestedResourcesIds);
                 if (requestedResourcesIds.isEmpty()) {
-                  return resourcesIds;
-                } else if (resourcesIds.containsAll(requestedResourcesIds)) {
+                  return allowedProjectIds;
+                } else if (allowedProjectIds.containsAll(requestedResourcesIds)) {
                   return requestedResourcesIds;
                 } else {
                   for (var requestedId : requestedResourcesIds) {
-                    if (!resourcesIds.contains(requestedId)) {
-                      resourcesIds.remove(requestedId);
+                    if (!allowedProjectIds.contains(requestedId)) {
+                      allowedProjectIds.remove(requestedId);
                     }
                   }
                 }
+                return allowedProjectIds;
               }
-              return resourcesIds;
             },
             executor);
   }
@@ -1377,7 +1365,6 @@ public class FutureProjectDAO {
         .thenCompose(
             unused ->
                 getSelfAllowedResources(
-                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
                     ModelDBActionEnum.ModelDBServiceActions.READ,
                     Collections.emptyList()),
             executor)

@@ -23,6 +23,7 @@ import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -42,6 +43,12 @@ public class UACApisUtil {
   public UACApisUtil(Executor executor, UAC uac) {
     this.executor = executor;
     this.uac = uac;
+  }
+
+  public static Set<String> getResourceIds(Collection<Resources> resources) {
+    return resources.stream()
+        .flatMap(resources1 -> resources1.getResourceIdsList().stream())
+        .collect(Collectors.toSet());
   }
 
   public InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
@@ -118,13 +125,8 @@ public class UACApisUtil {
             executor);
   }
 
-  public boolean checkAllResourceAllowed(List<Resources> resources) {
-    var allowedAllResources = false;
-    if (!resources.isEmpty()) {
-      // This should always MODEL_DB_SERVICE be the case unless we have a bug.
-      allowedAllResources = resources.get(0).getAllResourceIds();
-    }
-    return allowedAllResources;
+  public static boolean checkAllResourceAllowed(Collection<Resources> resources) {
+    return resources.stream().allMatch(Resources::getAllResourceIds) && !resources.isEmpty();
   }
 
   public InternalFuture<Workspace> getWorkspaceById(long workspaceId) {
@@ -160,7 +162,7 @@ public class UACApisUtil {
 
   public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
       Optional<String> workspaceName,
-      Optional<List<String>> resourceIdsOptional,
+      Optional<Collection<String>> resourceIdsOptional,
       Optional<String> resourceName,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
     var resourceType =

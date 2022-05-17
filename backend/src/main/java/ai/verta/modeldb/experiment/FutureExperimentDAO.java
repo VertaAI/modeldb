@@ -59,6 +59,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -375,14 +376,11 @@ public class FutureExperimentDAO {
               ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
           .thenApply(
               resources -> {
-                boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+                boolean allowedAllResources = UACApisUtil.checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
                   return new QueryFilterContext();
                 } else {
-                  List<String> accessibleProjectIds =
-                      resources.stream()
-                          .flatMap(x -> x.getResourceIdsList().stream())
-                          .collect(Collectors.toList());
+                  Set<String> accessibleProjectIds = UACApisUtil.getResourceIds(resources);
                   if (accessibleProjectIds.isEmpty()) {
                     return null;
                   } else {
