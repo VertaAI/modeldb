@@ -21,11 +21,7 @@ public class InternalFuture<T> {
 
   static {
     String internalFutureTracingEnabled = System.getenv("IFUTURE_TRACING_ENABLED");
-    if (internalFutureTracingEnabled == null) {
-      DEEP_TRACING_ENABLED = false;
-    } else {
-      DEEP_TRACING_ENABLED = Boolean.parseBoolean(internalFutureTracingEnabled);
-    }
+    DEEP_TRACING_ENABLED = Boolean.parseBoolean(internalFutureTracingEnabled);
   }
 
   private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
