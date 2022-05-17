@@ -813,8 +813,7 @@ public class FutureProjectDAO {
             unused -> {
               // Get self allowed resources id where user has delete permission
               return getSelfAllowedResources(
-                  ModelDBActionEnum.ModelDBServiceActions.DELETE,
-                  projectIds);
+                  ModelDBActionEnum.ModelDBServiceActions.DELETE, projectIds);
             },
             executor)
         .thenApply(
@@ -864,8 +863,7 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Collection<String>> getSelfAllowedResources(
-      ModelDBServiceActions modelDBServiceActions,
-      List<String> requestedResourcesIds) {
+      ModelDBServiceActions modelDBServiceActions, List<String> requestedResourcesIds) {
     return uacApisUtil
         .getAllowedEntitiesByResourceType(
             modelDBServiceActions, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
@@ -1365,8 +1363,7 @@ public class FutureProjectDAO {
         .thenCompose(
             unused ->
                 getSelfAllowedResources(
-                    ModelDBActionEnum.ModelDBServiceActions.READ,
-                    Collections.emptyList()),
+                    ModelDBActionEnum.ModelDBServiceActions.READ, Collections.emptyList()),
             executor)
         .thenCompose(
             selfAllowedResources -> {
