@@ -45,17 +45,17 @@ public class InternalFuture<T> {
         stackTrace = Arrays.copyOf(stackTrace, 10);
       }
       this.formattedStack =
-              Arrays.stream(stackTrace)
-                      .map(StackTraceElement::toString)
-                      .collect(Collectors.joining("\nat "));
+          Arrays.stream(stackTrace)
+              .map(StackTraceElement::toString)
+              .collect(Collectors.joining("\nat "));
     }
   }
 
   public static <T> InternalFuture<T> trace(
-          Supplier<InternalFuture<T>> supplier,
-          String operationName,
-          Map<String, String> tags,
-          Executor executor) {
+      Supplier<InternalFuture<T>> supplier,
+      String operationName,
+      Map<String, String> tags,
+      Executor executor) {
     // todo: remove me since tracing works in other ways now
     return supplier.get();
   }
@@ -63,7 +63,7 @@ public class InternalFuture<T> {
   // Convert a list of futures to a future of a list
   @SuppressWarnings("unchecked")
   public static <T> InternalFuture<List<T>> sequence(
-          final List<InternalFuture<T>> futures, Executor executor) {
+      final List<InternalFuture<T>> futures, Executor executor) {
     if (futures.isEmpty()) {
       return InternalFuture.completedInternalFuture(new LinkedList<>());
     }
@@ -71,33 +71,33 @@ public class InternalFuture<T> {
     final var promise = new CompletableFuture<List<T>>();
     final var values = new ArrayList<T>(futures.size());
     final CompletableFuture<T>[] futuresArray =
-            futures.stream()
-                    .map(x -> x.toCompletionStage().toCompletableFuture())
-                    .collect(Collectors.toList())
-                    .toArray(new CompletableFuture[futures.size()]);
+        futures.stream()
+            .map(x -> x.toCompletionStage().toCompletableFuture())
+            .collect(Collectors.toList())
+            .toArray(new CompletableFuture[futures.size()]);
 
     CompletableFuture.allOf(futuresArray)
-            .whenCompleteAsync(
-                    (ignored, throwable) -> {
-                      if (throwable != null) {
-                        promise.completeExceptionally(throwable);
-                        return;
-                      }
+        .whenCompleteAsync(
+            (ignored, throwable) -> {
+              if (throwable != null) {
+                promise.completeExceptionally(throwable);
+                return;
+              }
 
-                      try {
-                        for (final var future : futuresArray) {
-                          values.add(future.get());
-                        }
-                        promise.complete(values);
-                      } catch (RuntimeException | InterruptedException | ExecutionException t) {
-                        if (t instanceof InterruptedException) {
-                          // Restore interrupted state...
-                          Thread.currentThread().interrupt();
-                        }
-                        promise.completeExceptionally(t);
-                      }
-                    },
-                    executor);
+              try {
+                for (final var future : futuresArray) {
+                  values.add(future.get());
+                }
+                promise.complete(values);
+              } catch (RuntimeException | InterruptedException | ExecutionException t) {
+                if (t instanceof InterruptedException) {
+                  // Restore interrupted state...
+                  Thread.currentThread().interrupt();
+                }
+                promise.completeExceptionally(t);
+              }
+            },
+            executor);
 
     return InternalFuture.from(promise);
   }
@@ -115,25 +115,25 @@ public class InternalFuture<T> {
   }
 
   public <U> InternalFuture<U> thenCompose(
-          Function<? super T, InternalFuture<U>> fn, Executor executor) {
+      Function<? super T, InternalFuture<U>> fn, Executor executor) {
     return from(
-            stage.thenComposeAsync(
+        stage.thenComposeAsync(
+            traceFunction(
+                callingContext.wrapFunction(
                     traceFunction(
-                            callingContext.wrapFunction(
-                                    traceFunction(
-                                            fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose")),
-                            "futureThenApply"),
-                    executor));
+                        fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose")),
+                "futureThenApply"),
+            executor));
   }
 
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
     return from(
-            stage.thenApplyAsync(
-                    traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
+        stage.thenApplyAsync(
+            traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
   }
 
   private <U> Function<? super T, ? extends U> traceFunction(
-          Function<? super T, ? extends U> fn, String spanName) {
+      Function<? super T, ? extends U> fn, String spanName) {
     if (!DEEP_TRACING_ENABLED) {
       return fn;
     }
@@ -149,19 +149,19 @@ public class InternalFuture<T> {
 
   private Span startSpan(String futureThenApply) {
     return futureTracer
-            .spanBuilder(futureThenApply)
-            .setAttribute(STACK_ATTRIBUTE_KEY, formattedStack)
-            .startSpan();
+        .spanBuilder(futureThenApply)
+        .setAttribute(STACK_ATTRIBUTE_KEY, formattedStack)
+        .startSpan();
   }
 
   public <U> InternalFuture<U> handle(
-          BiFunction<? super T, Throwable, ? extends U> fn, Executor executor) {
+      BiFunction<? super T, Throwable, ? extends U> fn, Executor executor) {
     return from(
-            stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor));
+        stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor));
   }
 
   private <U> BiFunction<? super T, Throwable, ? extends U> traceBiFunctionThrowable(
-          BiFunction<? super T, Throwable, ? extends U> fn) {
+      BiFunction<? super T, Throwable, ? extends U> fn) {
     if (!DEEP_TRACING_ENABLED) {
       return fn;
     }
@@ -176,16 +176,16 @@ public class InternalFuture<T> {
   }
 
   public <U, V> InternalFuture<V> thenCombine(
-          InternalFuture<? extends U> other,
-          BiFunction<? super T, ? super U, ? extends V> fn,
-          Executor executor) {
+      InternalFuture<? extends U> other,
+      BiFunction<? super T, ? super U, ? extends V> fn,
+      Executor executor) {
     return from(
-            stage.thenCombineAsync(
-                    other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor));
+        stage.thenCombineAsync(
+            other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor));
   }
 
   private <U, V> BiFunction<? super T, ? super U, ? extends V> traceBiFunction(
-          BiFunction<? super T, ? super U, ? extends V> fn) {
+      BiFunction<? super T, ? super U, ? extends V> fn) {
     if (!DEEP_TRACING_ENABLED) {
       return fn;
     }
@@ -201,7 +201,7 @@ public class InternalFuture<T> {
 
   public InternalFuture<Void> thenAccept(Consumer<? super T> action, Executor executor) {
     return from(
-            stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor));
+        stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor));
   }
 
   private Consumer<? super T> traceConsumer(Consumer<? super T> action) {
@@ -237,13 +237,13 @@ public class InternalFuture<T> {
   }
 
   public InternalFuture<T> whenComplete(
-          BiConsumer<? super T, ? super Throwable> action, Executor executor) {
+      BiConsumer<? super T, ? super Throwable> action, Executor executor) {
     return from(
-            stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
+        stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
   }
 
   private BiConsumer<? super T, ? super Throwable> traceBiConsumer(
-          BiConsumer<? super T, ? super Throwable> action) {
+      BiConsumer<? super T, ? super Throwable> action) {
     if (!DEEP_TRACING_ENABLED) {
       return action;
     }
@@ -271,40 +271,40 @@ public class InternalFuture<T> {
   }
 
   public static <U> InternalFuture<U> retriableStage(
-          Supplier<InternalFuture<U>> supplier,
-          Function<Throwable, Boolean> retryChecker,
-          Executor executor) {
+      Supplier<InternalFuture<U>> supplier,
+      Function<Throwable, Boolean> retryChecker,
+      Executor executor) {
     final var promise = new CompletableFuture<U>();
 
     supplier
-            .get()
-            .whenComplete(
-                    (value, throwable) -> {
-                      boolean retryCheckerFlag = retryChecker.apply(throwable);
-                      if (throwable == null) {
-                        promise.complete(value);
-                      } else if (retryCheckerFlag) {
-                        // If we should retry, then perform the retry and map the result of the future to
-                        // the current promise
-                        // This build up a chain of promises, which can consume memory. I couldn't figure
-                        // out how to do better
-                        // with Java constraints of final vars in lambdas and not using uninitialized
-                        // variables.
-                        retriableStage(supplier, retryChecker, executor)
-                                .whenComplete(
-                                        (v, t) -> {
-                                          if (t == null) {
-                                            promise.complete(v);
-                                          } else {
-                                            promise.completeExceptionally(t);
-                                          }
-                                        },
-                                        executor);
-                      } else {
-                        promise.completeExceptionally(throwable);
-                      }
-                    },
-                    executor);
+        .get()
+        .whenComplete(
+            (value, throwable) -> {
+              boolean retryCheckerFlag = retryChecker.apply(throwable);
+              if (throwable == null) {
+                promise.complete(value);
+              } else if (retryCheckerFlag) {
+                // If we should retry, then perform the retry and map the result of the future to
+                // the current promise
+                // This build up a chain of promises, which can consume memory. I couldn't figure
+                // out how to do better
+                // with Java constraints of final vars in lambdas and not using uninitialized
+                // variables.
+                retriableStage(supplier, retryChecker, executor)
+                    .whenComplete(
+                        (v, t) -> {
+                          if (t == null) {
+                            promise.complete(v);
+                          } else {
+                            promise.completeExceptionally(t);
+                          }
+                        },
+                        executor);
+              } else {
+                promise.completeExceptionally(throwable);
+              }
+            },
+            executor);
 
     return InternalFuture.from(promise);
   }
