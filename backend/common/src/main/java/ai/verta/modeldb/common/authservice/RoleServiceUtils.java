@@ -725,20 +725,20 @@ public class RoleServiceUtils implements RoleService {
           modelDBServiceResourceTypes, modelDBServiceActions, requestedResourceIds.get(0));
       return requestedResourceIds;
     }
-      List<Resources> accessibleResources =
-          getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
-      boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
-      Set<String> accessibleResourceIds;
-      if (allowedAllResources) {
-        accessibleResourceIds = new HashSet<>(requestedResourceIds);
-      } else {
-        accessibleResourceIds = getResourceIds(accessibleResources);
-        if (!requestedResourceIds.isEmpty()) {
-          accessibleResourceIds.retainAll(requestedResourceIds);
-        }
+    List<Resources> accessibleResources =
+        getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
+    boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
+    Set<String> accessibleResourceIds;
+    if (allowedAllResources) {
+      accessibleResourceIds = new HashSet<>(requestedResourceIds);
+    } else {
+      accessibleResourceIds = getResourceIds(accessibleResources);
+      if (!requestedResourceIds.isEmpty()) {
+        accessibleResourceIds.retainAll(requestedResourceIds);
       }
-      // Validate if current user has access to the entity or not
-      return accessibleResourceIds;
+    }
+    // Validate if current user has access to the entity or not
+    return accessibleResourceIds;
   }
 
   @Override
