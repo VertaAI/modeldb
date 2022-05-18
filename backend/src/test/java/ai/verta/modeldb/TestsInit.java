@@ -114,7 +114,7 @@ public class TestsInit {
         testConfig, services, daos, testConfig.getJdbi(), handleExecutor);
 
     if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
-      authClientInterceptor = new AuthClientInterceptor(testConfig.testUsers, testConfig);
+      authClientInterceptor = new AuthClientInterceptor(testConfig);
       serviceAccountClientChannelBuilder.intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor());
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
