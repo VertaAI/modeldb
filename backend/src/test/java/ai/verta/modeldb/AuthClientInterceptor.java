@@ -3,7 +3,6 @@ package ai.verta.modeldb;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.config.TestConfig;
 import io.grpc.*;
-import java.util.Map;
 
 @SuppressWarnings("unchecked")
 public class AuthClientInterceptor {
@@ -15,8 +14,7 @@ public class AuthClientInterceptor {
   private final Client2AuthInterceptor client2AuthInterceptor;
 
   public AuthClientInterceptor(TestConfig testConfig) {
-     serviceAccountClientAuthInterceptor =
-      new ClientAuthInterceptor(testConfig.getService_user());
+    serviceAccountClientAuthInterceptor = new ClientAuthInterceptor(testConfig.getService_user());
     client1AuthInterceptor =
         new Client1AuthInterceptor(testConfig.testUsers.getOrDefault("primaryUser", null));
     client2AuthInterceptor =
