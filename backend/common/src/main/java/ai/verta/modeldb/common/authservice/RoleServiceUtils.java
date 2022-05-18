@@ -724,7 +724,7 @@ public class RoleServiceUtils implements RoleService {
       isSelfAllowed(
           modelDBServiceResourceTypes, modelDBServiceActions, requestedResourceIds.get(0));
       return requestedResourceIds;
-    } else {
+    }
       List<Resources> accessibleResources =
           getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
       boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
@@ -739,7 +739,6 @@ public class RoleServiceUtils implements RoleService {
       }
       // Validate if current user has access to the entity or not
       return accessibleResourceIds;
-    }
   }
 
   @Override
