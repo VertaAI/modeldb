@@ -88,7 +88,7 @@ public class TestsInit {
     String serverName = InProcessServerBuilder.generateName();
     serverBuilder = InProcessServerBuilder.forName(serverName).directExecutor();
     InProcessChannelBuilder serviceAccountClientChannelBuilder =
-    InProcessChannelBuilder.forName(serverName).directExecutor();
+        InProcessChannelBuilder.forName(serverName).directExecutor();
     InProcessChannelBuilder client1ChannelBuilder =
         InProcessChannelBuilder.forName(serverName).directExecutor();
     InProcessChannelBuilder client2ChannelBuilder =
@@ -115,7 +115,8 @@ public class TestsInit {
 
     if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig.testUsers, testConfig);
-      serviceAccountClientChannelBuilder.intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor());
+      serviceAccountClientChannelBuilder.intercept(
+          authClientInterceptor.getServiceAccountClientAuthInterceptor());
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
@@ -147,7 +148,7 @@ public class TestsInit {
     }
 
     ManagedChannel channelServiceUser =
-     serviceAccountClientChannelBuilder.maxInboundMessageSize(1024).build();
+        serviceAccountClientChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
 

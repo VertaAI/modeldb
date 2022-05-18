@@ -15,8 +15,7 @@ public class AuthClientInterceptor {
   private final Client2AuthInterceptor client2AuthInterceptor;
 
   public AuthClientInterceptor(Map<String, ServiceUserConfig> testUsers, TestConfig testConfig) {
-     serviceAccountClientAuthInterceptor =
-      new ClientAuthInterceptor(testConfig.getService_user());
+    serviceAccountClientAuthInterceptor = new ClientAuthInterceptor(testConfig.getService_user());
     client1AuthInterceptor =
         new Client1AuthInterceptor(testUsers.getOrDefault("primaryUser", null));
     client2AuthInterceptor =
