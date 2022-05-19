@@ -103,7 +103,8 @@ public abstract class Config {
 
   public abstract boolean hasServiceAccount();
 
-  //todo: move all tracing related things to a class that exposes spring @Beans, rather than doing all of this here.
+  // todo: move all tracing related things to a class that exposes spring @Beans, rather than doing
+  // all of this here.
   private void initializeTracing() {
     if (!enableTrace) {
       return;
