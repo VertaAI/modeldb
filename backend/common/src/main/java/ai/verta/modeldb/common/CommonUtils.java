@@ -172,8 +172,7 @@ public class CommonUtils {
     responseObserver.onError(logError(e));
   }
 
-  public static void observeError(
-          ResponseBodyEmitter responseObserver, Throwable e) {
+  public static void observeError(ResponseBodyEmitter responseObserver, Throwable e) {
     responseObserver.completeWithError(logError(e));
   }
 
