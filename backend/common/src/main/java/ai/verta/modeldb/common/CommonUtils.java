@@ -24,7 +24,6 @@ import java.util.concurrent.CompletionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 public class CommonUtils {
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
