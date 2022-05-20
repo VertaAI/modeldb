@@ -14,6 +14,7 @@ import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
@@ -42,8 +43,6 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
-import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateExperimentHandler extends HandlerUtil {
 
@@ -155,61 +154,48 @@ public class CreateExperimentHandler extends HandlerUtil {
 
     Supplier<InternalFuture<Experiment>> insertFutureSupplier =
         () ->
-            jdbi.withHandle(
-                handle ->
-                    handle.inTransaction(
-                        TransactionIsolationLevel.SERIALIZABLE,
-                        handleForTransaction -> {
-                          final var builder = newExperiment.toBuilder();
-                          Boolean exists =
-                              checkInsertedEntityAlreadyExists(handleForTransaction, newExperiment);
-                          if (exists) {
-                            throw new AlreadyExistsException(
-                                "Experiment '"
-                                    + builder.getName()
-                                    + "' already exists in database");
-                          }
+            jdbi.withTransaction(
+                handle -> {
+                  final var builder = newExperiment.toBuilder();
+                  Boolean exists = checkInsertedEntityAlreadyExists(handle, newExperiment);
+                  if (exists) {
+                    throw new AlreadyExistsException(
+                        "Experiment '" + builder.getName() + "' already exists in database");
+                  }
 
-                          String queryString = buildInsertQuery(valueMap, "experiment");
+                  String queryString = buildInsertQuery(valueMap, "experiment");
 
-                          LOGGER.trace("insert experiment query string: " + queryString);
-                          var query = handleForTransaction.createUpdate(queryString);
+                  LOGGER.trace("insert experiment query string: " + queryString);
+                  var query = handle.createUpdate(queryString);
 
-                          // Inserting fields arguments based on the keys and value of map
-                          for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
-                            query.bind(objectEntry.getKey(), objectEntry.getValue());
-                          }
+                  // Inserting fields arguments based on the keys and value of map
+                  for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+                    query.bind(objectEntry.getKey(), objectEntry.getValue());
+                  }
 
-                          int count = query.execute();
-                          LOGGER.trace("Experiment Inserted : " + (count > 0));
+                  int count = query.execute();
+                  LOGGER.trace("Experiment Inserted : " + (count > 0));
 
-                          if (!builder.getTagsList().isEmpty()) {
-                            tagsHandler.addTags(
-                                handleForTransaction, builder.getId(), builder.getTagsList());
-                          }
-                          if (!builder.getAttributesList().isEmpty()) {
-                            attributeHandler.logKeyValues(
-                                handleForTransaction, builder.getId(), builder.getAttributesList());
-                          }
-                          if (!builder.getArtifactsList().isEmpty()) {
-                            var updatedArtifacts =
-                                artifactHandler.logArtifacts(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    builder.getArtifactsList(),
-                                    false);
-                            builder.clearArtifacts().addAllArtifacts(updatedArtifacts).build();
-                          }
-                          if (builder.getCodeVersionSnapshot().hasCodeArchive()
-                              || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
-                            codeVersionHandler.logCodeVersion(
-                                handleForTransaction,
-                                builder.getId(),
-                                false,
-                                builder.getCodeVersionSnapshot());
-                          }
-                          return builder.build();
-                        }));
+                  if (!builder.getTagsList().isEmpty()) {
+                    tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
+                  }
+                  if (!builder.getAttributesList().isEmpty()) {
+                    attributeHandler.logKeyValues(
+                        handle, builder.getId(), builder.getAttributesList());
+                  }
+                  if (!builder.getArtifactsList().isEmpty()) {
+                    var updatedArtifacts =
+                        artifactHandler.logArtifacts(
+                            handle, builder.getId(), builder.getArtifactsList(), false);
+                    builder.clearArtifacts().addAllArtifacts(updatedArtifacts).build();
+                  }
+                  if (builder.getCodeVersionSnapshot().hasCodeArchive()
+                      || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
+                    codeVersionHandler.logCodeVersion(
+                        handle, builder.getId(), false, builder.getCodeVersionSnapshot());
+                  }
+                  return builder.build();
+                });
     return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
         .thenCompose(
             createdExperiment ->

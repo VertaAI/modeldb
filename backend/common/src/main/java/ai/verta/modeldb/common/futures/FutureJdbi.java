@@ -3,8 +3,6 @@ package ai.verta.modeldb.common.futures;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
-import org.jdbi.v3.core.HandleCallback;
-import org.jdbi.v3.core.HandleConsumer;
 import org.jdbi.v3.core.statement.StatementExceptions;
 
 public class FutureJdbi {
@@ -58,12 +56,7 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.withHandle",
-        Map.of(
-            "caller",
-            String.format(
-                "%s:%d",
-                Thread.currentThread().getStackTrace()[2].getFileName(),
-                Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(),
         executor);
   }
 
@@ -102,12 +95,7 @@ public class FutureJdbi {
           return InternalFuture.from(promise);
         },
         "jdbi.useHandle",
-        Map.of(
-            "caller",
-            String.format(
-                "%s:%d",
-                Thread.currentThread().getStackTrace()[2].getFileName(),
-                Thread.currentThread().getStackTrace()[2].getLineNumber())),
+        Map.of(),
         executor);
   }
 }

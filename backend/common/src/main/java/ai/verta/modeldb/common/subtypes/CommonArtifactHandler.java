@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.rpc.Code;
 import java.sql.ResultSet;
@@ -19,7 +20,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
-import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public abstract class CommonArtifactHandler<T> {
