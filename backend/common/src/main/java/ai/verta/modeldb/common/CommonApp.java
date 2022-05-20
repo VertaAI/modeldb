@@ -3,8 +3,6 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import io.grpc.Server;
-import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
 import io.prometheus.client.exporter.MetricsServlet;
 import io.prometheus.client.hotspot.DefaultExports;
 import io.prometheus.jmx.BuildInfoCollector;
@@ -16,7 +14,6 @@ import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.management.MalformedObjectNameException;
-import javax.servlet.Filter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.config.AutowireCapableBeanFactory;
@@ -63,16 +60,6 @@ public abstract class CommonApp implements ApplicationContextAware {
     var factory = new TomcatServletWebServerFactory();
     factory.addConnectorCustomizers(gracefulShutdown);
     return factory;
-  }
-
-  @Bean
-  public Filter webMvcTracingFilter(OpenTelemetry openTelemetry) {
-    return SpringWebMvcTelemetry.builder(openTelemetry).build().newServletFilter();
-  }
-
-  @Bean
-  public OpenTelemetry openTelemetry(Config config) {
-    return config.getOpenTelemetry();
   }
 
   @Bean
