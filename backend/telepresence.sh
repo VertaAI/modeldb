@@ -3,4 +3,9 @@
 set -eo pipefail
 
 mkdir -p ~/telepresence_mounts
-telepresence --swap-deployment modeldb--backend --env-json telepresence-env.json --expose 8085 --expose 8086 --also-proxy 10.0.0.0/8 --mount ~/telepresence_mounts/modeldb_backend --context engine-dev-admin
+
+# As of 5/20/2022 telepresence only supports a single port.  The last one listed is the one that is used.
+# HTTP:
+#telepresence intercept modeldb--backend --env-json telepresence-env.json --port 8086:8086 --mount ~/telepresence_mounts/modeldb_backend --context engine-dev-admin
+# GRPC:
+telepresence intercept modeldb--backend --env-json telepresence-env.json --port 8085:8085 --mount ~/telepresence_mounts/modeldb_backend --context engine-dev-admin
