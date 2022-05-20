@@ -172,10 +172,6 @@ public class CommonUtils {
     responseObserver.onError(logError(e));
   }
 
-  public static void observeError(ResponseBodyEmitter responseObserver, Throwable e) {
-    responseObserver.completeWithError(logError(e));
-  }
-
   public static <T extends GeneratedMessageV3> void observeError(
       StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
     responseObserver.onError(logError(e, defaultInstance));

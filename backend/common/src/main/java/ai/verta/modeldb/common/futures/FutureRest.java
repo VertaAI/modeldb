@@ -4,6 +4,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import io.grpc.Context;
 import io.opentracing.util.GlobalTracer;
 import java.io.IOException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 import org.springframework.lang.NonNull;
@@ -14,23 +15,22 @@ public class FutureRest {
   private FutureRest() {}
 
   // Injects the result of the future into the grpc StreamObserver as the return of the server
-  public static <T> ResponseBodyEmitter ServerResponse(InternalFuture<T> f, Executor ex) {
-    ResponseBodyEmitter observer = new ResponseBodyEmitter();
+  public static <T> CompletableFuture<T> ServerResponse(InternalFuture<T> f, Executor ex) {
+    CompletableFuture<T> promise = new CompletableFuture<>();
     f.whenComplete(
         (v, t) -> {
           if (t == null) {
             try {
-              observer.send(v);
-              observer.complete();
-            } catch (IOException e) {
-              CommonUtils.observeError(observer, t);
+              promise.complete(v);
+            } catch (Throwable e) {
+              promise.completeExceptionally(e);
             }
           } else {
-            CommonUtils.observeError(observer, t);
+            promise.completeExceptionally(t);
           }
         },
         ex);
-    return observer;
+    return promise;
   }
 
   // Wraps an Executor and make it compatible with grpc's context
