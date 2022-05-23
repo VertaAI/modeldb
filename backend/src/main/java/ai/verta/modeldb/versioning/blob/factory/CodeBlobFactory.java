@@ -10,6 +10,7 @@ import ai.verta.modeldb.versioning.NotebookCodeBlob;
 import ai.verta.modeldb.versioning.PathDatasetBlob;
 import io.grpc.Status.Code;
 import org.hibernate.Session;
+import org.springframework.http.HttpStatus;
 
 public class CodeBlobFactory extends BlobFactory {
 
@@ -35,7 +36,10 @@ public class CodeBlobFactory extends BlobFactory {
           if (pathBlob.getComponentsCount() == 1) {
             builder.setPath(pathBlob.getComponents(0));
           } else {
-            throw new ModelDBException("Path should have only one component", Code.INTERNAL);
+            throw new ModelDBException(
+                "Path should have only one component",
+                Code.INTERNAL,
+                HttpStatus.INTERNAL_SERVER_ERROR);
           }
         }
         codeBlobBuilder.setNotebook(

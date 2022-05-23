@@ -13,12 +13,12 @@ import ai.verta.modeldb.versioning.QueryDatasetBlob;
 import ai.verta.modeldb.versioning.QueryDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
 import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
-import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.util.List;
 import java.util.stream.Collectors;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.http.HttpStatus;
 
 public class DatasetBlobFactory extends BlobFactory {
 
@@ -40,14 +40,16 @@ public class DatasetBlobFactory extends BlobFactory {
       case PATH_DATASET_BLOB:
         final PathDatasetBlob pathBlob = getPathBlob(session, getElementSha());
         if (pathBlob == null) {
-          throw new ModelDBException("Path blob not found", Code.INTERNAL);
+          throw new ModelDBException(
+              "Path blob not found", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         datasetBlobBuilder.setPath(pathBlob);
         break;
       case QUERY_DATASET_BLOB:
         final QueryDatasetBlob queryBlob = getQueryBlob(session, getElementSha());
         if (queryBlob == null) {
-          throw new ModelDBException("Query blob not found", Code.INTERNAL);
+          throw new ModelDBException(
+              "Query blob not found", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
         }
         datasetBlobBuilder.setQuery(queryBlob);
         break;
@@ -73,7 +75,7 @@ public class DatasetBlobFactory extends BlobFactory {
               .collect(Collectors.toList());
       return S3DatasetBlob.newBuilder().addAllComponents(componentBlobs).build();
     } else {
-      throw new ModelDBException("S3 dataset Blob not found", Status.Code.NOT_FOUND);
+      throw new ModelDBException("S3 dataset Blob not found", Code.NOT_FOUND, HttpStatus.NOT_FOUND);
     }
   }
 

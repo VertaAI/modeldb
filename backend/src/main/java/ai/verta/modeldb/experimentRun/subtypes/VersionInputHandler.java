@@ -34,6 +34,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
 public class VersionInputHandler {
   private static final String REPOSITORY_ID_QUERY_PARAM = "repository_id";
@@ -347,7 +348,8 @@ public class VersionInputHandler {
               }
 
               if (errorMessage != null) {
-                throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+                throw new ModelDBException(
+                    errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
               }
             },
             executor);
@@ -392,7 +394,8 @@ public class VersionInputHandler {
                               + "' for key '"
                               + locationBlobKeyMap.getKey()
                               + "' not found in commit blobs",
-                          Code.INVALID_ARGUMENT));
+                          Code.INVALID_ARGUMENT,
+                          HttpStatus.BAD_REQUEST));
                 }
                 requestedLocationBlobWithHashMap.put(
                     locationKey, locationBlobWithHashMap.get(locationKey));

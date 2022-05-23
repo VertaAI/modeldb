@@ -53,6 +53,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.exception.LockAcquisitionException;
+import org.springframework.http.HttpStatus;
 import org.yaml.snakeyaml.Yaml;
 
 public class ModelDBUtils {
@@ -443,7 +444,9 @@ public class ModelDBUtils {
         && !name.isEmpty()
         && (name.contains(":") || name.contains("/") || name.contains("\\"))) {
       throw new ModelDBException(
-          "Name can not contain ':' or '/' or '\\\\'", Code.INVALID_ARGUMENT);
+          "Name can not contain ':' or '/' or '\\\\'",
+          Code.INVALID_ARGUMENT,
+          HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -455,7 +458,9 @@ public class ModelDBUtils {
       invalidFieldName = invalidFieldName.substring("could not resolve property: ".length());
       invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf(" of:"));
       return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+          "Invalid field found in the request : " + invalidFieldName,
+          Code.INVALID_ARGUMENT,
+          HttpStatus.BAD_REQUEST);
     }
     throw ex;
   }

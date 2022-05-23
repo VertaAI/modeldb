@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
 public class ArtifactStoreDAODisabled implements ArtifactStoreDAO {
 
@@ -18,32 +19,47 @@ public class ArtifactStoreDAODisabled implements ArtifactStoreDAO {
   @Override
   public Response getUrlForArtifact(String s3Key, String method) throws ModelDBException {
     LOGGER.debug(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS);
-    throw new ModelDBException(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS, Code.UNIMPLEMENTED);
+    throw new ModelDBException(
+        ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS,
+        Code.UNIMPLEMENTED,
+        HttpStatus.NOT_IMPLEMENTED);
   }
 
   @Override
   public Response getUrlForArtifactMultipart(
       String s3Key, String method, long partNumber, String uploadId) throws ModelDBException {
     LOGGER.debug(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS);
-    throw new ModelDBException(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS, Code.UNIMPLEMENTED);
+    throw new ModelDBException(
+        ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS,
+        Code.UNIMPLEMENTED,
+        HttpStatus.NOT_IMPLEMENTED);
   }
 
   @Override
   public Optional<String> initializeMultipart(String s3Key) throws ModelDBException {
     LOGGER.debug(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS);
-    throw new ModelDBException(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS, Code.UNIMPLEMENTED);
+    throw new ModelDBException(
+        ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS,
+        Code.UNIMPLEMENTED,
+        HttpStatus.NOT_IMPLEMENTED);
   }
 
   @Override
   public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
       throws ModelDBException {
     LOGGER.debug(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS);
-    throw new ModelDBException(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS, Code.UNIMPLEMENTED);
+    throw new ModelDBException(
+        ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS,
+        Code.UNIMPLEMENTED,
+        HttpStatus.NOT_IMPLEMENTED);
   }
 
   @Override
   public InputStream downloadArtifact(String artifactPath) throws ModelDBException {
     LOGGER.debug(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS);
-    throw new ModelDBException(ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS, Code.UNIMPLEMENTED);
+    throw new ModelDBException(
+        ModelDBMessages.ARTIFACT_STORE_DISABLED_LOGS,
+        Code.UNIMPLEMENTED,
+        HttpStatus.NOT_IMPLEMENTED);
   }
 }

@@ -117,6 +117,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
+import org.springframework.http.HttpStatus;
 
 public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
@@ -1505,7 +1506,9 @@ public class FutureExperimentRunDAO {
               // Validate request parameter
               if (request.getDatasetVersionId().isEmpty()) {
                 throw new ModelDBException(
-                    "DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
+                    "DatasetVersion Id should not be empty",
+                    Code.INVALID_ARGUMENT,
+                    HttpStatus.BAD_REQUEST);
               }
             },
             executor);

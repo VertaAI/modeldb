@@ -22,6 +22,7 @@ import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import org.springframework.http.HttpStatus;
 
 @Entity
 @Table(name = "hyperparameter_set_config_blob")
@@ -88,7 +89,9 @@ public class HyperparameterSetConfigBlobEntity implements Serializable {
     var valueCase = ValueCase.forNumber(this.value_type);
     if (valueCase == null) {
       throw new ModelDBException(
-          "Invalid value found for HyperparameterSetConfigBlob", Code.INVALID_ARGUMENT);
+          "Invalid value found for HyperparameterSetConfigBlob",
+          Code.INVALID_ARGUMENT,
+          HttpStatus.BAD_REQUEST);
     }
 
     switch (valueCase) {
@@ -115,7 +118,9 @@ public class HyperparameterSetConfigBlobEntity implements Serializable {
       case VALUE_NOT_SET:
       default:
         throw new ModelDBException(
-            "Invalid value found for HyperparameterSetConfigBlob", Code.INVALID_ARGUMENT);
+            "Invalid value found for HyperparameterSetConfigBlob",
+            Code.INVALID_ARGUMENT,
+            HttpStatus.BAD_REQUEST);
     }
     return builder.build();
   }

@@ -5,6 +5,7 @@ import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.versioning.Blob;
 import io.grpc.Status.Code;
 import org.hibernate.Session;
+import org.springframework.http.HttpStatus;
 
 /** constructs proto object from it's database implementation */
 public abstract class BlobFactory {
@@ -41,7 +42,10 @@ public abstract class BlobFactory {
       case CONFIG_BLOB:
         return new ConfigBlobFactory(folderElementEntity);
       default:
-        throw new ModelDBException("Unknown blob type found " + folderElementEntity, Code.INTERNAL);
+        throw new ModelDBException(
+            "Unknown blob type found " + folderElementEntity,
+            Code.INTERNAL,
+            HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

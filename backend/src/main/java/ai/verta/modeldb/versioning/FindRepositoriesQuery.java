@@ -13,6 +13,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.UserInfo;
+import io.grpc.Status;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -27,6 +28,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.http.HttpStatus;
 
 public class FindRepositoriesQuery {
   private FindRepositoriesQuery() {}
@@ -294,7 +296,9 @@ public class FindRepositoriesQuery {
         }
       } else {
         throw new ModelDBException(
-            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, io.grpc.Status.Code.FAILED_PRECONDITION);
+            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
+            Status.Code.FAILED_PRECONDITION,
+            HttpStatus.PRECONDITION_FAILED);
       }
     }
   }

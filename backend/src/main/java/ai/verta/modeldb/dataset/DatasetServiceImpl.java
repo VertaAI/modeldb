@@ -57,6 +57,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
 public class DatasetServiceImpl extends DatasetServiceImplBase {
 
@@ -428,7 +429,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         throw new ModelDBException(
-            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST, INVALID_ARGUMENT);
+            ModelDBMessages.DATASET_ID_NOT_FOUND_IN_REQUEST,
+            INVALID_ARGUMENT,
+            HttpStatus.BAD_REQUEST);
       }
 
       // Validate if current user has access to the entity or not
@@ -519,7 +522,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     try {
       // Request Parameter Validation
       LOGGER.info("getDatasetTags not supported");
-      throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
+      throw new ModelDBException("Not supported", Code.UNIMPLEMENTED, HttpStatus.NOT_IMPLEMENTED);
 
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());

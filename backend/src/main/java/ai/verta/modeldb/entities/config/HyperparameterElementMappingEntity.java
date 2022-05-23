@@ -4,12 +4,13 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
-import io.grpc.Status;
+import com.google.rpc.Code;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
 @Entity
 @Table(name = "hyperparameter_element_mapping")
@@ -36,7 +37,9 @@ public class HyperparameterElementMappingEntity implements Serializable {
       case VALUE_NOT_SET:
       default:
         throw new ModelDBException(
-            "Invalid value found in HyperparameterValuesConfigBlob", Status.Code.INVALID_ARGUMENT);
+            "Invalid value found in HyperparameterValuesConfigBlob",
+            Code.INVALID_ARGUMENT,
+            HttpStatus.BAD_REQUEST);
     }
 
     this.entity_type = entity.getClass().getSimpleName();

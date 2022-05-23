@@ -33,7 +33,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
-import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -49,6 +48,7 @@ import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.http.HttpStatus;
 
 public class CommitDAORdbImpl implements CommitDAO {
 
@@ -181,7 +181,8 @@ public class CommitDAORdbImpl implements CommitDAO {
             break;
           case DATASETVERSIONINFO_NOT_SET:
           default:
-            throw new ModelDBException("Wrong dataset version type", Code.INVALID_ARGUMENT);
+            throw new ModelDBException(
+                "Wrong dataset version type", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
         }
         blobBuilder.setDataset(datasetBlobBuilder);
       }
@@ -211,7 +212,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       if (!repositoryEntity.isDataset()) {
         throw new ModelDBException(
             "Repository should be created from Dataset to add Dataset Version to it",
-            Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT,
+            HttpStatus.BAD_REQUEST);
       }
 
       var commitPaginationDTO =
@@ -347,7 +349,9 @@ public class CommitDAORdbImpl implements CommitDAO {
         for (String parentSHA : commit.getParentShasList()) {
           if (!parentCommitEntities.containsKey(parentSHA)) {
             throw new ModelDBException(
-                "Parent commit '" + parentSHA + "' not found in DB", Code.INVALID_ARGUMENT);
+                "Parent commit '" + parentSHA + "' not found in DB",
+                Code.INVALID_ARGUMENT,
+                HttpStatus.BAD_REQUEST);
           }
         }
       }
@@ -387,7 +391,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                   () ->
                       new ModelDBException(
                           "Couldn't find base commit by sha : " + request.getCommitBase(),
-                          Code.NOT_FOUND));
+                          Code.NOT_FOUND,
+                          HttpStatus.NOT_FOUND));
       Long baseTime = baseCommitEntity.getDate_created();
       commitQueryBuilder.append(" AND cm.date_created >= :date_created_baseTime ");
       parameterMap.put("date_created_baseTime", baseTime);
@@ -400,7 +405,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                   () ->
                       new ModelDBException(
                           "Couldn't find head commit by sha : " + request.getCommitHead(),
-                          Code.NOT_FOUND));
+                          Code.NOT_FOUND,
+                          HttpStatus.NOT_FOUND));
       Long headTime = headCommitEntity.getDate_created();
       commitQueryBuilder.append(" AND cm.date_created <= :date_created_headTime ");
       parameterMap.put("date_created_headTime", headTime);
@@ -519,7 +525,8 @@ public class CommitDAORdbImpl implements CommitDAO {
         VersioningUtils.commitRepositoryMappingExists(
             session, commitHash, repositoryEntity.getId());
     if (!exists) {
-      throw new ModelDBException("Commit_hash and repository_id mapping not found", Code.NOT_FOUND);
+      throw new ModelDBException(
+          "Commit_hash and repository_id mapping not found", Code.NOT_FOUND, HttpStatus.NOT_FOUND);
     }
 
     return session.load(CommitEntity.class, commitHash);
@@ -532,7 +539,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       var commitEntity = session.get(CommitEntity.class, commitHash);
 
       if (commitEntity == null) {
-        throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
+        throw new ModelDBException(
+            "DatasetVersion not found", Code.NOT_FOUND, HttpStatus.NOT_FOUND);
       }
 
       if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
@@ -540,7 +548,8 @@ public class CommitDAORdbImpl implements CommitDAO {
             String.format(
                 "DatasetVersion '%s' associated with multiple datasets",
                 commitEntity.getCommit_hash()),
-            Code.INTERNAL);
+            Code.INTERNAL,
+            HttpStatus.INTERNAL_SERVER_ERROR);
       }
       return String.valueOf(new ArrayList<>(commitEntity.getRepository()).get(0).getId());
     } catch (Exception ex) {
@@ -603,9 +612,13 @@ public class CommitDAORdbImpl implements CommitDAO {
               String.format(
                   "DatasetVersion '%s' associated with multiple datasets",
                   commitEntity.getCommit_hash()),
-              Code.INTERNAL);
+              Code.INTERNAL,
+              HttpStatus.INTERNAL_SERVER_ERROR);
         } else if (commitEntity.getRepository() == null) {
-          throw new ModelDBException("DatasetVersion not associated with datasets", Code.INTERNAL);
+          throw new ModelDBException(
+              "DatasetVersion not associated with datasets",
+              Code.INTERNAL,
+              HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
         if (repositoryIdentification == null) {
@@ -617,7 +630,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                 String.format(
                     "DatasetVersion '%s' associated with multiple datasets",
                     commitEntity.getCommit_hash()),
-                Code.INTERNAL);
+                Code.INTERNAL,
+                HttpStatus.INTERNAL_SERVER_ERROR);
           }
         }
 
@@ -700,7 +714,8 @@ public class CommitDAORdbImpl implements CommitDAO {
       getCommitQuery.setParameter(COMMIT_HASHES_QUERY_PARAM, commitShas);
       List<CommitEntity> commitEntities = getCommitQuery.getResultList();
       if (commitEntities.isEmpty()) {
-        throw new ModelDBException("Commits not found for the ids: " + commitShas, Code.NOT_FOUND);
+        throw new ModelDBException(
+            "Commits not found for the ids: " + commitShas, Code.NOT_FOUND, HttpStatus.NOT_FOUND);
       }
 
       for (CommitEntity commitEntity : commitEntities) {
@@ -709,7 +724,8 @@ public class CommitDAORdbImpl implements CommitDAO {
               "Commit '"
                   + commitEntity.getCommit_hash()
                   + "' has the child, please delete child commit first",
-              Code.FAILED_PRECONDITION);
+              Code.FAILED_PRECONDITION,
+              HttpStatus.PRECONDITION_FAILED);
         }
       }
 
@@ -740,7 +756,8 @@ public class CommitDAORdbImpl implements CommitDAO {
           }
           count++;
         }
-        throw new ModelDBException(errorMessage.toString(), Code.FAILED_PRECONDITION);
+        throw new ModelDBException(
+            errorMessage.toString(), Code.FAILED_PRECONDITION, HttpStatus.PRECONDITION_FAILED);
       }
 
       String getTagsHql =
@@ -759,7 +776,8 @@ public class CommitDAORdbImpl implements CommitDAO {
                 + tagsEntities.stream()
                     .map(tagsEntity -> tagsEntity.getId().getTag())
                     .collect(Collectors.joining(",")),
-            Code.FAILED_PRECONDITION);
+            Code.FAILED_PRECONDITION,
+            HttpStatus.PRECONDITION_FAILED);
       }
 
       session.beginTransaction();
@@ -962,23 +980,28 @@ public class CommitDAORdbImpl implements CommitDAO {
       var predicateCase = predicate.getValue().getKindCase();
       if (predicate.getKey().equals(ModelDBConstants.ID)) {
         throw new ModelDBException(
-            "predicates with ids not supported", Status.Code.INVALID_ARGUMENT);
+            "predicates with ids not supported", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
       }
       if (predicate.getKey().isEmpty()) {
         throw new ModelDBException(
-            "predicates with empty key not supported", Status.Code.INVALID_ARGUMENT);
+            "predicates with empty key not supported",
+            Code.INVALID_ARGUMENT,
+            HttpStatus.BAD_REQUEST);
       }
       if (predicateCase.equals(Value.KindCase.STRING_VALUE)
           && predicate.getValue().getStringValue().isEmpty()) {
         throw new ModelDBException(
-            "Predicate does not contain string value in request", Status.Code.INVALID_ARGUMENT);
+            "Predicate does not contain string value in request",
+            Code.INVALID_ARGUMENT,
+            HttpStatus.BAD_REQUEST);
       }
       if (!predicateCase.equals(Value.KindCase.STRING_VALUE)
           && !predicateCase.equals(Value.KindCase.NUMBER_VALUE)
           && !predicateCase.equals(Value.KindCase.BOOL_VALUE)) {
         throw new ModelDBException(
             "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE",
-            Status.Code.UNIMPLEMENTED);
+            Code.UNIMPLEMENTED,
+            HttpStatus.NOT_IMPLEMENTED);
       }
 
       if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
@@ -986,7 +1009,9 @@ public class CommitDAORdbImpl implements CommitDAO {
           || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
           || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
         throw new ModelDBException(
-            "Workspace name OR type not supported as predicate", Status.Code.INVALID_ARGUMENT);
+            "Workspace name OR type not supported as predicate",
+            Code.INVALID_ARGUMENT,
+            HttpStatus.BAD_REQUEST);
       }
     }
 
@@ -1114,7 +1139,9 @@ public class CommitDAORdbImpl implements CommitDAO {
               }
             } else {
               throw new ModelDBException(
-                  "Given predicate not supported yet : " + predicate, Code.UNIMPLEMENTED);
+                  "Given predicate not supported yet : " + predicate,
+                  Code.UNIMPLEMENTED,
+                  HttpStatus.NOT_IMPLEMENTED);
             }
             break;
           case ModelDBConstants.ATTRIBUTES:
@@ -1305,7 +1332,9 @@ public class CommitDAORdbImpl implements CommitDAO {
             break;
           default:
             throw new ModelDBException(
-                "Invalid predicate found : " + predicate, Code.INVALID_ARGUMENT);
+                "Invalid predicate found : " + predicate,
+                Code.INVALID_ARGUMENT,
+                HttpStatus.BAD_REQUEST);
         }
       }
     }
@@ -1462,7 +1491,8 @@ public class CommitDAORdbImpl implements CommitDAO {
             session.get(CommitEntity.class, datasetVersionId, LockMode.PESSIMISTIC_WRITE);
 
         if (commitEntity == null) {
-          throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
+          throw new ModelDBException(
+              "DatasetVersion not found", Code.NOT_FOUND, HttpStatus.NOT_FOUND);
         }
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
@@ -1470,7 +1500,8 @@ public class CommitDAORdbImpl implements CommitDAO {
               String.format(
                   "DatasetVersion '%s' associated with multiple datasets",
                   commitEntity.getCommit_hash()),
-              Code.INTERNAL);
+              Code.INTERNAL,
+              HttpStatus.INTERNAL_SERVER_ERROR);
         }
         Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
         repositoryIdentification.setRepoId(newRepoId);

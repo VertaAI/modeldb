@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.http.HttpStatus;
 
 public class RdbmsUtils {
 
@@ -1810,7 +1811,9 @@ public class RdbmsUtils {
         keyValuePredicates.add(fuzzySearchPredicate);
       } else {
         throw new ModelDBException(
-            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
+            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
+            Code.FAILED_PRECONDITION,
+            HttpStatus.PRECONDITION_FAILED);
       }
     } else {
       var ownerId = predicate.getValue().getStringValue();
@@ -1848,7 +1851,9 @@ public class RdbmsUtils {
         keyValuePredicates.add(fuzzySearchPredicate);
       } else {
         throw new ModelDBException(
-            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
+            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
+            Code.FAILED_PRECONDITION,
+            HttpStatus.PRECONDITION_FAILED);
       }
     } else {
       expression = entityRootPath.get(key);

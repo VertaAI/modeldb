@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.S3Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
+import org.springframework.http.HttpStatus;
 
 public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
   public S3Config S3;
@@ -42,7 +43,8 @@ public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
       case "NFS":
         return getNFS().storeTypePathPrefix();
       default:
-        throw new ModelDBException("Unknown artifact store type", Code.INTERNAL);
+        throw new ModelDBException(
+            "Unknown artifact store type", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 

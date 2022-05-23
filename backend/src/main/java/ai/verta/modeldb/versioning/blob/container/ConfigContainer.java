@@ -21,6 +21,7 @@ import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.springframework.http.HttpStatus;
 
 public class ConfigContainer extends BlobContainer {
 
@@ -114,7 +115,9 @@ public class ConfigContainer extends BlobContainer {
           break;
         default:
           throw new ModelDBException(
-              "Hyperparameter set " + name + " value has unknown type", Code.INTERNAL);
+              "Hyperparameter set " + name + " value has unknown type",
+              Code.INTERNAL,
+              HttpStatus.INTERNAL_SERVER_ERROR);
       }
       var configBlobEntity =
           new ConfigBlobEntity(
@@ -246,7 +249,8 @@ public class ConfigContainer extends BlobContainer {
       case STRING_VALUE:
         return FileHasher.getSha(hyperparameterValuesConfigBlob.getStringValue());
       default:
-        throw new ModelDBException("Unexpected wrong type", Code.INTERNAL);
+        throw new ModelDBException(
+            "Unexpected wrong type", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

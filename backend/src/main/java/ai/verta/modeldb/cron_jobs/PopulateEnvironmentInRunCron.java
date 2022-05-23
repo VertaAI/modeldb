@@ -34,6 +34,7 @@ import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
+import org.springframework.http.HttpStatus;
 
 public class PopulateEnvironmentInRunCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(PopulateEnvironmentInRunCron.class);
@@ -180,7 +181,8 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
       }
     } catch (IOException e) {
       LOGGER.warn(e.getMessage());
-      throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
+      throw new ModelDBException(
+          e.getMessage(), Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR, e);
     }
   }
 
@@ -298,7 +300,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
     } catch (JsonSyntaxException | MalformedJsonException e) {
       var errorMessage = "model_api.json file could not be parsed";
       LOGGER.info(errorMessage);
-      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
     } catch (Exception e) {
       LOGGER.warn(e.getMessage());
       throw new ModelDBException(e);

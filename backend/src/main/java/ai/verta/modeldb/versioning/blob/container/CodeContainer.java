@@ -17,6 +17,7 @@ import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.Set;
 import org.hibernate.Session;
+import org.springframework.http.HttpStatus;
 
 public class CodeContainer extends BlobContainer {
 
@@ -57,7 +58,8 @@ public class CodeContainer extends BlobContainer {
         }
         break;
       default:
-        throw new ModelDBException("CODE_BLOB has unknown type", Code.INTERNAL);
+        throw new ModelDBException(
+            "CODE_BLOB has unknown type", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
     }
     rootTree.push(getLocationList(), blobHash, blobType);
   }

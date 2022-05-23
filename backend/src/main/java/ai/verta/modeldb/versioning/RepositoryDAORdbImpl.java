@@ -34,6 +34,7 @@ import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
+import org.springframework.http.HttpStatus;
 
 public class RepositoryDAORdbImpl implements RepositoryDAO {
 
@@ -172,18 +173,23 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   () ->
                       new ModelDBException(
                           "Couldn't find repository by name " + id.getNamedId().getName(),
-                          Code.NOT_FOUND));
+                          Code.NOT_FOUND,
+                          HttpStatus.NOT_FOUND));
     } else {
       repository =
           getRepositoryById(session, id.getRepoId())
               .orElseThrow(
                   () ->
                       new ModelDBException(
-                          "Couldn't find repository by id " + id.getRepoId(), Code.NOT_FOUND));
+                          "Couldn't find repository by id " + id.getRepoId(),
+                          Code.NOT_FOUND,
+                          HttpStatus.NOT_FOUND));
     }
     if (canNotOperateOnProtected && repository.isProtected()) {
       throw new ModelDBException(
-          "Can't access repository because it's protected", Code.PERMISSION_DENIED);
+          "Can't access repository because it's protected",
+          Code.PERMISSION_DENIED,
+          HttpStatus.FORBIDDEN);
     }
 
     var modelDBServiceResourceTypes =
@@ -306,7 +312,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     if (create) {
       String name = repository.getName();
       if (name.isEmpty()) {
-        throw new ModelDBException("Repository name should not be empty", Code.INVALID_ARGUMENT);
+        throw new ModelDBException(
+            "Repository name should not be empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
       }
 
       var deletedQueryStringBuilder = new StringBuilder(GET_DELETED_REPOSITORY_IDS_BY_NAME_HQL);
@@ -435,7 +442,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       if (allowedRepositoryIds.isEmpty()) {
         throw new ModelDBException(
             "Delete Access Denied for given repository Id : " + request.getRepositoryId(),
-            Code.PERMISSION_DENIED);
+            Code.PERMISSION_DENIED,
+            HttpStatus.FORBIDDEN);
       }
 
       deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
@@ -481,7 +489,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     if (allowedRepositoryIds.isEmpty()) {
       throw new ModelDBException(
           "Delete Access Denied for given repository Ids : " + repositoryIds,
-          Code.PERMISSION_DENIED);
+          Code.PERMISSION_DENIED,
+          HttpStatus.FORBIDDEN);
     }
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
@@ -734,7 +743,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 + repository.getId()
                 + " commit "
                 + " request.getCommitSha()",
-            Code.NOT_FOUND);
+            Code.NOT_FOUND,
+            HttpStatus.NOT_FOUND);
       }
 
       var query = session.createQuery(GET_TAG_HQL);
@@ -742,7 +752,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       query.setParameter("tag", request.getTag());
       var tagsEntity = (TagsEntity) query.uniqueResult();
       if (tagsEntity != null) {
-        throw new ModelDBException("Tag '" + request.getTag() + "' already exists", Code.NOT_FOUND);
+        throw new ModelDBException(
+            "Tag '" + request.getTag() + "' already exists", Code.NOT_FOUND, HttpStatus.NOT_FOUND);
       }
 
       tagsEntity = new TagsEntity(repository.getId(), request.getCommitSha(), request.getTag());
@@ -769,7 +780,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       query.setParameter("tag", request.getTag());
       var tagsEntity = (TagsEntity) query.uniqueResult();
       if (tagsEntity == null) {
-        throw new ModelDBException("Tag not found " + request.getTag(), Code.NOT_FOUND);
+        throw new ModelDBException(
+            "Tag not found " + request.getTag(), Code.NOT_FOUND, HttpStatus.NOT_FOUND);
       }
 
       var commitEntity = session.get(CommitEntity.class, tagsEntity.getCommit_hash());
@@ -793,7 +805,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               new TagsEntity.TagId(request.getTag(), repository.getId()),
               LockMode.PESSIMISTIC_WRITE);
       if (tagsEntity == null) {
-        throw new ModelDBException("Tag not found " + request.getTag(), Code.NOT_FOUND);
+        throw new ModelDBException(
+            "Tag not found " + request.getTag(), Code.NOT_FOUND, HttpStatus.NOT_FOUND);
       }
       session.beginTransaction();
       session.delete(tagsEntity);
@@ -877,7 +890,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               + repository.getId()
               + " and commit "
               + commitSHA,
-          Code.NOT_FOUND);
+          Code.NOT_FOUND,
+          HttpStatus.NOT_FOUND);
     }
 
     var query =
@@ -904,7 +918,8 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     query.setParameter(BRANCH_QUERY_PARAM, branchName);
     var branchEntity = (BranchEntity) query.uniqueResult();
     if (branchEntity == null) {
-      throw new ModelDBException(ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND);
+      throw new ModelDBException(
+          ModelDBConstants.BRANCH_NOT_FOUND, Code.NOT_FOUND, HttpStatus.NOT_FOUND);
     }
     return branchEntity;
   }
@@ -944,7 +959,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               LockMode.PESSIMISTIC_WRITE);
       if (branchEntity == null) {
         throw new ModelDBException(
-            ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
+            ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(),
+            Code.NOT_FOUND,
+            HttpStatus.NOT_FOUND);
       }
       session.beginTransaction();
       session.delete(branchEntity);
@@ -1020,14 +1037,18 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         var branchEntity = (BranchEntity) query.uniqueResult();
         if (branchEntity == null) {
           throw new ModelDBException(
-              ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(), Code.NOT_FOUND);
+              ModelDBConstants.BRANCH_NOT_FOUND + request.getBranch(),
+              Code.NOT_FOUND,
+              HttpStatus.NOT_FOUND);
         }
         referenceCommit = branchEntity.getCommit_hash();
       } else {
         CommitEntity commit = session.get(CommitEntity.class, request.getCommitSha());
         if (commit == null) {
           throw new ModelDBException(
-              ModelDBConstants.COMMIT_NOT_FOUND + request.getCommitSha(), Code.NOT_FOUND);
+              ModelDBConstants.COMMIT_NOT_FOUND + request.getCommitSha(),
+              Code.NOT_FOUND,
+              HttpStatus.NOT_FOUND);
         }
         referenceCommit = commit.getCommit_hash();
       }
@@ -1548,7 +1569,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           .build();
     } catch (NumberFormatException e) {
       String message = "Can't find repository, wrong id format: " + id;
-      throw new ModelDBException(message, Code.INVALID_ARGUMENT);
+      throw new ModelDBException(message, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return getDatasetById(metadataDAO, id);
