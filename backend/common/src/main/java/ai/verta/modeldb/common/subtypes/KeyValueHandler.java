@@ -138,7 +138,9 @@ public abstract class KeyValueHandler<T> {
       }
       if (keySet.contains(kv.getKey())) {
         throw new ModelDBException(
-            "Multiple key " + kv.getKey() + " found in request", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+            "Multiple key " + kv.getKey() + " found in request",
+            Code.INVALID_ARGUMENT,
+            HttpStatus.BAD_REQUEST);
       }
       keySet.add(kv.getKey());
     }

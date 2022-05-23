@@ -41,7 +41,8 @@ public class ModelDBException extends RuntimeException {
     this.httpCode = httpCode;
   }
 
-  public ModelDBException(String message, com.google.rpc.Code code, HttpStatus httpCode, Throwable cause) {
+  public ModelDBException(
+      String message, com.google.rpc.Code code, HttpStatus httpCode, Throwable cause) {
     super(message, cause);
     this.code = Code.valueOf(code.name());
     this.httpCode = httpCode;

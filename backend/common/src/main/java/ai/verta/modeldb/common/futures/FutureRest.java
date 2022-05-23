@@ -3,12 +3,10 @@ package ai.verta.modeldb.common.futures;
 import ai.verta.modeldb.common.CommonUtils;
 import io.grpc.Context;
 import io.opentracing.util.GlobalTracer;
-import java.io.IOException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 import org.springframework.lang.NonNull;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 @SuppressWarnings({"squid:S100"})
 public class FutureRest {
