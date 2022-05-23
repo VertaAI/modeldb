@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.http.HttpStatus;
 
 public abstract class KeyValueHandler<T> {
   private static final Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
@@ -133,11 +134,11 @@ public abstract class KeyValueHandler<T> {
     Set<String> keySet = new HashSet<>();
     for (final var kv : kvs) {
       if (kv.getKey().isEmpty()) {
-        throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT);
+        throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
       }
       if (keySet.contains(kv.getKey())) {
         throw new ModelDBException(
-            "Multiple key " + kv.getKey() + " found in request", Code.INVALID_ARGUMENT);
+            "Multiple key " + kv.getKey() + " found in request", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
       }
       keySet.add(kv.getKey());
     }
@@ -214,7 +215,7 @@ public abstract class KeyValueHandler<T> {
   // Comment: https://github.com/VertaAI/modeldb/pull/2118#discussion_r613762413
   public void updateKeyValue(Handle handle, T entityId, KeyValue kv) {
     if (kv.getKey().isEmpty()) {
-      throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT);
+      throw new ModelDBException("Empty key", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
     }
 
     // Check for conflicts

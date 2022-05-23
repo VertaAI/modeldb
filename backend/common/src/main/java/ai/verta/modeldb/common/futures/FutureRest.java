@@ -23,10 +23,10 @@ public class FutureRest {
             try {
               promise.complete(v);
             } catch (Throwable e) {
-              promise.completeExceptionally(e);
+              CommonUtils.observeError(promise, t);
             }
           } else {
-            promise.completeExceptionally(t);
+            CommonUtils.observeError(promise, t);
           }
         },
         ex);

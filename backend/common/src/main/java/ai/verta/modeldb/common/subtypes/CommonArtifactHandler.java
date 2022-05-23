@@ -21,6 +21,7 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.jdbi.v3.core.statement.Query;
+import org.springframework.http.HttpStatus;
 
 public abstract class CommonArtifactHandler<T> {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
@@ -82,7 +83,7 @@ public abstract class CommonArtifactHandler<T> {
     if (entityId == null
         || ((entityId instanceof String) && ((String) entityId).isEmpty())
         || ((entityId instanceof Number) && ((Long) entityId == 0))) {
-      throw new ModelDBException(CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
+      throw new ModelDBException(CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
     }
   }
 
@@ -119,7 +120,7 @@ public abstract class CommonArtifactHandler<T> {
     for (final var artifact : artifacts) {
       if (artifact.getKey().isEmpty()) {
         var errorMessage = "Artifact key not found in request";
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
       }
     }
 

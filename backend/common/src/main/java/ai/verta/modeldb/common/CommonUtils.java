@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import ai.verta.uac.UACServiceException;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -20,10 +21,18 @@ import io.grpc.stub.StreamObserver;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Function;
+
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.server.ResponseStatusException;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyEmitter;
 
 public class CommonUtils {
@@ -170,6 +179,67 @@ public class CommonUtils {
   public static <T extends GeneratedMessageV3> void observeError(
       StreamObserver<T> responseObserver, Throwable e) {
     responseObserver.onError(logError(e));
+  }
+
+  public static <T> void observeError(
+          CompletableFuture<T> completableFuture, Throwable e) {
+    completableFuture.completeExceptionally(observeErrorWithResponse(e, e.getMessage(), LOGGER));
+  }
+
+  public static ResponseStatusException observeErrorWithResponse(
+          Throwable e, String message, Logger logger) {
+    if (e instanceof ModelDBException
+            && e.getCause() instanceof ExecutionException
+            && e.getCause().getCause() != null) {
+      return observeErrorWithResponse(
+              e.getCause().getCause(), message, logger);
+    }
+
+    if (e instanceof CompletionException) {
+      return observeErrorWithResponse(
+              e.getCause(), message, logger);
+    }
+    final HttpStatus code;
+    if (e instanceof StatusRuntimeException) {
+      StatusRuntimeException ex = (StatusRuntimeException) e;
+      if (ex.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+        code = HttpStatus.NOT_FOUND;
+        logger.debug(e.getMessage());
+      } else {
+        code = HttpStatus.INTERNAL_SERVER_ERROR;
+        logger.error(e.getMessage());
+      }
+      message += " Details: " + e.getMessage();
+      printStackTrace(logger, e);
+    } else if (e instanceof IllegalArgumentException) {
+      code = HttpStatus.BAD_REQUEST;
+      String logMessage = "Common Service Exception occurred: {}";
+      message = e.getMessage();
+      logger.debug(logMessage, message);
+    } else if (e instanceof ModelDBException) {
+      ModelDBException uacServiceException = (ModelDBException) e;
+
+      message += " Details: " + e.getMessage();
+      String logMessage = "Common Service Exception occurred: {}";
+      if (uacServiceException.getCodeValue() == Code.INTERNAL_VALUE) {
+        code = HttpStatus.INTERNAL_SERVER_ERROR;
+        logger.error(logMessage, e.getMessage());
+        printStackTrace(logger, e);
+      } else {
+        if (uacServiceException.getCodeValue() == Code.RESOURCE_EXHAUSTED_VALUE) {
+          code = HttpStatus.TOO_MANY_REQUESTS;
+          message = e.getMessage();
+        } else {
+          code = uacServiceException.getHttpCode();
+        }
+        logger.debug(logMessage, e.getMessage());
+      }
+    }  else {
+      code = HttpStatus.INTERNAL_SERVER_ERROR;
+      logger.error(e.getMessage());
+      printStackTrace(logger, e);
+    }
+    return new ResponseStatusException(code, message, e);
   }
 
   public static <T extends GeneratedMessageV3> void observeError(
