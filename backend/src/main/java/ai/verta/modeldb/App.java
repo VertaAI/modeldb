@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
@@ -32,6 +33,8 @@ import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.BindableService;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
 import io.prometheus.client.Gauge;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -42,6 +45,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
+import javax.servlet.Filter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
@@ -71,6 +75,16 @@ public class App extends CommonApp {
           .name("verta_backend_up")
           .help("Binary signal indicating that the service is up and working.")
           .register();
+
+  @Bean
+  public Filter webMvcTracingFilter(OpenTelemetry openTelemetry) {
+    return SpringWebMvcTelemetry.builder(openTelemetry).build().newServletFilter();
+  }
+
+  @Bean
+  public OpenTelemetry openTelemetry(Config config) {
+    return config.getOpenTelemetry();
+  }
 
   public static App getInstance() {
     if (app == null) {
@@ -227,7 +241,7 @@ public class App extends CommonApp {
         LOGGER.info(
             "Tracing is "
                 + (config.getTracingServerInterceptor().isEmpty() ? "disabled" : "enabled"));
-        config.getTracingServerInterceptor().map(serverBuilder::intercept);
+        config.getTracingServerInterceptor().ifPresent(serverBuilder::intercept);
         serverBuilder.intercept(new MetadataForwarder());
         serverBuilder.intercept(new ExceptionInterceptor());
         serverBuilder.intercept(new MonitoringInterceptor());

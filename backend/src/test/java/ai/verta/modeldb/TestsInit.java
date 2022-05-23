@@ -30,6 +30,7 @@ import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
@@ -79,8 +80,13 @@ public class TestsInit {
   protected static HydratedServiceGrpc.HydratedServiceBlockingStub
       hydratedServiceBlockingStubClient2;
   protected static ArtifactStoreGrpc.ArtifactStoreBlockingStub artifactStoreBlockingStub;
+  private static AtomicBoolean setServerAndServiceRan = new AtomicBoolean(false);
 
   protected static void init() throws Exception {
+    if (setServerAndServiceRan.get()) {
+      return;
+    }
+
     String serverName = InProcessServerBuilder.generateName();
     serverBuilder = InProcessServerBuilder.forName(serverName).directExecutor();
     InProcessChannelBuilder client1ChannelBuilder =
@@ -173,6 +179,7 @@ public class TestsInit {
     hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(client2Channel);
 
     serverBuilder.build().start();
+    setServerAndServiceRan.set(true);
   }
 
   @BeforeClass

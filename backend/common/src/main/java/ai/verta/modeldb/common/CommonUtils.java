@@ -4,6 +4,7 @@ import ai.verta.common.Pagination;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import com.amazonaws.AmazonServiceException;
@@ -23,8 +24,6 @@ import java.util.List;
 import java.util.concurrent.CompletionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.hibernate.exception.LockAcquisitionException;
-import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.Query;
 
 public class CommonUtils {
@@ -136,14 +135,6 @@ public class CommonUtils {
                 .setCode(Code.UNAVAILABLE_VALUE)
                 .setMessage(errorMessage + throwable.getMessage())
                 .build();
-      } else if (e instanceof LockAcquisitionException) {
-        var errorMessage = "Encountered deadlock in database connection.";
-        LOGGER.info(" {} {}", errorMessage, e.getMessage());
-        status =
-            Status.newBuilder()
-                .setCode(Code.ABORTED_VALUE)
-                .setMessage(errorMessage + throwable.getMessage())
-                .build();
       } else if (e instanceof ModelDBException) {
         var modelDBException = (ModelDBException) e;
         logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
@@ -151,6 +142,15 @@ public class CommonUtils {
             Status.newBuilder()
                 .setCode(modelDBException.getCode().value())
                 .setMessage(modelDBException.getMessage())
+                .build();
+      } else if (e instanceof IllegalArgumentException) {
+        var illegalArgumentException = (IllegalArgumentException) e;
+        logBasedOnTheErrorCode(
+            isClientError(Code.INVALID_ARGUMENT_VALUE), illegalArgumentException);
+        status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(illegalArgumentException.getMessage())
                 .build();
       } else {
         LOGGER.error(

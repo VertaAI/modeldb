@@ -1,5 +1,7 @@
 package ai.verta.modeldb.common.config;
 
+import static io.opentelemetry.api.common.AttributeKey.stringKey;
+
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -9,14 +11,27 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
-import io.jaegertracing.Configuration;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.Attributes;
+import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.propagation.ContextPropagators;
+import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
+import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
+import io.opentelemetry.opentracingshim.OpenTracingShim;
+import io.opentelemetry.sdk.OpenTelemetrySdk;
+import io.opentelemetry.sdk.extension.resources.ContainerResource;
+import io.opentelemetry.sdk.extension.resources.HostResource;
+import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
 import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
-import io.opentracing.contrib.jdbi3.OpentracingSqlLogger;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -42,6 +57,9 @@ public abstract class Config {
   private ServiceUserConfig service_user;
   private int jdbi_retry_time = 100; // Time in ms
   private boolean event_system_enabled = false;
+  private TracingServerInterceptor tracingServerInterceptor = null;
+  private TracingClientInterceptor tracingClientInterceptor = null;
+  private volatile OpenTelemetry openTelemetry;
   public ArtifactStoreConfig artifactStoreConfig;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
@@ -61,7 +79,6 @@ public abstract class Config {
   }
 
   public void Validate() throws InvalidConfigException {
-
     if (authService != null) {
       authService.Validate("authService");
     }
@@ -92,16 +109,20 @@ public abstract class Config {
 
   public abstract boolean hasServiceAccount();
 
-  private TracingServerInterceptor tracingServerInterceptor = null;
-  private TracingClientInterceptor tracingClientInterceptor = null;
-
+  // todo: move all tracing related things to a class that exposes spring @Beans, rather than doing
+  // all of this here.
   private void initializeTracing() {
-    if (!enableTrace) return;
+    if (!enableTrace) {
+      return;
+    }
 
     if (tracingServerInterceptor == null) {
-      Tracer tracer = Configuration.fromEnv().getTracer();
-      tracingServerInterceptor = TracingServerInterceptor.newBuilder().withTracer(tracer).build();
-      GlobalTracer.registerIfAbsent(tracer);
+      OpenTelemetry openTelemetry = getOpenTelemetry();
+      Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
+
+      tracingServerInterceptor =
+          TracingServerInterceptor.newBuilder().withTracer(tracerShim).build();
+      GlobalTracer.registerIfAbsent(tracerShim);
       TracingDriver.load();
       TracingDriver.setInterceptorMode(true);
       TracingDriver.setInterceptorProperty(true);
@@ -114,6 +135,36 @@ public abstract class Config {
               .withActiveSpanSource(ActiveSpanSource.GRPC_CONTEXT)
               .build();
     }
+  }
+
+  private OpenTelemetry initializeOpenTelemetry() {
+    if (!enableTrace) {
+      return OpenTelemetry.noop();
+    }
+    JaegerThriftSpanExporter spanExporter =
+        JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+            .setResource(
+                Resource.getDefault()
+                    .merge(
+                        Resource.create(
+                            Attributes.of(
+                                stringKey("service.name"),
+                                System.getenv("JAEGER_SERVICE_NAME"),
+                                stringKey("kubernetes.namespace"),
+                                System.getenv("POD_NAMESPACE"))))
+                    .merge(HostResource.get())
+                    .merge(ContainerResource.get()))
+            .build();
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(tracerProvider)
+        .setPropagators(
+            ContextPropagators.create(
+                TextMapPropagator.composite(
+                    W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
+        .buildAndRegisterGlobal();
   }
 
   public Optional<TracingServerInterceptor> getTracingServerInterceptor() {
@@ -129,7 +180,9 @@ public abstract class Config {
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
     final var jdbi = initializeJdbi(databaseConfig, poolName);
     final var dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.getThreadCount());
-    return new FutureJdbi(jdbi, dbExecutor);
+    // wrap the executor in the OpenTelemetry context wrapper to make sure the context propagates
+    // into any jdbi threads.
+    return new FutureJdbi(jdbi, Context.taskWrapping(dbExecutor));
   }
 
   public InternalJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
@@ -147,8 +200,7 @@ public abstract class Config {
     hikariDataSource.setPoolName(poolName);
     hikariDataSource.setLeakDetectionThreshold(databaseConfig.getLeakDetectionThresholdMs());
 
-    return new InternalJdbi(
-        Jdbi.create(hikariDataSource).setSqlLogger(new OpentracingSqlLogger(GlobalTracer.get())));
+    return new InternalJdbi(Jdbi.create(hikariDataSource));
   }
 
   public ServiceConfig getAuthService() {
@@ -185,6 +237,13 @@ public abstract class Config {
 
   public boolean isEvent_system_enabled() {
     return event_system_enabled;
+  }
+
+  public OpenTelemetry getOpenTelemetry() {
+    if (openTelemetry == null) {
+      openTelemetry = initializeOpenTelemetry();
+    }
+    return openTelemetry;
   }
 
   public boolean isMigration() {

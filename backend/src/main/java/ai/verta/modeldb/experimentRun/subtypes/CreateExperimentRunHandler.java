@@ -10,6 +10,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
@@ -20,9 +21,7 @@ import java.util.*;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jdbi.v3.core.Handle;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
-import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
 
 public class CreateExperimentRunHandler extends HandlerUtil {
 
@@ -204,116 +203,88 @@ public class CreateExperimentRunHandler extends HandlerUtil {
             executor)
         .thenCompose(
             locationBlobWithHashMap ->
-                jdbi.withHandle(
-                    handle ->
-                        handle.inTransaction(
-                            TransactionIsolationLevel.SERIALIZABLE,
-                            handleForTransaction -> {
-                              final var builder = newExperimentRun.toBuilder();
-                              Boolean exists =
-                                  checkInsertedEntityAlreadyExists(
-                                      handleForTransaction, newExperimentRun);
-                              if (exists) {
-                                throw new AlreadyExistsException(
-                                    "ExperimentRun '"
-                                        + builder.getName()
-                                        + "' already exists in database");
-                              }
+                jdbi.withTransaction(
+                    handle -> {
+                      final var builder = newExperimentRun.toBuilder();
+                      Boolean exists = checkInsertedEntityAlreadyExists(handle, newExperimentRun);
+                      if (exists) {
+                        throw new AlreadyExistsException(
+                            "ExperimentRun '" + builder.getName() + "' already exists in database");
+                      }
 
-                              String queryString = buildInsertQuery(runValueMap, "experiment_run");
+                      String queryString = buildInsertQuery(runValueMap, "experiment_run");
 
-                              LOGGER.trace("insert experiment run query string: " + queryString);
-                              var query = handleForTransaction.createUpdate(queryString);
+                      LOGGER.trace("insert experiment run query string: " + queryString);
+                      var query = handle.createUpdate(queryString);
 
-                              // Inserting fields arguments based on the keys and value of map
-                              for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
-                                query.bind(objectEntry.getKey(), objectEntry.getValue());
-                              }
+                      // Inserting fields arguments based on the keys and value of map
+                      for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
+                        query.bind(objectEntry.getKey(), objectEntry.getValue());
+                      }
 
-                              try {
-                                int count = query.execute();
-                                LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
-                              } catch (UnableToExecuteStatementException exception) {
-                                // take a brief pause before resubmitting its query/transaction
-                                Thread.sleep(config.getJdbi_retry_time()); // Time in ms
-                                LOGGER.trace("Retry to insert ExperimentRun");
-                                int count = query.execute();
-                                LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
-                              }
+                      try {
+                        int count = query.execute();
+                        LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
+                      } catch (UnableToExecuteStatementException exception) {
+                        // take a brief pause before resubmitting its query/transaction
+                        Thread.sleep(config.getJdbi_retry_time()); // Time in ms
+                        LOGGER.trace("Retry to insert ExperimentRun");
+                        int count = query.execute();
+                        LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
+                      }
 
-                              final var futureLogs = new LinkedList<InternalFuture<Void>>();
+                      final var futureLogs = new LinkedList<InternalFuture<Void>>();
 
-                              if (!builder.getTagsList().isEmpty()) {
-                                tagsHandler.addTags(
-                                    handleForTransaction, builder.getId(), builder.getTagsList());
-                              }
-                              if (!builder.getAttributesList().isEmpty()) {
-                                attributeHandler.logKeyValues(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    builder.getAttributesList());
-                              }
-                              if (!builder.getHyperparametersList().isEmpty()) {
-                                hyperparametersHandler.logKeyValues(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    builder.getHyperparametersList());
-                              }
-                              if (!builder.getMetricsList().isEmpty()) {
-                                metricsHandler.logKeyValues(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    builder.getMetricsList());
-                              }
-                              if (!builder.getObservationsList().isEmpty()) {
-                                observationHandler.logObservations(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    builder.getObservationsList(),
-                                    now);
-                              }
-                              if (!builder.getArtifactsList().isEmpty()) {
-                                var updatedArtifacts =
-                                    artifactHandler.logArtifacts(
-                                        handleForTransaction,
-                                        builder.getId(),
-                                        builder.getArtifactsList(),
-                                        false);
-                                builder.clearArtifacts().addAllArtifacts(updatedArtifacts);
-                              }
-                              if (!builder.getFeaturesList().isEmpty()) {
-                                featureHandler.logFeatures(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    builder.getFeaturesList());
-                              }
-                              if (builder.getCodeVersionSnapshot().hasCodeArchive()
-                                  || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
-                                codeVersionHandler.logCodeVersion(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    false,
-                                    builder.getCodeVersionSnapshot());
-                              }
-                              if (!builder.getDatasetsList().isEmpty()) {
-                                var updatedDatasets =
-                                    datasetHandler.logArtifacts(
-                                        handleForTransaction,
-                                        builder.getId(),
-                                        builder.getDatasetsList(),
-                                        false);
-                                builder.clearDatasets().addAllDatasets(updatedDatasets);
-                              }
+                      if (!builder.getTagsList().isEmpty()) {
+                        tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
+                      }
+                      if (!builder.getAttributesList().isEmpty()) {
+                        attributeHandler.logKeyValues(
+                            handle, builder.getId(), builder.getAttributesList());
+                      }
+                      if (!builder.getHyperparametersList().isEmpty()) {
+                        hyperparametersHandler.logKeyValues(
+                            handle, builder.getId(), builder.getHyperparametersList());
+                      }
+                      if (!builder.getMetricsList().isEmpty()) {
+                        metricsHandler.logKeyValues(
+                            handle, builder.getId(), builder.getMetricsList());
+                      }
+                      if (!builder.getObservationsList().isEmpty()) {
+                        observationHandler.logObservations(
+                            handle, builder.getId(), builder.getObservationsList(), now);
+                      }
+                      if (!builder.getArtifactsList().isEmpty()) {
+                        var updatedArtifacts =
+                            artifactHandler.logArtifacts(
+                                handle, builder.getId(), builder.getArtifactsList(), false);
+                        builder.clearArtifacts().addAllArtifacts(updatedArtifacts);
+                      }
+                      if (!builder.getFeaturesList().isEmpty()) {
+                        featureHandler.logFeatures(
+                            handle, builder.getId(), builder.getFeaturesList());
+                      }
+                      if (builder.getCodeVersionSnapshot().hasCodeArchive()
+                          || builder.getCodeVersionSnapshot().hasGitSnapshot()) {
+                        codeVersionHandler.logCodeVersion(
+                            handle, builder.getId(), false, builder.getCodeVersionSnapshot());
+                      }
+                      if (!builder.getDatasetsList().isEmpty()) {
+                        var updatedDatasets =
+                            datasetHandler.logArtifacts(
+                                handle, builder.getId(), builder.getDatasetsList(), false);
+                        builder.clearDatasets().addAllDatasets(updatedDatasets);
+                      }
 
-                              if (builder.getVersionedInputs().getRepositoryId() != 0) {
-                                versionInputHandler.validateAndInsertVersionedInputs(
-                                    handleForTransaction,
-                                    builder.getId(),
-                                    builder.getVersionedInputs(),
-                                    locationBlobWithHashMap);
-                              }
-                              return builder.build();
-                            })),
+                      if (builder.getVersionedInputs().getRepositoryId() != 0) {
+                        versionInputHandler.validateAndInsertVersionedInputs(
+                            handle,
+                            builder.getId(),
+                            builder.getVersionedInputs(),
+                            locationBlobWithHashMap);
+                      }
+                      return builder.build();
+                    }),
             executor)
         .thenCompose(
             createdExperimentRun ->
