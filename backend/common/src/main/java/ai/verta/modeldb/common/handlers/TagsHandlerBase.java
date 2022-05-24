@@ -105,8 +105,7 @@ public abstract class TagsHandlerBase<T> {
     } else {
       for (String tag : tags) {
         if (tag.isEmpty()) {
-          throw new ModelDBException(
-              "Tag should not be empty", Code.INVALID_ARGUMENT);
+          throw new ModelDBException("Tag should not be empty", Code.INVALID_ARGUMENT);
         }
       }
     }

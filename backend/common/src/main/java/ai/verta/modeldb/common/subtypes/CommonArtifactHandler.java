@@ -82,8 +82,7 @@ public abstract class CommonArtifactHandler<T> {
     if (entityId == null
         || ((entityId instanceof String) && ((String) entityId).isEmpty())
         || ((entityId instanceof Number) && ((Long) entityId == 0))) {
-      throw new ModelDBException(
-          CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
+      throw new ModelDBException(CommonMessages.ENTITY_ID_IS_EMPTY_ERROR, Code.INVALID_ARGUMENT);
     }
   }
 

@@ -37,8 +37,7 @@ public class ModelDBException extends RuntimeException {
     this.code = code;
   }
 
-  public ModelDBException(
-          String message, com.google.rpc.Code code, Throwable cause) {
+  public ModelDBException(String message, com.google.rpc.Code code, Throwable cause) {
     super(message, cause);
     this.code = Code.valueOf(code.name());
   }
@@ -79,7 +78,8 @@ public class ModelDBException extends RuntimeException {
       case INVALID_ARGUMENT:
       case FAILED_PRECONDITION:
       case OUT_OF_RANGE:
-        // Note, this deliberately doesn't translate to the similarly named '412 Precondition Failed' HTTP response status.
+        // Note, this deliberately doesn't translate to the similarly named '412 Precondition
+        // Failed' HTTP response status.
         return HttpStatus.BAD_REQUEST;
       case DEADLINE_EXCEEDED:
         return HttpStatus.GATEWAY_TIMEOUT;
@@ -103,5 +103,4 @@ public class ModelDBException extends RuntimeException {
         return HttpStatus.INTERNAL_SERVER_ERROR;
     }
   }
-
 }
