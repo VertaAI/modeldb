@@ -19,7 +19,6 @@ import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 
 public abstract class TagsHandlerBase<T> {
   private static final Logger LOGGER = LogManager.getLogger(TagsHandlerBase.class);
@@ -42,14 +41,14 @@ public abstract class TagsHandlerBase<T> {
     for (String tag : tags) {
       if (tag.isEmpty()) {
         var errorMessage = "Invalid tag found, Tag shouldn't be empty";
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       } else if (tag.length() > CommonConstants.TAG_LENGTH) {
         String errorMessage =
             "Tag name can not be more than "
                 + CommonConstants.TAG_LENGTH
                 + " characters. Limit exceeded tag is: "
                 + tag;
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
     }
     return tags;
@@ -102,12 +101,12 @@ public abstract class TagsHandlerBase<T> {
   public void addTags(Handle handle, T entityId, List<String> tags) {
     // Validate input
     if (tags.isEmpty()) {
-      throw new ModelDBException("Tags not found", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Tags not found", Code.INVALID_ARGUMENT);
     } else {
       for (String tag : tags) {
         if (tag.isEmpty()) {
           throw new ModelDBException(
-              "Tag should not be empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+              "Tag should not be empty", Code.INVALID_ARGUMENT);
         }
       }
     }

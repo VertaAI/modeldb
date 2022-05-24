@@ -193,11 +193,10 @@ public class CommonUtils {
     final HttpStatus code;
     if (e instanceof StatusRuntimeException) {
       StatusRuntimeException ex = (StatusRuntimeException) e;
+      code = ModelDBException.httpStatusFromCode(ex.getStatus().getCode());
       if (ex.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
-        code = HttpStatus.NOT_FOUND;
         logger.debug(e.getMessage());
       } else {
-        code = HttpStatus.INTERNAL_SERVER_ERROR;
         logger.error(e.getMessage());
       }
       message += " Details: " + e.getMessage();
@@ -210,23 +209,21 @@ public class CommonUtils {
     } else if (e instanceof ModelDBException) {
       ModelDBException uacServiceException = (ModelDBException) e;
 
+      code = uacServiceException.getHttpCode();
       message += " Details: " + e.getMessage();
       String logMessage = "Common Service Exception occurred: {}";
       if (uacServiceException.getCodeValue() == Code.INTERNAL_VALUE) {
-        code = HttpStatus.INTERNAL_SERVER_ERROR;
         logger.error(logMessage, e.getMessage());
         printStackTrace(logger, e);
       } else {
         if (uacServiceException.getCodeValue() == Code.RESOURCE_EXHAUSTED_VALUE) {
-          code = HttpStatus.TOO_MANY_REQUESTS;
           message = e.getMessage();
-        } else {
-          code = uacServiceException.getHttpCode();
         }
         logger.debug(logMessage, e.getMessage());
       }
     } else {
       code = HttpStatus.INTERNAL_SERVER_ERROR;
+      message += e.getMessage();
       logger.error(e.getMessage());
       printStackTrace(logger, e);
     }

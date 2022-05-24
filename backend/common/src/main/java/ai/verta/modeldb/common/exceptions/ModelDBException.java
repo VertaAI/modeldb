@@ -1,57 +1,51 @@
 package ai.verta.modeldb.common.exceptions;
 
 import io.grpc.Status.Code;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.http.HttpStatus;
 
 public class ModelDBException extends RuntimeException {
 
+  private static final Logger LOGGER = LogManager.getLogger(ModelDBException.class);
   private static final long serialVersionUID = 1L;
 
   private final Code code;
 
-  private final HttpStatus httpCode;
-
   public ModelDBException() {
     super();
     code = Code.INTERNAL;
-    httpCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
   public ModelDBException(String message) {
     super(message);
     code = Code.INTERNAL;
-    httpCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
   public ModelDBException(String message, Throwable cause) {
     super(message, cause);
     code = Code.INTERNAL;
-    httpCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
   public ModelDBException(Throwable cause) {
     super(cause);
     code = Code.INTERNAL;
-    httpCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
-  public ModelDBException(String message, Code code, HttpStatus httpCode) {
+  public ModelDBException(String message, Code code) {
     super(message);
     this.code = code;
-    this.httpCode = httpCode;
   }
 
   public ModelDBException(
-      String message, com.google.rpc.Code code, HttpStatus httpCode, Throwable cause) {
+          String message, com.google.rpc.Code code, Throwable cause) {
     super(message, cause);
     this.code = Code.valueOf(code.name());
-    this.httpCode = httpCode;
   }
 
-  public ModelDBException(String message, com.google.rpc.Code code, HttpStatus httpCode) {
+  public ModelDBException(String message, com.google.rpc.Code code) {
     super(message);
     this.code = Code.valueOf(code.name());
-    this.httpCode = httpCode;
   }
 
   public Code getCode() {
@@ -66,10 +60,48 @@ public class ModelDBException extends RuntimeException {
       String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
     super(message, cause, enableSuppression, writableStackTrace);
     code = Code.INTERNAL;
-    httpCode = HttpStatus.INTERNAL_SERVER_ERROR;
   }
 
   public HttpStatus getHttpCode() {
-    return httpCode;
+    return httpStatusFromCode(this.code);
   }
+
+  public static HttpStatus httpStatusFromCode(Code code) {
+    switch (code) {
+      case OK:
+        return HttpStatus.OK;
+      case CANCELLED:
+        return HttpStatus.REQUEST_TIMEOUT;
+      case UNKNOWN:
+      case INTERNAL:
+      case DATA_LOSS:
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+      case INVALID_ARGUMENT:
+      case FAILED_PRECONDITION:
+      case OUT_OF_RANGE:
+        // Note, this deliberately doesn't translate to the similarly named '412 Precondition Failed' HTTP response status.
+        return HttpStatus.BAD_REQUEST;
+      case DEADLINE_EXCEEDED:
+        return HttpStatus.GATEWAY_TIMEOUT;
+      case NOT_FOUND:
+        return HttpStatus.NOT_FOUND;
+      case ALREADY_EXISTS:
+      case ABORTED:
+        return HttpStatus.CONFLICT;
+      case PERMISSION_DENIED:
+        return HttpStatus.FORBIDDEN;
+      case UNAUTHENTICATED:
+        return HttpStatus.UNAUTHORIZED;
+      case RESOURCE_EXHAUSTED:
+        return HttpStatus.TOO_MANY_REQUESTS;
+      case UNIMPLEMENTED:
+        return HttpStatus.NOT_IMPLEMENTED;
+      case UNAVAILABLE:
+        return HttpStatus.SERVICE_UNAVAILABLE;
+      default:
+        LOGGER.info("Unknown gRPC error code: {}", code);
+        return HttpStatus.INTERNAL_SERVER_ERROR;
+    }
+  }
+
 }
