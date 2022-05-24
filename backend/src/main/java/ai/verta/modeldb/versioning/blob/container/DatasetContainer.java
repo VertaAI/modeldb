@@ -16,7 +16,6 @@ import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import org.hibernate.Session;
-import org.springframework.http.HttpStatus;
 
 public class DatasetContainer extends BlobContainer {
 
@@ -74,9 +73,7 @@ public class DatasetContainer extends BlobContainer {
         break;
       default:
         throw new ModelDBException(
-            "Unknown dataset blob type: " + dataset.getContentCase().name(),
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            "Unknown dataset blob type: " + dataset.getContentCase().name(), Code.INVALID_ARGUMENT);
     }
     if (blobHash != null) {
       rootTree.push(locationList, blobHash, blobType);

@@ -56,7 +56,6 @@ import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.Transaction;
 import org.hibernate.query.Query;
-import org.springframework.http.HttpStatus;
 
 public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
 
@@ -209,7 +208,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
 
     if (errorMessage != null) {
-      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
     }
     var repositoryIdentification =
         RepositoryIdentification.newBuilder().setRepoId(versioningEntry.getRepositoryId()).build();
@@ -233,8 +232,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   + "' for key '"
                   + locationBlobKeyMap.getKey()
                   + "' not found in commit blobs",
-              Code.INVALID_ARGUMENT,
-              HttpStatus.BAD_REQUEST);
+              Code.INVALID_ARGUMENT);
         }
         requestedLocationBlobWithHashMap.put(locationKey, locationBlobWithHashMap.get(locationKey));
       }
@@ -2067,9 +2065,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   .equals(versioningModeldbFirstEntityMapping.getCommit())) {
             if (!OVERWRITE_VERSION_MAP) {
               throw new ModelDBException(
-                  ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE,
-                  Code.ALREADY_EXISTS,
-                  HttpStatus.CONFLICT);
+                  ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE, Code.ALREADY_EXISTS);
             }
             var cb = session.getCriteriaBuilder();
             CriteriaDelete<VersioningModeldbEntityMapping> delete =
@@ -2396,9 +2392,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       Optional<ArtifactEntity> artifactEntityOptional =
           getExperimentRunArtifact(session, experimentRunId, key);
       return artifactEntityOptional.orElseThrow(
-          () ->
-              new ModelDBException(
-                  "Can't find specified artifact", Code.NOT_FOUND, HttpStatus.NOT_FOUND));
+          () -> new ModelDBException("Can't find specified artifact", Code.NOT_FOUND));
     } catch (Exception e) {
       throwException(e);
       return null;
@@ -2424,8 +2418,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       if (message != null) {
         LOGGER.info(message);
-        throw new ModelDBException(
-            message, Code.FAILED_PRECONDITION, HttpStatus.PRECONDITION_FAILED);
+        throw new ModelDBException(message, Code.FAILED_PRECONDITION);
       }
       if (!Objects.equals(uploadId, artifactEntity.getUploadId())
           || artifactEntity.isUploadCompleted()) {
@@ -2518,8 +2511,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         if (artifactEntity.getUploadId() == null) {
           var message = "Multipart wasn't initialized OR Multipart artifact already committed";
           LOGGER.info(message);
-          throw new ModelDBException(
-              message, Code.FAILED_PRECONDITION, HttpStatus.PRECONDITION_FAILED);
+          throw new ModelDBException(message, Code.FAILED_PRECONDITION);
         }
         Set<ArtifactPartEntity> artifactPartEntities =
             VersioningUtils.getArtifactPartEntities(
@@ -2667,26 +2659,20 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       var commitEntity = session.get(CommitEntity.class, request.getDatasetVersionId());
       if (commitEntity == null) {
-        throw new ModelDBException(
-            "DatasetVersion not found", Code.NOT_FOUND, HttpStatus.NOT_FOUND);
+        throw new ModelDBException("DatasetVersion not found", Code.NOT_FOUND);
       }
 
       List<RepositoryEntity> datasets = new ArrayList<>(commitEntity.getRepository());
       if (datasets.size() == 0) {
-        throw new ModelDBException(
-            "DatasetVersion not attached with the dataset",
-            Code.INTERNAL,
-            HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new ModelDBException("DatasetVersion not attached with the dataset", Code.INTERNAL);
       } else if (datasets.size() > 1) {
         throw new ModelDBException(
             "DatasetVersion '"
                 + commitEntity.getCommit_hash()
                 + "' associated with multiple datasets",
-            Code.INTERNAL,
-            HttpStatus.INTERNAL_SERVER_ERROR);
+            Code.INTERNAL);
       } else if (!datasets.get(0).isDataset()) {
-        throw new ModelDBException(
-            "DatasetVersion not attached with the dataset", Code.NOT_FOUND, HttpStatus.NOT_FOUND);
+        throw new ModelDBException("DatasetVersion not attached with the dataset", Code.NOT_FOUND);
       }
 
       KeyValueQuery entityKeyValuePredicate =
@@ -2748,8 +2734,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
         if (destExperimentEntity == null) {
           throw new ModelDBException(
               "Destination experiment '" + cloneExperimentRun.getDestExperimentId() + "' not found",
-              Code.NOT_FOUND,
-              HttpStatus.NOT_FOUND);
+              Code.NOT_FOUND);
         }
 
         // Validate if current user has access to the entity or not

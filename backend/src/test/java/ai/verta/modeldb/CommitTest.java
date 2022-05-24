@@ -93,7 +93,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
 import org.junit.runners.MethodSorters;
-import org.springframework.http.HttpStatus;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -203,11 +202,9 @@ public class CommitTest extends TestsInit {
         return Blob.newBuilder().setConfig(configBlob).build();
       case CONTENT_NOT_SET:
       default:
-        throw new ModelDBException(
-            "Invalid blob type found", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Invalid blob type found", Code.INVALID_ARGUMENT);
     }
-    throw new ModelDBException(
-        "Invalid blob type found", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+    throw new ModelDBException("Invalid blob type found", Code.INVALID_ARGUMENT);
   }
 
   public static Blob getHyperparameterConfigBlob(float value1, float value2) {

@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
@@ -196,8 +195,7 @@ public class NFSService implements ArtifactStoreService {
   @Override
   public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
       throws ModelDBException {
-    throw new ModelDBException(
-        "Not supported by NFS", Code.FAILED_PRECONDITION, HttpStatus.PRECONDITION_FAILED);
+    throw new ModelDBException("Not supported by NFS", Code.FAILED_PRECONDITION);
   }
 
   @Override
@@ -213,12 +211,11 @@ public class NFSService implements ArtifactStoreService {
         return fileInputStream;
       }
     } catch (IOException e) {
-      throw new ModelDBException(
-          e.getMessage(), Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR, e);
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
     }
 
     String errorMessage = "artifact file not found in NFS storage for given key : " + artifactPath;
     LOGGER.info(errorMessage);
-    throw new ModelDBException(errorMessage, Code.NOT_FOUND, HttpStatus.NOT_FOUND);
+    throw new ModelDBException(errorMessage, Code.NOT_FOUND);
   }
 }

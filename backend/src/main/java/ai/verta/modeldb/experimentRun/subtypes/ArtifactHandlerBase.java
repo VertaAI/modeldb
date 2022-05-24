@@ -21,7 +21,6 @@ import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.jdbi.v3.core.statement.Query;
-import org.springframework.http.HttpStatus;
 
 public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> {
 
@@ -80,8 +79,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
     return InternalFuture.runAsync(
             () -> {
               if (key.isEmpty()) {
-                throw new ModelDBException(
-                    "Key must be provided", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+                throw new ModelDBException("Key must be provided", Code.INVALID_ARGUMENT);
               }
             },
             executor)

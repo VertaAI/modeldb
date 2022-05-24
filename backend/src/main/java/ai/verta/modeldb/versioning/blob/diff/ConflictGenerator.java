@@ -52,7 +52,6 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 
 public class ConflictGenerator {
   private static final Logger LOGGER = LogManager.getLogger(ConflictGenerator.class);
@@ -65,13 +64,11 @@ public class ConflictGenerator {
       throws ModelDBException {
     if (locSpecificBlobDiffA.size() != 1) {
       LOGGER.info("expecting diffs of same size");
-      throw new ModelDBException(
-          "different size of diff not expected", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new ModelDBException("different size of diff not expected", Code.INTERNAL);
     }
     if (locSpecificBlobDiffA.size() != locSpecificBlobDiffB.size()) {
       LOGGER.info("currently supporting diff of size 1");
-      throw new ModelDBException(
-          "different size of diff not expected", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new ModelDBException("different size of diff not expected", Code.INTERNAL);
     }
 
     var a = AutogenBlobDiff.fromProto(locSpecificBlobDiffA.get(0));
@@ -128,8 +125,7 @@ public class ConflictGenerator {
           updateDiffBasedOnDiffType(locSpecificBlobDiffB, a, b, c, blobDiff));
     }
     LOGGER.warn("During conflict generation code should not reach here.");
-    throw new ModelDBException(
-        "Exception during conflict generation", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+    throw new ModelDBException("Exception during conflict generation", Code.INTERNAL);
   }
 
   private static BlobDiff updateDiffBasedOnDiffType(
@@ -168,8 +164,7 @@ public class ConflictGenerator {
             "unsupported diff type found, {}", locSpecificBlobDiffList.get(0).getContentCase());
         throw new ModelDBException(
             "unsupported diff type found" + locSpecificBlobDiffList.get(0).getContentCase(),
-            Code.UNIMPLEMENTED,
-            HttpStatus.NOT_IMPLEMENTED);
+            Code.UNIMPLEMENTED);
     }
   }
 

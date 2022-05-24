@@ -18,7 +18,6 @@ import io.grpc.stub.StreamObserver;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.springframework.http.HttpStatus;
 
 public class LineageServiceImpl extends LineageServiceImplBase {
 
@@ -37,15 +36,12 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   public void addLineage(AddLineage request, StreamObserver<AddLineage.Response> responseObserver) {
     try {
       if (request.getInputCount() == 0 && request.getOutputCount() == 0) {
-        throw new ModelDBException(
-            "Input and output not specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Input and output not specified", Code.INVALID_ARGUMENT);
       } else {
         if (request.getInputCount() == 0) {
-          throw new ModelDBException(
-              "Input not specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+          throw new ModelDBException("Input not specified", Code.INVALID_ARGUMENT);
         } else if (request.getOutputCount() == 0) {
-          throw new ModelDBException(
-              "Output not specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+          throw new ModelDBException("Output not specified", Code.INVALID_ARGUMENT);
         }
       }
       var response = lineageDAO.addLineage(request, this::isResourceExists);
@@ -61,15 +57,12 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       DeleteLineage request, StreamObserver<DeleteLineage.Response> responseObserver) {
     try {
       if (request.getInputCount() == 0 && request.getOutputCount() == 0) {
-        throw new ModelDBException(
-            "Input and output not specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Input and output not specified", Code.INVALID_ARGUMENT);
       } else {
         if (request.getInputCount() == 0) {
-          throw new ModelDBException(
-              "Input not specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+          throw new ModelDBException("Input not specified", Code.INVALID_ARGUMENT);
         } else if (request.getOutputCount() == 0) {
-          throw new ModelDBException(
-              "Output not specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+          throw new ModelDBException("Output not specified", Code.INVALID_ARGUMENT);
         }
       }
       var response = lineageDAO.deleteLineage(request);
@@ -86,9 +79,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     try {
       if (request.getItemsCount() == 0) {
         throw new ModelDBException(
-            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR,
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR, Code.INVALID_ARGUMENT);
       }
       var response = lineageDAO.findAllInputs(request);
       responseObserver.onNext(response);
@@ -104,9 +95,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     try {
       if (request.getItemsCount() == 0) {
         throw new ModelDBException(
-            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR,
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR, Code.INVALID_ARGUMENT);
       }
       var response = lineageDAO.findAllOutputs(request);
       responseObserver.onNext(response);
@@ -123,9 +112,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
     try {
       if (request.getItemsCount() == 0) {
         throw new ModelDBException(
-            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR,
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            ModelDBMessages.ITEMS_NOT_SPECIFIED_ERROR, Code.INVALID_ARGUMENT);
       }
       var response = lineageDAO.findAllInputsOutputs(request);
       responseObserver.onNext(response);
@@ -145,9 +132,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
         return commitDAO.isCommitExists(session, id);
       default:
         throw new ModelDBException(
-            "Unexpected LineageEntryType '" + type + "' found",
-            Code.INTERNAL,
-            HttpStatus.INTERNAL_SERVER_ERROR);
+            "Unexpected LineageEntryType '" + type + "' found", Code.INTERNAL);
     }
   }
 }

@@ -24,7 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.Session;
-import org.springframework.http.HttpStatus;
 
 public class ArtifactHandler extends ArtifactHandlerBase {
   private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
@@ -62,8 +61,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
     } else if (entityName.equals("ExperimentRunEntity")) {
       this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
     } else {
-      throw new ModelDBException(
-          "Invalid entity type for ArtifactPart", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new ModelDBException("Invalid entity type for ArtifactPart", Code.INTERNAL);
     }
   }
 
@@ -169,8 +167,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       }
       if (message != null) {
         LOGGER.info(message);
-        throw new ModelDBException(
-            message, Code.FAILED_PRECONDITION, HttpStatus.PRECONDITION_FAILED);
+        throw new ModelDBException(message, Code.FAILED_PRECONDITION);
       }
       if (!Objects.equals(uploadId, artifactEntity.getUploadId())
           || artifactEntity.isUploadCompleted()) {

@@ -11,7 +11,6 @@ import io.grpc.stub.StreamObserver;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 
 public class MetadataServiceImpl extends MetadataServiceImplBase {
 
@@ -71,9 +70,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         throw new ModelDBException(
-            "Invalid parameter set in AddLabelsRequest.Id",
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            "Invalid parameter set in AddLabelsRequest.Id", Code.INVALID_ARGUMENT);
       }
 
       boolean status = metadataDAO.updateLabels(request.getId(), request.getLabelsList());
@@ -89,10 +86,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       GetLabelIdsRequest request, StreamObserver<GetLabelIdsRequest.Response> responseObserver) {
     try {
       if (request.getLabelsList().isEmpty()) {
-        throw new ModelDBException(
-            "Labels not found in GetLabelIdsRequest",
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Labels not found in GetLabelIdsRequest", Code.INVALID_ARGUMENT);
       }
 
       List<IdentificationType> labelIds =

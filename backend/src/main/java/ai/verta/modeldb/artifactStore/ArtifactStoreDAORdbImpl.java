@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 
 public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
 
@@ -56,13 +55,11 @@ public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
       String errorMessage = e.getMessage();
       LOGGER.warn(errorMessage);
       throw new ModelDBException(
-          errorMessage,
-          HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()),
-          HttpStatus.valueOf(e.getStatusCode()));
+          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     } catch (SdkClientException ex) {
       String errorMessage = ex.getMessage();
       LOGGER.warn(errorMessage);
-      throw new ModelDBException(errorMessage, Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new ModelDBException(errorMessage, Code.INTERNAL);
     }
   }
 

@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 
 public class VersioningServiceImpl extends VersioningServiceImplBase {
 
@@ -102,8 +101,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
         if (request.getPagination().getPageLimit() < 1
             || request.getPagination().getPageLimit() > 100) {
-          throw new ModelDBException(
-              "Page limit is invalid", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+          throw new ModelDBException("Page limit is invalid", Code.INVALID_ARGUMENT);
         }
       }
       var userInfo = authService.getCurrentLoginUserInfo();
@@ -184,8 +182,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       if (request.getRepository().getDescription().isEmpty()) {
         // FIXME: allow empty description
-        throw new ModelDBException(
-            "Description is empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Description is empty", Code.INVALID_ARGUMENT);
       } else if (request.getRepository().getName().isEmpty()) {
         request =
             request
@@ -294,20 +291,16 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       if (request.getCommit().getParentShasList().isEmpty()) {
         throw new ModelDBException(
-            "Parent commits not found in the CreateCommitRequest",
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            "Parent commits not found in the CreateCommitRequest", Code.INVALID_ARGUMENT);
       } else if (request.getBlobsCount() > 0
           && (!request.getCommitBase().isEmpty() || request.getDiffsCount() > 0)) {
         throw new ModelDBException(
             "Blob list and commit base with diffs should not be allowed together",
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            Code.INVALID_ARGUMENT);
       }
 
       if (request.getCommit().getMessage().isEmpty()) {
-        throw new ModelDBException(
-            "Commit message should not be empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Commit message should not be empty", Code.INVALID_ARGUMENT);
       }
 
       List<BlobContainer> blobContainers;
@@ -374,8 +367,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     List<BlobContainer> blobContainers = new LinkedList<>();
     for (BlobExpanded blobExpanded : request.getBlobsList()) {
       if (blobExpanded.getLocationList().isEmpty()) {
-        throw new ModelDBException(
-            "Blob path should not be empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Blob path should not be empty", Code.INVALID_ARGUMENT);
       }
       validator.validate(AutogenBlob.fromProto(blobExpanded.getBlob()));
       final var blobContainer = BlobContainer.create(blobExpanded);
@@ -422,8 +414,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       StreamObserver<ListCommitBlobsRequest.Response> responseObserver) {
     try {
       if (request.getCommitSha().isEmpty()) {
-        throw new ModelDBException(
-            "Commit SHA should not be empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
 
       var response =
@@ -445,8 +436,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       StreamObserver<GetCommitComponentRequest.Response> responseObserver) {
     try {
       if (request.getCommitSha().isEmpty()) {
-        throw new ModelDBException(
-            "Commit SHA should not be empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Commit SHA should not be empty", Code.INVALID_ARGUMENT);
       }
 
       var response =
@@ -597,9 +587,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       if (request.getBranch().isEmpty()) {
         throw new ModelDBException(
-            "Branch not found in the DeleteBranchRequest",
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            "Branch not found in the DeleteBranchRequest", Code.INVALID_ARGUMENT);
       }
       var response = repositoryDAO.deleteBranch(request);
 
@@ -698,8 +686,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       DeleteTagRequest request, StreamObserver<DeleteTagRequest.Response> responseObserver) {
     try {
       if (request.getTag().isEmpty()) {
-        throw new ModelDBException(
-            "Tag not found in the DeleteTagRequest", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Tag not found in the DeleteTagRequest", Code.INVALID_ARGUMENT);
       }
       var response = repositoryDAO.deleteTag(request);
 
@@ -794,7 +781,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     }
     if (errorMessage != null) {
       LOGGER.warn(errorMessage);
-      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
     }
   }
 
@@ -819,7 +806,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       if (errorMessage != null) {
         LOGGER.warn(errorMessage);
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
       var response =
@@ -855,7 +842,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       if (errorMessage != null) {
         LOGGER.warn(errorMessage);
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
       var response =
@@ -896,7 +883,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
 
       if (errorMessage != null) {
         LOGGER.warn(errorMessage);
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
       var response =

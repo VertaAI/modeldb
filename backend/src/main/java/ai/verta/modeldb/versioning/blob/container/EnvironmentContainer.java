@@ -30,7 +30,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.hibernate.Session;
-import org.springframework.http.HttpStatus;
 
 public class EnvironmentContainer extends BlobContainer {
 
@@ -104,8 +103,7 @@ public class EnvironmentContainer extends BlobContainer {
         }
         break;
       default:
-        throw new ModelDBException(
-            "ENVIRONMENT_BLOB has unknown type", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+        throw new ModelDBException("ENVIRONMENT_BLOB has unknown type", Code.INTERNAL);
     }
     if (!blobHashes.contains(environmentBlobEntity.getBlob_hash())) {
       entities.add(environmentBlobEntity);

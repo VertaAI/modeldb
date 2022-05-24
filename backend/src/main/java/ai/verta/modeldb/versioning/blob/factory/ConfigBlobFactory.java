@@ -15,7 +15,6 @@ import com.google.rpc.Code;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.springframework.http.HttpStatus;
 
 public class ConfigBlobFactory extends BlobFactory {
 
@@ -57,13 +56,11 @@ public class ConfigBlobFactory extends BlobFactory {
               configBlobBuilder.addHyperparameterSet(setConfigBlobEntity.toProto());
               break;
             default:
-              throw new ModelDBException(
-                  "Unknown blob type found", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+              throw new ModelDBException("Unknown blob type found", Code.INTERNAL);
           }
           break;
         default:
-          throw new ModelDBException(
-              "Unknown blob type found", Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+          throw new ModelDBException("Unknown blob type found", Code.INTERNAL);
       }
     }
     return Blob.newBuilder().setConfig(configBlobBuilder.build()).build();

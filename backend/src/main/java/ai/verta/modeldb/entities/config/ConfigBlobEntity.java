@@ -11,7 +11,6 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import org.springframework.http.HttpStatus;
 
 @Entity
 @Table(name = "config_blob")
@@ -35,8 +34,7 @@ public class ConfigBlobEntity implements Serializable {
           (HyperparameterElementConfigBlobEntity) blobEntity;
       this.hyperparameter_type = HYPERPARAMETER;
     } else {
-      throw new ModelDBException(
-          "Invalid blob object found", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Invalid blob object found", Code.INVALID_ARGUMENT);
     }
   }
 

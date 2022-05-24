@@ -24,7 +24,6 @@ import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
-import org.springframework.http.HttpStatus;
 
 public class LineageDAORdbImpl implements LineageDAO {
 
@@ -90,8 +89,7 @@ public class LineageDAORdbImpl implements LineageDAO {
       validate(input);
     }
     if (ids.size() != list.size()) {
-      throw new ModelDBException(
-          "Non-unique resource ids in a requests", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Non-unique resource ids in a requests", Code.INVALID_ARGUMENT);
     }
   }
 
@@ -106,7 +104,7 @@ public class LineageDAORdbImpl implements LineageDAO {
     }
     if (message != null) {
       LOGGER.info(message);
-      throw new ModelDBException(message, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException(message, Code.INVALID_ARGUMENT);
     }
   }
 
@@ -135,7 +133,7 @@ public class LineageDAORdbImpl implements LineageDAO {
         session, lineageEntry.getExternalId(), lineageEntry.getType())) {
       final var message = "External resource with a specified id does not exists";
       LOGGER.info(message);
-      throw new ModelDBException(message, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException(message, Code.INVALID_ARGUMENT);
     }
   }
 

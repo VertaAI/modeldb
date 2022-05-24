@@ -68,7 +68,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 
 public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
@@ -175,7 +174,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
     if (!request.hasPathDatasetVersionInfo() && !request.hasDatasetBlob()) {
       LOGGER.info("Request {}", request);
-      throw new ModelDBException("Not supported", Code.UNIMPLEMENTED, HttpStatus.NOT_IMPLEMENTED);
+      throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
     }
     datasetVersionBuilder.setPathDatasetVersionInfo(request.getPathDatasetVersionInfo());
 
@@ -499,9 +498,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       // Request Parameter Validation
       if (request.getId().isEmpty()) {
         throw new ModelDBException(
-            ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST,
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            ModelDBMessages.DATASET_VERSION_ID_NOT_FOUND_IN_REQUEST, Code.INVALID_ARGUMENT);
       }
 
       var datasetVersion =
@@ -955,7 +952,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     }
     if (errorMessage != null) {
       LOGGER.info(errorMessage);
-      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
     }
   }
 
@@ -971,7 +968,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
       if (errorMessage != null) {
         LOGGER.info(errorMessage);
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
       blobDAO.commitVersionedDatasetBlobArtifactPart(
@@ -1020,7 +1017,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     try {
       if (request.getPathDatasetComponentBlobPath().isEmpty()) {
         var errorMessage = "Path not found in CommitMultipartVersionedDatasetBlobArtifact request";
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
       blobDAO.commitMultipartVersionedDatasetBlobArtifact(
@@ -1048,7 +1045,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
     try {
       if (request.getId().isEmpty()) {
         var errorMessage = "DatasetVersion id not found in GetDatasetVersionById request";
-        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
 
       final var response =

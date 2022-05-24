@@ -63,7 +63,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.http.HttpStatus;
 
 public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
 
@@ -286,8 +285,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                               + request.getName()
                               + " not found in project "
                               + request.getProjectId();
-                      throw new ModelDBException(
-                          errorMessage, Code.NOT_FOUND, HttpStatus.NOT_FOUND);
+                      throw new ModelDBException(errorMessage, Code.NOT_FOUND);
                     }
                     if (experiments.size() != 1) {
                       var errorMessage =
@@ -295,8 +293,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                               + request.getName()
                               + " found in project "
                               + request.getProjectId();
-                      throw new ModelDBException(
-                          errorMessage, Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR);
+                      throw new ModelDBException(errorMessage, Code.INTERNAL);
                     }
                     return GetExperimentByName.Response.newBuilder()
                         .setExperiment(experiments.get(0))

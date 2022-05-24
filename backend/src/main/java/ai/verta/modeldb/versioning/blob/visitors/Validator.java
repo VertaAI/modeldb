@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
-import org.springframework.http.HttpStatus;
 
 public class Validator extends Visitor {
 
@@ -38,12 +37,10 @@ public class Validator extends Visitor {
         && autogenBlobDiff.getDataset() == null
         && autogenBlobDiff.getEnvironment() == null
         && autogenBlobDiff.getConfig() == null) {
-      throw new ModelDBException(
-          "Unknown blob type specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Unknown blob type specified", Code.INVALID_ARGUMENT);
     }
     if (autogenBlobDiff.getLocation() == null || autogenBlobDiff.getLocation().isEmpty()) {
-      throw new ModelDBException(
-          "Blob diff location is empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Blob diff location is empty", Code.INVALID_ARGUMENT);
     }
     autogenBlobDiff.postVisitDeep(this);
   }
@@ -56,8 +53,7 @@ public class Validator extends Visitor {
         && autogenBlob.getDataset() == null
         && autogenBlob.getEnvironment() == null
         && autogenBlob.getConfig() == null) {
-      throw new ModelDBException(
-          "Unknown blob type specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Unknown blob type specified", Code.INVALID_ARGUMENT);
     }
     autogenBlob.postVisitDeep(this);
   }
@@ -101,8 +97,7 @@ public class Validator extends Visitor {
       } catch (Exception ex) {
         throw new ModelDBException(
             description + HAS_A_STRING_VALUE_WHICH_IS_NOT_IN_A_VALID_NUMERIC_NOTATION,
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            Code.INVALID_ARGUMENT);
       }
     }
   }
@@ -112,9 +107,7 @@ public class Validator extends Visitor {
       AutogenDockerEnvironmentBlob blob) throws ModelDBException {
     if (blob.getRepository().isEmpty()) {
       throw new ModelDBException(
-          "Environment repository path should not be empty",
-          Code.INVALID_ARGUMENT,
-          HttpStatus.BAD_REQUEST);
+          "Environment repository path should not be empty", Code.INVALID_ARGUMENT);
     }
     return blob;
   }
@@ -131,8 +124,7 @@ public class Validator extends Visitor {
       variableNames.add(blob.getName());
     }
     if (variableNames.size() != lst.size()) {
-      throw new ModelDBException(
-          "There are recurring variables", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("There are recurring variables", Code.INVALID_ARGUMENT);
     }
     return lst;
   }
@@ -147,8 +139,7 @@ public class Validator extends Visitor {
           "Environment variable name: "
               + blob.getName()
               + " should be not empty, should contain only alphanumeric or underscore",
-          Code.INVALID_ARGUMENT,
-          HttpStatus.BAD_REQUEST);
+          Code.INVALID_ARGUMENT);
     }
     return blob;
   }
@@ -157,10 +148,7 @@ public class Validator extends Visitor {
   public AutogenGitCodeBlob postVisitAutogenGitCodeBlob(AutogenGitCodeBlob blob)
       throws ModelDBException {
     if (blob.getRepo().isEmpty()) {
-      throw new ModelDBException(
-          "Code repository path should not be empty",
-          Code.INVALID_ARGUMENT,
-          HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Code repository path should not be empty", Code.INVALID_ARGUMENT);
     }
     return blob;
   }
@@ -170,8 +158,7 @@ public class Validator extends Visitor {
       AutogenHyperparameterSetConfigBlob blob) throws ModelDBException {
     final String name = blob.getName();
     if (name.isEmpty()) {
-      throw new ModelDBException(
-          "Hyperparameter set name is empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Hyperparameter set name is empty", Code.INVALID_ARGUMENT);
     }
     return blob;
   }
@@ -195,8 +182,7 @@ public class Validator extends Visitor {
   public AutogenPathDatasetComponentBlob postVisitAutogenPathDatasetComponentBlob(
       AutogenPathDatasetComponentBlob blob) throws ModelDBException {
     if (blob.getPath().isEmpty()) {
-      throw new ModelDBException(
-          "Dataset path is empty", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Dataset path is empty", Code.INVALID_ARGUMENT);
     }
     return blob;
   }
@@ -208,16 +194,14 @@ public class Validator extends Visitor {
       Set<AutogenPythonRequirementEnvironmentBlob> pythonRequirementHash =
           new HashSet<>(blob.getRequirements());
       if (pythonRequirementHash.size() != blob.getRequirements().size()) {
-        throw new ModelDBException(
-            "There are recurring requirements", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("There are recurring requirements", Code.INVALID_ARGUMENT);
       }
     }
     if (blob.getConstraints() != null) {
       Set<AutogenPythonRequirementEnvironmentBlob> pythonConstraintHash =
           new HashSet<>(blob.getConstraints());
       if (pythonConstraintHash.size() != blob.getConstraints().size()) {
-        throw new ModelDBException(
-            "There are recurring constraints", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("There are recurring constraints", Code.INVALID_ARGUMENT);
       }
     }
     return blob;
@@ -228,9 +212,7 @@ public class Validator extends Visitor {
       AutogenPythonRequirementEnvironmentBlob blob) throws ModelDBException {
     if (blob.getLibrary().isEmpty()) {
       throw new ModelDBException(
-          "Requirement or constraint library name should not be empty",
-          Code.INVALID_ARGUMENT,
-          HttpStatus.BAD_REQUEST);
+          "Requirement or constraint library name should not be empty", Code.INVALID_ARGUMENT);
     }
     return blob;
   }
@@ -239,7 +221,7 @@ public class Validator extends Visitor {
   public AutogenDiffStatusEnumDiffStatus postVisitDeepAutogenDiffStatusEnumDiffStatus(
       AutogenDiffStatusEnumDiffStatus blob) throws ModelDBException {
     if (blob == null) {
-      throw new ModelDBException("Unknown status", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+      throw new ModelDBException("Unknown status", Code.INVALID_ARGUMENT);
     }
     switch (blob.toProto()) {
       case DELETED:
@@ -247,8 +229,7 @@ public class Validator extends Visitor {
       case MODIFIED:
         break;
       default:
-        throw new ModelDBException(
-            "Unknown status specified", Code.INVALID_ARGUMENT, HttpStatus.BAD_REQUEST);
+        throw new ModelDBException("Unknown status specified", Code.INVALID_ARGUMENT);
     }
     return blob;
   }

@@ -10,7 +10,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import org.hibernate.Session;
-import org.springframework.http.HttpStatus;
 
 /** contains proto object and saves it to the database */
 public abstract class BlobContainer {
@@ -35,8 +34,7 @@ public abstract class BlobContainer {
       default:
         throw new ModelDBException(
             "Unknown blob type: " + blobExpanded.getBlob().getContentCase().name(),
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            Code.INVALID_ARGUMENT);
     }
   }
 

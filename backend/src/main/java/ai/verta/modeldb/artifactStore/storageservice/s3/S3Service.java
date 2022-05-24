@@ -42,7 +42,6 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.CacheControl;
 import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 public class S3Service implements ArtifactStoreService {
@@ -98,8 +97,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(
-          ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE, HttpStatus.SERVICE_UNAVAILABLE);
+      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
     }
     var initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
@@ -124,8 +122,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(
-          ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE, HttpStatus.SERVICE_UNAVAILABLE);
+      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
     }
 
     HttpMethod reqMethod;
@@ -164,8 +161,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(
-          ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE, HttpStatus.SERVICE_UNAVAILABLE);
+      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
     }
     var completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
@@ -176,8 +172,7 @@ public class S3Service implements ArtifactStoreService {
     } catch (AmazonS3Exception e) {
       if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_BAD_REQUEST) {
         LOGGER.info("message: {} additional details: {}", e.getMessage(), e.getAdditionalDetails());
-        throw new ModelDBException(
-            e.getErrorMessage(), Code.FAILED_PRECONDITION, HttpStatus.PRECONDITION_FAILED);
+        throw new ModelDBException(e.getErrorMessage(), Code.FAILED_PRECONDITION);
       }
       throw e;
     }
@@ -189,10 +184,7 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       Boolean exist = doesBucketExist(bucketName);
       if (!exist) {
-        throw new ModelDBException(
-            ModelDBMessages.BUCKET_DOES_NOT_EXISTS,
-            Code.UNAVAILABLE,
-            HttpStatus.SERVICE_UNAVAILABLE);
+        throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
       }
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
@@ -231,15 +223,12 @@ public class S3Service implements ArtifactStoreService {
       String errorMessage = e.getMessage();
       LOGGER.warn(errorMessage);
       throw new ModelDBException(
-          errorMessage,
-          HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()),
-          HttpStatus.valueOf(e.getStatusCode()));
+          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     } catch (InterruptedException e) {
       LOGGER.warn(e.getMessage(), e);
       // Restore interrupted state...
       Thread.currentThread().interrupt();
-      throw new ModelDBException(
-          e.getMessage(), Code.INTERNAL, HttpStatus.INTERNAL_SERVER_ERROR, e);
+      throw new ModelDBException(e.getMessage(), Code.INTERNAL, e);
     }
   }
 
@@ -266,7 +255,7 @@ public class S3Service implements ArtifactStoreService {
       } else {
         String errorMessage = "File not found " + artifactPath;
         LOGGER.info(errorMessage);
-        throw new ModelDBException(errorMessage, Code.NOT_FOUND, HttpStatus.NOT_FOUND);
+        throw new ModelDBException(errorMessage, Code.NOT_FOUND);
       }
     } catch (AmazonServiceException e) {
       // Amazon S3 couldn't be contacted for a response, or the client
@@ -274,9 +263,7 @@ public class S3Service implements ArtifactStoreService {
       String errorMessage = e.getMessage();
       LOGGER.warn(errorMessage);
       throw new ModelDBException(
-          errorMessage,
-          HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()),
-          HttpStatus.valueOf(e.getStatusCode()));
+          errorMessage, HttpCodeToGRPCCode.convertHTTPCodeToGRPCCode(e.getStatusCode()));
     } catch (SdkClientException e) {
       // Amazon S3 couldn't be contacted for a response, or the client
       // couldn't parse the response from Amazon S3.
@@ -328,8 +315,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public InputStream downloadFileFromStorage(String key) throws ModelDBException {
     if (!doesBucketExist(bucketName)) {
-      throw new ModelDBException(
-          ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE, HttpStatus.SERVICE_UNAVAILABLE);
+      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
     }
 
     return downloadFileFromStorage(bucketName, key);
@@ -348,7 +334,7 @@ public class S3Service implements ArtifactStoreService {
 
       String errorMessage = "s3 object not found in s3 storage for given key : " + key;
       LOGGER.info(errorMessage);
-      throw new ModelDBException(errorMessage, Code.NOT_FOUND, HttpStatus.NOT_FOUND);
+      throw new ModelDBException(errorMessage, Code.NOT_FOUND);
     }
   }
 }

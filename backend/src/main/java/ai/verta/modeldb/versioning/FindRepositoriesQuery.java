@@ -28,7 +28,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.springframework.http.HttpStatus;
 
 public class FindRepositoriesQuery {
   private FindRepositoriesQuery() {}
@@ -296,9 +295,7 @@ public class FindRepositoriesQuery {
         }
       } else {
         throw new ModelDBException(
-            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND,
-            Status.Code.FAILED_PRECONDITION,
-            HttpStatus.PRECONDITION_FAILED);
+            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Status.Code.FAILED_PRECONDITION);
       }
     }
   }

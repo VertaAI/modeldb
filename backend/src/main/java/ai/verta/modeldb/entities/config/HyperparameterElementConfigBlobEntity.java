@@ -8,7 +8,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import org.springframework.http.HttpStatus;
 
 @Entity
 @Table(name = "hyperparameter_element_config_blob")
@@ -38,9 +37,7 @@ public class HyperparameterElementConfigBlobEntity implements Serializable {
       case VALUE_NOT_SET:
       default:
         throw new ModelDBException(
-            "Invalid value found in HyperparameterValuesConfigBlob",
-            Code.INVALID_ARGUMENT,
-            HttpStatus.BAD_REQUEST);
+            "Invalid value found in HyperparameterValuesConfigBlob", Code.INVALID_ARGUMENT);
     }
   }
 
