@@ -223,7 +223,6 @@ public class CommonUtils {
       }
     } else {
       code = HttpStatus.INTERNAL_SERVER_ERROR;
-      message += e.getMessage();
       logger.error(e.getMessage());
       printStackTrace(logger, e);
     }
