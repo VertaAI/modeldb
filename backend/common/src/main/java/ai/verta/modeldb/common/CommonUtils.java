@@ -214,7 +214,7 @@ public class CommonUtils {
       String logMessage = "Common Service Exception occurred: {}";
       if (uacServiceException.getCodeValue() == Code.INTERNAL_VALUE) {
         // If getting 500 then we will not expose about error to the user.
-        message = "";
+        message = "Internal Server Error";
         logger.error(logMessage, e.getMessage());
         printStackTrace(logger, e);
       } else {
@@ -226,7 +226,7 @@ public class CommonUtils {
     } else {
       code = HttpStatus.INTERNAL_SERVER_ERROR;
       // If getting 500 then we will not expose about error to the user.
-      message = "";
+      message = "Internal Server Error";
       logger.error(e.getMessage());
       printStackTrace(logger, e);
     }
