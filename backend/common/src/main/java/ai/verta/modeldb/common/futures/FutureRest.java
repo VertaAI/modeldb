@@ -12,7 +12,7 @@ public class FutureRest {
   private FutureRest() {}
 
   // Injects the result of the future into the grpc StreamObserver as the return of the server
-  public static <T> CompletableFuture<T> ServerResponse(InternalFuture<T> f, Executor ex) {
+  public static <T> CompletableFuture<T> serverResponse(InternalFuture<T> f, Executor ex) {
     CompletableFuture<T> promise = new CompletableFuture<>();
     f.whenComplete(
         (v, t) -> {
