@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
+import ai.verta.modeldb.common.CommonUtils;
 import io.grpc.Context;
 import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.CompletableFuture;
