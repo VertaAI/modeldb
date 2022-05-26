@@ -1218,14 +1218,8 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
           "Access is denied. ExperimentRun not found for given ids : " + requestedExperimentRunIds);
     }
     Set<String> projectIdSet = new HashSet<>(projectIdExperimentRunIdMap.values());
-    boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(allowedProjects);
-    Set<String> allowedProjectIds;
-    if (allowedAllResources) {
-      allowedProjectIds = projectIdSet;
-    } else {
-      allowedProjectIds = RoleServiceUtils.getResourceIds(allowedProjects);
-      allowedProjectIds.retainAll(projectIdSet);
-    }
+    Set<String> allowedProjectIds = RoleServiceUtils.getAccessibleResourceIdsFromAllowedResources(
+        projectIdSet, allowedProjects);
     for (Map.Entry<String, String> entry : projectIdExperimentRunIdMap.entrySet()) {
       if (allowedProjectIds.contains(entry.getValue())) {
         accessibleExperimentRunIds.add(entry.getKey());

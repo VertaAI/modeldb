@@ -459,6 +459,11 @@ public class RoleServiceUtils implements RoleService {
               false, currentLoginUserInfo, modelDBServiceResourceTypes);
     }
 
+    return getAccessibleResourceIdsFromAllowedResources(requestedResourceIds, accessibleResources);
+  }
+
+  public static Set<String> getAccessibleResourceIdsFromAllowedResources(Collection<String> requestedResourceIds,
+      Collection<Resources> accessibleResources) {
     boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
     Set<String> accessibleResourceIds;
     if (allowedAllResources) {
@@ -727,18 +732,9 @@ public class RoleServiceUtils implements RoleService {
     }
     List<Resources> accessibleResources =
         getSelfAllowedResources(modelDBServiceResourceTypes, modelDBServiceActions);
-    boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
-    Set<String> accessibleResourceIds;
-    if (allowedAllResources) {
-      accessibleResourceIds = new HashSet<>(requestedResourceIds);
-    } else {
-      accessibleResourceIds = getResourceIds(accessibleResources);
-      if (!requestedResourceIds.isEmpty()) {
-        accessibleResourceIds.retainAll(requestedResourceIds);
-      }
-    }
+
     // Validate if current user has access to the entity or not
-    return accessibleResourceIds;
+    return getAccessibleResourceIdsFromAllowedResources(requestedResourceIds, accessibleResources);
   }
 
   @Override
