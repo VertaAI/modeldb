@@ -462,8 +462,8 @@ public class RoleServiceUtils implements RoleService {
     return getAccessibleResourceIdsFromAllowedResources(requestedResourceIds, accessibleResources);
   }
 
-  public static Set<String> getAccessibleResourceIdsFromAllowedResources(Collection<String> requestedResourceIds,
-      Collection<Resources> accessibleResources) {
+  public static Set<String> getAccessibleResourceIdsFromAllowedResources(
+      Collection<String> requestedResourceIds, Collection<Resources> accessibleResources) {
     boolean allowedAllResources = checkAllResourceAllowed(accessibleResources);
     Set<String> accessibleResourceIds;
     if (allowedAllResources) {
