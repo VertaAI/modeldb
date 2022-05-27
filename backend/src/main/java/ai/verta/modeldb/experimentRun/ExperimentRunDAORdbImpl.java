@@ -1552,7 +1552,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    Set<String> accessibleResourceIds  = Collections.emptySet();
+    Set<String> accessibleResourceIds = Collections.emptySet();
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       boolean allowedAllResources =
           RoleServiceUtils.checkAllResourceAllowed(selfAllowedRepositories);
