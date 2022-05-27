@@ -13,16 +13,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 
 @SuppressWarnings({"squid:S100"})
-public class FutureGrpc {
+public class FutureGrpc extends FutureUtil {
   private FutureGrpc() {}
-
-  // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
-  // InternalFuture
-  public static <T> InternalFuture<T> ClientRequest(ListenableFuture<T> f, Executor ex) {
-    CompletableFuture<T> promise = new CompletableFuture<>();
-    Futures.addCallback(f, new Callback<T>(promise), ex);
-    return InternalFuture.from(promise);
-  }
 
   // Injects the result of the Scala future into the grpc StreamObserver as the return of the server
   public static <T extends GeneratedMessageV3> void ServerResponse(
@@ -37,64 +29,5 @@ public class FutureGrpc {
           }
         },
         ex);
-  }
-
-  // Wraps an Executor and make it compatible with grpc's context
-  private static Executor makeCompatibleExecutor(Executor ex) {
-    return new ExecutorWrapper(ex);
-  }
-
-  public static Executor initializeExecutor(Integer threadCount) {
-    return FutureGrpc.makeCompatibleExecutor(
-        new ForkJoinPool(
-            threadCount,
-            ForkJoinPool.defaultForkJoinWorkerThreadFactory,
-            Thread.getDefaultUncaughtExceptionHandler(),
-            true));
-  }
-
-  // Callback for a ListenableFuture to satisfy a promise
-  private static class Callback<T> implements com.google.common.util.concurrent.FutureCallback<T> {
-    final CompletableFuture<T> promise;
-
-    private Callback(CompletableFuture<T> promise) {
-      this.promise = promise;
-    }
-
-    @Override
-    public void onSuccess(T t) {
-      promise.complete(t);
-    }
-
-    @Override
-    public void onFailure(Throwable t) {
-      promise.completeExceptionally(t);
-    }
-  }
-
-  private static class ExecutorWrapper implements Executor {
-    final Executor other;
-
-    ExecutorWrapper(Executor other) {
-      this.other = other;
-    }
-
-    @Override
-    public void execute(Runnable r) {
-      if (GlobalTracer.isRegistered()) {
-        final var tracer = GlobalTracer.get();
-        final var span = tracer.scopeManager().activeSpan();
-        other.execute(
-            Context.current()
-                .wrap(
-                    () -> {
-                      try (Scope s = tracer.scopeManager().activate(span)) {
-                        r.run();
-                      }
-                    }));
-      } else {
-        other.execute(Context.current().wrap(r));
-      }
-    }
   }
 }
