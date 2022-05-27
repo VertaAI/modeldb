@@ -886,11 +886,10 @@ public class FutureProjectDAO {
                 return allowedProjectIds;
               } else if (allowedProjectIds.containsAll(requestedResourcesIds)) {
                 return requestedResourcesIds;
-              } else {
-                for (var requestedId : requestedResourcesIds) {
-                  if (!allowedProjectIds.contains(requestedId)) {
-                    allowedProjectIds.remove(requestedId);
-                  }
+              }
+              for (var requestedId : requestedResourcesIds) {
+                if (!allowedProjectIds.contains(requestedId)) {
+                  allowedProjectIds.remove(requestedId);
                 }
               }
               return allowedProjectIds;

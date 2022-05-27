@@ -438,7 +438,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Code.PERMISSION_DENIED);
       }
 
-      deleteRepositoriesCollection(session, experimentRunDAO, allowedRepositoryIds);
+      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -452,11 +452,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public void deleteRepositories(
-      Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds) {
-    deleteRepositoriesCollection(session, experimentRunDAO, allowedRepositoryIds);
-  }
-
-  public void deleteRepositoriesCollection(
       Session session, ExperimentRunDAO experimentRunDAO, Collection<String> allowedRepositoryIds) {
     var deletedRepositoriesQuery =
         session
@@ -489,7 +484,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           Code.PERMISSION_DENIED);
     }
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      deleteRepositoriesCollection(session, experimentRunDAO, allowedRepositoryIds);
+      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
     }
     return true;
   }
