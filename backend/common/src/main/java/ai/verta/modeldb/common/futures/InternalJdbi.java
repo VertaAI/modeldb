@@ -1,16 +1,30 @@
 package ai.verta.modeldb.common.futures;
 
-import java.util.function.Consumer;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.Jdbi;
 import org.jdbi.v3.core.config.ConfigRegistry;
 import org.jdbi.v3.core.config.JdbiConfig;
+import org.jdbi.v3.core.statement.SqlLogger;
+import org.jdbi.v3.core.statement.StatementContext;
 import org.jdbi.v3.core.transaction.TransactionIsolationLevel;
+
+import java.util.function.Consumer;
 
 public class InternalJdbi {
   private final Jdbi jdbi;
+  private static final Logger LOGGER = LogManager.getLogger(InternalJdbi.class);
 
   public InternalJdbi(Jdbi jdbi) {
     this.jdbi = jdbi;
+    SqlLogger sqlLogger = new SqlLogger() {
+      @Override
+      public void logAfterExecution(StatementContext context) {
+        LOGGER.info("sql {}, parameters {}", context.getRenderedSql(),
+            context.getBinding().toString());
+      }
+    };
+    jdbi.setSqlLogger(sqlLogger);
   }
 
   public ConfigRegistry getConfig() {
