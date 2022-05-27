@@ -1551,18 +1551,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     var queryBuilder =
         "Select vme.experimentRunEntity.id, cb From ConfigBlobEntity cb INNER JOIN VersioningModeldbEntityMapping vme ON vme.blob_hash = cb.blob_hash WHERE cb.hyperparameter_type = :hyperparameterType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    Set<String> accessibleResourceIds;
+    Set<String> accessibleResourceIds  = Collections.emptySet();
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       boolean allowedAllResources =
           RoleServiceUtils.checkAllResourceAllowed(selfAllowedRepositories);
       if (allowedAllResources) {
         return new HashMap<>();
-      } else {
-        accessibleResourceIds = RoleServiceUtils.getResourceIds(selfAllowedRepositories);
-        queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
       }
-    } else {
-      accessibleResourceIds = null;
+      accessibleResourceIds = RoleServiceUtils.getResourceIds(selfAllowedRepositories);
+      queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
     }
 
     var query = session.createQuery(queryBuilder);
@@ -1636,18 +1633,15 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
             + " LEFT JOIN PathDatasetComponentBlobEntity pdcb ON ncb.path_dataset_blob_hash = pdcb.id.path_dataset_blob_id "
             + " WHERE vme.versioning_blob_type = :versioningBlobType AND vme.experimentRunEntity.id IN (:expRunIds) ";
 
-    Set<String> accessibleRepositoryIds;
+    Set<String> accessibleRepositoryIds = Collections.emptySet();
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
       boolean allowedAllResources =
           RoleServiceUtils.checkAllResourceAllowed(selfAllowedRepositories);
       if (allowedAllResources) {
         return new HashMap<>();
-      } else {
-        accessibleRepositoryIds = RoleServiceUtils.getResourceIds(selfAllowedRepositories);
-        queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
       }
-    } else {
-      accessibleRepositoryIds = null;
+      accessibleRepositoryIds = RoleServiceUtils.getResourceIds(selfAllowedRepositories);
+      queryBuilder = queryBuilder + " AND vme.repository_id IN (:repoIds)";
     }
 
     var query = session.createQuery(queryBuilder);
