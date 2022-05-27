@@ -884,7 +884,8 @@ public class FutureProjectDAO {
               // resourcesIds.retainAll(requestedResourcesIds);
               if (requestedResourcesIds.isEmpty()) {
                 return allowedProjectIds;
-              } else if (allowedProjectIds.containsAll(requestedResourcesIds)) {
+              }
+              if (allowedProjectIds.containsAll(requestedResourcesIds)) {
                 return requestedResourcesIds;
               }
               for (var requestedId : requestedResourcesIds) {
