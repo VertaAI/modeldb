@@ -130,6 +130,15 @@ public class CommonUtils {
                 .setCode(modelDBException.getCode().value())
                 .setMessage(modelDBException.getMessage())
                 .build();
+      } else if (e instanceof IllegalArgumentException) {
+        var illegalArgumentException = (IllegalArgumentException) e;
+        logBasedOnTheErrorCode(
+            isClientError(Code.INVALID_ARGUMENT_VALUE), illegalArgumentException);
+        status =
+            Status.newBuilder()
+                .setCode(Code.INVALID_ARGUMENT_VALUE)
+                .setMessage(illegalArgumentException.getMessage())
+                .build();
       } else {
         LOGGER.error(
             "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());

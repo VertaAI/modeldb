@@ -1,7 +1,12 @@
 package ai.verta.modeldb.common.futures;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Context;
+import io.opentelemetry.context.Scope;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
@@ -11,28 +16,48 @@ import java.util.function.*;
 import java.util.stream.Collectors;
 
 public class InternalFuture<T> {
+  private static final boolean DEEP_TRACING_ENABLED;
+  public static final AttributeKey<String> STACK_ATTRIBUTE_KEY = AttributeKey.stringKey("stack");
+
+  static {
+    String internalFutureTracingEnabled = System.getenv("IFUTURE_TRACING_ENABLED");
+    DEEP_TRACING_ENABLED = Boolean.parseBoolean(internalFutureTracingEnabled);
+  }
+
+  private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
+  private final String formattedStack;
   private CompletionStage<T> stage;
 
   // keep the calling OpenTelemetry context, so we can use it to wrap the actual invocation of the
   // future's implementation
   private final Context callingContext = Context.current();
 
-  private InternalFuture() {}
+  private InternalFuture() {
+    if (!DEEP_TRACING_ENABLED) {
+      formattedStack = null;
+    } else {
+      StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+      if (stackTrace.length > 10) {
+        stackTrace = Arrays.copyOf(stackTrace, 10);
+      }
+      this.formattedStack =
+          Arrays.stream(stackTrace)
+              .map(StackTraceElement::toString)
+              .collect(Collectors.joining("\nat "));
+    }
+  }
 
   public static <T> InternalFuture<T> trace(
       Supplier<InternalFuture<T>> supplier,
       String operationName,
       Map<String, String> tags,
       Executor executor) {
-    // todo: implement me
-    //    SpanBuilder spanBuilder =
-    // GlobalOpenTelemetry.getTracer("verta_java").spanBuilder(operationName);
-    //    tags.forEach(spanBuilder::setAttribute);
-
+    // todo: remove me since tracing works in other ways now
     return supplier.get();
   }
 
   // Convert a list of futures to a future of a list
+  @SuppressWarnings("unchecked")
   public static <T> InternalFuture<List<T>> sequence(
       final List<InternalFuture<T>> futures, Executor executor) {
     if (futures.isEmpty()) {
@@ -89,37 +114,144 @@ public class InternalFuture<T> {
       Function<? super T, InternalFuture<U>> fn, Executor executor) {
     return from(
         stage.thenComposeAsync(
-            callingContext.wrapFunction(fn.andThen(internalFuture -> internalFuture.stage)),
+            traceFunction(
+                callingContext.wrapFunction(
+                    traceFunction(
+                        fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose")),
+                "futureThenApply"),
             executor));
   }
 
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
-    return from(stage.thenApplyAsync(callingContext.wrapFunction(fn), executor));
+    return from(
+        stage.thenApplyAsync(
+            traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
+  }
+
+  private <U> Function<? super T, ? extends U> traceFunction(
+      Function<? super T, ? extends U> fn, String spanName) {
+    if (!DEEP_TRACING_ENABLED) {
+      return fn;
+    }
+    return t -> {
+      Span span = startSpan(spanName);
+      try (Scope ignored = span.makeCurrent()) {
+        return fn.apply(t);
+      } finally {
+        span.end();
+      }
+    };
+  }
+
+  private Span startSpan(String futureThenApply) {
+    return futureTracer
+        .spanBuilder(futureThenApply)
+        .setAttribute(STACK_ATTRIBUTE_KEY, formattedStack)
+        .startSpan();
   }
 
   public <U> InternalFuture<U> handle(
       BiFunction<? super T, Throwable, ? extends U> fn, Executor executor) {
-    return from(stage.handleAsync(callingContext.wrapFunction(fn), executor));
+    return from(
+        stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor));
+  }
+
+  private <U> BiFunction<? super T, Throwable, ? extends U> traceBiFunctionThrowable(
+      BiFunction<? super T, Throwable, ? extends U> fn) {
+    if (!DEEP_TRACING_ENABLED) {
+      return fn;
+    }
+    return (t, throwable) -> {
+      Span span = startSpan("futureHandle");
+      try (Scope ignored = span.makeCurrent()) {
+        return fn.apply(t, throwable);
+      } finally {
+        span.end();
+      }
+    };
   }
 
   public <U, V> InternalFuture<V> thenCombine(
       InternalFuture<? extends U> other,
       BiFunction<? super T, ? super U, ? extends V> fn,
       Executor executor) {
-    return from(stage.thenCombineAsync(other.stage, callingContext.wrapFunction(fn), executor));
+    return from(
+        stage.thenCombineAsync(
+            other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor));
+  }
+
+  private <U, V> BiFunction<? super T, ? super U, ? extends V> traceBiFunction(
+      BiFunction<? super T, ? super U, ? extends V> fn) {
+    if (!DEEP_TRACING_ENABLED) {
+      return fn;
+    }
+    return (t, u) -> {
+      Span span = startSpan("futureThenCombine");
+      try (Scope ignored = span.makeCurrent()) {
+        return fn.apply(t, u);
+      } finally {
+        span.end();
+      }
+    };
   }
 
   public InternalFuture<Void> thenAccept(Consumer<? super T> action, Executor executor) {
-    return from(stage.thenAcceptAsync(callingContext.wrapConsumer(action), executor));
+    return from(
+        stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor));
+  }
+
+  private Consumer<? super T> traceConsumer(Consumer<? super T> action) {
+    if (!DEEP_TRACING_ENABLED) {
+      return action;
+    }
+    return t -> {
+      Span span = startSpan("futureThenAccept");
+      try (Scope ignored = span.makeCurrent()) {
+        action.accept(t);
+      } finally {
+        span.end();
+      }
+    };
   }
 
   public <U> InternalFuture<Void> thenRun(Runnable runnable, Executor executor) {
-    return from(stage.thenRunAsync(callingContext.wrap(runnable), executor));
+    return from(stage.thenRunAsync(callingContext.wrap(traceRunnable(runnable)), executor));
+  }
+
+  private Runnable traceRunnable(Runnable r) {
+    if (!DEEP_TRACING_ENABLED) {
+      return r;
+    }
+    return () -> {
+      Span span = startSpan("futureThenRun");
+      try (Scope ignored = span.makeCurrent()) {
+        r.run();
+      } finally {
+        span.end();
+      }
+    };
   }
 
   public InternalFuture<T> whenComplete(
       BiConsumer<? super T, ? super Throwable> action, Executor executor) {
-    return from(stage.whenCompleteAsync(callingContext.wrapConsumer(action), executor));
+    return from(
+        stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
+  }
+
+  private BiConsumer<? super T, ? super Throwable> traceBiConsumer(
+      BiConsumer<? super T, ? super Throwable> action) {
+    if (!DEEP_TRACING_ENABLED) {
+      return action;
+    }
+
+    return (t, throwable) -> {
+      Span span = startSpan("futureWhenComplete");
+      try (Scope ignored = span.makeCurrent()) {
+        action.accept(t, throwable);
+      } finally {
+        span.end();
+      }
+    };
   }
 
   public static <U> InternalFuture<Void> runAsync(Runnable runnable, Executor executor) {
