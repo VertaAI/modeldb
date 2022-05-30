@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
@@ -166,7 +167,7 @@ public abstract class Config {
 
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
     final var jdbi = initializeJdbi(databaseConfig, poolName);
-    final var dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.getThreadCount());
+    final var dbExecutor = FutureUtil.initializeExecutor(databaseConfig.getThreadCount());
     // wrap the executor in the OpenTelemetry context wrapper to make sure the context propagates
     // into any jdbi threads.
     return new FutureJdbi(jdbi, Context.taskWrapping(dbExecutor));

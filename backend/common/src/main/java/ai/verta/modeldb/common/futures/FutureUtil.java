@@ -10,7 +10,8 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ForkJoinPool;
 import org.springframework.lang.NonNull;
 
-public abstract class FutureUtil {
+public final class FutureUtil {
+  private FutureUtil() {}
 
   // Wraps an Executor and make it compatible with grpc's context
   public static Executor makeCompatibleExecutor(Executor ex) {

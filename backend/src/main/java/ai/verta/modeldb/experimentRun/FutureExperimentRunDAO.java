@@ -59,8 +59,8 @@ import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
@@ -479,7 +479,7 @@ public class FutureExperimentRunDAO {
       List<String> entityIds,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
                     IsSelfAllowed.newBuilder()
@@ -1672,7 +1672,7 @@ public class FutureExperimentRunDAO {
     return validateRequestParamFuture
         .thenCompose(
             unused ->
-                FutureGrpc.ClientRequest(
+                FutureUtil.ClientRequest(
                     uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
             executor)
         .thenCompose(

@@ -6,7 +6,7 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.Action;
 import ai.verta.uac.GetResources;
@@ -47,7 +47,7 @@ public class UACApisUtil {
   public InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getAuthzService()
                 .getSelfAllowedResources(
                     GetSelfAllowedResources.newBuilder()
@@ -81,7 +81,7 @@ public class UACApisUtil {
       resources.addAllResourceIds(resourceIds.get());
     }
 
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getCollaboratorService()
                 .getResources(
                     GetResources.newBuilder()
@@ -98,7 +98,7 @@ public class UACApisUtil {
     if (projectId.isPresent() && !projectId.get().isEmpty()) {
       requestProjectIds.add(projectId.get());
     }
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getWorkspaceService()
                 .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
             executor)
@@ -128,7 +128,7 @@ public class UACApisUtil {
   }
 
   public InternalFuture<Workspace> getWorkspaceById(long workspaceId) {
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
         uac.getWorkspaceService()
             .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
         executor);
@@ -152,7 +152,7 @@ public class UACApisUtil {
 
     var builder = GetResources.newBuilder().setResources(resources.build());
     builder.setWorkspaceName(workspaceName);
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
             executor)
         .thenApply(GetResources.Response::getItemList, executor);
@@ -178,7 +178,7 @@ public class UACApisUtil {
     var builder = GetResources.newBuilder().setResources(resources.build());
     workspaceName.ifPresent(builder::setWorkspaceName);
     resourceName.ifPresent(builder::setResourceName);
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getCollaboratorService().getResources(builder.build()), executor)
         .thenApply(GetResources.Response::getItemList, executor);
   }
@@ -191,7 +191,7 @@ public class UACApisUtil {
       paginationDTO.setTotalRecords(0L);
       return InternalFuture.completedInternalFuture(paginationDTO);
     }
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getUACService()
                 .getUsersFuzzy(GetUsersFuzzy.newBuilder().setUsername(usernameChar).build()),
             executor)
@@ -219,7 +219,7 @@ public class UACApisUtil {
     LOGGER.trace("email Id List : {}", emailIdList);
     LOGGER.trace("username Id List : {}", usernameList);
     // Get the user info from the Context
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getUACService().getUsers(getUserRequestBuilder.build()), executor)
         .thenApply(
             response -> {

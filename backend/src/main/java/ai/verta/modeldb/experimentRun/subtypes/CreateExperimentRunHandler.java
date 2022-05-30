@@ -8,8 +8,8 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
@@ -75,7 +75,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
   }
 
   public InternalFuture<ExperimentRun> convertCreateRequest(final CreateExperimentRun request) {
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
             currentLoginUserInfo -> {
@@ -334,7 +334,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.ClientRequest(
             uac.getServiceAccountRoleServiceFutureStub()
                 .setRoleBinding(
                     SetRoleBinding.newBuilder()

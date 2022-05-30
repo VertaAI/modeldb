@@ -13,7 +13,7 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.MigrationConfig;
@@ -224,7 +224,7 @@ public class App implements ApplicationContextAware {
 
       // Initialize executor so we don't lose context using Futures
       final var handleExecutor =
-          FutureGrpc.initializeExecutor(config.getGrpcServer().getThreadCount());
+          FutureUtil.initializeExecutor(config.getGrpcServer().getThreadCount());
 
       // Initialize data access
       var daos = DAOSet.fromServices(services, config.getJdbi(), handleExecutor, config);

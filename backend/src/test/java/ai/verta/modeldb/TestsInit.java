@@ -4,7 +4,7 @@ import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.cron_jobs.CronJobUtils;
@@ -89,7 +89,7 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
-    handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
+    handleExecutor = FutureUtil.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
     // Initialize services that we depend on
     services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;

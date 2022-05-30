@@ -4,7 +4,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
 @SuppressWarnings({"squid:S100"})
-public class FutureRest extends FutureUtil {
+public class FutureRest {
   private FutureRest() {}
 
   // Injects the result of the future into the grpc StreamObserver as the return of the server

@@ -6,7 +6,7 @@ import io.grpc.stub.StreamObserver;
 import java.util.concurrent.Executor;
 
 @SuppressWarnings({"squid:S100"})
-public class FutureGrpc extends FutureUtil {
+public class FutureGrpc {
   private FutureGrpc() {}
 
   // Injects the result of the Scala future into the grpc StreamObserver as the return of the server
