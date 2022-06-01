@@ -75,7 +75,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
   }
 
   public InternalFuture<ExperimentRun> convertCreateRequest(final CreateExperimentRun request) {
-    return FutureUtil.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
             currentLoginUserInfo -> {
@@ -334,7 +334,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
-    return FutureUtil.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getServiceAccountRoleServiceFutureStub()
                 .setRoleBinding(
                     SetRoleBinding.newBuilder()

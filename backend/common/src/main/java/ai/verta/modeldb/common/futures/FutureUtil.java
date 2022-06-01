@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
+import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.Context;
@@ -55,14 +56,14 @@ public final class FutureUtil {
 
   // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
   // InternalFuture
-  public static <T> InternalFuture<T> ClientRequest(ListenableFuture<T> f, Executor ex) {
+  public static <T> InternalFuture<T> clientRequest(ListenableFuture<T> f, Executor ex) {
     CompletableFuture<T> promise = new CompletableFuture<>();
     Futures.addCallback(f, new Callback<T>(promise), ex);
     return InternalFuture.from(promise);
   }
 
   // Callback for a ListenableFuture to satisfy a promise
-  private static class Callback<T> implements com.google.common.util.concurrent.FutureCallback<T> {
+  private static class Callback<T> implements FutureCallback<T> {
     final CompletableFuture<T> promise;
 
     private Callback(CompletableFuture<T> promise) {

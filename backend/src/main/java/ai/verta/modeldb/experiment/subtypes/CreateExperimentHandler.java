@@ -241,7 +241,7 @@ public class CreateExperimentHandler extends HandlerUtil {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_OWNER;
-    return FutureUtil.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getServiceAccountRoleServiceFutureStub()
                 .setRoleBinding(
                     SetRoleBinding.newBuilder()

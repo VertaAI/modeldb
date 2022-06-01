@@ -62,7 +62,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
               List<InternalFuture<String>> deletedEventUUIDFutures = new ArrayList<>();
               for (CreateEventRequest request : createEventRequests) {
                 deletedEventUUIDFutures.add(
-                    FutureUtil.ClientRequest(uac.getEventService().createEvent(request), executor)
+                    FutureUtil.clientRequest(uac.getEventService().createEvent(request), executor)
                         .thenApply(empty -> request.getEventUuid(), executor));
               }
               return InternalFuture.sequence(deletedEventUUIDFutures, executor);
