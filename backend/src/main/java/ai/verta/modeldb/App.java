@@ -227,7 +227,7 @@ public class App extends CommonApp {
       throws Exception {
     var liquibaseMigration =
         Boolean.parseBoolean(
-            Optional.ofNullable(System.getenv(CommonConstants.LIQUIBASE_MIGRATION))
+            Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))
                 .orElse("false"));
 
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
