@@ -427,7 +427,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       // Get self allowed resources id where user has delete permission
       var modelDBServiceResourceTypes =
           ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-      List<String> allowedRepositoryIds =
+      Collection<String> allowedRepositoryIds =
           mdbRoleService.getAccessibleResourceIdsByActions(
               modelDBServiceResourceTypes,
               ModelDBServiceActions.DELETE,
@@ -452,7 +452,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public void deleteRepositories(
-      Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds) {
+      Session session, ExperimentRunDAO experimentRunDAO, Collection<String> allowedRepositoryIds) {
     var deletedRepositoriesQuery =
         session
             .createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING)
@@ -473,7 +473,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   @Override
   public Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
       throws ModelDBException {
-    List<String> allowedRepositoryIds =
+    Collection<String> allowedRepositoryIds =
         mdbRoleService.getAccessibleResourceIdsByActions(
             ModelDBServiceResourceTypes.REPOSITORY,
             ModelDBServiceActions.DELETE,

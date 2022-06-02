@@ -23,6 +23,7 @@ import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -59,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -375,14 +377,11 @@ public class FutureExperimentDAO {
               ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
           .thenApply(
               resources -> {
-                boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+                boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
                   return new QueryFilterContext();
                 } else {
-                  List<String> accessibleProjectIds =
-                      resources.stream()
-                          .flatMap(x -> x.getResourceIdsList().stream())
-                          .collect(Collectors.toList());
+                  Set<String> accessibleProjectIds = RoleServiceUtils.getResourceIds(resources);
                   if (accessibleProjectIds.isEmpty()) {
                     return null;
                   } else {
