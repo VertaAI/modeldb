@@ -2,7 +2,6 @@ package ai.verta.modeldb.common.config;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -242,8 +241,6 @@ public abstract class Config {
   }
 
   public boolean isMigration() {
-    return Boolean.parseBoolean(
-        Optional.ofNullable("false")
-            .orElse("false"));
+    return Boolean.parseBoolean(Optional.ofNullable("false").orElse("false"));
   }
 }
