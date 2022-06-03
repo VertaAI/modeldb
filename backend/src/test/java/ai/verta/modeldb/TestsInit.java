@@ -97,13 +97,13 @@ public class TestsInit {
     testConfig = TestConfig.getInstance();
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
     // Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
-    authService = services.authService;
-    // Initialize data access
-    daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    App.migrate(testConfig.getDatabase(), testConfig.migrations);
+//    services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
+//    authService = services.authService;
+//    // Initialize data access
+//    daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
+//    App.migrate(testConfig.getDatabase(), testConfig.migrations);
 
-    App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
+//    App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
@@ -184,7 +184,7 @@ public class TestsInit {
 
   @AfterClass
   public static void removeServerAndService() throws InterruptedException {
-    App.initiateShutdown(0);
+//    App.initiateShutdown(0);
 
     cleanUpResources();
 

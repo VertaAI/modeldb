@@ -20,6 +20,7 @@
 package ai.verta.modeldb.health;
 
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.utils.JdbiUtil;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -77,13 +78,27 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       globalStatus = getStatus("");
       if (request.getService().equals("ready")) {
         if (globalStatus == ServingStatus.SERVING) {
-          setStatus("ready", modelDBHibernateUtil.checkReady());
+          ServingStatus hibernateConnectionStatus = modelDBHibernateUtil.checkReady();
+          ServingStatus jdbiConnectionStatus = JdbiUtil.checkReady();
+          if (hibernateConnectionStatus.equals(ServingStatus.SERVING)
+              && jdbiConnectionStatus.equals(ServingStatus.SERVING)) {
+            setStatus("ready", ServingStatus.SERVING);
+          } else {
+            setStatus("ready", ServingStatus.NOT_SERVING);
+          }
         } else {
           // Return default NOT_SERVING status
           return globalStatus;
         }
       } else if (request.getService().equals("live")) {
-        setStatus("live", modelDBHibernateUtil.checkLive());
+        ServingStatus hibernateConnectionStatus = modelDBHibernateUtil.checkLive();
+        ServingStatus jdbiConnectionStatus = JdbiUtil.checkLive();
+        if (hibernateConnectionStatus.equals(ServingStatus.SERVING)
+            && jdbiConnectionStatus.equals(ServingStatus.SERVING)) {
+          setStatus("live", ServingStatus.SERVING);
+        } else {
+          setStatus("live", ServingStatus.NOT_SERVING);
+        }
       }
     }
     return getStatus(request.getService());
