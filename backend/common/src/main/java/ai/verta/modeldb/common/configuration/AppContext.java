@@ -12,19 +12,20 @@ import org.springframework.lang.NonNull;
 @Configuration
 public class AppContext implements ApplicationContextAware {
 
-  private static AppContext appContext;
-  public ApplicationContext applicationContext;
+  private static final AppContext appContext = new AppContext();
+  private ApplicationContext applicationContext;
 
   public static AppContext getInstance() {
-    if (appContext == null) {
-      appContext = new AppContext();
-    }
     return appContext;
   }
 
   @Override
   public void setApplicationContext(@NonNull ApplicationContext applicationContext) {
     this.applicationContext = applicationContext;
+  }
+
+  public ApplicationContext getApplicationContext() {
+    return applicationContext;
   }
 
   /**
@@ -36,15 +37,15 @@ public class AppContext implements ApplicationContextAware {
     SpringApplication.exit(this.applicationContext, () -> returnCode);
   }
 
-  public void registeredBean(String controllerBeanName, Class<?> className) {
+  public void registerBean(String controllerBeanName, Class<?> className) {
     AutowireCapableBeanFactory factory = this.applicationContext.getAutowireCapableBeanFactory();
     BeanDefinitionRegistry registry = (BeanDefinitionRegistry) factory;
 
-    // Remove nfsController bean if exists
+    // Remove bean if it is already exists in registry before creating new one.
     if (registry.containsBeanDefinition(controllerBeanName)) {
       registry.removeBeanDefinition(controllerBeanName);
     }
-    // create nfsController bean based on condition
+    // Create bean as per given function arguments
     GenericBeanDefinition gbd = new GenericBeanDefinition();
     gbd.setBeanClass(className);
     registry.registerBeanDefinition(controllerBeanName, gbd);

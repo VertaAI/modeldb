@@ -12,7 +12,7 @@ public class GracefulShutdownBeans {
 
   @Bean
   public GracefulShutdown gracefulShutdown(Config config) {
-    if (config == null || config.getSpringServer().getShutdownTimeout() == null) {
+    if (config.getSpringServer().getShutdownTimeout() == null) {
       return new GracefulShutdown(30L);
     }
     return new GracefulShutdown(config.getSpringServer().getShutdownTimeout());

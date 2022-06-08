@@ -78,30 +78,26 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       globalStatus = getStatus("");
       if (request.getService().equals("ready")) {
         if (globalStatus == ServingStatus.SERVING) {
-          ServingStatus hibernateConnectionStatus = modelDBHibernateUtil.checkReady();
-          ServingStatus jdbiConnectionStatus = JdbiUtil.checkReady();
-          if (hibernateConnectionStatus.equals(ServingStatus.SERVING)
-              && jdbiConnectionStatus.equals(ServingStatus.SERVING)) {
-            setStatus("ready", ServingStatus.SERVING);
-          } else {
-            setStatus("ready", ServingStatus.NOT_SERVING);
-          }
+          setServingStatus(modelDBHibernateUtil.checkReady(), JdbiUtil.checkReady(), "ready");
         } else {
           // Return default NOT_SERVING status
           return globalStatus;
         }
       } else if (request.getService().equals("live")) {
-        ServingStatus hibernateConnectionStatus = modelDBHibernateUtil.checkLive();
-        ServingStatus jdbiConnectionStatus = JdbiUtil.checkLive();
-        if (hibernateConnectionStatus.equals(ServingStatus.SERVING)
-            && jdbiConnectionStatus.equals(ServingStatus.SERVING)) {
-          setStatus("live", ServingStatus.SERVING);
-        } else {
-          setStatus("live", ServingStatus.NOT_SERVING);
-        }
+        setServingStatus(modelDBHibernateUtil.checkLive(), JdbiUtil.checkLive(), "live");
       }
     }
     return getStatus(request.getService());
+  }
+
+  private void setServingStatus(
+      ServingStatus hibernateConnectionStatus, ServingStatus jdbiConnectionStatus, String status) {
+    if (hibernateConnectionStatus.equals(ServingStatus.SERVING)
+        && jdbiConnectionStatus.equals(ServingStatus.SERVING)) {
+      setStatus(status, ServingStatus.SERVING);
+    } else {
+      setStatus(status, ServingStatus.NOT_SERVING);
+    }
   }
 
   void setStatus(String service, ServingStatus status) {
