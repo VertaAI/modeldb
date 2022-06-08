@@ -28,7 +28,6 @@ import ai.verta.modeldb.lineage.LineageServiceImpl;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.project.FutureProjectServiceImpl;
-import ai.verta.modeldb.utils.JdbiUtil;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
@@ -39,7 +38,6 @@ import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
 import io.prometheus.client.Gauge;
 import java.io.IOException;
-import java.sql.SQLException;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -109,11 +107,6 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public JdbiUtil jdbiUtil(MDBConfig config) throws SQLException, InterruptedException {
-    return JdbiUtil.getInstance(config);
-  }
-
-  @Bean
   ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService)
       throws IOException {
     // Initialize services that we depend on
@@ -169,7 +162,6 @@ public class AppConfigBeans {
       MDBConfig config,
       ServiceSet services,
       DAOSet daos,
-      JdbiUtil jdbiUtil,
       Executor grpcExecutor) {
     return args -> {
       try {
@@ -179,7 +171,7 @@ public class AppConfigBeans {
         logger.setLevel(Level.WARNING);
 
         // Initialize database configuration and maybe run migration
-        if (Migration.migrate(config, jdbiUtil, grpcExecutor)) {
+        if (Migration.migrate(config)) {
           LOGGER.info("Migrations have completed.  System exiting.");
           appContext.initiateShutdown(0);
           return;

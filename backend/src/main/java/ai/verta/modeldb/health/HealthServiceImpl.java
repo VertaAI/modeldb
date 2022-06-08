@@ -20,7 +20,6 @@
 package ai.verta.modeldb.health;
 
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.utils.JdbiUtil;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import io.grpc.Status;
 import io.grpc.StatusException;
@@ -78,22 +77,20 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       globalStatus = getStatus("");
       if (request.getService().equals("ready")) {
         if (globalStatus == ServingStatus.SERVING) {
-          setServingStatus(modelDBHibernateUtil.checkReady(), JdbiUtil.checkReady(), "ready");
+          setServingStatus(modelDBHibernateUtil.checkReady(), "ready");
         } else {
           // Return default NOT_SERVING status
           return globalStatus;
         }
       } else if (request.getService().equals("live")) {
-        setServingStatus(modelDBHibernateUtil.checkLive(), JdbiUtil.checkLive(), "live");
+        setServingStatus(modelDBHibernateUtil.checkLive(), "live");
       }
     }
     return getStatus(request.getService());
   }
 
-  private void setServingStatus(
-      ServingStatus hibernateConnectionStatus, ServingStatus jdbiConnectionStatus, String status) {
-    if (hibernateConnectionStatus.equals(ServingStatus.SERVING)
-        && jdbiConnectionStatus.equals(ServingStatus.SERVING)) {
+  private void setServingStatus(ServingStatus hibernateConnectionStatus, String status) {
+    if (hibernateConnectionStatus.equals(ServingStatus.SERVING)) {
       setStatus(status, ServingStatus.SERVING);
     } else {
       setStatus(status, ServingStatus.NOT_SERVING);

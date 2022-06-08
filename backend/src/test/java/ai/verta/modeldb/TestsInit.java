@@ -21,7 +21,6 @@ import ai.verta.modeldb.monitoring.MonitoringInterceptor;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
-import ai.verta.modeldb.utils.JdbiUtil;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
@@ -110,7 +109,7 @@ public class TestsInit {
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    Migration.migrate(testConfig, JdbiUtil.getInstance(testConfig), handleExecutor);
+    Migration.migrate(testConfig);
 
     new AppConfigBeans(new AppContext())
         .initializeBackendServices(serverBuilder, services, daos, handleExecutor);
