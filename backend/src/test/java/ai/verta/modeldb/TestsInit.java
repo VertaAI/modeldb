@@ -192,8 +192,6 @@ public class TestsInit {
 
   @AfterClass
   public static void removeServerAndService() throws InterruptedException {
-    //    App.initiateShutdown(0);
-
     cleanUpResources();
 
     // shutdown test server
