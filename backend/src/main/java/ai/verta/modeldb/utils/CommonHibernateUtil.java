@@ -44,7 +44,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
   // private HibernateStatisticsCollector hibernateStatisticsCollector;
 
   public Connection getConnection() throws SQLException {
-    return sessionFactory
+    return getSessionFactory()
         .getSessionFactoryOptions()
         .getServiceRegistry()
         .getService(ConnectionProvider.class)
