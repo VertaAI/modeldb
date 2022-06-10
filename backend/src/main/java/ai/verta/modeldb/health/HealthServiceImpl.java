@@ -77,16 +77,24 @@ public class HealthServiceImpl extends HealthGrpc.HealthImplBase {
       globalStatus = getStatus("");
       if (request.getService().equals("ready")) {
         if (globalStatus == ServingStatus.SERVING) {
-          setStatus("ready", modelDBHibernateUtil.checkReady());
+          setServingStatus(modelDBHibernateUtil.checkReady(), "ready");
         } else {
           // Return default NOT_SERVING status
           return globalStatus;
         }
       } else if (request.getService().equals("live")) {
-        setStatus("live", modelDBHibernateUtil.checkLive());
+        setServingStatus(modelDBHibernateUtil.checkLive(), "live");
       }
     }
     return getStatus(request.getService());
+  }
+
+  private void setServingStatus(ServingStatus hibernateConnectionStatus, String status) {
+    if (hibernateConnectionStatus.equals(ServingStatus.SERVING)) {
+      setStatus(status, ServingStatus.SERVING);
+    } else {
+      setStatus(status, ServingStatus.NOT_SERVING);
+    }
   }
 
   void setStatus(String service, ServingStatus status) {

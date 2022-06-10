@@ -1,22 +1,28 @@
-package ai.verta.modeldb.cron_jobs;
+package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.config.CronJobConfig;
 import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.cron_jobs.CleanUpEntitiesCron;
+import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
+import ai.verta.modeldb.cron_jobs.PopulateEnvironmentInRunCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
+@Configuration
 public class CronJobUtils {
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
 
-  public static void initializeCronJobs(MDBConfig mdbConfig, ServiceSet services) {
-
+  @Bean
+  public CronJobUtils initializeCronJobs(MDBConfig mdbConfig, ServiceSet services) {
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
     if (mdbConfig.getCron_job() != null) {
       for (Map.Entry<String, CronJobConfig> cronJob : mdbConfig.getCron_job().entrySet()) {
@@ -55,5 +61,6 @@ public class CronJobUtils {
       }
     }
     LOGGER.info("Exit from CronJobUtils: initializeBasedOnConfig()");
+    return this;
   }
 }

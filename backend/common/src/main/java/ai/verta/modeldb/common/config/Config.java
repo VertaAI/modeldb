@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.config;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -238,5 +239,11 @@ public abstract class Config {
       openTelemetry = initializeOpenTelemetry();
     }
     return openTelemetry;
+  }
+
+  public boolean isMigration() {
+    return Boolean.parseBoolean(
+        Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))
+            .orElse("false"));
   }
 }
