@@ -1,25 +1,16 @@
-package ai.verta.modeldb.configuration;
+package ai.verta.modeldb.reconcilers;
 
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
-import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TestConfig;
-import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
-import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
-import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
-import ai.verta.modeldb.reconcilers.SoftDeleteRepositories;
-import ai.verta.modeldb.reconcilers.UpdateExperimentTimestampReconcile;
-import ai.verta.modeldb.reconcilers.UpdateProjectTimestampReconcile;
-import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconcile;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-@Configuration
 public class ReconcilerInitializer {
   private static final Logger LOGGER = LogManager.getLogger(ReconcilerInitializer.class);
   public static SoftDeleteProjects softDeleteProjects;
@@ -32,12 +23,10 @@ public class ReconcilerInitializer {
   public static UpdateProjectTimestampReconcile updateProjectTimestampReconcile;
   public static SendEventsWithCleanUp sendEventsWithCleanUp;
 
-  @Bean
-  public ReconcilerInitializer initialize(
-      MDBConfig config, ServiceSet services, DAOSet daos, Executor executor) {
+  public static void initialize(
+      Config config, ServiceSet services, DAOSet daos, FutureJdbi futureJdbi, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
 
-    var futureJdbi = config.getJdbi();
     ReconcilerConfig reconcilerConfig = new ReconcilerConfig(config instanceof TestConfig);
 
     softDeleteProjects =
@@ -67,6 +56,5 @@ public class ReconcilerInitializer {
     }
 
     LOGGER.info("Exit from ReconcilerUtils: initialize()");
-    return this;
   }
 }

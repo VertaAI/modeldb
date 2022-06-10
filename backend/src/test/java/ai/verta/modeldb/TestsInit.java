@@ -3,21 +3,16 @@ package ai.verta.modeldb;
 import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
-import ai.verta.modeldb.configuration.AppConfigBeans;
-import ai.verta.modeldb.configuration.CronJobUtils;
-import ai.verta.modeldb.configuration.Migration;
-import ai.verta.modeldb.configuration.ReconcilerInitializer;
+import ai.verta.modeldb.cron_jobs.CronJobUtils;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
+import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
@@ -101,25 +96,22 @@ public class TestsInit {
 
     testConfig = TestConfig.getInstance();
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
-
-    // TODO: FIXME: fix init flow as per spring bean initialization
-
-    //  Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, new NFSService(new FileStorageProperties()));
+    // Initialize services that we depend on
+    services = ServiceSet.fromConfig(testConfig, testConfig.artifactStoreConfig);
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    Migration.migrate(testConfig);
+    App.migrate(testConfig.getDatabase(), testConfig.migrations);
 
-    new AppConfigBeans(new AppContext())
-        .initializeBackendServices(serverBuilder, services, daos, handleExecutor);
+    App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
     serverBuilder.intercept(new AuthInterceptor());
     // Initialize cron jobs
-    new CronJobUtils().initializeCronJobs(testConfig, services);
-    new ReconcilerInitializer().initialize(testConfig, services, daos, handleExecutor);
+    CronJobUtils.initializeCronJobs(testConfig, services);
+    ReconcilerInitializer.initialize(
+        testConfig, services, daos, testConfig.getJdbi(), handleExecutor);
 
     if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig);
@@ -192,6 +184,8 @@ public class TestsInit {
 
   @AfterClass
   public static void removeServerAndService() throws InterruptedException {
+    App.initiateShutdown(0);
+
     cleanUpResources();
 
     // shutdown test server
