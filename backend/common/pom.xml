@@ -143,21 +143,6 @@
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_spring_boot</artifactId>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_servlet -->
-        <dependency>
-            <groupId>io.prometheus</groupId>
-            <artifactId>simpleclient_servlet</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_hotspot -->
-        <dependency>
-            <groupId>io.prometheus</groupId>
-            <artifactId>simpleclient_hotspot</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/io.prometheus.jmx/collector -->
-        <dependency>
-            <groupId>io.prometheus.jmx</groupId>
-            <artifactId>collector</artifactId>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>

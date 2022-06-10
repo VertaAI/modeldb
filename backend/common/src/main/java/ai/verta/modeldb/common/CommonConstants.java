@@ -13,9 +13,6 @@ public interface CommonConstants {
   String EMPTY_STRING = "";
   String S3 = "S3";
   Integer TAG_LENGTH = 40;
-  String ENABLE_LIQUIBASE_MIGRATION_ENV_VAR = "LIQUIBASE_MIGRATION";
-  String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
-  String BACKEND_PID = "verta-backend.pid";
 
   enum UserIdentifier {
     VERTA_ID,
