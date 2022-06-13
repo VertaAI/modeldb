@@ -29,7 +29,8 @@ public class App {
   }
 
   public static void main(String[] args) throws Exception {
-    var pathToPidFile = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
+    var pathToPidFile =
+        System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
     CommonUtils.resolvePortCollisionIfExists(pathToPidFile);
     SpringApplication application = new SpringApplication(App.class);
     application.addListeners(new ApplicationPidFileWriter(pathToPidFile));

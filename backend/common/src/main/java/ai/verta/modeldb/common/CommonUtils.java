@@ -319,7 +319,8 @@ public class CommonUtils {
   }
 
   public static void cleanUpPIDFile() {
-    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
+    var path =
+        System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
     File pidFile = new File(path);
     if (pidFile.exists()) {
       pidFile.deleteOnExit();
