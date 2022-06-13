@@ -2097,7 +2097,7 @@ public class RdbmsUtils {
    */
   public static void validatePredicates(
       String entityName,
-      List<String> accessibleEntityIds,
+      Collection<String> accessibleEntityIds,
       KeyValueQuery predicate,
       boolean roleServiceImplemented) {
     if (predicate.getKey().equals(ModelDBConstants.ID)) {

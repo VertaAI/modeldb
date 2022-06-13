@@ -19,8 +19,7 @@ import org.apache.logging.log4j.Logger;
 
 public class TelemetryUtils {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryUtils.class);
-  private static final ModelDBHibernateUtil modelDBHibernateUtil =
-      ModelDBHibernateUtil.getInstance();
+  private static ModelDBHibernateUtil modelDBHibernateUtil;
   private static boolean telemetryInitialized = false;
   public static String telemetryUniqueIdentifier = null;
   private String consumer = ModelDBConstants.TELEMETRY_CONSUMER_URL;
@@ -29,6 +28,7 @@ public class TelemetryUtils {
     if (consumer != null && !consumer.isEmpty()) {
       this.consumer = consumer;
     }
+    modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     initializeTelemetry();
   }
 

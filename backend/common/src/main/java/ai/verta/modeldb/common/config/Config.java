@@ -248,6 +248,7 @@ public abstract class Config {
 
   public boolean isMigration() {
     return Boolean.parseBoolean(
-        Optional.ofNullable(System.getenv(CommonConstants.LIQUIBASE_MIGRATION)).orElse("false"));
+        Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))
+            .orElse("false"));
   }
 }

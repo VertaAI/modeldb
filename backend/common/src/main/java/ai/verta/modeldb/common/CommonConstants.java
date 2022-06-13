@@ -13,13 +13,10 @@ public interface CommonConstants {
   String EMPTY_STRING = "";
   String S3 = "S3";
   Integer TAG_LENGTH = 40;
-  Integer THREAD_COUNT = 256;
-  String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
+  String ENABLE_LIQUIBASE_MIGRATION_ENV_VAR = "LIQUIBASE_MIGRATION";
   String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
   String BACKEND_PID = "verta-backend.pid";
   String FILENAME = "FileName";
-  String PUT = "put";
-  String GET = "get";
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
   String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";

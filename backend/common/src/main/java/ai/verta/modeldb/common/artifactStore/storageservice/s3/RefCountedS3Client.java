@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
+import ai.verta.modeldb.configuration.CronJobUtils;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.services.s3.AmazonS3;
 import java.util.concurrent.atomic.AtomicInteger;

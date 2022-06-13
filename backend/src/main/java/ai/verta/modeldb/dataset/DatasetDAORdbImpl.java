@@ -191,7 +191,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
   @Override
   public Boolean deleteDatasets(List<String> datasetIds) {
     // Get self allowed resources id where user has delete permission
-    List<String> allowedDatasetIds =
+    Collection<String> allowedDatasetIds =
         mdbRoleService.getAccessibleResourceIdsByActions(
             ModelDBServiceResourceTypes.DATASET,
             ModelDBActionEnum.ModelDBServiceActions.DELETE,
@@ -253,7 +253,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
       ResourceVisibility datasetVisibility) {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
-      List<String> accessibleDatasetIds =
+      Collection<String> accessibleDatasetIds =
           mdbRoleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),
@@ -773,7 +773,7 @@ public class DatasetDAORdbImpl implements DatasetDAO {
 
       // get list of accessible datasets
       @SuppressWarnings("unchecked")
-      List<String> accessibleDatasetIds =
+      Collection<String> accessibleDatasetIds =
           mdbRoleService.getAccessibleResourceIds(
               null,
               new CollaboratorUser(authService, currentLoginUserInfo),

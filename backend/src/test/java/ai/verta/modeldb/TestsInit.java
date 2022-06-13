@@ -1,6 +1,8 @@
 package ai.verta.modeldb;
 
 import ai.verta.artifactstore.ArtifactStoreGrpc;
+import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
+import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
 import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
@@ -8,18 +10,20 @@ import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
-import ai.verta.modeldb.cron_jobs.CronJobUtils;
+import ai.verta.modeldb.configuration.AppConfigBeans;
+import ai.verta.modeldb.configuration.CronJobUtils;
+import ai.verta.modeldb.configuration.Migration;
+import ai.verta.modeldb.configuration.ReconcilerInitializer;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
-import ai.verta.modeldb.reconcilers.ReconcilerInitializer;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
-import ai.verta.modeldb.utils.JdbiUtil;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.OrganizationServiceGrpc;
@@ -55,6 +59,7 @@ public class TestsInit {
       collaboratorServiceStubClient2;
   protected static ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
   protected static ProjectServiceGrpc.ProjectServiceBlockingStub client2ProjectServiceStub;
+  protected static ProjectServiceBlockingStub serviceUserProjectServiceStub;
   protected static ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
   protected static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub
       experimentRunServiceStub;
@@ -71,6 +76,7 @@ public class TestsInit {
   protected static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
   protected static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
   protected static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStubClient2;
+  protected static DatasetServiceBlockingStub serviceUserDatasetServiceStub;
   protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStub;
   protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
@@ -89,43 +95,47 @@ public class TestsInit {
 
     String serverName = InProcessServerBuilder.generateName();
     serverBuilder = InProcessServerBuilder.forName(serverName).directExecutor();
+    InProcessChannelBuilder serviceAccountClientChannelBuilder =
+        InProcessChannelBuilder.forName(serverName).directExecutor();
     InProcessChannelBuilder client1ChannelBuilder =
         InProcessChannelBuilder.forName(serverName).directExecutor();
     InProcessChannelBuilder client2ChannelBuilder =
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
-    JdbiUtil jdbiUtil = JdbiUtil.getInstance(testConfig);
     handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
+
     // Initialize services that we depend on
     var artifactStoreConfig = testConfig.artifactStoreConfig;
     ArtifactStoreService artifactStoreService = new NoopArtifactStoreService();
     if (artifactStoreConfig.getArtifactStoreType().equals("S3")) {
-      artifactStoreService =
-          new S3Service(artifactStoreConfig, artifactStoreConfig.getS3().getCloudBucketName());
+      artifactStoreService = new S3Service(artifactStoreConfig);
     } else if (artifactStoreConfig.getArtifactStoreType().equals("NFS")) {
       String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
-      artifactStoreService =
-          new NFSService(new FileStorageProperties(rootDir), artifactStoreConfig);
+      var fileProperties = new FileStorageProperties();
+      fileProperties.setUploadDir(rootDir);
+      artifactStoreService = new NFSService(fileProperties, artifactStoreConfig);
     }
     services = ServiceSet.fromConfig(testConfig, artifactStoreService);
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    App.migrate(testConfig, jdbiUtil, handleExecutor);
+    Migration.migrate(testConfig);
 
-    App.initializeBackendServices(serverBuilder, services, daos, handleExecutor);
+    new AppConfigBeans(new AppContext())
+        .initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
     serverBuilder.intercept(new AuthInterceptor());
     // Initialize cron jobs
-    CronJobUtils.initializeCronJobs(testConfig, services);
-    ReconcilerInitializer.initialize(
-        testConfig, services, daos, testConfig.getJdbi(), handleExecutor);
+    new CronJobUtils().initializeCronJobs(testConfig, services);
+    new ReconcilerInitializer().initialize(testConfig, services, daos, handleExecutor);
 
     if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
-      authClientInterceptor = new AuthClientInterceptor(testConfig.testUsers);
+      authClientInterceptor = new AuthClientInterceptor(testConfig);
+      serviceAccountClientChannelBuilder.intercept(
+          authClientInterceptor.getServiceAccountClientAuthInterceptor());
       client1ChannelBuilder.intercept(authClientInterceptor.getClient1AuthInterceptor());
       client2ChannelBuilder.intercept(authClientInterceptor.getClient2AuthInterceptor());
     }
@@ -156,12 +166,15 @@ public class TestsInit {
           CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
     }
 
+    ManagedChannel channelServiceUser =
+        serviceAccountClientChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel channel = client1ChannelBuilder.maxInboundMessageSize(1024).build();
     ManagedChannel client2Channel = client2ChannelBuilder.maxInboundMessageSize(1024).build();
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     client2ProjectServiceStub = ProjectServiceGrpc.newBlockingStub(client2Channel);
+    serviceUserProjectServiceStub = ProjectServiceGrpc.newBlockingStub(channelServiceUser);
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStubClient2 = ExperimentRunServiceGrpc.newBlockingStub(client2Channel);
@@ -171,6 +184,7 @@ public class TestsInit {
     metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     datasetServiceStubClient2 = DatasetServiceGrpc.newBlockingStub(client2Channel);
+    serviceUserDatasetServiceStub = DatasetServiceGrpc.newBlockingStub(channelServiceUser);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
@@ -189,8 +203,6 @@ public class TestsInit {
 
   @AfterClass
   public static void removeServerAndService() throws InterruptedException {
-    App.initiateShutdown(0);
-
     cleanUpResources();
 
     // shutdown test server

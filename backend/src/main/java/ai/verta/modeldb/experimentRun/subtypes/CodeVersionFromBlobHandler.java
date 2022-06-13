@@ -14,6 +14,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.GitCodeBlob;
 import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -45,7 +46,7 @@ public class CodeVersionFromBlobHandler {
    */
   public InternalFuture<Map<String, Map<String, CodeVersion>>> getExperimentRunCodeVersionMap(
       Set<String> expRunIds,
-      List<String> selfAllowedRepositoryIds,
+      Collection<String> selfAllowedRepositoryIds,
       boolean allowedAllRepositories) {
     if (!allowedAllRepositories) {
       // If all repositories are not allowed and some one send empty selfAllowedRepositoryIds list

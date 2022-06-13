@@ -50,11 +50,11 @@ public class S3Service implements ArtifactStoreService {
   private final String bucketName;
   private final ArtifactStoreConfig artifactStoreConfig;
 
-  public S3Service(ArtifactStoreConfig artifactStoreConfig, String cloudBucketName)
+  public S3Service(ArtifactStoreConfig artifactStoreConfig)
       throws ModelDBException, IOException {
     this.artifactStoreConfig = artifactStoreConfig;
     s3Client = new S3Client(artifactStoreConfig.getS3());
-    this.bucketName = cloudBucketName;
+    this.bucketName = artifactStoreConfig.getS3().getCloudBucketName();
   }
 
   private Boolean doesBucketExist(String bucketName) throws ModelDBException {
@@ -126,9 +126,9 @@ public class S3Service implements ArtifactStoreService {
     }
 
     HttpMethod reqMethod;
-    if (method.equalsIgnoreCase(CommonConstants.PUT)) {
+    if (method.equalsIgnoreCase("put")) {
       reqMethod = HttpMethod.PUT;
-    } else if (method.equalsIgnoreCase(CommonConstants.GET)) {
+    } else if (method.equalsIgnoreCase("get")) {
       reqMethod = HttpMethod.GET;
     } else {
       var errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
@@ -279,7 +279,7 @@ public class S3Service implements ArtifactStoreService {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("artifact_path", artifactPath);
 
-    if (method.equalsIgnoreCase(CommonConstants.PUT)) {
+    if (method.equalsIgnoreCase("put")) {
       LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
       LOGGER.debug("part number: " + partNumber);
       parameters.put("part_number", partNumber);
@@ -293,7 +293,7 @@ public class S3Service implements ArtifactStoreService {
               artifactStoreConfig.getHost());
       LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
       return url;
-    } else if (method.equalsIgnoreCase(CommonConstants.GET)) {
+    } else if (method.equalsIgnoreCase("get")) {
       LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
       var filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(CommonConstants.FILENAME, filename);
