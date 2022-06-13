@@ -155,7 +155,7 @@ public class NFSService implements ArtifactStoreService {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("artifact_path", artifactPath);
 
-    if (method.equalsIgnoreCase(CommonConstants.PUT)) {
+    if (method.equalsIgnoreCase("put")) {
       LOGGER.trace("NFSService - generatePresignedUrl - put url returned");
       return getUploadUrl(
           parameters,
@@ -163,7 +163,7 @@ public class NFSService implements ArtifactStoreService {
           artifactStoreConfig.getArtifactEndpoint().getGetArtifact(),
           artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
           artifactStoreConfig.getHost());
-    } else if (method.equalsIgnoreCase(CommonConstants.GET)) {
+    } else if (method.equalsIgnoreCase("get")) {
       LOGGER.trace("NFSService - generatePresignedUrl - get url returned");
       var filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put(CommonConstants.FILENAME, filename);

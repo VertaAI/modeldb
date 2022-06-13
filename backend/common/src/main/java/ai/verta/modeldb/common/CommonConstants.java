@@ -17,6 +17,7 @@ public interface CommonConstants {
   String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
   String BACKEND_PID = "verta-backend.pid";
   String FILENAME = "FileName";
+  String FILENAME_QUERY_PARAMETER = "FileName";
   // AWS Releated Constants
   String AWS_ROLE_ARN = "AWS_ROLE_ARN";
   String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";

@@ -51,7 +51,7 @@ public class S3Controller {
 
   @GetMapping(value = {"${artifactEndpoint.getArtifact}/{FileName}"})
   public ResponseEntity<Resource> getArtifact(
-      @PathVariable(value = CommonConstants.FILENAME) String fileName,
+      @PathVariable(value = CommonConstants.FILENAME_QUERY_PARAMETER) String fileName,
       @RequestParam("artifact_path") String artifactPath)
       throws ModelDBException {
     LOGGER.debug("getArtifact called");

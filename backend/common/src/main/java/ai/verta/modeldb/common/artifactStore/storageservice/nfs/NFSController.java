@@ -55,7 +55,7 @@ public class NFSController {
 
   @GetMapping(value = {"${artifactEndpoint.getArtifact}/{FileName}"})
   public ResponseEntity<Resource> getArtifact(
-      @PathVariable(value = CommonConstants.FILENAME) String fileName,
+      @PathVariable(value = CommonConstants.FILENAME_QUERY_PARAMETER) String fileName,
       @RequestParam("artifact_path") String artifactPath,
       HttpServletRequest request)
       throws ModelDBException {
