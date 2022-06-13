@@ -148,7 +148,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/vertamodeldbCommitArtifactPartResponse"
+              "$ref": "#/definitions/modeldbCommitArtifactPartResponse"
             }
           },
           "default": {
@@ -164,7 +164,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/vertamodeldbCommitArtifactPart"
+              "$ref": "#/definitions/modeldbCommitArtifactPart"
             }
           }
         ],
@@ -180,7 +180,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/vertamodeldbCommitMultipartArtifactResponse"
+              "$ref": "#/definitions/modeldbCommitMultipartArtifactResponse"
             }
           },
           "default": {
@@ -196,7 +196,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/vertamodeldbCommitMultipartArtifact"
+              "$ref": "#/definitions/modeldbCommitMultipartArtifact"
             }
           }
         ],
@@ -705,7 +705,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/vertamodeldbGetCommittedArtifactPartsResponse"
+              "$ref": "#/definitions/modeldbGetCommittedArtifactPartsResponse"
             }
           },
           "default": {
@@ -1268,7 +1268,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/vertamodeldbGetUrlForArtifactResponse"
+              "$ref": "#/definitions/modeldbGetUrlForArtifactResponse"
             }
           },
           "default": {
@@ -1284,7 +1284,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/vertamodeldbGetUrlForArtifact"
+              "$ref": "#/definitions/modeldbGetUrlForArtifact"
             }
           }
         ],
@@ -2526,6 +2526,37 @@
         }
       }
     },
+    "modeldbCommitArtifactPart": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/commonArtifactPart"
+        }
+      }
+    },
+    "modeldbCommitArtifactPartResponse": {
+      "type": "object"
+    },
+    "modeldbCommitMultipartArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        }
+      }
+    },
+    "modeldbCommitMultipartArtifactResponse": {
+      "type": "object"
+    },
     "modeldbCreateExperimentRun": {
       "type": "object",
       "properties": {
@@ -3040,6 +3071,17 @@
         }
       }
     },
+    "modeldbGetCommittedArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifactPart"
+          }
+        }
+      }
+    },
     "modeldbGetDatasetsResponse": {
       "type": "object",
       "properties": {
@@ -3169,6 +3211,45 @@
           "items": {
             "type": "string"
           }
+        }
+      }
+    },
+    "modeldbGetUrlForArtifact": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "key": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "modeldbGetUrlForArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -3778,87 +3859,6 @@
         }
       },
       "title": "For pagination"
-    },
-    "vertamodeldbCommitArtifactPart": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
-        "artifact_part": {
-          "$ref": "#/definitions/commonArtifactPart"
-        }
-      }
-    },
-    "vertamodeldbCommitArtifactPartResponse": {
-      "type": "object"
-    },
-    "vertamodeldbCommitMultipartArtifact": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        }
-      }
-    },
-    "vertamodeldbCommitMultipartArtifactResponse": {
-      "type": "object"
-    },
-    "vertamodeldbGetCommittedArtifactPartsResponse": {
-      "type": "object",
-      "properties": {
-        "artifact_parts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonArtifactPart"
-          }
-        }
-      }
-    },
-    "vertamodeldbGetUrlForArtifact": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "key": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "vertamodeldbGetUrlForArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "url": {
-          "type": "string"
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
-        "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
     },
     "vertamodeldbLocation": {
       "type": "object",
