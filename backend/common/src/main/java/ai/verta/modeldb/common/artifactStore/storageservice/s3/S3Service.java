@@ -50,8 +50,7 @@ public class S3Service implements ArtifactStoreService {
   private final String bucketName;
   private final ArtifactStoreConfig artifactStoreConfig;
 
-  public S3Service(ArtifactStoreConfig artifactStoreConfig)
-      throws ModelDBException, IOException {
+  public S3Service(ArtifactStoreConfig artifactStoreConfig) throws ModelDBException, IOException {
     this.artifactStoreConfig = artifactStoreConfig;
     s3Client = new S3Client(artifactStoreConfig.getS3());
     this.bucketName = artifactStoreConfig.getS3().getCloudBucketName();
