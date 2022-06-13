@@ -15,7 +15,7 @@ public interface CommonConstants {
   Integer TAG_LENGTH = 40;
   String ENABLE_LIQUIBASE_MIGRATION_ENV_VAR = "LIQUIBASE_MIGRATION";
   String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
-  String BACKEND_PID = "verta-backend.pid";
+  String BACKEND_PID_FILENAME = "verta-backend.pid";
 
   enum UserIdentifier {
     VERTA_ID,

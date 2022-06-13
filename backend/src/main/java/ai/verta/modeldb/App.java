@@ -10,10 +10,12 @@ import org.springframework.context.annotation.ComponentScan;
 
 /** This class is entry point of modeldb server. */
 @SpringBootApplication
-// Remove bracket () code if in future define any @component outside the defined basePackages.
-@ComponentScan(
-    basePackages =
-        "ai.verta.modeldb.config, ai.verta.modeldb.health, ai.verta.modeldb.configuration, ai.verta.modeldb.common.configuration")
+@ComponentScan({
+  "ai.verta.modeldb.config",
+  "ai.verta.modeldb.health",
+  "ai.verta.modeldb.configuration",
+  "ai.verta.modeldb.common.configuration"
+})
 public class App {
 
   private static App app = null;
@@ -27,10 +29,11 @@ public class App {
   }
 
   public static void main(String[] args) throws Exception {
-    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
-    CommonUtils.resolvePortCollisionIfExists(path);
+    var pathToPidFile =
+        System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
+    CommonUtils.resolvePortCollisionIfExists(pathToPidFile);
     SpringApplication application = new SpringApplication(App.class);
-    application.addListeners(new ApplicationPidFileWriter(path));
+    application.addListeners(new ApplicationPidFileWriter(pathToPidFile));
     application.run(args);
   }
 }

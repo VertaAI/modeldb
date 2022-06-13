@@ -299,8 +299,8 @@ public class CommonUtils {
     return query;
   }
 
-  public static void resolvePortCollisionIfExists(String path) throws Exception {
-    File pidFile = new File(path);
+  public static void resolvePortCollisionIfExists(String pathToPidFile) throws Exception {
+    File pidFile = new File(pathToPidFile);
     if (pidFile.exists()) {
       try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {
         String pidString = reader.readLine();
@@ -319,11 +319,12 @@ public class CommonUtils {
   }
 
   public static void cleanUpPIDFile() {
-    var path = System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID;
+    var path =
+        System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
     File pidFile = new File(path);
     if (pidFile.exists()) {
       pidFile.deleteOnExit();
-      LOGGER.trace(CommonConstants.BACKEND_PID + " file is deleted: {}", pidFile.exists());
+      LOGGER.trace(CommonConstants.BACKEND_PID_FILENAME + " file is deleted: {}", pidFile.exists());
     }
   }
 }
