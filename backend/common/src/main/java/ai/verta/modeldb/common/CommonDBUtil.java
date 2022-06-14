@@ -318,6 +318,11 @@ public abstract class CommonDBUtil {
     Connection connection =
         DriverManager.getConnection(
             dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
+
+    if (rdbConfiguration.isH2()) {
+      LOGGER.debug("database driver is H2...skipping creation");
+      return;
+    }
     ResultSet resultSet = connection.getMetaData().getCatalogs();
 
     while (resultSet.next()) {

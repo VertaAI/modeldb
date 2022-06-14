@@ -32,7 +32,7 @@ public class RdbConfig {
     if (RdbUsername == null || RdbUsername.isEmpty()) {
       throw new InvalidConfigException(base + ".RdbUsername", Config.MISSING_REQUIRED);
     }
-    if (!isPostgres() && !isMysql() && !isMssql()) {
+    if (!isPostgres() && !isMysql() && !isMssql() && !isH2()) {
       throw new InvalidConfigException(base + ".RdbDialect", "Unknown or unsupported dialect.");
     }
 
@@ -61,7 +61,14 @@ public class RdbConfig {
     return RdbDialect.equals("org.hibernate.dialect.SQLServer2008Dialect");
   }
 
+  public boolean isH2() {
+    return RdbDialect.equals("org.hibernate.dialect.H2Dialect");
+  }
+
   public static String buildDatabaseConnectionString(RdbConfig rdb) {
+    if (rdb.isH2()) {
+      return buildDatabaseServerConnectionString(rdb);
+    }
     if (rdb.DBConnectionURL != null) {
       return rdb.DBConnectionURL;
     }
