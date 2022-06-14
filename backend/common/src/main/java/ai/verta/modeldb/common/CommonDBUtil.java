@@ -316,8 +316,8 @@ public abstract class CommonDBUtil {
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
     LOGGER.debug("Connecting to DB URL " + dbUrl);
     Connection connection =
-            DriverManager.getConnection(
-                    dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
+        DriverManager.getConnection(
+            dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
 
     if (rdbConfiguration.isH2()) {
       LOGGER.debug("database driver is H2...skipping creation");
