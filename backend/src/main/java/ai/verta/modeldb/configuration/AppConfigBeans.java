@@ -13,6 +13,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.configuration.AppContext;
+import ai.verta.modeldb.common.configuration.MigrationSetupConfig;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -114,8 +115,12 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
-    if (config.isMigration()) {
+  public DAOSet daoSet(
+      MDBConfig config,
+      ServiceSet services,
+      Executor grpcExecutor,
+      MigrationSetupConfig migrationSetupConfig) {
+    if (migrationSetupConfig.isMigration()) {
       return null;
     }
 

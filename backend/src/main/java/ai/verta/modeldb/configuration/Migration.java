@@ -2,6 +2,7 @@ package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.MssqlMigrationUtil;
+import ai.verta.modeldb.common.configuration.MigrationSetupConfig;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import java.util.Optional;
@@ -13,10 +14,7 @@ public class Migration {
   private static final Logger LOGGER = LogManager.getLogger(Migration.class);
 
   public static boolean migrate(MDBConfig mdbConfig) throws Exception {
-    var liquibaseMigration =
-        Boolean.parseBoolean(
-            Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))
-                .orElse("false"));
+    var liquibaseMigration = new MigrationSetupConfig().isMigration();
     var databaseConfig = mdbConfig.getDatabase();
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(mdbConfig, databaseConfig);

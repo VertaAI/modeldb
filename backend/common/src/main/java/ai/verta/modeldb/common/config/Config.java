@@ -240,10 +240,4 @@ public abstract class Config {
     }
     return openTelemetry;
   }
-
-  public boolean isMigration() {
-    return Boolean.parseBoolean(
-        Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))
-            .orElse("false"));
-  }
 }
