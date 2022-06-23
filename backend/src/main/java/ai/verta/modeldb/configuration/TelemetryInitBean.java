@@ -1,7 +1,6 @@
 package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.common.config.InvalidConfigException;
-import ai.verta.modeldb.common.configuration.MigrationSetupConfig;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBUtils;

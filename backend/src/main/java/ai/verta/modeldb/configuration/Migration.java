@@ -1,23 +1,24 @@
 package ai.verta.modeldb.configuration;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.MssqlMigrationUtil;
-import ai.verta.modeldb.common.configuration.MigrationSetupConfig;
-import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
-import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Migration {
+  private final Logger LOGGER = LogManager.getLogger(Migration.class);
+  private final MigrationSetupConfig migrationSetupConfig;
 
-  private static final Logger LOGGER = LogManager.getLogger(Migration.class);
+  public Migration(MigrationSetupConfig migrationSetupConfig) {
+    this.migrationSetupConfig = migrationSetupConfig;
+  }
 
-  public static boolean migrate(MDBConfig mdbConfig) throws Exception {
-    var liquibaseMigration = new MigrationSetupConfig().isMigration();
-    var databaseConfig = mdbConfig.getDatabase();
+  public void migrate() throws Exception {
+    var liquibaseMigration = migrationSetupConfig.isMigration();
+    var databaseConfig = migrationSetupConfig.getDatabase();
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-    modelDBHibernateUtil.initializedConfigAndDatabase(mdbConfig, databaseConfig);
+    modelDBHibernateUtil.initializedConfigAndDatabase(
+        migrationSetupConfig.getMdbConfig(), databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
       modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
@@ -26,24 +27,14 @@ public class Migration {
       modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
       LOGGER.info("Code migration starting");
-      modelDBHibernateUtil.runMigration(databaseConfig, mdbConfig.migrations);
+      modelDBHibernateUtil.runMigration(databaseConfig, migrationSetupConfig.getMigrations());
       LOGGER.info("Code migration done");
 
       if (databaseConfig.getRdbConfiguration().isMssql()) {
-        MssqlMigrationUtil.migrateToUTF16ForMssql(mdbConfig.getJdbi());
-      }
-
-      var runLiquibaseSeparate =
-          Boolean.parseBoolean(
-              Optional.ofNullable(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE))
-                  .orElse("false"));
-      LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
-      if (runLiquibaseSeparate) {
-        return true;
+        MssqlMigrationUtil.migrateToUTF16ForMssql(migrationSetupConfig.getJdbi());
       }
     }
 
     modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
-    return false;
   }
 }

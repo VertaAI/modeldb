@@ -2,7 +2,6 @@ package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
-import ai.verta.modeldb.common.configuration.MigrationSetupConfig;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
 import ai.verta.modeldb.config.MDBConfig;

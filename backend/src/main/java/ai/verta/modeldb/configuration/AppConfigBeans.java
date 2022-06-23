@@ -13,7 +13,6 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.configuration.AppContext;
-import ai.verta.modeldb.common.configuration.MigrationSetupConfig;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
@@ -50,6 +49,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -115,15 +115,9 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public DAOSet daoSet(
-      MDBConfig config,
-      ServiceSet services,
-      Executor grpcExecutor,
-      MigrationSetupConfig migrationSetupConfig) {
-    if (migrationSetupConfig.isMigration()) {
-      return null;
-    }
-
+  // flag isRunSeparateMigration is true then ignore below function
+  @Conditional(MigrationSetupConfig.class)
+  public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
 
@@ -161,6 +155,36 @@ public class AppConfigBeans {
   }
 
   @Bean
+  public MigrationSetupConfig migrationSetupConfig(MDBConfig mdbConfig) {
+    return new MigrationSetupConfig(mdbConfig);
+  }
+
+  @Bean
+  public Migration migration(MigrationSetupConfig migrationSetupConfig) throws Exception {
+    return new Migration(migrationSetupConfig);
+  }
+
+  @Bean
+  // isRunSeparateMigration is true then execute below function
+  public CommandLineRunner commandLineRunner(
+      Migration migration, MigrationSetupConfig migrationSetupConfig) {
+    return args -> {
+      migration.migrate();
+      LOGGER.info("Migrations have completed");
+
+      var runLiquibaseSeparate = migrationSetupConfig.isRunSeparateMigration();
+      LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
+      if (runLiquibaseSeparate) {
+        LOGGER.info("System exiting");
+        this.appContext.initiateShutdown(0);
+        System.exit(0);
+      }
+    };
+  }
+
+  @Bean
+  // flag isRunSeparateMigration is true then ignore below function
+  @Conditional(MigrationSetupConfig.class)
   public CommandLineRunner commandLineRunner(
       ServerBuilder<?> serverBuilder,
       HealthStatusManager healthStatusManager,
@@ -174,15 +198,6 @@ public class AppConfigBeans {
         final var logger =
             java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
         logger.setLevel(Level.WARNING);
-
-        // Initialize database configuration and maybe run migration
-        if (Migration.migrate(config)) {
-          LOGGER.info("Migrations have completed.  System exiting.");
-          appContext.initiateShutdown(0);
-          return;
-        }
-
-        LOGGER.info("Migration disabled, starting server.");
 
         // Add APIs
         LOGGER.info("Initializing backend services.");
