@@ -2,6 +2,7 @@ package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
 import ai.verta.modeldb.config.MDBConfig;
@@ -16,7 +17,7 @@ import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconcile;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -34,7 +35,9 @@ public class ReconcilerInitializer {
   public static SendEventsWithCleanUp sendEventsWithCleanUp;
 
   @Bean
-  @ConditionalOnBean(DAOSet.class) // the DAOSet is explicitly not valid when doing migrations
+  @ConditionalOnProperty(
+      value = CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR,
+      havingValue = "false")
   public ReconcilerInitializer initialize(
       MDBConfig config, ServiceSet services, DAOSet daos, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
