@@ -115,11 +115,6 @@ public class AppConfigBeans {
   }
 
   @Bean
-  MigrationNotEnabled migrationSentinel() {
-    return new MigrationNotEnabled();
-  }
-
-  @Bean
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
     if (config.isMigration()) {
       return null;
@@ -272,16 +267,5 @@ public class AppConfigBeans {
     appContext.initiateShutdown(0);
 
     CommonUtils.cleanUpPIDFile();
-  }
-
-  public static class MigrationNotEnabled implements Condition {
-
-    @Override
-    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-      System.out.println("MigrationNotEnabled.matches");
-      String migrationEnvironmentValue =
-          System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR);
-      return !Boolean.parseBoolean(Optional.ofNullable(migrationEnvironmentValue).orElse("false"));
-    }
   }
 }
