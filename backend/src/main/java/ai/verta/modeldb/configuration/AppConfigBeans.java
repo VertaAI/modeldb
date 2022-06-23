@@ -9,7 +9,6 @@ import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
@@ -50,7 +49,6 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
-import org.springframework.core.type.AnnotatedTypeMetadata;
 
 @Configuration
 @EnableConfigurationProperties({FileStorageProperties.class})
