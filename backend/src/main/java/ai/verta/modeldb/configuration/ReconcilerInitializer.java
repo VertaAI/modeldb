@@ -34,7 +34,7 @@ public class ReconcilerInitializer {
   public static SendEventsWithCleanUp sendEventsWithCleanUp;
 
   @Bean
-  @ConditionalOnBean(DAOSet.class) // the DAOSet is explicitly not valid when doing migrations
+  @ConditionalOnBean(AppConfigBeans.MigrationNotEnabled.class)
   public ReconcilerInitializer initialize(
       MDBConfig config, ServiceSet services, DAOSet daos, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");

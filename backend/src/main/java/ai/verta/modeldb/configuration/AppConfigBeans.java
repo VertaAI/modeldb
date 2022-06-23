@@ -9,6 +9,7 @@ import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
@@ -48,8 +49,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.*;
+import org.springframework.core.type.AnnotatedTypeMetadata;
 
 @Configuration
 @EnableConfigurationProperties({FileStorageProperties.class})
@@ -111,6 +112,11 @@ public class AppConfigBeans {
       throws IOException {
     // Initialize services that we depend on
     return ServiceSet.fromConfig(config, artifactStoreService);
+  }
+
+  @Bean
+  MigrationNotEnabled migrationSentinel() {
+    return new MigrationNotEnabled();
   }
 
   @Bean
@@ -266,5 +272,16 @@ public class AppConfigBeans {
     appContext.initiateShutdown(0);
 
     CommonUtils.cleanUpPIDFile();
+  }
+
+  public static class MigrationNotEnabled implements Condition {
+
+    @Override
+    public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+      System.out.println("MigrationNotEnabled.matches");
+      String migrationEnvironmentValue =
+          System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR);
+      return !Boolean.parseBoolean(Optional.ofNullable(migrationEnvironmentValue).orElse("false"));
+    }
   }
 }
