@@ -34,7 +34,7 @@ public class ReconcilerInitializer {
   public static SendEventsWithCleanUp sendEventsWithCleanUp;
 
   @Bean
-  @Conditional(MigrationSetupConfig.class)
+  @Conditional(EnableReconcilers.class)
   public ReconcilerInitializer initialize(
       MDBConfig config, ServiceSet services, DAOSet daos, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");

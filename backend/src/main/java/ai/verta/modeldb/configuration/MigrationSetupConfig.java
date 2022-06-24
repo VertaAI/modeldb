@@ -42,13 +42,13 @@ public class MigrationSetupConfig implements Condition {
             .orElse("false"));
   }
 
-  public boolean isRunSeparateMigration() {
+  public boolean liquibaseRunSeparately() {
     return Boolean.parseBoolean(
         Optional.ofNullable(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE)).orElse("false"));
   }
 
   @Override
   public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-    return !isRunSeparateMigration();
+    return !liquibaseRunSeparately();
   }
 }

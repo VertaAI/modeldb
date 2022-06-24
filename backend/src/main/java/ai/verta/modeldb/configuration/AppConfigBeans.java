@@ -115,7 +115,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  // flag isRunSeparateMigration is true then ignore below function
+  // flag liquibaseRunSeparately is true then ignore below function
   @Conditional(MigrationSetupConfig.class)
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
@@ -165,14 +165,14 @@ public class AppConfigBeans {
   }
 
   @Bean
-  // isRunSeparateMigration is true then execute below function
+  // liquibaseRunSeparately is true then execute below function
   public CommandLineRunner commandLineRunner(
       Migration migration, MigrationSetupConfig migrationSetupConfig) {
     return args -> {
       migration.migrate();
       LOGGER.info("Migrations have completed");
 
-      var runLiquibaseSeparate = migrationSetupConfig.isRunSeparateMigration();
+      var runLiquibaseSeparate = migrationSetupConfig.liquibaseRunSeparately();
       LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         LOGGER.info("System exiting");
@@ -183,7 +183,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  // flag isRunSeparateMigration is true then ignore below function
+  // flag liquibaseRunSeparately is true then ignore below function
   @Conditional(MigrationSetupConfig.class)
   public CommandLineRunner commandLineRunner(
       ServerBuilder<?> serverBuilder,
