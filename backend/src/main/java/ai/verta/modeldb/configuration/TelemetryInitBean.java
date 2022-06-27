@@ -10,6 +10,7 @@ import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -18,6 +19,7 @@ public class TelemetryInitBean {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryInitBean.class);
 
   @Bean
+  @Conditional(MigrationSetupConfig.class)
   public TelemetryInitBean initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
       throws FileNotFoundException, InvalidConfigException {
     if (!mdbConfig.telemetry.opt_out) {

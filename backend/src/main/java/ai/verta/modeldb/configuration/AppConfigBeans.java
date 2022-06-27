@@ -49,6 +49,9 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 @EnableConfigurationProperties({FileStorageProperties.class})
@@ -113,11 +116,9 @@ public class AppConfigBeans {
   }
 
   @Bean
+  // flag liquibaseRunSeparately is true then ignore below function
+  @Conditional(MigrationSetupConfig.class)
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
-    if (config.isMigration()) {
-      return null;
-    }
-
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
 
@@ -155,6 +156,36 @@ public class AppConfigBeans {
   }
 
   @Bean
+  public MigrationSetupConfig migrationSetupConfig(MDBConfig mdbConfig) {
+    return new MigrationSetupConfig(mdbConfig);
+  }
+
+  @Bean
+  public Migration migration(MigrationSetupConfig migrationSetupConfig) throws Exception {
+    return new Migration(migrationSetupConfig);
+  }
+
+  @Bean
+  // liquibaseRunSeparately is true then execute below function
+  public CommandLineRunner commandLineRunner(
+      Migration migration, MigrationSetupConfig migrationSetupConfig) {
+    return args -> {
+      migration.migrate();
+      LOGGER.info("Migrations have completed");
+
+      var runLiquibaseSeparate = migrationSetupConfig.liquibaseRunSeparately();
+      LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
+      if (runLiquibaseSeparate) {
+        LOGGER.info("System exiting");
+        this.appContext.initiateShutdown(0);
+        System.exit(0);
+      }
+    };
+  }
+
+  @Bean
+  // flag liquibaseRunSeparately is true then ignore below function
+  @Conditional(MigrationSetupConfig.class)
   public CommandLineRunner commandLineRunner(
       ServerBuilder<?> serverBuilder,
       HealthStatusManager healthStatusManager,
@@ -168,15 +199,6 @@ public class AppConfigBeans {
         final var logger =
             java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
         logger.setLevel(Level.WARNING);
-
-        // Initialize database configuration and maybe run migration
-        if (Migration.migrate(config)) {
-          LOGGER.info("Migrations have completed.  System exiting.");
-          appContext.initiateShutdown(0);
-          return;
-        }
-
-        LOGGER.info("Migration disabled, starting server.");
 
         // Add APIs
         LOGGER.info("Initializing backend services.");
