@@ -12,7 +12,9 @@ public class EnableReconcilers implements Condition {
 
   @Override
   public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-    return liquibaseMigrationDisabled() || !liquibaseRunSeparately();
+    var enableReconcilers = liquibaseMigrationDisabled() || !liquibaseRunSeparately();
+    LOGGER.info("Enable Reconcilers: {}", enableReconcilers);
+    return enableReconcilers;
   }
 
   boolean liquibaseMigrationDisabled() {

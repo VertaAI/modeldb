@@ -24,8 +24,6 @@ public class Migration {
       modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
       LOGGER.info("Liquibase migration done");
 
-      modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
-
       LOGGER.info("Code migration starting");
       modelDBHibernateUtil.runMigration(databaseConfig, migrationSetupConfig.getMigrations());
       LOGGER.info("Code migration done");
@@ -34,7 +32,5 @@ public class Migration {
         MssqlMigrationUtil.migrateToUTF16ForMssql(migrationSetupConfig.getJdbi());
       }
     }
-
-    modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
   }
 }
