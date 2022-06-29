@@ -8,7 +8,7 @@ public class GrpcServerConfig {
   private int metrics_port = 8087;
   private Integer maxInboundMessageSize = 4194304; // bytes
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (port == 0) throw new InvalidConfigException(base + ".port", Config.MISSING_REQUIRED);
   }
 

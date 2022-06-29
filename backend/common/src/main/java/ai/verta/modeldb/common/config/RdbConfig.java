@@ -22,7 +22,7 @@ public class RdbConfig {
   private Boolean sslEnabled = false;
   private String DBConnectionURL;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (RdbDriver == null || RdbDriver.isEmpty()) {
       throw new InvalidConfigException(base + ".RdbDriver", Config.MISSING_REQUIRED);
     }

@@ -4,7 +4,7 @@ public class NFSEndpointConfig {
   private String getArtifact;
   private String storeArtifact;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (getArtifact == null || getArtifact.isEmpty())
       throw new InvalidConfigException(base + ".getArtifact", Config.MISSING_REQUIRED);
     if (storeArtifact == null || storeArtifact.isEmpty())
