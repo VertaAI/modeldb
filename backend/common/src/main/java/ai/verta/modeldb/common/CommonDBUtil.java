@@ -296,8 +296,7 @@ public abstract class CommonDBUtil {
       changeLogTableName = changeLogTableName.toUpperCase();
     }
     System.getProperties().put("liquibase.databaseChangeLogTableName", changeLogTableName);
-    System.getProperties()
-            .put("liquibase.databaseChangeLogLockTableName", changeLogLockTableName);
+    System.getProperties().put("liquibase.databaseChangeLogLockTableName", changeLogLockTableName);
 
     // Lock to RDB for now
     var rdb = config.getRdbConfiguration();
