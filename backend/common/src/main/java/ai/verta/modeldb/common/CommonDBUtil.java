@@ -27,11 +27,8 @@ import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultSetException;
 import org.jdbi.v3.core.statement.UnableToCreateStatementException;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
-
 public abstract class CommonDBUtil {
-
   private static final Logger LOGGER = LogManager.getLogger(CommonDBUtil.class);
-
   protected static void checkDBConnectionInLoop(
       DatabaseConfig databaseConfig, boolean isStartUpTime) throws InterruptedException {
     var loopBackTime = 5;
@@ -60,13 +57,11 @@ public abstract class CommonDBUtil {
       }
     }
   }
-
   protected static Connection getDBConnection(RdbConfig rdb) throws SQLException {
     final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
     return DriverManager.getConnection(
         connectionString, rdb.getRdbUsername(), rdb.getRdbPassword());
   }
-
   protected static boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
     try (var con = getDBConnection(rdb)) {
       return con.isValid(timeout);
@@ -75,7 +70,6 @@ public abstract class CommonDBUtil {
       return false;
     }
   }
-
   protected void releaseLiquibaseLock(DatabaseConfig config)
       throws InterruptedException, SQLException, DatabaseException, LockException {
     // Get database connection
@@ -144,7 +138,6 @@ public abstract class CommonDBUtil {
       throw e;
     }
   }
-
   public static boolean tableExists(Connection conn, DatabaseConfig config, String tableName)
       throws SQLException {
     var tExists = false;
@@ -159,7 +152,6 @@ public abstract class CommonDBUtil {
     }
     return tExists;
   }
-
   private static ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
       throws SQLException {
     if (rdb.isPostgres()) {
@@ -169,7 +161,6 @@ public abstract class CommonDBUtil {
       return conn.getMetaData().getTables(RdbConfig.buildDatabaseName(rdb), null, tableName, null);
     }
   }
-
   protected void createTablesLiquibaseMigration(
       DatabaseConfig config,
       String changeSetToRevertUntilTag,
@@ -220,7 +211,6 @@ public abstract class CommonDBUtil {
       }
     }
   }
-
   public static void changeCharsetToUtf(JdbcConnection jdbcCon)
       throws DatabaseException, SQLException {
     try (var stmt = jdbcCon.createStatement()) {
@@ -232,7 +222,6 @@ public abstract class CommonDBUtil {
       LOGGER.info("ALTER charset execute result: {}", result);
     }
   }
-
   protected boolean checkMigrationLockedStatus(String migrationName, RdbConfig rdbConfig)
       throws SQLException, DatabaseException {
     // Get database connection
@@ -288,9 +277,9 @@ public abstract class CommonDBUtil {
       DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
-    System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
+    System.getProperties().put("liquibase.databaseChangeLogTableName", "DATABASE_CHANGE_LOG");
     System.getProperties()
-        .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
+        .put("liquibase.databaseChangeLogLockTableName", "DATABASE_CHANGE_LOG_LOCK");
 
     // Lock to RDB for now
     var rdb = config.getRdbConfiguration();
