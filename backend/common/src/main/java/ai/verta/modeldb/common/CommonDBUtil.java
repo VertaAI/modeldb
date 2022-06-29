@@ -292,8 +292,8 @@ public abstract class CommonDBUtil {
     if (config.getRdbConfiguration().isH2()) {
       // H2 upper cases all table names, and liquibase has issues if you don't make this also upper
       // case.
-      changeLogLockTableName = changeLogLockTableName.toUpperCase();
       changeLogTableName = changeLogTableName.toUpperCase();
+      changeLogLockTableName = changeLogLockTableName.toUpperCase();
     }
     System.getProperties().put("liquibase.databaseChangeLogTableName", changeLogTableName);
     System.getProperties().put("liquibase.databaseChangeLogLockTableName", changeLogLockTableName);
