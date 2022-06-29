@@ -287,16 +287,16 @@ public abstract class CommonDBUtil {
       DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
+    String changeLogTableName = "database_change_log";
+    String changeLogLockTableName = "database_change_log_lock";
     if (config.getRdbConfiguration().isH2()) {
       //H2 upper cases all table names, and liquibase has issues if you don't make this also upper case.
-      System.getProperties().put("liquibase.databaseChangeLogTableName", "DATABASE_CHANGE_LOG");
-      System.getProperties()
-          .put("liquibase.databaseChangeLogLockTableName", "DATABASE_CHANGE_LOG_LOCK");
-    } else {
-      System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
-      System.getProperties()
-              .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
+      changeLogLockTableName = changeLogLockTableName.toUpperCase();
+      changeLogTableName = changeLogTableName.toUpperCase();
     }
+    System.getProperties().put("liquibase.databaseChangeLogTableName", changeLogTableName);
+    System.getProperties()
+            .put("liquibase.databaseChangeLogLockTableName", changeLogLockTableName);
 
     // Lock to RDB for now
     var rdb = config.getRdbConfiguration();
