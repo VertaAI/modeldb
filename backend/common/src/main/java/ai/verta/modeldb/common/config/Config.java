@@ -76,6 +76,7 @@ public abstract class Config {
     }
   }
 
+  /** If you're overriding this method, don't forget to call super.validate(). */
   public void validate() throws InvalidConfigException {
     if (authService != null) {
       authService.validate("authService");
