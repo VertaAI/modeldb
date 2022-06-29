@@ -6,7 +6,7 @@ public class CronJobConfig {
   private int frequency = 10;
   private int record_update_limit = 100;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     // Do nothing
   }
 

@@ -7,13 +7,13 @@ public class NFSConfig {
   private NFSEndpointConfig artifactEndpoint;
   private String nfsPathPrefix;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (nfsRootPath == null || nfsRootPath.isEmpty())
       throw new InvalidConfigException(base + ".nfsRootPath", Config.MISSING_REQUIRED);
 
     if (artifactEndpoint == null)
       throw new InvalidConfigException(base + ".artifactEndpoint", Config.MISSING_REQUIRED);
-    artifactEndpoint.Validate(base + ".artifactEndpoint");
+    artifactEndpoint.validate(base + ".artifactEndpoint");
   }
 
   public String storeTypePathPrefix() {

@@ -76,25 +76,25 @@ public abstract class Config {
     }
   }
 
-  public void Validate() throws InvalidConfigException {
+  public void validate() throws InvalidConfigException {
     if (authService != null) {
-      authService.Validate("authService");
+      authService.validate("authService");
     }
 
     if (cron_job != null) {
       for (Map.Entry<String, CronJobConfig> cronJob : cron_job.entrySet()) {
-        cronJob.getValue().Validate("cron_job." + cronJob.getKey());
+        cronJob.getValue().validate("cron_job." + cronJob.getKey());
       }
     }
 
     if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
-    database.Validate("database");
+    database.validate("database");
 
     if (grpcServer == null) throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
-    grpcServer.Validate("grpcServer");
+    grpcServer.validate("grpcServer");
 
     if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
-    springServer.Validate("springServer");
+    springServer.validate("springServer");
   }
 
   public boolean hasAuth() {

@@ -10,19 +10,19 @@ import com.google.rpc.Code;
 public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
   public S3Config S3;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (getArtifactStoreType() == null || getArtifactStoreType().isEmpty())
       throw new InvalidConfigException(base + ".artifactStoreType", Config.MISSING_REQUIRED);
 
     switch (getArtifactStoreType()) {
       case "S3":
         if (S3 == null) throw new InvalidConfigException(base + ".S3", Config.MISSING_REQUIRED);
-        S3.Validate(base + ".S3");
+        S3.validate(base + ".S3");
         break;
       case "NFS":
         if (getNFS() == null)
           throw new InvalidConfigException(base + ".NFS", Config.MISSING_REQUIRED);
-        getNFS().Validate(base + ".NFS");
+        getNFS().validate(base + ".NFS");
         break;
       default:
         throw new InvalidConfigException(
@@ -30,7 +30,7 @@ public class MDBArtifactStoreConfig extends ArtifactStoreConfig {
     }
 
     if (getArtifactEndpoint() != null) {
-      getArtifactEndpoint().Validate(base + ".artifactEndpoint");
+      getArtifactEndpoint().validate(base + ".artifactEndpoint");
     }
   }
 
