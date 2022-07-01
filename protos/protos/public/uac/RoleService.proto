@@ -76,6 +76,7 @@ message ModelDBActionEnum {
         READ_SECRETS = 17;
         CREATE_SERVICE_ACCOUNT = 18;
         CREATE_CONTAINER_REGISTRY = 19;
+        PROMOTE = 20;
     }
 };
 
@@ -127,6 +128,7 @@ message AuthzResourceEnum {
         WEBHOOK = 9;
         SYSTEM_ADMIN = 10;
         PYPI_CONFIGURATION = 11;
+        KAFKA_CONFIGURATION = 12;
     }
 };
 
