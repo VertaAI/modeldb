@@ -549,8 +549,7 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION",
-              "KAFKA_CONFIGURATION"
+              "PYPI_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -690,8 +689,7 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION",
-              "KAFKA_CONFIGURATION"
+              "PYPI_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -851,8 +849,7 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION",
-              "KAFKA_CONFIGURATION"
+              "PYPI_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -1418,8 +1415,7 @@
         "EVENT",
         "WEBHOOK",
         "SYSTEM_ADMIN",
-        "PYPI_CONFIGURATION",
-        "KAFKA_CONFIGURATION"
+        "PYPI_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },
