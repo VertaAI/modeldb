@@ -128,7 +128,6 @@ message AuthzResourceEnum {
         WEBHOOK = 9;
         SYSTEM_ADMIN = 10;
         PYPI_CONFIGURATION = 11;
-        KAFKA_CONFIGURATION = 12;
     }
 };
 
