@@ -922,7 +922,8 @@
         "GET",
         "READ_SECRETS",
         "CREATE_SERVICE_ACCOUNT",
-        "CREATE_CONTAINER_REGISTRY"
+        "CREATE_CONTAINER_REGISTRY",
+        "PROMOTE"
       ],
       "default": "UNKNOWN"
     },

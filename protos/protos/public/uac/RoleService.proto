@@ -76,6 +76,7 @@ message ModelDBActionEnum {
         READ_SECRETS = 17;
         CREATE_SERVICE_ACCOUNT = 18;
         CREATE_CONTAINER_REGISTRY = 19;
+        PROMOTE = 20;
     }
 };
 
