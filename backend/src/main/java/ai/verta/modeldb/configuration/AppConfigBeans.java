@@ -48,7 +48,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -117,7 +116,7 @@ public class AppConfigBeans {
 
   @Bean
   // flag liquibaseRunSeparately is true then ignore below function
-  @Conditional(MigrationSetupConfig.class)
+  @Conditional(MigrationsIncludedInAppStartup.class)
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
@@ -156,24 +155,25 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public MigrationSetupConfig migrationSetupConfig(MDBConfig mdbConfig) {
-    return new MigrationSetupConfig(mdbConfig);
+  public MigrationsIncludedInAppStartup migrationSetupConfig(MDBConfig mdbConfig) {
+    return new MigrationsIncludedInAppStartup(mdbConfig);
   }
 
   @Bean
-  public Migration migration(MigrationSetupConfig migrationSetupConfig) throws Exception {
-    return new Migration(migrationSetupConfig);
+  public Migration migration(MigrationsIncludedInAppStartup migrationsIncludedInAppStartup)
+      throws Exception {
+    return new Migration(migrationsIncludedInAppStartup);
   }
 
   @Bean
   // liquibaseRunSeparately is true then execute below function
   public CommandLineRunner commandLineRunner(
-      Migration migration, MigrationSetupConfig migrationSetupConfig) {
+      Migration migration, MigrationsIncludedInAppStartup migrationsIncludedInAppStartup) {
     return args -> {
       migration.migrate();
       LOGGER.info("Migrations have completed");
 
-      var runLiquibaseSeparate = migrationSetupConfig.liquibaseRunSeparately();
+      var runLiquibaseSeparate = migrationsIncludedInAppStartup.liquibaseRunSeparately();
       LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
       if (runLiquibaseSeparate) {
         LOGGER.info("System exiting");
@@ -185,7 +185,7 @@ public class AppConfigBeans {
 
   @Bean
   // flag liquibaseRunSeparately is true then ignore below function
-  @Conditional(MigrationSetupConfig.class)
+  @Conditional(MigrationsIncludedInAppStartup.class)
   public CommandLineRunner commandLineRunner(
       ServerBuilder<?> serverBuilder,
       HealthStatusManager healthStatusManager,

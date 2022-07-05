@@ -7,29 +7,30 @@ import org.apache.logging.log4j.Logger;
 
 public class Migration {
   private final Logger LOGGER = LogManager.getLogger(Migration.class);
-  private final MigrationSetupConfig migrationSetupConfig;
+  private final MigrationsIncludedInAppStartup migrationsIncludedInAppStartup;
 
-  public Migration(MigrationSetupConfig migrationSetupConfig) {
-    this.migrationSetupConfig = migrationSetupConfig;
+  public Migration(MigrationsIncludedInAppStartup migrationsIncludedInAppStartup) {
+    this.migrationsIncludedInAppStartup = migrationsIncludedInAppStartup;
   }
 
   public void migrate() throws Exception {
-    var liquibaseMigration = migrationSetupConfig.isMigration();
-    var databaseConfig = migrationSetupConfig.getDatabase();
+    var liquibaseMigration = migrationsIncludedInAppStartup.isMigration();
+    var databaseConfig = migrationsIncludedInAppStartup.getDatabase();
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(
-        migrationSetupConfig.getMdbConfig(), databaseConfig);
+        migrationsIncludedInAppStartup.getMdbConfig(), databaseConfig);
     if (liquibaseMigration) {
       LOGGER.info("Liquibase migration starting");
       modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
       LOGGER.info("Liquibase migration done");
 
       LOGGER.info("Code migration starting");
-      modelDBHibernateUtil.runMigration(databaseConfig, migrationSetupConfig.getMigrations());
+      modelDBHibernateUtil.runMigration(
+          databaseConfig, migrationsIncludedInAppStartup.getMigrations());
       LOGGER.info("Code migration done");
 
       if (databaseConfig.getRdbConfiguration().isMssql()) {
-        MssqlMigrationUtil.migrateToUTF16ForMssql(migrationSetupConfig.getJdbi());
+        MssqlMigrationUtil.migrateToUTF16ForMssql(migrationsIncludedInAppStartup.getJdbi());
       }
     }
   }

@@ -19,7 +19,7 @@ public class TelemetryInitBean {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryInitBean.class);
 
   @Bean
-  @Conditional(MigrationSetupConfig.class)
+  @Conditional(MigrationsIncludedInAppStartup.class)
   public TelemetryInitBean initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
       throws FileNotFoundException, InvalidConfigException {
     if (!mdbConfig.telemetry.opt_out) {

@@ -13,14 +13,14 @@ import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-public class MigrationSetupConfig implements Condition {
-  private static final Logger LOGGER = LogManager.getLogger(MigrationSetupConfig.class);
+public class MigrationsIncludedInAppStartup implements Condition {
+  private static final Logger LOGGER = LogManager.getLogger(MigrationsIncludedInAppStartup.class);
 
-  public MigrationSetupConfig() {}
+  public MigrationsIncludedInAppStartup() {}
 
   private MDBConfig mdbConfig;
 
-  public MigrationSetupConfig(MDBConfig mdbConfig) {
+  public MigrationsIncludedInAppStartup(MDBConfig mdbConfig) {
     this.mdbConfig = mdbConfig;
   }
 
