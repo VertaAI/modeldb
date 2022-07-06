@@ -18,6 +18,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.configuration.RunLiquibaseSeparate.InversedRunLiquibaseSeparate;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.experiment.FutureExperimentServiceImpl;
@@ -115,8 +116,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  // flag liquibaseRunSeparately is true then ignore below function
-  @Conditional(MigrationsIncludedInAppStartup.class)
+  @Conditional(InversedRunLiquibaseSeparate.class)
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
@@ -155,37 +155,14 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public MigrationsIncludedInAppStartup migrationSetupConfig(MDBConfig mdbConfig) {
-    return new MigrationsIncludedInAppStartup(mdbConfig);
+  @Conditional(EnabledMigration.class)
+  public Migration migration(MDBConfig mdbConfig) throws Exception {
+    var migration = new Migration(mdbConfig);
+    LOGGER.info("Migrations have completed");
+    return migration;
   }
 
   @Bean
-  public Migration migration(MigrationsIncludedInAppStartup migrationsIncludedInAppStartup)
-      throws Exception {
-    return new Migration(migrationsIncludedInAppStartup);
-  }
-
-  @Bean
-  // liquibaseRunSeparately is true then execute below function
-  public CommandLineRunner commandLineRunner(
-      Migration migration, MigrationsIncludedInAppStartup migrationsIncludedInAppStartup) {
-    return args -> {
-      migration.migrate();
-      LOGGER.info("Migrations have completed");
-
-      var runLiquibaseSeparate = migrationsIncludedInAppStartup.liquibaseRunSeparately();
-      LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
-      if (runLiquibaseSeparate) {
-        LOGGER.info("System exiting");
-        this.appContext.initiateShutdown(0);
-        System.exit(0);
-      }
-    };
-  }
-
-  @Bean
-  // flag liquibaseRunSeparately is true then ignore below function
-  @Conditional(MigrationsIncludedInAppStartup.class)
   public CommandLineRunner commandLineRunner(
       ServerBuilder<?> serverBuilder,
       HealthStatusManager healthStatusManager,
@@ -225,6 +202,17 @@ public class AppConfigBeans {
         // Restore interrupted state...
         Thread.currentThread().interrupt();
       }
+    };
+  }
+
+  @Bean
+  @Conditional({RunLiquibaseSeparate.class})
+  public CommandLineRunner commandLineRunner() {
+    return args -> {
+      LOGGER.trace("Liquibase run separate: done");
+      LOGGER.info("System exiting");
+      this.appContext.initiateShutdown(0);
+      System.exit(0);
     };
   }
 
