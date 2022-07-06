@@ -14,7 +14,6 @@ import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.AppConfigBeans;
 import ai.verta.modeldb.configuration.CronJobUtils;
-import ai.verta.modeldb.configuration.EnabledMigration;
 import ai.verta.modeldb.configuration.Migration;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
