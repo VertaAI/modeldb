@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.futures;
 
-import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 import org.jdbi.v3.core.statement.StatementExceptions;
@@ -40,24 +39,18 @@ public class FutureJdbi {
 
   private <R, T extends Exception> InternalFuture<R> withHandleOrTransaction(
       SupplierWithException<R, T> supplier) {
-    return InternalFuture.trace(
+    CompletableFuture<R> promise = new CompletableFuture<>();
+
+    executor.execute(
         () -> {
-          CompletableFuture<R> promise = new CompletableFuture<>();
+          try {
+            promise.complete(supplier.get());
+          } catch (Throwable e) {
+            promise.completeExceptionally(e);
+          }
+        });
 
-          executor.execute(
-              () -> {
-                try {
-                  promise.complete(supplier.get());
-                } catch (Throwable e) {
-                  promise.completeExceptionally(e);
-                }
-              });
-
-          return InternalFuture.from(promise);
-        },
-        "jdbi.withHandle",
-        Map.of(),
-        executor);
+    return InternalFuture.from(promise);
   }
 
   public <R, T extends Exception> InternalFuture<R> withHandleCompose(
@@ -78,24 +71,18 @@ public class FutureJdbi {
 
   private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(
       final RunnableWithException<T> runnableWithException) {
-    return InternalFuture.trace(
+    CompletableFuture<Void> promise = new CompletableFuture<>();
+
+    executor.execute(
         () -> {
-          CompletableFuture<Void> promise = new CompletableFuture<>();
+          try {
+            runnableWithException.run();
+            promise.complete(null);
+          } catch (Throwable e) {
+            promise.completeExceptionally(e);
+          }
+        });
 
-          executor.execute(
-              () -> {
-                try {
-                  runnableWithException.run();
-                  promise.complete(null);
-                } catch (Throwable e) {
-                  promise.completeExceptionally(e);
-                }
-              });
-
-          return InternalFuture.from(promise);
-        },
-        "jdbi.useHandle",
-        Map.of(),
-        executor);
+    return InternalFuture.from(promise);
   }
 }

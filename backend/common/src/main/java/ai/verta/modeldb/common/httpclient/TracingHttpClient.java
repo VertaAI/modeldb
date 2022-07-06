@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
+import java.util.function.BiConsumer;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
@@ -67,10 +68,7 @@ public class TracingHttpClient extends HttpClient {
     Span span = createRequestSpan(request);
     try (Scope ignored = span.makeCurrent()) {
       request = addPropagationHeaders(request, Context.current());
-      CompletableFuture<HttpResponse<T>> response =
-          delegate.sendAsync(request, responseBodyHandler);
-      handleResponseCompletion(span, response);
-      return response;
+      return delegate.sendAsync(request, responseBodyHandler).whenComplete(responseCompleter(span));
     }
   }
 
@@ -81,25 +79,22 @@ public class TracingHttpClient extends HttpClient {
     Span span = createRequestSpan(request);
     try (Scope ignored = span.makeCurrent()) {
       request = addPropagationHeaders(request, Context.current());
-      CompletableFuture<HttpResponse<T>> response =
-          delegate.sendAsync(request, responseBodyHandler, pushPromiseHandler);
-      handleResponseCompletion(span, response);
-      return response;
+      return delegate
+          .sendAsync(request, responseBodyHandler, pushPromiseHandler)
+          .whenComplete(responseCompleter(span));
     }
   }
 
-  private <T> void handleResponseCompletion(
-      Span span, CompletableFuture<HttpResponse<T>> response) {
-    response.whenComplete(
-        (httpResponse, throwable) -> {
-          if (throwable != null) {
-            span.setStatus(StatusCode.ERROR);
-            span.recordException(throwable);
-          } else {
-            span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.statusCode());
-          }
-          span.end();
-        });
+  private <T> BiConsumer<HttpResponse<T>, Throwable> responseCompleter(Span span) {
+    return (httpResponse, throwable) -> {
+      if (throwable != null) {
+        span.setStatus(StatusCode.ERROR);
+        span.recordException(throwable);
+      } else {
+        span.setAttribute(SemanticAttributes.HTTP_STATUS_CODE, httpResponse.statusCode());
+      }
+      span.end();
+    };
   }
 
   private Span createRequestSpan(HttpRequest request) {

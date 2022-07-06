@@ -27,4 +27,21 @@ class InternalFutureTest {
 
     assertThatThrownBy(testFuture::get).getRootCause().hasMessage("borken");
   }
+
+  @Test
+  void composition_syncFailsFast() {
+    InternalFuture<String> testFuture =
+        InternalFuture.completedInternalFuture("cheese")
+            .thenApplySync(
+                s1 -> {
+                  throw new RuntimeException("borken");
+                })
+            .thenComposeSync(
+                s -> {
+                  Assertions.fail("should never execute the next stage");
+                  return InternalFuture.failedStage(new RuntimeException("broken"));
+                });
+
+    assertThatThrownBy(testFuture::get).getRootCause().hasMessage("borken");
+  }
 }
