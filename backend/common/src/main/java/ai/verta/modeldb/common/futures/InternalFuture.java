@@ -113,24 +113,10 @@ public class InternalFuture<T> {
             executor));
   }
 
-  public <U> InternalFuture<U> thenComposeSync(Function<? super T, InternalFuture<U>> fn) {
-    return from(
-        stage.thenCompose(
-            traceFunction(
-                callingContext.wrapFunction(
-                    traceFunction(
-                        fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose")),
-                "futureThenApply")));
-  }
-
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
     return from(
         stage.thenApplyAsync(
             traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
-  }
-
-  public <U> InternalFuture<U> thenApplySync(Function<? super T, ? extends U> fn) {
-    return from(stage.thenApply(traceFunction(callingContext.wrapFunction(fn), "futureThenApply")));
   }
 
   private <U> Function<? super T, ? extends U> traceFunction(
@@ -161,10 +147,6 @@ public class InternalFuture<T> {
         stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor));
   }
 
-  public <U> InternalFuture<U> handleSync(BiFunction<? super T, Throwable, ? extends U> fn) {
-    return from(stage.handle(traceBiFunctionThrowable(callingContext.wrapFunction(fn))));
-  }
-
   private <U> BiFunction<? super T, Throwable, ? extends U> traceBiFunctionThrowable(
       BiFunction<? super T, Throwable, ? extends U> fn) {
     if (!DEEP_TRACING_ENABLED) {
@@ -189,11 +171,6 @@ public class InternalFuture<T> {
             other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor));
   }
 
-  public <U, V> InternalFuture<V> thenCombineSync(
-      InternalFuture<? extends U> other, BiFunction<? super T, ? super U, ? extends V> fn) {
-    return from(stage.thenCombine(other.stage, callingContext.wrapFunction(traceBiFunction(fn))));
-  }
-
   private <U, V> BiFunction<? super T, ? super U, ? extends V> traceBiFunction(
       BiFunction<? super T, ? super U, ? extends V> fn) {
     if (!DEEP_TRACING_ENABLED) {
@@ -214,10 +191,6 @@ public class InternalFuture<T> {
         stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor));
   }
 
-  public InternalFuture<Void> thenAcceptSync(Consumer<? super T> action) {
-    return from(stage.thenAccept(callingContext.wrapConsumer(traceConsumer(action))));
-  }
-
   private Consumer<? super T> traceConsumer(Consumer<? super T> action) {
     if (!DEEP_TRACING_ENABLED) {
       return action;
@@ -234,10 +207,6 @@ public class InternalFuture<T> {
 
   public <U> InternalFuture<Void> thenRun(Runnable runnable, Executor executor) {
     return from(stage.thenRunAsync(callingContext.wrap(traceRunnable(runnable)), executor));
-  }
-
-  public <U> InternalFuture<Void> thenRunSync(Runnable runnable) {
-    return from(stage.thenRun(callingContext.wrap(traceRunnable(runnable))));
   }
 
   private Runnable traceRunnable(Runnable r) {
@@ -258,10 +227,6 @@ public class InternalFuture<T> {
       BiConsumer<? super T, ? super Throwable> action, Executor executor) {
     return from(
         stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
-  }
-
-  public InternalFuture<T> whenCompleteSync(BiConsumer<? super T, ? super Throwable> action) {
-    return from(stage.whenComplete(callingContext.wrapConsumer(traceBiConsumer(action))));
   }
 
   private BiConsumer<? super T, ? super Throwable> traceBiConsumer(
