@@ -18,7 +18,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.configuration.RunLiquibaseSeparate.InversedRunLiquibaseSeparate;
+import ai.verta.modeldb.configuration.RunLiquibaseSeparately.InversedRunLiquibaseSeparately;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.experiment.FutureExperimentServiceImpl;
@@ -116,7 +116,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  @Conditional(InversedRunLiquibaseSeparate.class)
+  @Conditional(InversedRunLiquibaseSeparately.class)
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
@@ -206,7 +206,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  @Conditional({RunLiquibaseSeparate.class})
+  @Conditional({RunLiquibaseSeparately.class})
   public CommandLineRunner commandLineRunner() {
     return args -> {
       LOGGER.trace("Liquibase run separate: done");

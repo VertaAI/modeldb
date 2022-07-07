@@ -8,18 +8,16 @@ import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 
-public class RunLiquibaseSeparate implements Condition {
-  private static final Logger LOGGER = LogManager.getLogger(RunLiquibaseSeparate.class);
+public class RunLiquibaseSeparately implements Condition {
+  private static final Logger LOGGER = LogManager.getLogger(RunLiquibaseSeparately.class);
 
-  public RunLiquibaseSeparate() {}
-
-  public boolean liquibaseRunSeparately() {
+  private boolean liquibaseRunSeparately() {
     var liquibaseRunSeparately =
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE))
                 .orElse("false"));
     LOGGER.info("RUN_LIQUIBASE_SEPARATE: {}", liquibaseRunSeparately);
-    return false;
+    return liquibaseRunSeparately;
   }
 
   @Override
@@ -27,7 +25,7 @@ public class RunLiquibaseSeparate implements Condition {
     return liquibaseRunSeparately();
   }
 
-  public static class InversedRunLiquibaseSeparate extends RunLiquibaseSeparate {
+  public static class InversedRunLiquibaseSeparately extends RunLiquibaseSeparately {
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
       return !super.matches(context, metadata);
