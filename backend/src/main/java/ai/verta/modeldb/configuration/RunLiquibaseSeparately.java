@@ -25,7 +25,7 @@ public class RunLiquibaseSeparately implements Condition {
     return liquibaseRunSeparately();
   }
 
-  public static class InversedRunLiquibaseSeparately extends RunLiquibaseSeparately {
+  public static class RunLiquibaseWithMainService extends RunLiquibaseSeparately {
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
       return !super.matches(context, metadata);

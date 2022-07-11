@@ -27,7 +27,7 @@ public class EnabledMigration implements Condition {
     return isMigration();
   }
 
-  public static class InversedEnabledMigration extends EnabledMigration {
+  public static class DisabledMigration extends EnabledMigration {
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
       return !super.matches(context, metadata);

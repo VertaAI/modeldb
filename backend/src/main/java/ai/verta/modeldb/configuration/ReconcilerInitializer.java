@@ -6,7 +6,7 @@ import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TestConfig;
-import ai.verta.modeldb.configuration.RunLiquibaseSeparately.InversedRunLiquibaseSeparately;
+import ai.verta.modeldb.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
@@ -35,7 +35,7 @@ public class ReconcilerInitializer {
   public static SendEventsWithCleanUp sendEventsWithCleanUp;
 
   @Bean
-  @Conditional({InversedRunLiquibaseSeparately.class})
+  @Conditional({RunLiquibaseWithMainService.class})
   public ReconcilerInitializer initialize(
       MDBConfig config, ServiceSet services, DAOSet daos, Executor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
