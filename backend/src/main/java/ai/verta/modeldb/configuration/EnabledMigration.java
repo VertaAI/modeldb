@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 public class EnabledMigration implements Condition {
   private static final Logger LOGGER = LogManager.getLogger(EnabledMigration.class);
 
-  private boolean isMigration() {
+  private static boolean isMigration() {
     var enableLiquibaseMigrationEnvVar =
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))
@@ -27,10 +27,10 @@ public class EnabledMigration implements Condition {
     return isMigration();
   }
 
-  public static class DisabledMigration extends EnabledMigration {
+  public static class MigrationDisabled implements Condition {
     @Override
     public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
-      return !super.matches(context, metadata);
+      return !isMigration();
     }
   }
 }
