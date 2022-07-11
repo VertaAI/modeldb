@@ -208,6 +208,9 @@ message ModelVersion {
 
     // Doc for version_number https://github.com/VertaAI/docs/pull/53
     uint64 version_number = 23;
+
+    // Reference: https://vertaai.atlassian.net/browse/VRD-329
+    string redirect_metadata = 25;
 }
 
 message DockerMetadata {
