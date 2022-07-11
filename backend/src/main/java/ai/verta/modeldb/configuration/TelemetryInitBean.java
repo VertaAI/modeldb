@@ -2,6 +2,7 @@ package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.telemetry.TelemetryCron;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import java.io.FileNotFoundException;
@@ -19,7 +20,7 @@ public class TelemetryInitBean {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryInitBean.class);
 
   @Bean
-  @Conditional(MigrationSetupConfig.class)
+  @Conditional(RunLiquibaseWithMainService.class)
   public TelemetryInitBean initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
       throws FileNotFoundException, InvalidConfigException {
     if (!mdbConfig.telemetry.opt_out) {

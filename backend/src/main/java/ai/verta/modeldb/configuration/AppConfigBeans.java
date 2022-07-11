@@ -18,6 +18,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.experiment.FutureExperimentServiceImpl;
@@ -48,7 +49,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.annotation.*;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
@@ -116,8 +116,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  // flag liquibaseRunSeparately is true then ignore below function
-  @Conditional(MigrationSetupConfig.class)
+  @Conditional(RunLiquibaseWithMainService.class)
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
@@ -156,36 +155,14 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public MigrationSetupConfig migrationSetupConfig(MDBConfig mdbConfig) {
-    return new MigrationSetupConfig(mdbConfig);
+  @Conditional(EnabledMigration.class)
+  public Migration migration(MDBConfig mdbConfig) throws Exception {
+    var migration = new Migration(mdbConfig);
+    LOGGER.info("Migrations have completed");
+    return migration;
   }
 
   @Bean
-  public Migration migration(MigrationSetupConfig migrationSetupConfig) throws Exception {
-    return new Migration(migrationSetupConfig);
-  }
-
-  @Bean
-  // liquibaseRunSeparately is true then execute below function
-  public CommandLineRunner commandLineRunner(
-      Migration migration, MigrationSetupConfig migrationSetupConfig) {
-    return args -> {
-      migration.migrate();
-      LOGGER.info("Migrations have completed");
-
-      var runLiquibaseSeparate = migrationSetupConfig.liquibaseRunSeparately();
-      LOGGER.trace("run Liquibase separate: {}", runLiquibaseSeparate);
-      if (runLiquibaseSeparate) {
-        LOGGER.info("System exiting");
-        this.appContext.initiateShutdown(0);
-        System.exit(0);
-      }
-    };
-  }
-
-  @Bean
-  // flag liquibaseRunSeparately is true then ignore below function
-  @Conditional(MigrationSetupConfig.class)
   public CommandLineRunner commandLineRunner(
       ServerBuilder<?> serverBuilder,
       HealthStatusManager healthStatusManager,
@@ -225,6 +202,17 @@ public class AppConfigBeans {
         // Restore interrupted state...
         Thread.currentThread().interrupt();
       }
+    };
+  }
+
+  @Bean
+  @Conditional({RunLiquibaseSeparately.class})
+  public CommandLineRunner commandLineRunner() {
+    return args -> {
+      LOGGER.trace("Liquibase run separate: done");
+      LOGGER.info("System exiting");
+      this.appContext.initiateShutdown(0);
+      System.exit(0);
     };
   }
 

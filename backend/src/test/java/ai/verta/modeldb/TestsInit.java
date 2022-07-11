@@ -15,7 +15,6 @@ import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.AppConfigBeans;
 import ai.verta.modeldb.configuration.CronJobUtils;
 import ai.verta.modeldb.configuration.Migration;
-import ai.verta.modeldb.configuration.MigrationSetupConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
 import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.monitoring.MonitoringInterceptor;
@@ -110,7 +109,7 @@ public class TestsInit {
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    new Migration(new MigrationSetupConfig(testConfig)).migrate();
+    new Migration(testConfig);
 
     new AppConfigBeans(new AppContext())
         .initializeBackendServices(serverBuilder, services, daos, handleExecutor);
