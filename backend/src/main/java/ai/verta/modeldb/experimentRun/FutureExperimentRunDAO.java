@@ -1509,8 +1509,9 @@ public class FutureExperimentRunDAO {
                     handle -> {
                       Optional<Long> count =
                           handle
-                              .createQuery("SELECT COUNT(id) FROM commit WHERE id = :id")
-                              .bind("id", request.getDatasetVersionId())
+                              .createQuery(
+                                  "SELECT COUNT(commit_hash) FROM \"commit\" WHERE commit_hash = :commitHash")
+                              .bind("commitHash", request.getDatasetVersionId())
                               .mapTo(Long.class)
                               .findOne();
                       if (count.isEmpty() || count.get() == 0) {

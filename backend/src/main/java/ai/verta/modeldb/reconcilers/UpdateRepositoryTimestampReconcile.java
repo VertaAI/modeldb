@@ -33,7 +33,7 @@ public class UpdateRepositoryTimestampReconcile
   private List<SimpleEntry<Long, Long>> getEntriesForDateUpdate() {
     var fetchUpdatedDatasetIds =
         new StringBuilder("SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
-            .append(" FROM commit cm INNER JOIN repository_commit rc ")
+            .append(" FROM \"commit\" cm INNER JOIN repository_commit rc ")
             .append(" ON rc.commit_hash = cm.commit_hash ")
             .append(" INNER JOIN commit_parent cp ")
             .append(" ON cp.parent_hash IS NOT NULL ")
