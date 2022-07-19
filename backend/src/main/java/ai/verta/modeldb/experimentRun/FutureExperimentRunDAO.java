@@ -1507,10 +1507,15 @@ public class FutureExperimentRunDAO {
                 // Validate requested dataset version exists
                 jdbi.useHandle(
                     handle -> {
+                      var query =
+                          "SELECT COUNT(commit_hash) FROM commit WHERE commit_hash = :commitHash";
+                      if (config.getDatabase().getRdbConfiguration().isMssql()) {
+                        query =
+                            "SELECT COUNT(commit_hash) FROM \"commit\" WHERE commit_hash = :commitHash";
+                      }
                       Optional<Long> count =
                           handle
-                              .createQuery(
-                                  "SELECT COUNT(commit_hash) FROM \"commit\" WHERE commit_hash = :commitHash")
+                              .createQuery(query)
                               .bind("commitHash", request.getDatasetVersionId())
                               .mapTo(Long.class)
                               .findOne();
