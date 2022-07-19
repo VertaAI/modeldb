@@ -40,7 +40,8 @@ public class UpdateRepositoryTimestampReconcile
       tableName = "\"commit\"";
     }
     var fetchUpdatedDatasetIds =
-        new StringBuilder("SELECT rc.repository_id, MAX(cm.date_created) AS max_date ")
+        new StringBuilder(
+                "SELECT rc.repository_id as repository_id, MAX(cm.date_created) AS max_date ")
             .append(String.format(" FROM %s cm INNER JOIN repository_commit rc ", tableName))
             .append(" ON rc.commit_hash = cm.commit_hash ")
             .append(" INNER JOIN commit_parent cp ")
@@ -59,7 +60,7 @@ public class UpdateRepositoryTimestampReconcile
                     .setFetchSize(config.getMaxSync())
                     .map(
                         (rs, ctx) -> {
-                          Long datasetId = rs.getLong("rc.repository_id");
+                          Long datasetId = rs.getLong("repository_id");
                           Long maxUpdatedDate = rs.getLong("max_date");
                           return new SimpleEntry<>(datasetId, maxUpdatedDate);
                         })
