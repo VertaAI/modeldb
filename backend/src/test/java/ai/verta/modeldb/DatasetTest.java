@@ -1862,4 +1862,18 @@ public class DatasetTest extends TestsInit {
 
     LOGGER.info("check dataset name with colon and slashes test stop...........");
   }
+
+  @Test
+  public void createAndDeleteDatasetUsingServiceAccount() {
+    // Create two dataset of above dataset
+    CreateDataset createDatasetRequest =
+        DatasetTest.getDatasetRequest("dataset-" + new Date().getTime());
+    CreateDataset.Response createDatasetResponse =
+        serviceUserDatasetServiceStub.createDataset(createDatasetRequest);
+    DeleteDatasets deleteDatasets =
+        DeleteDatasets.newBuilder().addIds(createDatasetResponse.getDataset().getId()).build();
+    DeleteDatasets.Response deleteDatasetsResponse =
+        serviceUserDatasetServiceStub.deleteDatasets(deleteDatasets);
+    assertTrue(deleteDatasetsResponse.getStatus());
+  }
 }

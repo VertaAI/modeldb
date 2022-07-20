@@ -112,7 +112,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public List<String> getSelfAllowedResources(
+  public List<Resources> getSelfAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions) {
     return Collections.emptyList();
@@ -126,7 +126,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public List<String> getAllowedResources(
+  public List<Resources> getAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       CollaboratorBase collaboratorBase) {
@@ -154,16 +154,16 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public List<String> getAccessibleResourceIds(
+  public Collection<String> getAccessibleResourceIds(
       CollaboratorBase hostUserInfo,
       CollaboratorBase currentLoginUserInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      List<String> requestedResourceIds) {
+      Collection<String> requestedResourceIds) {
     return requestedResourceIds;
   }
 
   @Override
-  public List<String> getAccessibleResourceIdsByActions(
+  public Collection<String> getAccessibleResourceIdsByActions(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
       List<String> requestedIdList) {

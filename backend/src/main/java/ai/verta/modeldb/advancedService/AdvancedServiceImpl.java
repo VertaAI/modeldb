@@ -6,6 +6,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
+import ai.verta.modeldb.FindProjects.Builder;
 import ai.verta.modeldb.HydratedServiceGrpc.HydratedServiceImplBase;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.comment.CommentDAO;
@@ -13,6 +14,7 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
@@ -163,13 +165,17 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     try {
       // Get the user info from the Context
       var userInfo = authService.getCurrentLoginUserInfo();
-      ProjectPaginationDTO projectPaginationDTO;
-      List<String> allowedProjectIds =
+      List<Resources> allowedProjects =
           mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
+      Builder builder = FindProjects.newBuilder();
+      boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(allowedProjects);
+      if (!allowedAllResources) {
+        Set<String> allowedProjectIds = RoleServiceUtils.getResourceIds(allowedProjects);
+        builder.addAllProjectIds(allowedProjectIds);
+      }
       var findProjects =
-          FindProjects.newBuilder()
-              .addAllProjectIds(allowedProjectIds)
+          builder
               .setPageNumber(request.getPageNumber())
               .setPageLimit(request.getPageLimit())
               .setAscending(request.getAscending())

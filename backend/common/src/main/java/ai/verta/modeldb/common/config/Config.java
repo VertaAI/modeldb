@@ -56,6 +56,9 @@ public abstract class Config {
   private ServiceUserConfig service_user;
   private int jdbi_retry_time = 100; // Time in ms
   private boolean event_system_enabled = false;
+  private TracingServerInterceptor tracingServerInterceptor = null;
+  private TracingClientInterceptor tracingClientInterceptor = null;
+  private volatile OpenTelemetry openTelemetry;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
@@ -73,26 +76,26 @@ public abstract class Config {
     }
   }
 
-  public void Validate() throws InvalidConfigException {
-
+  /** If you're overriding this method, don't forget to call super.validate(). */
+  public void validate() throws InvalidConfigException {
     if (authService != null) {
-      authService.Validate("authService");
+      authService.validate("authService");
     }
 
     if (cron_job != null) {
       for (Map.Entry<String, CronJobConfig> cronJob : cron_job.entrySet()) {
-        cronJob.getValue().Validate("cron_job." + cronJob.getKey());
+        cronJob.getValue().validate("cron_job." + cronJob.getKey());
       }
     }
 
     if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
-    database.Validate("database");
+    database.validate("database");
 
     if (grpcServer == null) throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
-    grpcServer.Validate("grpcServer");
+    grpcServer.validate("grpcServer");
 
     if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
-    springServer.Validate("springServer");
+    springServer.validate("springServer");
   }
 
   public boolean hasAuth() {
@@ -101,40 +104,15 @@ public abstract class Config {
 
   public abstract boolean hasServiceAccount();
 
-  private TracingServerInterceptor tracingServerInterceptor = null;
-  private TracingClientInterceptor tracingClientInterceptor = null;
-
+  // todo: move all tracing related things to a class that exposes spring @Beans, rather than doing
+  // all of this here.
   private void initializeTracing() {
     if (!enableTrace) {
       return;
     }
 
     if (tracingServerInterceptor == null) {
-      JaegerThriftSpanExporter spanExporter =
-          JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
-      SdkTracerProvider tracerProvider =
-          SdkTracerProvider.builder()
-              .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
-              .setResource(
-                  Resource.getDefault()
-                      .merge(
-                          Resource.create(
-                              Attributes.of(
-                                  stringKey("service.name"),
-                                  System.getenv("JAEGER_SERVICE_NAME"),
-                                  stringKey("kubernetes.namespace"),
-                                  System.getenv("POD_NAMESPACE"))))
-                      .merge(HostResource.get())
-                      .merge(ContainerResource.get()))
-              .build();
-      OpenTelemetry openTelemetry =
-          OpenTelemetrySdk.builder()
-              .setTracerProvider(tracerProvider)
-              .setPropagators(
-                  ContextPropagators.create(
-                      TextMapPropagator.composite(
-                          W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
-              .buildAndRegisterGlobal();
+      OpenTelemetry openTelemetry = getOpenTelemetry();
       Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
 
       tracingServerInterceptor =
@@ -152,6 +130,36 @@ public abstract class Config {
               .withActiveSpanSource(ActiveSpanSource.GRPC_CONTEXT)
               .build();
     }
+  }
+
+  private OpenTelemetry initializeOpenTelemetry() {
+    if (!enableTrace) {
+      return OpenTelemetry.noop();
+    }
+    JaegerThriftSpanExporter spanExporter =
+        JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
+    SdkTracerProvider tracerProvider =
+        SdkTracerProvider.builder()
+            .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+            .setResource(
+                Resource.getDefault()
+                    .merge(
+                        Resource.create(
+                            Attributes.of(
+                                stringKey("service.name"),
+                                System.getenv("JAEGER_SERVICE_NAME"),
+                                stringKey("kubernetes.namespace"),
+                                System.getenv("POD_NAMESPACE"))))
+                    .merge(HostResource.get())
+                    .merge(ContainerResource.get()))
+            .build();
+    return OpenTelemetrySdk.builder()
+        .setTracerProvider(tracerProvider)
+        .setPropagators(
+            ContextPropagators.create(
+                TextMapPropagator.composite(
+                    W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
+        .buildAndRegisterGlobal();
   }
 
   public Optional<TracingServerInterceptor> getTracingServerInterceptor() {
@@ -224,5 +232,12 @@ public abstract class Config {
 
   public boolean isEvent_system_enabled() {
     return event_system_enabled;
+  }
+
+  public OpenTelemetry getOpenTelemetry() {
+    if (openTelemetry == null) {
+      openTelemetry = initializeOpenTelemetry();
+    }
+    return openTelemetry;
   }
 }

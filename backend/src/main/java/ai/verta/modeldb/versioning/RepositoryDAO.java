@@ -14,6 +14,7 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collection;
 import java.util.List;
 import org.hibernate.Session;
 
@@ -53,7 +54,7 @@ public interface RepositoryDAO {
       throws ModelDBException;
 
   void deleteRepositories(
-      Session session, ExperimentRunDAO experimentRunDAO, List<String> allowedRepositoryIds);
+      Session session, ExperimentRunDAO experimentRunDAO, Collection<String> allowedRepositoryIds);
 
   Dataset createOrUpdateDataset(
       Dataset dataset, String workspaceName, boolean create, UserInfo userInfo)

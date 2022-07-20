@@ -2870,4 +2870,18 @@ public class ProjectTest extends TestsInit {
         1,
         response.getDatasetCount());
   }
+
+  @Test
+  public void createAndDeleteProjectUsingServiceAccount() {
+    // Create two project of above project
+    CreateProject createProjectRequest =
+        ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject.Response createProjectResponse =
+        serviceUserProjectServiceStub.createProject(createProjectRequest);
+    DeleteProjects deleteProjects =
+        DeleteProjects.newBuilder().addIds(createProjectResponse.getProject().getId()).build();
+    DeleteProjects.Response deleteProjectsResponse =
+        serviceUserProjectServiceStub.deleteProjects(deleteProjects);
+    assertTrue(deleteProjectsResponse.getStatus());
+  }
 }

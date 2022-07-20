@@ -5,7 +5,7 @@ public class ServiceUserConfig {
   private String email;
   private String devKey;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (email == null || email.isEmpty())
       throw new InvalidConfigException(base + ".email", Config.MISSING_REQUIRED);
     if (devKey == null || devKey.isEmpty())

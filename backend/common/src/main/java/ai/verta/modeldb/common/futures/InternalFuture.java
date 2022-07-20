@@ -47,15 +47,6 @@ public class InternalFuture<T> {
     }
   }
 
-  public static <T> InternalFuture<T> trace(
-      Supplier<InternalFuture<T>> supplier,
-      String operationName,
-      Map<String, String> tags,
-      Executor executor) {
-    // todo: remove me since tracing works in other ways now
-    return supplier.get();
-  }
-
   // Convert a list of futures to a future of a list
   @SuppressWarnings("unchecked")
   public static <T> InternalFuture<List<T>> sequence(
