@@ -57,7 +57,7 @@ public class ReconcilerInitializer {
         new SoftDeleteRepositories(
             reconcilerConfig, services.mdbRoleService, true, futureJdbi, executor);
     updateRepositoryTimestampReconcile =
-        new UpdateRepositoryTimestampReconcile(reconcilerConfig, futureJdbi, executor);
+        new UpdateRepositoryTimestampReconcile(reconcilerConfig, futureJdbi, executor, config);
     updateExperimentTimestampReconcile =
         new UpdateExperimentTimestampReconcile(reconcilerConfig, futureJdbi, executor);
     updateProjectTimestampReconcile =

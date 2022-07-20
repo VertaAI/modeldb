@@ -1567,7 +1567,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      query.setParameterList(REPO_IDS_QUERY_PARAM, accessibleResourceIds);
+      query.setParameterList(
+          REPO_IDS_QUERY_PARAM,
+          accessibleResourceIds.stream().map(Long::parseLong).collect(Collectors.toList()));
     }
 
     LOGGER.debug(
@@ -1649,7 +1651,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
     query.setParameterList("expRunIds", expRunIds);
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      query.setParameterList(REPO_IDS_QUERY_PARAM, accessibleRepositoryIds);
+      query.setParameterList(
+          REPO_IDS_QUERY_PARAM,
+          accessibleRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
     }
 
     LOGGER.debug("Final experimentRuns code config blob final query : {}", query.getQueryString());

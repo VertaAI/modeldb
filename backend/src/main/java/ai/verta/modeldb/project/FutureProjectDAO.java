@@ -1375,9 +1375,10 @@ public class FutureProjectDAO {
                         handle ->
                             handle
                                 .createQuery(
-                                    "select count(p.id) from project p where p.deleted = false AND p.short_name = :projectShortName AND p.id IN (<projectIds>)")
+                                    "select count(p.id) from project p where p.deleted = :deleted AND p.short_name = :projectShortName AND p.id IN (<projectIds>)")
                                 .bind("projectShortName", request.getShortName())
                                 .bindList("projectIds", selfAllowedResources)
+                                .bind("deleted", false)
                                 .mapTo(Long.class)
                                 .findOne());
               }
