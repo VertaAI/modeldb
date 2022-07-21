@@ -12,6 +12,7 @@ import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.EnabledMigration;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
@@ -102,6 +103,11 @@ public class AppConfigBeans {
     System.getProperties().put("server.port", config.getSpringServer().getPort());
 
     return config;
+  }
+
+  @Bean
+  public SpringServerConfig springServerConfig(MDBConfig config) {
+    return config.getSpringServer();
   }
 
   @Bean
