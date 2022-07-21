@@ -52,6 +52,7 @@ import ai.verta.modeldb.UpdateExperimentRunDescription;
 import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -59,8 +60,8 @@ import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
@@ -479,7 +480,7 @@ public class FutureExperimentRunDAO {
       List<String> entityIds,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
                     IsSelfAllowed.newBuilder()
@@ -1241,14 +1242,11 @@ public class FutureExperimentRunDAO {
               ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
           .thenApply(
               resources -> {
-                boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+                boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
                   return new QueryFilterContext();
                 } else {
-                  List<String> accessibleProjectIds =
-                      resources.stream()
-                          .flatMap(x -> x.getResourceIdsList().stream())
-                          .collect(Collectors.toList());
+                  Set<String> accessibleProjectIds = RoleServiceUtils.getResourceIds(resources);
                   if (accessibleProjectIds.isEmpty()) {
                     return null;
                   } else {
@@ -1282,7 +1280,7 @@ public class FutureExperimentRunDAO {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
-              boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+              boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
               // For all repositories are accessible
               if (allowedAllResources) {
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
@@ -1290,10 +1288,7 @@ public class FutureExperimentRunDAO {
               } else {
                 // If all repositories are not accessible then need to extract accessible from list
                 // of resources
-                List<String> selfAllowedRepositoryIds =
-                    resources.stream()
-                        .flatMap(x -> x.getResourceIdsList().stream())
-                        .collect(Collectors.toList());
+                Set<String> selfAllowedRepositoryIds = RoleServiceUtils.getResourceIds(resources);
                 // If self allowed repositories list is empty then return response by this method
                 // will return empty list otherwise return as per selfAllowedRepositoryIds
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
@@ -1308,7 +1303,7 @@ public class FutureExperimentRunDAO {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
             resources -> {
-              boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+              boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
               // For all repositories are accessible
               if (allowedAllResources) {
                 return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
@@ -1316,14 +1311,11 @@ public class FutureExperimentRunDAO {
               } else {
                 // If all repositories are not accessible then need to extract accessible from list
                 // of resources
-                List<String> selfAllowedRepositoryIds =
-                    resources.stream()
-                        .flatMap(x -> x.getResourceIdsList().stream())
-                        .collect(Collectors.toList());
+                Set<String> selfAllowedRepositoryIds = RoleServiceUtils.getResourceIds(resources);
                 // If self allowed repositories list is empty then return response by this method
                 // will return empty list otherwise return as per selfAllowedRepositoryIds
                 return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
-                    ids, Collections.emptyList(), false);
+                    ids, selfAllowedRepositoryIds, false);
               }
             },
             executor);
@@ -1515,10 +1507,16 @@ public class FutureExperimentRunDAO {
                 // Validate requested dataset version exists
                 jdbi.useHandle(
                     handle -> {
+                      var query =
+                          "SELECT COUNT(commit_hash) FROM commit WHERE commit_hash = :commitHash";
+                      if (config.getDatabase().getRdbConfiguration().isMssql()) {
+                        query =
+                            "SELECT COUNT(commit_hash) FROM \"commit\" WHERE commit_hash = :commitHash";
+                      }
                       Optional<Long> count =
                           handle
-                              .createQuery("SELECT COUNT(id) FROM commit WHERE id = :id")
-                              .bind("id", request.getDatasetVersionId())
+                              .createQuery(query)
+                              .bind("commitHash", request.getDatasetVersionId())
                               .mapTo(Long.class)
                               .findOne();
                       if (count.isEmpty() || count.get() == 0) {
@@ -1672,7 +1670,7 @@ public class FutureExperimentRunDAO {
     return validateRequestParamFuture
         .thenCompose(
             unused ->
-                FutureGrpc.ClientRequest(
+                FutureUtil.clientRequest(
                     uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
             executor)
         .thenCompose(

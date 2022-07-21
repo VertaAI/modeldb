@@ -678,7 +678,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                     executor);
           } else {
             return InternalFuture.completedInternalFuture(
-                new QueryFilterContext().addCondition(String.format("%s.id = -1", alias)));
+                new QueryFilterContext().addCondition(String.format("%s.id = '-1'", alias)));
           }
         },
         executor);

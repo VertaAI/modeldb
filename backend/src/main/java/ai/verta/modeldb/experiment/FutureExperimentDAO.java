@@ -23,12 +23,13 @@ import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
@@ -59,6 +60,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -116,7 +118,7 @@ public class FutureExperimentDAO {
   }
 
   public InternalFuture<Experiment> createExperiment(CreateExperiment request) {
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo ->
@@ -375,14 +377,11 @@ public class FutureExperimentDAO {
               ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
           .thenApply(
               resources -> {
-                boolean allowedAllResources = uacApisUtil.checkAllResourceAllowed(resources);
+                boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
                   return new QueryFilterContext();
                 } else {
-                  List<String> accessibleProjectIds =
-                      resources.stream()
-                          .flatMap(x -> x.getResourceIdsList().stream())
-                          .collect(Collectors.toList());
+                  Set<String> accessibleProjectIds = RoleServiceUtils.getResourceIds(resources);
                   if (accessibleProjectIds.isEmpty()) {
                     return null;
                   } else {

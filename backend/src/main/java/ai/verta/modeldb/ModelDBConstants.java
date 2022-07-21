@@ -14,8 +14,6 @@ public abstract class ModelDBConstants {
   public static final String PATH = "path";
   public static final String PORT = "port";
   public static final String STORE_TYPE_PATH = "store_type_path";
-  public static final String LIQUIBASE_MIGRATION = "LIQUIBASE_MIGRATION";
-  public static final String RUN_LIQUIBASE_SEPARATE = "RUN_LIQUIBASE_SEPARATE";
   public static final String LIMIT_RUN_ARTIFACT_NUMBER = "LIMIT_RUN_ARTIFACT_NUMBER: ";
   public static final String LIMIT_RUN_NUMBER = "LIMIT_RUN_NUMBER: ";
   public static final String LIMIT_RUN_ARTIFACT_SIZE = "LIMIT_RUN_ARTIFACT_SIZE: ";
@@ -208,6 +206,4 @@ public abstract class ModelDBConstants {
   public static final String DATASET = "DATASET";
   public static final String DATASET_VERSION = "DATASET_VERSION";
   public static final String COMMENT = "COMMENT";
-
-  public static final String BACKEND_PID = "verta-mdb-backend.pid";
 }

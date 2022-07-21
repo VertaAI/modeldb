@@ -10,7 +10,7 @@ public class S3Config {
   private String awsRegion = "us-east-1";
   private Boolean s3presignedURLEnabled = true;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (cloudBucketName == null || cloudBucketName.isEmpty())
       throw new InvalidConfigException(base + ".cloudBucketName", Config.MISSING_REQUIRED);
   }

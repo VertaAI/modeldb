@@ -16,17 +16,18 @@ public class TestConfig extends MDBConfig {
   public static TestConfig getInstance() throws InternalErrorException {
     if (config == null) {
       config = getInstance(TestConfig.class, ModelDBConstants.VERTA_MODELDB_TEST_CONFIG);
-      config.Validate();
+      config.validate();
     }
     return config;
   }
 
-  public void Validate() throws InvalidConfigException {
+  @Override
+  public void validate() throws InvalidConfigException {
     if (getDatabase() == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
-    getDatabase().Validate("database");
+    getDatabase().validate("database");
 
     if (getService_user() != null) {
-      getService_user().Validate("service_user");
+      getService_user().validate("service_user");
     }
 
     if (config.hasAuth() && testUsers == null) {
@@ -34,16 +35,16 @@ public class TestConfig extends MDBConfig {
     }
 
     for (Map.Entry<String, ServiceUserConfig> entry : testUsers.entrySet()) {
-      entry.getValue().Validate(entry.getKey());
+      entry.getValue().validate(entry.getKey());
     }
 
     if (artifactStoreConfig == null)
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.Validate("artifactStoreConfig");
+    artifactStoreConfig.validate("artifactStoreConfig");
 
     if (migrations != null) {
       for (MigrationConfig migrationConfig : migrations) {
-        migrationConfig.Validate("migration");
+        migrationConfig.validate("migration");
       }
     }
   }

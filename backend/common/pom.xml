@@ -6,7 +6,7 @@
         <groupId>ai.verta.modeldb</groupId>
         <artifactId>modeldb-parent</artifactId>
         <version>1.0-SNAPSHOT</version>
-        <relativePath>../..</relativePath>
+        <relativePath>../../pom.xml</relativePath>
     </parent>
     <groupId>ai.verta.common</groupId>
     <artifactId>common</artifactId>
@@ -108,6 +108,10 @@
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-opentracing-shim</artifactId>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-semconv</artifactId>
+        </dependency>
 
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
@@ -139,6 +143,21 @@
             <groupId>io.prometheus</groupId>
             <artifactId>simpleclient_spring_boot</artifactId>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_servlet -->
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_servlet</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_hotspot -->
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_hotspot</artifactId>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/io.prometheus.jmx/collector -->
+        <dependency>
+            <groupId>io.prometheus.jmx</groupId>
+            <artifactId>collector</artifactId>
+        </dependency>
         <!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
@@ -167,6 +186,19 @@
         </dependency>
 
         <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- override this version to fix a bug with conflicting junit internal versions -->
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-commons</artifactId>
+            <version>1.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
             <exclusions>
@@ -175,6 +207,17 @@
                     <artifactId>spring-boot-starter-logging</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.mock-server</groupId>
+            <artifactId>mockserver-netty</artifactId>
+            <version>5.13.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.opentelemetry</groupId>
+            <artifactId>opentelemetry-sdk-testing</artifactId>
+            <scope>test</scope>
         </dependency>
         <!-- Snyk abatement -->
         <dependency>
@@ -189,6 +232,19 @@
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
         </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-api</artifactId>
+            <version>5.8.2</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.assertj</groupId>
+            <artifactId>assertj-core</artifactId>
+            <version>3.22.0</version>
+            <scope>test</scope>
+        </dependency>
+
     </dependencies>
 
     <build>

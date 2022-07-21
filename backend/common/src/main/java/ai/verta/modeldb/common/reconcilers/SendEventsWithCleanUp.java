@@ -3,8 +3,8 @@ package ai.verta.modeldb.common.reconcilers;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.event.FutureEventDAO;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.CreateEventRequest;
 import com.google.protobuf.Any;
@@ -62,7 +62,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
               List<InternalFuture<String>> deletedEventUUIDFutures = new ArrayList<>();
               for (CreateEventRequest request : createEventRequests) {
                 deletedEventUUIDFutures.add(
-                    FutureGrpc.ClientRequest(uac.getEventService().createEvent(request), executor)
+                    FutureUtil.clientRequest(uac.getEventService().createEvent(request), executor)
                         .thenApply(empty -> request.getEventUuid(), executor));
               }
               return InternalFuture.sequence(deletedEventUUIDFutures, executor);

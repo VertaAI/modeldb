@@ -6,7 +6,7 @@ public class SpringServerConfig {
   private Long shutdownTimeout = 30L;
   private int threadCount = 32;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (port == 0) throw new InvalidConfigException(base + ".port", Config.MISSING_REQUIRED);
   }
 

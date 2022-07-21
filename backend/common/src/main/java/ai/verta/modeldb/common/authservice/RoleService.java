@@ -4,7 +4,9 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.uac.*;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.protobuf.GeneratedMessageV3;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -71,20 +73,20 @@ public interface RoleService {
   String buildRoleBindingName(
       String roleName, String resourceId, String userId, String resourceTypeName);
 
-  List<String> getAccessibleResourceIds(
+  Collection<String> getAccessibleResourceIds(
       CollaboratorBase hostUserInfo,
       CollaboratorBase currentLoginUserInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      List<String> requestedResourceIds);
+      Collection<String> requestedResourceIds);
 
-  List<String> getAllowedResources(
+  List<Resources> getAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
+      ModelDBServiceActions modelDBServiceActions,
       CollaboratorBase collaboratorBase);
 
-  List<String> getSelfAllowedResources(
+  List<Resources> getSelfAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
+      ModelDBServiceActions modelDBServiceActions);
 
   List<String> getSelfDirectlyAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
@@ -95,10 +97,10 @@ public interface RoleService {
       ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
       String resourceId);
 
-  List<String> getAccessibleResourceIdsByActions(
+  Collection<String> getAccessibleResourceIdsByActions(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
-      List<String> requestedIdList);
+      ModelDBServiceActions modelDBServiceActions,
+      List<String> requestedResourceIds);
 
   Map<String, Actions> getSelfAllowedActionsBatch(
       List<String> resourceIds, ModelDBServiceResourceTypes type);

@@ -16,14 +16,14 @@ public class DatabaseConfig {
 
   private RdbConfig RdbConfiguration;
 
-  public void Validate(String base) throws InvalidConfigException {
+  public void validate(String base) throws InvalidConfigException {
     if (DBType == null || DBType.isEmpty())
       throw new InvalidConfigException(base + ".DBType", Config.MISSING_REQUIRED);
 
     if ("relational".equals(DBType)) {
       if (RdbConfiguration == null)
         throw new InvalidConfigException(base + ".RdbConfiguration", Config.MISSING_REQUIRED);
-      RdbConfiguration.Validate(base + ".RdbConfiguration");
+      RdbConfiguration.validate(base + ".RdbConfiguration");
     } else {
       throw new InvalidConfigException(base + ".DBType", "unknown type " + DBType);
     }

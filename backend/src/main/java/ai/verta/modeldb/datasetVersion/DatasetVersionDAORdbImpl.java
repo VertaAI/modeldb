@@ -10,6 +10,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -25,6 +26,7 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.Resources;
 import ai.verta.uac.UserInfo;
 import com.google.rpc.Code;
 import java.util.*;
@@ -216,7 +218,7 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
     Set<String> datasetIdSet = new HashSet<>(datasetIdDatasetVersionIdMap.values());
 
     List<String> accessibleDatasetVersionIds = new ArrayList<>();
-    List<String> allowedDatasetIds;
+    List<Resources> allowedDatasets;
     // Validate if current user has access to the entity or not
     if (datasetIdSet.size() == 1) {
       mdbRoleService.isSelfAllowed(
@@ -225,11 +227,13 @@ public class DatasetVersionDAORdbImpl implements DatasetVersionDAO {
           new ArrayList<>(datasetIdSet).get(0));
       accessibleDatasetVersionIds.addAll(requestedDatasetVersionIds);
     } else {
-      allowedDatasetIds =
+      allowedDatasets =
           mdbRoleService.getSelfAllowedResources(
               ModelDBServiceResourceTypes.DATASET, modelDBServiceActions);
       // Validate if current user has access to the entity or not
-      allowedDatasetIds.retainAll(datasetIdSet);
+      Set<String> allowedDatasetIds =
+          RoleServiceUtils.getAccessibleResourceIdsFromAllowedResources(
+              datasetIdSet, allowedDatasets);
       for (Map.Entry<String, String> entry : datasetIdDatasetVersionIdMap.entrySet()) {
         if (allowedDatasetIds.contains(entry.getValue())) {
           accessibleDatasetVersionIds.add(entry.getKey());
