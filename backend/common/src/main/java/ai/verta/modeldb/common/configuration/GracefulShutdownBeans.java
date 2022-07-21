@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.configuration;
 
 import ai.verta.modeldb.common.GracefulShutdown;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.SpringServerConfig;
 import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
 import org.springframework.boot.web.servlet.server.ServletWebServerFactory;
