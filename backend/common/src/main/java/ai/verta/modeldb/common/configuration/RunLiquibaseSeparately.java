@@ -1,4 +1,4 @@
-package ai.verta.modeldb.configuration;
+package ai.verta.modeldb.common.configuration;
 
 import ai.verta.modeldb.common.CommonConstants;
 import java.util.Optional;

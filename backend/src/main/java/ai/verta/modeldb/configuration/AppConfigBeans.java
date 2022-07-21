@@ -12,13 +12,16 @@ import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.configuration.AppContext;
+import ai.verta.modeldb.common.configuration.EnabledMigration;
+import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
+import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
 import ai.verta.modeldb.experiment.FutureExperimentServiceImpl;
@@ -100,6 +103,11 @@ public class AppConfigBeans {
     System.getProperties().put("server.port", config.getSpringServer().getPort());
 
     return config;
+  }
+
+  @Bean
+  public SpringServerConfig springServerConfig(MDBConfig config) {
+    return config.getSpringServer();
   }
 
   @Bean
