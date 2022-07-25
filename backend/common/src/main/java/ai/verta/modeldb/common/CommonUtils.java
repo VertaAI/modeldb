@@ -23,10 +23,14 @@ import java.io.FileReader;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.server.ResponseStatusException;
 
 public class CommonUtils {
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
@@ -172,6 +176,64 @@ public class CommonUtils {
   public static <T extends GeneratedMessageV3> void observeError(
       StreamObserver<T> responseObserver, Throwable e) {
     responseObserver.onError(logError(e));
+  }
+
+  public static <T> void observeError(CompletableFuture<T> completableFuture, Throwable e) {
+    completableFuture.completeExceptionally(observeErrorWithResponse(e, e.getMessage(), LOGGER));
+  }
+
+  public static ResponseStatusException observeErrorWithResponse(
+      Throwable e, String message, Logger logger) {
+    if (e instanceof ModelDBException
+        && e.getCause() instanceof ExecutionException
+        && e.getCause().getCause() != null) {
+      return observeErrorWithResponse(e.getCause().getCause(), message, logger);
+    }
+
+    if (e instanceof CompletionException) {
+      return observeErrorWithResponse(e.getCause(), message, logger);
+    }
+    final HttpStatus code;
+    if (e instanceof StatusRuntimeException) {
+      StatusRuntimeException ex = (StatusRuntimeException) e;
+      code = ModelDBException.httpStatusFromCode(ex.getStatus().getCode());
+      if (ex.getStatus().getCode() == io.grpc.Status.Code.NOT_FOUND) {
+        logger.debug(e.getMessage());
+      } else {
+        logger.error(e.getMessage());
+      }
+      message += " Details: " + e.getMessage();
+      printStackTrace(logger, e);
+    } else if (e instanceof IllegalArgumentException) {
+      code = HttpStatus.BAD_REQUEST;
+      String logMessage = "Common Service Exception occurred: {}";
+      message = e.getMessage();
+      logger.debug(logMessage, message);
+    } else if (e instanceof ModelDBException) {
+      ModelDBException uacServiceException = (ModelDBException) e;
+
+      code = uacServiceException.getHttpCode();
+      message += " Details: " + e.getMessage();
+      String logMessage = "Common Service Exception occurred: {}";
+      if (uacServiceException.getCodeValue() == Code.INTERNAL_VALUE) {
+        // If getting 500 then we will not expose about error to the user.
+        message = "Internal Server Error";
+        logger.error(logMessage, e.getMessage());
+        printStackTrace(logger, e);
+      } else {
+        if (uacServiceException.getCodeValue() == Code.RESOURCE_EXHAUSTED_VALUE) {
+          message = e.getMessage();
+        }
+        logger.debug(logMessage, e.getMessage());
+      }
+    } else {
+      code = HttpStatus.INTERNAL_SERVER_ERROR;
+      // If getting 500 then we will not expose about error to the user.
+      message = "Internal Server Error";
+      logger.error(e.getMessage());
+      printStackTrace(logger, e);
+    }
+    return new ResponseStatusException(code, message, e);
   }
 
   public static <T extends GeneratedMessageV3> void observeError(

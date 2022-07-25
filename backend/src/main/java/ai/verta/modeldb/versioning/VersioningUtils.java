@@ -14,6 +14,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.ResourceVisibility;
+import io.grpc.Status;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -255,7 +256,7 @@ public class VersioningUtils {
       var commitEntity = session.get(CommitEntity.class, datasetVersionId);
 
       if (commitEntity == null) {
-        throw new ModelDBException("DatasetVersion not found", io.grpc.Status.Code.NOT_FOUND);
+        throw new ModelDBException("DatasetVersion not found", Status.Code.NOT_FOUND);
       }
 
       if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
@@ -263,7 +264,7 @@ public class VersioningUtils {
             "DatasetVersion '"
                 + commitEntity.getCommit_hash()
                 + "' associated with multiple datasets",
-            io.grpc.Status.Code.INTERNAL);
+            Status.Code.INTERNAL);
       }
       Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
       repositoryIdentification.setRepoId(newRepoId);

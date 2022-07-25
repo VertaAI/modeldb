@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.futures;
 
+import ai.verta.modeldb.common.CommonUtils;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
 
@@ -15,10 +16,10 @@ public class FutureRest {
             try {
               promise.complete(v);
             } catch (Throwable e) {
-              promise.completeExceptionally(e);
+              CommonUtils.observeError(promise, t);
             }
           } else {
-            promise.completeExceptionally(t);
+            CommonUtils.observeError(promise, t);
           }
         },
         ex);
