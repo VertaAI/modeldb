@@ -29,7 +29,6 @@ import org.jdbi.v3.core.statement.UnableToCreateStatementException;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 
 public abstract class CommonDBUtil {
-
   private static final Logger LOGGER = LogManager.getLogger(CommonDBUtil.class);
 
   protected static void checkDBConnectionInLoop(
@@ -288,9 +287,16 @@ public abstract class CommonDBUtil {
       DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
-    System.getProperties().put("liquibase.databaseChangeLogTableName", "database_change_log");
-    System.getProperties()
-        .put("liquibase.databaseChangeLogLockTableName", "database_change_log_lock");
+    String changeLogTableName = "database_change_log";
+    String changeLogLockTableName = "database_change_log_lock";
+    if (config.getRdbConfiguration().isH2()) {
+      // H2 upper cases all table names, and liquibase has issues if you don't make this also upper
+      // case.
+      changeLogTableName = changeLogTableName.toUpperCase();
+      changeLogLockTableName = changeLogLockTableName.toUpperCase();
+    }
+    System.getProperties().put("liquibase.databaseChangeLogTableName", changeLogTableName);
+    System.getProperties().put("liquibase.databaseChangeLogLockTableName", changeLogLockTableName);
 
     // Lock to RDB for now
     var rdb = config.getRdbConfiguration();
@@ -318,6 +324,11 @@ public abstract class CommonDBUtil {
     Connection connection =
         DriverManager.getConnection(
             dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
+
+    if (rdbConfiguration.isH2()) {
+      LOGGER.debug("database driver is H2...skipping creation");
+      return;
+    }
     ResultSet resultSet = connection.getMetaData().getCatalogs();
 
     while (resultSet.next()) {

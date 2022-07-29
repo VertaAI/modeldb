@@ -213,7 +213,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     }
 
     if (errorMessage != null) {
-      throw new ModelDBException(errorMessage, io.grpc.Status.Code.INVALID_ARGUMENT);
+      throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
     }
     var repositoryIdentification =
         RepositoryIdentification.newBuilder().setRepoId(versioningEntry.getRepositoryId()).build();
@@ -237,7 +237,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   + "' for key '"
                   + locationBlobKeyMap.getKey()
                   + "' not found in commit blobs",
-              io.grpc.Status.Code.INVALID_ARGUMENT);
+              Code.INVALID_ARGUMENT);
         }
         requestedLocationBlobWithHashMap.put(locationKey, locationBlobWithHashMap.get(locationKey));
       }
@@ -1570,7 +1570,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     query.setParameter("hyperparameterType", HYPERPARAMETER);
     query.setParameterList("expRunIds", expRunIds);
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      query.setParameterList(REPO_IDS_QUERY_PARAM, accessibleResourceIds);
+      query.setParameterList(
+          REPO_IDS_QUERY_PARAM,
+          accessibleResourceIds.stream().map(Long::parseLong).collect(Collectors.toList()));
     }
 
     LOGGER.debug(
@@ -1652,7 +1654,9 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
     query.setParameter("versioningBlobType", Blob.ContentCase.CODE.getNumber());
     query.setParameterList("expRunIds", expRunIds);
     if (mdbConfig.isPopulateConnectionsBasedOnPrivileges()) {
-      query.setParameterList(REPO_IDS_QUERY_PARAM, accessibleRepositoryIds);
+      query.setParameterList(
+          REPO_IDS_QUERY_PARAM,
+          accessibleRepositoryIds.stream().map(Long::parseLong).collect(Collectors.toList()));
     }
 
     LOGGER.debug("Final experimentRuns code config blob final query : {}", query.getQueryString());
@@ -2082,8 +2086,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
                   .equals(versioningModeldbFirstEntityMapping.getCommit())) {
             if (!OVERWRITE_VERSION_MAP) {
               throw new ModelDBException(
-                  ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE,
-                  io.grpc.Status.Code.ALREADY_EXISTS);
+                  ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE, Code.ALREADY_EXISTS);
             }
             var cb = session.getCriteriaBuilder();
             CriteriaDelete<VersioningModeldbEntityMapping> delete =
@@ -2436,7 +2439,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       }
       if (message != null) {
         LOGGER.info(message);
-        throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+        throw new ModelDBException(message, Code.FAILED_PRECONDITION);
       }
       if (!Objects.equals(uploadId, artifactEntity.getUploadId())
           || artifactEntity.isUploadCompleted()) {

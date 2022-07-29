@@ -19,24 +19,25 @@ public class MDBConfig extends Config {
   public static MDBConfig getInstance() throws InternalErrorException {
     if (mdbConfig == null) {
       mdbConfig = getInstance(MDBConfig.class, ModelDBConstants.VERTA_MODELDB_CONFIG);
-      mdbConfig.Validate();
+      mdbConfig.validate();
     }
     return mdbConfig;
   }
 
-  public void Validate() throws InvalidConfigException {
-    super.Validate();
+  @Override
+  public void validate() throws InvalidConfigException {
+    super.validate();
 
     if (getService_user() != null) {
-      getService_user().Validate("service_user");
+      getService_user().validate("service_user");
     }
 
     if (telemetry == null) telemetry = new TelemetryConfig();
-    telemetry.Validate("telemetry");
+    telemetry.validate("telemetry");
 
     if (migrations != null) {
       for (MigrationConfig migrationConfig : migrations) {
-        migrationConfig.Validate("migration");
+        migrationConfig.validate("migration");
       }
     }
   }

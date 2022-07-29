@@ -39,7 +39,7 @@ import ai.verta.modeldb.versioning.blob.factory.BlobFactory;
 import ai.verta.uac.Workspace;
 import com.amazonaws.services.s3.model.PartETag;
 import com.google.protobuf.ProtocolStringList;
-import io.grpc.Status;
+import com.google.rpc.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
@@ -139,7 +139,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         var commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
           throw new ModelDBException(
-              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Status.Code.NOT_FOUND);
+              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Code.NOT_FOUND);
         }
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
@@ -147,7 +147,7 @@ public class BlobDAORdbImpl implements BlobDAO {
               String.format(
                   "DatasetVersion '%s' associated with multiple datasets",
                   commitEntity.getCommit_hash()),
-              Status.Code.INTERNAL);
+              Code.INTERNAL);
         }
         assert commitEntity.getRepository() != null;
         Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
@@ -229,7 +229,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         var commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
           throw new ModelDBException(
-              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Status.Code.NOT_FOUND);
+              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Code.NOT_FOUND);
         }
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
@@ -237,7 +237,7 @@ public class BlobDAORdbImpl implements BlobDAO {
               String.format(
                   "DatasetVersion '%s' associated with multiple datasets",
                   commitEntity.getCommit_hash()),
-              Status.Code.INTERNAL);
+              Code.INTERNAL);
         }
         assert commitEntity.getRepository() != null;
         Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
@@ -333,7 +333,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         commitEntity = session.get(CommitEntity.class, commitHash);
         if (commitEntity == null) {
           throw new ModelDBException(
-              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Status.Code.NOT_FOUND);
+              ModelDBMessages.DATASET_VERSION_NOT_FOUND_ERROR, Code.NOT_FOUND);
         }
 
         if (commitEntity.getRepository() != null && commitEntity.getRepository().size() > 1) {
@@ -341,7 +341,7 @@ public class BlobDAORdbImpl implements BlobDAO {
               String.format(
                   "DatasetVersion '%s' associated with multiple datasets",
                   commitEntity.getCommit_hash()),
-              Status.Code.INTERNAL);
+              Code.INTERNAL);
         }
         assert commitEntity.getRepository() != null;
         Long newRepoId = new ArrayList<>(commitEntity.getRepository()).get(0).getId();
@@ -442,11 +442,11 @@ public class BlobDAORdbImpl implements BlobDAO {
       Session session, Long repoId, CommitEntity commit, List<String> locationList)
       throws ModelDBException {
     if (commit == null) {
-      throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
+      throw new ModelDBException("No such commit", Code.NOT_FOUND);
     }
 
     if (!VersioningUtils.commitRepositoryMappingExists(session, commit.getCommit_hash(), repoId)) {
-      throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
+      throw new ModelDBException("No such commit found in the repository", Code.NOT_FOUND);
     }
 
     String folderHash = commit.getRootSha();
@@ -473,7 +473,7 @@ public class BlobDAORdbImpl implements BlobDAO {
             index,
             folderLocation);
         throw new ModelDBException(
-            String.format("No such folder found : %s", folderLocation), Status.Code.NOT_FOUND);
+            String.format("No such folder found : %s", folderLocation), Code.NOT_FOUND);
       }
       if (elementEntity.getElement_type().equals(TREE)) {
         folderHash = elementEntity.getElement_sha();
@@ -497,12 +497,11 @@ public class BlobDAORdbImpl implements BlobDAO {
         } else {
           throw new ModelDBException(
               String.format("No such folder found : %s", locationList.get(index + 1)),
-              Status.Code.NOT_FOUND);
+              Code.NOT_FOUND);
         }
       }
     }
-    throw new ModelDBException(
-        "Unexpected logic issue found when fetching blobs", Status.Code.UNKNOWN);
+    throw new ModelDBException("Unexpected logic issue found when fetching blobs", Code.UNKNOWN);
   }
 
   @Override
@@ -522,7 +521,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (!repositoryEntity.isDataset()) {
         throw new ModelDBException(
             "Repository should be created from Dataset to add Dataset Version to it",
-            Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT);
       }
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
       List<String> locationList = Collections.singletonList(DEFAULT_VERSIONING_BLOB_LOCATION);
@@ -610,7 +609,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         datasetVersionBuilder.setDatasetBlob(dataset);
         return datasetVersionBuilder.build();
       } else {
-        throw new ModelDBException("No such blob found", Status.Code.NOT_FOUND);
+        throw new ModelDBException("No such blob found", Code.NOT_FOUND);
       }
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -785,7 +784,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (parentLocation
           != null) { // = null mainly is supporting the call on init commit which is an empty commit
         throw new ModelDBException(
-            String.format("No such folder found : %s", parentLocation), Status.Code.NOT_FOUND);
+            String.format("No such folder found : %s", parentLocation), Code.NOT_FOUND);
       }
     }
 
@@ -838,12 +837,12 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       CommitEntity commit = session.get(CommitEntity.class, commitHash);
       if (commit == null) {
-        throw new ModelDBException("No such commit", Status.Code.NOT_FOUND);
+        throw new ModelDBException("No such commit", Code.NOT_FOUND);
       }
 
       RepositoryEntity repository = repositoryFunction.apply(session);
       if (!VersioningUtils.commitRepositoryMappingExists(session, commitHash, repository.getId())) {
-        throw new ModelDBException("No such commit found in the repository", Status.Code.NOT_FOUND);
+        throw new ModelDBException("No such commit found in the repository", Code.NOT_FOUND);
       }
       Map<String, BlobExpanded> locationBlobMap =
           getCommitBlobMap(session, commit.getRootSha(), locationList);
@@ -917,14 +916,12 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (internalCommitA == null) {
         throw new ModelDBException(
-            String.format("No such commit OR branch found : %s", errorNameA),
-            Status.Code.NOT_FOUND);
+            String.format("No such commit OR branch found : %s", errorNameA), Code.NOT_FOUND);
       }
 
       if (internalCommitB == null) {
         throw new ModelDBException(
-            String.format("No such commit OR branch found : %s", errorNameB),
-            Status.Code.NOT_FOUND);
+            String.format("No such commit OR branch found : %s", errorNameB), Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
@@ -932,7 +929,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             String.format(
                 "No such commit found in the repository : %s", internalCommitA.getCommit_hash()),
-            Status.Code.NOT_FOUND);
+            Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
@@ -940,7 +937,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             String.format(
                 "No such commit found in the repository : %s", internalCommitB.getCommit_hash()),
-            Status.Code.NOT_FOUND);
+            Code.NOT_FOUND);
       }
 
       if (request.getReplaceAWithCommonAncestor()) {
@@ -1034,7 +1031,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
     if (invalidParam) {
       throw new ModelDBException(
-          "Branches and Commits both are not allowed in the request", Status.Code.INVALID_ARGUMENT);
+          "Branches and Commits both are not allowed in the request", Code.INVALID_ARGUMENT);
     }
   }
 
@@ -1109,14 +1106,12 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (internalCommitA == null) {
         throw new ModelDBException(
-            String.format("No such commit OR branch found : %s", branchOrCommitA),
-            Status.Code.NOT_FOUND);
+            String.format("No such commit OR branch found : %s", branchOrCommitA), Code.NOT_FOUND);
       }
 
       if (internalCommitB == null) {
         throw new ModelDBException(
-            String.format("No such commit OR branch found : %s", branchOrCommitB),
-            Status.Code.NOT_FOUND);
+            String.format("No such commit OR branch found : %s", branchOrCommitB), Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
@@ -1124,7 +1119,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             String.format(
                 "No such commit found in the repository : %s", internalCommitA.getCommit_hash()),
-            Status.Code.NOT_FOUND);
+            Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
@@ -1132,7 +1127,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             String.format(
                 "No such commit found in the repository : %s", internalCommitB.getCommit_hash()),
-            Status.Code.NOT_FOUND);
+            Code.NOT_FOUND);
       }
 
       parentCommit =
@@ -1259,11 +1254,11 @@ public class BlobDAORdbImpl implements BlobDAO {
     LOGGER.debug("Validating RevertRepositoryCommitsRequest");
     if (request.getCommitToRevertSha().isEmpty()) {
       throw new ModelDBException(
-          "Revert Commit SHA not found in the request", Status.Code.INVALID_ARGUMENT);
+          "Revert Commit SHA not found in the request", Code.INVALID_ARGUMENT);
     }
     if (request.getBaseCommitSha().isEmpty()) {
       throw new ModelDBException(
-          "Revert Base Commit SHA not found in the request", Status.Code.INVALID_ARGUMENT);
+          "Revert Base Commit SHA not found in the request", Code.INVALID_ARGUMENT);
     }
     LOGGER.debug("RevertRepositoryCommitsRequest validated");
 
@@ -1278,14 +1273,14 @@ public class BlobDAORdbImpl implements BlobDAO {
           session, request.getCommitToRevertSha(), repositoryEntity.getId())) {
         throw new ModelDBException(
             "No such revert commit found in the repository : " + request.getCommitToRevertSha(),
-            Status.Code.NOT_FOUND);
+            Code.NOT_FOUND);
       }
 
       if (!VersioningUtils.commitRepositoryMappingExists(
           session, request.getBaseCommitSha(), repositoryEntity.getId())) {
         throw new ModelDBException(
             "No such base commit found in the repository : " + request.getCommitToRevertSha(),
-            Status.Code.NOT_FOUND);
+            Code.NOT_FOUND);
       }
 
       commitToRevertEntity =
@@ -1297,7 +1292,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (commitToRevertEntity.getParent_commits() == null
           || commitToRevertEntity.getParent_commits().isEmpty()) {
         throw new ModelDBException(
-            "No parent found for commit : " + request.getCommitToRevertSha(), Status.Code.INTERNAL);
+            "No parent found for commit : " + request.getCommitToRevertSha(), Code.INTERNAL);
       }
       CommitEntity firstParentOfCommitToRevert = commitToRevertEntity.getParent_commits().get(0);
 
@@ -1448,7 +1443,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
     }
     // Should never happen, since we have the initial commit
-    throw new ModelDBException("Could not find base commit for merge", Status.Code.INTERNAL);
+    throw new ModelDBException("Could not find base commit for merge", Code.INTERNAL);
   }
 
   private Map<String, Set<BlobExpanded>> getCollectToMap(
@@ -1589,8 +1584,7 @@ public class BlobDAORdbImpl implements BlobDAO {
     for (AutogenBlobDiff blobDiff : diffs) {
       final List<String> locationList = blobDiff.getLocation();
       if (locationList == null || locationList.isEmpty()) {
-        throw new ModelDBException(
-            "Location in BlobDiff should not be empty", Status.Code.INTERNAL);
+        throw new ModelDBException("Location in BlobDiff should not be empty", Code.INTERNAL);
       }
       var blobExpanded = locationBlobsMap.get(getStringFromLocationList(locationList));
 
@@ -1640,7 +1634,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         return blobTypeList.contains(BlobType.ENVIRONMENT_BLOB);
       default:
         throw new ModelDBException(
-            "Invalid blob type found in DB Blob : " + contentCase.name(), Status.Code.INTERNAL);
+            "Invalid blob type found in DB Blob : " + contentCase.name(), Code.INTERNAL);
     }
   }
 
@@ -1762,7 +1756,7 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             String.format(
                 "Blob Location '%s' not found in commit blobs", request.getLocationList()),
-            Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       var blob = blobExpandedMap.getKey().getBlob();
@@ -1799,12 +1793,12 @@ public class BlobDAORdbImpl implements BlobDAO {
       String uploadId = s3KeyUploadId.getValue();
       if (s3Key == null || s3Key.isEmpty()) {
         LOGGER.warn(errorMessage);
-        throw new ModelDBException(errorMessage, Status.Code.NOT_FOUND);
+        throw new ModelDBException(errorMessage, Code.NOT_FOUND);
       }
       return artifactStoreDAO.getUrlForArtifactMultipart(
           s3Key, request.getMethod(), request.getPartNumber(), uploadId);
     } else {
-      throw new ModelDBException("Invalid Blob type found", Status.Code.INVALID_ARGUMENT);
+      throw new ModelDBException("Invalid Blob type found", Code.INVALID_ARGUMENT);
     }
   }
 
@@ -1881,11 +1875,11 @@ public class BlobDAORdbImpl implements BlobDAO {
           break;
       }
     } else {
-      throw new ModelDBException("Invalid Blob type found", Status.Code.INVALID_ARGUMENT);
+      throw new ModelDBException("Invalid Blob type found", Code.INVALID_ARGUMENT);
     }
     throw new ModelDBException(
         "Dataset component blob not found for the path: '" + pathDatasetComponentBlobPath + "'",
-        Status.Code.NOT_FOUND);
+        Code.NOT_FOUND);
   }
 
   private Map.Entry<String, String> getS3PathAndMultipartUploadId(
@@ -1938,7 +1932,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       }
       if (message != null) {
         LOGGER.info(message);
-        throw new ModelDBException(message, io.grpc.Status.Code.FAILED_PRECONDITION);
+        throw new ModelDBException(message, Code.FAILED_PRECONDITION);
       }
 
       if (!Objects.equals(uploadId, uploadStatusEntity.getUploadId())
@@ -1968,7 +1962,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       getUploadStatusQuery.append(
           " AND us.component_blob_type = " + UploadStatusEntity.S3_DATASET_COMPONENT_BLOB);
     } else {
-      throw new ModelDBException("Invalid content case found in DatasetBlob", Status.Code.INTERNAL);
+      throw new ModelDBException("Invalid content case found in DatasetBlob", Code.INTERNAL);
     }
     var query = session.createQuery(getUploadStatusQuery.toString());
     query.setParameter("pathId", datasetComponentPathId);
@@ -2016,7 +2010,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
             String.format("Blob Location '%s' not found in commit blobs", location),
-            Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
 
@@ -2075,7 +2069,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
             String.format("Blob Location '%s' not found in commit blobs", location),
-            Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       Map<String, String> componentWithSHAMap =
@@ -2137,7 +2131,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (!locationBlobWithHashMap.containsKey(locationKey)) {
         throw new ModelDBException(
             String.format("Blob Location '%s' not found in commit blobs", location),
-            Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT);
       }
       Map.Entry<BlobExpanded, String> blobExpandedMap = locationBlobWithHashMap.get(locationKey);
       var blob = blobExpandedMap.getKey().getBlob();
@@ -2148,7 +2142,7 @@ public class BlobDAORdbImpl implements BlobDAO {
 
       if (!blob.getContentCase().equals(Blob.ContentCase.DATASET)) {
         throw new ModelDBException(
-            "Invalid Blob type found for given location", Status.Code.INVALID_ARGUMENT);
+            "Invalid Blob type found for given location", Code.INVALID_ARGUMENT);
       }
 
       List<UploadStatusEntity> uploadStatusEntities =
@@ -2158,11 +2152,11 @@ public class BlobDAORdbImpl implements BlobDAO {
         throw new ModelDBException(
             "Multipart wasn't initialized OR Artifact upload status not found in DB datasetComponentPathId : "
                 + computeSha,
-            Status.Code.FAILED_PRECONDITION);
+            Code.FAILED_PRECONDITION);
       } else if (uploadStatusEntities.size() > 1) {
         throw new ModelDBException(
             "Multiple upload status found for datasetComponentPathId : " + computeSha,
-            Status.Code.FAILED_PRECONDITION);
+            Code.FAILED_PRECONDITION);
       } else {
         uploadStatusEntity = uploadStatusEntities.get(0);
       }

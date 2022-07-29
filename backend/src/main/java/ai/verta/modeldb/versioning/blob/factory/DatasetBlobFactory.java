@@ -13,7 +13,6 @@ import ai.verta.modeldb.versioning.QueryDatasetBlob;
 import ai.verta.modeldb.versioning.QueryDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
 import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
-import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -73,7 +72,7 @@ public class DatasetBlobFactory extends BlobFactory {
               .collect(Collectors.toList());
       return S3DatasetBlob.newBuilder().addAllComponents(componentBlobs).build();
     } else {
-      throw new ModelDBException("S3 dataset Blob not found", Status.Code.NOT_FOUND);
+      throw new ModelDBException("S3 dataset Blob not found", Code.NOT_FOUND);
     }
   }
 

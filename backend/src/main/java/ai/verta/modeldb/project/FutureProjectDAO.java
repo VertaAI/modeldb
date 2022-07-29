@@ -48,8 +48,8 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
@@ -391,7 +391,7 @@ public class FutureProjectDAO {
     if (projId != null) {
       resourceBuilder.addResourceIds(projId);
     }
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getAuthzService()
                 .isSelfAllowed(
                     IsSelfAllowed.newBuilder()
@@ -468,7 +468,7 @@ public class FutureProjectDAO {
   }
 
   public InternalFuture<FindProjects.Response> findProjects(FindProjects request) {
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
@@ -785,7 +785,7 @@ public class FutureProjectDAO {
   }
 
   private InternalFuture<Workspace> getWorkspaceByWorkspaceName(String workspaceName) {
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.clientRequest(
         uac.getWorkspaceService()
             .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
         executor);
@@ -1006,7 +1006,7 @@ public class FutureProjectDAO {
     return validateParamFuture
         .thenCompose(
             unused ->
-                FutureGrpc.ClientRequest(
+                FutureUtil.clientRequest(
                     uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()),
                     executor),
             executor)
@@ -1392,9 +1392,10 @@ public class FutureProjectDAO {
                         handle ->
                             handle
                                 .createQuery(
-                                    "select count(p.id) from project p where p.deleted = false AND p.short_name = :projectShortName AND p.id IN (<projectIds>)")
+                                    "select count(p.id) from project p where p.deleted = :deleted AND p.short_name = :projectShortName AND p.id IN (<projectIds>)")
                                 .bind("projectShortName", request.getShortName())
                                 .bindList("projectIds", selfAllowedResources)
+                                .bind("deleted", false)
                                 .mapTo(Long.class)
                                 .findOne());
               }
@@ -1547,7 +1548,7 @@ public class FutureProjectDAO {
         .thenCompose(createProjectHandler::insertProject, executor)
         .thenCompose(
             createdProject ->
-                FutureGrpc.ClientRequest(
+                FutureUtil.clientRequest(
                         uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()),
                         executor)
                     .thenCompose(
@@ -1693,7 +1694,7 @@ public class FutureProjectDAO {
 
               LOGGER.trace("Calling CollaboratorService to delete resources");
               var deleteResources = DeleteResources.newBuilder().setResources(resources).build();
-              return FutureGrpc.ClientRequest(
+              return FutureUtil.clientRequest(
                       uac.getServiceAccountCollaboratorServiceForServiceUser()
                           .deleteResources(deleteResources),
                       executor)
@@ -1737,7 +1738,7 @@ public class FutureProjectDAO {
           "workspaceId and workspaceName are both empty.  One must be provided.");
     }
 
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getCollaboratorService().setResource(setResourcesBuilder.build()), executor)
         .thenCompose(
             response -> {

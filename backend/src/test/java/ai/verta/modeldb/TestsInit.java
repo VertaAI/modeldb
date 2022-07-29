@@ -12,7 +12,7 @@ import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.AppConfigBeans;
@@ -103,7 +103,7 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
-    handleExecutor = FutureGrpc.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
+    handleExecutor = FutureUtil.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
 
     // Initialize services that we depend on
     var artifactStoreConfig = testConfig.artifactStoreConfig;
@@ -120,7 +120,7 @@ public class TestsInit {
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
-    Migration.migrate(testConfig);
+    new Migration(testConfig);
 
     new AppConfigBeans(new AppContext())
         .initializeBackendServices(serverBuilder, services, daos, handleExecutor);

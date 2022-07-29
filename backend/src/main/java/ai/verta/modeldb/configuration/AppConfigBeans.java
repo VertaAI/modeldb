@@ -10,9 +10,13 @@ import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService
 import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.configuration.AppContext;
+import ai.verta.modeldb.common.configuration.EnabledMigration;
+import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
+import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.futures.FutureGrpc;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -46,6 +50,7 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
@@ -89,9 +94,14 @@ public class AppConfigBeans {
   }
 
   @Bean
+  public SpringServerConfig springServerConfig(MDBConfig config) {
+    return config.getSpringServer();
+  }
+
+  @Bean
   Executor grpcExecutor(Config config) {
     // Initialize executor so we don't lose context using Futures
-    return FutureGrpc.initializeExecutor(config.getGrpcServer().getThreadCount());
+    return FutureUtil.initializeExecutor(config.getGrpcServer().getThreadCount());
   }
 
   @Bean
@@ -102,11 +112,8 @@ public class AppConfigBeans {
   }
 
   @Bean
+  @Conditional(RunLiquibaseWithMainService.class)
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
-    if (config.isMigration()) {
-      return null;
-    }
-
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
 
@@ -144,6 +151,14 @@ public class AppConfigBeans {
   }
 
   @Bean
+  @Conditional(EnabledMigration.class)
+  public Migration migration(MDBConfig mdbConfig) throws Exception {
+    var migration = new Migration(mdbConfig);
+    LOGGER.info("Migrations have completed");
+    return migration;
+  }
+
+  @Bean
   public CommandLineRunner commandLineRunner(
       ServerBuilder<?> serverBuilder,
       HealthStatusManager healthStatusManager,
@@ -157,15 +172,6 @@ public class AppConfigBeans {
         final var logger =
             java.util.logging.Logger.getLogger("io.grpc.netty.NettyServerTransport.connections");
         logger.setLevel(Level.WARNING);
-
-        // Initialize database configuration and maybe run migration
-        if (Migration.migrate(config)) {
-          LOGGER.info("Migrations have completed.  System exiting.");
-          appContext.initiateShutdown(0);
-          return;
-        }
-
-        LOGGER.info("Migration disabled, starting server.");
 
         // Add APIs
         LOGGER.info("Initializing backend services.");
@@ -192,6 +198,17 @@ public class AppConfigBeans {
         // Restore interrupted state...
         Thread.currentThread().interrupt();
       }
+    };
+  }
+
+  @Bean
+  @Conditional({RunLiquibaseSeparately.class})
+  public CommandLineRunner commandLineRunner() {
+    return args -> {
+      LOGGER.trace("Liquibase run separate: done");
+      LOGGER.info("System exiting");
+      this.appContext.initiateShutdown(0);
+      System.exit(0);
     };
   }
 

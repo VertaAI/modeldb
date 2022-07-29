@@ -2360,6 +2360,10 @@
           "type": "string",
           "format": "uint64",
           "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+        },
+        "redirect_metadata": {
+          "type": "string",
+          "title": "Reference: https://vertaai.atlassian.net/browse/VRD-329"
         }
       }
     },

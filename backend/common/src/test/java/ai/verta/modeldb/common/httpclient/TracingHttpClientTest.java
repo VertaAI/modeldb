@@ -16,6 +16,7 @@ import java.net.http.HttpResponse;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -34,13 +35,18 @@ class TracingHttpClientTest {
     mockServer = ClientAndServer.startClientAndServer(port);
     mockServer.when(request().withPath("/error")).error(new HttpError().withDropConnection(true));
     mockServer
-        .when(request().withPath("/"))
+        .when(request().withPath("/").withHeader("traceparent", ".*"))
         .respond(new org.mockserver.model.HttpResponse().withStatusCode(420).withBody("foo"));
   }
 
   @AfterAll
-  static void tearDown() {
+  static void afterAll() {
     mockServer.stop();
+  }
+
+  @AfterEach
+  void tearDown() {
+    otelTesting.clearSpans();
   }
 
   @Test
@@ -54,7 +60,6 @@ class TracingHttpClientTest {
     HttpResponse<String> result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(result.body()).isEqualTo("foo");
-
     otelTesting
         .assertTraces()
         .hasTracesSatisfyingExactly(
@@ -126,12 +131,11 @@ class TracingHttpClientTest {
                 traceAssert
                     .hasSize(1)
                     .hasSpansSatisfyingExactlyInAnyOrder(
-                        spanDataAssert -> {
-                          spanDataAssert
-                              .hasAttribute(SemanticAttributes.HTTP_METHOD, "GET")
-                              .hasAttribute(SemanticAttributes.NET_PEER_NAME, "localhost")
-                              .hasStatus(StatusData.error())
-                              .hasKind(SpanKind.CLIENT);
-                        }));
+                        spanDataAssert ->
+                            spanDataAssert
+                                .hasAttribute(SemanticAttributes.HTTP_METHOD, "GET")
+                                .hasAttribute(SemanticAttributes.NET_PEER_NAME, "localhost")
+                                .hasStatus(StatusData.error())
+                                .hasKind(SpanKind.CLIENT)));
   }
 }

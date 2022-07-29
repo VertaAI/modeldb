@@ -174,7 +174,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
 
     if (!request.hasPathDatasetVersionInfo() && !request.hasDatasetBlob()) {
       LOGGER.info("Request {}", request);
-      throw new ModelDBException("Not supported", io.grpc.Status.Code.UNIMPLEMENTED);
+      throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
     }
     datasetVersionBuilder.setPathDatasetVersionInfo(request.getPathDatasetVersionInfo());
 

@@ -12,8 +12,8 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
@@ -241,7 +241,7 @@ public class CreateExperimentHandler extends HandlerUtil {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_OWNER;
-    return FutureGrpc.ClientRequest(
+    return FutureUtil.clientRequest(
             uac.getServiceAccountRoleServiceFutureStub()
                 .setRoleBinding(
                     SetRoleBinding.newBuilder()

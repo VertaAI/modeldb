@@ -2,12 +2,11 @@ package ai.verta.modeldb.common.config;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
@@ -78,25 +77,26 @@ public abstract class Config {
     }
   }
 
-  public void Validate() throws InvalidConfigException {
+  /** If you're overriding this method, don't forget to call super.validate(). */
+  public void validate() throws InvalidConfigException {
     if (authService != null) {
-      authService.Validate("authService");
+      authService.validate("authService");
     }
 
     if (cron_job != null) {
       for (Map.Entry<String, CronJobConfig> cronJob : cron_job.entrySet()) {
-        cronJob.getValue().Validate("cron_job." + cronJob.getKey());
+        cronJob.getValue().validate("cron_job." + cronJob.getKey());
       }
     }
 
     if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
-    database.Validate("database");
+    database.validate("database");
 
     if (grpcServer == null) throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
-    grpcServer.Validate("grpcServer");
+    grpcServer.validate("grpcServer");
 
     if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
-    springServer.Validate("springServer");
+    springServer.validate("springServer");
 
     if (artifactStoreConfig == null)
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
@@ -179,7 +179,7 @@ public abstract class Config {
 
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
     final var jdbi = initializeJdbi(databaseConfig, poolName);
-    final var dbExecutor = FutureGrpc.initializeExecutor(databaseConfig.getThreadCount());
+    final var dbExecutor = FutureUtil.initializeExecutor(databaseConfig.getThreadCount());
     // wrap the executor in the OpenTelemetry context wrapper to make sure the context propagates
     // into any jdbi threads.
     return new FutureJdbi(jdbi, Context.taskWrapping(dbExecutor));
@@ -244,11 +244,5 @@ public abstract class Config {
       openTelemetry = initializeOpenTelemetry();
     }
     return openTelemetry;
-  }
-
-  public boolean isMigration() {
-    return Boolean.parseBoolean(
-        Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))
-            .orElse("false"));
   }
 }

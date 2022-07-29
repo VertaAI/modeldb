@@ -70,7 +70,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       if (request.getId() == null
           || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
         throw new ModelDBException(
-            "Invalid parameter set in AddLabelsRequest.Id", io.grpc.Status.Code.INVALID_ARGUMENT);
+            "Invalid parameter set in AddLabelsRequest.Id", Code.INVALID_ARGUMENT);
       }
 
       boolean status = metadataDAO.updateLabels(request.getId(), request.getLabelsList());
