@@ -59,6 +59,8 @@ class ExperimentRun(_DeployableEntity):
         Name of this Experiment Run.
     has_environment : bool
         Whether there is an environment associated with this Experiment Run.
+    url : str
+        Verta web app URL.
 
     """
 
@@ -71,8 +73,7 @@ class ExperimentRun(_DeployableEntity):
         run_msg = self._msg
         return '\n'.join((
             "name: {}".format(run_msg.name),
-            "url: {}://{}/{}/projects/{}/exp-runs/{}".format(
-                self._conn.scheme, self._conn.socket, self.workspace, run_msg.project_id, self.id),
+            "url: {}".format(self.url),
             "date created: {}".format(
                 _utils.timestamp_to_str(int(run_msg.date_created))),
             "date updated: {}".format(
@@ -129,6 +130,16 @@ class ExperimentRun(_DeployableEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.name
+
+    @property
+    def url(self):
+        return "{}://{}/{}/projects/{}/exp-runs/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self._msg.project_id,
+            self.id,
+        )
 
     @classmethod
     def _generate_default_name(cls):
