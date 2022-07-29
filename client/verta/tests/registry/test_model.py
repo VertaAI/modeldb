@@ -75,7 +75,6 @@ class TestModel:
         repr = str(registered_model)
 
         assert registered_model.name in repr
-        assert registered_model.url in repr
         assert str(registered_model.id) in repr
         assert str(registered_model.get_labels()) in repr
 
