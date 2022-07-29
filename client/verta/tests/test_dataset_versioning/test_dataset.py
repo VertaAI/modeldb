@@ -143,7 +143,6 @@ class TestCreateGet:
         str_repr = repr(dataset)
 
         assert "name: {}".format(dataset.name) in str_repr
-        assert dataset.url in str_repr
         assert "id: {}".format(dataset.id) in str_repr
         assert "time created" in str_repr
         assert "time updated" in str_repr
