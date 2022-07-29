@@ -100,7 +100,7 @@ public abstract class Config {
 
     if (artifactStoreConfig == null)
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.Validate("artifactStoreConfig");
+    artifactStoreConfig.validate("artifactStoreConfig");
   }
 
   public boolean hasAuth() {

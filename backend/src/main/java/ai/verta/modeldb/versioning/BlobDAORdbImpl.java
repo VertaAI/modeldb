@@ -8,7 +8,6 @@ import ai.verta.common.GetUrlForArtifact;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -1724,7 +1723,7 @@ public class BlobDAORdbImpl implements BlobDAO {
                     repositoryDAO,
                     datasetId,
                     request.getDatasetVersionId(),
-                    request.getMethod().equalsIgnoreCase(CommonConstants.PUT)),
+                    request.getMethod().equalsIgnoreCase("put")),
             commitFunction,
             getUrlForBlobVersionedRequest);
     return GetUrlForDatasetBlobVersioned.Response.newBuilder()
