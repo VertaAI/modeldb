@@ -197,7 +197,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryCommitArtifactPartResponse"
+              "$ref": "#/definitions/vertaregistryCommitArtifactPartResponse"
             }
           },
           "default": {
@@ -221,7 +221,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryCommitArtifactPart"
+              "$ref": "#/definitions/vertaregistryCommitArtifactPart"
             }
           }
         ],
@@ -237,7 +237,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryCommitMultipartArtifactResponse"
+              "$ref": "#/definitions/vertaregistryCommitMultipartArtifactResponse"
             }
           },
           "default": {
@@ -261,7 +261,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryCommitMultipartArtifact"
+              "$ref": "#/definitions/vertaregistryCommitMultipartArtifact"
             }
           }
         ],
@@ -277,7 +277,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryGetCommittedArtifactPartsResponse"
+              "$ref": "#/definitions/vertaregistryGetCommittedArtifactPartsResponse"
             }
           },
           "default": {
@@ -316,7 +316,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/registryGetUrlForArtifactResponse"
+              "$ref": "#/definitions/vertaregistryGetUrlForArtifactResponse"
             }
           },
           "default": {
@@ -340,7 +340,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryGetUrlForArtifact"
+              "$ref": "#/definitions/vertaregistryGetUrlForArtifact"
             }
           }
         ],
@@ -1952,43 +1952,6 @@
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "registryCommitArtifactPart": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        },
-        "artifact_part": {
-          "$ref": "#/definitions/commonArtifactPart"
-        }
-      }
-    },
-    "registryCommitArtifactPartResponse": {
-      "type": "object"
-    },
-    "registryCommitMultipartArtifact": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        }
-      }
-    },
-    "registryCommitMultipartArtifactResponse": {
-      "type": "object"
-    },
     "registryDeleteModelVersionRequestResponse": {
       "type": "object"
     },
@@ -2095,17 +2058,6 @@
         }
       }
     },
-    "registryGetCommittedArtifactPartsResponse": {
-      "type": "object",
-      "properties": {
-        "artifact_parts": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonArtifactPart"
-          }
-        }
-      }
-    },
     "registryGetModelVersionRequestResponse": {
       "type": "object",
       "properties": {
@@ -2128,52 +2080,6 @@
       "properties": {
         "registered_model": {
           "$ref": "#/definitions/registryRegisteredModel"
-        }
-      }
-    },
-    "registryGetUrlForArtifact": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        },
-        "method": {
-          "type": "string",
-          "title": "GET or PUT"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType",
-          "title": "type of artifact"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64",
-          "title": "0 if the url is not required to be multi part"
-        }
-      }
-    },
-    "registryGetUrlForArtifactResponse": {
-      "type": "object",
-      "properties": {
-        "url": {
-          "type": "string",
-          "title": "URL based on action"
-        },
-        "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "fields": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
         }
       }
     },
@@ -2807,6 +2713,100 @@
         }
       },
       "title": "For pagination"
+    },
+    "vertaregistryCommitArtifactPart": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of model version"
+        },
+        "key": {
+          "type": "string",
+          "title": "artifact key"
+        },
+        "artifact_part": {
+          "$ref": "#/definitions/commonArtifactPart"
+        }
+      }
+    },
+    "vertaregistryCommitArtifactPartResponse": {
+      "type": "object"
+    },
+    "vertaregistryCommitMultipartArtifact": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of model version"
+        },
+        "key": {
+          "type": "string",
+          "title": "artifact key"
+        }
+      }
+    },
+    "vertaregistryCommitMultipartArtifactResponse": {
+      "type": "object"
+    },
+    "vertaregistryGetCommittedArtifactPartsResponse": {
+      "type": "object",
+      "properties": {
+        "artifact_parts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifactPart"
+          }
+        }
+      }
+    },
+    "vertaregistryGetUrlForArtifact": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of model version"
+        },
+        "key": {
+          "type": "string",
+          "title": "artifact key"
+        },
+        "method": {
+          "type": "string",
+          "title": "GET or PUT"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType",
+          "title": "type of artifact"
+        },
+        "part_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "0 if the url is not required to be multi part"
+        }
+      }
+    },
+    "vertaregistryGetUrlForArtifactResponse": {
+      "type": "object",
+      "properties": {
+        "url": {
+          "type": "string",
+          "title": "URL based on action"
+        },
+        "multipart_upload_ok": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "fields": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
     }
   },
   "basePath": "/v1"

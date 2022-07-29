@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.common',
   syntax='proto3',
   serialized_options=b'P\001Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/common',
-  serialized_pb=b'\n\x1a\x63ommon/CommonService.proto\x12\x0f\x61i.verta.common\x1a\x1cgoogle/protobuf/struct.proto\":\n\x0bTernaryEnum\"+\n\x07Ternary\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\"|\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"I\n\x14\x43ollaboratorTypeEnum\"1\n\x10\x43ollaboratorType\x12\r\n\tREAD_ONLY\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\"t\n#CollaboratorTypeEnumWithDefaultEnum\"M\n\x1f\x43ollaboratorTypeEnumWithDefault\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\x12\r\n\tREAD_ONLY\x10\x02\"R\n\x0c\x45ntitiesEnum\"B\n\rEntitiesTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04TEAM\x10\x02\x12\x08\n\x04USER\x10\x03\"\xc3\x03\n\x13ModelDBResourceEnum\"\xab\x03\n\x1bModelDBServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x0e\n\nEXPERIMENT\x10\x03\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x04\x12\x0b\n\x07\x44\x41TASET\x10\x05\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x06\x12\r\n\tDASHBOARD\x10\x07\x12\x0e\n\nREPOSITORY\x10\x08\x12\x14\n\x10REGISTERED_MODEL\x10\t\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\n\x12\x14\n\x10MONITORED_ENTITY\x10\x0b\x12\x18\n\x14NOTIFICATION_CHANNEL\x10\x0c\x12\x0c\n\x08\x45NDPOINT\x10\r\x12\t\n\x05\x42UILD\x10\x0e\x12\x10\n\x0cORGANIZATION\x10\x0f\x12\x08\n\x04TEAM\x10\x10\x12\r\n\tWORKSPACE\x10\x11\x12\x08\n\x04USER\x10\x12\x12\x13\n\x0fSERVICE_ACCOUNT\x10\x13\x12$\n CONTAINER_REGISTRY_CONFIGURATION\x10\x14\x12\t\n\x05STAGE\x10\x15\x12\x0c\n\x08PROFILER\x10\x16\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\"\x82\x01\n\x10\x41rtifactTypeEnum\"n\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\x12\r\n\tCONTAINER\x10\x07\"\x82\x02\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\x12\x15\n\rserialization\x18\x07 \x01(\t\x12\x18\n\x10\x61rtifact_subtype\x18\x08 \x01(\t\x12\x18\n\x10upload_completed\x18\t \x01(\x08\"\xbb\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x38\n\x08operator\x18\x04 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"_\n\x0eVisibilityEnum\"M\n\nVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x12\x0f\n\x0bORG_DEFAULT\x10\x03\"\x93\x01\n\x0b\x43odeVersion\x12\x34\n\x0cgit_snapshot\x18\x01 \x01(\x0b\x32\x1c.ai.verta.common.GitSnapshotH\x00\x12\x31\n\x0c\x63ode_archive\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.ArtifactH\x00\x12\x13\n\x0b\x64\x61te_logged\x18\x03 \x01(\x04\x42\x06\n\x04\x63ode\"t\n\x0bGitSnapshot\x12\x11\n\tfilepaths\x18\x01 \x03(\t\x12\x0c\n\x04repo\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x36\n\x08is_dirty\x18\x04 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.TernaryBAP\x01Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/commonb\x06proto3'
+  serialized_pb=b'\n\x1a\x63ommon/CommonService.proto\x12\x0f\x61i.verta.common\x1a\x1cgoogle/protobuf/struct.proto\":\n\x0bTernaryEnum\"+\n\x07Ternary\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\"|\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"I\n\x14\x43ollaboratorTypeEnum\"1\n\x10\x43ollaboratorType\x12\r\n\tREAD_ONLY\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\"t\n#CollaboratorTypeEnumWithDefaultEnum\"M\n\x1f\x43ollaboratorTypeEnumWithDefault\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0e\n\nREAD_WRITE\x10\x01\x12\r\n\tREAD_ONLY\x10\x02\"R\n\x0c\x45ntitiesEnum\"B\n\rEntitiesTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04TEAM\x10\x02\x12\x08\n\x04USER\x10\x03\"\xc3\x03\n\x13ModelDBResourceEnum\"\xab\x03\n\x1bModelDBServiceResourceTypes\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03\x41LL\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x0e\n\nEXPERIMENT\x10\x03\x12\x12\n\x0e\x45XPERIMENT_RUN\x10\x04\x12\x0b\n\x07\x44\x41TASET\x10\x05\x12\x13\n\x0f\x44\x41TASET_VERSION\x10\x06\x12\r\n\tDASHBOARD\x10\x07\x12\x0e\n\nREPOSITORY\x10\x08\x12\x14\n\x10REGISTERED_MODEL\x10\t\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\n\x12\x14\n\x10MONITORED_ENTITY\x10\x0b\x12\x18\n\x14NOTIFICATION_CHANNEL\x10\x0c\x12\x0c\n\x08\x45NDPOINT\x10\r\x12\t\n\x05\x42UILD\x10\x0e\x12\x10\n\x0cORGANIZATION\x10\x0f\x12\x08\n\x04TEAM\x10\x10\x12\r\n\tWORKSPACE\x10\x11\x12\x08\n\x04USER\x10\x12\x12\x13\n\x0fSERVICE_ACCOUNT\x10\x13\x12$\n CONTAINER_REGISTRY_CONFIGURATION\x10\x14\x12\t\n\x05STAGE\x10\x15\x12\x0c\n\x08PROFILER\x10\x16\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"M\n\x11WorkspaceTypeEnum\"8\n\rWorkspaceType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cORGANIZATION\x10\x01\x12\x08\n\x04USER\x10\x02\"\x82\x01\n\x10\x41rtifactTypeEnum\"n\n\x0c\x41rtifactType\x12\t\n\x05IMAGE\x10\x00\x12\t\n\x05MODEL\x10\x01\x12\x0f\n\x0bTENSORBOARD\x10\x02\x12\x08\n\x04\x44\x41TA\x10\x03\x12\x08\n\x04\x42LOB\x10\x04\x12\n\n\x06STRING\x10\x05\x12\x08\n\x04\x43ODE\x10\x06\x12\r\n\tCONTAINER\x10\x07\"\x82\x02\n\x08\x41rtifact\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\x0c\n\x04path\x18\x02 \x01(\t\x12\x11\n\tpath_only\x18\x03 \x01(\x08\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x1a\n\x12linked_artifact_id\x18\x05 \x01(\t\x12\x1a\n\x12\x66ilename_extension\x18\x06 \x01(\t\x12\x15\n\rserialization\x18\x07 \x01(\t\x12\x18\n\x10\x61rtifact_subtype\x18\x08 \x01(\t\x12\x18\n\x10upload_completed\x18\t \x01(\x08\"\xbb\x01\n\rKeyValueQuery\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12<\n\nvalue_type\x18\x03 \x01(\x0e\x32(.ai.verta.common.ValueTypeEnum.ValueType\x12\x38\n\x08operator\x18\x04 \x01(\x0e\x32&.ai.verta.common.OperatorEnum.Operator\"1\n\x0c\x41rtifactPart\x12\x13\n\x0bpart_number\x18\x01 \x01(\x04\x12\x0c\n\x04\x65tag\x18\x02 \x01(\t\"r\n\x0cOperatorEnum\"b\n\x08Operator\x12\x06\n\x02\x45Q\x10\x00\x12\x06\n\x02NE\x10\x01\x12\x06\n\x02GT\x10\x02\x12\x07\n\x03GTE\x10\x03\x12\x06\n\x02LT\x10\x04\x12\x07\n\x03LTE\x10\x05\x12\x0b\n\x07\x43ONTAIN\x10\x06\x12\x0f\n\x0bNOT_CONTAIN\x10\x07\x12\x06\n\x02IN\x10\x08\"_\n\x0eVisibilityEnum\"M\n\nVisibility\x12\x0b\n\x07PRIVATE\x10\x00\x12\n\n\x06PUBLIC\x10\x01\x12\x15\n\x11ORG_SCOPED_PUBLIC\x10\x02\x12\x0f\n\x0bORG_DEFAULT\x10\x03\"\x93\x01\n\x0b\x43odeVersion\x12\x34\n\x0cgit_snapshot\x18\x01 \x01(\x0b\x32\x1c.ai.verta.common.GitSnapshotH\x00\x12\x31\n\x0c\x63ode_archive\x18\x02 \x01(\x0b\x32\x19.ai.verta.common.ArtifactH\x00\x12\x13\n\x0b\x64\x61te_logged\x18\x03 \x01(\x04\x42\x06\n\x04\x63ode\"t\n\x0bGitSnapshot\x12\x11\n\tfilepaths\x18\x01 \x03(\t\x12\x0c\n\x04repo\x18\x02 \x01(\t\x12\x0c\n\x04hash\x18\x03 \x01(\t\x12\x36\n\x08is_dirty\x18\x04 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\"\xc7\x02\n\x11GetUrlForArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x0e\n\x06method\x18\x03 \x01(\t\x12\x45\n\rartifact_type\x18\x04 \x01(\x0e\x32..ai.verta.common.ArtifactTypeEnum.ArtifactType\x12\x13\n\x0bpart_number\x18\x05 \x01(\x04\x1a\xac\x01\n\x08Response\x12\x0b\n\x03url\x18\x01 \x01(\t\x12G\n\x06\x66ields\x18\x02 \x03(\x0b\x32\x37.ai.verta.common.GetUrlForArtifact.Response.FieldsEntry\x12\x1b\n\x13multipart_upload_ok\x18\x03 \x01(\x08\x1a-\n\x0b\x46ieldsEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"o\n\x12\x43ommitArtifactPart\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x12\x34\n\rartifact_part\x18\x03 \x01(\x0b\x32\x1d.ai.verta.common.ArtifactPart\x1a\n\n\x08Response\"w\n\x19GetCommittedArtifactParts\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\x41\n\x08Response\x12\x35\n\x0e\x61rtifact_parts\x18\x01 \x03(\x0b\x32\x1d.ai.verta.common.ArtifactPart\">\n\x17\x43ommitMultipartArtifact\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0b\n\x03key\x18\x02 \x01(\t\x1a\n\n\x08ResponseBAP\x01Z=github.com/VertaAI/modeldb/protos/gen/go/protos/public/commonb\x06proto3'
   ,
   dependencies=[google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
@@ -1027,6 +1027,343 @@ _GITSNAPSHOT = _descriptor.Descriptor(
   serialized_end=2316,
 )
 
+
+_GETURLFORARTIFACT_RESPONSE_FIELDSENTRY = _descriptor.Descriptor(
+  name='FieldsEntry',
+  full_name='ai.verta.common.GetUrlForArtifact.Response.FieldsEntry',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.common.GetUrlForArtifact.Response.FieldsEntry.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ai.verta.common.GetUrlForArtifact.Response.FieldsEntry.value', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=b'8\001',
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2601,
+  serialized_end=2646,
+)
+
+_GETURLFORARTIFACT_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.common.GetUrlForArtifact.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='url', full_name='ai.verta.common.GetUrlForArtifact.Response.url', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='fields', full_name='ai.verta.common.GetUrlForArtifact.Response.fields', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='multipart_upload_ok', full_name='ai.verta.common.GetUrlForArtifact.Response.multipart_upload_ok', index=2,
+      number=3, type=8, cpp_type=7, label=1,
+      has_default_value=False, default_value=False,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETURLFORARTIFACT_RESPONSE_FIELDSENTRY, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2474,
+  serialized_end=2646,
+)
+
+_GETURLFORARTIFACT = _descriptor.Descriptor(
+  name='GetUrlForArtifact',
+  full_name='ai.verta.common.GetUrlForArtifact',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.common.GetUrlForArtifact.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.common.GetUrlForArtifact.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='method', full_name='ai.verta.common.GetUrlForArtifact.method', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='artifact_type', full_name='ai.verta.common.GetUrlForArtifact.artifact_type', index=3,
+      number=4, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='part_number', full_name='ai.verta.common.GetUrlForArtifact.part_number', index=4,
+      number=5, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETURLFORARTIFACT_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2319,
+  serialized_end=2646,
+)
+
+
+_COMMITARTIFACTPART_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.common.CommitArtifactPart.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2474,
+  serialized_end=2484,
+)
+
+_COMMITARTIFACTPART = _descriptor.Descriptor(
+  name='CommitArtifactPart',
+  full_name='ai.verta.common.CommitArtifactPart',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.common.CommitArtifactPart.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.common.CommitArtifactPart.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='artifact_part', full_name='ai.verta.common.CommitArtifactPart.artifact_part', index=2,
+      number=3, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_COMMITARTIFACTPART_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2648,
+  serialized_end=2759,
+)
+
+
+_GETCOMMITTEDARTIFACTPARTS_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.common.GetCommittedArtifactParts.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='artifact_parts', full_name='ai.verta.common.GetCommittedArtifactParts.Response.artifact_parts', index=0,
+      number=1, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2815,
+  serialized_end=2880,
+)
+
+_GETCOMMITTEDARTIFACTPARTS = _descriptor.Descriptor(
+  name='GetCommittedArtifactParts',
+  full_name='ai.verta.common.GetCommittedArtifactParts',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.common.GetCommittedArtifactParts.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.common.GetCommittedArtifactParts.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_GETCOMMITTEDARTIFACTPARTS_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2761,
+  serialized_end=2880,
+)
+
+
+_COMMITMULTIPARTARTIFACT_RESPONSE = _descriptor.Descriptor(
+  name='Response',
+  full_name='ai.verta.common.CommitMultipartArtifact.Response',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2474,
+  serialized_end=2484,
+)
+
+_COMMITMULTIPARTARTIFACT = _descriptor.Descriptor(
+  name='CommitMultipartArtifact',
+  full_name='ai.verta.common.CommitMultipartArtifact',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='id', full_name='ai.verta.common.CommitMultipartArtifact.id', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.common.CommitMultipartArtifact.key', index=1,
+      number=2, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[_COMMITMULTIPARTARTIFACT_RESPONSE, ],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=2882,
+  serialized_end=2944,
+)
+
 _TERNARYENUM_TERNARY.containing_type = _TERNARYENUM
 _KEYVALUE.fields_by_name['value'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
 _KEYVALUE.fields_by_name['value_type'].enum_type = _VALUETYPEENUM_VALUETYPE
@@ -1052,6 +1389,15 @@ _CODEVERSION.oneofs_by_name['code'].fields.append(
   _CODEVERSION.fields_by_name['code_archive'])
 _CODEVERSION.fields_by_name['code_archive'].containing_oneof = _CODEVERSION.oneofs_by_name['code']
 _GITSNAPSHOT.fields_by_name['is_dirty'].enum_type = _TERNARYENUM_TERNARY
+_GETURLFORARTIFACT_RESPONSE_FIELDSENTRY.containing_type = _GETURLFORARTIFACT_RESPONSE
+_GETURLFORARTIFACT_RESPONSE.fields_by_name['fields'].message_type = _GETURLFORARTIFACT_RESPONSE_FIELDSENTRY
+_GETURLFORARTIFACT_RESPONSE.containing_type = _GETURLFORARTIFACT
+_GETURLFORARTIFACT.fields_by_name['artifact_type'].enum_type = _ARTIFACTTYPEENUM_ARTIFACTTYPE
+_COMMITARTIFACTPART_RESPONSE.containing_type = _COMMITARTIFACTPART
+_COMMITARTIFACTPART.fields_by_name['artifact_part'].message_type = _ARTIFACTPART
+_GETCOMMITTEDARTIFACTPARTS_RESPONSE.fields_by_name['artifact_parts'].message_type = _ARTIFACTPART
+_GETCOMMITTEDARTIFACTPARTS_RESPONSE.containing_type = _GETCOMMITTEDARTIFACTPARTS
+_COMMITMULTIPARTARTIFACT_RESPONSE.containing_type = _COMMITMULTIPARTARTIFACT
 DESCRIPTOR.message_types_by_name['TernaryEnum'] = _TERNARYENUM
 DESCRIPTOR.message_types_by_name['KeyValue'] = _KEYVALUE
 DESCRIPTOR.message_types_by_name['ValueTypeEnum'] = _VALUETYPEENUM
@@ -1069,6 +1415,10 @@ DESCRIPTOR.message_types_by_name['OperatorEnum'] = _OPERATORENUM
 DESCRIPTOR.message_types_by_name['VisibilityEnum'] = _VISIBILITYENUM
 DESCRIPTOR.message_types_by_name['CodeVersion'] = _CODEVERSION
 DESCRIPTOR.message_types_by_name['GitSnapshot'] = _GITSNAPSHOT
+DESCRIPTOR.message_types_by_name['GetUrlForArtifact'] = _GETURLFORARTIFACT
+DESCRIPTOR.message_types_by_name['CommitArtifactPart'] = _COMMITARTIFACTPART
+DESCRIPTOR.message_types_by_name['GetCommittedArtifactParts'] = _GETCOMMITTEDARTIFACTPARTS
+DESCRIPTOR.message_types_by_name['CommitMultipartArtifact'] = _COMMITMULTIPARTARTIFACT
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
 TernaryEnum = _reflection.GeneratedProtocolMessageType('TernaryEnum', (_message.Message,), {
@@ -1190,6 +1540,75 @@ GitSnapshot = _reflection.GeneratedProtocolMessageType('GitSnapshot', (_message.
   })
 _sym_db.RegisterMessage(GitSnapshot)
 
+GetUrlForArtifact = _reflection.GeneratedProtocolMessageType('GetUrlForArtifact', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+
+    'FieldsEntry' : _reflection.GeneratedProtocolMessageType('FieldsEntry', (_message.Message,), {
+      'DESCRIPTOR' : _GETURLFORARTIFACT_RESPONSE_FIELDSENTRY,
+      '__module__' : 'common.CommonService_pb2'
+      # @@protoc_insertion_point(class_scope:ai.verta.common.GetUrlForArtifact.Response.FieldsEntry)
+      })
+    ,
+    'DESCRIPTOR' : _GETURLFORARTIFACT_RESPONSE,
+    '__module__' : 'common.CommonService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.common.GetUrlForArtifact.Response)
+    })
+  ,
+  'DESCRIPTOR' : _GETURLFORARTIFACT,
+  '__module__' : 'common.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.common.GetUrlForArtifact)
+  })
+_sym_db.RegisterMessage(GetUrlForArtifact)
+_sym_db.RegisterMessage(GetUrlForArtifact.Response)
+_sym_db.RegisterMessage(GetUrlForArtifact.Response.FieldsEntry)
+
+CommitArtifactPart = _reflection.GeneratedProtocolMessageType('CommitArtifactPart', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _COMMITARTIFACTPART_RESPONSE,
+    '__module__' : 'common.CommonService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.common.CommitArtifactPart.Response)
+    })
+  ,
+  'DESCRIPTOR' : _COMMITARTIFACTPART,
+  '__module__' : 'common.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.common.CommitArtifactPart)
+  })
+_sym_db.RegisterMessage(CommitArtifactPart)
+_sym_db.RegisterMessage(CommitArtifactPart.Response)
+
+GetCommittedArtifactParts = _reflection.GeneratedProtocolMessageType('GetCommittedArtifactParts', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _GETCOMMITTEDARTIFACTPARTS_RESPONSE,
+    '__module__' : 'common.CommonService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.common.GetCommittedArtifactParts.Response)
+    })
+  ,
+  'DESCRIPTOR' : _GETCOMMITTEDARTIFACTPARTS,
+  '__module__' : 'common.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.common.GetCommittedArtifactParts)
+  })
+_sym_db.RegisterMessage(GetCommittedArtifactParts)
+_sym_db.RegisterMessage(GetCommittedArtifactParts.Response)
+
+CommitMultipartArtifact = _reflection.GeneratedProtocolMessageType('CommitMultipartArtifact', (_message.Message,), {
+
+  'Response' : _reflection.GeneratedProtocolMessageType('Response', (_message.Message,), {
+    'DESCRIPTOR' : _COMMITMULTIPARTARTIFACT_RESPONSE,
+    '__module__' : 'common.CommonService_pb2'
+    # @@protoc_insertion_point(class_scope:ai.verta.common.CommitMultipartArtifact.Response)
+    })
+  ,
+  'DESCRIPTOR' : _COMMITMULTIPARTARTIFACT,
+  '__module__' : 'common.CommonService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.common.CommitMultipartArtifact)
+  })
+_sym_db.RegisterMessage(CommitMultipartArtifact)
+_sym_db.RegisterMessage(CommitMultipartArtifact.Response)
+
 
 DESCRIPTOR._options = None
+_GETURLFORARTIFACT_RESPONSE_FIELDSENTRY._options = None
 # @@protoc_insertion_point(module_scope)
