@@ -214,6 +214,8 @@ message FindAlertRequest {
     // Allow filtering to see only failing alerts
     repeated AlertStatusEnum.AlertStatus status = 6;
 
+    bool includeIfNoData = 12;
+
     // Pagination
     int32 page_number = 7;
     int32 page_limit = 8;
