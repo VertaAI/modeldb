@@ -242,7 +242,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
@@ -549,7 +549,9 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION"
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -689,7 +691,9 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION"
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -849,7 +853,9 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION"
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -1323,7 +1329,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
@@ -1415,7 +1421,9 @@
         "EVENT",
         "WEBHOOK",
         "SYSTEM_ADMIN",
-        "PYPI_CONFIGURATION"
+        "PYPI_CONFIGURATION",
+        "KAFKA_CONFIGURATION",
+        "SCIM_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },
@@ -1481,7 +1489,10 @@
         "VERTA",
         "SAML",
         "AD_OAUTH2",
-        "LDAP"
+        "LDAP",
+        "OKTA_SCIM",
+        "AD_SCIM",
+        "SCIM"
       ],
       "default": "UNKNOWN"
     },
@@ -1737,9 +1748,6 @@
     "uacDeleteResourcesResponse": {
       "type": "object"
     },
-    "uacEmpty": {
-      "type": "object"
-    },
     "uacFlagEnum": {
       "type": "string",
       "enum": [
@@ -1834,6 +1842,9 @@
         }
       }
     },
+    "uacIdServiceProviderEnum": {
+      "type": "object"
+    },
     "uacModifyResourceAdmins": {
       "type": "object",
       "properties": {
@@ -1877,6 +1888,9 @@
         },
         "owner_id": {
           "type": "string"
+        },
+        "idp": {
+          "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
           "type": "string",
@@ -2123,6 +2137,9 @@
         "owner_id": {
           "type": "string"
         },
+        "id_service_provider": {
+          "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
+        },
         "created_timestamp": {
           "type": "string",
           "format": "int64"
@@ -2171,6 +2188,10 @@
         },
         "secondary_dev_key": {
           "type": "string"
+        },
+        "disabled": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -2210,6 +2231,9 @@
           "type": "string"
         }
       }
+    },
+    "vertauacEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"

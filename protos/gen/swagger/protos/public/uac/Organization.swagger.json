@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
@@ -204,7 +204,7 @@
     },
     "/organization/listMyOrganizations": {
       "get": {
-        "summary": "Lists the organizations that the current user can see",
+        "summary": "Lists the organizations that the current user is a member of",
         "operationId": "OrganizationService_listMyOrganizations",
         "responses": {
           "200": {
@@ -220,6 +220,38 @@
             }
           }
         },
+        "tags": [
+          "OrganizationService"
+        ]
+      }
+    },
+    "/organization/listOrganizations": {
+      "get": {
+        "summary": "Lists the organizations that the current user can access",
+        "operationId": "OrganizationService_listOrganizations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacListOrganizationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "externalOnly",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          }
+        ],
         "tags": [
           "OrganizationService"
         ]
@@ -249,6 +281,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "external_only",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
           }
         ],
         "tags": [
@@ -294,7 +333,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
@@ -497,9 +536,6 @@
         }
       }
     },
-    "uacEmpty": {
-      "type": "object"
-    },
     "uacGetOrganizationByIdResponse": {
       "type": "object",
       "properties": {
@@ -524,7 +560,21 @@
         }
       }
     },
+    "uacIdServiceProviderEnum": {
+      "type": "object"
+    },
     "uacListMyOrganizationsResponse": {
+      "type": "object",
+      "properties": {
+        "organizations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacOrganization"
+          }
+        }
+      }
+    },
+    "uacListOrganizationsResponse": {
       "type": "object",
       "properties": {
         "organizations": {
@@ -594,6 +644,9 @@
         },
         "owner_id": {
           "type": "string"
+        },
+        "idp": {
+          "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
           "type": "string",
@@ -713,6 +766,9 @@
           "$ref": "#/definitions/uacOrganization"
         }
       }
+    },
+    "vertauacEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"
