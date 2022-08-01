@@ -10,27 +10,29 @@ public class ArtifactStoreConfig {
   private String protocol = "https";
   private String host = "";
 
-  @SuppressWarnings({"squid:S116"})
-  private S3Config S3;
+  private S3Config s3;
 
-  @SuppressWarnings({"squid:S116"})
-  private NFSConfig NFS;
+  private NFSConfig nfs;
 
   private NFSEndpointConfig artifactEndpoint;
 
   public void validate(String base) throws InvalidConfigException {
-    if (getArtifactStoreType() == null || getArtifactStoreType().isEmpty())
+    if (getArtifactStoreType() == null || getArtifactStoreType().isEmpty()) {
       throw new InvalidConfigException(base + ".artifactStoreType", Config.MISSING_REQUIRED);
+    }
 
     switch (getArtifactStoreType()) {
       case "S3":
-        if (S3 == null) throw new InvalidConfigException(base + ".S3", Config.MISSING_REQUIRED);
-        S3.validate(base + ".S3");
+        if (s3 == null) {
+          throw new InvalidConfigException(base + ".S3", Config.MISSING_REQUIRED);
+        }
+        s3.validate(base + ".S3");
         break;
       case "NFS":
-        if (getNFS() == null)
+        if (getNfs() == null) {
           throw new InvalidConfigException(base + ".NFS", Config.MISSING_REQUIRED);
-        getNFS().validate(base + ".NFS");
+        }
+        getNfs().validate(base + ".NFS");
         break;
       default:
         throw new InvalidConfigException(
@@ -63,11 +65,11 @@ public class ArtifactStoreConfig {
   }
 
   public S3Config getS3() {
-    return S3;
+    return s3;
   }
 
-  public NFSConfig getNFS() {
-    return NFS;
+  public NFSConfig getNfs() {
+    return nfs;
   }
 
   public NFSEndpointConfig getArtifactEndpoint() {
@@ -77,9 +79,9 @@ public class ArtifactStoreConfig {
   public String storeTypePathPrefix() {
     switch (getArtifactStoreType()) {
       case "S3":
-        return S3.storeTypePathPrefix();
+        return s3.storeTypePathPrefix();
       case "NFS":
-        return getNFS().storeTypePathPrefix();
+        return getNfs().storeTypePathPrefix();
       default:
         throw new ModelDBException("Unknown artifact store type", Code.INTERNAL);
     }
@@ -88,9 +90,9 @@ public class ArtifactStoreConfig {
   public String getPathPrefixWithSeparator() {
     switch (getArtifactStoreType()) {
       case "S3":
-        return S3.getCloudBucketPrefix();
+        return s3.getCloudBucketPrefix();
       case "NFS":
-        return getNFS().getNfsPathPrefix();
+        return getNfs().getNfsPathPrefix();
       default:
         return "";
     }

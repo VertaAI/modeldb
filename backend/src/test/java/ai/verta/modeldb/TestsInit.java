@@ -106,12 +106,12 @@ public class TestsInit {
     handleExecutor = FutureUtil.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
 
     // Initialize services that we depend on
-    var artifactStoreConfig = testConfig.artifactStoreConfig;
+    var artifactStoreConfig = testConfig.getArtifactStoreConfig();
     ArtifactStoreService artifactStoreService = new NoopArtifactStoreService();
     if (artifactStoreConfig.getArtifactStoreType().equals("S3")) {
       artifactStoreService = new S3Service(artifactStoreConfig);
     } else if (artifactStoreConfig.getArtifactStoreType().equals("NFS")) {
-      String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
+      String rootDir = artifactStoreConfig.getNfs().getNfsRootPath();
       var fileProperties = new FileStorageProperties();
       fileProperties.setUploadDir(rootDir);
       artifactStoreService = new NFSService(fileProperties, artifactStoreConfig);

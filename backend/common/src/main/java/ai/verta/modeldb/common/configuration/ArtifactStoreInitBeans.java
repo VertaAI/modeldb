@@ -24,7 +24,7 @@ public class ArtifactStoreInitBeans {
   public ArtifactStoreService artifactStoreService(Config config, AppContext appContext)
       throws IOException {
 
-    final var artifactStoreConfig = config.artifactStoreConfig;
+    final var artifactStoreConfig = config.getArtifactStoreConfig();
     if (artifactStoreConfig.isEnabled()) {
       //
       // TODO: This is backwards, these values can be extracted from the environment or injected
@@ -44,16 +44,16 @@ public class ArtifactStoreInitBeans {
       }
 
       if (artifactStoreConfig.getArtifactStoreType().equals("NFS")
-          && artifactStoreConfig.getNFS() != null
-          && artifactStoreConfig.getNFS().getArtifactEndpoint() != null) {
+          && artifactStoreConfig.getNfs() != null
+          && artifactStoreConfig.getNfs().getArtifactEndpoint() != null) {
         System.getProperties()
             .put(
                 "artifactEndpoint.storeArtifact",
-                artifactStoreConfig.getNFS().getArtifactEndpoint().getStoreArtifact());
+                artifactStoreConfig.getNfs().getArtifactEndpoint().getStoreArtifact());
         System.getProperties()
             .put(
                 "artifactEndpoint.getArtifact",
-                artifactStoreConfig.getNFS().getArtifactEndpoint().getGetArtifact());
+                artifactStoreConfig.getNfs().getArtifactEndpoint().getGetArtifact());
       }
 
       switch (artifactStoreConfig.getArtifactStoreType()) {
@@ -65,7 +65,7 @@ public class ArtifactStoreInitBeans {
           break;
         case "NFS":
           appContext.registerBean("nfsController", NFSController.class);
-          String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
+          String rootDir = artifactStoreConfig.getNfs().getNfsRootPath();
           LOGGER.trace("NFS server root path {}", rootDir);
           final var props = new FileStorageProperties();
           props.setUploadDir(rootDir);

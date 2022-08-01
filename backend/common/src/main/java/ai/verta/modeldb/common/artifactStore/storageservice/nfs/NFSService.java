@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
@@ -166,7 +165,7 @@ public class NFSService implements ArtifactStoreService {
     } else if (method.equalsIgnoreCase("get")) {
       LOGGER.trace("NFSService - generatePresignedUrl - get url returned");
       var filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
-      parameters.put(CommonConstants.FILENAME, filename);
+      parameters.put("FileName", filename);
       return getDownloadUrl(
           parameters,
           artifactStoreConfig.getProtocol(),

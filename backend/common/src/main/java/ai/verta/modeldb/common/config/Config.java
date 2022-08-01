@@ -59,7 +59,7 @@ public abstract class Config {
   private TracingServerInterceptor tracingServerInterceptor = null;
   private TracingClientInterceptor tracingClientInterceptor = null;
   private volatile OpenTelemetry openTelemetry;
-  public ArtifactStoreConfig artifactStoreConfig;
+  private ArtifactStoreConfig artifactStoreConfig;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
@@ -244,5 +244,9 @@ public abstract class Config {
       openTelemetry = initializeOpenTelemetry();
     }
     return openTelemetry;
+  }
+
+  public ArtifactStoreConfig getArtifactStoreConfig() {
+    return artifactStoreConfig;
   }
 }

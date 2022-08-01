@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
@@ -96,7 +95,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
     var initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
@@ -121,7 +120,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
 
     HttpMethod reqMethod;
@@ -160,7 +159,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
     var completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
@@ -183,7 +182,7 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       Boolean exist = doesBucketExist(bucketName);
       if (!exist) {
-        throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+        throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
       }
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
@@ -245,7 +244,7 @@ public class S3Service implements ArtifactStoreService {
             resource.getObjectMetadata().getRawMetadata().entrySet()) {
           responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
         }
-        responseHeaders.add(CommonConstants.FILENAME, fileName);
+        responseHeaders.add("FileName", fileName);
         LOGGER.debug("getArtifact returned");
         return ResponseEntity.ok()
             .cacheControl(CacheControl.noCache())
@@ -295,7 +294,7 @@ public class S3Service implements ArtifactStoreService {
     } else if (method.equalsIgnoreCase("get")) {
       LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
       var filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
-      parameters.put(CommonConstants.FILENAME, filename);
+      parameters.put("FileName", filename);
       final var url =
           getDownloadUrl(
               parameters,
@@ -314,7 +313,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public InputStream downloadFileFromStorage(String key) throws ModelDBException {
     if (!doesBucketExist(bucketName)) {
-      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
 
     return downloadFileFromStorage(bucketName, key);

@@ -71,7 +71,8 @@ public class DAOSet {
       set.artifactStoreDAO = new ArtifactStoreDAODisabled();
     } else {
       set.artifactStoreDAO =
-          new ArtifactStoreDAORdbImpl(services.artifactStoreService, mdbConfig.artifactStoreConfig);
+          new ArtifactStoreDAORdbImpl(
+              services.artifactStoreService, mdbConfig.getArtifactStoreConfig());
     }
 
     set.commentDAO = new CommentDAORdbImpl(services.authService);

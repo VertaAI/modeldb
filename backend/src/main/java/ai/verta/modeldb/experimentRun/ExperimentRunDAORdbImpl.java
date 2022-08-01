@@ -2427,7 +2427,7 @@ public class ExperimentRunDAORdbImpl implements ExperimentRunDAO {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3)) {
+        && mdbConfig.getArtifactStoreConfig().getArtifactStoreType().equals(CommonConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {

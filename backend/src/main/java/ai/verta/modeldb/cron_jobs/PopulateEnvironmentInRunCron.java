@@ -44,7 +44,7 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
   public PopulateEnvironmentInRunCron(
       ArtifactStoreService artifactStoreService, Integer recordUpdateLimit, MDBConfig mdbConfig) {
     this.artifactStoreDAO =
-        new ArtifactStoreDAORdbImpl(artifactStoreService, mdbConfig.artifactStoreConfig);
+        new ArtifactStoreDAORdbImpl(artifactStoreService, mdbConfig.getArtifactStoreConfig());
     this.recordUpdateLimit = recordUpdateLimit;
   }
 

@@ -3,7 +3,7 @@ package ai.verta.modeldb.common;
 public abstract class CommonMessages {
 
   public static final String ARTIFACT_STORE_DISABLED_LOGS = "Artifact store is disabled";
-  public static final String BUCKET_DOES_NOT_EXISTS = "Bucket does not exists";
+  public static final String BUCKET_DOES_NOT_EXIST = "Bucket does not exist";
 
   private CommonMessages() {}
 
