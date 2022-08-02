@@ -184,7 +184,7 @@
     },
     "/team/listMyTeams": {
       "get": {
-        "summary": "Lists the teams that the current user is a member of",
+        "summary": "Lists the teams that the current user can see",
         "operationId": "TeamService_listMyTeams",
         "responses": {
           "200": {
@@ -200,22 +200,6 @@
             }
           }
         },
-        "parameters": [
-          {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          }
-        ],
         "tags": [
           "TeamService"
         ]
@@ -320,23 +304,6 @@
     }
   },
   "definitions": {
-    "IdServiceProviderEnumIdServiceProvider": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "GITHUB",
-        "BITBUCKET",
-        "GOOGLE",
-        "VERTA",
-        "SAML",
-        "AD_OAUTH2",
-        "LDAP",
-        "OKTA_SCIM",
-        "AD_SCIM",
-        "SCIM"
-      ],
-      "default": "UNKNOWN"
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -442,10 +409,6 @@
           "items": {
             "$ref": "#/definitions/uacTeam"
           }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -517,9 +480,6 @@
         "owner_id": {
           "type": "string"
         },
-        "id_service_provider": {
-          "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
-        },
         "created_timestamp": {
           "type": "string",
           "format": "int64"
@@ -529,20 +489,6 @@
           "format": "int64"
         }
       }
-    },
-    "vertacommonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     }
   },
   "basePath": "/v1"

@@ -35,7 +35,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
+              "$ref": "#/definitions/uacEmpty"
             }
           }
         ],
@@ -134,7 +134,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
+              "$ref": "#/definitions/uacEmpty"
             }
           }
         ],
@@ -200,7 +200,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
+              "$ref": "#/definitions/uacEmpty"
             }
           }
         ],
@@ -450,10 +450,7 @@
         "VERTA",
         "SAML",
         "AD_OAUTH2",
-        "LDAP",
-        "OKTA_SCIM",
-        "AD_SCIM",
-        "SCIM"
+        "LDAP"
       ],
       "default": "UNKNOWN"
     },
@@ -536,6 +533,9 @@
           "format": "boolean"
         }
       }
+    },
+    "uacEmpty": {
+      "type": "object"
     },
     "uacFlagEnum": {
       "type": "string",
@@ -670,10 +670,6 @@
         },
         "secondary_dev_key": {
           "type": "string"
-        },
-        "disabled": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },
@@ -713,9 +709,6 @@
           "type": "string"
         }
       }
-    },
-    "vertauacEmpty": {
-      "type": "object"
     },
     "vertauacPagination": {
       "type": "object",

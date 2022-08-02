@@ -896,10 +896,7 @@
         "VERTA",
         "SAML",
         "AD_OAUTH2",
-        "LDAP",
-        "OKTA_SCIM",
-        "AD_SCIM",
-        "SCIM"
+        "LDAP"
       ],
       "default": "UNKNOWN"
     },
@@ -2357,9 +2354,6 @@
       ],
       "default": "UNDEFINED"
     },
-    "uacIdServiceProviderEnum": {
-      "type": "object"
-    },
     "uacOrganization": {
       "type": "object",
       "properties": {
@@ -2377,9 +2371,6 @@
         },
         "owner_id": {
           "type": "string"
-        },
-        "idp": {
-          "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
           "type": "string",
@@ -2496,9 +2487,6 @@
         "owner_id": {
           "type": "string"
         },
-        "id_service_provider": {
-          "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
-        },
         "created_timestamp": {
           "type": "string",
           "format": "int64"
@@ -2547,10 +2535,6 @@
         },
         "secondary_dev_key": {
           "type": "string"
-        },
-        "disabled": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },

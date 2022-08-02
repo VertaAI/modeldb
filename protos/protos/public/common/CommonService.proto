@@ -186,7 +186,3 @@ message GitSnapshot {
     string hash = 3; // commit hash
     common.TernaryEnum.Ternary is_dirty = 4;
 }
-
-message Empty {
-
-}

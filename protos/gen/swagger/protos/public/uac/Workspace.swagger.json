@@ -50,7 +50,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
+              "$ref": "#/definitions/uacEmpty"
             }
           },
           "default": {
@@ -247,6 +247,9 @@
         }
       }
     },
+    "uacEmpty": {
+      "type": "object"
+    },
     "uacWorkspace": {
       "type": "object",
       "properties": {
@@ -306,9 +309,6 @@
           }
         }
       }
-    },
-    "vertauacEmpty": {
-      "type": "object"
     }
   },
   "basePath": "/v1"

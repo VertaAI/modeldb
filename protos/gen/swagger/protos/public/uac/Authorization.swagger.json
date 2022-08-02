@@ -333,9 +333,7 @@
         "EVENT",
         "WEBHOOK",
         "SYSTEM_ADMIN",
-        "PYPI_CONFIGURATION",
-        "KAFKA_CONFIGURATION",
-        "SCIM_CONFIGURATION"
+        "PYPI_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },
