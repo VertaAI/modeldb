@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.query;
 
+import ai.verta.common.Pagination;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 
 public class PaginationSupport {
@@ -13,6 +14,15 @@ public class PaginationSupport {
       return " OFFSET " + offset + " ROWS FETCH NEXT " + pageLimit + " ROWS ONLY";
     }
     return " LIMIT " + pageLimit + " OFFSET " + offset;
+  }
+
+  public static String addPagination(
+          Pagination pagination, String sql, DatabaseConfig databaseConfig) {
+    if (pagination.getPageNumber() != 0 && pagination.getPageLimit() != 0) {
+      return sql + getLimitString(
+              databaseConfig, pagination.getPageNumber(), pagination.getPageLimit());
+    }
+    return sql;
   }
 
   private static int calculatePageIndex(int pageNumber) {
