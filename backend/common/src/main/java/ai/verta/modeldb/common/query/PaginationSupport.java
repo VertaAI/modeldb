@@ -17,10 +17,10 @@ public class PaginationSupport {
   }
 
   public static String addPagination(
-          Pagination pagination, String sql, DatabaseConfig databaseConfig) {
+      Pagination pagination, String sql, DatabaseConfig databaseConfig) {
     if (pagination.getPageNumber() != 0 && pagination.getPageLimit() != 0) {
-      return sql + getLimitString(
-              databaseConfig, pagination.getPageNumber(), pagination.getPageLimit());
+      return sql
+          + getLimitString(databaseConfig, pagination.getPageNumber(), pagination.getPageLimit());
     }
     return sql;
   }
