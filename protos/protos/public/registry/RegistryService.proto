@@ -42,7 +42,7 @@ message RegisteredModel {
     // internal id
     uint64 id = 1;
 
-    // Unique name for the model within the workspace.
+    // Unique name for the model within the workspace. 
     string name = 2;
 
     // Timestamp recorded when this ``registered_model`` was created.
