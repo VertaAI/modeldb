@@ -1751,6 +1751,20 @@
     }
   },
   "definitions": {
+    "ActionTypeEnumActionType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "CLASSIFICATION",
+        "CLUSTERING",
+        "DETECTION",
+        "REGRESSION",
+        "TRANSCRIPTION",
+        "TRANSLATION"
+      ],
+      "default": "UNKNOWN"
+    },
     "ArtifactTypeEnumArtifactType": {
       "type": "string",
       "enum": [
@@ -1772,6 +1786,19 @@
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
+    },
+    "DataTypeEnumDataType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "AUDIO",
+        "IMAGE",
+        "TABULAR",
+        "TEXT",
+        "VIDEO"
+      ],
+      "default": "UNKNOWN"
     },
     "ModelVersionLockLevelEnumModelVersionLockLevel": {
       "type": "string",
@@ -2422,10 +2449,6 @@
           "type": "string",
           "title": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
         },
-        "workspace_service_id": {
-          "type": "string",
-          "format": "uint64"
-        },
         "readme_text": {
           "type": "string",
           "title": "readme"
@@ -2440,6 +2463,10 @@
             "$ref": "#/definitions/commonKeyValue"
           },
           "title": "Other attributes"
+        },
+        "workspace_service_id": {
+          "type": "string",
+          "format": "uint64"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
@@ -2464,6 +2491,13 @@
           "type": "string",
           "format": "uint64",
           "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+        },
+        "data_type": {
+          "$ref": "#/definitions/DataTypeEnumDataType",
+          "title": "Fields for model's task_type. Those fields must be searchable as per our \"find\" operation"
+        },
+        "action_type": {
+          "$ref": "#/definitions/ActionTypeEnumActionType"
         }
       }
     },
