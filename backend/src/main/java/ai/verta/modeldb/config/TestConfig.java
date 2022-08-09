@@ -23,7 +23,9 @@ public class TestConfig extends MDBConfig {
 
   @Override
   public void validate() throws InvalidConfigException {
-    if (getDatabase() == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
+    if (getDatabase() == null) {
+      throw new InvalidConfigException("database", MISSING_REQUIRED);
+    }
     getDatabase().validate("database");
 
     if (getService_user() != null) {
@@ -38,8 +40,9 @@ public class TestConfig extends MDBConfig {
       entry.getValue().validate(entry.getKey());
     }
 
-    if (getArtifactStoreConfig() == null)
+    if (getArtifactStoreConfig() == null) {
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    }
     getArtifactStoreConfig().validate("artifactStoreConfig");
 
     if (migrations != null) {

@@ -89,17 +89,24 @@ public abstract class Config {
       }
     }
 
-    if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
+    if (database == null) {
+      throw new InvalidConfigException("database", MISSING_REQUIRED);
+    }
     database.validate("database");
 
-    if (grpcServer == null) throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
+    if (grpcServer == null){
+      throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
+    }
     grpcServer.validate("grpcServer");
 
-    if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
+    if (springServer == null){
+      throw new InvalidConfigException("springServer", MISSING_REQUIRED);
+    }
     springServer.validate("springServer");
 
-    if (artifactStoreConfig == null)
+    if (artifactStoreConfig == null) {
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    }
     artifactStoreConfig.validate("artifactStoreConfig");
   }
 
