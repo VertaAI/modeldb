@@ -94,12 +94,12 @@ public abstract class Config {
     }
     database.validate("database");
 
-    if (grpcServer == null){
+    if (grpcServer == null) {
       throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
     }
     grpcServer.validate("grpcServer");
 
-    if (springServer == null){
+    if (springServer == null) {
       throw new InvalidConfigException("springServer", MISSING_REQUIRED);
     }
     springServer.validate("springServer");
