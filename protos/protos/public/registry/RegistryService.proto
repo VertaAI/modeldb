@@ -39,7 +39,7 @@ message ActionTypeEnum {
 }
 
 message RegisteredModel {
-    // internal id
+    // internal id 
     uint64 id = 1;
 
     // Unique name for the model within the workspace.
