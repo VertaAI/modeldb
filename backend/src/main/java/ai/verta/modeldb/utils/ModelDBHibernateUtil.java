@@ -142,7 +142,6 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
   public void initializedConfigAndDatabase(Config mdbConfig, DatabaseConfig dbConfig) {
     config = mdbConfig;
     databaseConfig = dbConfig;
-    getInstance().createOrGetSessionFactory(databaseConfig);
   }
 
   // TODO: this will removed after merging of the PR: https://github.com/VertaAI/modeldb/pull/1846
