@@ -50,12 +50,12 @@ public class FutureJdbi {
           }
         });
 
-    return InternalFuture.from(promise);
+    return InternalFuture.from(promise).useExecutor(executor);
   }
 
   public <R, T extends Exception> InternalFuture<R> withHandleCompose(
       HandleCallback<InternalFuture<R>, T> callback) {
-    return withHandle(callback).thenCompose(x -> x, this.executor);
+    return withHandle(callback).thenCompose(x -> x);
   }
 
   public <T extends Exception> InternalFuture<Void> useHandle(final HandleConsumer<T> consumer) {
@@ -83,6 +83,6 @@ public class FutureJdbi {
           }
         });
 
-    return InternalFuture.from(promise);
+    return InternalFuture.from(promise).useExecutor(executor);
   }
 }

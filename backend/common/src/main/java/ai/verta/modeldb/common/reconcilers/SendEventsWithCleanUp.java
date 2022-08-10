@@ -57,17 +57,17 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
   @Override
   protected ReconcileResult reconcile(Set<CreateEventRequest> eventUUIDs) {
     return InternalFuture.completedInternalFuture(eventUUIDs)
+        .useExecutor(executor)
         .thenCompose(
             createEventRequests -> {
               List<InternalFuture<String>> deletedEventUUIDFutures = new ArrayList<>();
               for (CreateEventRequest request : createEventRequests) {
                 deletedEventUUIDFutures.add(
                     FutureUtil.clientRequest(uac.getEventService().createEvent(request), executor)
-                        .thenApply(empty -> request.getEventUuid(), executor));
+                        .thenApply(empty -> request.getEventUuid()));
               }
               return InternalFuture.sequence(deletedEventUUIDFutures, executor);
-            },
-            executor)
+            })
         .thenCompose(
             deleteEventUUIDs -> {
               logger.debug("Ready to delete local events from database");
@@ -75,14 +75,12 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
                   futureEventDAO.deleteLocalEventWithAsync(deleteEventUUIDs);
               logger.debug("Deleted local events from database");
               return statusFuture;
-            },
-            executor)
+            })
         .thenApply(
             status -> {
               logger.debug("local events sent into the global event server successfully");
               return new ReconcileResult();
-            },
-            executor)
+            })
         .get();
   }
 }

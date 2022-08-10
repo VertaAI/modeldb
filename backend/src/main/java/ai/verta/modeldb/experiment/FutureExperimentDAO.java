@@ -130,10 +130,8 @@ public class FutureExperimentDAO {
                                 .checkProjectPermission(
                                     request.getProjectId(),
                                     ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-                                .thenApply(unused -> experiment, executor),
-                        executor)
-                    .thenCompose(createExperimentHandler::insertExperiment, executor),
-            executor);
+                                .thenApply(unused -> experiment, executor))
+                    .thenCompose(createExperimentHandler::insertExperiment));
   }
 
   public InternalFuture<FindExperiments.Response> findExperiments(FindExperiments request) {
@@ -193,7 +191,7 @@ public class FutureExperimentDAO {
                             futureSortingContext,
                             futureProjectIdsContext),
                         executor)
-                    .thenApply(QueryFilterContext::combine, executor)
+                    .thenApply(QueryFilterContext::combine)
                     .thenCompose(
                         queryContext -> {
                           // TODO: get environment
@@ -245,7 +243,8 @@ public class FutureExperimentDAO {
                                     }
 
                                     var futureBuildersStream =
-                                        InternalFuture.completedInternalFuture(builders.stream());
+                                        InternalFuture.completedInternalFuture(builders.stream())
+                                            .useExecutor(executor);
                                     final var ids =
                                         builders.stream()
                                             .map(x -> x.getId())
@@ -260,8 +259,7 @@ public class FutureExperimentDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllTags(
-                                                            tags.get(builder.getId()))),
-                                            executor);
+                                                            tags.get(builder.getId()))));
 
                                     // Get attributes
                                     final var futureAttributes =
@@ -273,8 +271,7 @@ public class FutureExperimentDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllAttributes(
-                                                            attributes.get(builder.getId()))),
-                                            executor);
+                                                            attributes.get(builder.getId()))));
 
                                     // Get artifacts
                                     final var futureArtifacts =
@@ -286,8 +283,7 @@ public class FutureExperimentDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllArtifacts(
-                                                            artifacts.get(builder.getId()))),
-                                            executor);
+                                                            artifacts.get(builder.getId()))));
 
                                     // Get code version snapshot
                                     final var futureCodeVersionSnapshots =
@@ -303,8 +299,7 @@ public class FutureExperimentDAO {
                                                         builder.setCodeVersionSnapshot(
                                                             codeVersionsMap.get(builder.getId()));
                                                       }
-                                                    }),
-                                            executor);
+                                                    }));
 
                                     return futureBuildersStream.thenApply(
                                         experimentRunBuilders ->
@@ -314,11 +309,9 @@ public class FutureExperimentDAO {
                                         executor);
                                   },
                                   executor);
-                        },
-                        executor);
+                        });
               }
-            },
-            executor);
+            });
 
     final var futureCount =
         futureProjectIds.thenCompose(
@@ -333,7 +326,7 @@ public class FutureExperimentDAO {
                         Arrays.asList(
                             futureLocalContext, futurePredicatesContext, futureProjectIdsContext),
                         executor)
-                    .thenApply(QueryFilterContext::combine, executor)
+                    .thenApply(QueryFilterContext::combine)
                     .thenCompose(
                         queryContext ->
                             jdbi.withHandle(
@@ -352,11 +345,9 @@ public class FutureExperimentDAO {
                                   queryContext.getBinds().forEach(b -> b.accept(query));
 
                                   return query.mapTo(Long.class).one();
-                                }),
-                        executor);
+                                }));
               }
-            },
-            executor);
+            });
 
     return futureExperiments.thenCombine(
         futureCount,
@@ -364,8 +355,7 @@ public class FutureExperimentDAO {
             FindExperiments.Response.newBuilder()
                 .addAllExperiments(experiments)
                 .setTotalRecords(count)
-                .build(),
-        executor);
+                .build());
   }
 
   private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
@@ -419,11 +409,9 @@ public class FutureExperimentDAO {
                     .checkProjectPermission(
                         projectIdFromExperimentMap.get(request.getId()),
                         ModelDBServiceActions.UPDATE)
-                    .thenApply(unused -> projectIdFromExperimentMap.get(request.getId()), executor),
-            executor)
+                    .thenApply(unused -> projectIdFromExperimentMap.get(request.getId()), executor))
         .thenCompose(
-            projectId -> updateExperimentName(request.getName(), projectId, request.getId()),
-            executor)
+            projectId -> updateExperimentName(request.getName(), projectId, request.getId()))
         .thenCompose(
             unused -> {
               // FIXME: this code never allows us to set the description as an empty string
@@ -432,9 +420,8 @@ public class FutureExperimentDAO {
                     request.getId(), "description", request.getDescription());
               }
               return InternalFuture.completedInternalFuture(null);
-            },
-            executor)
-        .thenCompose(unused -> getExperimentById(request.getId()), executor);
+            })
+        .thenCompose(unused -> getExperimentById(request.getId()));
   }
 
   private InternalFuture<Void> updateExperimentField(
@@ -492,8 +479,7 @@ public class FutureExperimentDAO {
               } else {
                 return findResponse.getExperiments(0);
               }
-            },
-            executor);
+            });
   }
 
   public InternalFuture<Experiment> updateExperimentName(UpdateExperimentName request) {

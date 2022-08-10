@@ -59,7 +59,7 @@ public final class FutureUtil {
   public static <T> InternalFuture<T> clientRequest(ListenableFuture<T> f, Executor ex) {
     CompletableFuture<T> promise = new CompletableFuture<>();
     Futures.addCallback(f, new Callback<T>(promise), ex);
-    return InternalFuture.from(promise);
+    return InternalFuture.from(promise).useExecutor(ex);
   }
 
   // Callback for a ListenableFuture to satisfy a promise

@@ -68,14 +68,12 @@ public abstract class CommonArtifactHandler<T> {
                                       .setUploadCompleted(rs.getBoolean("uc"))
                                       .build())
                           .list();
-                    }),
-            executor)
+                    }))
         .thenApply(
             artifacts ->
                 artifacts.stream()
                     .sorted(Comparator.comparing(Artifact::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+                    .collect(Collectors.toList()));
   }
 
   private void validateField(T entityId) {
