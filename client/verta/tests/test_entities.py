@@ -196,6 +196,14 @@ class TestProject:
         with pytest.raises(ValueError):
             client.set_project(id="nonexistent_id")
 
+    def test_repr(self, client):
+        proj = client.create_project()
+        str_repr = str(proj)
+
+        assert proj.name in str_repr
+        assert proj.url in str_repr
+        assert proj.id in str_repr
+
     @pytest.mark.parametrize("tags", [TAG, [TAG]])
     def test_tags_is_list_of_str(self, client, tags):
         proj = client.set_project(tags=tags)
@@ -339,9 +347,12 @@ class TestExperimentRun:
         with pytest.raises(ValueError):
             client.set_experiment_run(id="nonexistent_id")
 
-    def test_no_experiment_error(self, client):
-        with pytest.raises(AttributeError):
-            client.set_experimennt_run()
+    def test_repr(self, experiment_run):
+        str_repr = str(experiment_run)
+
+        assert experiment_run.name in str_repr
+        assert experiment_run.url in str_repr
+        assert experiment_run.id in str_repr
 
     @pytest.mark.parametrize("tags", [TAG, [TAG]])
     def test_tags_is_list_of_str(self, client, tags):

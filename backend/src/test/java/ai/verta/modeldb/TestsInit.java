@@ -103,6 +103,8 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
+    var app = App.getInstance();
+    app.mdbConfig = testConfig;
     handleExecutor = FutureUtil.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
 
     // Initialize services that we depend on

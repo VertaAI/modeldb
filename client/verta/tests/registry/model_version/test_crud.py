@@ -48,6 +48,7 @@ class TestCRUD:
         repr = str(model_version)
 
         assert model_version.name in repr
+        assert model_version.url in repr
         assert str(model_version.id) in repr
         assert str(model_version.registered_model_id) in repr
         assert str(model_version.get_labels()) in repr

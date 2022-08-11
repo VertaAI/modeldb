@@ -35,6 +35,8 @@ class Project(_ModelDBEntity):
         Name of this Project.
     expt_runs : :class:`~verta.tracking.entities.ExperimentRuns`
         Experiment Runs under this Project.
+    url : str
+        Verta web app URL.
 
     """
     def __init__(self, conn, conf, msg):
@@ -46,7 +48,7 @@ class Project(_ModelDBEntity):
 
         return '\n'.join((
             "name: {}".format(msg.name),
-            "url: {}://{}/{}/projects/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "url: {}".format(self.url),
         ))
 
     @property
@@ -62,6 +64,15 @@ class Project(_ModelDBEntity):
     def expt_runs(self):
         # get runs in this Project
         return ExperimentRuns(self._conn, self._conf).with_project(self)
+
+    @property
+    def url(self):
+        return "{}://{}/{}/projects/{}/summary".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+        )
 
     @property
     def workspace(self):

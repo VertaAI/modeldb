@@ -7207,7 +7207,7 @@ public class ExperimentRunTest extends TestsInit {
         if (exprRun.getId().equals(experimentRun2.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-          if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
+          if (!testConfig.isPopulateConnectionsBasedOnPrivileges()) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7224,7 +7224,7 @@ public class ExperimentRunTest extends TestsInit {
         } else if (exprRun.getId().equals(experimentRun3.getId())) {
           String locationKey =
               ModelDBUtils.getLocationWithSlashOperator(test2Location.getLocationList());
-          if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
+          if (!testConfig.isPopulateConnectionsBasedOnPrivileges()) {
             assertFalse(
                 "Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
           } else {
@@ -7247,7 +7247,7 @@ public class ExperimentRunTest extends TestsInit {
       ExperimentRun exprRun = getHydratedExperimentRunsResponse.getExperimentRun();
       String locationKey =
           ModelDBUtils.getLocationWithSlashOperator(test1Location.getLocationList());
-      if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
+      if (!testConfig.isPopulateConnectionsBasedOnPrivileges()) {
         assertFalse("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));
       } else {
         assertTrue("Code blob should not empty", exprRun.containsCodeVersionFromBlob(locationKey));

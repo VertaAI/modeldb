@@ -114,9 +114,6 @@ public class AppConfigBeans {
   @Bean
   @Conditional(RunLiquibaseWithMainService.class)
   public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
-    var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-    modelDBHibernateUtil.initializedConfigAndDatabase(config, config.getDatabase());
-
     return DAOSet.fromServices(services, config.getJdbi(), grpcExecutor, config);
   }
 
@@ -156,6 +153,15 @@ public class AppConfigBeans {
     var migration = new Migration(mdbConfig);
     LOGGER.info("Migrations have completed");
     return migration;
+  }
+
+  @Bean
+  public ModelDBHibernateUtil hibernateUtil(MDBConfig mdbConfig) {
+    // Initialize hibernate session factory
+    var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
+    modelDBHibernateUtil.initializedConfigAndDatabase(mdbConfig, mdbConfig.getDatabase());
+    modelDBHibernateUtil.createOrGetSessionFactory(mdbConfig.getDatabase());
+    return modelDBHibernateUtil;
   }
 
   @Bean
