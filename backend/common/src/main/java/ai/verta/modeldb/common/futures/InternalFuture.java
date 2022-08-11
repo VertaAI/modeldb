@@ -295,10 +295,7 @@ public class InternalFuture<T> {
     };
   }
 
-  /**
-   * Syntactic sugar for {@link #thenCompose(Function)} with the function ignoring the
-   * input.
-   */
+  /** Syntactic sugar for {@link #thenCompose(Function)} with the function ignoring the input. */
   public <U> InternalFuture<U> thenSupply(Supplier<InternalFuture<U>> supplier) {
     return thenCompose(ignored -> supplier.get());
   }
