@@ -50,7 +50,7 @@ public class FutureJdbi {
           }
         });
 
-    return InternalFuture.from(promise).useExecutor(executor);
+    return InternalFuture.from(promise);
   }
 
   public <R, T extends Exception> InternalFuture<R> withHandleCompose(
@@ -83,6 +83,6 @@ public class FutureJdbi {
           }
         });
 
-    return InternalFuture.from(promise).useExecutor(executor);
+    return InternalFuture.from(promise);
   }
 }
