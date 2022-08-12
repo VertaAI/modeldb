@@ -13,8 +13,33 @@ import "modeldb/versioning/Code.proto";
 import "registry/StageService.proto";
 import "uac/Collaborator.proto";
 
+message DataTypeEnum {
+  enum DataType {
+      UNKNOWN = 0;
+      OTHER = 1;
+      AUDIO = 2;
+      IMAGE = 3;
+      TABULAR = 4;
+      TEXT = 5;
+      VIDEO = 6;
+  }
+}
+
+message ActionTypeEnum {
+  enum ActionType {
+    UNKNOWN = 0;
+    OTHER = 1;
+    CLASSIFICATION = 2;
+    CLUSTERING = 3;
+    DETECTION = 4;
+    REGRESSION = 5;
+    TRANSCRIPTION = 6;
+    TRANSLATION = 7;
+  }
+}
+
 message RegisteredModel {
-    // internal id
+    // internal id 
     uint64 id = 1;
 
     // Unique name for the model within the workspace.
@@ -39,8 +64,6 @@ message RegisteredModel {
     //not storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files
     string workspace_id = 8;
 
-    uint64 workspace_service_id = 12;
-
     //readme
     string readme_text = 9;
 
@@ -49,6 +72,9 @@ message RegisteredModel {
 
     // Other attributes
     repeated common.KeyValue attributes = 11;
+
+    uint64 workspace_service_id = 12;
+
     // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 13;
@@ -61,6 +87,10 @@ message RegisteredModel {
 
     // Doc for version_number https://github.com/VertaAI/docs/pull/53
     uint64 version_number = 17;
+
+    // Fields for model's task_type. Those fields must be searchable as per our "find" operation
+    DataTypeEnum.DataType data_type = 18;
+    ActionTypeEnum.ActionType action_type = 19;
 }
 
 //CRUD for Registred Models

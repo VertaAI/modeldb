@@ -445,7 +445,7 @@ public class InternalFuture<T> {
     }
 
     @Override
-    public void onFailure(@NonNull Throwable t) {
+    public void onFailure(Throwable t) {
       promise.completeExceptionally(t);
     }
   }
