@@ -640,7 +640,7 @@ class Client(object):
         """
         return self.set_experiment_run(*args, **kwargs)
 
-    def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, id=None):
+    def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, id=None, actionType=None, dataType=None):
         """
         Attaches a registered_model to this Client.
 
@@ -671,7 +671,12 @@ class Client(object):
         id : str, optional
             ID of the registered_model. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
-
+        actionType : str, optional
+            Action type of the registered_model.
+            OTHER, CLASSIFICATION, CLUSTERING, DETECTION, REGRESSION, TRANSCRIPTION, TRANSLATION
+        dataType : str, optional
+            Data type of the registered_model.
+            OTHER, AUDIO, IMAGE, TABULAR, TEXT, VIDEO
         Returns
         -------
         :class:`~verta.registry.entities.RegisteredModel`
@@ -703,7 +708,7 @@ class Client(object):
         else:
             registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                   lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, ctx.workspace_name),
-                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org, visibility=visibility),
+                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org, visibility=visibility, actionType=actionType, dataType=dataType),
                                                                   lambda: check_unnecessary_params_warning(
                                                                       resource_name,
                                                                       "name {}".format(name),
@@ -1014,7 +1019,7 @@ class Client(object):
         return self._ctx.expt_run
 
 
-    def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None):
+    def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, actionType=None, dataType=None):
         """
         Creates a new Registered Model.
 
@@ -1040,6 +1045,12 @@ class Client(object):
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used. This parameter
             should be preferred over `public_within_org`.
+        actionType : str, optional
+            Action type of the registered_model.
+            OTHER, CLASSIFICATION, CLUSTERING, DETECTION, REGRESSION, TRANSCRIPTION, TRANSLATION
+        dataType : str, optional
+            Data type of the registered_model.
+            OTHER, AUDIO, IMAGE, TABULAR, TEXT, VIDEO
 
         Returns
         -------
@@ -1065,6 +1076,7 @@ class Client(object):
             self._conn, self._conf, ctx,
             name=name, desc=desc, tags=labels,
             public_within_org=public_within_org, visibility=visibility,
+            actionType=actionType, dataType=dataType,
         )
 
 

@@ -200,7 +200,7 @@ class _ModelDBEntity(object):
         return cls._create_proto_internal(conn, *args, **kwargs)
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, **kwargs):  # recommended params
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, actionType=None, dataType=None, **kwargs):  # recommended params
         raise NotImplementedError
 
     def log_code(self, exec_path=None, repo_url=None, commit_hash=None, overwrite=False, is_dirty=None, autocapture=True):

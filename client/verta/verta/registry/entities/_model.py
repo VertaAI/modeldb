@@ -797,9 +797,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None, actionType=None, dataType=None):
         Message = _RegistryService.RegisteredModel
-        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created)
+        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created, action_type=actionType, data_type=dataType)
         if (public_within_org
                 and ctx.workspace_name is not None  # not user's personal workspace
                 and _utils.is_org(ctx.workspace_name, conn)):  # not anyone's personal workspace
@@ -907,3 +907,21 @@ class RegisteredModel(_entity._ModelDBEntity):
         request_url = "{}://{}/api/v1/registry/registered_models/{}".format(self._conn.scheme, self._conn.socket, self.id)
         response = _utils.make_request("DELETE", request_url, self._conn)
         _utils.raise_for_http_error(response)
+
+    def set_actionType(self, actionType):
+        if not actionType:
+            raise ValueError("actionType is not specified")
+        self._update(self.RegisteredModelMessage(action_type=actionType))
+
+    def get_actionType(self):
+        self._refresh_cache()
+        return self._msg.action_type
+
+    def set_dataType(self, dataType):
+        if not dataType:
+            raise ValueError("dataType is not specified")
+        self._update(self.RegisteredModelMessage(data_type=dataType))
+
+    def get_dataType(self):
+        self._refresh_cache()
+        return self._msg.data_type

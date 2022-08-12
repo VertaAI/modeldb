@@ -28,14 +28,16 @@ def create():
 @click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
 @click.option("--visibility", "-v", default="private", show_default=True, type=click.Choice(["private", "org"], case_sensitive=False), help="Visibility level of the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-def create_model(model_name, label, visibility, workspace, description):
+@click.option("--actionType", "-a", default="OTHER", show_default=True, type=click.Choice(["OTHER", "CLASSIFICATION", "CLUSTERING", "DETECTION", "REGRESSION", "TRANSCRIPTION", "TRANSLATION"], case_sensitive=True), help="Action type.")
+@click.option("--dataType", "-d", default="OTHER", show_default=True, type=click.Choice(["OTHER", "AUDIO", "IMAGE", "TABULAR", "TEXT", "VIDEO"], case_sensitive=True), help="Data type.")
+def create_model(model_name, label, visibility, workspace, description, actionType, dataType):
     """Create a new registeredmodel entry.
     """
     public_within_org = visibility == "org"
     client = Client()
 
     model = client.create_registered_model(model_name, workspace=workspace, public_within_org=public_within_org,
-                                           desc=description)
+                                           desc=description, actionType=actionType, dataType=dataType)
     for l in label:
         model.add_label(l)
 
