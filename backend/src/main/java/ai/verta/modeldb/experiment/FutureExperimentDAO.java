@@ -31,6 +31,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.InternalFutureWithDefaultExecutor;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
@@ -357,7 +358,7 @@ public class FutureExperimentDAO {
                 .build());
   }
 
-  private InternalFuture.WithCachedExecutor<QueryFilterContext>
+  private InternalFutureWithDefaultExecutor<QueryFilterContext>
       getAccessibleProjectIdsQueryFilterContext(String workspaceName, String requestedProjectId) {
     if (workspaceName.isEmpty()) {
       return uacApisUtil
@@ -438,7 +439,7 @@ public class FutureExperimentDAO {
                 .execute());
   }
 
-  private InternalFuture.WithCachedExecutor<Map<String, String>> getProjectIdByExperimentId(
+  private InternalFutureWithDefaultExecutor<Map<String, String>> getProjectIdByExperimentId(
       List<String> experimentIds) {
     return jdbi.withHandle(
             handle -> {

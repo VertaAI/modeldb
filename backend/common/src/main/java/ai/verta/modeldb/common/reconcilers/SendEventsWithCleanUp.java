@@ -5,6 +5,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.InternalFutureWithDefaultExecutor;
 import ai.verta.uac.CreateEventRequest;
 import com.google.protobuf.Any;
 import com.google.protobuf.Value;
@@ -18,7 +19,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
   private final UAC uac;
   private final FutureEventDAO futureEventDAO;
 
-  private final InternalFuture.FactoryWithExecutor futureFactory;
+  private final InternalFutureWithDefaultExecutor.FactoryWithExecutor futureFactory;
 
   public SendEventsWithCleanUp(
       ReconcilerConfig config,
