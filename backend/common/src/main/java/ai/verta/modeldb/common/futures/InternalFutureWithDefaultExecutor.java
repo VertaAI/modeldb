@@ -141,7 +141,7 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
 
     private Executor executor;
 
-    private FactoryWithExecutor(Executor executor) {
+    FactoryWithExecutor(Executor executor) {
       this.executor = executor;
     }
 
