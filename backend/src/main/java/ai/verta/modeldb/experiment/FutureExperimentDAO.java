@@ -123,6 +123,7 @@ public class FutureExperimentDAO {
             userInfo ->
                 createExperimentHandler
                     .convertCreateRequest(request, userInfo)
+                    .thenWithExecutor(executor)
                     .thenCompose(
                         experiment ->
                             futureProjectDAO
@@ -170,7 +171,7 @@ public class FutureExperimentDAO {
     final var futureSortingContext =
         sortingHandler.processSort(request.getSortKey(), request.getAscending());
 
-    final InternalFuture<QueryFilterContext> futureProjectIds =
+    final var futureProjectIds =
         getAccessibleProjectIdsQueryFilterContext(
             request.getWorkspaceName(), request.getProjectId());
 
@@ -234,6 +235,7 @@ public class FutureExperimentDAO {
                                             })
                                         .list();
                                   })
+                              .thenWithExecutor(executor)
                               .thenCompose(
                                   builders -> {
                                     if (builders == null || builders.isEmpty()) {
@@ -305,8 +307,7 @@ public class FutureExperimentDAO {
                                             experimentRunBuilders
                                                 .map(Experiment.Builder::build)
                                                 .collect(Collectors.toList()));
-                                  },
-                                  executor);
+                                  });
                         });
               }
             });
@@ -356,8 +357,8 @@ public class FutureExperimentDAO {
                 .build());
   }
 
-  private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
-      String workspaceName, String requestedProjectId) {
+  private InternalFuture.WithCachedExecutor<QueryFilterContext>
+      getAccessibleProjectIdsQueryFilterContext(String workspaceName, String requestedProjectId) {
     if (workspaceName.isEmpty()) {
       return uacApisUtil
           .getAllowedEntitiesByResourceType(
@@ -437,7 +438,7 @@ public class FutureExperimentDAO {
                 .execute());
   }
 
-  private InternalFuture<Map<String, String>> getProjectIdByExperimentId(
+  private InternalFuture.WithCachedExecutor<Map<String, String>> getProjectIdByExperimentId(
       List<String> experimentIds) {
     return jdbi.withHandle(
             handle -> {
@@ -469,6 +470,7 @@ public class FutureExperimentDAO {
 
   public InternalFuture<Experiment> getExperimentById(String experimentId) {
     return findExperiments(FindExperiments.newBuilder().addExperimentIds(experimentId).build())
+        .thenWithExecutor(executor)
         .thenApply(
             findResponse -> {
               if (findResponse.getExperimentsCount() > 1) {
@@ -702,6 +704,7 @@ public class FutureExperimentDAO {
     final var expId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
     return getExperimentById(expId)
+        .thenWithExecutor(executor)
         .thenApply(
             experiment -> {
               futureProjectDAO.checkProjectPermission(

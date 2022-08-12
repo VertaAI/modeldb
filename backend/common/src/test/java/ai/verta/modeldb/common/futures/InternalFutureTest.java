@@ -34,7 +34,7 @@ class InternalFutureTest {
     AtomicBoolean firstWasCalled = new AtomicBoolean();
     final Executor executor = MoreExecutors.directExecutor();
     final InternalFuture.FactoryWithExecutor factory = InternalFuture.withExecutor(executor);
-    InternalFuture<Void> testFuture =
+    var testFuture =
         factory.supplyAsync(
             () -> {
               firstWasCalled.set(true);
@@ -51,7 +51,7 @@ class InternalFutureTest {
     AtomicBoolean secondWasCalled = new AtomicBoolean();
     Executor executor = MoreExecutors.directExecutor();
     final InternalFuture.FactoryWithExecutor factory = InternalFuture.withExecutor(executor);
-    InternalFuture<Void> testFuture =
+    var testFuture =
         factory.supplyAsync(
             () -> {
               throw new IllegalStateException("failed");
