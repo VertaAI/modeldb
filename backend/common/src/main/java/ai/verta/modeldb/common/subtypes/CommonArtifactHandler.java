@@ -45,7 +45,8 @@ public abstract class CommonArtifactHandler<T> {
   }
 
   public InternalFuture<List<Artifact>> getArtifacts(T entityId, Optional<String> maybeKey) {
-    var currentFuture = InternalFuture.runAsync(() -> validateField(entityId), executor);
+    var currentFuture =
+        InternalFuture.withExecutor(executor).runAsync(() -> validateField(entityId));
     return currentFuture
         .thenCompose(
             unused ->
@@ -93,13 +94,13 @@ public abstract class CommonArtifactHandler<T> {
               Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
               return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
             })
+        .thenWithExecutor(executor)
         .thenApply(
             simpleEntries ->
                 simpleEntries.stream()
                     .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
-                    .collect(Collectors.toList()),
-            executor)
-        .thenApply(MapSubtypes::from, executor);
+                    .collect(Collectors.toList()))
+        .thenApply(MapSubtypes::from);
   }
 
   protected abstract AbstractMap.SimpleEntry<T, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
