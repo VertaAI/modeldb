@@ -1,6 +1,9 @@
 package ai.verta.modeldb.common.futures;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
@@ -26,7 +29,7 @@ public class InternalFuture<T> {
 
   private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
   private final String formattedStack;
-  private CompletionStage<T> stage;
+  private final CompletionStage<T> stage;
 
   private Executor cachedExecutor = null;
 
@@ -34,7 +37,8 @@ public class InternalFuture<T> {
   // future's implementation
   private final Context callingContext = Context.current();
 
-  private InternalFuture() {
+  private InternalFuture(final CompletionStage<T> stage) {
+    this.stage = stage;
     if (!DEEP_TRACING_ENABLED) {
       formattedStack = null;
     } else {
@@ -88,54 +92,63 @@ public class InternalFuture<T> {
             },
             executor);
 
-    return InternalFuture.from(promise);
+    return from(promise);
   }
 
   public static <R> InternalFuture<R> from(CompletionStage<R> other) {
-    var ret = new InternalFuture<R>();
-    ret.stage = other;
-    return ret;
+    return new InternalFuture<>(other);
+  }
+
+  // Converts a ListenableFuture, returned by a non-blocking call via grpc, to our custom
+  // InternalFuture
+  public static <T> InternalFuture<T> from(ListenableFuture<T> f, Executor ex) {
+    CompletableFuture<T> promise = new CompletableFuture<>();
+    Futures.addCallback(f, new Callback<T>(promise), ex);
+    return InternalFuture.from(promise);
   }
 
   public static <R> InternalFuture<R> completedInternalFuture(R value) {
-    var ret = new InternalFuture<R>();
-    ret.stage = CompletableFuture.completedFuture(value);
-    return ret;
+    return from(CompletableFuture.completedFuture(value));
   }
 
-  public InternalFuture<T> useExecutor(Executor executor) {
+  public static FactoryWithExecutor withExecutor(Executor executor) {
+    return new FactoryWithExecutor(executor);
+  }
+
+  public InternalFuture<T> thenWithExecutor(Executor executor) {
     this.cachedExecutor = executor;
     return this;
   }
 
   public <U> InternalFuture<U> thenCompose(Function<? super T, InternalFuture<U>> fn) {
     Objects.requireNonNull(cachedExecutor, "Cached executor required to use this method signature");
-    InternalFuture<U> result = thenCompose(fn, cachedExecutor);
-    return result.useExecutor(cachedExecutor);
+    return thenCompose(fn, cachedExecutor);
   }
 
   public <U> InternalFuture<U> thenCompose(
       Function<? super T, InternalFuture<U>> fn, Executor executor) {
-    return from(
-        stage.thenComposeAsync(
-            traceFunction(
-                callingContext.wrapFunction(
-                    traceFunction(
-                        fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose")),
-                "futureThenApply"),
-            executor));
+    return InternalFuture.<U>from(
+            stage.thenComposeAsync(
+                traceFunction(
+                    callingContext.wrapFunction(
+                        traceFunction(
+                            fn.andThen(internalFuture -> internalFuture.stage),
+                            "futureThenCompose")),
+                    "futureThenApply"),
+                executor))
+        .thenWithExecutor(cachedExecutor);
   }
 
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn) {
     Objects.requireNonNull(cachedExecutor, "Cached executor required to use this method signature");
-    InternalFuture<U> result = thenApply(fn, cachedExecutor);
-    return result.useExecutor(cachedExecutor);
+    return thenApply(fn, cachedExecutor);
   }
 
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
-    return from(
-        stage.thenApplyAsync(
-            traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
+    return InternalFuture.<U>from(
+            stage.thenApplyAsync(
+                traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor))
+        .thenWithExecutor(cachedExecutor);
   }
 
   private <U> Function<? super T, ? extends U> traceFunction(
@@ -162,14 +175,14 @@ public class InternalFuture<T> {
 
   public <U> InternalFuture<U> handle(BiFunction<? super T, Throwable, ? extends U> fn) {
     Objects.requireNonNull(cachedExecutor, "Cached executor required to use this method signature");
-    InternalFuture<U> result = handle(fn, cachedExecutor);
-    return result.useExecutor(cachedExecutor);
+    return handle(fn, cachedExecutor);
   }
 
   public <U> InternalFuture<U> handle(
       BiFunction<? super T, Throwable, ? extends U> fn, Executor executor) {
-    return from(
-        stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor));
+    return InternalFuture.<U>from(
+            stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor))
+        .thenWithExecutor(cachedExecutor);
   }
 
   private <U> BiFunction<? super T, Throwable, ? extends U> traceBiFunctionThrowable(
@@ -190,17 +203,17 @@ public class InternalFuture<T> {
   public <U, V> InternalFuture<V> thenCombine(
       InternalFuture<? extends U> other, BiFunction<? super T, ? super U, ? extends V> fn) {
     Objects.requireNonNull(cachedExecutor, "Cached executor required to use this method signature");
-    InternalFuture<V> result = thenCombine(other, fn, cachedExecutor);
-    return result.useExecutor(cachedExecutor);
+    return thenCombine(other, fn, cachedExecutor);
   }
 
   public <U, V> InternalFuture<V> thenCombine(
       InternalFuture<? extends U> other,
       BiFunction<? super T, ? super U, ? extends V> fn,
       Executor executor) {
-    return from(
-        stage.thenCombineAsync(
-            other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor));
+    return InternalFuture.<V>from(
+            stage.thenCombineAsync(
+                other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor))
+        .thenWithExecutor(cachedExecutor);
   }
 
   private <U, V> BiFunction<? super T, ? super U, ? extends V> traceBiFunction(
@@ -220,13 +233,12 @@ public class InternalFuture<T> {
 
   public InternalFuture<Void> thenAccept(Consumer<? super T> action) {
     Objects.requireNonNull(cachedExecutor, "Cached executor required to use this method signature");
-    InternalFuture<Void> result = thenAccept(action, cachedExecutor);
-    return result.useExecutor(cachedExecutor);
+    return thenAccept(action, cachedExecutor);
   }
 
   public InternalFuture<Void> thenAccept(Consumer<? super T> action, Executor executor) {
-    return from(
-        stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor));
+    return from(stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor))
+        .thenWithExecutor(cachedExecutor);
   }
 
   private Consumer<? super T> traceConsumer(Consumer<? super T> action) {
@@ -245,12 +257,12 @@ public class InternalFuture<T> {
 
   public <U> InternalFuture<Void> thenRun(Runnable runnable) {
     Objects.requireNonNull(cachedExecutor, "Cached executor required to use this method signature");
-    InternalFuture<Void> result = thenRun(runnable, cachedExecutor);
-    return result.useExecutor(cachedExecutor);
+    return thenRun(runnable, cachedExecutor);
   }
 
   public <U> InternalFuture<Void> thenRun(Runnable runnable, Executor executor) {
-    return from(stage.thenRunAsync(callingContext.wrap(traceRunnable(runnable)), executor));
+    return from(stage.thenRunAsync(callingContext.wrap(traceRunnable(runnable)), executor))
+        .thenWithExecutor(cachedExecutor);
   }
 
   private Runnable traceRunnable(Runnable r) {
@@ -269,14 +281,14 @@ public class InternalFuture<T> {
 
   public InternalFuture<T> whenComplete(BiConsumer<? super T, ? super Throwable> action) {
     Objects.requireNonNull(cachedExecutor, "Cached executor required to use this method signature");
-    InternalFuture<T> result = whenComplete(action, cachedExecutor);
-    return result.useExecutor(cachedExecutor);
+    return whenComplete(action, cachedExecutor);
   }
 
   public InternalFuture<T> whenComplete(
       BiConsumer<? super T, ? super Throwable> action, Executor executor) {
-    return from(
-        stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
+    return from(stage.whenCompleteAsync(
+            callingContext.wrapConsumer(traceBiConsumer(action)), executor))
+        .thenWithExecutor(cachedExecutor);
   }
 
   private BiConsumer<? super T, ? super Throwable> traceBiConsumer(
@@ -297,7 +309,8 @@ public class InternalFuture<T> {
 
   /** Syntactic sugar for {@link #thenCompose(Function)} with the function ignoring the input. */
   public <U> InternalFuture<U> thenSupply(Supplier<InternalFuture<U>> supplier) {
-    return thenCompose(ignored -> supplier.get());
+    Objects.requireNonNull(cachedExecutor, "Cached executor required to use this method signature");
+    return thenCompose(ignored -> supplier.get()).thenWithExecutor(cachedExecutor);
   }
 
   /**
@@ -356,7 +369,7 @@ public class InternalFuture<T> {
             },
             executor);
 
-    return InternalFuture.from(promise);
+    return from(promise);
   }
 
   public T get() {
@@ -373,5 +386,67 @@ public class InternalFuture<T> {
 
   public CompletionStage<T> toCompletionStage() {
     return stage;
+  }
+
+  public static class FactoryWithExecutor {
+
+    private Executor executor;
+
+    private FactoryWithExecutor(Executor executor) {
+      this.executor = executor;
+    }
+
+    public <U> InternalFuture<U> completedInternalFuture(U value) {
+      return InternalFuture.completedInternalFuture(value).thenWithExecutor(executor);
+    }
+
+    public <U> InternalFuture<U> from(CompletionStage<U> stage) {
+      return InternalFuture.from(stage).thenWithExecutor(executor);
+    }
+
+    public <U> InternalFuture<U> from(ListenableFuture<U> listenableFuture) {
+      return InternalFuture.from(listenableFuture, executor).thenWithExecutor(executor);
+    }
+
+    public InternalFuture<Void> runAsync(Runnable runnable) {
+      return InternalFuture.runAsync(runnable, executor).thenWithExecutor(executor);
+    }
+
+    public <U> InternalFuture<List<U>> sequence(final List<InternalFuture<U>> futures) {
+      return InternalFuture.sequence(futures, executor).thenWithExecutor(executor);
+    }
+
+    public <U> InternalFuture<U> supplyAsync(Supplier<U> supplier) {
+      return InternalFuture.supplyAsync(supplier, executor).thenWithExecutor(executor);
+    }
+
+    public <U> InternalFuture<U> failedStage(Throwable ex) {
+      return InternalFuture.<U>failedStage(ex).thenWithExecutor(executor);
+    }
+
+    public <U> InternalFuture<U> retriableStage(
+        Supplier<InternalFuture<U>> supplier, Function<Throwable, Boolean> retryChecker) {
+      return InternalFuture.retriableStage(supplier, retryChecker, executor)
+          .thenWithExecutor(executor);
+    }
+  }
+
+  // Callback for a ListenableFuture to satisfy a promise
+  private static class Callback<T> implements FutureCallback<T> {
+    final CompletableFuture<T> promise;
+
+    private Callback(CompletableFuture<T> promise) {
+      this.promise = promise;
+    }
+
+    @Override
+    public void onSuccess(T t) {
+      promise.complete(t);
+    }
+
+    @Override
+    public void onFailure(@NonNull Throwable t) {
+      promise.completeExceptionally(t);
+    }
   }
 }

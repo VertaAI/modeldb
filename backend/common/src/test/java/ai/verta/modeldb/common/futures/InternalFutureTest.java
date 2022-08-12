@@ -14,8 +14,8 @@ class InternalFutureTest {
   void composition_failsFast() {
     Executor executor = MoreExecutors.directExecutor();
     InternalFuture<String> testFuture =
-        InternalFuture.completedInternalFuture("cheese")
-            .useExecutor(executor)
+        InternalFuture.withExecutor(executor)
+            .completedInternalFuture("cheese")
             .thenApply(
                 s1 -> {
                   throw new RuntimeException("borken");
@@ -32,18 +32,16 @@ class InternalFutureTest {
   @Test
   void thenSupply() {
     AtomicBoolean firstWasCalled = new AtomicBoolean();
-    Executor executor = MoreExecutors.directExecutor();
+    final Executor executor = MoreExecutors.directExecutor();
+    final InternalFuture.FactoryWithExecutor factory = InternalFuture.withExecutor(executor);
     InternalFuture<Void> testFuture =
-        InternalFuture.<Void>supplyAsync(
-                () -> {
-                  firstWasCalled.set(true);
-                  return null;
-                },
-                executor)
-            .useExecutor(executor);
-
+        factory.supplyAsync(
+            () -> {
+              firstWasCalled.set(true);
+              return null;
+            });
     InternalFuture<String> result =
-        testFuture.thenSupply(() -> InternalFuture.completedInternalFuture("cheese"));
+        testFuture.thenSupply(() -> factory.completedInternalFuture("cheese"));
     assertThat(result.get()).isEqualTo("cheese");
     assertThat(firstWasCalled).isTrue();
   }
@@ -52,22 +50,20 @@ class InternalFutureTest {
   void thenSupply_exception() {
     AtomicBoolean secondWasCalled = new AtomicBoolean();
     Executor executor = MoreExecutors.directExecutor();
+    final InternalFuture.FactoryWithExecutor factory = InternalFuture.withExecutor(executor);
     InternalFuture<Void> testFuture =
-        InternalFuture.<Void>supplyAsync(
-                () -> {
-                  throw new IllegalStateException("failed");
-                },
-                executor)
-            .useExecutor(executor);
+        factory.supplyAsync(
+            () -> {
+              throw new IllegalStateException("failed");
+            });
     InternalFuture<String> result =
         testFuture.thenSupply(
             () ->
-                InternalFuture.supplyAsync(
+                factory.supplyAsync(
                     () -> {
                       secondWasCalled.set(true);
                       return "cheese";
-                    },
-                    executor));
+                    }));
     assertThatThrownBy(result::get).hasMessageContaining("failed");
     assertThat(secondWasCalled).isFalse();
   }

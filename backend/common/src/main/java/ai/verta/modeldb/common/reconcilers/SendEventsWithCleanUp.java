@@ -4,7 +4,6 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.CreateEventRequest;
 import com.google.protobuf.Any;
@@ -19,6 +18,8 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
   private final UAC uac;
   private final FutureEventDAO futureEventDAO;
 
+  private final InternalFuture.FactoryWithExecutor futureFactory;
+
   public SendEventsWithCleanUp(
       ReconcilerConfig config,
       UAC uac,
@@ -28,6 +29,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
     super(config, LogManager.getLogger(SendEventsWithCleanUp.class), futureJdbi, executor, false);
     this.uac = uac;
     this.futureEventDAO = futureEventDAO;
+    this.futureFactory = InternalFuture.withExecutor(executor);
   }
 
   @Override
@@ -56,17 +58,18 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
 
   @Override
   protected ReconcileResult reconcile(Set<CreateEventRequest> eventUUIDs) {
-    return InternalFuture.completedInternalFuture(eventUUIDs)
-        .useExecutor(executor)
+    return futureFactory
+        .completedInternalFuture(eventUUIDs)
         .thenCompose(
             createEventRequests -> {
               List<InternalFuture<String>> deletedEventUUIDFutures = new ArrayList<>();
               for (CreateEventRequest request : createEventRequests) {
                 deletedEventUUIDFutures.add(
-                    FutureUtil.clientRequest(uac.getEventService().createEvent(request), executor)
+                    futureFactory
+                        .from(uac.getEventService().createEvent(request))
                         .thenApply(empty -> request.getEventUuid()));
               }
-              return InternalFuture.sequence(deletedEventUUIDFutures, executor);
+              return futureFactory.sequence(deletedEventUUIDFutures);
             })
         .thenCompose(
             deleteEventUUIDs -> {

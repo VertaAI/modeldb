@@ -55,7 +55,7 @@ public class FutureJdbi {
 
   public <R, T extends Exception> InternalFuture<R> withHandleCompose(
       HandleCallback<InternalFuture<R>, T> callback) {
-    return withHandle(callback).thenCompose(x -> x);
+    return withHandle(callback).thenCompose(x -> x, executor);
   }
 
   public <T extends Exception> InternalFuture<Void> useHandle(final HandleConsumer<T> consumer) {
