@@ -115,7 +115,7 @@ public class InternalFuture<T> {
   }
 
   public InternalFutureWithDefaultExecutor<T> thenWithExecutor(Executor executor) {
-    return new InternalFutureWithDefaultExecutor<>(this.stage).thenWithExecutor(executor);
+    return new InternalFutureWithDefaultExecutor<>(this.stage, executor);
   }
 
   public <U> InternalFuture<U> thenCompose(

@@ -13,22 +13,16 @@ import java.util.function.Supplier;
 
 public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
 
-  private Executor defaultExecutor = null;
+  private final Executor defaultExecutor;
 
-  InternalFutureWithDefaultExecutor(CompletionStage<T> stage) {
+  InternalFutureWithDefaultExecutor(CompletionStage<T> stage, Executor executor) {
     super(stage);
-  }
-
-  @Override
-  public InternalFutureWithDefaultExecutor<T> thenWithExecutor(Executor executor) {
+    Objects.requireNonNull(executor, "Valid executor required");
     defaultExecutor = executor;
-    return this;
   }
 
   public <U> InternalFutureWithDefaultExecutor<U> thenCompose(
       Function<? super T, InternalFuture<U>> fn) {
-    Objects.requireNonNull(
-        defaultExecutor, "Cached executor required to use this method signature");
     return thenCompose(fn, defaultExecutor);
   }
 
@@ -40,8 +34,6 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
   }
 
   public <U> InternalFutureWithDefaultExecutor<U> thenApply(Function<? super T, ? extends U> fn) {
-    Objects.requireNonNull(
-        defaultExecutor, "Cached executor required to use this method signature");
     return thenApply(fn, defaultExecutor);
   }
 
@@ -55,8 +47,6 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
 
   public <U> InternalFutureWithDefaultExecutor<U> handle(
       BiFunction<? super T, Throwable, ? extends U> fn) {
-    Objects.requireNonNull(
-        defaultExecutor, "Cached executor required to use this method signature");
     return handle(fn, defaultExecutor);
   }
 
@@ -70,8 +60,6 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
 
   public <U, V> InternalFutureWithDefaultExecutor<V> thenCombine(
       InternalFuture<? extends U> other, BiFunction<? super T, ? super U, ? extends V> fn) {
-    Objects.requireNonNull(
-        defaultExecutor, "Cached executor required to use this method signature");
     return thenCombine(other, fn, defaultExecutor);
   }
 
@@ -86,8 +74,6 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
   }
 
   public InternalFutureWithDefaultExecutor<Void> thenAccept(Consumer<? super T> action) {
-    Objects.requireNonNull(
-        defaultExecutor, "Cached executor required to use this method signature");
     return thenAccept(action, defaultExecutor);
   }
 
@@ -99,8 +85,6 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
   }
 
   public <U> InternalFutureWithDefaultExecutor<Void> thenRun(Runnable runnable) {
-    Objects.requireNonNull(
-        defaultExecutor, "Cached executor required to use this method signature");
     return thenRun(runnable, defaultExecutor);
   }
 
@@ -112,8 +96,6 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
 
   public InternalFutureWithDefaultExecutor<T> whenComplete(
       BiConsumer<? super T, ? super Throwable> action) {
-    Objects.requireNonNull(
-        defaultExecutor, "Cached executor required to use this method signature");
     return whenComplete(action, defaultExecutor);
   }
 
@@ -125,8 +107,6 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
   }
 
   public <U> InternalFutureWithDefaultExecutor<U> thenSupply(Supplier<InternalFuture<U>> supplier) {
-    Objects.requireNonNull(
-        defaultExecutor, "Cached executor required to use this method signature");
     return thenSupply(supplier, defaultExecutor);
   }
 
@@ -142,6 +122,7 @@ public class InternalFutureWithDefaultExecutor<T> extends InternalFuture<T> {
     private Executor executor;
 
     FactoryWithExecutor(Executor executor) {
+      Objects.requireNonNull(executor, "Valid executor required");
       this.executor = executor;
     }
 
