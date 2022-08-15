@@ -49,3 +49,35 @@ class _ActionType(object):
             raise ValueError(
                 "unrecognized action type {}".format(action_type)
             )
+
+    @staticmethod
+    def _from_str(action_type_str):
+        """
+        Parameters
+        ----------
+        action_type : Action type name.
+
+        Returns
+        -------
+        :class:`_ActionType`
+
+        """
+        # imports here to avoid circular import in Python 2
+        from . import (
+            Other,
+            Classification,
+            Clustering,
+            Detection,
+            Regression,
+            Transcription,
+            Translation,
+            Unknown,
+        )
+        
+        for action_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, Unknown):            
+            if action_type_str.lower() == action_type_cls.__qualname__.lower():
+                return action_type_cls()
+        else:
+            raise ValueError(
+                "unrecognized action type {}".format(action_type_str)
+            )
