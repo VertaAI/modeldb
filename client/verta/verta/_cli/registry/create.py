@@ -5,6 +5,8 @@ import click
 from .registry import registry
 from ... import Client
 from .update import update_model_version
+from verta.registry import action_type as action
+from verta.registry import data_type as data
 
 
 @registry.group(name="create")
@@ -28,16 +30,28 @@ def create():
 @click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
 @click.option("--visibility", "-v", default="private", show_default=True, type=click.Choice(["private", "org"], case_sensitive=False), help="Visibility level of the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-@click.option("--actionType", "-a", default="OTHER", show_default=True, type=click.Choice(["OTHER", "CLASSIFICATION", "CLUSTERING", "DETECTION", "REGRESSION", "TRANSCRIPTION", "TRANSLATION"], case_sensitive=True), help="Action type.")
-@click.option("--dataType", "-d", default="OTHER", show_default=True, type=click.Choice(["OTHER", "AUDIO", "IMAGE", "TABULAR", "TEXT", "VIDEO"], case_sensitive=True), help="Data type.")
-def create_model(model_name, label, visibility, workspace, description, actionType, dataType):
+@click.option("--action_type", "-a", default="other", show_default=True, type=click.Choice(["other", "classification", "clustering", "detection", "regression", "transcription", "translation"], case_sensitive=False), help="Action type.")
+@click.option("--data_type", "-d", default="other", show_default=True, type=click.Choice(["other", "audio", "image", "tabular", "text", "video"], case_sensitive=False), help="Data type.")
+def create_model(model_name, label, visibility, workspace, description, action_type, data_type):
     """Create a new registeredmodel entry.
     """
     public_within_org = visibility == "org"
     client = Client()
 
+    if (action_type is not None):
+        try:
+            action_type = action._ActionType._from_str(action_type)
+        except ValueError:
+            raise click.BadParameter("action type {} does not exist".format(action_type))
+
+    if (data_type is not None):
+        try:
+            data_type = data._DataType._from_str(data_type)
+        except ValueError:
+            raise click.BadParameter("data type {} does not exist".format(data_type))
+
     model = client.create_registered_model(model_name, workspace=workspace, public_within_org=public_within_org,
-                                           desc=description, actionType=actionType, dataType=dataType)
+                                           desc=description, action_type=action_type, data_type=data_type)
     for l in label:
         model.add_label(l)
 
