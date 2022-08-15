@@ -13,6 +13,8 @@ from verta._protos.public.registry import RegistryService_pb2 as _RegistryServic
 from .. import _constants, VertaModelBase
 from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
+from .. import action_type as action
+from .. import data_type as data
 
 
 class RegisteredModel(_entity._ModelDBEntity):
@@ -797,9 +799,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None, actionType=None, dataType=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None, action_type=None, data_type=None):
+        if action_type is None:
+            action_type = action.Unknown()
+        if data_type is None:
+            data_type = data.Unknown()
         Message = _RegistryService.RegisteredModel
-        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created, action_type=actionType, data_type=dataType)
+        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created, action_type=action_type._as_proto(), data_type=data_type._as_proto())
         if (public_within_org
                 and ctx.workspace_name is not None  # not user's personal workspace
                 and _utils.is_org(ctx.workspace_name, conn)):  # not anyone's personal workspace
@@ -908,20 +914,22 @@ class RegisteredModel(_entity._ModelDBEntity):
         response = _utils.make_request("DELETE", request_url, self._conn)
         _utils.raise_for_http_error(response)
 
-    def set_actionType(self, actionType):
-        if not actionType:
-            raise ValueError("actionType is not specified")
-        self._update(self.RegisteredModelMessage(action_type=actionType))
+    def set_action_type(self, action_type):
+        if not isinstance(action_type, action):
+            raise ValueError("action_type is not specified")
 
-    def get_actionType(self):
+        self._update(self.RegisteredModelMessage(action_type=action_type))
+
+    def get_action_type(self):
         self._refresh_cache()
-        return self._msg.action_type
+        return action._ActionType._from_proto(self._msg.action_type)
 
-    def set_dataType(self, dataType):
-        if not dataType:
-            raise ValueError("dataType is not specified")
-        self._update(self.RegisteredModelMessage(data_type=dataType))
+    def set_data_type(self, data_type):
+        if not isinstance(data_type, data):
+            raise ValueError("data_type is not specified")
 
-    def get_dataType(self):
+        self._update(self.RegisteredModelMessage(data_type=data_type))
+
+    def get_data_type(self):
         self._refresh_cache()
-        return self._msg.data_type
+        return data._DataType._from_proto(self._msg.data_type)
