@@ -12,6 +12,11 @@ class _DataType(object):
 
     _DATA_TYPE = None
 
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        return self._as_proto() == other._as_proto()
+
     def __repr__(self):
         return "<{} data type>".format(self.__class__.__name__)
 
@@ -71,7 +76,7 @@ class _DataType(object):
             Video,
             Unknown,
         )
-        
+
         for data_type_cls in (Other, Audio, Image, Tabular, Text, Video, Unknown):
             if data_type_str.lower() == data_type_cls.__qualname__.lower():
                 return data_type_cls()

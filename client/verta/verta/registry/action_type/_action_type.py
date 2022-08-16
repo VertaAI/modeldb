@@ -12,6 +12,11 @@ class _ActionType(object):
 
     _ACTION_TYPE = None
 
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        return self._as_proto() == other._as_proto()
+
     def __repr__(self):
         return "<{} action type>".format(self.__class__.__name__)
 
@@ -73,8 +78,8 @@ class _ActionType(object):
             Translation,
             Unknown,
         )
-        
-        for action_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, Unknown):            
+
+        for action_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, Unknown):
             if action_type_str.lower() == action_type_cls.__qualname__.lower():
                 return action_type_cls()
         else:
