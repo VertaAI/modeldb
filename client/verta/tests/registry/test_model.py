@@ -2,6 +2,10 @@ import pytest
 import requests
 
 import verta
+from verta.registry.action_type import _ActionType
+from verta.registry.data_type import _DataType
+
+from .. import utils
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -127,3 +131,41 @@ class TestModel:
         created_entities.append(registered_model)
         registered_model.set_description(desc)
         assert desc == registered_model.get_description()
+
+
+class TestActionTypes:
+    @pytest.mark.parametrize("action_type_cls", utils.sorted_subclasses(_ActionType))
+    def test_creation(self, client, created_entities, action_type_cls):
+        action_type = action_type_cls()
+
+        registered_model = client.create_registered_model(action_type=action_type)
+        created_entities.append(registered_model)
+
+        assert registered_model.get_action_type() == action_type
+
+    @pytest.mark.parametrize("action_type_cls", utils.sorted_subclasses(_ActionType))
+    def test_set(self, registered_model, action_type_cls):
+        action_type = action_type_cls()
+
+        registered_model.set_action_type(action_type)
+
+        assert registered_model.get_action_type() == action_type
+
+
+class TestDataTypes:
+    @pytest.mark.parametrize("data_type_cls", utils.sorted_subclasses(_DataType))
+    def test_creation(self, client, created_entities, data_type_cls):
+        data_type = data_type_cls()
+
+        registered_model = client.create_registered_model(data_type=data_type)
+        created_entities.append(registered_model)
+
+        assert registered_model.get_data_type() == data_type
+
+    @pytest.mark.parametrize("data_type_cls", utils.sorted_subclasses(_DataType))
+    def test_set(self, registered_model, data_type_cls):
+        data_type = data_type_cls()
+
+        registered_model.set_data_type(data_type)
+
+        assert registered_model.get_data_type() == data_type
