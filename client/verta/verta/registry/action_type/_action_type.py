@@ -12,6 +12,11 @@ class _ActionType(object):
 
     _ACTION_TYPE = None
 
+    def __eq__(self, other):
+        if type(self) is not type(other):
+            return NotImplemented
+        return self._as_proto() == other._as_proto()
+
     def __repr__(self):
         return "<{} action type>".format(self.__class__.__name__)
 
