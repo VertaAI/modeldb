@@ -10,6 +10,8 @@ from verta import Client
 from verta._cli import cli
 from verta._cli.registry.update import add_attributes
 from verta.registry.entities import RegisteredModel
+from verta.registry import action_type as action_type_module
+from verta.registry import data_type as data_type_module
 from verta._internal_utils import (
     _artifact_utils,
     _utils,
@@ -18,8 +20,7 @@ from verta.environment import Python
 from verta.utils import ModelAPI
 from verta.endpoint.update._strategies import DirectUpdateStrategy
 
-
-from ..utils import sys_path_manager
+from ..utils import sorted_subclasses, sys_path_manager
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -668,3 +669,51 @@ def test_multiple_attributes():
 
     model_version = TestModelVersion()
     add_attributes(model_version, ["num=3.6", 'dict={"a": 1, "b": 2}'], True)
+
+
+class TestActionTypes:
+    @pytest.mark.parametrize("action_type_cls", sorted_subclasses(action_type_module._ActionType))
+    def test_creation(self, client, created_entities, action_type_cls):
+        if action_type_cls is action_type_module.Unknown:
+            pytest.skip("unsupported action type")
+
+        action_type = action_type_cls()
+        action_type_str = action_type.__class__.__name__.lower()
+        model_name = RegisteredModel._generate_default_name()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ["registry", "create", "registeredmodel", model_name, "--action-type", action_type_str],
+        )
+        assert not result.exception
+
+        registered_model = client.get_registered_model(model_name)
+        assert registered_model
+        created_entities.append(registered_model)
+
+        assert registered_model.get_action_type() == action_type
+
+
+class TestDataTypes:
+    @pytest.mark.parametrize("data_type_cls", sorted_subclasses(data_type_module._DataType))
+    def test_creation(self, client, created_entities, data_type_cls):
+        if data_type_cls is data_type_module.Unknown:
+            pytest.skip("unsupported data type")
+
+        data_type = data_type_cls()
+        data_type_str = data_type.__class__.__name__.lower()
+        model_name = RegisteredModel._generate_default_name()
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ["registry", "create", "registeredmodel", model_name, "--data-type", data_type_str],
+        )
+        assert not result.exception
+
+        registered_model = client.get_registered_model(model_name)
+        assert registered_model
+        created_entities.append(registered_model)
+
+        assert registered_model.get_data_type() == data_type
