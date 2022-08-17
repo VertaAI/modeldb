@@ -2,10 +2,6 @@ import pytest
 import requests
 
 import verta
-from verta.registry import action_type as action_type_module
-from verta.registry import data_type as data_type_module
-
-from ..utils import sorted_subclasses
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
@@ -131,55 +127,3 @@ class TestModel:
         created_entities.append(registered_model)
         registered_model.set_description(desc)
         assert desc == registered_model.get_description()
-
-
-class TestActionTypes:
-    @pytest.mark.parametrize("action_type_cls", sorted_subclasses(action_type_module._ActionType))
-    def test_creation(self, client, created_entities, action_type_cls):
-        if action_type_cls is action_type_module.Unknown:
-            pytest.skip("unsupported action type")
-
-        action_type = action_type_cls()
-
-        registered_model = client.create_registered_model(action_type=action_type)
-        created_entities.append(registered_model)
-
-        registered_model = client.get_registered_model(id=registered_model.id)
-        assert registered_model.get_action_type() == action_type
-
-    @pytest.mark.parametrize("action_type_cls", sorted_subclasses(action_type_module._ActionType))
-    def test_set(self, registered_model, action_type_cls):
-        if action_type_cls is action_type_module.Unknown:
-            pytest.skip("unsupported action type")
-
-        action_type = action_type_cls()
-
-        registered_model.set_action_type(action_type)
-
-        assert registered_model.get_action_type() == action_type
-
-
-class TestDataTypes:
-    @pytest.mark.parametrize("data_type_cls", sorted_subclasses(data_type_module._DataType))
-    def test_creation(self, client, created_entities, data_type_cls):
-        if data_type_cls is data_type_module.Unknown:
-            pytest.skip("unsupported data type")
-
-        data_type = data_type_cls()
-
-        registered_model = client.create_registered_model(data_type=data_type)
-        created_entities.append(registered_model)
-
-        registered_model = client.get_registered_model(id=registered_model.id)
-        assert registered_model.get_data_type() == data_type
-
-    @pytest.mark.parametrize("data_type_cls", sorted_subclasses(data_type_module._DataType))
-    def test_set(self, registered_model, data_type_cls):
-        if data_type_cls is data_type_module.Unknown:
-            pytest.skip("unsupported data type")
-
-        data_type = data_type_cls()
-
-        registered_model.set_data_type(data_type)
-
-        assert registered_model.get_data_type() == data_type

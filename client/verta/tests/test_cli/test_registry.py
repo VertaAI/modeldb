@@ -674,7 +674,7 @@ def test_multiple_attributes():
 class TestActionTypes:
     @pytest.mark.parametrize("action_type_cls", sorted_subclasses(action_type_module._ActionType))
     def test_creation(self, client, created_entities, action_type_cls):
-        if action_type_cls is action_type_module.Unknown:
+        if action_type_cls is action_type_module._Unknown:
             pytest.skip("unsupported action type")
 
         action_type = action_type_cls()
@@ -698,7 +698,7 @@ class TestActionTypes:
 class TestDataTypes:
     @pytest.mark.parametrize("data_type_cls", sorted_subclasses(data_type_module._DataType))
     def test_creation(self, client, created_entities, data_type_cls):
-        if data_type_cls is data_type_module.Unknown:
+        if data_type_cls is data_type_module._Unknown:
             pytest.skip("unsupported data type")
 
         data_type = data_type_cls()
