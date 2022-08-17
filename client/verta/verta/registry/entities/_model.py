@@ -931,7 +931,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         if not isinstance(data_type, data):
             raise ValueError("data_type is not specified")
 
-        self._update(self.RegisteredModelMessage(data_type=data_type))
+        self._update(self.RegisteredModelMessage(data_type=data_type._as_proto()))
 
     def get_data_type(self):
         self._refresh_cache()
