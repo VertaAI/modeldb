@@ -11,7 +11,7 @@ from ._image import Image
 from ._tabular import Tabular
 from ._text import Text
 from ._video import Video
-from ._unknown import Unknown
+from ._unknown import _Unknown
 
 documentation.reassign_module(
     [
@@ -21,7 +21,7 @@ documentation.reassign_module(
         Tabular,
         Text,
         Video,
-        Unknown,
+        _Unknown,
     ],
     module_name=__name__,
 )
@@ -32,4 +32,4 @@ image = Image()
 tabular = Tabular()
 text = Text()
 video = Video()
-unknown = Unknown()
+unknown = _Unknown()

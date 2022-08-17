@@ -43,10 +43,10 @@ class _DataType(object):
             Tabular,
             Text,
             Video,
-            Unknown,
+            _Unknown,
         )
 
-        for data_type_cls in (Other, Audio, Image, Tabular, Text, Video, Unknown):
+        for data_type_cls in (Other, Audio, Image, Tabular, Text, Video, _Unknown):
             if data_type == data_type_cls._DATA_TYPE:
                 return data_type_cls()
         else:
@@ -74,10 +74,9 @@ class _DataType(object):
             Tabular,
             Text,
             Video,
-            Unknown,
         )
 
-        for data_type_cls in (Other, Audio, Image, Tabular, Text, Video, Unknown):
+        for data_type_cls in (Other, Audio, Image, Tabular, Text, Video):
             if data_type_str.lower() == data_type_cls.__qualname__.lower():
                 return data_type_cls()
         else:
