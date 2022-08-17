@@ -929,7 +929,10 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def set_data_type(self, data_type):
         if not isinstance(data_type, data):
-            raise ValueError("data_type is not specified")
+            raise ValueError(
+                "`data_type` must be an object from verta.registry.data_type,"
+                " not {}".format(type(data_type))
+            )
 
         self._update(self.RegisteredModelMessage(data_type=data_type._as_proto()))
 
