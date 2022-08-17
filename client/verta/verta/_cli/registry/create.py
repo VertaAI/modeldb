@@ -30,8 +30,8 @@ def create():
 @click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
 @click.option("--visibility", "-v", default="private", show_default=True, type=click.Choice(["private", "org"], case_sensitive=False), help="Visibility level of the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-@click.option("--action_type", "-a", default="other", show_default=True, type=click.Choice(["other", "classification", "clustering", "detection", "regression", "transcription", "translation"], case_sensitive=False), help="Action type.")
-@click.option("--data_type", "-d", default="other", show_default=True, type=click.Choice(["other", "audio", "image", "tabular", "text", "video"], case_sensitive=False), help="Data type.")
+@click.option("--action-type", default="other", show_default=True, type=click.Choice(["other", "classification", "clustering", "detection", "regression", "transcription", "translation"], case_sensitive=False), help="Action type.")
+@click.option("--data-type", default="other", show_default=True, type=click.Choice(["other", "audio", "image", "tabular", "text", "video"], case_sensitive=False), help="Data type.")
 def create_model(model_name, label, visibility, workspace, description, action_type, data_type):
     """Create a new registeredmodel entry.
     """
