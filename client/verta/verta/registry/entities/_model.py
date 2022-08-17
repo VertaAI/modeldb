@@ -915,7 +915,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         _utils.raise_for_http_error(response)
 
     def set_action_type(self, action_type):
-        if not isinstance(action_type, action):
+        if not isinstance(action_type, action._ActionType):
             raise ValueError(
                 "`action_type` must be an object from verta.registry.action_type,"
                 " not {}".format(type(action_type))
