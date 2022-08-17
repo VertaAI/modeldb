@@ -1044,9 +1044,9 @@ class Client(object):
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used. This parameter
             should be preferred over `public_within_org`.
-        action_type : :mod:`~verta.registry.action_type`, default :class:`~verta.registry.action_type.Unknown`, optional
+        action_type : :mod:`~verta.registry.action_type`, optional
             Action type of the registered_model.
-        data_type : :mod:`~verta.registry.data_type`, default :class:`~verta.registry.data_type.Unknown`, optional
+        data_type : :mod:`~verta.registry.data_type`, optional
             Data type of the registered_model.
 
         Returns
