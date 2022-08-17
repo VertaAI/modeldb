@@ -23,7 +23,7 @@ class _DataType(object):
         """
         Parameters
         ----------
-        data_type : ``RegistryService_pb2.DataTypeEnum.DataType.OTHER``
+        data_type : ``RegistryService_pb2.DataTypeEnum.DataType``
 
         Returns
         -------
