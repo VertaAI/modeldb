@@ -5,8 +5,8 @@ import click
 from .registry import registry
 from ... import Client
 from .update import update_model_version
-from verta.registry import action_type as action
-from verta.registry import data_type as data
+from verta.registry import action_type as action_type_module
+from verta.registry import data_type as data_type_module
 
 
 @registry.group(name="create")
