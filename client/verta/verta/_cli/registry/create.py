@@ -40,13 +40,13 @@ def create_model(model_name, label, visibility, workspace, description, action_t
 
     if (action_type is not None):
         try:
-            action_type = action._ActionType._from_str(action_type)
+            action_type = action_type_module._ActionType._from_str(action_type)
         except ValueError:
             raise click.BadParameter("action type {} does not exist".format(action_type))
 
     if (data_type is not None):
         try:
-            data_type = data._DataType._from_str(data_type)
+            data_type = data_type_module._DataType._from_str(data_type)
         except ValueError:
             raise click.BadParameter("data type {} does not exist".format(data_type))
 
