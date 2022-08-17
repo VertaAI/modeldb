@@ -921,7 +921,7 @@ class RegisteredModel(_entity._ModelDBEntity):
                 " not {}".format(type(action_type))
             )
 
-        self._update(self.RegisteredModelMessage(action_type=action_type))
+        self._update(self.RegisteredModelMessage(action_type=action_type._as_proto()))
 
     def get_action_type(self):
         self._refresh_cache()
