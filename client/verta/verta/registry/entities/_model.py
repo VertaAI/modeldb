@@ -916,7 +916,10 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def set_action_type(self, action_type):
         if not isinstance(action_type, action):
-            raise ValueError("action_type is not specified")
+            raise ValueError(
+                "`action_type` must be an object from verta.registry.action_type,"
+                " not {}".format(type(action_type))
+            )
 
         self._update(self.RegisteredModelMessage(action_type=action_type))
 
