@@ -75,7 +75,7 @@ class _ActionType(object):
         )
         
         for action_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, Unknown):            
-            if action_type_str.lower() == action_type_cls.__qualname__.lower():
+            if action_type_str.lower() == action_type_cls.__name__.lower():
                 return action_type_cls()
         else:
             raise ValueError(
