@@ -76,9 +76,10 @@ class _ActionType(object):
             Regression,
             Transcription,
             Translation,
+            _Unknown,
         )
         
-        for action_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation):            
+        for action_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, _Unknown):            
             if action_type_str.lower() == action_type_cls.__name__.lower():
                 return action_type_cls()
         else:
