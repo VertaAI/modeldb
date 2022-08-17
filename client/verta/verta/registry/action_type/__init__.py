@@ -11,7 +11,7 @@ from ._detection import Detection
 from ._regression import Regression
 from ._transcription import Transcription
 from ._translation import Translation
-from ._unknown import Unknown
+from ._unknown import _Unknown
 
 documentation.reassign_module(
     [
@@ -22,7 +22,7 @@ documentation.reassign_module(
         Regression,
         Transcription,
         Translation,
-        Unknown,
+        _Unknown,
     ],
     module_name=__name__,
 )
@@ -34,4 +34,4 @@ detection = Detection()
 regression = Regression()
 transcription = Transcription()
 translation = Translation()
-unknown = Unknown()
+unknown = _Unknown()
