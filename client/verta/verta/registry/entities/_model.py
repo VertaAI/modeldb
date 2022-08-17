@@ -13,8 +13,8 @@ from verta._protos.public.registry import RegistryService_pb2 as _RegistryServic
 from .. import _constants, VertaModelBase
 from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
-from .. import action_type as action
-from .. import data_type as data
+from .. import action_type as action_type_module
+from .. import data_type as data_type_module
 
 
 class RegisteredModel(_entity._ModelDBEntity):
