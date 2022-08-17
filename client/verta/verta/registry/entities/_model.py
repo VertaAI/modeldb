@@ -801,9 +801,9 @@ class RegisteredModel(_entity._ModelDBEntity):
     @classmethod
     def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None, action_type=None, data_type=None):
         if action_type is None:
-            action_type = action.Unknown()
+            action_type = action_type_module._Unknown()
         if data_type is None:
-            data_type = data.Unknown()
+            data_type = data_type_module._Unknown()
         Message = _RegistryService.RegisteredModel
         msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created, action_type=action_type._as_proto(), data_type=data_type._as_proto())
         if (public_within_org
@@ -915,7 +915,16 @@ class RegisteredModel(_entity._ModelDBEntity):
         _utils.raise_for_http_error(response)
 
     def set_action_type(self, action_type):
-        if not isinstance(action_type, action._ActionType):
+        """
+        Sets this registered model action type
+
+        Parameters
+        ----------
+        action_type : :mod:`~verta.registry.action_type`
+            Action type to set.
+
+        """
+        if not isinstance(action_type, action_type_module._ActionType):
             raise ValueError(
                 "`action_type` must be an object from verta.registry.action_type,"
                 " not {}".format(type(action_type))
@@ -924,11 +933,29 @@ class RegisteredModel(_entity._ModelDBEntity):
         self._update(self.RegisteredModelMessage(action_type=action_type._as_proto()))
 
     def get_action_type(self):
+        """
+        Gets this registered model action type
+
+        Returns
+        -------
+        action_type : :mod:`~verta.registry.action_type`
+            This registered model action type.
+
+        """
         self._refresh_cache()
-        return action._ActionType._from_proto(self._msg.action_type)
+        return action_type_module._ActionType._from_proto(self._msg.action_type)
 
     def set_data_type(self, data_type):
-        if not isinstance(data_type, data):
+        """
+        Sets this registered model data type
+
+        Parameters
+        ----------
+        data_type : :mod:`~verta.registry.data_type`
+            Data type to set.
+
+        """
+        if not isinstance(data_type, data_type_module._DataType):
             raise ValueError(
                 "`data_type` must be an object from verta.registry.data_type,"
                 " not {}".format(type(data_type))
@@ -937,5 +964,14 @@ class RegisteredModel(_entity._ModelDBEntity):
         self._update(self.RegisteredModelMessage(data_type=data_type._as_proto()))
 
     def get_data_type(self):
+        """
+        Gets this registered model data type
+
+        Returns
+        -------
+        data_type : :mod:`~verta.registry.data_type`
+            This registered model data type.
+
+        """
         self._refresh_cache()
-        return data._DataType._from_proto(self._msg.data_type)
+        return data_type_module._DataType._from_proto(self._msg.data_type)
