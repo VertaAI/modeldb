@@ -11,7 +11,7 @@ import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.ConfigBlob;
 import ai.verta.modeldb.versioning.HyperparameterConfigBlob;
-import io.grpc.Status;
+import com.google.rpc.Code;
 import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
@@ -56,11 +56,11 @@ public class ConfigBlobFactory extends BlobFactory {
               configBlobBuilder.addHyperparameterSet(setConfigBlobEntity.toProto());
               break;
             default:
-              throw new ModelDBException("Unknown blob type found", Status.Code.INTERNAL);
+              throw new ModelDBException("Unknown blob type found", Code.INTERNAL);
           }
           break;
         default:
-          throw new ModelDBException("Unknown blob type found", Status.Code.INTERNAL);
+          throw new ModelDBException("Unknown blob type found", Code.INTERNAL);
       }
     }
     return Blob.newBuilder().setConfig(configBlobBuilder.build()).build();

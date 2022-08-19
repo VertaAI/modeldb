@@ -47,6 +47,8 @@ class Endpoint(object):
         Kafka settings on this endpoint.
     path : str
         Path of this endpoint.
+    url : str
+        Verta web app URL.
 
     """
 
@@ -68,9 +70,7 @@ class Endpoint(object):
         return "\n".join(
             (
                 "path: {}".format(data["creator_request"]["path"]),
-                "url: {}://{}/{}/endpoints/{}/summary".format(
-                    self._conn.scheme, self._conn.socket, self.workspace, self.id
-                ),
+                "url: {}".format(self.url),
                 "id: {}".format(self.id),
                 "curl: {}".format(curl),
                 "status: {}".format(status["status"]),
@@ -93,6 +93,15 @@ class Endpoint(object):
     def path(self):
         """Get the HTTP path of this endpoint."""
         return self._path(Endpoint._get_json_by_id(self._conn, self.workspace, self.id))
+
+    @property
+    def url(self):
+        return "{}://{}/{}/endpoints/{}/summary".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+        )
 
     def get_current_build(self):
         """Retrieve the currently deployed build for this endpoint.

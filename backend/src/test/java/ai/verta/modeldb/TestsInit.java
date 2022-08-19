@@ -3,8 +3,6 @@ package ai.verta.modeldb;
 import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.configuration.AppContext;
@@ -13,6 +11,7 @@ import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.AppConfigBeans;
+import ai.verta.modeldb.configuration.ArtifactStoreInitBeans;
 import ai.verta.modeldb.configuration.CronJobUtils;
 import ai.verta.modeldb.configuration.Migration;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
@@ -100,18 +99,23 @@ public class TestsInit {
         InProcessChannelBuilder.forName(serverName).directExecutor();
 
     testConfig = TestConfig.getInstance();
+    var app = App.getInstance();
+    app.mdbConfig = testConfig;
     handleExecutor = FutureUtil.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
 
     // TODO: FIXME: fix init flow as per spring bean initialization
 
+    var appContext = new AppContext();
+    var artifactStoreService =
+        new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, new NFSService(new FileStorageProperties()));
+    services = ServiceSet.fromConfig(testConfig, artifactStoreService);
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
     new Migration(testConfig);
 
-    new AppConfigBeans(new AppContext())
+    new AppConfigBeans(appContext)
         .initializeBackendServices(serverBuilder, services, daos, handleExecutor);
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());

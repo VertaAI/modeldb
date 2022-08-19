@@ -66,6 +66,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         ID of this version's Registered Model.
     stage : str
         Model version stage.
+    url : str
+        Verta web app URL.
 
     """
 
@@ -92,13 +94,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                         msg.lock_level
                     ).lower()
                 ),
-                "url: {}://{}/{}/registry/{}/versions/{}".format(
-                    self._conn.scheme,
-                    self._conn.socket,
-                    self.workspace,
-                    self.registered_model_id,
-                    self.id,
-                ),
+                "url: {}".format(self.url),
                 "time created: {}".format(
                     _utils.timestamp_to_str(int(msg.time_created))
                 ),
@@ -151,6 +147,16 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     # def is_archived(self):
     #     self._refresh_cache()
     #     return self._msg.archived == _CommonCommonService.TernaryEnum.TRUE
+
+    @property
+    def url(self):
+        return "{}://{}/{}/registry/{}/versions/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.registered_model_id,
+            self.id,
+        )
 
     @property
     def workspace(self):

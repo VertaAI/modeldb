@@ -13,6 +13,8 @@ from verta._protos.public.registry import RegistryService_pb2 as _RegistryServic
 from .. import _constants, VertaModelBase
 from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
+from .. import action_type as action_type_module
+from .. import data_type as data_type_module
 
 
 class RegisteredModel(_entity._ModelDBEntity):
@@ -29,6 +31,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         ID of this Registered Model.
     name : str
         Name of this Registered Model.
+    url : str
+        Verta web app URL.
     versions : iterable of :class:`~verta.registry.entities.RegisteredModelVersion`
         Versions of this RegisteredModel.
 
@@ -42,7 +46,7 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         return '\n'.join((
             "name: {}".format(msg.name),
-            "url: {}://{}/{}/registry/{}".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "url: {}".format(self.url),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -54,6 +58,15 @@ class RegisteredModel(_entity._ModelDBEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.name
+
+    @property
+    def url(self):
+        return "{}://{}/{}/registry/{}".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+        )
 
     @property
     def workspace(self):
@@ -786,9 +799,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None):
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None, action_type=None, data_type=None):
+        if action_type is None:
+            action_type = action_type_module._Unknown()
+        if data_type is None:
+            data_type = data_type_module._Unknown()
         Message = _RegistryService.RegisteredModel
-        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created)
+        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created, action_type=action_type._as_proto(), data_type=data_type._as_proto())
         if (public_within_org
                 and ctx.workspace_name is not None  # not user's personal workspace
                 and _utils.is_org(ctx.workspace_name, conn)):  # not anyone's personal workspace
@@ -896,3 +913,65 @@ class RegisteredModel(_entity._ModelDBEntity):
         request_url = "{}://{}/api/v1/registry/registered_models/{}".format(self._conn.scheme, self._conn.socket, self.id)
         response = _utils.make_request("DELETE", request_url, self._conn)
         _utils.raise_for_http_error(response)
+
+    def set_action_type(self, action_type):
+        """
+        Sets this registered model action type
+
+        Parameters
+        ----------
+        action_type : :mod:`~verta.registry.action_type`
+            Action type to set.
+
+        """
+        if not isinstance(action_type, action_type_module._ActionType):
+            raise ValueError(
+                "`action_type` must be an object from verta.registry.action_type,"
+                " not {}".format(type(action_type))
+            )
+
+        self._update(self.RegisteredModelMessage(action_type=action_type._as_proto()))
+
+    def get_action_type(self):
+        """
+        Gets this registered model action type
+
+        Returns
+        -------
+        action_type : :mod:`~verta.registry.action_type`
+            This registered model action type.
+
+        """
+        self._refresh_cache()
+        return action_type_module._ActionType._from_proto(self._msg.action_type)
+
+    def set_data_type(self, data_type):
+        """
+        Sets this registered model data type
+
+        Parameters
+        ----------
+        data_type : :mod:`~verta.registry.data_type`
+            Data type to set.
+
+        """
+        if not isinstance(data_type, data_type_module._DataType):
+            raise ValueError(
+                "`data_type` must be an object from verta.registry.data_type,"
+                " not {}".format(type(data_type))
+            )
+
+        self._update(self.RegisteredModelMessage(data_type=data_type._as_proto()))
+
+    def get_data_type(self):
+        """
+        Gets this registered model data type
+
+        Returns
+        -------
+        data_type : :mod:`~verta.registry.data_type`
+            This registered model data type.
+
+        """
+        self._refresh_cache()
+        return data_type_module._DataType._from_proto(self._msg.data_type)

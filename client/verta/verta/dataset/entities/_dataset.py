@@ -37,6 +37,8 @@ class Dataset(_entity._ModelDBEntity):
         ID of this dataset.
     name : str
         Name of this dataset.
+    url : str
+        Verta web app URL.
     workspace : str
         Workspace containing this dataset.
     versions : :class:`~verta.dataset.entities.DatasetVersions`
@@ -52,7 +54,7 @@ class Dataset(_entity._ModelDBEntity):
 
         return '\n'.join((
             "name: {}".format(msg.name),
-            "url: {}://{}/{}/datasets/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+            "url: {}".format(self.url),
             "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
             "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
             "description: {}".format(msg.description),
@@ -65,6 +67,15 @@ class Dataset(_entity._ModelDBEntity):
     def name(self):
         self._refresh_cache()
         return self._msg.name
+
+    @property
+    def url(self):
+        return "{}://{}/{}/datasets/{}/summary".format(
+            self._conn.scheme,
+            self._conn.socket,
+            self.workspace,
+            self.id,
+        )
 
     @property
     def workspace(self):

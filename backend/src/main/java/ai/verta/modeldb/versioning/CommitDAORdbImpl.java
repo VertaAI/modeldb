@@ -33,7 +33,6 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.protobuf.ProtocolStringList;
 import com.google.protobuf.Value;
-import io.grpc.Status;
 import io.grpc.Status.Code;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
@@ -211,7 +210,7 @@ public class CommitDAORdbImpl implements CommitDAO {
       if (!repositoryEntity.isDataset()) {
         throw new ModelDBException(
             "Repository should be created from Dataset to add Dataset Version to it",
-            Status.Code.INVALID_ARGUMENT);
+            Code.INVALID_ARGUMENT);
       }
 
       var commitPaginationDTO =
@@ -961,24 +960,23 @@ public class CommitDAORdbImpl implements CommitDAO {
     for (KeyValueQuery predicate : predicates) {
       var predicateCase = predicate.getValue().getKindCase();
       if (predicate.getKey().equals(ModelDBConstants.ID)) {
-        throw new ModelDBException(
-            "predicates with ids not supported", Status.Code.INVALID_ARGUMENT);
+        throw new ModelDBException("predicates with ids not supported", Code.INVALID_ARGUMENT);
       }
       if (predicate.getKey().isEmpty()) {
         throw new ModelDBException(
-            "predicates with empty key not supported", Status.Code.INVALID_ARGUMENT);
+            "predicates with empty key not supported", Code.INVALID_ARGUMENT);
       }
       if (predicateCase.equals(Value.KindCase.STRING_VALUE)
           && predicate.getValue().getStringValue().isEmpty()) {
         throw new ModelDBException(
-            "Predicate does not contain string value in request", Status.Code.INVALID_ARGUMENT);
+            "Predicate does not contain string value in request", Code.INVALID_ARGUMENT);
       }
       if (!predicateCase.equals(Value.KindCase.STRING_VALUE)
           && !predicateCase.equals(Value.KindCase.NUMBER_VALUE)
           && !predicateCase.equals(Value.KindCase.BOOL_VALUE)) {
         throw new ModelDBException(
             "Unknown 'Value' type recognized, valid 'Value' type are NUMBER_VALUE, STRING_VALUE, BOOL_VALUE",
-            Status.Code.UNIMPLEMENTED);
+            Code.UNIMPLEMENTED);
       }
 
       if (predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE)
@@ -986,7 +984,7 @@ public class CommitDAORdbImpl implements CommitDAO {
           || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_NAME)
           || predicate.getKey().equalsIgnoreCase(ModelDBConstants.WORKSPACE_TYPE)) {
         throw new ModelDBException(
-            "Workspace name OR type not supported as predicate", Status.Code.INVALID_ARGUMENT);
+            "Workspace name OR type not supported as predicate", Code.INVALID_ARGUMENT);
       }
     }
 

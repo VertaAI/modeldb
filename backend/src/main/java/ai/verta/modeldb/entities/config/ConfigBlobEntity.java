@@ -1,7 +1,7 @@
 package ai.verta.modeldb.entities.config;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import io.grpc.Status;
+import com.google.rpc.Code;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.persistence.CascadeType;
@@ -34,7 +34,7 @@ public class ConfigBlobEntity implements Serializable {
           (HyperparameterElementConfigBlobEntity) blobEntity;
       this.hyperparameter_type = HYPERPARAMETER;
     } else {
-      throw new ModelDBException("Invalid blob object found", Status.Code.INVALID_ARGUMENT);
+      throw new ModelDBException("Invalid blob object found", Code.INVALID_ARGUMENT);
     }
   }
 
