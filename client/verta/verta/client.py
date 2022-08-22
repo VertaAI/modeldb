@@ -640,7 +640,7 @@ class Client(object):
         """
         return self.set_experiment_run(*args, **kwargs)
 
-    def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, id=None, action_type=None, data_type=None):
+    def get_or_create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, id=None, task_type=None, data_type=None):
         """
         Attaches a registered_model to this Client.
 
@@ -671,8 +671,8 @@ class Client(object):
         id : str, optional
             ID of the registered_model. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
-        action_type : :mod:`~verta.registry.action_type`, optional
-            Action type of the registered_model.
+        task_type : :mod:`~verta.registry.task_type`, optional
+            Task type of the registered_model.
         data_type : :mod:`~verta.registry.data_type`, optional
             Data type of the registered_model.
 
@@ -707,7 +707,7 @@ class Client(object):
         else:
             registered_model = RegisteredModel._get_or_create_by_name(self._conn, name,
                                                                   lambda name: RegisteredModel._get_by_name(self._conn, self._conf, name, ctx.workspace_name),
-                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org, visibility=visibility, action_type=action_type, data_type=data_type),
+                                                                  lambda name: RegisteredModel._create(self._conn, self._conf, ctx, name=name, desc=desc, tags=labels, public_within_org=public_within_org, visibility=visibility, task_type=task_type, data_type=data_type),
                                                                   lambda: check_unnecessary_params_warning(
                                                                       resource_name,
                                                                       "name {}".format(name),
@@ -1018,7 +1018,7 @@ class Client(object):
         return self._ctx.expt_run
 
 
-    def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, action_type=None, data_type=None):
+    def create_registered_model(self, name=None, desc=None, labels=None, workspace=None, public_within_org=None, visibility=None, task_type=None, data_type=None):
         """
         Creates a new Registered Model.
 
@@ -1044,8 +1044,8 @@ class Client(object):
             Visibility to set when creating this registered model. If not
             provided, an appropriate default will be used. This parameter
             should be preferred over `public_within_org`.
-        action_type : :mod:`~verta.registry.action_type`, optional
-            Action type of the registered_model.
+        task_type : :mod:`~verta.registry.task_type`, optional
+            Task type of the registered_model.
         data_type : :mod:`~verta.registry.data_type`, optional
             Data type of the registered_model.
 
@@ -1073,7 +1073,7 @@ class Client(object):
             self._conn, self._conf, ctx,
             name=name, desc=desc, tags=labels,
             public_within_org=public_within_org, visibility=visibility,
-            action_type=action_type, data_type=data_type,
+            task_type=task_type, data_type=data_type,
         )
 
 

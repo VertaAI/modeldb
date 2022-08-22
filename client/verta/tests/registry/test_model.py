@@ -2,7 +2,7 @@ import pytest
 import requests
 
 import verta
-from verta.registry import action_type as action_type_module
+from verta.registry import task_type as task_type_module
 from verta.registry import data_type as data_type_module
 
 from ..utils import sorted_subclasses
@@ -132,30 +132,30 @@ class TestModel:
         registered_model.set_description(desc)
         assert desc == registered_model.get_description()
 
-class TestActionTypes:
-    @pytest.mark.parametrize("action_type_cls", sorted_subclasses(action_type_module._ActionType))
-    def test_creation(self, client, created_entities, action_type_cls):
-        if action_type_cls is action_type_module._Unknown:
-            pytest.skip("unsupported action type")
+class TestTaskTypes:
+    @pytest.mark.parametrize("task_type_cls", sorted_subclasses(task_type_module._TaskType))
+    def test_creation(self, client, created_entities, task_type_cls):
+        if task_type_cls is task_type_module._Unknown:
+            pytest.skip("unsupported task type")
 
-        action_type = action_type_cls()
+        task_type = task_type_cls()
 
-        registered_model = client.create_registered_model(action_type=action_type)
+        registered_model = client.create_registered_model(task_type=task_type)
         created_entities.append(registered_model)
 
         registered_model = client.get_registered_model(id=registered_model.id)
-        assert registered_model.get_action_type() == action_type
+        assert registered_model.get_task_type() == task_type
 
-    @pytest.mark.parametrize("action_type_cls", sorted_subclasses(action_type_module._ActionType))
-    def test_set(self, registered_model, action_type_cls):
-        if action_type_cls is action_type_module._Unknown:
-            pytest.skip("unsupported action type")
+    @pytest.mark.parametrize("task_type_cls", sorted_subclasses(task_type_module._TaskType))
+    def test_set(self, registered_model, task_type_cls):
+        if task_type_cls is task_type_module._Unknown:
+            pytest.skip("unsupported task type")
 
-        action_type = action_type_cls()
+        task_type = task_type_cls()
 
-        registered_model.set_action_type(action_type)
+        registered_model.set_task_type(task_type)
 
-        assert registered_model.get_action_type() == action_type
+        assert registered_model.get_task_type() == task_type
 
 
 class TestDataTypes:
