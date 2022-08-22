@@ -161,7 +161,7 @@ public class CommonUtils {
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
         for (; n < STACKTRACE_LENGTH + 1; ++n) {
-          if (isClientError){
+          if (isClientError) {
             LOGGER.debug("{}: {}", n, stack[n]);
           } else {
             LOGGER.warn("{}: {}", n, stack[n]);
@@ -170,7 +170,7 @@ public class CommonUtils {
       }
       for (; n < stack.length; ++n) {
         if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
-          if (isClientError){
+          if (isClientError) {
             LOGGER.debug("{}: {}", n, stack[n]);
           } else {
             LOGGER.warn("{}: {}", n, stack[n]);
