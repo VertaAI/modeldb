@@ -1751,20 +1751,6 @@
     }
   },
   "definitions": {
-    "ActionTypeEnumActionType": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "OTHER",
-        "CLASSIFICATION",
-        "CLUSTERING",
-        "DETECTION",
-        "REGRESSION",
-        "TRANSCRIPTION",
-        "TRANSLATION"
-      ],
-      "default": "UNKNOWN"
-    },
     "ArtifactTypeEnumArtifactType": {
       "type": "string",
       "enum": [
@@ -1821,7 +1807,8 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
     },
@@ -1834,6 +1821,20 @@
         "PRODUCTION",
         "ARCHIVED",
         "UNASSIGNED"
+      ],
+      "default": "UNKNOWN"
+    },
+    "TaskTypeEnumTaskType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "CLASSIFICATION",
+        "CLUSTERING",
+        "DETECTION",
+        "REGRESSION",
+        "TRANSCRIPTION",
+        "TRANSLATION"
       ],
       "default": "UNKNOWN"
     },
@@ -1945,6 +1946,20 @@
         }
       }
     },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -2052,7 +2067,7 @@
           "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
         },
         "pagination": {
-          "$ref": "#/definitions/vertacommonPagination",
+          "$ref": "#/definitions/commonPagination",
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
@@ -2094,7 +2109,7 @@
           "title": "Filtering supported on\n1. name\n2. labels\n3. description"
         },
         "pagination": {
-          "$ref": "#/definitions/vertacommonPagination",
+          "$ref": "#/definitions/commonPagination",
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
@@ -2496,8 +2511,8 @@
           "$ref": "#/definitions/DataTypeEnumDataType",
           "title": "Fields for model's task_type. Those fields must be searchable as per our \"find\" operation"
         },
-        "action_type": {
-          "$ref": "#/definitions/ActionTypeEnumActionType"
+        "task_type": {
+          "$ref": "#/definitions/TaskTypeEnumTaskType"
         }
       }
     },
@@ -2827,20 +2842,6 @@
           "type": "string"
         }
       }
-    },
-    "vertacommonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     }
   },
   "basePath": "/v1"
