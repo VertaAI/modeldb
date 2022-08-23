@@ -109,9 +109,8 @@ public class InternalFuture<T> {
     return from(CompletableFuture.completedFuture(value));
   }
 
-  public static InternalFutureWithDefaultExecutor.FactoryWithExecutor withExecutor(
-      Executor executor) {
-    return new InternalFutureWithDefaultExecutor.FactoryWithExecutor(executor);
+  public static InternalFutureWithDefaultExecutorFactory withExecutor(Executor executor) {
+    return new InternalFutureWithDefaultExecutorFactory(executor);
   }
 
   public InternalFutureWithDefaultExecutor<T> thenWithExecutor(Executor executor) {

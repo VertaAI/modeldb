@@ -33,8 +33,7 @@ class InternalFutureTest {
   void thenSupply() {
     AtomicBoolean firstWasCalled = new AtomicBoolean();
     Executor executor = MoreExecutors.directExecutor();
-    InternalFutureWithDefaultExecutor.FactoryWithExecutor factory =
-        InternalFuture.withExecutor(executor);
+    var factory = InternalFuture.withExecutor(executor);
     var testFuture =
         factory.supplyAsync(
             () -> {
@@ -51,8 +50,7 @@ class InternalFutureTest {
   void thenSupply_exception() {
     AtomicBoolean secondWasCalled = new AtomicBoolean();
     Executor executor = MoreExecutors.directExecutor();
-    InternalFutureWithDefaultExecutor.FactoryWithExecutor factory =
-        InternalFuture.withExecutor(executor);
+    var factory = InternalFuture.withExecutor(executor);
     var testFuture =
         factory.supplyAsync(
             () -> {
