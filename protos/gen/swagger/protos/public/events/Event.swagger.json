@@ -269,6 +269,20 @@
     }
   },
   "definitions": {
+    "ActionTypeEnumActionType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "CLASSIFICATION",
+        "CLUSTERING",
+        "DETECTION",
+        "REGRESSION",
+        "TRANSCRIPTION",
+        "TRANSLATION"
+      ],
+      "default": "UNKNOWN"
+    },
     "ArtifactTypeEnumArtifactType": {
       "type": "string",
       "enum": [
@@ -1078,6 +1092,9 @@
         "data_type": {
           "$ref": "#/definitions/DataTypeEnumDataType",
           "title": "Fields for model's task_type. Those fields must be searchable as per our \"find\" operation"
+        },
+        "action_type": {
+          "$ref": "#/definitions/ActionTypeEnumActionType"
         },
         "task_type": {
           "$ref": "#/definitions/TaskTypeEnumTaskType"

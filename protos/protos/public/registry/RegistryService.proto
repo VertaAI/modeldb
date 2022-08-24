@@ -25,6 +25,21 @@ message DataTypeEnum {
   }
 }
 
+message ActionTypeEnum {  
+  option deprecated = true;
+  enum ActionType {
+    option deprecated = true;
+    UNKNOWN = 0;
+    OTHER = 1;
+    CLASSIFICATION = 2;
+    CLUSTERING = 3;
+    DETECTION = 4;
+    REGRESSION = 5;
+    TRANSCRIPTION = 6;
+    TRANSLATION = 7;
+  }
+}
+
 message TaskTypeEnum {
   enum TaskType {
     UNKNOWN = 0;
@@ -90,7 +105,8 @@ message RegisteredModel {
 
     // Fields for model's task_type. Those fields must be searchable as per our "find" operation
     DataTypeEnum.DataType data_type = 18;
-    TaskTypeEnum.TaskType task_type = 19;
+    ActionTypeEnum.ActionType action_type = 19 [deprecated = true];
+    TaskTypeEnum.TaskType task_type = 20;
 }
 
 //CRUD for Registred Models
