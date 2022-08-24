@@ -82,7 +82,7 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
   }
 
   private static void initializedUtil() {
-    liquibaseRootFilePath = "\\src\\main\\resources\\liquibase\\db-changelog-master.xml";
+    liquibaseRootFilePath = "liquibase/db-changelog-master.xml";
     entities =
         new Class[] {
           ProjectEntity.class,

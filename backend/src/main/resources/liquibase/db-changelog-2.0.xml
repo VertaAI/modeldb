@@ -983,6 +983,7 @@
         <preConditions onFail="MARK_RAN">
             <not>
                 <dbms type="mssql"/>
+                <dbms type="h2"/>
             </not>
             <columnExists tableName="artifact" columnName="upload_completed"/>
         </preConditions>
