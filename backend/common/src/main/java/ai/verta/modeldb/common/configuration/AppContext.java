@@ -12,8 +12,12 @@ import org.springframework.lang.NonNull;
 @Configuration
 public class AppContext implements ApplicationContextAware {
 
-  private static final AppContext appContext = new AppContext();
+  private static AppContext appContext;
   private ApplicationContext applicationContext;
+
+  public AppContext () {
+    appContext = this;
+  }
 
   public static AppContext getInstance() {
     return appContext;

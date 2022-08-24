@@ -240,4 +240,12 @@ public abstract class Config {
     }
     return openTelemetry;
   }
+
+  public void setSpringServer(SpringServerConfig springServer) {
+    this.springServer = springServer;
+  }
+
+  public void setGrpcServer(GrpcServerConfig grpcServer) {
+    this.grpcServer = grpcServer;
+  }
 }
