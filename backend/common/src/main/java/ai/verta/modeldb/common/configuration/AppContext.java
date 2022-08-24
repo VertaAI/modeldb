@@ -15,7 +15,7 @@ public class AppContext implements ApplicationContextAware {
   private static AppContext appContext;
   private ApplicationContext applicationContext;
 
-  public AppContext () {
+  public AppContext() {
     appContext = this;
   }
 
