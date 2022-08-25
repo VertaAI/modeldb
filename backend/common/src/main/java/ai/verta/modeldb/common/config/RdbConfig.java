@@ -94,6 +94,10 @@ public class RdbConfig {
       return rdb.DBConnectionURL;
     }
 
+    if (rdb.isH2()) {
+      return rdb.RdbUrl + ";DB_CLOSE_DELAY=-1";
+    }
+
     if (rdb.isMssql()) {
       return rdb.RdbUrl;
     }
