@@ -31,6 +31,12 @@ artifactStore:
   # This should be configured to the same path that artifact store will use
   path: /artifact-store/
   storage: 100Gi
+  ## PVC Storage Class for artifact store data volume
+  ## If defined, storageClassName: <storageClass>
+  ## If set to "-", storageClassName: "", which disables dynamic provisioning
+  ## If undefined (the default) or set to null, no storageClassName spec is set
+  ##
+  # storageClass: "-"
 
 hpa:
   enabled: false
