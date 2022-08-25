@@ -3,12 +3,12 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
-        logicalFilePath="src/main/resources/liquibase/db-changelog-1.0.xml">
+        logicalFilePath="liquibase/db-changelog-1.0.xml">
 
-    <include file="src/main/resources/liquibase/create-tables-changelog-1.0.xml"/>
+    <include file="liquibase/create-tables-changelog-1.0.xml"/>
 
     <changeSet id="1" author="anandJ" failOnError="false">
-        <sqlFile path="src/main/resources/liquibase/create_indexes.sql"/>
+        <sqlFile path="liquibase/create_indexes.sql"/>
     </changeSet>
 
     <changeSet id="tag-1.0" author="anandJ">
@@ -307,8 +307,8 @@
         </createIndex>
     </changeSet>
 
-    <include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
-    <include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
+    <include file="liquibase/create-versioning-tables-changelog.xml"/>
+    <include file="liquibase/create-versioning-tables-changelog2.xml"/>
 
     <changeSet id="13-add_s3_dataset_component_blob_s3_version_id" author="anandJ">
         <preConditions onFail="MARK_RAN">
@@ -672,7 +672,7 @@
         </createTable>
     </changeSet>
 
-    <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
+    <include file="liquibase/create-index-changelog.xml"/>
     <changeSet author="anandJ" id="migration_status_table">
         <preConditions onFail="MARK_RAN">
             <not>
