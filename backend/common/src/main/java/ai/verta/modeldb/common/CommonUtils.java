@@ -103,7 +103,6 @@ public class CommonUtils {
       Throwable e, T defaultInstance) {
     Status status;
     StatusRuntimeException statusRuntimeException;
-    boolean isClientError = false;
     if (e instanceof StatusRuntimeException) {
       statusRuntimeException = (StatusRuntimeException) e;
     } else if (e instanceof CompletionException) {
@@ -132,8 +131,7 @@ public class CommonUtils {
                 .build();
       } else if (e instanceof ModelDBException) {
         var modelDBException = (ModelDBException) e;
-        isClientError = isClientError(modelDBException.getCode().value());
-        logBasedOnTheErrorCode(isClientError, modelDBException);
+        logBasedOnTheErrorCode(isClientError(modelDBException.getCode().value()), modelDBException);
         status =
             Status.newBuilder()
                 .setCode(modelDBException.getCode().value())
@@ -141,8 +139,8 @@ public class CommonUtils {
                 .build();
       } else if (e instanceof IllegalArgumentException) {
         var illegalArgumentException = (IllegalArgumentException) e;
-        isClientError = isClientError(Code.INVALID_ARGUMENT_VALUE);
-        logBasedOnTheErrorCode(isClientError, illegalArgumentException);
+        logBasedOnTheErrorCode(
+            isClientError(Code.INVALID_ARGUMENT_VALUE), illegalArgumentException);
         status =
             Status.newBuilder()
                 .setCode(Code.INVALID_ARGUMENT_VALUE)
@@ -161,20 +159,12 @@ public class CommonUtils {
       boolean isLongStack = stack.length > STACKTRACE_LENGTH;
       if (isLongStack) {
         for (; n < STACKTRACE_LENGTH + 1; ++n) {
-          if (isClientError) {
-            LOGGER.debug("{}: {}", n, stack[n]);
-          } else {
-            LOGGER.warn("{}: {}", n, stack[n]);
-          }
+          LOGGER.warn("{}: {}", n, stack[n]);
         }
       }
       for (; n < stack.length; ++n) {
         if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
-          if (isClientError) {
-            LOGGER.debug("{}: {}", n, stack[n]);
-          } else {
-            LOGGER.warn("{}: {}", n, stack[n]);
-          }
+          LOGGER.warn("{}: {}", n, stack[n]);
         }
       }
       statusRuntimeException = StatusProto.toStatusRuntimeException(status);
@@ -253,7 +243,7 @@ public class CommonUtils {
 
   public static void logBasedOnTheErrorCode(boolean isClientError, Throwable e) {
     if (isClientError) {
-      LOGGER.debug("Exception occurred:{} {}", e.getClass(), e.getMessage());
+      LOGGER.info("Exception occurred:{} {}", e.getClass(), e.getMessage());
     } else {
       LOGGER.warn("Exception occurred:{} {}", e.getClass(), e.getMessage());
     }
