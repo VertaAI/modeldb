@@ -1837,6 +1837,20 @@
       ],
       "default": "UNKNOWN"
     },
+    "TaskTypeEnumTaskType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "CLASSIFICATION",
+        "CLUSTERING",
+        "DETECTION",
+        "REGRESSION",
+        "TRANSCRIPTION",
+        "TRANSLATION"
+      ],
+      "default": "UNKNOWN"
+    },
     "TernaryEnumTernary": {
       "type": "string",
       "enum": [
@@ -2498,6 +2512,9 @@
         },
         "action_type": {
           "$ref": "#/definitions/ActionTypeEnumActionType"
+        },
+        "task_type": {
+          "$ref": "#/definitions/TaskTypeEnumTaskType"
         }
       }
     },

@@ -95,6 +95,7 @@ func (DataTypeEnum_DataType) EnumDescriptor() ([]byte, []int) {
 	return file_registry_RegistryService_proto_rawDescGZIP(), []int{0, 0}
 }
 
+// Deprecated: Do not use.
 type ActionTypeEnum_ActionType int32
 
 const (
@@ -159,6 +160,70 @@ func (ActionTypeEnum_ActionType) EnumDescriptor() ([]byte, []int) {
 	return file_registry_RegistryService_proto_rawDescGZIP(), []int{1, 0}
 }
 
+type TaskTypeEnum_TaskType int32
+
+const (
+	TaskTypeEnum_UNKNOWN        TaskTypeEnum_TaskType = 0
+	TaskTypeEnum_OTHER          TaskTypeEnum_TaskType = 1
+	TaskTypeEnum_CLASSIFICATION TaskTypeEnum_TaskType = 2
+	TaskTypeEnum_CLUSTERING     TaskTypeEnum_TaskType = 3
+	TaskTypeEnum_DETECTION      TaskTypeEnum_TaskType = 4
+	TaskTypeEnum_REGRESSION     TaskTypeEnum_TaskType = 5
+	TaskTypeEnum_TRANSCRIPTION  TaskTypeEnum_TaskType = 6
+	TaskTypeEnum_TRANSLATION    TaskTypeEnum_TaskType = 7
+)
+
+// Enum value maps for TaskTypeEnum_TaskType.
+var (
+	TaskTypeEnum_TaskType_name = map[int32]string{
+		0: "UNKNOWN",
+		1: "OTHER",
+		2: "CLASSIFICATION",
+		3: "CLUSTERING",
+		4: "DETECTION",
+		5: "REGRESSION",
+		6: "TRANSCRIPTION",
+		7: "TRANSLATION",
+	}
+	TaskTypeEnum_TaskType_value = map[string]int32{
+		"UNKNOWN":        0,
+		"OTHER":          1,
+		"CLASSIFICATION": 2,
+		"CLUSTERING":     3,
+		"DETECTION":      4,
+		"REGRESSION":     5,
+		"TRANSCRIPTION":  6,
+		"TRANSLATION":    7,
+	}
+)
+
+func (x TaskTypeEnum_TaskType) Enum() *TaskTypeEnum_TaskType {
+	p := new(TaskTypeEnum_TaskType)
+	*p = x
+	return p
+}
+
+func (x TaskTypeEnum_TaskType) String() string {
+	return protoimpl.X.EnumStringOf(x.Descriptor(), protoreflect.EnumNumber(x))
+}
+
+func (TaskTypeEnum_TaskType) Descriptor() protoreflect.EnumDescriptor {
+	return file_registry_RegistryService_proto_enumTypes[2].Descriptor()
+}
+
+func (TaskTypeEnum_TaskType) Type() protoreflect.EnumType {
+	return &file_registry_RegistryService_proto_enumTypes[2]
+}
+
+func (x TaskTypeEnum_TaskType) Number() protoreflect.EnumNumber {
+	return protoreflect.EnumNumber(x)
+}
+
+// Deprecated: Use TaskTypeEnum_TaskType.Descriptor instead.
+func (TaskTypeEnum_TaskType) EnumDescriptor() ([]byte, []int) {
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{2, 0}
+}
+
 type ModelVersionLockLevelEnum_ModelVersionLockLevel int32
 
 const (
@@ -195,11 +260,11 @@ func (x ModelVersionLockLevelEnum_ModelVersionLockLevel) String() string {
 }
 
 func (ModelVersionLockLevelEnum_ModelVersionLockLevel) Descriptor() protoreflect.EnumDescriptor {
-	return file_registry_RegistryService_proto_enumTypes[2].Descriptor()
+	return file_registry_RegistryService_proto_enumTypes[3].Descriptor()
 }
 
 func (ModelVersionLockLevelEnum_ModelVersionLockLevel) Type() protoreflect.EnumType {
-	return &file_registry_RegistryService_proto_enumTypes[2]
+	return &file_registry_RegistryService_proto_enumTypes[3]
 }
 
 func (x ModelVersionLockLevelEnum_ModelVersionLockLevel) Number() protoreflect.EnumNumber {
@@ -208,7 +273,7 @@ func (x ModelVersionLockLevelEnum_ModelVersionLockLevel) Number() protoreflect.E
 
 // Deprecated: Use ModelVersionLockLevelEnum_ModelVersionLockLevel.Descriptor instead.
 func (ModelVersionLockLevelEnum_ModelVersionLockLevel) EnumDescriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{10, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{11, 0}
 }
 
 type DataTypeEnum struct {
@@ -249,6 +314,7 @@ func (*DataTypeEnum) Descriptor() ([]byte, []int) {
 	return file_registry_RegistryService_proto_rawDescGZIP(), []int{0}
 }
 
+// Deprecated: Do not use.
 type ActionTypeEnum struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -285,6 +351,44 @@ func (x *ActionTypeEnum) ProtoReflect() protoreflect.Message {
 // Deprecated: Use ActionTypeEnum.ProtoReflect.Descriptor instead.
 func (*ActionTypeEnum) Descriptor() ([]byte, []int) {
 	return file_registry_RegistryService_proto_rawDescGZIP(), []int{1}
+}
+
+type TaskTypeEnum struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *TaskTypeEnum) Reset() {
+	*x = TaskTypeEnum{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_registry_RegistryService_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *TaskTypeEnum) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*TaskTypeEnum) ProtoMessage() {}
+
+func (x *TaskTypeEnum) ProtoReflect() protoreflect.Message {
+	mi := &file_registry_RegistryService_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use TaskTypeEnum.ProtoReflect.Descriptor instead.
+func (*TaskTypeEnum) Descriptor() ([]byte, []int) {
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{2}
 }
 
 type RegisteredModel struct {
@@ -327,14 +431,16 @@ type RegisteredModel struct {
 	// Doc for version_number https://github.com/VertaAI/docs/pull/53
 	VersionNumber uint64 `protobuf:"varint,17,opt,name=version_number,json=versionNumber,proto3" json:"version_number,omitempty"`
 	// Fields for model's task_type. Those fields must be searchable as per our "find" operation
-	DataType   DataTypeEnum_DataType     `protobuf:"varint,18,opt,name=data_type,json=dataType,proto3,enum=ai.verta.registry.DataTypeEnum_DataType" json:"data_type,omitempty"`
+	DataType DataTypeEnum_DataType `protobuf:"varint,18,opt,name=data_type,json=dataType,proto3,enum=ai.verta.registry.DataTypeEnum_DataType" json:"data_type,omitempty"`
+	// Deprecated: Do not use.
 	ActionType ActionTypeEnum_ActionType `protobuf:"varint,19,opt,name=action_type,json=actionType,proto3,enum=ai.verta.registry.ActionTypeEnum_ActionType" json:"action_type,omitempty"`
+	TaskType   TaskTypeEnum_TaskType     `protobuf:"varint,20,opt,name=task_type,json=taskType,proto3,enum=ai.verta.registry.TaskTypeEnum_TaskType" json:"task_type,omitempty"`
 }
 
 func (x *RegisteredModel) Reset() {
 	*x = RegisteredModel{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[2]
+		mi := &file_registry_RegistryService_proto_msgTypes[3]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -347,7 +453,7 @@ func (x *RegisteredModel) String() string {
 func (*RegisteredModel) ProtoMessage() {}
 
 func (x *RegisteredModel) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[2]
+	mi := &file_registry_RegistryService_proto_msgTypes[3]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -360,7 +466,7 @@ func (x *RegisteredModel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisteredModel.ProtoReflect.Descriptor instead.
 func (*RegisteredModel) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{2}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{3}
 }
 
 func (x *RegisteredModel) GetId() uint64 {
@@ -489,11 +595,19 @@ func (x *RegisteredModel) GetDataType() DataTypeEnum_DataType {
 	return DataTypeEnum_UNKNOWN
 }
 
+// Deprecated: Do not use.
 func (x *RegisteredModel) GetActionType() ActionTypeEnum_ActionType {
 	if x != nil {
 		return x.ActionType
 	}
 	return ActionTypeEnum_UNKNOWN
+}
+
+func (x *RegisteredModel) GetTaskType() TaskTypeEnum_TaskType {
+	if x != nil {
+		return x.TaskType
+	}
+	return TaskTypeEnum_UNKNOWN
 }
 
 //CRUD for Registred Models
@@ -518,7 +632,7 @@ type FindRegisteredModelRequest struct {
 func (x *FindRegisteredModelRequest) Reset() {
 	*x = FindRegisteredModelRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[3]
+		mi := &file_registry_RegistryService_proto_msgTypes[4]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -531,7 +645,7 @@ func (x *FindRegisteredModelRequest) String() string {
 func (*FindRegisteredModelRequest) ProtoMessage() {}
 
 func (x *FindRegisteredModelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[3]
+	mi := &file_registry_RegistryService_proto_msgTypes[4]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -544,7 +658,7 @@ func (x *FindRegisteredModelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindRegisteredModelRequest.ProtoReflect.Descriptor instead.
 func (*FindRegisteredModelRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{3}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{4}
 }
 
 func (x *FindRegisteredModelRequest) GetWorkspaceName() string {
@@ -593,7 +707,7 @@ type GetRegisteredModelRequest struct {
 func (x *GetRegisteredModelRequest) Reset() {
 	*x = GetRegisteredModelRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[4]
+		mi := &file_registry_RegistryService_proto_msgTypes[5]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -606,7 +720,7 @@ func (x *GetRegisteredModelRequest) String() string {
 func (*GetRegisteredModelRequest) ProtoMessage() {}
 
 func (x *GetRegisteredModelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[4]
+	mi := &file_registry_RegistryService_proto_msgTypes[5]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -619,7 +733,7 @@ func (x *GetRegisteredModelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRegisteredModelRequest.ProtoReflect.Descriptor instead.
 func (*GetRegisteredModelRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{4}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{5}
 }
 
 func (x *GetRegisteredModelRequest) GetId() *RegisteredModelIdentification {
@@ -640,7 +754,7 @@ type GetRegisteredModelCountRequest struct {
 func (x *GetRegisteredModelCountRequest) Reset() {
 	*x = GetRegisteredModelCountRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[5]
+		mi := &file_registry_RegistryService_proto_msgTypes[6]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -653,7 +767,7 @@ func (x *GetRegisteredModelCountRequest) String() string {
 func (*GetRegisteredModelCountRequest) ProtoMessage() {}
 
 func (x *GetRegisteredModelCountRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[5]
+	mi := &file_registry_RegistryService_proto_msgTypes[6]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -666,7 +780,7 @@ func (x *GetRegisteredModelCountRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetRegisteredModelCountRequest.ProtoReflect.Descriptor instead.
 func (*GetRegisteredModelCountRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{5}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{6}
 }
 
 func (x *GetRegisteredModelCountRequest) GetProjectId() string {
@@ -690,7 +804,7 @@ type RegisteredModelNamedIdentification struct {
 func (x *RegisteredModelNamedIdentification) Reset() {
 	*x = RegisteredModelNamedIdentification{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[6]
+		mi := &file_registry_RegistryService_proto_msgTypes[7]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -703,7 +817,7 @@ func (x *RegisteredModelNamedIdentification) String() string {
 func (*RegisteredModelNamedIdentification) ProtoMessage() {}
 
 func (x *RegisteredModelNamedIdentification) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[6]
+	mi := &file_registry_RegistryService_proto_msgTypes[7]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -716,7 +830,7 @@ func (x *RegisteredModelNamedIdentification) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use RegisteredModelNamedIdentification.ProtoReflect.Descriptor instead.
 func (*RegisteredModelNamedIdentification) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{6}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{7}
 }
 
 func (x *RegisteredModelNamedIdentification) GetName() string {
@@ -748,7 +862,7 @@ type RegisteredModelIdentification struct {
 func (x *RegisteredModelIdentification) Reset() {
 	*x = RegisteredModelIdentification{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[7]
+		mi := &file_registry_RegistryService_proto_msgTypes[8]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -761,7 +875,7 @@ func (x *RegisteredModelIdentification) String() string {
 func (*RegisteredModelIdentification) ProtoMessage() {}
 
 func (x *RegisteredModelIdentification) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[7]
+	mi := &file_registry_RegistryService_proto_msgTypes[8]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -774,7 +888,7 @@ func (x *RegisteredModelIdentification) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use RegisteredModelIdentification.ProtoReflect.Descriptor instead.
 func (*RegisteredModelIdentification) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{7}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{8}
 }
 
 func (x *RegisteredModelIdentification) GetNamedId() *RegisteredModelNamedIdentification {
@@ -804,7 +918,7 @@ type SetRegisteredModel struct {
 func (x *SetRegisteredModel) Reset() {
 	*x = SetRegisteredModel{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[8]
+		mi := &file_registry_RegistryService_proto_msgTypes[9]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -817,7 +931,7 @@ func (x *SetRegisteredModel) String() string {
 func (*SetRegisteredModel) ProtoMessage() {}
 
 func (x *SetRegisteredModel) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[8]
+	mi := &file_registry_RegistryService_proto_msgTypes[9]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -830,7 +944,7 @@ func (x *SetRegisteredModel) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetRegisteredModel.ProtoReflect.Descriptor instead.
 func (*SetRegisteredModel) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{8}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{9}
 }
 
 func (x *SetRegisteredModel) GetId() *RegisteredModelIdentification {
@@ -865,7 +979,7 @@ type DeleteRegisteredModelRequest struct {
 func (x *DeleteRegisteredModelRequest) Reset() {
 	*x = DeleteRegisteredModelRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[9]
+		mi := &file_registry_RegistryService_proto_msgTypes[10]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -878,7 +992,7 @@ func (x *DeleteRegisteredModelRequest) String() string {
 func (*DeleteRegisteredModelRequest) ProtoMessage() {}
 
 func (x *DeleteRegisteredModelRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[9]
+	mi := &file_registry_RegistryService_proto_msgTypes[10]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -891,7 +1005,7 @@ func (x *DeleteRegisteredModelRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteRegisteredModelRequest.ProtoReflect.Descriptor instead.
 func (*DeleteRegisteredModelRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{9}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{10}
 }
 
 func (x *DeleteRegisteredModelRequest) GetId() *RegisteredModelIdentification {
@@ -910,7 +1024,7 @@ type ModelVersionLockLevelEnum struct {
 func (x *ModelVersionLockLevelEnum) Reset() {
 	*x = ModelVersionLockLevelEnum{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[10]
+		mi := &file_registry_RegistryService_proto_msgTypes[11]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -923,7 +1037,7 @@ func (x *ModelVersionLockLevelEnum) String() string {
 func (*ModelVersionLockLevelEnum) ProtoMessage() {}
 
 func (x *ModelVersionLockLevelEnum) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[10]
+	mi := &file_registry_RegistryService_proto_msgTypes[11]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -936,7 +1050,7 @@ func (x *ModelVersionLockLevelEnum) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelVersionLockLevelEnum.ProtoReflect.Descriptor instead.
 func (*ModelVersionLockLevelEnum) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{10}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{11}
 }
 
 type ModelVersion struct {
@@ -998,7 +1112,7 @@ type ModelVersion struct {
 func (x *ModelVersion) Reset() {
 	*x = ModelVersion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[11]
+		mi := &file_registry_RegistryService_proto_msgTypes[12]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1011,7 +1125,7 @@ func (x *ModelVersion) String() string {
 func (*ModelVersion) ProtoMessage() {}
 
 func (x *ModelVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[11]
+	mi := &file_registry_RegistryService_proto_msgTypes[12]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1024,7 +1138,7 @@ func (x *ModelVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelVersion.ProtoReflect.Descriptor instead.
 func (*ModelVersion) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{11}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{12}
 }
 
 func (x *ModelVersion) GetId() uint64 {
@@ -1225,7 +1339,7 @@ type DockerMetadata struct {
 func (x *DockerMetadata) Reset() {
 	*x = DockerMetadata{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[12]
+		mi := &file_registry_RegistryService_proto_msgTypes[13]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1238,7 +1352,7 @@ func (x *DockerMetadata) String() string {
 func (*DockerMetadata) ProtoMessage() {}
 
 func (x *DockerMetadata) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[12]
+	mi := &file_registry_RegistryService_proto_msgTypes[13]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1251,7 +1365,7 @@ func (x *DockerMetadata) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DockerMetadata.ProtoReflect.Descriptor instead.
 func (*DockerMetadata) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{12}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{13}
 }
 
 func (x *DockerMetadata) GetRequestPort() uint32 {
@@ -1288,7 +1402,7 @@ type SetLockModelVersionRequest struct {
 func (x *SetLockModelVersionRequest) Reset() {
 	*x = SetLockModelVersionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[13]
+		mi := &file_registry_RegistryService_proto_msgTypes[14]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1301,7 +1415,7 @@ func (x *SetLockModelVersionRequest) String() string {
 func (*SetLockModelVersionRequest) ProtoMessage() {}
 
 func (x *SetLockModelVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[13]
+	mi := &file_registry_RegistryService_proto_msgTypes[14]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1314,7 +1428,7 @@ func (x *SetLockModelVersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetLockModelVersionRequest.ProtoReflect.Descriptor instead.
 func (*SetLockModelVersionRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{13}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{14}
 }
 
 func (x *SetLockModelVersionRequest) GetId() *ModelVersionIdentification {
@@ -1345,7 +1459,7 @@ type ModelVersionIdentification struct {
 func (x *ModelVersionIdentification) Reset() {
 	*x = ModelVersionIdentification{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[14]
+		mi := &file_registry_RegistryService_proto_msgTypes[15]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1358,7 +1472,7 @@ func (x *ModelVersionIdentification) String() string {
 func (*ModelVersionIdentification) ProtoMessage() {}
 
 func (x *ModelVersionIdentification) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[14]
+	mi := &file_registry_RegistryService_proto_msgTypes[15]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1371,7 +1485,7 @@ func (x *ModelVersionIdentification) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ModelVersionIdentification.ProtoReflect.Descriptor instead.
 func (*ModelVersionIdentification) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{14}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{15}
 }
 
 func (x *ModelVersionIdentification) GetModelVersionId() uint64 {
@@ -1401,7 +1515,7 @@ type GetModelVersionRequest struct {
 func (x *GetModelVersionRequest) Reset() {
 	*x = GetModelVersionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[15]
+		mi := &file_registry_RegistryService_proto_msgTypes[16]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1414,7 +1528,7 @@ func (x *GetModelVersionRequest) String() string {
 func (*GetModelVersionRequest) ProtoMessage() {}
 
 func (x *GetModelVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[15]
+	mi := &file_registry_RegistryService_proto_msgTypes[16]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1427,7 +1541,7 @@ func (x *GetModelVersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetModelVersionRequest.ProtoReflect.Descriptor instead.
 func (*GetModelVersionRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{15}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{16}
 }
 
 func (x *GetModelVersionRequest) GetId() *ModelVersionIdentification {
@@ -1462,7 +1576,7 @@ type FindModelVersionRequest struct {
 func (x *FindModelVersionRequest) Reset() {
 	*x = FindModelVersionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[16]
+		mi := &file_registry_RegistryService_proto_msgTypes[17]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1475,7 +1589,7 @@ func (x *FindModelVersionRequest) String() string {
 func (*FindModelVersionRequest) ProtoMessage() {}
 
 func (x *FindModelVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[16]
+	mi := &file_registry_RegistryService_proto_msgTypes[17]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1488,7 +1602,7 @@ func (x *FindModelVersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindModelVersionRequest.ProtoReflect.Descriptor instead.
 func (*FindModelVersionRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{16}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{17}
 }
 
 func (x *FindModelVersionRequest) GetId() *RegisteredModelIdentification {
@@ -1539,7 +1653,7 @@ type SetModelVersion struct {
 func (x *SetModelVersion) Reset() {
 	*x = SetModelVersion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[17]
+		mi := &file_registry_RegistryService_proto_msgTypes[18]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1552,7 +1666,7 @@ func (x *SetModelVersion) String() string {
 func (*SetModelVersion) ProtoMessage() {}
 
 func (x *SetModelVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[17]
+	mi := &file_registry_RegistryService_proto_msgTypes[18]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1565,7 +1679,7 @@ func (x *SetModelVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetModelVersion.ProtoReflect.Descriptor instead.
 func (*SetModelVersion) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{17}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{18}
 }
 
 func (x *SetModelVersion) GetId() *ModelVersionIdentification {
@@ -1600,7 +1714,7 @@ type DeleteModelVersionRequest struct {
 func (x *DeleteModelVersionRequest) Reset() {
 	*x = DeleteModelVersionRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[18]
+		mi := &file_registry_RegistryService_proto_msgTypes[19]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1613,7 +1727,7 @@ func (x *DeleteModelVersionRequest) String() string {
 func (*DeleteModelVersionRequest) ProtoMessage() {}
 
 func (x *DeleteModelVersionRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[18]
+	mi := &file_registry_RegistryService_proto_msgTypes[19]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1626,7 +1740,7 @@ func (x *DeleteModelVersionRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use DeleteModelVersionRequest.ProtoReflect.Descriptor instead.
 func (*DeleteModelVersionRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{18}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{19}
 }
 
 func (x *DeleteModelVersionRequest) GetId() *ModelVersionIdentification {
@@ -1656,7 +1770,7 @@ type GetUrlForArtifact struct {
 func (x *GetUrlForArtifact) Reset() {
 	*x = GetUrlForArtifact{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[19]
+		mi := &file_registry_RegistryService_proto_msgTypes[20]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1669,7 +1783,7 @@ func (x *GetUrlForArtifact) String() string {
 func (*GetUrlForArtifact) ProtoMessage() {}
 
 func (x *GetUrlForArtifact) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[19]
+	mi := &file_registry_RegistryService_proto_msgTypes[20]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1682,7 +1796,7 @@ func (x *GetUrlForArtifact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUrlForArtifact.ProtoReflect.Descriptor instead.
 func (*GetUrlForArtifact) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{19}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{20}
 }
 
 func (x *GetUrlForArtifact) GetModelVersionId() uint64 {
@@ -1735,7 +1849,7 @@ type CommitArtifactPart struct {
 func (x *CommitArtifactPart) Reset() {
 	*x = CommitArtifactPart{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[20]
+		mi := &file_registry_RegistryService_proto_msgTypes[21]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1748,7 +1862,7 @@ func (x *CommitArtifactPart) String() string {
 func (*CommitArtifactPart) ProtoMessage() {}
 
 func (x *CommitArtifactPart) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[20]
+	mi := &file_registry_RegistryService_proto_msgTypes[21]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1761,7 +1875,7 @@ func (x *CommitArtifactPart) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitArtifactPart.ProtoReflect.Descriptor instead.
 func (*CommitArtifactPart) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{20}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{21}
 }
 
 func (x *CommitArtifactPart) GetModelVersionId() uint64 {
@@ -1799,7 +1913,7 @@ type GetCommittedArtifactParts struct {
 func (x *GetCommittedArtifactParts) Reset() {
 	*x = GetCommittedArtifactParts{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[21]
+		mi := &file_registry_RegistryService_proto_msgTypes[22]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1812,7 +1926,7 @@ func (x *GetCommittedArtifactParts) String() string {
 func (*GetCommittedArtifactParts) ProtoMessage() {}
 
 func (x *GetCommittedArtifactParts) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[21]
+	mi := &file_registry_RegistryService_proto_msgTypes[22]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1825,7 +1939,7 @@ func (x *GetCommittedArtifactParts) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetCommittedArtifactParts.ProtoReflect.Descriptor instead.
 func (*GetCommittedArtifactParts) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{21}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{22}
 }
 
 func (x *GetCommittedArtifactParts) GetModelVersionId() uint64 {
@@ -1856,7 +1970,7 @@ type CommitMultipartArtifact struct {
 func (x *CommitMultipartArtifact) Reset() {
 	*x = CommitMultipartArtifact{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[22]
+		mi := &file_registry_RegistryService_proto_msgTypes[23]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1869,7 +1983,7 @@ func (x *CommitMultipartArtifact) String() string {
 func (*CommitMultipartArtifact) ProtoMessage() {}
 
 func (x *CommitMultipartArtifact) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[22]
+	mi := &file_registry_RegistryService_proto_msgTypes[23]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1882,7 +1996,7 @@ func (x *CommitMultipartArtifact) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitMultipartArtifact.ProtoReflect.Descriptor instead.
 func (*CommitMultipartArtifact) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{22}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{23}
 }
 
 func (x *CommitMultipartArtifact) GetModelVersionId() uint64 {
@@ -1911,7 +2025,7 @@ type LogDatasetsInModelVersion struct {
 func (x *LogDatasetsInModelVersion) Reset() {
 	*x = LogDatasetsInModelVersion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[23]
+		mi := &file_registry_RegistryService_proto_msgTypes[24]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1924,7 +2038,7 @@ func (x *LogDatasetsInModelVersion) String() string {
 func (*LogDatasetsInModelVersion) ProtoMessage() {}
 
 func (x *LogDatasetsInModelVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[23]
+	mi := &file_registry_RegistryService_proto_msgTypes[24]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1937,7 +2051,7 @@ func (x *LogDatasetsInModelVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogDatasetsInModelVersion.ProtoReflect.Descriptor instead.
 func (*LogDatasetsInModelVersion) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{23}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{24}
 }
 
 func (x *LogDatasetsInModelVersion) GetModelVersionId() uint64 {
@@ -1966,7 +2080,7 @@ type LogCodeBlobInModelVersion struct {
 func (x *LogCodeBlobInModelVersion) Reset() {
 	*x = LogCodeBlobInModelVersion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[24]
+		mi := &file_registry_RegistryService_proto_msgTypes[25]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -1979,7 +2093,7 @@ func (x *LogCodeBlobInModelVersion) String() string {
 func (*LogCodeBlobInModelVersion) ProtoMessage() {}
 
 func (x *LogCodeBlobInModelVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[24]
+	mi := &file_registry_RegistryService_proto_msgTypes[25]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -1992,7 +2106,7 @@ func (x *LogCodeBlobInModelVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogCodeBlobInModelVersion.ProtoReflect.Descriptor instead.
 func (*LogCodeBlobInModelVersion) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{24}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{25}
 }
 
 func (x *LogCodeBlobInModelVersion) GetModelVersionId() uint64 {
@@ -2021,7 +2135,7 @@ type LogAttributesInModelVersion struct {
 func (x *LogAttributesInModelVersion) Reset() {
 	*x = LogAttributesInModelVersion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[25]
+		mi := &file_registry_RegistryService_proto_msgTypes[26]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2034,7 +2148,7 @@ func (x *LogAttributesInModelVersion) String() string {
 func (*LogAttributesInModelVersion) ProtoMessage() {}
 
 func (x *LogAttributesInModelVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[25]
+	mi := &file_registry_RegistryService_proto_msgTypes[26]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2047,7 +2161,7 @@ func (x *LogAttributesInModelVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogAttributesInModelVersion.ProtoReflect.Descriptor instead.
 func (*LogAttributesInModelVersion) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{25}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{26}
 }
 
 func (x *LogAttributesInModelVersion) GetModelVersionId() uint64 {
@@ -2076,7 +2190,7 @@ type LogDockerMetadataInModelVersion struct {
 func (x *LogDockerMetadataInModelVersion) Reset() {
 	*x = LogDockerMetadataInModelVersion{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[26]
+		mi := &file_registry_RegistryService_proto_msgTypes[27]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2089,7 +2203,7 @@ func (x *LogDockerMetadataInModelVersion) String() string {
 func (*LogDockerMetadataInModelVersion) ProtoMessage() {}
 
 func (x *LogDockerMetadataInModelVersion) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[26]
+	mi := &file_registry_RegistryService_proto_msgTypes[27]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2102,7 +2216,7 @@ func (x *LogDockerMetadataInModelVersion) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use LogDockerMetadataInModelVersion.ProtoReflect.Descriptor instead.
 func (*LogDockerMetadataInModelVersion) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{26}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{27}
 }
 
 func (x *LogDockerMetadataInModelVersion) GetModelVersionId() uint64 {
@@ -2131,7 +2245,7 @@ type FindRegisteredModelRequest_Response struct {
 func (x *FindRegisteredModelRequest_Response) Reset() {
 	*x = FindRegisteredModelRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[27]
+		mi := &file_registry_RegistryService_proto_msgTypes[28]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2144,7 +2258,7 @@ func (x *FindRegisteredModelRequest_Response) String() string {
 func (*FindRegisteredModelRequest_Response) ProtoMessage() {}
 
 func (x *FindRegisteredModelRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[27]
+	mi := &file_registry_RegistryService_proto_msgTypes[28]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2157,7 +2271,7 @@ func (x *FindRegisteredModelRequest_Response) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use FindRegisteredModelRequest_Response.ProtoReflect.Descriptor instead.
 func (*FindRegisteredModelRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{3, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{4, 0}
 }
 
 func (x *FindRegisteredModelRequest_Response) GetRegisteredModels() []*RegisteredModel {
@@ -2185,7 +2299,7 @@ type GetRegisteredModelRequest_Response struct {
 func (x *GetRegisteredModelRequest_Response) Reset() {
 	*x = GetRegisteredModelRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[28]
+		mi := &file_registry_RegistryService_proto_msgTypes[29]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2198,7 +2312,7 @@ func (x *GetRegisteredModelRequest_Response) String() string {
 func (*GetRegisteredModelRequest_Response) ProtoMessage() {}
 
 func (x *GetRegisteredModelRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[28]
+	mi := &file_registry_RegistryService_proto_msgTypes[29]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2211,7 +2325,7 @@ func (x *GetRegisteredModelRequest_Response) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use GetRegisteredModelRequest_Response.ProtoReflect.Descriptor instead.
 func (*GetRegisteredModelRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{4, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{5, 0}
 }
 
 func (x *GetRegisteredModelRequest_Response) GetRegisteredModel() *RegisteredModel {
@@ -2232,7 +2346,7 @@ type GetRegisteredModelCountRequest_Response struct {
 func (x *GetRegisteredModelCountRequest_Response) Reset() {
 	*x = GetRegisteredModelCountRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[29]
+		mi := &file_registry_RegistryService_proto_msgTypes[30]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2245,7 +2359,7 @@ func (x *GetRegisteredModelCountRequest_Response) String() string {
 func (*GetRegisteredModelCountRequest_Response) ProtoMessage() {}
 
 func (x *GetRegisteredModelCountRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[29]
+	mi := &file_registry_RegistryService_proto_msgTypes[30]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2258,7 +2372,7 @@ func (x *GetRegisteredModelCountRequest_Response) ProtoReflect() protoreflect.Me
 
 // Deprecated: Use GetRegisteredModelCountRequest_Response.ProtoReflect.Descriptor instead.
 func (*GetRegisteredModelCountRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{5, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{6, 0}
 }
 
 func (x *GetRegisteredModelCountRequest_Response) GetRegisteredModelCount() int64 {
@@ -2279,7 +2393,7 @@ type SetRegisteredModel_Response struct {
 func (x *SetRegisteredModel_Response) Reset() {
 	*x = SetRegisteredModel_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[30]
+		mi := &file_registry_RegistryService_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2292,7 +2406,7 @@ func (x *SetRegisteredModel_Response) String() string {
 func (*SetRegisteredModel_Response) ProtoMessage() {}
 
 func (x *SetRegisteredModel_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[30]
+	mi := &file_registry_RegistryService_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2305,7 +2419,7 @@ func (x *SetRegisteredModel_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetRegisteredModel_Response.ProtoReflect.Descriptor instead.
 func (*SetRegisteredModel_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{8, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{9, 0}
 }
 
 func (x *SetRegisteredModel_Response) GetRegisteredModel() *RegisteredModel {
@@ -2324,7 +2438,7 @@ type DeleteRegisteredModelRequest_Response struct {
 func (x *DeleteRegisteredModelRequest_Response) Reset() {
 	*x = DeleteRegisteredModelRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[31]
+		mi := &file_registry_RegistryService_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2337,7 +2451,7 @@ func (x *DeleteRegisteredModelRequest_Response) String() string {
 func (*DeleteRegisteredModelRequest_Response) ProtoMessage() {}
 
 func (x *DeleteRegisteredModelRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[31]
+	mi := &file_registry_RegistryService_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2350,7 +2464,7 @@ func (x *DeleteRegisteredModelRequest_Response) ProtoReflect() protoreflect.Mess
 
 // Deprecated: Use DeleteRegisteredModelRequest_Response.ProtoReflect.Descriptor instead.
 func (*DeleteRegisteredModelRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{9, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{10, 0}
 }
 
 type SetLockModelVersionRequest_Response struct {
@@ -2362,7 +2476,7 @@ type SetLockModelVersionRequest_Response struct {
 func (x *SetLockModelVersionRequest_Response) Reset() {
 	*x = SetLockModelVersionRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[33]
+		mi := &file_registry_RegistryService_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2375,7 +2489,7 @@ func (x *SetLockModelVersionRequest_Response) String() string {
 func (*SetLockModelVersionRequest_Response) ProtoMessage() {}
 
 func (x *SetLockModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[33]
+	mi := &file_registry_RegistryService_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2388,7 +2502,7 @@ func (x *SetLockModelVersionRequest_Response) ProtoReflect() protoreflect.Messag
 
 // Deprecated: Use SetLockModelVersionRequest_Response.ProtoReflect.Descriptor instead.
 func (*SetLockModelVersionRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{13, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{14, 0}
 }
 
 type GetModelVersionRequest_Response struct {
@@ -2402,7 +2516,7 @@ type GetModelVersionRequest_Response struct {
 func (x *GetModelVersionRequest_Response) Reset() {
 	*x = GetModelVersionRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[34]
+		mi := &file_registry_RegistryService_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2415,7 +2529,7 @@ func (x *GetModelVersionRequest_Response) String() string {
 func (*GetModelVersionRequest_Response) ProtoMessage() {}
 
 func (x *GetModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[34]
+	mi := &file_registry_RegistryService_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2428,7 +2542,7 @@ func (x *GetModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetModelVersionRequest_Response.ProtoReflect.Descriptor instead.
 func (*GetModelVersionRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{15, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{16, 0}
 }
 
 func (x *GetModelVersionRequest_Response) GetModelVersion() *ModelVersion {
@@ -2450,7 +2564,7 @@ type FindModelVersionRequest_Response struct {
 func (x *FindModelVersionRequest_Response) Reset() {
 	*x = FindModelVersionRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[35]
+		mi := &file_registry_RegistryService_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2463,7 +2577,7 @@ func (x *FindModelVersionRequest_Response) String() string {
 func (*FindModelVersionRequest_Response) ProtoMessage() {}
 
 func (x *FindModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[35]
+	mi := &file_registry_RegistryService_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2476,7 +2590,7 @@ func (x *FindModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindModelVersionRequest_Response.ProtoReflect.Descriptor instead.
 func (*FindModelVersionRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{16, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{17, 0}
 }
 
 func (x *FindModelVersionRequest_Response) GetModelVersions() []*ModelVersion {
@@ -2504,7 +2618,7 @@ type SetModelVersion_Response struct {
 func (x *SetModelVersion_Response) Reset() {
 	*x = SetModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[36]
+		mi := &file_registry_RegistryService_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2517,7 +2631,7 @@ func (x *SetModelVersion_Response) String() string {
 func (*SetModelVersion_Response) ProtoMessage() {}
 
 func (x *SetModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[36]
+	mi := &file_registry_RegistryService_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2530,7 +2644,7 @@ func (x *SetModelVersion_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use SetModelVersion_Response.ProtoReflect.Descriptor instead.
 func (*SetModelVersion_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{17, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{18, 0}
 }
 
 func (x *SetModelVersion_Response) GetModelVersion() *ModelVersion {
@@ -2549,7 +2663,7 @@ type DeleteModelVersionRequest_Response struct {
 func (x *DeleteModelVersionRequest_Response) Reset() {
 	*x = DeleteModelVersionRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[37]
+		mi := &file_registry_RegistryService_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2562,7 +2676,7 @@ func (x *DeleteModelVersionRequest_Response) String() string {
 func (*DeleteModelVersionRequest_Response) ProtoMessage() {}
 
 func (x *DeleteModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[37]
+	mi := &file_registry_RegistryService_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2575,7 +2689,7 @@ func (x *DeleteModelVersionRequest_Response) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use DeleteModelVersionRequest_Response.ProtoReflect.Descriptor instead.
 func (*DeleteModelVersionRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{18, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{19, 0}
 }
 
 type GetUrlForArtifact_Response struct {
@@ -2592,7 +2706,7 @@ type GetUrlForArtifact_Response struct {
 func (x *GetUrlForArtifact_Response) Reset() {
 	*x = GetUrlForArtifact_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[38]
+		mi := &file_registry_RegistryService_proto_msgTypes[39]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2605,7 +2719,7 @@ func (x *GetUrlForArtifact_Response) String() string {
 func (*GetUrlForArtifact_Response) ProtoMessage() {}
 
 func (x *GetUrlForArtifact_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[38]
+	mi := &file_registry_RegistryService_proto_msgTypes[39]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2618,7 +2732,7 @@ func (x *GetUrlForArtifact_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use GetUrlForArtifact_Response.ProtoReflect.Descriptor instead.
 func (*GetUrlForArtifact_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{19, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{20, 0}
 }
 
 func (x *GetUrlForArtifact_Response) GetUrl() string {
@@ -2651,7 +2765,7 @@ type CommitArtifactPart_Response struct {
 func (x *CommitArtifactPart_Response) Reset() {
 	*x = CommitArtifactPart_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[40]
+		mi := &file_registry_RegistryService_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2664,7 +2778,7 @@ func (x *CommitArtifactPart_Response) String() string {
 func (*CommitArtifactPart_Response) ProtoMessage() {}
 
 func (x *CommitArtifactPart_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[40]
+	mi := &file_registry_RegistryService_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2677,7 +2791,7 @@ func (x *CommitArtifactPart_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitArtifactPart_Response.ProtoReflect.Descriptor instead.
 func (*CommitArtifactPart_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{20, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{21, 0}
 }
 
 type GetCommittedArtifactParts_Response struct {
@@ -2691,7 +2805,7 @@ type GetCommittedArtifactParts_Response struct {
 func (x *GetCommittedArtifactParts_Response) Reset() {
 	*x = GetCommittedArtifactParts_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[41]
+		mi := &file_registry_RegistryService_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2704,7 +2818,7 @@ func (x *GetCommittedArtifactParts_Response) String() string {
 func (*GetCommittedArtifactParts_Response) ProtoMessage() {}
 
 func (x *GetCommittedArtifactParts_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[41]
+	mi := &file_registry_RegistryService_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2717,7 +2831,7 @@ func (x *GetCommittedArtifactParts_Response) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use GetCommittedArtifactParts_Response.ProtoReflect.Descriptor instead.
 func (*GetCommittedArtifactParts_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{21, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{22, 0}
 }
 
 func (x *GetCommittedArtifactParts_Response) GetArtifactParts() []*common.ArtifactPart {
@@ -2736,7 +2850,7 @@ type CommitMultipartArtifact_Response struct {
 func (x *CommitMultipartArtifact_Response) Reset() {
 	*x = CommitMultipartArtifact_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[42]
+		mi := &file_registry_RegistryService_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2749,7 +2863,7 @@ func (x *CommitMultipartArtifact_Response) String() string {
 func (*CommitMultipartArtifact_Response) ProtoMessage() {}
 
 func (x *CommitMultipartArtifact_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[42]
+	mi := &file_registry_RegistryService_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2762,7 +2876,7 @@ func (x *CommitMultipartArtifact_Response) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use CommitMultipartArtifact_Response.ProtoReflect.Descriptor instead.
 func (*CommitMultipartArtifact_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{22, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{23, 0}
 }
 
 type LogDatasetsInModelVersion_Response struct {
@@ -2774,7 +2888,7 @@ type LogDatasetsInModelVersion_Response struct {
 func (x *LogDatasetsInModelVersion_Response) Reset() {
 	*x = LogDatasetsInModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[43]
+		mi := &file_registry_RegistryService_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2787,7 +2901,7 @@ func (x *LogDatasetsInModelVersion_Response) String() string {
 func (*LogDatasetsInModelVersion_Response) ProtoMessage() {}
 
 func (x *LogDatasetsInModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[43]
+	mi := &file_registry_RegistryService_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2800,7 +2914,7 @@ func (x *LogDatasetsInModelVersion_Response) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use LogDatasetsInModelVersion_Response.ProtoReflect.Descriptor instead.
 func (*LogDatasetsInModelVersion_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{23, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{24, 0}
 }
 
 type LogCodeBlobInModelVersion_Response struct {
@@ -2812,7 +2926,7 @@ type LogCodeBlobInModelVersion_Response struct {
 func (x *LogCodeBlobInModelVersion_Response) Reset() {
 	*x = LogCodeBlobInModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[45]
+		mi := &file_registry_RegistryService_proto_msgTypes[46]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2825,7 +2939,7 @@ func (x *LogCodeBlobInModelVersion_Response) String() string {
 func (*LogCodeBlobInModelVersion_Response) ProtoMessage() {}
 
 func (x *LogCodeBlobInModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[45]
+	mi := &file_registry_RegistryService_proto_msgTypes[46]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2838,7 +2952,7 @@ func (x *LogCodeBlobInModelVersion_Response) ProtoReflect() protoreflect.Message
 
 // Deprecated: Use LogCodeBlobInModelVersion_Response.ProtoReflect.Descriptor instead.
 func (*LogCodeBlobInModelVersion_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{24, 1}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{25, 1}
 }
 
 type LogAttributesInModelVersion_Response struct {
@@ -2850,7 +2964,7 @@ type LogAttributesInModelVersion_Response struct {
 func (x *LogAttributesInModelVersion_Response) Reset() {
 	*x = LogAttributesInModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[46]
+		mi := &file_registry_RegistryService_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2863,7 +2977,7 @@ func (x *LogAttributesInModelVersion_Response) String() string {
 func (*LogAttributesInModelVersion_Response) ProtoMessage() {}
 
 func (x *LogAttributesInModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[46]
+	mi := &file_registry_RegistryService_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2876,7 +2990,7 @@ func (x *LogAttributesInModelVersion_Response) ProtoReflect() protoreflect.Messa
 
 // Deprecated: Use LogAttributesInModelVersion_Response.ProtoReflect.Descriptor instead.
 func (*LogAttributesInModelVersion_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{25, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{26, 0}
 }
 
 type LogDockerMetadataInModelVersion_Response struct {
@@ -2888,7 +3002,7 @@ type LogDockerMetadataInModelVersion_Response struct {
 func (x *LogDockerMetadataInModelVersion_Response) Reset() {
 	*x = LogDockerMetadataInModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[47]
+		mi := &file_registry_RegistryService_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2901,7 +3015,7 @@ func (x *LogDockerMetadataInModelVersion_Response) String() string {
 func (*LogDockerMetadataInModelVersion_Response) ProtoMessage() {}
 
 func (x *LogDockerMetadataInModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[47]
+	mi := &file_registry_RegistryService_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2914,7 +3028,7 @@ func (x *LogDockerMetadataInModelVersion_Response) ProtoReflect() protoreflect.M
 
 // Deprecated: Use LogDockerMetadataInModelVersion_Response.ProtoReflect.Descriptor instead.
 func (*LogDockerMetadataInModelVersion_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{26, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{27, 0}
 }
 
 var File_registry_RegistryService_proto protoreflect.FileDescriptor
@@ -2943,8 +3057,8 @@ var file_registry_RegistryService_proto_rawDesc = []byte{
 	0x05, 0x41, 0x55, 0x44, 0x49, 0x4f, 0x10, 0x02, 0x12, 0x09, 0x0a, 0x05, 0x49, 0x4d, 0x41, 0x47,
 	0x45, 0x10, 0x03, 0x12, 0x0b, 0x0a, 0x07, 0x54, 0x41, 0x42, 0x55, 0x4c, 0x41, 0x52, 0x10, 0x04,
 	0x12, 0x08, 0x0a, 0x04, 0x54, 0x45, 0x58, 0x54, 0x10, 0x05, 0x12, 0x09, 0x0a, 0x05, 0x56, 0x49,
-	0x44, 0x45, 0x4f, 0x10, 0x06, 0x22, 0x9e, 0x01, 0x0a, 0x0e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e,
-	0x54, 0x79, 0x70, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x22, 0x8b, 0x01, 0x0a, 0x0a, 0x41, 0x63, 0x74,
+	0x44, 0x45, 0x4f, 0x10, 0x06, 0x22, 0xa6, 0x01, 0x0a, 0x0e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e,
+	0x54, 0x79, 0x70, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x22, 0x8f, 0x01, 0x0a, 0x0a, 0x41, 0x63, 0x74,
 	0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07, 0x55, 0x4e, 0x4b, 0x4e, 0x4f,
 	0x57, 0x4e, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05, 0x4f, 0x54, 0x48, 0x45, 0x52, 0x10, 0x01, 0x12,
 	0x12, 0x0a, 0x0e, 0x43, 0x4c, 0x41, 0x53, 0x53, 0x49, 0x46, 0x49, 0x43, 0x41, 0x54, 0x49, 0x4f,
@@ -2953,64 +3067,79 @@ var file_registry_RegistryService_proto_rawDesc = []byte{
 	0x10, 0x04, 0x12, 0x0e, 0x0a, 0x0a, 0x52, 0x45, 0x47, 0x52, 0x45, 0x53, 0x53, 0x49, 0x4f, 0x4e,
 	0x10, 0x05, 0x12, 0x11, 0x0a, 0x0d, 0x54, 0x52, 0x41, 0x4e, 0x53, 0x43, 0x52, 0x49, 0x50, 0x54,
 	0x49, 0x4f, 0x4e, 0x10, 0x06, 0x12, 0x0f, 0x0a, 0x0b, 0x54, 0x52, 0x41, 0x4e, 0x53, 0x4c, 0x41,
-	0x54, 0x49, 0x4f, 0x4e, 0x10, 0x07, 0x22, 0x95, 0x07, 0x0a, 0x0f, 0x52, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x65, 0x64, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x12, 0x0a, 0x04, 0x6e, 0x61,
-	0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x12, 0x21,
-	0x0a, 0x0c, 0x74, 0x69, 0x6d, 0x65, 0x5f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x18, 0x03,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x74, 0x69, 0x6d, 0x65, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65,
-	0x64, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x69, 0x6d, 0x65, 0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65,
-	0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x74, 0x69, 0x6d, 0x65, 0x55, 0x70, 0x64,
-	0x61, 0x74, 0x65, 0x64, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74,
-	0x69, 0x6f, 0x6e, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x64, 0x65, 0x73, 0x63, 0x72,
-	0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73,
-	0x18, 0x06, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x6c, 0x61, 0x62, 0x65, 0x6c, 0x73, 0x12, 0x4a,
-	0x0a, 0x0a, 0x76, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x18, 0x07, 0x20, 0x01,
-	0x28, 0x0e, 0x32, 0x2a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f,
-	0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x56, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x45,
-	0x6e, 0x75, 0x6d, 0x2e, 0x56, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x0a,
-	0x76, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x12, 0x21, 0x0a, 0x0c, 0x77, 0x6f,
-	0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x09,
-	0x52, 0x0b, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x49, 0x64, 0x12, 0x1f, 0x0a,
-	0x0b, 0x72, 0x65, 0x61, 0x64, 0x6d, 0x65, 0x5f, 0x74, 0x65, 0x78, 0x74, 0x18, 0x09, 0x20, 0x01,
-	0x28, 0x09, 0x52, 0x0a, 0x72, 0x65, 0x61, 0x64, 0x6d, 0x65, 0x54, 0x65, 0x78, 0x74, 0x12, 0x14,
-	0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x0a, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f,
-	0x77, 0x6e, 0x65, 0x72, 0x12, 0x39, 0x0a, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74,
-	0x65, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65,
-	0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x4b, 0x65, 0x79, 0x56, 0x61,
-	0x6c, 0x75, 0x65, 0x52, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x12,
-	0x30, 0x0a, 0x14, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x73, 0x65, 0x72,
-	0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x0c, 0x20, 0x01, 0x28, 0x04, 0x52, 0x12, 0x77,
-	0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x49,
-	0x64, 0x12, 0x52, 0x0a, 0x11, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x5f, 0x70, 0x65, 0x72, 0x6d,
-	0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x0d, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x61,
-	0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x75, 0x61, 0x63, 0x2e, 0x43, 0x6f, 0x6c, 0x6c,
-	0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69,
-	0x6f, 0x6e, 0x73, 0x52, 0x10, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d, 0x50, 0x65, 0x72, 0x6d, 0x69,
-	0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x51, 0x0a, 0x13, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63,
-	0x65, 0x5f, 0x76, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x18, 0x0e, 0x20, 0x01,
-	0x28, 0x0e, 0x32, 0x20, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x75, 0x61,
-	0x63, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x56, 0x69, 0x73, 0x69, 0x62, 0x69,
-	0x6c, 0x69, 0x74, 0x79, 0x52, 0x12, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x56, 0x69,
-	0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x12, 0x37, 0x0a, 0x09, 0x61, 0x72, 0x74, 0x69,
-	0x66, 0x61, 0x63, 0x74, 0x73, 0x18, 0x0f, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e, 0x61, 0x69,
-	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x41, 0x72,
-	0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x52, 0x09, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74,
-	0x73, 0x12, 0x2e, 0x0a, 0x13, 0x72, 0x65, 0x61, 0x64, 0x6d, 0x65, 0x5f, 0x74, 0x65, 0x78, 0x74,
-	0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x18, 0x10, 0x20, 0x01, 0x28, 0x08, 0x52, 0x11,
-	0x72, 0x65, 0x61, 0x64, 0x6d, 0x65, 0x54, 0x65, 0x78, 0x74, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
-	0x64, 0x12, 0x25, 0x0a, 0x0e, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x6e, 0x75, 0x6d,
-	0x62, 0x65, 0x72, 0x18, 0x11, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d, 0x76, 0x65, 0x72, 0x73, 0x69,
-	0x6f, 0x6e, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x12, 0x45, 0x0a, 0x09, 0x64, 0x61, 0x74, 0x61,
-	0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x12, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x28, 0x2e, 0x61, 0x69,
-	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e,
-	0x44, 0x61, 0x74, 0x61, 0x54, 0x79, 0x70, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x2e, 0x44, 0x61, 0x74,
-	0x61, 0x54, 0x79, 0x70, 0x65, 0x52, 0x08, 0x64, 0x61, 0x74, 0x61, 0x54, 0x79, 0x70, 0x65, 0x12,
-	0x4d, 0x0a, 0x0b, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x13,
-	0x20, 0x01, 0x28, 0x0e, 0x32, 0x2c, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
-	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54,
-	0x79, 0x70, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x2e, 0x41, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79,
-	0x70, 0x65, 0x52, 0x0a, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x22, 0xfc,
+	0x54, 0x49, 0x4f, 0x4e, 0x10, 0x07, 0x1a, 0x02, 0x18, 0x01, 0x3a, 0x02, 0x18, 0x01, 0x22, 0x9a,
+	0x01, 0x0a, 0x0c, 0x54, 0x61, 0x73, 0x6b, 0x54, 0x79, 0x70, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x22,
+	0x89, 0x01, 0x0a, 0x08, 0x54, 0x61, 0x73, 0x6b, 0x54, 0x79, 0x70, 0x65, 0x12, 0x0b, 0x0a, 0x07,
+	0x55, 0x4e, 0x4b, 0x4e, 0x4f, 0x57, 0x4e, 0x10, 0x00, 0x12, 0x09, 0x0a, 0x05, 0x4f, 0x54, 0x48,
+	0x45, 0x52, 0x10, 0x01, 0x12, 0x12, 0x0a, 0x0e, 0x43, 0x4c, 0x41, 0x53, 0x53, 0x49, 0x46, 0x49,
+	0x43, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x10, 0x02, 0x12, 0x0e, 0x0a, 0x0a, 0x43, 0x4c, 0x55, 0x53,
+	0x54, 0x45, 0x52, 0x49, 0x4e, 0x47, 0x10, 0x03, 0x12, 0x0d, 0x0a, 0x09, 0x44, 0x45, 0x54, 0x45,
+	0x43, 0x54, 0x49, 0x4f, 0x4e, 0x10, 0x04, 0x12, 0x0e, 0x0a, 0x0a, 0x52, 0x45, 0x47, 0x52, 0x45,
+	0x53, 0x53, 0x49, 0x4f, 0x4e, 0x10, 0x05, 0x12, 0x11, 0x0a, 0x0d, 0x54, 0x52, 0x41, 0x4e, 0x53,
+	0x43, 0x52, 0x49, 0x50, 0x54, 0x49, 0x4f, 0x4e, 0x10, 0x06, 0x12, 0x0f, 0x0a, 0x0b, 0x54, 0x52,
+	0x41, 0x4e, 0x53, 0x4c, 0x41, 0x54, 0x49, 0x4f, 0x4e, 0x10, 0x07, 0x22, 0xe0, 0x07, 0x0a, 0x0f,
+	0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x12,
+	0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12,
+	0x12, 0x0a, 0x04, 0x6e, 0x61, 0x6d, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x09, 0x52, 0x04, 0x6e,
+	0x61, 0x6d, 0x65, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x69, 0x6d, 0x65, 0x5f, 0x63, 0x72, 0x65, 0x61,
+	0x74, 0x65, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x74, 0x69, 0x6d, 0x65, 0x43,
+	0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x69, 0x6d, 0x65, 0x5f, 0x75,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x74, 0x69,
+	0x6d, 0x65, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x12, 0x20, 0x0a, 0x0b, 0x64, 0x65, 0x73,
+	0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x18, 0x05, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b,
+	0x64, 0x65, 0x73, 0x63, 0x72, 0x69, 0x70, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x16, 0x0a, 0x06, 0x6c,
+	0x61, 0x62, 0x65, 0x6c, 0x73, 0x18, 0x06, 0x20, 0x03, 0x28, 0x09, 0x52, 0x06, 0x6c, 0x61, 0x62,
+	0x65, 0x6c, 0x73, 0x12, 0x4a, 0x0a, 0x0a, 0x76, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74,
+	0x79, 0x18, 0x07, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2a, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
+	0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e, 0x56, 0x69, 0x73, 0x69, 0x62, 0x69,
+	0x6c, 0x69, 0x74, 0x79, 0x45, 0x6e, 0x75, 0x6d, 0x2e, 0x56, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c,
+	0x69, 0x74, 0x79, 0x52, 0x0a, 0x76, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x12,
+	0x21, 0x0a, 0x0c, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18,
+	0x08, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0b, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65,
+	0x49, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x72, 0x65, 0x61, 0x64, 0x6d, 0x65, 0x5f, 0x74, 0x65, 0x78,
+	0x74, 0x18, 0x09, 0x20, 0x01, 0x28, 0x09, 0x52, 0x0a, 0x72, 0x65, 0x61, 0x64, 0x6d, 0x65, 0x54,
+	0x65, 0x78, 0x74, 0x12, 0x14, 0x0a, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x18, 0x0a, 0x20, 0x01,
+	0x28, 0x09, 0x52, 0x05, 0x6f, 0x77, 0x6e, 0x65, 0x72, 0x12, 0x39, 0x0a, 0x0a, 0x61, 0x74, 0x74,
+	0x72, 0x69, 0x62, 0x75, 0x74, 0x65, 0x73, 0x18, 0x0b, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x19, 0x2e,
+	0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e,
+	0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x0a, 0x61, 0x74, 0x74, 0x72, 0x69, 0x62,
+	0x75, 0x74, 0x65, 0x73, 0x12, 0x30, 0x0a, 0x14, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63,
+	0x65, 0x5f, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x0c, 0x20, 0x01,
+	0x28, 0x04, 0x52, 0x12, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x53, 0x65, 0x72,
+	0x76, 0x69, 0x63, 0x65, 0x49, 0x64, 0x12, 0x52, 0x0a, 0x11, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d,
+	0x5f, 0x70, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x18, 0x0d, 0x20, 0x01, 0x28,
+	0x0b, 0x32, 0x25, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x75, 0x61, 0x63,
+	0x2e, 0x43, 0x6f, 0x6c, 0x6c, 0x61, 0x62, 0x6f, 0x72, 0x61, 0x74, 0x6f, 0x72, 0x50, 0x65, 0x72,
+	0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x52, 0x10, 0x63, 0x75, 0x73, 0x74, 0x6f, 0x6d,
+	0x50, 0x65, 0x72, 0x6d, 0x69, 0x73, 0x73, 0x69, 0x6f, 0x6e, 0x12, 0x51, 0x0a, 0x13, 0x72, 0x65,
+	0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x5f, 0x76, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74,
+	0x79, 0x18, 0x0e, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x20, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
+	0x74, 0x61, 0x2e, 0x75, 0x61, 0x63, 0x2e, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x56,
+	0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x52, 0x12, 0x72, 0x65, 0x73, 0x6f, 0x75,
+	0x72, 0x63, 0x65, 0x56, 0x69, 0x73, 0x69, 0x62, 0x69, 0x6c, 0x69, 0x74, 0x79, 0x12, 0x37, 0x0a,
+	0x09, 0x61, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x73, 0x18, 0x0f, 0x20, 0x03, 0x28, 0x0b,
+	0x32, 0x19, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d,
+	0x6f, 0x6e, 0x2e, 0x41, 0x72, 0x74, 0x69, 0x66, 0x61, 0x63, 0x74, 0x52, 0x09, 0x61, 0x72, 0x74,
+	0x69, 0x66, 0x61, 0x63, 0x74, 0x73, 0x12, 0x2e, 0x0a, 0x13, 0x72, 0x65, 0x61, 0x64, 0x6d, 0x65,
+	0x5f, 0x74, 0x65, 0x78, 0x74, 0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x18, 0x10, 0x20,
+	0x01, 0x28, 0x08, 0x52, 0x11, 0x72, 0x65, 0x61, 0x64, 0x6d, 0x65, 0x54, 0x65, 0x78, 0x74, 0x55,
+	0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x12, 0x25, 0x0a, 0x0e, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
+	0x6e, 0x5f, 0x6e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x18, 0x11, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0d,
+	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x4e, 0x75, 0x6d, 0x62, 0x65, 0x72, 0x12, 0x45, 0x0a,
+	0x09, 0x64, 0x61, 0x74, 0x61, 0x5f, 0x74, 0x79, 0x70, 0x65, 0x18, 0x12, 0x20, 0x01, 0x28, 0x0e,
+	0x32, 0x28, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x72, 0x79, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x54, 0x79, 0x70, 0x65, 0x45, 0x6e, 0x75,
+	0x6d, 0x2e, 0x44, 0x61, 0x74, 0x61, 0x54, 0x79, 0x70, 0x65, 0x52, 0x08, 0x64, 0x61, 0x74, 0x61,
+	0x54, 0x79, 0x70, 0x65, 0x12, 0x51, 0x0a, 0x0b, 0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x5f, 0x74,
+	0x79, 0x70, 0x65, 0x18, 0x13, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x2c, 0x2e, 0x61, 0x69, 0x2e, 0x76,
+	0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x41, 0x63,
+	0x74, 0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x2e, 0x41, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x42, 0x02, 0x18, 0x01, 0x52, 0x0a, 0x61, 0x63, 0x74,
+	0x69, 0x6f, 0x6e, 0x54, 0x79, 0x70, 0x65, 0x12, 0x45, 0x0a, 0x09, 0x74, 0x61, 0x73, 0x6b, 0x5f,
+	0x74, 0x79, 0x70, 0x65, 0x18, 0x14, 0x20, 0x01, 0x28, 0x0e, 0x32, 0x28, 0x2e, 0x61, 0x69, 0x2e,
+	0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x54,
+	0x61, 0x73, 0x6b, 0x54, 0x79, 0x70, 0x65, 0x45, 0x6e, 0x75, 0x6d, 0x2e, 0x54, 0x61, 0x73, 0x6b,
+	0x54, 0x79, 0x70, 0x65, 0x52, 0x08, 0x74, 0x61, 0x73, 0x6b, 0x54, 0x79, 0x70, 0x65, 0x22, 0xfc,
 	0x02, 0x0a, 0x1a, 0x46, 0x69, 0x6e, 0x64, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65,
 	0x64, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x25, 0x0a,
 	0x0e, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x18,
@@ -3787,173 +3916,176 @@ func file_registry_RegistryService_proto_rawDescGZIP() []byte {
 	return file_registry_RegistryService_proto_rawDescData
 }
 
-var file_registry_RegistryService_proto_enumTypes = make([]protoimpl.EnumInfo, 3)
-var file_registry_RegistryService_proto_msgTypes = make([]protoimpl.MessageInfo, 48)
+var file_registry_RegistryService_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
+var file_registry_RegistryService_proto_msgTypes = make([]protoimpl.MessageInfo, 49)
 var file_registry_RegistryService_proto_goTypes = []interface{}{
 	(DataTypeEnum_DataType)(0),                           // 0: ai.verta.registry.DataTypeEnum.DataType
 	(ActionTypeEnum_ActionType)(0),                       // 1: ai.verta.registry.ActionTypeEnum.ActionType
-	(ModelVersionLockLevelEnum_ModelVersionLockLevel)(0), // 2: ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel
-	(*DataTypeEnum)(nil),                                 // 3: ai.verta.registry.DataTypeEnum
-	(*ActionTypeEnum)(nil),                               // 4: ai.verta.registry.ActionTypeEnum
-	(*RegisteredModel)(nil),                              // 5: ai.verta.registry.RegisteredModel
-	(*FindRegisteredModelRequest)(nil),                   // 6: ai.verta.registry.FindRegisteredModelRequest
-	(*GetRegisteredModelRequest)(nil),                    // 7: ai.verta.registry.GetRegisteredModelRequest
-	(*GetRegisteredModelCountRequest)(nil),               // 8: ai.verta.registry.GetRegisteredModelCountRequest
-	(*RegisteredModelNamedIdentification)(nil),           // 9: ai.verta.registry.RegisteredModelNamedIdentification
-	(*RegisteredModelIdentification)(nil),                // 10: ai.verta.registry.RegisteredModelIdentification
-	(*SetRegisteredModel)(nil),                           // 11: ai.verta.registry.SetRegisteredModel
-	(*DeleteRegisteredModelRequest)(nil),                 // 12: ai.verta.registry.DeleteRegisteredModelRequest
-	(*ModelVersionLockLevelEnum)(nil),                    // 13: ai.verta.registry.ModelVersionLockLevelEnum
-	(*ModelVersion)(nil),                                 // 14: ai.verta.registry.ModelVersion
-	(*DockerMetadata)(nil),                               // 15: ai.verta.registry.DockerMetadata
-	(*SetLockModelVersionRequest)(nil),                   // 16: ai.verta.registry.SetLockModelVersionRequest
-	(*ModelVersionIdentification)(nil),                   // 17: ai.verta.registry.ModelVersionIdentification
-	(*GetModelVersionRequest)(nil),                       // 18: ai.verta.registry.GetModelVersionRequest
-	(*FindModelVersionRequest)(nil),                      // 19: ai.verta.registry.FindModelVersionRequest
-	(*SetModelVersion)(nil),                              // 20: ai.verta.registry.SetModelVersion
-	(*DeleteModelVersionRequest)(nil),                    // 21: ai.verta.registry.DeleteModelVersionRequest
-	(*GetUrlForArtifact)(nil),                            // 22: ai.verta.registry.GetUrlForArtifact
-	(*CommitArtifactPart)(nil),                           // 23: ai.verta.registry.CommitArtifactPart
-	(*GetCommittedArtifactParts)(nil),                    // 24: ai.verta.registry.GetCommittedArtifactParts
-	(*CommitMultipartArtifact)(nil),                      // 25: ai.verta.registry.CommitMultipartArtifact
-	(*LogDatasetsInModelVersion)(nil),                    // 26: ai.verta.registry.LogDatasetsInModelVersion
-	(*LogCodeBlobInModelVersion)(nil),                    // 27: ai.verta.registry.LogCodeBlobInModelVersion
-	(*LogAttributesInModelVersion)(nil),                  // 28: ai.verta.registry.LogAttributesInModelVersion
-	(*LogDockerMetadataInModelVersion)(nil),              // 29: ai.verta.registry.LogDockerMetadataInModelVersion
-	(*FindRegisteredModelRequest_Response)(nil),          // 30: ai.verta.registry.FindRegisteredModelRequest.Response
-	(*GetRegisteredModelRequest_Response)(nil),           // 31: ai.verta.registry.GetRegisteredModelRequest.Response
-	(*GetRegisteredModelCountRequest_Response)(nil),      // 32: ai.verta.registry.GetRegisteredModelCountRequest.Response
-	(*SetRegisteredModel_Response)(nil),                  // 33: ai.verta.registry.SetRegisteredModel.Response
-	(*DeleteRegisteredModelRequest_Response)(nil),        // 34: ai.verta.registry.DeleteRegisteredModelRequest.Response
-	nil, // 35: ai.verta.registry.ModelVersion.CodeBlobMapEntry
-	(*SetLockModelVersionRequest_Response)(nil), // 36: ai.verta.registry.SetLockModelVersionRequest.Response
-	(*GetModelVersionRequest_Response)(nil),     // 37: ai.verta.registry.GetModelVersionRequest.Response
-	(*FindModelVersionRequest_Response)(nil),    // 38: ai.verta.registry.FindModelVersionRequest.Response
-	(*SetModelVersion_Response)(nil),            // 39: ai.verta.registry.SetModelVersion.Response
-	(*DeleteModelVersionRequest_Response)(nil),  // 40: ai.verta.registry.DeleteModelVersionRequest.Response
-	(*GetUrlForArtifact_Response)(nil),          // 41: ai.verta.registry.GetUrlForArtifact.Response
-	nil,                                         // 42: ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry
-	(*CommitArtifactPart_Response)(nil),         // 43: ai.verta.registry.CommitArtifactPart.Response
-	(*GetCommittedArtifactParts_Response)(nil),  // 44: ai.verta.registry.GetCommittedArtifactParts.Response
-	(*CommitMultipartArtifact_Response)(nil),    // 45: ai.verta.registry.CommitMultipartArtifact.Response
-	(*LogDatasetsInModelVersion_Response)(nil),  // 46: ai.verta.registry.LogDatasetsInModelVersion.Response
-	nil, // 47: ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry
-	(*LogCodeBlobInModelVersion_Response)(nil),       // 48: ai.verta.registry.LogCodeBlobInModelVersion.Response
-	(*LogAttributesInModelVersion_Response)(nil),     // 49: ai.verta.registry.LogAttributesInModelVersion.Response
-	(*LogDockerMetadataInModelVersion_Response)(nil), // 50: ai.verta.registry.LogDockerMetadataInModelVersion.Response
-	(common.VisibilityEnum_Visibility)(0),            // 51: ai.verta.common.VisibilityEnum.Visibility
-	(*common.KeyValue)(nil),                          // 52: ai.verta.common.KeyValue
-	(*uac.CollaboratorPermissions)(nil),              // 53: ai.verta.uac.CollaboratorPermissions
-	(uac.ResourceVisibility)(0),                      // 54: ai.verta.uac.ResourceVisibility
-	(*common.Artifact)(nil),                          // 55: ai.verta.common.Artifact
-	(*common.KeyValueQuery)(nil),                     // 56: ai.verta.common.KeyValueQuery
-	(*common.Pagination)(nil),                        // 57: ai.verta.common.Pagination
-	(*field_mask.FieldMask)(nil),                     // 58: google.protobuf.FieldMask
-	(*versioning.EnvironmentBlob)(nil),               // 59: ai.verta.modeldb.versioning.EnvironmentBlob
-	(common.TernaryEnum_Ternary)(0),                  // 60: ai.verta.common.TernaryEnum.Ternary
-	(StageEnum_Stage)(0),                             // 61: ai.verta.registry.StageEnum.Stage
-	(common.ArtifactTypeEnum_ArtifactType)(0),        // 62: ai.verta.common.ArtifactTypeEnum.ArtifactType
-	(*common.ArtifactPart)(nil),                      // 63: ai.verta.common.ArtifactPart
-	(*versioning.CodeBlob)(nil),                      // 64: ai.verta.modeldb.versioning.CodeBlob
+	(TaskTypeEnum_TaskType)(0),                           // 2: ai.verta.registry.TaskTypeEnum.TaskType
+	(ModelVersionLockLevelEnum_ModelVersionLockLevel)(0), // 3: ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel
+	(*DataTypeEnum)(nil),                                 // 4: ai.verta.registry.DataTypeEnum
+	(*ActionTypeEnum)(nil),                               // 5: ai.verta.registry.ActionTypeEnum
+	(*TaskTypeEnum)(nil),                                 // 6: ai.verta.registry.TaskTypeEnum
+	(*RegisteredModel)(nil),                              // 7: ai.verta.registry.RegisteredModel
+	(*FindRegisteredModelRequest)(nil),                   // 8: ai.verta.registry.FindRegisteredModelRequest
+	(*GetRegisteredModelRequest)(nil),                    // 9: ai.verta.registry.GetRegisteredModelRequest
+	(*GetRegisteredModelCountRequest)(nil),               // 10: ai.verta.registry.GetRegisteredModelCountRequest
+	(*RegisteredModelNamedIdentification)(nil),           // 11: ai.verta.registry.RegisteredModelNamedIdentification
+	(*RegisteredModelIdentification)(nil),                // 12: ai.verta.registry.RegisteredModelIdentification
+	(*SetRegisteredModel)(nil),                           // 13: ai.verta.registry.SetRegisteredModel
+	(*DeleteRegisteredModelRequest)(nil),                 // 14: ai.verta.registry.DeleteRegisteredModelRequest
+	(*ModelVersionLockLevelEnum)(nil),                    // 15: ai.verta.registry.ModelVersionLockLevelEnum
+	(*ModelVersion)(nil),                                 // 16: ai.verta.registry.ModelVersion
+	(*DockerMetadata)(nil),                               // 17: ai.verta.registry.DockerMetadata
+	(*SetLockModelVersionRequest)(nil),                   // 18: ai.verta.registry.SetLockModelVersionRequest
+	(*ModelVersionIdentification)(nil),                   // 19: ai.verta.registry.ModelVersionIdentification
+	(*GetModelVersionRequest)(nil),                       // 20: ai.verta.registry.GetModelVersionRequest
+	(*FindModelVersionRequest)(nil),                      // 21: ai.verta.registry.FindModelVersionRequest
+	(*SetModelVersion)(nil),                              // 22: ai.verta.registry.SetModelVersion
+	(*DeleteModelVersionRequest)(nil),                    // 23: ai.verta.registry.DeleteModelVersionRequest
+	(*GetUrlForArtifact)(nil),                            // 24: ai.verta.registry.GetUrlForArtifact
+	(*CommitArtifactPart)(nil),                           // 25: ai.verta.registry.CommitArtifactPart
+	(*GetCommittedArtifactParts)(nil),                    // 26: ai.verta.registry.GetCommittedArtifactParts
+	(*CommitMultipartArtifact)(nil),                      // 27: ai.verta.registry.CommitMultipartArtifact
+	(*LogDatasetsInModelVersion)(nil),                    // 28: ai.verta.registry.LogDatasetsInModelVersion
+	(*LogCodeBlobInModelVersion)(nil),                    // 29: ai.verta.registry.LogCodeBlobInModelVersion
+	(*LogAttributesInModelVersion)(nil),                  // 30: ai.verta.registry.LogAttributesInModelVersion
+	(*LogDockerMetadataInModelVersion)(nil),              // 31: ai.verta.registry.LogDockerMetadataInModelVersion
+	(*FindRegisteredModelRequest_Response)(nil),          // 32: ai.verta.registry.FindRegisteredModelRequest.Response
+	(*GetRegisteredModelRequest_Response)(nil),           // 33: ai.verta.registry.GetRegisteredModelRequest.Response
+	(*GetRegisteredModelCountRequest_Response)(nil),      // 34: ai.verta.registry.GetRegisteredModelCountRequest.Response
+	(*SetRegisteredModel_Response)(nil),                  // 35: ai.verta.registry.SetRegisteredModel.Response
+	(*DeleteRegisteredModelRequest_Response)(nil),        // 36: ai.verta.registry.DeleteRegisteredModelRequest.Response
+	nil, // 37: ai.verta.registry.ModelVersion.CodeBlobMapEntry
+	(*SetLockModelVersionRequest_Response)(nil), // 38: ai.verta.registry.SetLockModelVersionRequest.Response
+	(*GetModelVersionRequest_Response)(nil),     // 39: ai.verta.registry.GetModelVersionRequest.Response
+	(*FindModelVersionRequest_Response)(nil),    // 40: ai.verta.registry.FindModelVersionRequest.Response
+	(*SetModelVersion_Response)(nil),            // 41: ai.verta.registry.SetModelVersion.Response
+	(*DeleteModelVersionRequest_Response)(nil),  // 42: ai.verta.registry.DeleteModelVersionRequest.Response
+	(*GetUrlForArtifact_Response)(nil),          // 43: ai.verta.registry.GetUrlForArtifact.Response
+	nil,                                         // 44: ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry
+	(*CommitArtifactPart_Response)(nil),         // 45: ai.verta.registry.CommitArtifactPart.Response
+	(*GetCommittedArtifactParts_Response)(nil),  // 46: ai.verta.registry.GetCommittedArtifactParts.Response
+	(*CommitMultipartArtifact_Response)(nil),    // 47: ai.verta.registry.CommitMultipartArtifact.Response
+	(*LogDatasetsInModelVersion_Response)(nil),  // 48: ai.verta.registry.LogDatasetsInModelVersion.Response
+	nil, // 49: ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry
+	(*LogCodeBlobInModelVersion_Response)(nil),       // 50: ai.verta.registry.LogCodeBlobInModelVersion.Response
+	(*LogAttributesInModelVersion_Response)(nil),     // 51: ai.verta.registry.LogAttributesInModelVersion.Response
+	(*LogDockerMetadataInModelVersion_Response)(nil), // 52: ai.verta.registry.LogDockerMetadataInModelVersion.Response
+	(common.VisibilityEnum_Visibility)(0),            // 53: ai.verta.common.VisibilityEnum.Visibility
+	(*common.KeyValue)(nil),                          // 54: ai.verta.common.KeyValue
+	(*uac.CollaboratorPermissions)(nil),              // 55: ai.verta.uac.CollaboratorPermissions
+	(uac.ResourceVisibility)(0),                      // 56: ai.verta.uac.ResourceVisibility
+	(*common.Artifact)(nil),                          // 57: ai.verta.common.Artifact
+	(*common.KeyValueQuery)(nil),                     // 58: ai.verta.common.KeyValueQuery
+	(*common.Pagination)(nil),                        // 59: ai.verta.common.Pagination
+	(*field_mask.FieldMask)(nil),                     // 60: google.protobuf.FieldMask
+	(*versioning.EnvironmentBlob)(nil),               // 61: ai.verta.modeldb.versioning.EnvironmentBlob
+	(common.TernaryEnum_Ternary)(0),                  // 62: ai.verta.common.TernaryEnum.Ternary
+	(StageEnum_Stage)(0),                             // 63: ai.verta.registry.StageEnum.Stage
+	(common.ArtifactTypeEnum_ArtifactType)(0),        // 64: ai.verta.common.ArtifactTypeEnum.ArtifactType
+	(*common.ArtifactPart)(nil),                      // 65: ai.verta.common.ArtifactPart
+	(*versioning.CodeBlob)(nil),                      // 66: ai.verta.modeldb.versioning.CodeBlob
 }
 var file_registry_RegistryService_proto_depIdxs = []int32{
-	51, // 0: ai.verta.registry.RegisteredModel.visibility:type_name -> ai.verta.common.VisibilityEnum.Visibility
-	52, // 1: ai.verta.registry.RegisteredModel.attributes:type_name -> ai.verta.common.KeyValue
-	53, // 2: ai.verta.registry.RegisteredModel.custom_permission:type_name -> ai.verta.uac.CollaboratorPermissions
-	54, // 3: ai.verta.registry.RegisteredModel.resource_visibility:type_name -> ai.verta.uac.ResourceVisibility
-	55, // 4: ai.verta.registry.RegisteredModel.artifacts:type_name -> ai.verta.common.Artifact
+	53, // 0: ai.verta.registry.RegisteredModel.visibility:type_name -> ai.verta.common.VisibilityEnum.Visibility
+	54, // 1: ai.verta.registry.RegisteredModel.attributes:type_name -> ai.verta.common.KeyValue
+	55, // 2: ai.verta.registry.RegisteredModel.custom_permission:type_name -> ai.verta.uac.CollaboratorPermissions
+	56, // 3: ai.verta.registry.RegisteredModel.resource_visibility:type_name -> ai.verta.uac.ResourceVisibility
+	57, // 4: ai.verta.registry.RegisteredModel.artifacts:type_name -> ai.verta.common.Artifact
 	0,  // 5: ai.verta.registry.RegisteredModel.data_type:type_name -> ai.verta.registry.DataTypeEnum.DataType
 	1,  // 6: ai.verta.registry.RegisteredModel.action_type:type_name -> ai.verta.registry.ActionTypeEnum.ActionType
-	56, // 7: ai.verta.registry.FindRegisteredModelRequest.predicates:type_name -> ai.verta.common.KeyValueQuery
-	57, // 8: ai.verta.registry.FindRegisteredModelRequest.pagination:type_name -> ai.verta.common.Pagination
-	10, // 9: ai.verta.registry.GetRegisteredModelRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
-	9,  // 10: ai.verta.registry.RegisteredModelIdentification.named_id:type_name -> ai.verta.registry.RegisteredModelNamedIdentification
-	10, // 11: ai.verta.registry.SetRegisteredModel.id:type_name -> ai.verta.registry.RegisteredModelIdentification
-	5,  // 12: ai.verta.registry.SetRegisteredModel.registered_model:type_name -> ai.verta.registry.RegisteredModel
-	58, // 13: ai.verta.registry.SetRegisteredModel.update_mask:type_name -> google.protobuf.FieldMask
-	10, // 14: ai.verta.registry.DeleteRegisteredModelRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
-	55, // 15: ai.verta.registry.ModelVersion.model:type_name -> ai.verta.common.Artifact
-	59, // 16: ai.verta.registry.ModelVersion.environment:type_name -> ai.verta.modeldb.versioning.EnvironmentBlob
-	15, // 17: ai.verta.registry.ModelVersion.docker_metadata:type_name -> ai.verta.registry.DockerMetadata
-	55, // 18: ai.verta.registry.ModelVersion.artifacts:type_name -> ai.verta.common.Artifact
-	60, // 19: ai.verta.registry.ModelVersion.archived:type_name -> ai.verta.common.TernaryEnum.Ternary
-	52, // 20: ai.verta.registry.ModelVersion.attributes:type_name -> ai.verta.common.KeyValue
-	61, // 21: ai.verta.registry.ModelVersion.stage:type_name -> ai.verta.registry.StageEnum.Stage
-	2,  // 22: ai.verta.registry.ModelVersion.lock_level:type_name -> ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel
-	55, // 23: ai.verta.registry.ModelVersion.datasets:type_name -> ai.verta.common.Artifact
-	35, // 24: ai.verta.registry.ModelVersion.code_blob_map:type_name -> ai.verta.registry.ModelVersion.CodeBlobMapEntry
-	17, // 25: ai.verta.registry.SetLockModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
-	2,  // 26: ai.verta.registry.SetLockModelVersionRequest.lock_level:type_name -> ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel
-	10, // 27: ai.verta.registry.ModelVersionIdentification.model_id:type_name -> ai.verta.registry.RegisteredModelIdentification
-	17, // 28: ai.verta.registry.GetModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
-	10, // 29: ai.verta.registry.FindModelVersionRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
-	56, // 30: ai.verta.registry.FindModelVersionRequest.predicates:type_name -> ai.verta.common.KeyValueQuery
-	57, // 31: ai.verta.registry.FindModelVersionRequest.pagination:type_name -> ai.verta.common.Pagination
-	17, // 32: ai.verta.registry.SetModelVersion.id:type_name -> ai.verta.registry.ModelVersionIdentification
-	14, // 33: ai.verta.registry.SetModelVersion.model_version:type_name -> ai.verta.registry.ModelVersion
-	58, // 34: ai.verta.registry.SetModelVersion.update_mask:type_name -> google.protobuf.FieldMask
-	17, // 35: ai.verta.registry.DeleteModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
-	62, // 36: ai.verta.registry.GetUrlForArtifact.artifact_type:type_name -> ai.verta.common.ArtifactTypeEnum.ArtifactType
-	63, // 37: ai.verta.registry.CommitArtifactPart.artifact_part:type_name -> ai.verta.common.ArtifactPart
-	55, // 38: ai.verta.registry.LogDatasetsInModelVersion.datasets:type_name -> ai.verta.common.Artifact
-	47, // 39: ai.verta.registry.LogCodeBlobInModelVersion.code_blob_map:type_name -> ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry
-	52, // 40: ai.verta.registry.LogAttributesInModelVersion.attributes:type_name -> ai.verta.common.KeyValue
-	15, // 41: ai.verta.registry.LogDockerMetadataInModelVersion.docker_metadata:type_name -> ai.verta.registry.DockerMetadata
-	5,  // 42: ai.verta.registry.FindRegisteredModelRequest.Response.registered_models:type_name -> ai.verta.registry.RegisteredModel
-	5,  // 43: ai.verta.registry.GetRegisteredModelRequest.Response.registered_model:type_name -> ai.verta.registry.RegisteredModel
-	5,  // 44: ai.verta.registry.SetRegisteredModel.Response.registered_model:type_name -> ai.verta.registry.RegisteredModel
-	64, // 45: ai.verta.registry.ModelVersion.CodeBlobMapEntry.value:type_name -> ai.verta.modeldb.versioning.CodeBlob
-	14, // 46: ai.verta.registry.GetModelVersionRequest.Response.model_version:type_name -> ai.verta.registry.ModelVersion
-	14, // 47: ai.verta.registry.FindModelVersionRequest.Response.model_versions:type_name -> ai.verta.registry.ModelVersion
-	14, // 48: ai.verta.registry.SetModelVersion.Response.model_version:type_name -> ai.verta.registry.ModelVersion
-	42, // 49: ai.verta.registry.GetUrlForArtifact.Response.fields:type_name -> ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry
-	63, // 50: ai.verta.registry.GetCommittedArtifactParts.Response.artifact_parts:type_name -> ai.verta.common.ArtifactPart
-	64, // 51: ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry.value:type_name -> ai.verta.modeldb.versioning.CodeBlob
-	6,  // 52: ai.verta.registry.RegistryService.FindRegisteredModel:input_type -> ai.verta.registry.FindRegisteredModelRequest
-	7,  // 53: ai.verta.registry.RegistryService.GetRegisteredModel:input_type -> ai.verta.registry.GetRegisteredModelRequest
-	8,  // 54: ai.verta.registry.RegistryService.GetRegisteredModelCount:input_type -> ai.verta.registry.GetRegisteredModelCountRequest
-	11, // 55: ai.verta.registry.RegistryService.CreateRegisteredModel:input_type -> ai.verta.registry.SetRegisteredModel
-	11, // 56: ai.verta.registry.RegistryService.UpdateRegisteredModel:input_type -> ai.verta.registry.SetRegisteredModel
-	12, // 57: ai.verta.registry.RegistryService.DeleteRegisteredModel:input_type -> ai.verta.registry.DeleteRegisteredModelRequest
-	19, // 58: ai.verta.registry.RegistryService.FindModelVersion:input_type -> ai.verta.registry.FindModelVersionRequest
-	18, // 59: ai.verta.registry.RegistryService.GetModelVersion:input_type -> ai.verta.registry.GetModelVersionRequest
-	20, // 60: ai.verta.registry.RegistryService.CreateModelVersion:input_type -> ai.verta.registry.SetModelVersion
-	20, // 61: ai.verta.registry.RegistryService.UpdateModelVersion:input_type -> ai.verta.registry.SetModelVersion
-	16, // 62: ai.verta.registry.RegistryService.SetLockModelVersion:input_type -> ai.verta.registry.SetLockModelVersionRequest
-	21, // 63: ai.verta.registry.RegistryService.DeleteModelVersion:input_type -> ai.verta.registry.DeleteModelVersionRequest
-	22, // 64: ai.verta.registry.RegistryService.getUrlForArtifact:input_type -> ai.verta.registry.GetUrlForArtifact
-	23, // 65: ai.verta.registry.RegistryService.commitArtifactPart:input_type -> ai.verta.registry.CommitArtifactPart
-	24, // 66: ai.verta.registry.RegistryService.getCommittedArtifactParts:input_type -> ai.verta.registry.GetCommittedArtifactParts
-	25, // 67: ai.verta.registry.RegistryService.commitMultipartArtifact:input_type -> ai.verta.registry.CommitMultipartArtifact
-	26, // 68: ai.verta.registry.RegistryService.logDatasetsInModelVersion:input_type -> ai.verta.registry.LogDatasetsInModelVersion
-	27, // 69: ai.verta.registry.RegistryService.logCodeBlobInModelVersion:input_type -> ai.verta.registry.LogCodeBlobInModelVersion
-	28, // 70: ai.verta.registry.RegistryService.logAttributesInModelVersion:input_type -> ai.verta.registry.LogAttributesInModelVersion
-	29, // 71: ai.verta.registry.RegistryService.logDockerMetadataInModelVersion:input_type -> ai.verta.registry.LogDockerMetadataInModelVersion
-	30, // 72: ai.verta.registry.RegistryService.FindRegisteredModel:output_type -> ai.verta.registry.FindRegisteredModelRequest.Response
-	31, // 73: ai.verta.registry.RegistryService.GetRegisteredModel:output_type -> ai.verta.registry.GetRegisteredModelRequest.Response
-	32, // 74: ai.verta.registry.RegistryService.GetRegisteredModelCount:output_type -> ai.verta.registry.GetRegisteredModelCountRequest.Response
-	33, // 75: ai.verta.registry.RegistryService.CreateRegisteredModel:output_type -> ai.verta.registry.SetRegisteredModel.Response
-	33, // 76: ai.verta.registry.RegistryService.UpdateRegisteredModel:output_type -> ai.verta.registry.SetRegisteredModel.Response
-	34, // 77: ai.verta.registry.RegistryService.DeleteRegisteredModel:output_type -> ai.verta.registry.DeleteRegisteredModelRequest.Response
-	38, // 78: ai.verta.registry.RegistryService.FindModelVersion:output_type -> ai.verta.registry.FindModelVersionRequest.Response
-	37, // 79: ai.verta.registry.RegistryService.GetModelVersion:output_type -> ai.verta.registry.GetModelVersionRequest.Response
-	39, // 80: ai.verta.registry.RegistryService.CreateModelVersion:output_type -> ai.verta.registry.SetModelVersion.Response
-	39, // 81: ai.verta.registry.RegistryService.UpdateModelVersion:output_type -> ai.verta.registry.SetModelVersion.Response
-	36, // 82: ai.verta.registry.RegistryService.SetLockModelVersion:output_type -> ai.verta.registry.SetLockModelVersionRequest.Response
-	40, // 83: ai.verta.registry.RegistryService.DeleteModelVersion:output_type -> ai.verta.registry.DeleteModelVersionRequest.Response
-	41, // 84: ai.verta.registry.RegistryService.getUrlForArtifact:output_type -> ai.verta.registry.GetUrlForArtifact.Response
-	43, // 85: ai.verta.registry.RegistryService.commitArtifactPart:output_type -> ai.verta.registry.CommitArtifactPart.Response
-	44, // 86: ai.verta.registry.RegistryService.getCommittedArtifactParts:output_type -> ai.verta.registry.GetCommittedArtifactParts.Response
-	45, // 87: ai.verta.registry.RegistryService.commitMultipartArtifact:output_type -> ai.verta.registry.CommitMultipartArtifact.Response
-	46, // 88: ai.verta.registry.RegistryService.logDatasetsInModelVersion:output_type -> ai.verta.registry.LogDatasetsInModelVersion.Response
-	48, // 89: ai.verta.registry.RegistryService.logCodeBlobInModelVersion:output_type -> ai.verta.registry.LogCodeBlobInModelVersion.Response
-	49, // 90: ai.verta.registry.RegistryService.logAttributesInModelVersion:output_type -> ai.verta.registry.LogAttributesInModelVersion.Response
-	50, // 91: ai.verta.registry.RegistryService.logDockerMetadataInModelVersion:output_type -> ai.verta.registry.LogDockerMetadataInModelVersion.Response
-	72, // [72:92] is the sub-list for method output_type
-	52, // [52:72] is the sub-list for method input_type
-	52, // [52:52] is the sub-list for extension type_name
-	52, // [52:52] is the sub-list for extension extendee
-	0,  // [0:52] is the sub-list for field type_name
+	2,  // 7: ai.verta.registry.RegisteredModel.task_type:type_name -> ai.verta.registry.TaskTypeEnum.TaskType
+	58, // 8: ai.verta.registry.FindRegisteredModelRequest.predicates:type_name -> ai.verta.common.KeyValueQuery
+	59, // 9: ai.verta.registry.FindRegisteredModelRequest.pagination:type_name -> ai.verta.common.Pagination
+	12, // 10: ai.verta.registry.GetRegisteredModelRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
+	11, // 11: ai.verta.registry.RegisteredModelIdentification.named_id:type_name -> ai.verta.registry.RegisteredModelNamedIdentification
+	12, // 12: ai.verta.registry.SetRegisteredModel.id:type_name -> ai.verta.registry.RegisteredModelIdentification
+	7,  // 13: ai.verta.registry.SetRegisteredModel.registered_model:type_name -> ai.verta.registry.RegisteredModel
+	60, // 14: ai.verta.registry.SetRegisteredModel.update_mask:type_name -> google.protobuf.FieldMask
+	12, // 15: ai.verta.registry.DeleteRegisteredModelRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
+	57, // 16: ai.verta.registry.ModelVersion.model:type_name -> ai.verta.common.Artifact
+	61, // 17: ai.verta.registry.ModelVersion.environment:type_name -> ai.verta.modeldb.versioning.EnvironmentBlob
+	17, // 18: ai.verta.registry.ModelVersion.docker_metadata:type_name -> ai.verta.registry.DockerMetadata
+	57, // 19: ai.verta.registry.ModelVersion.artifacts:type_name -> ai.verta.common.Artifact
+	62, // 20: ai.verta.registry.ModelVersion.archived:type_name -> ai.verta.common.TernaryEnum.Ternary
+	54, // 21: ai.verta.registry.ModelVersion.attributes:type_name -> ai.verta.common.KeyValue
+	63, // 22: ai.verta.registry.ModelVersion.stage:type_name -> ai.verta.registry.StageEnum.Stage
+	3,  // 23: ai.verta.registry.ModelVersion.lock_level:type_name -> ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel
+	57, // 24: ai.verta.registry.ModelVersion.datasets:type_name -> ai.verta.common.Artifact
+	37, // 25: ai.verta.registry.ModelVersion.code_blob_map:type_name -> ai.verta.registry.ModelVersion.CodeBlobMapEntry
+	19, // 26: ai.verta.registry.SetLockModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
+	3,  // 27: ai.verta.registry.SetLockModelVersionRequest.lock_level:type_name -> ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel
+	12, // 28: ai.verta.registry.ModelVersionIdentification.model_id:type_name -> ai.verta.registry.RegisteredModelIdentification
+	19, // 29: ai.verta.registry.GetModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
+	12, // 30: ai.verta.registry.FindModelVersionRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
+	58, // 31: ai.verta.registry.FindModelVersionRequest.predicates:type_name -> ai.verta.common.KeyValueQuery
+	59, // 32: ai.verta.registry.FindModelVersionRequest.pagination:type_name -> ai.verta.common.Pagination
+	19, // 33: ai.verta.registry.SetModelVersion.id:type_name -> ai.verta.registry.ModelVersionIdentification
+	16, // 34: ai.verta.registry.SetModelVersion.model_version:type_name -> ai.verta.registry.ModelVersion
+	60, // 35: ai.verta.registry.SetModelVersion.update_mask:type_name -> google.protobuf.FieldMask
+	19, // 36: ai.verta.registry.DeleteModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
+	64, // 37: ai.verta.registry.GetUrlForArtifact.artifact_type:type_name -> ai.verta.common.ArtifactTypeEnum.ArtifactType
+	65, // 38: ai.verta.registry.CommitArtifactPart.artifact_part:type_name -> ai.verta.common.ArtifactPart
+	57, // 39: ai.verta.registry.LogDatasetsInModelVersion.datasets:type_name -> ai.verta.common.Artifact
+	49, // 40: ai.verta.registry.LogCodeBlobInModelVersion.code_blob_map:type_name -> ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry
+	54, // 41: ai.verta.registry.LogAttributesInModelVersion.attributes:type_name -> ai.verta.common.KeyValue
+	17, // 42: ai.verta.registry.LogDockerMetadataInModelVersion.docker_metadata:type_name -> ai.verta.registry.DockerMetadata
+	7,  // 43: ai.verta.registry.FindRegisteredModelRequest.Response.registered_models:type_name -> ai.verta.registry.RegisteredModel
+	7,  // 44: ai.verta.registry.GetRegisteredModelRequest.Response.registered_model:type_name -> ai.verta.registry.RegisteredModel
+	7,  // 45: ai.verta.registry.SetRegisteredModel.Response.registered_model:type_name -> ai.verta.registry.RegisteredModel
+	66, // 46: ai.verta.registry.ModelVersion.CodeBlobMapEntry.value:type_name -> ai.verta.modeldb.versioning.CodeBlob
+	16, // 47: ai.verta.registry.GetModelVersionRequest.Response.model_version:type_name -> ai.verta.registry.ModelVersion
+	16, // 48: ai.verta.registry.FindModelVersionRequest.Response.model_versions:type_name -> ai.verta.registry.ModelVersion
+	16, // 49: ai.verta.registry.SetModelVersion.Response.model_version:type_name -> ai.verta.registry.ModelVersion
+	44, // 50: ai.verta.registry.GetUrlForArtifact.Response.fields:type_name -> ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry
+	65, // 51: ai.verta.registry.GetCommittedArtifactParts.Response.artifact_parts:type_name -> ai.verta.common.ArtifactPart
+	66, // 52: ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry.value:type_name -> ai.verta.modeldb.versioning.CodeBlob
+	8,  // 53: ai.verta.registry.RegistryService.FindRegisteredModel:input_type -> ai.verta.registry.FindRegisteredModelRequest
+	9,  // 54: ai.verta.registry.RegistryService.GetRegisteredModel:input_type -> ai.verta.registry.GetRegisteredModelRequest
+	10, // 55: ai.verta.registry.RegistryService.GetRegisteredModelCount:input_type -> ai.verta.registry.GetRegisteredModelCountRequest
+	13, // 56: ai.verta.registry.RegistryService.CreateRegisteredModel:input_type -> ai.verta.registry.SetRegisteredModel
+	13, // 57: ai.verta.registry.RegistryService.UpdateRegisteredModel:input_type -> ai.verta.registry.SetRegisteredModel
+	14, // 58: ai.verta.registry.RegistryService.DeleteRegisteredModel:input_type -> ai.verta.registry.DeleteRegisteredModelRequest
+	21, // 59: ai.verta.registry.RegistryService.FindModelVersion:input_type -> ai.verta.registry.FindModelVersionRequest
+	20, // 60: ai.verta.registry.RegistryService.GetModelVersion:input_type -> ai.verta.registry.GetModelVersionRequest
+	22, // 61: ai.verta.registry.RegistryService.CreateModelVersion:input_type -> ai.verta.registry.SetModelVersion
+	22, // 62: ai.verta.registry.RegistryService.UpdateModelVersion:input_type -> ai.verta.registry.SetModelVersion
+	18, // 63: ai.verta.registry.RegistryService.SetLockModelVersion:input_type -> ai.verta.registry.SetLockModelVersionRequest
+	23, // 64: ai.verta.registry.RegistryService.DeleteModelVersion:input_type -> ai.verta.registry.DeleteModelVersionRequest
+	24, // 65: ai.verta.registry.RegistryService.getUrlForArtifact:input_type -> ai.verta.registry.GetUrlForArtifact
+	25, // 66: ai.verta.registry.RegistryService.commitArtifactPart:input_type -> ai.verta.registry.CommitArtifactPart
+	26, // 67: ai.verta.registry.RegistryService.getCommittedArtifactParts:input_type -> ai.verta.registry.GetCommittedArtifactParts
+	27, // 68: ai.verta.registry.RegistryService.commitMultipartArtifact:input_type -> ai.verta.registry.CommitMultipartArtifact
+	28, // 69: ai.verta.registry.RegistryService.logDatasetsInModelVersion:input_type -> ai.verta.registry.LogDatasetsInModelVersion
+	29, // 70: ai.verta.registry.RegistryService.logCodeBlobInModelVersion:input_type -> ai.verta.registry.LogCodeBlobInModelVersion
+	30, // 71: ai.verta.registry.RegistryService.logAttributesInModelVersion:input_type -> ai.verta.registry.LogAttributesInModelVersion
+	31, // 72: ai.verta.registry.RegistryService.logDockerMetadataInModelVersion:input_type -> ai.verta.registry.LogDockerMetadataInModelVersion
+	32, // 73: ai.verta.registry.RegistryService.FindRegisteredModel:output_type -> ai.verta.registry.FindRegisteredModelRequest.Response
+	33, // 74: ai.verta.registry.RegistryService.GetRegisteredModel:output_type -> ai.verta.registry.GetRegisteredModelRequest.Response
+	34, // 75: ai.verta.registry.RegistryService.GetRegisteredModelCount:output_type -> ai.verta.registry.GetRegisteredModelCountRequest.Response
+	35, // 76: ai.verta.registry.RegistryService.CreateRegisteredModel:output_type -> ai.verta.registry.SetRegisteredModel.Response
+	35, // 77: ai.verta.registry.RegistryService.UpdateRegisteredModel:output_type -> ai.verta.registry.SetRegisteredModel.Response
+	36, // 78: ai.verta.registry.RegistryService.DeleteRegisteredModel:output_type -> ai.verta.registry.DeleteRegisteredModelRequest.Response
+	40, // 79: ai.verta.registry.RegistryService.FindModelVersion:output_type -> ai.verta.registry.FindModelVersionRequest.Response
+	39, // 80: ai.verta.registry.RegistryService.GetModelVersion:output_type -> ai.verta.registry.GetModelVersionRequest.Response
+	41, // 81: ai.verta.registry.RegistryService.CreateModelVersion:output_type -> ai.verta.registry.SetModelVersion.Response
+	41, // 82: ai.verta.registry.RegistryService.UpdateModelVersion:output_type -> ai.verta.registry.SetModelVersion.Response
+	38, // 83: ai.verta.registry.RegistryService.SetLockModelVersion:output_type -> ai.verta.registry.SetLockModelVersionRequest.Response
+	42, // 84: ai.verta.registry.RegistryService.DeleteModelVersion:output_type -> ai.verta.registry.DeleteModelVersionRequest.Response
+	43, // 85: ai.verta.registry.RegistryService.getUrlForArtifact:output_type -> ai.verta.registry.GetUrlForArtifact.Response
+	45, // 86: ai.verta.registry.RegistryService.commitArtifactPart:output_type -> ai.verta.registry.CommitArtifactPart.Response
+	46, // 87: ai.verta.registry.RegistryService.getCommittedArtifactParts:output_type -> ai.verta.registry.GetCommittedArtifactParts.Response
+	47, // 88: ai.verta.registry.RegistryService.commitMultipartArtifact:output_type -> ai.verta.registry.CommitMultipartArtifact.Response
+	48, // 89: ai.verta.registry.RegistryService.logDatasetsInModelVersion:output_type -> ai.verta.registry.LogDatasetsInModelVersion.Response
+	50, // 90: ai.verta.registry.RegistryService.logCodeBlobInModelVersion:output_type -> ai.verta.registry.LogCodeBlobInModelVersion.Response
+	51, // 91: ai.verta.registry.RegistryService.logAttributesInModelVersion:output_type -> ai.verta.registry.LogAttributesInModelVersion.Response
+	52, // 92: ai.verta.registry.RegistryService.logDockerMetadataInModelVersion:output_type -> ai.verta.registry.LogDockerMetadataInModelVersion.Response
+	73, // [73:93] is the sub-list for method output_type
+	53, // [53:73] is the sub-list for method input_type
+	53, // [53:53] is the sub-list for extension type_name
+	53, // [53:53] is the sub-list for extension extendee
+	0,  // [0:53] is the sub-list for field type_name
 }
 
 func init() { file_registry_RegistryService_proto_init() }
@@ -3988,7 +4120,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RegisteredModel); i {
+			switch v := v.(*TaskTypeEnum); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4000,7 +4132,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FindRegisteredModelRequest); i {
+			switch v := v.(*RegisteredModel); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4012,7 +4144,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[4].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetRegisteredModelRequest); i {
+			switch v := v.(*FindRegisteredModelRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4024,7 +4156,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[5].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetRegisteredModelCountRequest); i {
+			switch v := v.(*GetRegisteredModelRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4036,7 +4168,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[6].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RegisteredModelNamedIdentification); i {
+			switch v := v.(*GetRegisteredModelCountRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4048,7 +4180,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[7].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*RegisteredModelIdentification); i {
+			switch v := v.(*RegisteredModelNamedIdentification); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4060,7 +4192,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[8].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetRegisteredModel); i {
+			switch v := v.(*RegisteredModelIdentification); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4072,7 +4204,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[9].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteRegisteredModelRequest); i {
+			switch v := v.(*SetRegisteredModel); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4084,7 +4216,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[10].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ModelVersionLockLevelEnum); i {
+			switch v := v.(*DeleteRegisteredModelRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4096,7 +4228,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[11].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ModelVersion); i {
+			switch v := v.(*ModelVersionLockLevelEnum); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4108,7 +4240,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[12].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DockerMetadata); i {
+			switch v := v.(*ModelVersion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4120,7 +4252,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[13].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetLockModelVersionRequest); i {
+			switch v := v.(*DockerMetadata); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4132,7 +4264,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[14].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ModelVersionIdentification); i {
+			switch v := v.(*SetLockModelVersionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4144,7 +4276,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[15].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetModelVersionRequest); i {
+			switch v := v.(*ModelVersionIdentification); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4156,7 +4288,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[16].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FindModelVersionRequest); i {
+			switch v := v.(*GetModelVersionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4168,7 +4300,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[17].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetModelVersion); i {
+			switch v := v.(*FindModelVersionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4180,7 +4312,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[18].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteModelVersionRequest); i {
+			switch v := v.(*SetModelVersion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4192,7 +4324,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[19].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetUrlForArtifact); i {
+			switch v := v.(*DeleteModelVersionRequest); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4204,7 +4336,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[20].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommitArtifactPart); i {
+			switch v := v.(*GetUrlForArtifact); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4216,7 +4348,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[21].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetCommittedArtifactParts); i {
+			switch v := v.(*CommitArtifactPart); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4228,7 +4360,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[22].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*CommitMultipartArtifact); i {
+			switch v := v.(*GetCommittedArtifactParts); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4240,7 +4372,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[23].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogDatasetsInModelVersion); i {
+			switch v := v.(*CommitMultipartArtifact); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4252,7 +4384,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[24].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogCodeBlobInModelVersion); i {
+			switch v := v.(*LogDatasetsInModelVersion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4264,7 +4396,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[25].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogAttributesInModelVersion); i {
+			switch v := v.(*LogCodeBlobInModelVersion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4276,7 +4408,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[26].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*LogDockerMetadataInModelVersion); i {
+			switch v := v.(*LogAttributesInModelVersion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4288,7 +4420,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[27].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FindRegisteredModelRequest_Response); i {
+			switch v := v.(*LogDockerMetadataInModelVersion); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4300,7 +4432,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[28].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetRegisteredModelRequest_Response); i {
+			switch v := v.(*FindRegisteredModelRequest_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4312,7 +4444,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[29].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetRegisteredModelCountRequest_Response); i {
+			switch v := v.(*GetRegisteredModelRequest_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4324,7 +4456,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetRegisteredModel_Response); i {
+			switch v := v.(*GetRegisteredModelCountRequest_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -4336,6 +4468,18 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*SetRegisteredModel_Response); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_registry_RegistryService_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteRegisteredModelRequest_Response); i {
 			case 0:
 				return &v.state
@@ -4347,7 +4491,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SetLockModelVersionRequest_Response); i {
 			case 0:
 				return &v.state
@@ -4359,7 +4503,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetModelVersionRequest_Response); i {
 			case 0:
 				return &v.state
@@ -4371,7 +4515,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindModelVersionRequest_Response); i {
 			case 0:
 				return &v.state
@@ -4383,7 +4527,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SetModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -4395,7 +4539,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteModelVersionRequest_Response); i {
 			case 0:
 				return &v.state
@@ -4407,7 +4551,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetUrlForArtifact_Response); i {
 			case 0:
 				return &v.state
@@ -4419,7 +4563,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CommitArtifactPart_Response); i {
 			case 0:
 				return &v.state
@@ -4431,7 +4575,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetCommittedArtifactParts_Response); i {
 			case 0:
 				return &v.state
@@ -4443,7 +4587,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CommitMultipartArtifact_Response); i {
 			case 0:
 				return &v.state
@@ -4455,7 +4599,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogDatasetsInModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -4467,7 +4611,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogCodeBlobInModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -4479,7 +4623,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogAttributesInModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -4491,7 +4635,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogDockerMetadataInModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -4504,7 +4648,7 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 	}
-	file_registry_RegistryService_proto_msgTypes[11].OneofWrappers = []interface{}{
+	file_registry_RegistryService_proto_msgTypes[12].OneofWrappers = []interface{}{
 		(*ModelVersion_ExperimentRunId)(nil),
 	}
 	type x struct{}
@@ -4512,8 +4656,8 @@ func file_registry_RegistryService_proto_init() {
 		File: protoimpl.DescBuilder{
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_registry_RegistryService_proto_rawDesc,
-			NumEnums:      3,
-			NumMessages:   48,
+			NumEnums:      4,
+			NumMessages:   49,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
