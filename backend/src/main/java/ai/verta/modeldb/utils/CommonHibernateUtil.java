@@ -17,6 +17,7 @@ import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.h2.jdbcx.JdbcDataSource;
 import org.hibernate.SessionFactory;
 import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
@@ -157,6 +158,9 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
     }
     if (rdbConfiguration.isPostgres()) {
       return PGSimpleDataSource.class.getName();
+    }
+    if (rdbConfiguration.isH2()) {
+      return JdbcDataSource.class.getName();
     }
     throw new ModelDBException("Unrecognized database " + rdbConfiguration.getRdbDialect());
   }
