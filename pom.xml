@@ -27,7 +27,7 @@
         <jackson.version>2.13.3</jackson.version>
         <jaegertracing.version>1.8.1</jaegertracing.version>
         <os-maven-plugin.version>1.6.2</os-maven-plugin.version>
-        <springframework.version>5.3.21</springframework.version>
+        <springframework.version>5.3.22</springframework.version>
 
         <jacoco.version>0.8.6</jacoco.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
@@ -51,6 +51,24 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            <!-- PRISMA-2022-0239 - https://github.com/square/okhttp/issues/6738 -->
+            <dependency>
+                <groupId>com.squareup.okhttp3</groupId>
+                <artifactId>okhttp</artifactId>
+                <version>4.9.3</version>
+            </dependency>
+            <dependency>
+                <groupId>org.jetbrains.kotlin</groupId>
+                <artifactId>kotlin-stdlib</artifactId>
+                <version>1.6.21</version>
+            </dependency>
+            <dependency>
+                <groupId>org.apache.logging.log4j</groupId>
+                <artifactId>log4j-bom</artifactId>
+                <version>${log4j.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
             <dependency>
                 <groupId>org.springframework</groupId>
                 <artifactId>spring-framework-bom</artifactId>
@@ -69,7 +87,7 @@
                 <artifactId>snakeyaml</artifactId>
                 <version>1.26</version>
             </dependency>
-
+            <!-- PRISMA-2022-0239 -->
             <!-- The main transport implementation based on Netty, for both the client
                 and the server (https://grpc.io/grpc-java/javadoc/io/grpc/netty/package-summary.html) -->
             <dependency>
@@ -195,27 +213,6 @@
                 <artifactId>google-oauth-client</artifactId>
                 <version>1.33.3</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-slf4j-impl</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-layout-template-json</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-api</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.apache.logging.log4j</groupId>
-                <artifactId>log4j-core</artifactId>
-                <version>${log4j.version}</version>
-            </dependency>
             <!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-core -->
             <dependency>
                 <groupId>org.liquibase</groupId>
@@ -310,7 +307,7 @@
             <dependency>
                 <groupId>org.apache.tomcat.embed</groupId>
                 <artifactId>tomcat-embed-core</artifactId>
-                <version>9.0.58</version>
+                <version>9.0.65</version>
             </dependency>
             <dependency>
                 <groupId>org.glassfish</groupId>
