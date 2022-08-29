@@ -5,7 +5,6 @@ from six.moves import filterfalse
 
 import datetime
 import itertools
-import json
 import os
 import pickle
 import random
