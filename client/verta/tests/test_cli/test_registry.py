@@ -10,7 +10,7 @@ from verta import Client
 from verta._cli import cli
 from verta._cli.registry.update import add_attributes
 from verta.registry.entities import RegisteredModel
-from verta.registry import action_type as action_type_module
+from verta.registry import task_type as task_type_module
 from verta.registry import data_type as data_type_module
 from verta._internal_utils import (
     _artifact_utils,
@@ -671,20 +671,20 @@ def test_multiple_attributes():
     add_attributes(model_version, ["num=3.6", 'dict={"a": 1, "b": 2}'], True)
 
 
-class TestActionTypes:
-    @pytest.mark.parametrize("action_type_cls", sorted_subclasses(action_type_module._ActionType))
-    def test_creation(self, client, created_entities, action_type_cls):
-        if action_type_cls is action_type_module._Unknown:
-            pytest.skip("unsupported action type")
+class TestTaskTypes:
+    @pytest.mark.parametrize("task_type_cls", sorted_subclasses(task_type_module._TaskType))
+    def test_creation(self, client, created_entities, task_type_cls):
+        if task_type_cls is task_type_module._Unknown:
+            pytest.skip("unsupported task type")
 
-        action_type = action_type_cls()
-        action_type_str = action_type.__class__.__name__.lower()
+        task_type = task_type_cls()
+        task_type_str = task_type.__class__.__name__.lower()
         model_name = RegisteredModel._generate_default_name()
 
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ["registry", "create", "registeredmodel", model_name, "--action-type", action_type_str],
+            ["registry", "create", "registeredmodel", model_name, "--task-type", task_type_str],
         )
         assert not result.exception
 
@@ -692,7 +692,7 @@ class TestActionTypes:
         assert registered_model
         created_entities.append(registered_model)
 
-        assert registered_model.get_action_type() == action_type
+        assert registered_model.get_task_type() == task_type
 
 
 class TestDataTypes:
