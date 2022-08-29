@@ -4,13 +4,13 @@ from ...external import six
 
 
 @six.add_metaclass(abc.ABCMeta)
-class _ActionType(object):
+class _TaskType(object):
     """
-    Base class for action type. Not for external use.
+    Base class for task type. Not for external use.
 
     """
 
-    _ACTION_TYPE = None
+    _TASK_TYPE = None
 
     def __eq__(self, other):
         if type(self) is not type(other):
@@ -18,21 +18,21 @@ class _ActionType(object):
         return self._as_proto() == other._as_proto()
 
     def __repr__(self):
-        return "<{} action type>".format(self.__class__.__name__)
+        return "<{} task type>".format(self.__class__.__name__)
 
     def _as_proto(self):
-        return self._ACTION_TYPE
+        return self._TASK_TYPE
 
     @staticmethod
-    def _from_proto(action_type):
+    def _from_proto(task_type):
         """
         Parameters
         ----------
-        action_type : ``RegistryService_pb2.ActionTypeEnum.ActionType``
+        task_type : ``RegistryService_pb2.TaskTypeEnum.TaskType``
 
         Returns
         -------
-        :class:`_ActionType`
+        :class:`_TaskType`
 
         """
         # imports here to avoid circular import in Python 2
@@ -47,24 +47,24 @@ class _ActionType(object):
             _Unknown,
         )
 
-        for action_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, _Unknown):
-            if action_type == action_type_cls._ACTION_TYPE:
-                return action_type_cls()
+        for task_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, _Unknown):
+            if task_type == task_type_cls._TASK_TYPE:
+                return task_type_cls()
         else:
             raise ValueError(
-                "unrecognized action type {}".format(action_type)
+                "unrecognized task type {}".format(task_type)
             )
 
     @staticmethod
-    def _from_str(action_type_str):
+    def _from_str(task_type_str):
         """
         Parameters
         ----------
-        action_type : Action type name.
+        task_type : Task type name.
 
         Returns
         -------
-        :class:`_ActionType`
+        :class:`_TaskType`
 
         """
         # imports here to avoid circular import in Python 2
@@ -79,10 +79,10 @@ class _ActionType(object):
             _Unknown,
         )
         
-        for action_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, _Unknown):            
-            if action_type_str.lower() == action_type_cls.__name__.lower():
-                return action_type_cls()
+        for task_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, _Unknown):            
+            if task_type_str.lower() == task_type_cls.__name__.lower():
+                return task_type_cls()
         else:
             raise ValueError(
-                "unrecognized action type {}".format(action_type_str)
+                "unrecognized task type {}".format(task_type_str)
             )

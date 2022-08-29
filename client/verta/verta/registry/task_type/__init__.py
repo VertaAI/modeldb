@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-"""Action type for registered models."""
+"""Task type for registered models."""
 
 from verta._internal_utils import documentation
 
-from ._action_type import _ActionType
+from ._task_type import _TaskType
 from ._other import Other
 from ._classification import Classification
 from ._clustering import Clustering
