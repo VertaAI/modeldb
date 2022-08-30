@@ -26,7 +26,7 @@
         <aws.version>1.12.262</aws.version>
         <jackson.version>2.13.3</jackson.version>
         <jaegertracing.version>1.8.1</jaegertracing.version>
-        <os-maven-plugin.version>1.6.2</os-maven-plugin.version>
+        <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
         <springframework.version>5.3.22</springframework.version>
 
         <jacoco.version>0.8.6</jacoco.version>
