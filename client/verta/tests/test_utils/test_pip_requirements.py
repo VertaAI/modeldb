@@ -44,6 +44,7 @@ def metadata(draw):
 
 
 class TestPipRequirementsUtils:
+    @pytest.mark.skip(reason="environment versioning fails for locally-installed verta (VUMM-199)")
     def test_parse_pip_freeze(self):
         req_specs = _pip_requirements_utils.get_pip_freeze()
         req_specs = _pip_requirements_utils.clean_reqs_file_lines(req_specs)
