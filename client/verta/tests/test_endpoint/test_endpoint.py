@@ -233,7 +233,7 @@ class TestEndpoint:
 
         e_msg = str(excinfo.value).strip()
         assert e_msg.startswith("endpoint update failed;")
-        assert "Serving Flask app" in e_msg
+        assert "Traceback" in e_msg
         assert "No module named" in e_msg
         assert "sklearn" in e_msg
 
