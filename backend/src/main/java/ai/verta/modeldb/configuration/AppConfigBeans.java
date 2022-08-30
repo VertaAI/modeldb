@@ -85,15 +85,6 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public S3Service getS3Service() throws ModelDBException, IOException {
-    String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
-    if (bucketName != null && !bucketName.isEmpty()) {
-      return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
-    }
-    return null;
-  }
-
-  @Bean
   public MDBConfig config() {
     var config = MDBConfig.getInstance();
     App.getInstance().mdbConfig = config;
