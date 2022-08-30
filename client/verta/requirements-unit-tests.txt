@@ -1,3 +1,4 @@
+filelock
 hypothesis
 pytest >= 4.3
 pytest-xdist >= 1.32
