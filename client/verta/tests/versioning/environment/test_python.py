@@ -176,6 +176,7 @@ class TestParsedRequirements:
         # only has injected requirements
         assert requirements == {"verta", "cloudpickle"}
 
+    @pytest.mark.skip(reason="environment versioning fails for locally-installed verta (VUMM-199)")
     def test_from_file_no_versions(self, requirements_file_without_versions):
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         env = Python(requirements=reqs)
@@ -249,6 +250,7 @@ class TestRawRequirements:
 
 
 class TestParsedConstraints:
+    @pytest.mark.skip(reason="environment versioning fails for locally-installed verta (VUMM-199)")
     def test_from_file(self, requirements_file):
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=[], constraints=reqs)
