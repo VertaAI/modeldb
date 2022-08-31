@@ -2,12 +2,10 @@ package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.DAOSet;
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
@@ -18,7 +16,6 @@ import ai.verta.modeldb.common.configuration.EnabledMigration;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
@@ -82,15 +79,6 @@ public class AppConfigBeans {
   @Bean
   public OpenTelemetry openTelemetry(Config config) {
     return config.getOpenTelemetry();
-  }
-
-  @Bean
-  public S3Service getS3Service() throws ModelDBException, IOException {
-    String bucketName = System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME);
-    if (bucketName != null && !bucketName.isEmpty()) {
-      return new S3Service(System.getProperty(ModelDBConstants.CLOUD_BUCKET_NAME));
-    }
-    return null;
   }
 
   @Bean
