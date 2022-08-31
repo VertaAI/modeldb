@@ -199,7 +199,7 @@ class TestLink:
         model_ver = reg_model.create_version()
         model_ver.log_model(LogisticRegression(), custom_modules=[])
         model_ver.log_environment(Python(["scikit-learn"]))
-        with pytest.raises(requests.HTTPError, match="^403"):
+        with pytest.raises(requests.HTTPError, match="^404 Client Error: Couldn't find modelVersion"):
             endpoint.update(model_ver)
 
         # org model version, deploy=False
@@ -208,7 +208,7 @@ class TestLink:
         model_ver = reg_model.create_version()
         model_ver.log_model(LogisticRegression(), custom_modules=[])
         model_ver.log_environment(Python(["scikit-learn"]))
-        with pytest.raises(requests.HTTPError, match="^403"):
+        with pytest.raises(requests.HTTPError, match="^403 Client Error: Forbidden"):
             endpoint.update(model_ver)
 
         # org model version, deploy=True
