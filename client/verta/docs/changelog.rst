@@ -37,6 +37,23 @@ Changelog
      (`# <>`__)
 
 
+v0.20.3 (2022-08-31)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add ``.url`` property to most entities
+  (`#3071 <https://github.com/VertaAI/modeldb/pull/3071>`__)
+- add support for registered models' ``data_type`` and ``task_type`` fields
+  (`#3079 <https://github.com/VertaAI/modeldb/pull/3079>`__,
+  `#3086 <https://github.com/VertaAI/modeldb/pull/3086>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- bump ``protobuf`` dependency version upper constraint from ``<3.18`` to ``<4.0``
+  (`#3070 <https://github.com/VertaAI/modeldb/pull/3070>`__)
+
+
 v0.20.2 (2022-04-27)
 --------------------
 
