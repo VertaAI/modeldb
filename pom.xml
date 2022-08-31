@@ -27,6 +27,8 @@
         <jackson.version>2.13.3</jackson.version>
         <jaegertracing.version>1.8.1</jaegertracing.version>
         <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
+        <otel.core.version>1.17.0</otel.core.version>
+        <otel.instrumentation.version>1.16.0-alpha</otel.instrumentation.version>
         <springframework.version>5.3.22</springframework.version>
 
         <jacoco.version>0.8.6</jacoco.version>
@@ -51,6 +53,26 @@
                 <scope>import</scope>
                 <type>pom</type>
             </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom</artifactId>
+                <version>${otel.core.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry</groupId>
+                <artifactId>opentelemetry-bom-alpha</artifactId>
+                <version>${otel.core.version}-alpha</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-spring-webmvc-3.1</artifactId>
+                <version>${otel.instrumentation.version}</version>
+            </dependency>
+
             <!-- PRISMA-2022-0239 - https://github.com/square/okhttp/issues/6738 -->
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
