@@ -159,7 +159,7 @@ class Connection(object):
             err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
             six.raise_from(err, None)
 
-        if response.status_code == requests.codes.unauthorized:
+        if response.status_code in (requests.codes.unauthorized, requests.codes.forbidden):
             try:
                 response.raise_for_status()
             except requests.HTTPError as e:

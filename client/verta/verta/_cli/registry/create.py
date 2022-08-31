@@ -5,7 +5,7 @@ import click
 from .registry import registry
 from ... import Client
 from .update import update_model_version
-from verta.registry import action_type as action_type_module
+from verta.registry import task_type as task_type_module
 from verta.registry import data_type as data_type_module
 
 
@@ -30,19 +30,19 @@ def create():
 @click.option("--label", "-l", multiple=True, help="Labels to be associated with the object.")
 @click.option("--visibility", "-v", default="private", show_default=True, type=click.Choice(["private", "org"], case_sensitive=False), help="Visibility level of the object.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-@click.option("--action-type", default="other", show_default=True, type=click.Choice(["other", "classification", "clustering", "detection", "regression", "transcription", "translation"], case_sensitive=False), help="Action type.")
+@click.option("--task-type", default="other", show_default=True, type=click.Choice(["other", "classification", "clustering", "detection", "regression", "transcription", "translation"], case_sensitive=False), help="Task type.")
 @click.option("--data-type", default="other", show_default=True, type=click.Choice(["other", "audio", "image", "tabular", "text", "video"], case_sensitive=False), help="Data type.")
-def create_model(model_name, label, visibility, workspace, description, action_type, data_type):
+def create_model(model_name, label, visibility, workspace, description, task_type, data_type):
     """Create a new registeredmodel entry.
     """
     public_within_org = visibility == "org"
     client = Client()
 
-    if (action_type is not None):
+    if (task_type is not None):
         try:
-            action_type = action_type_module._ActionType._from_str(action_type)
+            task_type = task_type_module._TaskType._from_str(task_type)
         except ValueError:
-            raise click.BadParameter("action type {} does not exist".format(action_type))
+            raise click.BadParameter("task type {} does not exist".format(task_type))
 
     if (data_type is not None):
         try:
@@ -51,7 +51,7 @@ def create_model(model_name, label, visibility, workspace, description, action_t
             raise click.BadParameter("data type {} does not exist".format(data_type))
 
     model = client.create_registered_model(model_name, workspace=workspace, public_within_org=public_within_org,
-                                           desc=description, action_type=action_type, data_type=data_type)
+                                           desc=description, task_type=task_type, data_type=data_type)
     for l in label:
         model.add_label(l)
 

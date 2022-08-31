@@ -233,7 +233,7 @@ class TestEndpoint:
 
         e_msg = str(excinfo.value).strip()
         assert e_msg.startswith("endpoint update failed;")
-        assert "Serving Flask app" in e_msg
+        assert "Traceback" in e_msg
         assert "No module named" in e_msg
         assert "sklearn" in e_msg
 
@@ -720,7 +720,7 @@ class TestEndpoint:
             endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
 
         excinfo_value = str(excinfo.value).strip()
-        assert "403" in excinfo_value
+        assert "404 Client Error: Couldn't find modelVersion" in excinfo_value
 
     def test_update_from_build(self, client, class_endpoint_updated, created_entities):
         existing_endpoint = class_endpoint_updated

@@ -13,7 +13,7 @@ from verta._protos.public.registry import RegistryService_pb2 as _RegistryServic
 from .. import _constants, VertaModelBase
 from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
-from .. import action_type as action_type_module
+from .. import task_type as task_type_module
 from .. import data_type as data_type_module
 
 
@@ -799,13 +799,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         return conn.maybe_proto_response(response, Message.Response).registered_model
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None, action_type=None, data_type=None):
-        if action_type is None:
-            action_type = action_type_module._Unknown()
+    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, date_created=None, public_within_org=None, visibility=None, task_type=None, data_type=None):
+        if task_type is None:
+            task_type = task_type_module._Unknown()
         if data_type is None:
             data_type = data_type_module._Unknown()
         Message = _RegistryService.RegisteredModel
-        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created, action_type=action_type._as_proto(), data_type=data_type._as_proto())
+        msg = Message(name=name, description=desc, labels=tags, time_created=date_created, time_updated=date_created, task_type=task_type._as_proto(), data_type=data_type._as_proto())
         if (public_within_org
                 and ctx.workspace_name is not None  # not user's personal workspace
                 and _utils.is_org(ctx.workspace_name, conn)):  # not anyone's personal workspace
@@ -914,36 +914,36 @@ class RegisteredModel(_entity._ModelDBEntity):
         response = _utils.make_request("DELETE", request_url, self._conn)
         _utils.raise_for_http_error(response)
 
-    def set_action_type(self, action_type):
+    def set_task_type(self, task_type):
         """
-        Sets this registered model action type
+        Sets this registered model task type
 
         Parameters
         ----------
-        action_type : :mod:`~verta.registry.action_type`
-            Action type to set.
+        task_type : :mod:`~verta.registry.task_type`
+            Task type to set.
 
         """
-        if not isinstance(action_type, action_type_module._ActionType):
+        if not isinstance(task_type, task_type_module._TaskType):
             raise ValueError(
-                "`action_type` must be an object from verta.registry.action_type,"
-                " not {}".format(type(action_type))
+                "`task_type` must be an object from verta.registry.task_type,"
+                " not {}".format(type(task_type))
             )
 
-        self._update(self.RegisteredModelMessage(action_type=action_type._as_proto()))
+        self._update(self.RegisteredModelMessage(task_type=task_type._as_proto()))
 
-    def get_action_type(self):
+    def get_task_type(self):
         """
-        Gets this registered model action type
+        Gets this registered model task type
 
         Returns
         -------
-        action_type : :mod:`~verta.registry.action_type`
-            This registered model action type.
+        task_type : :mod:`~verta.registry.task_type`
+            This registered model task type.
 
         """
         self._refresh_cache()
-        return action_type_module._ActionType._from_proto(self._msg.action_type)
+        return task_type_module._TaskType._from_proto(self._msg.task_type)
 
     def set_data_type(self, data_type):
         """
