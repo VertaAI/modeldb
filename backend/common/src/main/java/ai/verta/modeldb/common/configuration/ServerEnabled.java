@@ -1,12 +1,11 @@
 package ai.verta.modeldb.common.configuration;
 
 import ai.verta.modeldb.common.CommonConstants;
+import java.util.Optional;
 import org.springframework.context.annotation.Condition;
 import org.springframework.context.annotation.ConditionContext;
 import org.springframework.core.type.AnnotatedTypeMetadata;
 import org.springframework.stereotype.Component;
-
-import java.util.Optional;
 
 /**
  * Condition that will allow spring beans to only be created if the web/grpc server(s) are enabled.
