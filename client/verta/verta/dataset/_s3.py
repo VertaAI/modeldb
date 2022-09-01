@@ -3,7 +3,7 @@
 from __future__ import print_function
 
 import os
-import pathlib2
+import pathlib
 import tempfile
 
 from ..external import six
@@ -200,7 +200,7 @@ class S3(_dataset._Dataset):
 
             # download to file in ~/.verta/temp/
             tempdir = os.path.join(_config_utils.HOME_VERTA_DIR, "temp")
-            pathlib2.Path(tempdir).mkdir(parents=True, exist_ok=True)
+            pathlib.Path(tempdir).mkdir(parents=True, exist_ok=True)
             print("downloading {} from S3".format(component.path))
             with tempfile.NamedTemporaryFile('w+b', dir=tempdir, delete=False) as tempf:
                 s3.download_fileobj(

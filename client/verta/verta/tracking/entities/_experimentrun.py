@@ -5,7 +5,7 @@ from __future__ import print_function
 import ast
 import copy
 import os
-import pathlib2
+import pathlib
 import pprint
 import shutil
 import sys
@@ -247,7 +247,7 @@ class ExperimentRun(_DeployableEntity):
                 VERTA_ARTIFACT_DIR,
                 artifact_msg.path,
             )
-            pathlib2.Path(artifact_path).parent.mkdir(
+            pathlib.Path(artifact_path).parent.mkdir(
                 parents=True,
                 exist_ok=True,
             )
@@ -1518,7 +1518,7 @@ class ExperimentRun(_DeployableEntity):
         artifact = self._get_artifact_msg(key)
 
         # create parent dirs
-        pathlib2.Path(download_to_path).parent.mkdir(
+        pathlib.Path(download_to_path).parent.mkdir(
             parents=True, exist_ok=True)
         # TODO: clean up empty parent dirs if something later fails
 

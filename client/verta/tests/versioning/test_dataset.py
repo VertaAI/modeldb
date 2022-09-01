@@ -1,7 +1,7 @@
 import itertools
 import os
 import shutil
-import pathlib2
+import pathlib
 
 from six.moves import filterfalse
 
@@ -519,7 +519,7 @@ class TestS3ManagedVersioning:
         for s3_obj in s3.list_objects_v2(Bucket=bucket, Prefix=dirname)['Contents']:
             key = s3_obj['Key']
             filepath = os.path.join(reference_dir, key)
-            pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # create parent dirs
+            pathlib.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # create parent dirs
 
             s3.download_file(bucket, key, filepath)
 
@@ -562,7 +562,7 @@ class TestS3ManagedVersioning:
         dataset_blob = dataset.create_version(dataset_blob).get_content()
 
         dirpath = dataset_blob.download("s3://")
-        assert "s3:" not in pathlib2.Path(dirpath).parts
+        assert "s3:" not in pathlib.Path(dirpath).parts
 
     def test_download_all(self, dataset):
         s3 = pytest.importorskip("boto3").client('s3')
@@ -576,7 +576,7 @@ class TestS3ManagedVersioning:
         for s3_obj in s3.list_objects_v2(Bucket=bucket, Prefix=dirname)['Contents']:
             key = s3_obj['Key']
             filepath = os.path.join(reference_dir, bucket, key)
-            pathlib2.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # create parent dirs
+            pathlib.Path(filepath).parent.mkdir(parents=True, exist_ok=True)  # create parent dirs
 
             s3.download_file(bucket, key, filepath)
 
@@ -601,9 +601,9 @@ class TestS3ManagedVersioning:
         # create dir for reference files
         reference_dir = "reference"
         filepath1 = os.path.join(reference_dir, bucket1, key1)
-        pathlib2.Path(filepath1).parent.mkdir(parents=True, exist_ok=True)
+        pathlib.Path(filepath1).parent.mkdir(parents=True, exist_ok=True)
         filepath2 = os.path.join(reference_dir, bucket2, key2)
-        pathlib2.Path(filepath2).parent.mkdir(parents=True, exist_ok=True)
+        pathlib.Path(filepath2).parent.mkdir(parents=True, exist_ok=True)
 
         # download files directly from S3 for reference
         s3.download_file(bucket1, key1, filepath1)

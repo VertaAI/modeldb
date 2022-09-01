@@ -6,7 +6,7 @@ import ast
 import json
 import logging
 import os
-import pathlib2
+import pathlib
 import pickle
 import tempfile
 import warnings
@@ -710,7 +710,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         artifact = self._get_artifact_msg(key)
 
         # create parent dirs
-        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        pathlib.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
         # TODO: clean up empty parent dirs if something later fails
 
         # get a stream of the file bytes, without loading into memory, and write to file

@@ -277,9 +277,6 @@ ignore-on-opaque-inference=yes
 ignored-classes=optparse.Values,
                 thread._local,
                 _thread._local,
-            # In Python 2, pylint mistakes pathlib2's Path for PurePath.
-            # The client doesn't use PurePath anyway, so ignore.
-                PurePath,
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
