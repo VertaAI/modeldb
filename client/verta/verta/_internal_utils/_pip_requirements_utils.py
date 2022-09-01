@@ -412,14 +412,14 @@ def preserve_req_suffixes(requirement, pinned_library_req):
     .. code-block:: python
 
         assert preserve_req_suffixes(
-            "verta;python_version>'2.7' and python_version<'3.9'  # very important!",
+            "verta;python_version>'3.8' and python_version<'3.10'  # very important!",
             "verta==0.20.0",
-        ) == "verta==0.20.0;python_version>'2.7' and python_version<'3.9'  # very important!"
+        ) == "verta==0.20.0;python_version>'3.8' and python_version<'3.10'  # very important!"
 
         assert preserve_req_suffixes(
-            "verta;python_version<='2.7'",
+            "verta;python_version<='3.8'",
             "verta==0.20.0",
-        ) == "verta==0.20.0;python_version<='2.7'"
+        ) == "verta==0.20.0;python_version<='3.8'"
 
         assert preserve_req_suffixes(
             "verta  # very important!",
