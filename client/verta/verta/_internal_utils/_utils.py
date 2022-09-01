@@ -1052,11 +1052,7 @@ def ensure_timestamp(timestamp):
     elif isinstance(timestamp, numbers.Real):
         return timestamp_to_ms(timestamp)
     elif isinstance(timestamp, datetime.datetime):
-        if six.PY2:
-            # replicate https://docs.python.org/3/library/datetime.html#datetime.datetime.timestamp
-            seconds = (timestamp - datetime.datetime(1970, 1, 1, tzinfo=UTC())).total_seconds()
-        else:  # Python 3
-            seconds = timestamp.timestamp()
+        seconds = timestamp.timestamp()
         return timestamp_to_ms(seconds)
     else:
         raise TypeError("unable to parse timestamp of type {}".format(type(timestamp)))

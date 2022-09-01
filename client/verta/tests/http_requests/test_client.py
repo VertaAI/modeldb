@@ -6,7 +6,6 @@ import hypothesis
 import hypothesis.strategies as st
 import pytest
 import requests
-import six
 
 import verta
 from verta._internal_utils import _utils
@@ -169,7 +168,7 @@ class TestClient:
             "^Could not find a suitable TLS CA certificate bundle,"
             " invalid path: {}$".format(bad_ca_bundle_path)
         )
-        error_type = IOError if six.PY2 else OSError
+        error_type = OSError
         try:
             os.environ[REQUESTS_CA_BUNDLE_ENV_VAR] = bad_ca_bundle_path
 
