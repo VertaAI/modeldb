@@ -3,4 +3,4 @@ sphinx==3.5.4
 sphinx_copybutton
 
 click
-sphinx-click==2.7.1
+sphinx-click==4.3.0
