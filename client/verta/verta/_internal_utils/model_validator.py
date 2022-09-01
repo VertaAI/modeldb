@@ -1,7 +1,12 @@
 # -*- coding: utf-8 -*-
 
 import warnings
-from inspect import getfullargspec
+
+from verta.external import six
+if six.PY2:
+    from inspect import getargspec
+else:
+    from inspect import getfullargspec as getargspec  # pylint: disable-all
 
 from verta.registry import VertaModelBase
 from verta.registry._verify_io import _DECORATED_FLAG
@@ -83,8 +88,8 @@ def must_verta(model):
         )
 
     # model service passes __init__(artifacts) by keyword, so params must match
-    expected_init_params = tuple(getfullargspec(VertaModelBase.__init__).args)
-    init_params = tuple(getfullargspec(model.__init__).args)
+    expected_init_params = tuple(getargspec(VertaModelBase.__init__).args)
+    init_params = tuple(getargspec(model.__init__).args)
     if init_params != expected_init_params:
         raise TypeError(
             "model __init__() parameters must be named {},"

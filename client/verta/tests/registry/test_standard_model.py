@@ -11,6 +11,7 @@ import pytest
 
 from verta._internal_utils import _artifact_utils, model_validator
 from verta.environment import Python
+from verta.external import six
 from verta.registry import _constants, verify_io
 
 from ..models import standard_models
@@ -60,7 +61,10 @@ class TestVerifyIO:
         # TODO: create Hypothesis strategy for non-decodable binary
         value = b"\x80abc"
 
-        msg_match = "not JSON serializable.*{} must only contain types"
+        if six.PY2:
+            msg_match = "'utf8' codec can't decode byte.*{} cannot contain binary"
+        else:
+            msg_match = "not JSON serializable.*{} must only contain types"
 
         @verify_io
         def predict(self, _):
@@ -371,6 +375,9 @@ class TestStandardModels:
 
         # TODO: find a more automatic way to do this for the user (VR-11973)
         reqs = ["torch"]
+        if six.PY2:
+            # Python 2 torch requires this to deserialize models
+            reqs.append("future")
 
         model_ver = registered_model.create_standard_model_from_torch(
             model,

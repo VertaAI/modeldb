@@ -3,6 +3,7 @@
 import os
 
 import pytest
+import six
 
 from verta.environment import Python
 from verta._internal_utils._utils import generate_default_name
@@ -45,7 +46,7 @@ class TestDeployedModel:
             "^Could not find a suitable TLS CA certificate bundle,"
             " invalid path: {}$".format(bad_ca_bundle_path)
         )
-        error_type = OSError
+        error_type = IOError if six.PY2 else OSError
         try:
             os.environ[REQUESTS_CA_BUNDLE_ENV_VAR] = bad_ca_bundle_path
 
