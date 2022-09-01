@@ -23,7 +23,7 @@ public class ServerEnabled implements Condition {
             Optional.ofNullable(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE))
                 .orElse("false"));
 
-    // we run the web/grpc servers in every case where don't both have liquibase enabled and run it
+    // We run the web/grpc servers in every case where don't both have liquibase enabled and run it
     // separately.
     return !(enableLiquibase && runLiquibaseSeparate);
   }
