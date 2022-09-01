@@ -254,7 +254,7 @@ class TestCreate:
             model_api["model_packaging"] = {
                 "deserialization": "cloudpickle",
                 "type": "torch",
-                "python_version": "2.7.17"
+                "python_version": "3.9.13"
             }
             model_version.log_artifact(_artifact_utils.MODEL_API_KEY, model_api, True, "json")
 

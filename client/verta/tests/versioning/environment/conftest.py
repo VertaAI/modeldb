@@ -26,7 +26,7 @@ def requirements_file_without_versions(requirements_file):
 def requirements_file_with_unsupported_lines():
     with tempfile.NamedTemporaryFile("w+") as tempf:
         requirements = [
-            "verta;python_version>=2.7",
+            "verta;python_version>=3.8",
             "--no-binary :all:",
             "--only-binary :none:",
             "--require-hashes",

@@ -75,7 +75,7 @@ class TestObject:
         requirements = [
             "-e git+https://github.com/matplotlib/matplotlib.git@master#egg=matplotlib",
         ]
-        constraints = ["pytest > 6; python_version >= '2.7'"]
+        constraints = ["pytest > 6; python_version >= '3.8'"]
 
         env = Python(
             requirements=requirements,
