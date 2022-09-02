@@ -113,14 +113,14 @@ class TestPipRequirementsUtils:
         # NOTE: these cases should match the function's docstring's examples
 
         assert _pip_requirements_utils.preserve_req_suffixes(
-            "verta;python_version>'2.7' and python_version<'3.9'  # very important!",
+            "verta;python_version>'3.8' and python_version<'3.10'  # very important!",
             "verta==0.20.0",
-        ) == "verta==0.20.0;python_version>'2.7' and python_version<'3.9'  # very important!"
+        ) == "verta==0.20.0;python_version>'3.8' and python_version<'3.10'  # very important!"
 
         assert _pip_requirements_utils.preserve_req_suffixes(
-            "verta;python_version<='2.7'",
+            "verta;python_version<='3.8'",
             "verta==0.20.0",
-        ) == "verta==0.20.0;python_version<='2.7'"
+        ) == "verta==0.20.0;python_version<='3.8'"
 
         assert _pip_requirements_utils.preserve_req_suffixes(
             "verta  # very important!",
