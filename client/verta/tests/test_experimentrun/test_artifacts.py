@@ -9,18 +9,6 @@ from verta._internal_utils import _artifact_utils
 
 
 class TestArtifacts:
-    def test_log_path(self, experiment_run, strs):
-        strs, holdout = strs[:-1], strs[-1]  # reserve last key
-
-        for key, artifact_path in zip(strs, strs):
-            experiment_run.log_artifact_path(key, artifact_path)
-
-        for key, artifact_path in zip(strs, strs):
-            assert experiment_run.get_artifact(key) == artifact_path
-
-        with pytest.raises(KeyError):
-            experiment_run.get_artifact(holdout)
-
     def test_clientside_storage(self, experiment_run, strs, in_tempdir, random_data):
         key = strs[0]
         filename = strs[1]
@@ -62,24 +50,6 @@ class TestArtifacts:
             else:
                 del os.environ[VERTA_ARTIFACT_DIR_KEY]
 
-    def test_download_path_only_error(self, experiment_run, strs, in_tempdir):
-        key = strs[0]
-        path = strs[1]
-
-        experiment_run.log_artifact_path(key, path)
-        with pytest.raises(ValueError):
-            experiment_run.download_artifact(key, path)
-
-    def test_blocklisted_key_error(self, experiment_run, all_values):
-        all_values = (value  # log_artifact treats str value as filepath to open
-                      for value in all_values if not isinstance(value, str))
-
-        for key, artifact in zip(_artifact_utils.BLOCKLISTED_KEYS, all_values):
-            with pytest.raises(ValueError, match="please use a different key$"):
-                experiment_run.log_image(key, artifact)
-            with pytest.raises(ValueError, match="please use a different key$"):
-                experiment_run.log_image_path(key, artifact)
-
 
 class TestImages:
     @staticmethod
@@ -89,18 +59,6 @@ class TestImages:
         bytestream = six.BytesIO()
         fig.savefig(bytestream)
         return Image.open(bytestream)
-
-    def test_log_path(self, experiment_run, strs):
-        strs, holdout = strs[:-1], strs[-1]  # reserve last key
-
-        for key, image_path in zip(strs, strs):
-            experiment_run.log_image_path(key, image_path)
-
-        for key, image_path in zip(strs, strs):
-            assert experiment_run.get_image(key) == image_path
-
-        with pytest.raises(KeyError):
-            experiment_run.get_image(holdout)
 
     def test_upload_blank_warning(self, experiment_run, strs):
         Image = pytest.importorskip("PIL.Image")
@@ -167,3 +125,11 @@ class TestImages:
         for key, image in reversed(list(six.viewitems(images))):
             with pytest.raises(ValueError):
                 experiment_run.log_image(key, image)
+
+    def test_blocklisted_key_error(self, experiment_run, all_values):
+        all_values = (value  # log_artifact treats str value as filepath to open
+                      for value in all_values if not isinstance(value, str))
+
+        for key, artifact in zip(_artifact_utils.BLOCKLISTED_KEYS, all_values):
+            with pytest.raises(ValueError, match="please use a different key$"):
+                experiment_run.log_image(key, artifact)
