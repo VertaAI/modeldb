@@ -1,10 +1,10 @@
 package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAORdbImpl;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -43,7 +43,8 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
 
   public PopulateEnvironmentInRunCron(
       ArtifactStoreService artifactStoreService, Integer recordUpdateLimit, MDBConfig mdbConfig) {
-    this.artifactStoreDAO = new ArtifactStoreDAORdbImpl(artifactStoreService, mdbConfig);
+    this.artifactStoreDAO =
+        new ArtifactStoreDAORdbImpl(artifactStoreService, mdbConfig.getArtifactStoreConfig());
     this.recordUpdateLimit = recordUpdateLimit;
   }
 

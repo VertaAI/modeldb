@@ -2,8 +2,8 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.ArtifactTypeEnum;
 import ai.verta.modeldb.*;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -48,7 +48,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       ArtifactStoreDAO artifactStoreDAO,
       DatasetVersionDAO datasetVersionDAO,
       MDBConfig mdbConfig) {
-    super(executor, jdbi, "artifacts", entityName, mdbConfig.artifactStoreConfig);
+    super(executor, jdbi, "artifacts", entityName, mdbConfig.getArtifactStoreConfig());
     this.codeVersionHandler = codeVersionHandler;
     this.datasetHandler = datasetHandler;
     this.datasetVersionDAO = datasetVersionDAO;
@@ -155,7 +155,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       S3KeyFunction initializeMultipart) {
     String uploadId;
     if (partNumberSpecified
-        && mdbConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3)) {
+        && mdbConfig.getArtifactStoreConfig().getArtifactStoreType().equals(CommonConstants.S3)) {
       uploadId = artifactEntity.getUploadId();
       String message = null;
       if (uploadId == null || artifactEntity.isUploadCompleted()) {

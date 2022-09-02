@@ -201,7 +201,8 @@ public class DatasetTest extends TestsInit {
   private static void checkValidArtifactPath(
       String entityId, String entityName, List<Artifact> artifacts) {
     for (var responseArtifact : artifacts) {
-      var validPrefix = testConfig.artifactStoreConfig.getPathPrefixWithSeparator() + entityName;
+      var validPrefix =
+          testConfig.getArtifactStoreConfig().getPathPrefixWithSeparator() + entityName;
       var path = validPrefix + "/" + entityId + "/" + responseArtifact.getKey();
 
       var filenameExtension = responseArtifact.getFilenameExtension();
@@ -1386,7 +1387,10 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
+                  !testConfig
+                      .getArtifactStoreConfig()
+                      .getArtifactStoreType()
+                      .equals(CommonConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1422,7 +1426,10 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
+                  !testConfig
+                      .getArtifactStoreConfig()
+                      .getArtifactStoreType()
+                      .equals(CommonConstants.S3))
               .build();
 
       logDatasetRequest =
@@ -1605,7 +1612,10 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion2.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
+                  !testConfig
+                      .getArtifactStoreConfig()
+                      .getArtifactStoreType()
+                      .equals(CommonConstants.S3))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1641,7 +1651,10 @@ public class DatasetTest extends TestsInit {
               .setArtifactType(ArtifactType.DATA)
               .setLinkedArtifactId(datasetVersion1.getId())
               .setUploadCompleted(
-                  !testConfig.artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3))
+                  !testConfig
+                      .getArtifactStoreConfig()
+                      .getArtifactStoreType()
+                      .equals(CommonConstants.S3))
               .build();
 
       logDatasetRequest =

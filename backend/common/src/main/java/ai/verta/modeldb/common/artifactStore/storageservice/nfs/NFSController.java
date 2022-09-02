@@ -1,6 +1,5 @@
-package ai.verta.modeldb.artifactStore.storageservice.nfs;
+package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
 
-import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.rpc.Code;
 import com.google.rpc.Status;
@@ -55,7 +54,7 @@ public class NFSController {
 
   @GetMapping(value = {"${artifactEndpoint.getArtifact}/{FileName}"})
   public ResponseEntity<Resource> getArtifact(
-      @PathVariable(value = ModelDBConstants.FILENAME) String fileName,
+      @PathVariable(value = "FileName") String fileName,
       @RequestParam("artifact_path") String artifactPath,
       HttpServletRequest request)
       throws ModelDBException {
@@ -78,7 +77,7 @@ public class NFSController {
           .header(
               HttpHeaders.CONTENT_DISPOSITION,
               "attachment; filename=\"" + resource.getFilename() + "\"")
-          .header(ModelDBConstants.FILENAME, fileName)
+          .header("FileName", fileName)
           .body(resource);
     } catch (ModelDBException e) {
       LOGGER.info(e.getMessage(), e);

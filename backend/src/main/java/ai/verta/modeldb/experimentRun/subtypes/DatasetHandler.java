@@ -7,6 +7,6 @@ import java.util.concurrent.Executor;
 public class DatasetHandler extends ArtifactHandlerBase {
   public DatasetHandler(
       Executor executor, FutureJdbi jdbi, String entityName, MDBConfig mdbConfig) {
-    super(executor, jdbi, "datasets", entityName, mdbConfig.artifactStoreConfig);
+    super(executor, jdbi, "datasets", entityName, mdbConfig.getArtifactStoreConfig());
   }
 }

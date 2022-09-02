@@ -1,10 +1,11 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAODisabled;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.comment.CommentDAO;
 import ai.verta.modeldb.comment.CommentDAORdbImpl;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAORdbImpl;
+import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
@@ -64,10 +65,13 @@ public class DAOSet {
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    if (services.artifactStoreService != null) {
-      set.artifactStoreDAO = new ArtifactStoreDAORdbImpl(services.artifactStoreService, mdbConfig);
-    } else {
+    if (services.artifactStoreService == null
+        || services.artifactStoreService instanceof NoopArtifactStoreService) {
       set.artifactStoreDAO = new ArtifactStoreDAODisabled();
+    } else {
+      set.artifactStoreDAO =
+          new ArtifactStoreDAORdbImpl(
+              services.artifactStoreService, mdbConfig.getArtifactStoreConfig());
     }
 
     set.commentDAO = new CommentDAORdbImpl(services.authService);

@@ -24,7 +24,7 @@ public class ArtifactEntity implements Serializable {
   public ArtifactEntity(
       Object entity, String fieldType, Artifact artifact, String entityName, String entityId) {
     var app = App.getInstance();
-    var artifactStoreConfig = app.mdbConfig.artifactStoreConfig;
+    var artifactStoreConfig = app.mdbConfig.getArtifactStoreConfig();
     setKey(artifact.getKey());
     setArtifact_type(artifact.getArtifactTypeValue());
     setPath_only(artifact.getPathOnly());
