@@ -236,25 +236,6 @@ class ExperimentRun(_DeployableEntity):
             extension=extension,
         )
 
-        # augment artifact_path and path_only based on VERTA_ARTIFACT_DIR
-        # TODO: incorporate into config
-        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
-        VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
-        if VERTA_ARTIFACT_DIR:
-            print("set artifact directory from environment:")
-            print("    " + VERTA_ARTIFACT_DIR)
-            artifact_path = os.path.join(
-                VERTA_ARTIFACT_DIR,
-                artifact_msg.path,
-            )
-            pathlib.Path(artifact_path).parent.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
-
-            artifact_msg.path = artifact_path
-            artifact_msg.path_only = True
-
         # log key to ModelDB
         msg = _ExperimentRunService.LogArtifact(id=self.id, artifact=artifact_msg)
         data = _utils.proto_to_json(msg)
@@ -275,13 +256,7 @@ class ExperimentRun(_DeployableEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        if VERTA_ARTIFACT_DIR:
-            print("logging artifact")
-            with open(artifact_path, 'wb') as f:
-                shutil.copyfileobj(artifact_stream, f)
-            print("log complete; file written to {}".format(artifact_path))
-        else:
-            self._upload_artifact(key, artifact_stream)
+        self._upload_artifact(key, artifact_stream)
 
         self._clear_cache()
 
@@ -383,48 +358,6 @@ class ExperimentRun(_DeployableEntity):
 
         print("upload complete ({})".format(key))
 
-    def _log_artifact_path(self, key, artifact_path, artifact_type, overwrite=False):
-        """
-        Logs the filesystem path of an artifact to this Experiment Run.
-
-        Parameters
-        ----------
-        key : str
-            Name of the artifact.
-        artifact_path : str
-            Filesystem path of the artifact.
-        artifact_type : int
-            Variant of `_CommonCommonService.ArtifactTypeEnum`.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-        """
-        # log key-path to ModelDB
-        Message = _ExperimentRunService.LogArtifact
-        artifact_msg = _CommonCommonService.Artifact(key=key,
-                                                     path=artifact_path,
-                                                     path_only=True,
-                                                     artifact_type=artifact_type)
-        msg = Message(id=self.id, artifact=artifact_msg)
-        data = _utils.proto_to_json(msg)
-        if overwrite:
-            response = _utils.make_request("DELETE",
-                                           "{}://{}/api/v1/modeldb/experiment-run/deleteArtifact".format(
-                                               self._conn.scheme, self._conn.socket),
-                                           self._conn, json={'id': self.id, 'key': key})
-            _utils.raise_for_http_error(response)
-        response = _utils.make_request("POST",
-                                       "{}://{}/api/v1/modeldb/experiment-run/logArtifact".format(
-                                           self._conn.scheme, self._conn.socket),
-                                       self._conn, json=data)
-        if not response.ok:
-            if response.status_code == 409:
-                raise ValueError("artifact with key {} already exists;"
-                                 " consider setting overwrite=True".format(key))
-            else:
-                _utils.raise_for_http_error(response)
-
-        self._clear_cache()
-
     def _get_artifact_msg(self, key):
         # get key-path from ModelDB
         msg = _CommonService.GetArtifacts(id=self.id, key=key)
@@ -462,6 +395,8 @@ class ExperimentRun(_DeployableEntity):
         """
         artifact = self._get_artifact_msg(key)
 
+        # TODO: remove handling of path_only since log_artifact_path() was removed
+        # which should also let us consolidate _get_artifact() in _DeployableEntity
         if artifact.path_only:
             return artifact.path, artifact.path_only
         else:
@@ -1321,27 +1256,6 @@ class ExperimentRun(_DeployableEntity):
         self._log_artifact(
             key, image, _CommonCommonService.ArtifactTypeEnum.IMAGE, extension, overwrite=overwrite)
 
-    def log_image_path(self, key, image_path):
-        """
-        Logs the filesystem path of an image to this Experiment Run.
-
-        This function makes no attempt to open a file at `image_path`. Only the path string itself
-        is logged.
-
-        Parameters
-        ----------
-        key : str
-            Name of the image.
-        image_path : str
-            Filesystem path of the image.
-
-        """
-        _artifact_utils.validate_key(key)
-        _utils.validate_flat_key(key)
-
-        self._log_artifact_path(
-            key, image_path, _CommonCommonService.ArtifactTypeEnum.IMAGE)
-
     def get_image(self, key):
         """
         Gets the image artifact with name `key` from this Experiment Run.
@@ -1376,9 +1290,6 @@ class ExperimentRun(_DeployableEntity):
     def log_artifact(self, key, artifact, overwrite=False):
         """
         Logs an artifact to this Experiment Run.
-
-        The ``VERTA_ARTIFACT_DIR`` environment variable can be used to specify a locally-accessible
-        directory to store artifacts.
 
         .. note::
 
@@ -1422,29 +1333,6 @@ class ExperimentRun(_DeployableEntity):
 
         self._log_artifact(
             key, artifact, _CommonCommonService.ArtifactTypeEnum.BLOB, extension, overwrite=overwrite)
-
-    def log_artifact_path(self, key, artifact_path, overwrite=False):
-        """
-        Logs the filesystem path of an artifact to this Experiment Run.
-
-        This function makes no attempt to open a file at `artifact_path`. Only the path string itself
-        is logged.
-
-        Parameters
-        ----------
-        key : str
-            Name of the artifact.
-        artifact_path : str
-            Filesystem path of the artifact.
-        overwrite : bool, default False
-            Whether to allow overwriting an existing artifact with key `key`.
-
-        """
-        _artifact_utils.validate_key(key)
-        _utils.validate_flat_key(key)
-
-        self._log_artifact_path(
-            key, artifact_path, _CommonCommonService.ArtifactTypeEnum.BLOB, overwrite=overwrite)
 
     def get_artifact(self, key):
         """

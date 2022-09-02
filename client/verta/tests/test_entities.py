@@ -38,11 +38,11 @@ TAG = "my-tag"
 class TestClient:
 
     @pytest.mark.skipif(not all(env_var in os.environ for env_var in ('VERTA_HOST', 'VERTA_EMAIL', 'VERTA_DEV_KEY')), reason="insufficient Verta credentials")
-    def test_config_file(self):
+    def test_config_file(self, in_tempdir):
         self.config_file_with_type_util(connect = False)
 
     @pytest.mark.skipif(not all(env_var in os.environ for env_var in ('VERTA_HOST', 'VERTA_EMAIL', 'VERTA_DEV_KEY')), reason="insufficient Verta credentials")
-    def test_config_file_connect(self):
+    def test_config_file_connect(self, in_tempdir):
         self.config_file_with_type_util(connect = True)
 
     def config_file_with_type_util(self, connect):
