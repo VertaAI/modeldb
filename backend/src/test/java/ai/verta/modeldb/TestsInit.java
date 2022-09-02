@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.ArtifactStoreInitBeans;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
@@ -83,7 +84,7 @@ public class TestsInit {
   protected static HydratedServiceGrpc.HydratedServiceBlockingStub
       hydratedServiceBlockingStubClient2;
   protected static ArtifactStoreGrpc.ArtifactStoreBlockingStub artifactStoreBlockingStub;
-  private static AtomicBoolean setServerAndServiceRan = new AtomicBoolean(false);
+  private static final AtomicBoolean setServerAndServiceRan = new AtomicBoolean(false);
 
   protected static void init() throws Exception {
     if (setServerAndServiceRan.get()) {
@@ -110,7 +111,7 @@ public class TestsInit {
     ArtifactStoreService artifactStoreService =
         new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, artifactStoreService);
+    services = ServiceSet.fromConfig(testConfig, artifactStoreService, UAC.FromConfig(testConfig));
     authService = services.authService;
     // Initialize data access
     daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);

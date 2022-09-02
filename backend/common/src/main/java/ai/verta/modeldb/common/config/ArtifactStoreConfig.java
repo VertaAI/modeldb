@@ -66,6 +66,10 @@ public class ArtifactStoreConfig {
     return host;
   }
 
+  public void setHost(String host) {
+    this.host = host;
+  }
+
   public S3Config getS3() {
     return S3;
   }

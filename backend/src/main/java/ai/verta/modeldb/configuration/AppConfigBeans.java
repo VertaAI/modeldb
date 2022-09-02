@@ -15,6 +15,7 @@ import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.EnabledMigration;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
@@ -83,14 +84,7 @@ public class AppConfigBeans {
 
   @Bean
   public MDBConfig config() {
-    var config = MDBConfig.getInstance();
-    App.getInstance().mdbConfig = config;
-
-    // Configure spring HTTP server
-    LOGGER.info("Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
-    System.getProperties().put("server.port", config.getSpringServer().getPort());
-
-    return config;
+    return App.getInstance().mdbConfig;
   }
 
   @Bean
@@ -105,10 +99,15 @@ public class AppConfigBeans {
   }
 
   @Bean
-  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService)
+  UAC uac(Config config){
+    return UAC.FromConfig(config);
+  }
+
+  @Bean
+  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService, UAC uac)
       throws IOException {
     // Initialize services that we depend on
-    return ServiceSet.fromConfig(config, artifactStoreService);
+    return ServiceSet.fromConfig(config, artifactStoreService, uac);
   }
 
   @Bean
@@ -193,10 +192,6 @@ public class AppConfigBeans {
         up.inc();
         LOGGER.info("Current PID: {}", ProcessHandle.current().pid());
         LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
-
-        // ----------- Don't exit the main thread. Wait until server is terminated -----------
-        server.awaitTermination();
-        up.dec();
       } catch (Exception ex) {
         CommonUtils.printStackTrace(LOGGER, ex);
         appContext.initiateShutdown(0);

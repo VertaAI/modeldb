@@ -1,11 +1,22 @@
-package ai.verta.modeldb;
+package ai.verta.modeldb.ArtifactStore;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
-import ai.verta.modeldb.authservice.*;
+import ai.verta.modeldb.CreateExperiment;
+import ai.verta.modeldb.CreateExperimentRun;
+import ai.verta.modeldb.CreateProject;
+import ai.verta.modeldb.DeleteProject;
+import ai.verta.modeldb.Experiment;
+import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.ExperimentRunTest;
+import ai.verta.modeldb.ExperimentTest;
+import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.Project;
+import ai.verta.modeldb.ProjectTest;
+import ai.verta.modeldb.TestsInit;
 import com.google.api.client.util.IOUtils;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -17,6 +28,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Date;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -29,23 +41,16 @@ import org.junit.runners.MethodSorters;
 
 @RunWith(JUnit4.class)
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class NFSArtifactStoreTest extends TestsInit {
+public class NFSArtifactStoreTest extends ArtifactStoreTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSArtifactStoreTest.class);
-  private static String artifactKey = "verta_logo.png";
-
-  // Project Entity
+  private static final String artifactKey = "verta_logo.png";
   private static Project project;
-
-  // Experiment Entity
   private static Experiment experiment;
-
-  // ExperimentRun Entity
   private static ExperimentRun experimentRun;
 
   @Before
   public void createEntities() {
-    // Create all entities
     createProjectEntities();
     createExperimentEntities();
     createExperimentRunEntities();
@@ -61,45 +66,34 @@ public class NFSArtifactStoreTest extends TestsInit {
   }
 
   private static void createProjectEntities() {
-    ProjectTest projectTest = new ProjectTest();
-
-    // Create two project of above project
-    CreateProject createProjectRequest = projectTest.getCreateProjectRequest("Project_1");
+    var name = "Project" + new Date().getTime();
     CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(createProjectRequest);
+        projectServiceStub.createProject(CreateProject.newBuilder().setName(name).build());
     project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
     assertEquals(
         "Project name not match with expected Project name",
-        createProjectRequest.getName(),
+        name,
         project.getName());
   }
 
   private static void createExperimentEntities() {
-    ExperimentTest experimentTest = new ExperimentTest();
-
-    // Create two experiment of above project
-    CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_1");
+    var name = "Experiment" + new Date().getTime();
     CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(createExperimentRequest);
+        experimentServiceStub.createExperiment(CreateExperiment.newBuilder().setName("Experiment" + new Date().getTime()).setProjectId(project.getId()).build());
     experiment = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
         "Experiment name not match with expected Experiment name",
-        createExperimentRequest.getName(),
+        name,
         experiment.getName());
   }
 
   private static void createExperimentRunEntities() {
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
-    CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
-    createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+    var name = "ExperimentRun" + new Date().getTime();
+    var createExperimentRunRequest =
+        CreateExperimentRun.newBuilder()
+            .setName(name)
             .addArtifacts(
                 Artifact.newBuilder()
                     .setKey(artifactKey)
@@ -117,10 +111,9 @@ public class NFSArtifactStoreTest extends TestsInit {
         experimentRun.getName());
   }
 
-  private void storeArtifactTest() {
-    LOGGER.info("store artifact test start................................");
+  @Test
+  public void getUrlForArtifactTest() {
     try {
-
       GetUrlForArtifact getUrlForArtifactRequest =
           GetUrlForArtifact.newBuilder()
               .setId(experimentRun.getId())
@@ -159,8 +152,6 @@ public class NFSArtifactStoreTest extends TestsInit {
       LOGGER.error("Error : {}", e.getMessage(), e);
       fail();
     }
-
-    LOGGER.info("store artifact test stop................................");
   }
 
   @Test
@@ -168,7 +159,7 @@ public class NFSArtifactStoreTest extends TestsInit {
     LOGGER.info("get artifact test start................................");
 
     try {
-      storeArtifactTest();
+      getUrlForArtifactTest();
 
       GetUrlForArtifact getUrlForArtifactRequest =
           GetUrlForArtifact.newBuilder()
