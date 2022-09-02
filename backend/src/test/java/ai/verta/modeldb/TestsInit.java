@@ -4,10 +4,6 @@ import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
-import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
-import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.configuration.AppContext;
@@ -111,7 +107,8 @@ public class TestsInit {
     // TODO: FIXME: fix init flow as per spring bean initialization
 
     var appContext = new AppContext();
-    ArtifactStoreService artifactStoreService = new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
+    ArtifactStoreService artifactStoreService =
+        new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
     services = ServiceSet.fromConfig(testConfig, artifactStoreService);
     authService = services.authService;
