@@ -289,8 +289,6 @@ class _DeployableEntity(_ModelDBEntity):
             extension,
         )
 
-        # TODO: support VERTA_ARTIFACT_DIR like in ER._create_artifact_msg()
-
         artifact_msg = _CommonCommonService.Artifact(
             key=key,
             path=artifact_path,

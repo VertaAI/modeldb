@@ -236,25 +236,6 @@ class ExperimentRun(_DeployableEntity):
             extension=extension,
         )
 
-        # augment artifact_path and path_only based on VERTA_ARTIFACT_DIR
-        # TODO: incorporate into config
-        VERTA_ARTIFACT_DIR = os.environ.get('VERTA_ARTIFACT_DIR', "")
-        VERTA_ARTIFACT_DIR = os.path.expanduser(VERTA_ARTIFACT_DIR)
-        if VERTA_ARTIFACT_DIR:
-            print("set artifact directory from environment:")
-            print("    " + VERTA_ARTIFACT_DIR)
-            artifact_path = os.path.join(
-                VERTA_ARTIFACT_DIR,
-                artifact_msg.path,
-            )
-            pathlib2.Path(artifact_path).parent.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
-
-            artifact_msg.path = artifact_path
-            artifact_msg.path_only = True
-
         # log key to ModelDB
         msg = _ExperimentRunService.LogArtifact(id=self.id, artifact=artifact_msg)
         data = _utils.proto_to_json(msg)
@@ -275,13 +256,7 @@ class ExperimentRun(_DeployableEntity):
             else:
                 _utils.raise_for_http_error(response)
 
-        if VERTA_ARTIFACT_DIR:
-            print("logging artifact")
-            with open(artifact_path, 'wb') as f:
-                shutil.copyfileobj(artifact_stream, f)
-            print("log complete; file written to {}".format(artifact_path))
-        else:
-            self._upload_artifact(key, artifact_stream)
+        self._upload_artifact(key, artifact_stream)
 
         self._clear_cache()
 
@@ -420,6 +395,8 @@ class ExperimentRun(_DeployableEntity):
         """
         artifact = self._get_artifact_msg(key)
 
+        # TODO: remove handling of path_only since log_artifact_path() was removed
+        # which should also let us consolidate _get_artifact() in _DeployableEntity
         if artifact.path_only:
             return artifact.path, artifact.path_only
         else:
@@ -1313,9 +1290,6 @@ class ExperimentRun(_DeployableEntity):
     def log_artifact(self, key, artifact, overwrite=False):
         """
         Logs an artifact to this Experiment Run.
-
-        The ``VERTA_ARTIFACT_DIR`` environment variable can be used to specify a locally-accessible
-        directory to store artifacts.
 
         .. note::
 
