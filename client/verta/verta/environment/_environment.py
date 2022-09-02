@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-import collections
+import collections.abc
 import os
 import sys
 
@@ -102,7 +102,7 @@ class _Environment(_blob.Blob):
             # {'VERTA_HOST': 'app.verta.ai', 'CUDA_VISIBLE_DEVICES': '0,1'}
 
         """
-        if isinstance(env_vars, collections.Mapping):
+        if isinstance(env_vars, collections.abc.Mapping):
             # as mapping
             env_vars_dict = dict(env_vars)
         else:
