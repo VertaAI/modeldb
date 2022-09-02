@@ -11,6 +11,9 @@ from verta._internal_utils import _config_utils
 from . import utils
 
 
+pytestmark = [pytest.mark.xdist_group(name="verta_config")]
+
+
 @pytest.fixture
 def expected_config(in_tempdir):
     """
