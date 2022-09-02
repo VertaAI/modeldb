@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 from hypothesis import given
 import hypothesis.strategies as st
@@ -23,7 +23,7 @@ class TestEpochMillis:
         _check_positive_millis(millis)
 
     def test_aware_dt(self):
-        aware_dt = datetime.now(time_utils.utc)
+        aware_dt = datetime.now(timezone.utc)
         assert aware_dt.tzinfo is not None
         _check_positive_millis(time_utils.epoch_millis(aware_dt))
 
