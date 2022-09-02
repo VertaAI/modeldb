@@ -1,10 +1,5 @@
 package ai.verta.modeldb.ArtifactStore;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mockingDetails;
-import static org.mockito.Mockito.when;
-
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.AuthClientInterceptor;
 import ai.verta.modeldb.Empty;
@@ -13,30 +8,15 @@ import ai.verta.modeldb.ExperimentServiceGrpc;
 import ai.verta.modeldb.ProjectServiceGrpc;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.ServiceSet;
-import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.GrpcServerConfig;
 import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.configuration.AppContext;
-import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.common.exceptions.InternalErrorException;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
-import ai.verta.uac.Action;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.OrganizationServiceGrpc;
-import ai.verta.uac.ServiceEnum;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.UserInfo;
 import io.grpc.ManagedChannelBuilder;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.util.Random;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -44,11 +24,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.mockito.Mockito;
-import org.mockito.stubbing.Answer;
-import org.yaml.snakeyaml.Yaml;
-import org.yaml.snakeyaml.constructor.Constructor;
-import org.yaml.snakeyaml.introspector.BeanAccess;
 
 public abstract class ArtifactStoreTestSetup {
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreTestSetup.class);
@@ -88,11 +63,12 @@ public abstract class ArtifactStoreTestSetup {
 
     var applicationContext = app.getApplicationContext();
     executor = applicationContext.getBean(Executor.class);
-    reconcilerInitializer = (ReconcilerInitializer) applicationContext.getBean("reconcilerInitializer");
+    reconcilerInitializer =
+        (ReconcilerInitializer) applicationContext.getBean("reconcilerInitializer");
     var services = applicationContext.getBean(ServiceSet.class);
     var appContext = applicationContext.getBean(AppContext.class);
 
-    //FIXME: Add mock uac logic
+    // FIXME: Add mock uac logic
     /*var uac = Mockito.mock(UAC.class);
     appContext.registerBean("uac", uac);
 
@@ -105,7 +81,9 @@ public abstract class ArtifactStoreTestSetup {
   }
 
   private static TestConfig initializeTestConfig() {
-    var config = TestConfig.getInstance("src/test/java/ai/verta/modeldb/ArtifactStore/nfs-config-test-h2.yaml");
+    var config =
+        TestConfig.getInstance(
+            "src/test/java/ai/verta/modeldb/ArtifactStore/nfs-config-test-h2.yaml");
     SpringServerConfig springServerConfig = config.getSpringServer();
     if (springServerConfig.getPort() == USE_RANDOM_PORTS_PORT) {
       springServerConfig.setPort(RANDOM_WEB_PORT);
@@ -131,7 +109,8 @@ public abstract class ArtifactStoreTestSetup {
             .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
             .intercept(authClientInterceptor.getClient1AuthInterceptor())
             .usePlaintext()
-            .executor(executor).build();
+            .executor(executor)
+            .build();
 
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
@@ -143,9 +122,7 @@ public abstract class ArtifactStoreTestSetup {
 
   private static boolean appIsRunning() {
     try {
-      var response =
-          projectServiceStub
-              .verifyConnection(Empty.newBuilder().build());
+      var response = projectServiceStub.verifyConnection(Empty.newBuilder().build());
       return response.getStatus();
     } catch (Exception e) {
       return false;

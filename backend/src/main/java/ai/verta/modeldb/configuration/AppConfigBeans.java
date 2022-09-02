@@ -99,7 +99,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  UAC uac(Config config){
+  UAC uac(Config config) {
     return UAC.FromConfig(config);
   }
 

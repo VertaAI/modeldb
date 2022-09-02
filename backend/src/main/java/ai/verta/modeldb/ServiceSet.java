@@ -19,7 +19,7 @@ public class ServiceSet {
   public static ServiceSet fromConfig(
       MDBConfig mdbConfig, ArtifactStoreService artifactStoreService, UAC uac) throws IOException {
     var set = new ServiceSet();
-    set.uac = uac;//UAC.FromConfig(mdbConfig);
+    set.uac = uac; // UAC.FromConfig(mdbConfig);
     set.authService = MDBAuthServiceUtils.FromConfig(mdbConfig, set.uac);
     set.mdbRoleService = MDBRoleServiceUtils.FromConfig(mdbConfig, set.authService, set.uac);
 

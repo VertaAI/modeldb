@@ -257,8 +257,7 @@ public abstract class Config {
     return artifactStoreConfig;
   }
 
-  public void setArtifactStoreConfig(
-      ArtifactStoreConfig artifactStoreConfig) {
+  public void setArtifactStoreConfig(ArtifactStoreConfig artifactStoreConfig) {
     this.artifactStoreConfig = artifactStoreConfig;
   }
 

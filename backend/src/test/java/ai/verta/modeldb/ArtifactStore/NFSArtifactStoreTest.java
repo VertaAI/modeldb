@@ -11,12 +11,8 @@ import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.DeleteProject;
 import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ExperimentRun;
-import ai.verta.modeldb.ExperimentRunTest;
-import ai.verta.modeldb.ExperimentTest;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.Project;
-import ai.verta.modeldb.ProjectTest;
-import ai.verta.modeldb.TestsInit;
 import com.google.api.client.util.IOUtils;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -71,22 +67,21 @@ public class NFSArtifactStoreTest extends ArtifactStoreTestSetup {
         projectServiceStub.createProject(CreateProject.newBuilder().setName(name).build());
     project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
-    assertEquals(
-        "Project name not match with expected Project name",
-        name,
-        project.getName());
+    assertEquals("Project name not match with expected Project name", name, project.getName());
   }
 
   private static void createExperimentEntities() {
     var name = "Experiment" + new Date().getTime();
     CreateExperiment.Response createExperimentResponse =
-        experimentServiceStub.createExperiment(CreateExperiment.newBuilder().setName("Experiment" + new Date().getTime()).setProjectId(project.getId()).build());
+        experimentServiceStub.createExperiment(
+            CreateExperiment.newBuilder()
+                .setName("Experiment" + new Date().getTime())
+                .setProjectId(project.getId())
+                .build());
     experiment = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
-        "Experiment name not match with expected Experiment name",
-        name,
-        experiment.getName());
+        "Experiment name not match with expected Experiment name", name, experiment.getName());
   }
 
   private static void createExperimentRunEntities() {
