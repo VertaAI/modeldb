@@ -395,6 +395,8 @@ class ExperimentRun(_DeployableEntity):
         """
         artifact = self._get_artifact_msg(key)
 
+        # TODO: remove handling of path_only since log_artifact_path() was removed
+        # which should also let us consolidate _get_artifact() in _DeployableEntity
         if artifact.path_only:
             return artifact.path, artifact.path_only
         else:
