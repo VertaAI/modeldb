@@ -34,10 +34,9 @@ class TestObject:
             assert "sha: " not in repr(env)
 
     def test_required_arguments(self):
-        err_msg_match = "missing 1 required positional argument: 'repository'"
         with pytest.raises(
             TypeError,
-            match=err_msg_match,
+            match="missing 1 required positional argument: 'repository'",
         ):
             Docker()  # pylint: disable=no-value-for-parameter
 
