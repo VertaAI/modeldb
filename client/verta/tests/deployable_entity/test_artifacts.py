@@ -175,7 +175,7 @@ class TestArtifacts:
             del os.environ['VERTA_ARTIFACT_PART_SIZE']
 
         # get artifact parts
-        committed_parts = deployable_entity.get_artifact_parts(key)
+        committed_parts = deployable_entity._get_artifact_parts(key)
         assert len(committed_parts) > 1
 
         # part checksums match actual file contents
