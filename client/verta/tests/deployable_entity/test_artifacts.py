@@ -13,6 +13,7 @@ import pytest
 import requests
 import six
 
+from verta.registry.entities import RegisteredModelVersion
 from verta._internal_utils import (
     _artifact_utils,
     _request_utils,
@@ -153,6 +154,9 @@ class TestArtifacts:
 
     @pytest.mark.not_oss
     def test_upload_multipart(self, deployable_entity, in_tempdir):
+        if isinstance(deployable_entity, RegisteredModelVersion):
+            pytest.skip("/getCommittedArtifactParts not implemented in registry")
+
         key = "large"
 
         # create artifact
@@ -172,7 +176,7 @@ class TestArtifacts:
 
         # get artifact parts
         committed_parts = deployable_entity.get_artifact_parts(key)
-        assert committed_parts
+        assert len(committed_parts) > 1
 
         # part checksums match actual file contents
         with open(tempf.name, 'rb') as f:
