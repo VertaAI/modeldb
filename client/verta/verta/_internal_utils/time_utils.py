@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, timedelta, timezone
 import time
 import warnings
-from datetime import datetime, timedelta, timezone
 
 import pytimeparse
 from verta.external import six
