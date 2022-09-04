@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
-import warnings
 from inspect import getfullargspec
+import warnings
 
 from verta.registry import VertaModelBase
 from verta.registry._verify_io import _DECORATED_FLAG
