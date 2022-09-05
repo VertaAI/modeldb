@@ -159,7 +159,7 @@ public class NFSService implements ArtifactStoreService {
       return getUploadUrl(
           parameters,
           artifactStoreConfig.getProtocol(),
-          artifactStoreConfig.getArtifactEndpoint().getGetArtifact(),
+          artifactStoreConfig.getArtifactEndpoint().getStoreArtifact(),
           artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
           artifactStoreConfig.getHost());
     } else if (method.equalsIgnoreCase("get")) {

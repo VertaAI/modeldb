@@ -24,6 +24,10 @@ public class NFSConfig {
     return nfsRootPath;
   }
 
+  public void setNfsRootPath(String nfsRootPath) {
+    this.nfsRootPath = nfsRootPath;
+  }
+
   public NFSEndpointConfig getArtifactEndpoint() {
     return artifactEndpoint;
   }

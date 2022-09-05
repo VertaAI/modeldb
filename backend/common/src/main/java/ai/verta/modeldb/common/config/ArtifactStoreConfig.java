@@ -78,6 +78,10 @@ public class ArtifactStoreConfig {
     return NFS;
   }
 
+  public void setNFS(NFSConfig nfs) {
+    this.NFS = nfs;
+  }
+
   public NFSEndpointConfig getArtifactEndpoint() {
     return artifactEndpoint;
   }

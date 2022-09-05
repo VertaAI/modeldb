@@ -45,7 +45,8 @@ public class ArtifactStoreInitBeans {
 
       if (artifactStoreConfig.getArtifactStoreType().equals("NFS")
           && artifactStoreConfig.getNfs() != null
-          && artifactStoreConfig.getNfs().getArtifactEndpoint() != null) {
+          && artifactStoreConfig.getNfs().getArtifactEndpoint() != null
+          && artifactStoreConfig.getArtifactEndpoint() == null) {
         System.getProperties()
             .put(
                 "artifactEndpoint.storeArtifact",

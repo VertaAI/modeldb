@@ -54,7 +54,7 @@ artifactStoreConfig:
     nfsUrlProtocol: http
     nfsPathPrefix: test_prefix
     artifactEndpoint:
-      getArtifact: "/v1/artifact1/getArtifact"
+      getArtifact: "/v1/artifact/getArtifact"
       storeArtifact: "/v1/artifact/storeArtifact"
 
 authService:
