@@ -42,8 +42,8 @@ public class ArtifactTestsConfigBeans extends AppConfigBeans {
 
   private TestConfig initializeTestConfig() {
     var config =
-    TestConfig.getInstance(
-        "src/test/java/ai/verta/modeldb/ArtifactStore/nfs-config-test-h2.yaml");
+        TestConfig.getInstance(
+            "src/test/java/ai/verta/modeldb/ArtifactStore/nfs-config-test-h2.yaml");
 
     final int randomGrpcPort = new Random().nextInt(10000) + 1024;
     final int randomWebPort = randomGrpcPort + 1;

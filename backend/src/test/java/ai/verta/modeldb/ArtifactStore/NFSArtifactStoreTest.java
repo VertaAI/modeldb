@@ -2,9 +2,6 @@ package ai.verta.modeldb.ArtifactStore;
 
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
@@ -27,10 +24,7 @@ import ai.verta.modeldb.configuration.ReconcilerInitializer;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
-import ai.verta.uac.AuthzServiceGrpc;
-import ai.verta.uac.IsSelfAllowed;
 import com.google.api.client.util.IOUtils;
-import com.google.common.util.concurrent.Futures;
 import io.grpc.ManagedChannelBuilder;
 import java.io.File;
 import java.io.FileInputStream;
