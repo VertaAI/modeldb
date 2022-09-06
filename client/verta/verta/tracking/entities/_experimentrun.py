@@ -1006,30 +1006,6 @@ class ExperimentRun(_DeployableEntity):
         self._refresh_cache()
         return self._hyperparameters
 
-    def log_dataset(self, key, dataset, overwrite=False):
-        """
-        Alias for :meth:`~ExperimentRun.log_dataset_version`.
-
-        .. deprecated:: 0.14.12
-            :meth:`~ExperimentRun.log_dataset` can no longer be used to log artifacts.
-            :meth:`~ExperimentRun.log_artifact` should be used instead.
-
-        """
-        if isinstance(dataset, _dataset.Dataset):
-            raise TypeError(
-                "directly logging a Dataset is not supported;"
-                " please create a DatasetVersion for logging"
-            )
-
-        if not isinstance(dataset, _dataset_version.DatasetVersion):
-            raise TypeError(
-                "`dataset` must be of type DatasetVersion;"
-                " to log an artifact, consider using run.log_artifact() instead"
-            )
-
-        self.log_dataset_version(
-            key=key, dataset_version=dataset, overwrite=overwrite)
-
     def log_dataset_version(self, key, dataset_version, overwrite=False):
         """
         Logs a Verta DatasetVersion to this ExperimentRun with the given key.
