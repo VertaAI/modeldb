@@ -55,7 +55,6 @@ autodoc_mock_imports = [
     'cloudpickle',
     'google',
     'joblib',
-    'pathlib2',
     'sklearn',
     'tensorflow',
     'torch',
