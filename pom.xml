@@ -276,7 +276,7 @@
             <dependency>
                 <groupId>io.prometheus.jmx</groupId>
                 <artifactId>collector</artifactId>
-                <version>0.15.0</version>
+                <version>0.17.0</version>
             </dependency>
             <!-- https://mvnrepository.com/artifact/org.mariadb.jdbc/mariadb-java-client -->
             <dependency>
@@ -425,7 +425,7 @@
                     <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>build-helper-maven-plugin</artifactId>
-                    <version>3.2.0</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
