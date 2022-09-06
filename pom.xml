@@ -16,7 +16,7 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <hibernate.version>5.6.5.Final</hibernate.version>
+        <hibernate.version>5.6.11.Final</hibernate.version>
         <log4j.version>2.18.0</log4j.version>
         <grpc.version>1.45.0</grpc.version>
         <postgres.version>42.4.1</postgres.version>
