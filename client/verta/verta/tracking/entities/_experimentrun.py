@@ -408,6 +408,24 @@ class ExperimentRun(_DeployableEntity):
 
             return response.content, artifact.path_only
 
+    def _get_artifact_parts(self, key):
+        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
+            self._conn.scheme,
+            self._conn.socket,
+        )
+        data = {'id': self.id, 'key': key}
+        response = _utils.make_request(
+            "GET", endpoint, self._conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        committed_parts = _utils.body_to_json(
+            response).get('artifact_parts', [])
+        committed_parts = list(sorted(
+            committed_parts,
+            key=lambda part: int(part['part_number']),
+        ))
+        return committed_parts
+
     # TODO: Fix up get dataset to handle the Dataset class when logging dataset
     # version
     def _get_dataset(self, key):
@@ -1439,24 +1457,6 @@ class ExperimentRun(_DeployableEntity):
 
     def download_model(self, download_to_path):
         return self.download_artifact(self._MODEL_KEY, download_to_path)
-
-    def get_artifact_parts(self, key):
-        endpoint = "{}://{}/api/v1/modeldb/experiment-run/getCommittedArtifactParts".format(
-            self._conn.scheme,
-            self._conn.socket,
-        )
-        data = {'id': self.id, 'key': key}
-        response = _utils.make_request(
-            "GET", endpoint, self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        committed_parts = _utils.body_to_json(
-            response).get('artifact_parts', [])
-        committed_parts = list(sorted(
-            committed_parts,
-            key=lambda part: int(part['part_number']),
-        ))
-        return committed_parts
 
     def log_observation(self, key, value, timestamp=None, epoch_num=None, overwrite=False):
         """
