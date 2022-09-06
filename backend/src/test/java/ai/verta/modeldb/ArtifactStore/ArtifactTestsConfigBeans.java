@@ -6,34 +6,14 @@ import static org.mockito.Mockito.mock;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.GrpcServerConfig;
 import ai.verta.modeldb.common.config.SpringServerConfig;
-import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.TestConfig;
-import ai.verta.modeldb.configuration.AppConfigBeans;
 import java.util.Random;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 
 @TestConfiguration
-@ComponentScan({
-  "ai.verta.modeldb.config",
-  "ai.verta.modeldb.health",
-  "ai.verta.modeldb.configuration",
-  "ai.verta.modeldb.common.configuration"
-})
-public class ArtifactTestsConfigBeans extends AppConfigBeans {
-
-  private final AppContext appContext;
-
-  public AppContext getAppContext() {
-    return appContext;
-  }
-
-  public ArtifactTestsConfigBeans(AppContext appContext) {
-    super(appContext);
-    this.appContext = appContext;
-  }
+public class ArtifactTestsConfigBeans {
 
   @Bean
   public TestConfig config() {
@@ -42,8 +22,8 @@ public class ArtifactTestsConfigBeans extends AppConfigBeans {
 
   private TestConfig initializeTestConfig() {
     var config =
-    TestConfig.getInstance(
-        "src/test/java/ai/verta/modeldb/ArtifactStore/nfs-config-test-h2.yaml");
+        TestConfig.getInstance(
+            "src/test/java/ai/verta/modeldb/ArtifactStore/nfs-config-test-h2.yaml");
 
     final int randomGrpcPort = new Random().nextInt(10000) + 1024;
     final int randomWebPort = randomGrpcPort + 1;
@@ -61,6 +41,7 @@ public class ArtifactTestsConfigBeans extends AppConfigBeans {
       config.setGrpcServer(grpcServerConfig);
     }
 
+    System.getProperties().put("server.port", config.getSpringServer().getPort());
     var artifactStoreConfig = config.getArtifactStoreConfig();
     artifactStoreConfig.setHost("localhost:" + config.getSpringServer().getPort());
     var nfsConfig = artifactStoreConfig.getNfs();

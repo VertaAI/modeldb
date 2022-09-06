@@ -346,6 +346,11 @@
 
     <changeSet id="set-created-true-on-project-for-existing-projects" author="cory">
         <validCheckSum>8:facae5d9b302c1ccb90da4c4a817e4e7</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="h2"/>
+            </not>
+        </preConditions>
         <update tableName="project">
             <column name="created" valueBoolean="true"/>
             <where>created=0 AND deleted=0</where>
@@ -376,6 +381,11 @@
 
     <changeSet id="set-created-true-on-repository-for-existing-repositories" author="anandJ">
         <validCheckSum>8:ca60f426e233e31ee54ab1fa18f27b4f</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="h2"/>
+            </not>
+        </preConditions>
         <update tableName="repository">
             <column name="created" valueBoolean="true"/>
             <where>created=0 AND deleted=0</where>
@@ -450,6 +460,11 @@
 
     <changeSet id="set-visibility-migration-false-on-repositories" author="anandJ">
         <validCheckSum>8:84a5812d4897c6ff419c96746930d5cb</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="h2"/>
+            </not>
+        </preConditions>
         <update tableName="repository">
             <column name="visibility_migration" valueBoolean="false"/>
             <where>visibility_migration=1</where>
@@ -458,6 +473,11 @@
 
     <changeSet id="set-visibility-migration-false-on-projects" author="anandJ">
         <validCheckSum>8:49b3426a96fae28f656c42ec4932346d</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="h2"/>
+            </not>
+        </preConditions>
         <update tableName="project">
             <column name="visibility_migration" valueBoolean="false"/>
             <where>visibility_migration=1</where>
@@ -759,6 +779,7 @@
                 <or>
                     <dbms type="mysql"/>
                     <dbms type="postgres"/>
+                    <dbms type="h2"/>
                 </or>
             </not>
         </preConditions>
@@ -1050,6 +1071,11 @@
     </changeSet>
 
     <changeSet id="set-created-true-based-on-column-type-existing-experiment" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <dbms type="h2"/>
+            </not>
+        </preConditions>
         <update tableName="experiment">
             <column name="created" valueBoolean="true"/>
             <where>created=0 AND deleted=0</where>

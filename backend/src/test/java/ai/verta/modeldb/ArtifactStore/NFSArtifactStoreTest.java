@@ -5,9 +5,12 @@ import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.App;
 import ai.verta.modeldb.AuthClientInterceptor;
 import ai.verta.modeldb.CreateExperiment;
 import ai.verta.modeldb.CreateExperimentRun;
@@ -28,7 +31,25 @@ import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.uac.AuthzServiceGrpc;
+import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResources.Response;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.GetWorkspaceById;
+import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Resources;
+import ai.verta.uac.RoleServiceGrpc;
+import ai.verta.uac.SetResource;
+import ai.verta.uac.SetRoleBinding;
+import ai.verta.uac.UACServiceGrpc;
+import ai.verta.uac.UserInfo;
+import ai.verta.uac.VertaUserInfo;
+import ai.verta.uac.Workspace;
+import ai.verta.uac.WorkspaceServiceGrpc;
 import com.google.api.client.util.IOUtils;
 import com.google.common.util.concurrent.Futures;
 import io.grpc.ManagedChannelBuilder;
@@ -44,15 +65,18 @@ import java.util.Date;
 import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ArtifactTestsConfigBeans.class})
 public class NFSArtifactStoreTest {
 
@@ -74,17 +98,85 @@ public class NFSArtifactStoreTest {
 
   @Autowired ReconcilerInitializer reconcilerInitializer;
 
+  private void setupMockUacEndpoints(UAC uac) {
+    var uacMock = mock(UACServiceGrpc.UACServiceFutureStub.class);
+    when(uac.getUACService()).thenReturn(uacMock);
+    when(uacMock.getCurrentUser(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                UserInfo.newBuilder()
+                    .setEmail("testUser@verta.ai")
+                    .setVertaInfo(
+                        VertaUserInfo.newBuilder()
+                            .setUserId("testUser")
+                            .setDefaultWorkspaceId(1L)
+                            .setWorkspaceId("1")
+                            .build())
+                    .build()));
+    when(uacMock.getUser(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                UserInfo.newBuilder()
+                    .setEmail("testUser@verta.ai")
+                    .setVertaInfo(
+                        VertaUserInfo.newBuilder()
+                            .setUserId("testUser")
+                            .setDefaultWorkspaceId(1L)
+                            .setWorkspaceId("1")
+                            .build())
+                    .build()));
+
+    var authzMock = mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
+    when(uac.getAuthzService()).thenReturn(authzMock);
+    when(authzMock.isSelfAllowed(any()))
+        .thenReturn(
+            Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+
+    var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+    when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
+    // allow any SetResource call
+    when(collaboratorMock.setResource(any()))
+        .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
+    var workspaceMock = mock(WorkspaceServiceGrpc.WorkspaceServiceFutureStub.class);
+    when(uac.getWorkspaceService()).thenReturn(workspaceMock);
+    when(workspaceMock.getWorkspaceById(GetWorkspaceById.newBuilder().setId(1L).build()))
+        .thenReturn(Futures.immediateFuture(Workspace.newBuilder().setId(1L).build()));
+    when(workspaceMock.getWorkspaceByName(GetWorkspaceByName.newBuilder().setName("").build()))
+        .thenReturn(Futures.immediateFuture(Workspace.newBuilder().setId(1L).build()));
+
+    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                Response.newBuilder()
+                    .addItem(
+                        GetResourcesResponseItem.newBuilder()
+                            .setVisibility(ResourceVisibility.PRIVATE)
+                            .setResourceType(
+                                ResourceType.newBuilder()
+                                    .setModeldbServiceResourceType(
+                                        ModelDBServiceResourceTypes.PROJECT)
+                                    .build())
+                            .setOwnerId(1L)
+                            .setWorkspaceId(1L)
+                            .build())
+                    .build()));
+    var roleServiceMock = mock(RoleServiceGrpc.RoleServiceFutureStub.class);
+    when(uac.getServiceAccountRoleServiceFutureStub()).thenReturn(roleServiceMock);
+    when(roleServiceMock.setRoleBinding(any()))
+        .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
+    when(authzMock.getSelfAllowedResources(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                GetSelfAllowedResources.Response.newBuilder()
+                    .addResources(Resources.newBuilder().setAllResourceIds(true).build())
+                    .build()));
+  }
+
   @Before
   public void createEntities() {
     initializedChannelBuilderAndExternalServiceStubs();
 
-    // TODO: FIXME: fix Mockito cannot mock/spy because : - final class error.
-    /*var authzMock = mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
-    when(uac.getAuthzService()).thenReturn(authzMock);
-    when(authzMock.isSelfAllowed(any()))
-        .thenReturn(
-            Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));*/
-
+    setupMockUacEndpoints(uac);
     createProjectEntities();
     createExperimentEntities();
     createExperimentRunEntities();
@@ -109,7 +201,7 @@ public class NFSArtifactStoreTest {
   }
 
   @After
-  public void removeEntities() throws InterruptedException {
+  public void removeEntities() throws InterruptedException, IOException {
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -119,7 +211,7 @@ public class NFSArtifactStoreTest {
     cleanUpResources();
   }
 
-  private void cleanUpResources() throws InterruptedException {
+  private void cleanUpResources() throws InterruptedException, IOException {
     // Remove all entities
     // removeEntities();
     // Delete entities by cron job
@@ -146,15 +238,34 @@ public class NFSArtifactStoreTest {
 
     ReconcilerInitializer.softDeleteDatasets.resync();
     ReconcilerInitializer.softDeleteRepositories.resync();
+
+    File downloadedFile = new File(testConfig.getArtifactStoreConfig().getNfs().getNfsPathPrefix());
+    if (downloadedFile.exists()) {
+      FileUtils.deleteDirectory(downloadedFile);
+    }
+    LOGGER.trace("test artifact removed from storage: {}", !downloadedFile.exists());
   }
 
-  private static void createProjectEntities() {
+  private void createProjectEntities() {
     var name = "Project" + new Date().getTime();
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(CreateProject.newBuilder().setName(name).build());
     project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
     assertEquals("Project name not match with expected Project name", name, project.getName());
+
+    var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+    when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
+    when(collaboratorMock.getResources(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                GetResources.Response.newBuilder()
+                    .addItem(
+                        GetResourcesResponseItem.newBuilder()
+                            .setResourceId(project.getId())
+                            .setWorkspaceId(1L)
+                            .build())
+                    .build()));
   }
 
   private static void createExperimentEntities() {
@@ -254,7 +365,8 @@ public class NFSArtifactStoreTest {
     if (!downloadedFile.exists()) {
       fail("File not fount at download destination");
     }
-    downloadedFile.delete();
+    var fileDeleted = downloadedFile.delete();
+    LOGGER.info("test artifact removed from storage: {}", fileDeleted);
 
     LOGGER.info("get artifact test stop................................");
   }
