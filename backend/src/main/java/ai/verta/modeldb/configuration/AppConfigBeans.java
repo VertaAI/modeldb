@@ -84,7 +84,8 @@ public class AppConfigBeans {
 
   @Bean
   public MDBConfig config() {
-    var config = App.getInstance().mdbConfig;
+    var config = MDBConfig.getInstance();
+    App.getInstance().mdbConfig = config;
     initializeSystemProperties(config);
     return config;
   }
