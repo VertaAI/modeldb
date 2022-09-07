@@ -3,6 +3,11 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import java.sql.*;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -22,12 +27,6 @@ import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultSetException;
 import org.jdbi.v3.core.statement.UnableToCreateStatementException;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
-
-import java.sql.*;
-import java.util.Calendar;
-import java.util.Locale;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 
 public abstract class CommonDBUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonDBUtil.class);
