@@ -16,7 +16,7 @@
     <url>http://maven.apache.org</url>
 
     <properties>
-        <hibernate.version>5.6.5.Final</hibernate.version>
+        <hibernate.version>5.6.11.Final</hibernate.version>
         <log4j.version>2.18.0</log4j.version>
         <grpc.version>1.45.0</grpc.version>
         <postgres.version>42.5.0</postgres.version>
@@ -282,7 +282,7 @@
             <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>2.7.4</version>
+            <version>3.0.7</version>
             </dependency>
             <dependency>
                 <groupId>io.jaegertracing</groupId>
