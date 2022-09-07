@@ -8,7 +8,6 @@ import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.regex.Pattern;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -185,12 +184,13 @@ public abstract class CommonDBUtil {
         changeCharsetToUtf(jdbcCon);
       }
 
-
       var changeLogTableName =
           System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
-      var updateQuery = "update %s set FILENAME=substring(FILENAME, length('/src/main/resources/')) "
-          + "WHERE FILENAME LIKE ?";
-      try(var statement = jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
+      var updateQuery =
+          "update %s set FILENAME=substring(FILENAME, length('/src/main/resources/')) "
+              + "WHERE FILENAME LIKE ?";
+      try (var statement =
+          jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
         statement.setString(1, "%src/main/resources/liquibase%");
         statement.executeUpdate();
       }
