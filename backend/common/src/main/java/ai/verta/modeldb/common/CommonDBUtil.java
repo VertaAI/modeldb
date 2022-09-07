@@ -184,6 +184,17 @@ public abstract class CommonDBUtil {
         changeCharsetToUtf(jdbcCon);
       }
 
+      var changeLogTableName =
+          System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
+      var updateQuery =
+          "update %s set FILENAME=substring(FILENAME, length('/src/main/resources/')) "
+              + "WHERE FILENAME LIKE ?";
+      try (var statement =
+          jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
+        statement.setString(1, "%src/main/resources/liquibase%");
+        statement.executeUpdate();
+      }
+
       // Overwrite default liquibase table names by custom
       GlobalConfiguration liquibaseConfiguration =
           LiquibaseConfiguration.getInstance().getConfiguration(GlobalConfiguration.class);

@@ -3,7 +3,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
-	logicalFilePath="src/main/resources/liquibase/create-tables-changelog-1.0.xml">
+	logicalFilePath="liquibase/create-tables-changelog-1.0.xml">
 
 	<changeSet author="raviS" id="create-git_code_blob">
 		<preConditions onFail="MARK_RAN">
