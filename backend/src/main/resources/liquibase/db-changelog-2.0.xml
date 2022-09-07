@@ -3,7 +3,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
-        logicalFilePath="src/main/resources/liquibase/db-changelog-2.0.xml">
+        logicalFilePath="liquibase/db-changelog-2.0.xml">
 
     <changeSet id="db_version_2.0.pre" author="raviS">
         <tagDatabase tag="db_version_2.0.pre"/>
