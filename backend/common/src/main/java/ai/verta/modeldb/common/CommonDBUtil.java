@@ -3,11 +3,6 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import java.sql.*;
-import java.util.Calendar;
-import java.util.Locale;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -27,6 +22,12 @@ import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultSetException;
 import org.jdbi.v3.core.statement.UnableToCreateStatementException;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
+
+import java.sql.*;
+import java.util.Calendar;
+import java.util.Locale;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
 
 public abstract class CommonDBUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonDBUtil.class);
@@ -186,13 +187,30 @@ public abstract class CommonDBUtil {
 
       var changeLogTableName =
           System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
-      var updateQuery =
-          "update %s set FILENAME=substring(FILENAME, length('/src/main/resources/')) "
-              + "WHERE FILENAME LIKE ?";
-      try (var statement =
-          jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
-        statement.setString(1, "%src/main/resources/liquibase%");
-        statement.executeUpdate();
+
+      boolean changeLogTableExists = false;
+      DatabaseMetaData metaData = jdbcCon.getMetaData();
+      ResultSet tables = metaData.getTables(null, null, "%", null);
+      while (tables.next()) {
+        String tableName = tables.getString(3);
+        if (changeLogTableName.equalsIgnoreCase(tableName)) {
+          LOGGER.info("existing changelog table found in the database: " + tableName);
+          changeLogTableExists = true;
+          break;
+        }
+      }
+
+      if (changeLogTableExists) {
+        var updateQuery =
+            "update %s set FILENAME=substring(FILENAME, length('/src/main/resources/')) "
+                + "WHERE FILENAME LIKE ?";
+        try (var statement =
+            jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
+          statement.setString(1, "%src/main/resources/liquibase%");
+          statement.executeUpdate();
+        } catch (Exception e) {
+          LOGGER.warn("Updating the changelog table name failed.", e);
+        }
       }
 
       // Overwrite default liquibase table names by custom
