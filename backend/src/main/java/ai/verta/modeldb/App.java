@@ -45,5 +45,4 @@ public class App {
     application.addListeners(new ApplicationPidFileWriter(pathToPidFile));
     application.run(args);
   }
-
 }
