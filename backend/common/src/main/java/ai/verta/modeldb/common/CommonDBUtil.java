@@ -206,9 +206,7 @@ public abstract class CommonDBUtil {
         } else {
           trimOperation = "substring(FILENAME, len('/src/main/resources/'))";
         }
-        var updateQuery =
-            "update %s set FILENAME=" + trimOperation + " "
-                + "WHERE FILENAME LIKE ?";
+        var updateQuery = "update %s set FILENAME=" + trimOperation + " " + "WHERE FILENAME LIKE ?";
         try (var statement =
             jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
           statement.setString(1, "%src/main/resources/liquibase%");
