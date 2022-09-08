@@ -200,9 +200,13 @@ public abstract class CommonDBUtil {
       }
 
       if (changeLogTableExists) {
-        var updateQuery =
-            "update %s set FILENAME=substring(FILENAME, length('/src/main/resources/')) "
-                + "WHERE FILENAME LIKE ?";
+        String trimOperation;
+        if (config.getRdbConfiguration().isMssql()) {
+          trimOperation = "trim('/src/main/resources/' FROM FILENAME)";
+        } else {
+          trimOperation = "substring(FILENAME, length('/src/main/resources/'))";
+        }
+        var updateQuery = "update %s set FILENAME=" + trimOperation + " WHERE FILENAME LIKE ?";
         try (var statement =
             jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
           statement.setString(1, "%src/main/resources/liquibase%");
