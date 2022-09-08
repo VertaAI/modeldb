@@ -38,7 +38,7 @@
     "group-array": "^0.3.4",
     "json2typescript": "^1.0.6",
     "lodash": "^4.17.11",
-    "moment": "^2.24.0",
+    "moment": "^2.29.4",
     "normalize.css": "^8.0.1",
     "pixi-scrollbox": "^2.1.4",
     "pixi-viewport": "^4.10.0",
