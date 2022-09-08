@@ -207,7 +207,7 @@
             <dependency>
                 <groupId>org.jdbi</groupId>
                 <artifactId>jdbi3-core</artifactId>
-                <version>3.27.1</version>
+                <version>3.32.0</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
