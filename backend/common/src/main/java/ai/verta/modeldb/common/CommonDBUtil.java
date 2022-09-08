@@ -204,7 +204,7 @@ public abstract class CommonDBUtil {
         if (config.getRdbConfiguration().isMssql()) {
           trimOperation = "trim('/src/main/resources/' FROM FILENAME)";
         } else {
-          trimOperation = "substring(FILENAME, len('/src/main/resources/'))";
+          trimOperation = "substring(FILENAME, length('/src/main/resources/'))";
         }
         var updateQuery = "update %s set FILENAME=" + trimOperation + " " + "WHERE FILENAME LIKE ?";
         try (var statement =
