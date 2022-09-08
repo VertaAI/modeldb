@@ -283,7 +283,7 @@ class TestUpdate:
 
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(classifier)
+        model_version.log_model(classifier, custom_modules=[])
 
         env = Python(requirements=["scikit-learn"])
         model_version.log_environment(env)
