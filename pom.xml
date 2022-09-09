@@ -318,7 +318,7 @@
             <dependency>
                 <groupId>com.microsoft.sqlserver</groupId>
                 <artifactId>mssql-jdbc</artifactId>
-                <version>9.5.0-SNAPSHOT.jre8-preview</version>
+                <version>9.5.0.jre11-preview</version>
             </dependency>
             <!-- Snyk abatements -->
             <dependency>
@@ -371,7 +371,6 @@
                                 <goal>compile</goal>
                                 <goal>compile-custom</goal>
                             </goals>
-                        </execution>
                     </executions>
                 </plugin>
                 <plugin>
