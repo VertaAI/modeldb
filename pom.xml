@@ -20,7 +20,7 @@
         <log4j.version>2.18.0</log4j.version>
         <grpc.version>1.49.0</grpc.version>
         <postgres.version>42.5.0</postgres.version>
-        <liquibase.version>4.15.0</liquibase.version>
+        <liquibase.version>4.9.1</liquibase.version>
         <prometheus.version>0.16.0</prometheus.version>
         <protobuf.version>3.21.5</protobuf.version>
         <aws.version>1.12.298</aws.version>
