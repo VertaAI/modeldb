@@ -202,7 +202,9 @@ public abstract class CommonDBUtil {
       if (changeLogTableExists) {
         String trimOperation;
         if (config.getRdbConfiguration().isMssql()) {
-          trimOperation = "trim('/src/main/resources/' FROM FILENAME)";
+          LOGGER.info("MSSQL detected. Using custom update to liquibase filename records.");
+          //looks like sql server doesn't support the "length" function, so hardcode it here.
+          trimOperation = "substring(FILENAME, 1, 19)";
         } else {
           trimOperation = "substring(FILENAME, length('/src/main/resources/'))";
         }
@@ -213,6 +215,8 @@ public abstract class CommonDBUtil {
           statement.executeUpdate();
         } catch (Exception e) {
           LOGGER.warn("Updating the changelog table name failed.", e);
+          //make this fail so it doesn't look like we've gotten properly migrated when we haven't.
+          throw e;
         }
       }
 
