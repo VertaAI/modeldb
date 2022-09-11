@@ -58,9 +58,14 @@ def update_model(model_name, label, workspace, description):
 @click.option('--overwrite', help="Overwrite model and artifacts if already logged.", is_flag=True)
 @click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
 @click.option("--workspace", "-w", help="Workspace to use.")
+@click.option("--input_description", "-d", help="Input description.")
+@click.option("--hide_input_label", help="Flag to hide input label.", is_flag=True)
+@click.option("--output_description", "-d", help="Output description.")
+@click.option("--hide_output_label", help="Flag to hide output label.", is_flag=True)
 def update_model_version(model_name, version_name, label, model, custom_module, no_custom_modules,
                          artifact, workspace, overwrite, requirements,
-                         description, attribute):
+                         description, attribute, input_description, hide_input_label,
+                         output_description, hide_output_label):
     """Update an existing registeredmodelversion entry.
     """
     if custom_module and no_custom_modules:
@@ -102,6 +107,18 @@ def update_model_version(model_name, version_name, label, model, custom_module, 
     if description:
         model_version.set_description(description)
 
+    if input_description:
+        model_version.set_input_description(input_description)
+        
+    if hide_input_label:
+        model_version.set_hide_input_label(hide_input_label)
+
+    if output_description:
+        model_version.set_output_description(output_description)
+
+    if hide_output_label:
+        model_version.set_hide_output_label(hide_output_label)
+    
     add_attributes(model_version, attribute, overwrite)
 
 

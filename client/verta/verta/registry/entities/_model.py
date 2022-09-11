@@ -77,7 +77,20 @@ class RegisteredModel(_entity._ModelDBEntity):
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
-    def get_or_create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None, lock_level=None, id=None):
+    def get_or_create_version(
+        self,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        time_created=None,
+        lock_level=None,
+        id=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
+    ):
         """
         Gets or creates a Model Version.
 
@@ -101,6 +114,14 @@ class RegisteredModel(_entity._ModelDBEntity):
         id : str, optional
             ID of the Model Version. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
+        input_description : str, optional
+            Input Description of the Model Version.
+        hide_input_label : bool, optional
+            Hide Input Label of the Model Version.
+        output_description : str, optional
+            Output Description of the Model Version.
+        hide_output_label : bool, optional
+            Hide Output Label of the Model Version.
 
         Returns
         -------
@@ -116,8 +137,8 @@ class RegisteredModel(_entity._ModelDBEntity):
             raise ValueError("cannot specify both `name` and `id`")
 
         resource_name = "Model Version"
-        param_names = "`desc`, `labels`, `attrs`, `time_created`, or `lock_level`"
-        params = (desc, labels, attrs, time_created, lock_level)
+        param_names = "`desc`, `labels`, `attrs`, `time_created`, `lock_level`, `input_description`, `hide_input_label`, `output_description`, or `hide_output_label`"
+        params = (desc, labels, attrs, time_created, lock_level, input_description, hide_input_label, output_description, hide_output_label)
         if id is not None:
             check_unnecessary_params_warning(resource_name, "id {}".format(id),
                                              param_names, params)
@@ -132,6 +153,10 @@ class RegisteredModel(_entity._ModelDBEntity):
                     self._conn, self._conf, ctx,
                     name=name, desc=desc, tags=labels, attrs=attrs,
                     date_created=time_created, lock_level=lock_level,
+                    input_description=input_description,
+                    hide_input_label=hide_input_label,
+                    output_description=output_description,
+                    hide_output_label=hide_output_label,
                 ),
                 lambda: check_unnecessary_params_warning(
                     resource_name,
@@ -147,7 +172,19 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         return self.get_or_create_version(*args, **kwargs)
 
-    def create_version(self, name=None, desc=None, labels=None, attrs=None, time_created=None, lock_level=None):
+    def create_version(
+        self,
+        name=None,
+        desc=None,
+        labels=None,
+        attrs=None,
+        time_created=None,
+        lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
+    ):
         """
         Creates a model registry entry.
 
@@ -163,6 +200,14 @@ class RegisteredModel(_entity._ModelDBEntity):
             Attributes of the Model Version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
+        input_description : str, optional
+            Input Description of the Model Version.
+        hide_input_label : bool, optional
+            Hide Input Label of the Model Version.
+        output_description : str, optional
+            Output Description of the Model Version.
+        hide_output_label : bool, optional
+            Hide Output Label of the Model Version.
 
         Returns
         -------
@@ -175,6 +220,10 @@ class RegisteredModel(_entity._ModelDBEntity):
             self._conn, self._conf, ctx,
             name=name, desc=desc, tags=labels, attrs=attrs,
             date_created=time_created, lock_level=lock_level,
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
 
     def _create_standard_model_from_spec(
@@ -189,6 +238,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         labels=None,
         attrs=None,
         lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
     ):
         artifacts = artifacts or {}
         for key in artifacts.keys():
@@ -205,6 +258,10 @@ class RegisteredModel(_entity._ModelDBEntity):
             labels=labels,
             attrs=attrs,
             lock_level=lock_level,
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
         try:
             for key, artifact in artifacts.items():
@@ -234,6 +291,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         labels=None,
         attrs=None,
         lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
     ):
         """Create a Standard Verta Model version from a Verta Model Specification.
 
@@ -285,6 +346,14 @@ class RegisteredModel(_entity._ModelDBEntity):
             Attributes of the model version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
+        input_description : str, optional
+            Input Description of the Model Version.
+        hide_input_label : bool, optional
+            Hide Input Label of the Model Version.
+        output_description : str, optional
+            Output Description of the Model Version.
+        hide_output_label : bool, optional
+            Hide Output Label of the Model Version.
 
         Returns
         -------
@@ -331,6 +400,10 @@ class RegisteredModel(_entity._ModelDBEntity):
             labels=labels,
             attrs=attrs,
             lock_level=lock_level,
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
 
     def create_standard_model_from_keras(
@@ -343,6 +416,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         labels=None,
         attrs=None,
         lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
     ):
         """Create a Standard Verta Model version from a TensorFlow-backend Keras model.
 
@@ -367,6 +444,14 @@ class RegisteredModel(_entity._ModelDBEntity):
             Attributes of the model version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
+        input_description : str, optional
+            Input Description of the Model Version.
+        hide_input_label : bool, optional
+            Hide Input Label of the Model Version.
+        output_description : str, optional
+            Output Description of the Model Version.
+        hide_output_label : bool, optional
+            Hide Output Label of the Model Version.
 
         Returns
         -------
@@ -404,6 +489,10 @@ class RegisteredModel(_entity._ModelDBEntity):
             labels=labels,
             attrs=attrs,
             lock_level=lock_level,
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
 
     def create_standard_model_from_sklearn(
@@ -416,6 +505,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         labels=None,
         attrs=None,
         lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
     ):
         """Create a Standard Verta Model version from a scikit-learn model.
 
@@ -440,6 +533,14 @@ class RegisteredModel(_entity._ModelDBEntity):
             Attributes of the model version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
+        input_description : str, optional
+            Input Description of the Model Version.
+        hide_input_label : bool, optional
+            Hide Input Label of the Model Version.
+        output_description : str, optional
+            Output Description of the Model Version.
+        hide_output_label : bool, optional
+            Hide Output Label of the Model Version.
 
         Returns
         -------
@@ -474,6 +575,10 @@ class RegisteredModel(_entity._ModelDBEntity):
             labels=labels,
             attrs=attrs,
             lock_level=lock_level,
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
 
     def create_standard_model_from_torch(
@@ -486,6 +591,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         labels=None,
         attrs=None,
         lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
     ):
         """Create a Standard Verta Model version from a PyTorch model.
 
@@ -510,6 +619,14 @@ class RegisteredModel(_entity._ModelDBEntity):
             Attributes of the model version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
+        input_description : str, optional
+            Input Description of the Model Version.
+        hide_input_label : bool, optional
+            Hide Input Label of the Model Version.
+        output_description : str, optional
+            Output Description of the Model Version.
+        hide_output_label : bool, optional
+            Hide Output Label of the Model Version.
 
         Returns
         -------
@@ -554,6 +671,10 @@ class RegisteredModel(_entity._ModelDBEntity):
             labels=labels,
             attrs=attrs,
             lock_level=lock_level,
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
 
     def create_standard_model_from_xgboost(
@@ -566,6 +687,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         labels=None,
         attrs=None,
         lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
     ):
         """Create a Standard Verta Model version from an XGBoost model.
 
@@ -596,6 +721,14 @@ class RegisteredModel(_entity._ModelDBEntity):
             Attributes of the model version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
+        input_description : str, optional
+            Input Description of the Model Version.
+        hide_input_label : bool, optional
+            Hide Input Label of the Model Version.
+        output_description : str, optional
+            Output Description of the Model Version.
+        hide_output_label : bool, optional
+            Hide Output Label of the Model Version.
 
         Returns
         -------
@@ -630,6 +763,10 @@ class RegisteredModel(_entity._ModelDBEntity):
             labels=labels,
             attrs=attrs,
             lock_level=lock_level,
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
 
     def create_containerized_model(
@@ -641,6 +778,10 @@ class RegisteredModel(_entity._ModelDBEntity):
         labels=None,
         attrs=None,
         lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None,
     ):
         """Create a Containerized Model version from a Docker image.
 
@@ -667,6 +808,14 @@ class RegisteredModel(_entity._ModelDBEntity):
             Attributes of the model version.
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
+        input_description : str, optional
+            Input Description of the Model Version.
+        hide_input_label : bool, optional
+            Hide Input Label of the Model Version.
+        output_description : str, optional
+            Output Description of the Model Version.
+        hide_output_label : bool, optional
+            Hide Output Label of the Model Version.
 
         Returns
         -------
@@ -708,6 +857,10 @@ class RegisteredModel(_entity._ModelDBEntity):
             labels=labels,
             attrs=attrs,
             lock_level=lock_level,
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
         try:
             model_ver.log_docker(

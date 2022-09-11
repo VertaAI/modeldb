@@ -18,8 +18,8 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='registry/ModelMetadata.proto',
   package='ai.verta.registry',
   syntax='proto3',
-  serialized_options=b'P\001Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry',
-  serialized_pb=b'\n\x1cregistry/ModelMetadata.proto\x12\x11\x61i.verta.registry\x1a\x1cgoogle/api/annotations.proto\"=\n\x11ModelLanguageEnum\"(\n\rModelLanguage\x12\x0b\n\x07Unknown\x10\x00\x12\n\n\x06Python\x10\x01\"\\\n\rModelTypeEnum\"K\n\tModelType\x12\n\n\x06\x43ustom\x10\x00\x12\x16\n\x12StandardVertaModel\x10\x01\x12\x1a\n\x16UserContainerizedModel\x10\x02\x42\x43P\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
+  serialized_options=b'P\001ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registry',
+  serialized_pb=b'\n\x1cregistry/ModelMetadata.proto\x12\x11\x61i.verta.registry\x1a\x1cgoogle/api/annotations.proto\"=\n\x11ModelLanguageEnum\"(\n\rModelLanguage\x12\x0b\n\x07Unknown\x10\x00\x12\n\n\x06Python\x10\x01\"\\\n\rModelTypeEnum\"K\n\tModelType\x12\n\n\x06\x43ustom\x10\x00\x12\x16\n\x12StandardVertaModel\x10\x01\x12\x1a\n\x16UserContainerizedModel\x10\x02\x42GP\x01ZCgithub.com/VertaAI/protos-all/protos/gen/go/protos/private/registryb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
