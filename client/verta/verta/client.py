@@ -120,7 +120,8 @@ class Client(object):
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
                  max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, jwt_token=None, jwt_token_sig=None, _connect=True):
-        self._load_config()
+        if not os.environ.get("VERTA_DISABLE_CLIENT_CONFIG"):
+            self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
         if host is None:
