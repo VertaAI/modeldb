@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common;
 
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
@@ -187,19 +188,7 @@ public abstract class CommonDBUtil {
       var changeLogTableName =
           System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
 
-      boolean changeLogTableExists = false;
-      DatabaseMetaData metaData = jdbcCon.getMetaData();
-      ResultSet tables = metaData.getTables(null, null, "%", null);
-      while (tables.next()) {
-        String tableName = tables.getString(3);
-        if (changeLogTableName.equalsIgnoreCase(tableName)) {
-          LOGGER.info("existing changelog table found in the database: " + tableName);
-          changeLogTableExists = true;
-          break;
-        }
-      }
-
-      if (changeLogTableExists) {
+      if (tableExists(con, config, changeLogTableName)) {
         String trimOperation;
         if (config.getRdbConfiguration().isMssql()) {
           LOGGER.info("MSSQL detected. Using custom update to liquibase filename records.");
