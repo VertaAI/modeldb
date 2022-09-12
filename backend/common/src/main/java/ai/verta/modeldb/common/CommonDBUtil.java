@@ -184,6 +184,30 @@ public abstract class CommonDBUtil {
         changeCharsetToUtf(jdbcCon);
       }
 
+      var changeLogTableName =
+          System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
+
+      if (tableExists(con, config, changeLogTableName)) {
+        String trimOperation;
+        if (config.getRdbConfiguration().isMssql()) {
+          LOGGER.info("MSSQL detected. Using custom update to liquibase filename records.");
+          // looks like sql server doesn't support the "length" function, so hardcode it here.
+          trimOperation = "substring(FILENAME, 1, 19)";
+        } else {
+          trimOperation = "substring(FILENAME, length('/src/main/resources/'))";
+        }
+        var updateQuery = "update %s set FILENAME=" + trimOperation + " WHERE FILENAME LIKE ?";
+        try (var statement =
+            jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
+          statement.setString(1, "%src/main/resources/liquibase%");
+          statement.executeUpdate();
+        } catch (Exception e) {
+          LOGGER.warn("Updating the changelog table name failed.", e);
+          // make this fail so it doesn't look like we've gotten properly migrated when we haven't.
+          throw e;
+        }
+      }
+
       // Overwrite default liquibase table names by custom
       GlobalConfiguration liquibaseConfiguration =
           LiquibaseConfiguration.getInstance().getConfiguration(GlobalConfiguration.class);

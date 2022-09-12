@@ -3,15 +3,16 @@ package ai.verta.modeldb;
 import ai.verta.artifactstore.ArtifactStoreGrpc;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.configuration.AppContext;
+import ai.verta.modeldb.common.configuration.ArtifactStoreInitBeans;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.AppConfigBeans;
-import ai.verta.modeldb.configuration.ArtifactStoreInitBeans;
 import ai.verta.modeldb.configuration.CronJobUtils;
 import ai.verta.modeldb.configuration.Migration;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
@@ -106,7 +107,7 @@ public class TestsInit {
     // TODO: FIXME: fix init flow as per spring bean initialization
 
     var appContext = new AppContext();
-    var artifactStoreService =
+    ArtifactStoreService artifactStoreService =
         new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
     services = ServiceSet.fromConfig(testConfig, artifactStoreService);

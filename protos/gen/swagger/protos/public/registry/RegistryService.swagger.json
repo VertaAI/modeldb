@@ -2405,6 +2405,24 @@
         "redirect_metadata": {
           "type": "string",
           "title": "Reference: https://vertaai.atlassian.net/browse/VRD-329"
+        },
+        "input_description": {
+          "type": "string",
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "hide_input_label": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "output_description": {
+          "type": "string",
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "hide_output_label": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         }
       }
     },

@@ -50,6 +50,10 @@ from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
 
+
+VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR = "VERTA_DISABLE_CLIENT_CONFIG"
+
+
 class Client(object):
     """
     Object for interfacing with the Verta backend.
@@ -60,6 +64,10 @@ class Client(object):
     .. deprecated:: 0.13.3
        The `expt_runs` attribute will be removed in an upcoming version; consider using `proj.expt_runs` and
        `expt.expt_runs` instead.
+    .. versionadded:: 0.20.4
+       The ``VERTA_DISABLE_CLIENT_CONFIG`` environment variable, when set to
+       a non-empty value, disables discovery of client config files for use in
+       protected filesystems.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
 
@@ -217,8 +225,12 @@ class Client(object):
         return ExperimentRuns(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def _load_config(self):
-        with _config_utils.read_merged_config() as config:
-            self._config = config
+        if (VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR in os.environ
+                and os.environ[VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR] != ""):
+            self._config = dict()
+        else:
+            with _config_utils.read_merged_config() as config:
+                self._config = config
 
     def _set_from_config_if_none(self, var, resource_name):
         if var is None:

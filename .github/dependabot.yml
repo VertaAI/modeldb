@@ -12,14 +12,17 @@ updates:
     # default is 5, but that results in major version bumps or riskier updates blocking the pipeline.
     # Increased to try to clear the way for lower risk updates.
     open-pull-requests-limit: 15
+    rebase-strategy: "disabled"
   - package-ecosystem: "npm"
     directory: "/webapp/" # Location of package manifests
     schedule:
       interval: "daily"
     open-pull-requests-limit: 15
+    rebase-strategy: "disabled"
   - package-ecosystem: "pip" 
     directory: "/client/verta/" # Location of package manifests
     schedule:
       interval: "daily"
     open-pull-requests-limit: 15
+    rebase-strategy: "disabled"
 

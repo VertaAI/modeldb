@@ -1,14 +1,14 @@
-package ai.verta.modeldb.configuration;
+package ai.verta.modeldb.common.configuration;
 
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSController;
-import ai.verta.modeldb.artifactStore.storageservice.nfs.NFSService;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3Controller;
-import ai.verta.modeldb.artifactStore.storageservice.s3.S3Service;
-import ai.verta.modeldb.common.configuration.AppContext;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSController;
+import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Controller;
+import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.config.MDBConfig;
 import java.io.IOException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -21,10 +21,10 @@ public class ArtifactStoreInitBeans {
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreInitBeans.class);
 
   @Bean
-  public ArtifactStoreService artifactStoreService(MDBConfig config, AppContext appContext)
+  public ArtifactStoreService artifactStoreService(Config config, AppContext appContext)
       throws IOException {
 
-    final var artifactStoreConfig = config.artifactStoreConfig;
+    final var artifactStoreConfig = config.getArtifactStoreConfig();
     if (artifactStoreConfig.isEnabled()) {
       //
       // TODO: This is backwards, these values can be extracted from the environment or injected
@@ -44,32 +44,32 @@ public class ArtifactStoreInitBeans {
       }
 
       if (artifactStoreConfig.getArtifactStoreType().equals("NFS")
-          && artifactStoreConfig.getNFS() != null
-          && artifactStoreConfig.getNFS().getArtifactEndpoint() != null) {
+          && artifactStoreConfig.getNfs() != null
+          && artifactStoreConfig.getNfs().getArtifactEndpoint() != null) {
         System.getProperties()
             .put(
                 "artifactEndpoint.storeArtifact",
-                artifactStoreConfig.getNFS().getArtifactEndpoint().getStoreArtifact());
+                artifactStoreConfig.getNfs().getArtifactEndpoint().getStoreArtifact());
         System.getProperties()
             .put(
                 "artifactEndpoint.getArtifact",
-                artifactStoreConfig.getNFS().getArtifactEndpoint().getGetArtifact());
+                artifactStoreConfig.getNfs().getArtifactEndpoint().getGetArtifact());
       }
 
       switch (artifactStoreConfig.getArtifactStoreType()) {
         case "S3":
-          if (!artifactStoreConfig.S3.getS3presignedURLEnabled()) {
+          if (!artifactStoreConfig.getS3().getS3presignedURLEnabled()) {
             appContext.registerBean("s3Controller", S3Controller.class);
           }
-          artifactStoreService = new S3Service(artifactStoreConfig.S3.getCloudBucketName());
+          artifactStoreService = new S3Service(artifactStoreConfig);
           break;
         case "NFS":
           appContext.registerBean("nfsController", NFSController.class);
-          String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
+          String rootDir = artifactStoreConfig.getNfs().getNfsRootPath();
           LOGGER.trace("NFS server root path {}", rootDir);
           final var props = new FileStorageProperties();
           props.setUploadDir(rootDir);
-          artifactStoreService = new NFSService(props);
+          artifactStoreService = new NFSService(props, artifactStoreConfig);
           break;
         default:
           throw new ModelDBException("Configure valid artifact store name in config.yaml file.");
@@ -81,7 +81,7 @@ public class ArtifactStoreInitBeans {
       return artifactStoreService;
     } else {
       LOGGER.info("Artifact store service is disabled.");
-      return null;
+      return new NoopArtifactStoreService();
     }
   }
 }

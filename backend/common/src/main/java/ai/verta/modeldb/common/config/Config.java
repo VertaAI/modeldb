@@ -59,6 +59,7 @@ public abstract class Config {
   private TracingServerInterceptor tracingServerInterceptor = null;
   private TracingClientInterceptor tracingClientInterceptor = null;
   private volatile OpenTelemetry openTelemetry;
+  private ArtifactStoreConfig artifactStoreConfig;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
@@ -88,14 +89,25 @@ public abstract class Config {
       }
     }
 
-    if (database == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
+    if (database == null) {
+      throw new InvalidConfigException("database", MISSING_REQUIRED);
+    }
     database.validate("database");
 
-    if (grpcServer == null) throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
+    if (grpcServer == null) {
+      throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
+    }
     grpcServer.validate("grpcServer");
 
-    if (springServer == null) throw new InvalidConfigException("springServer", MISSING_REQUIRED);
+    if (springServer == null) {
+      throw new InvalidConfigException("springServer", MISSING_REQUIRED);
+    }
     springServer.validate("springServer");
+
+    if (artifactStoreConfig == null) {
+      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+    }
+    artifactStoreConfig.validate("artifactStoreConfig");
   }
 
   public boolean hasAuth() {
@@ -239,6 +251,10 @@ public abstract class Config {
       openTelemetry = initializeOpenTelemetry();
     }
     return openTelemetry;
+  }
+
+  public ArtifactStoreConfig getArtifactStoreConfig() {
+    return artifactStoreConfig;
   }
 
   public void setSpringServer(SpringServerConfig springServer) {

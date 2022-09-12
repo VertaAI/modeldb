@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
+import com.amazonaws.AmazonServiceException;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -63,6 +64,18 @@ public class CommonUtils {
       LOGGER.warn("Error generating while convert MessageOrBuilder to string", ex);
       throw new RuntimeException(ex);
     }
+  }
+
+  public static void logAmazonServiceExceptionErrorCodes(Logger LOGGER, AmazonServiceException e) {
+    LOGGER.debug("Amazon Service Status Code: " + e.getStatusCode());
+    LOGGER.debug("Amazon Service Error Code: " + e.getErrorCode());
+    LOGGER.debug("Amazon Service Error Type: " + e.getErrorType());
+    LOGGER.debug("Amazon Service Error Message: " + e.getErrorMessage());
+  }
+
+  public static boolean isEnvSet(String envVar) {
+    String envVarVal = System.getenv(envVar);
+    return envVarVal != null && !envVarVal.isEmpty();
   }
 
   public interface RetryCallInterface<T> {

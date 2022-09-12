@@ -3,7 +3,7 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
-        logicalFilePath="src/main/resources/liquibase/create-tables-changelog-1.0.xml">
+        logicalFilePath="liquibase/create-tables-changelog-1.0.xml">
     <changeSet author="anand" id="create-commit">
         <preConditions onFail="MARK_RAN">
             <not>
@@ -21,13 +21,14 @@
         </createTable>
     </changeSet>
     <changeSet author="anand" id="create-repository">
+        <validCheckSum>8:4753cee08331a7a06cd13b3d85df6bc6</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="repository"/>
             </not>
         </preConditions>
         <createTable tableName="repository">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="date_created" type="int8"/>

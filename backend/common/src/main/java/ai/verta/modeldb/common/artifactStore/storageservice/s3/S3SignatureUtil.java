@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ofPattern;
@@ -14,9 +14,9 @@ import javax.crypto.spec.SecretKeySpec;
 import org.apache.commons.codec.binary.Hex;
 
 public class S3SignatureUtil extends AWS4Signer {
-  private String awsServiceName;
-  private AWSCredentials credentials;
-  private String region;
+  private final String awsServiceName;
+  private final AWSCredentials credentials;
+  private final String region;
 
   public S3SignatureUtil(AWSCredentials credentials, String region, String awsServiceName) {
     this.credentials = credentials;

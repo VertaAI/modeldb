@@ -3,7 +3,7 @@ package ai.verta.modeldb.versioning;
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
-import ai.verta.modeldb.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experimentRun.CommitMultipartFunction;

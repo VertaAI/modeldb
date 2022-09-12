@@ -18,10 +18,6 @@ public abstract class ModelDBConstants {
   public static final String LIMIT_RUN_NUMBER = "LIMIT_RUN_NUMBER: ";
   public static final String LIMIT_RUN_ARTIFACT_SIZE = "LIMIT_RUN_ARTIFACT_SIZE: ";
 
-  // AWS Releated Constants
-  public static final String AWS_ROLE_ARN = "AWS_ROLE_ARN";
-  public static final String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
-
   // Threshold Constant
   public static final Integer NAME_MAX_LENGTH = 40;
   public static final Integer NAME_LENGTH = 256;
@@ -77,8 +73,6 @@ public abstract class ModelDBConstants {
   // Common verb constants
   public static final String ORDER_ASC = "asc";
   public static final String ORDER_DESC = "desc";
-  public static final String GET = "get";
-  public static final String PUT = "put";
   public static final String POST = "post";
 
   // Common constants
@@ -188,7 +182,6 @@ public abstract class ModelDBConstants {
   public static final String DEFAULT_VERSIONING_BLOB_LOCATION = "version";
   public static final String REPOSITORY_ACCESS_MODIFIER = "repositoryAccessModifier";
   public static final String PROPERTY_NAME = "property_name";
-  public static final String FILENAME = "FileName";
 
   // Cron job constant
   public static final String DELETE_ENTITIES = "delete_entities";
