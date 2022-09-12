@@ -8,7 +8,6 @@ import zipfile
 
 import hypothesis
 import pytest
-import six
 
 from verta.tracking.entities._deployable_entity import _DeployableEntity
 from verta._internal_utils.custom_modules import CustomModules
@@ -53,15 +52,8 @@ class TestPipInstalledModule:
                 "pytest modifies both import mechanisms and module objects,"
                 " which we can't handle right now"
             )
-        if six.PY2 and name == "pytest_forked":
-            pytest.skip(
-                "pytest_forked insists on having an empty __pycache__,"
-                " which custom modules ignores, which fails our match check"
-            )
         if CustomModules.get_module_path(name) in ("built-in", "frozen"):
             pytest.skip("built into Python; no module file to collect")
-        if six.PY2 and (name.startswith("tensorflow_") or name == "torch"):
-            pytest.skip("takes too long")
 
         custom_modules = _DeployableEntity._custom_modules_as_artifact([name])
         self.assert_in_custom_modules(custom_modules, name)

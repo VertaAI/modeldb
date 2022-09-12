@@ -1,23 +1,18 @@
 # -*- coding: utf-8 -*-
 
+from datetime import datetime, timedelta, timezone
 import time
 import warnings
-from datetime import datetime, timedelta
 
 import pytimeparse
 from verta.external import six
 
-if six.PY3:
-    from ._utc_py3 import utc
-if six.PY2:
-    from ._utc_py2 import utc
 
-
-UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=utc)
+UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
 
 def now():
-    return datetime.now(utc)
+    return datetime.now(timezone.utc)
 
 
 def now_in_millis():
@@ -39,7 +34,7 @@ def epoch_millis(dt):
 def _promote_naive_to_utc(dt):
     if dt.tzinfo is None:
         warnings.warn("Time zone naive datetime found, assuming UTC time zone")
-        return dt.replace(tzinfo=utc)
+        return dt.replace(tzinfo=timezone.utc)
     else:
         return dt
 

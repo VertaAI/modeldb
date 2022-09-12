@@ -3,12 +3,12 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
-        logicalFilePath="src/main/resources/liquibase/db-changelog-1.0.xml">
+        logicalFilePath="liquibase/db-changelog-1.0.xml">
 
-    <include file="src/main/resources/liquibase/create-tables-changelog-1.0.xml"/>
+    <include file="liquibase/create-tables-changelog-1.0.xml"/>
 
     <changeSet id="1" author="anandJ" failOnError="false">
-        <sqlFile path="src/main/resources/liquibase/create_indexes.sql"/>
+        <sqlFile path="liquibase/create_indexes.sql"/>
     </changeSet>
 
     <changeSet id="tag-1.0" author="anandJ">
@@ -16,12 +16,13 @@
     </changeSet>
 
     <changeSet author="raviS" id="2-createSequence">
+        <validCheckSum>8:429535ae082ee4f6e2a6ac96c0fda205</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <sequenceExists sequenceName="hibernate_sequence"/>
             </not>
         </preConditions>
-        <createSequence incrementBy="1"
+        <createSequence
                         sequenceName="hibernate_sequence" startValue="1"/>
     </changeSet>
 
@@ -307,8 +308,8 @@
         </createIndex>
     </changeSet>
 
-    <include file="src/main/resources/liquibase/create-versioning-tables-changelog.xml"/>
-    <include file="src/main/resources/liquibase/create-versioning-tables-changelog2.xml"/>
+    <include file="liquibase/create-versioning-tables-changelog.xml"/>
+    <include file="liquibase/create-versioning-tables-changelog2.xml"/>
 
     <changeSet id="13-add_s3_dataset_component_blob_s3_version_id" author="anandJ">
         <preConditions onFail="MARK_RAN">
@@ -384,13 +385,14 @@
     </changeSet>
 
     <changeSet id="vmem-hyperparameter-element-mapping-table" author="anandJ">
+        <validCheckSum>8:1c0e27ffec5d64840685672d68e9c0d6</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="hyperparameter_element_mapping"/>
             </not>
         </preConditions>
         <createTable tableName="hyperparameter_element_mapping">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="experiment_run_id" type="varchar(255)">
@@ -604,13 +606,14 @@
     </changeSet>
 
     <changeSet id="upload_status_table_create" author="lezhevg">
+        <validCheckSum>8:7166b0826181410a42cf588406fb95c9</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="upload_status"/>
             </not>
         </preConditions>
         <createTable tableName="upload_status">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="dataset_component_blob_id" type="varchar(64)"/>
@@ -672,15 +675,16 @@
         </createTable>
     </changeSet>
 
-    <include file="src/main/resources/liquibase/create-index-changelog.xml"/>
+    <include file="liquibase/create-index-changelog.xml"/>
     <changeSet author="anandJ" id="migration_status_table">
+        <validCheckSum>8:2f8041b76b63bee2ef78e46b3184e35b</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="migration_status"/>
             </not>
         </preConditions>
         <createTable tableName="migration_status">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="migration_name" type="varchar(255)"/>

@@ -1,8 +1,5 @@
 import pytest
 
-import six
-
-import os
 import shutil
 import tempfile
 import time
@@ -323,7 +320,6 @@ class TestTensorFlow:
 
 
 class TestXGBoost:
-    @pytest.mark.skipif(six.PY2, reason="XGBoost causes a segfault in Python 2 (VR-11963)")
     @pytest.mark.skip(reason="need to update the callback for xgboost>=1.6 (VUMM-629)")
     def test_callback(self, experiment_run):
         verta_integrations_xgboost = pytest.importorskip("verta.integrations.xgboost")

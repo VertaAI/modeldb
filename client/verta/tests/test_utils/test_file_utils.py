@@ -1,6 +1,6 @@
 # pylint: disable=unidiomatic-typecheck
 
-import pathlib2
+import pathlib
 import pytest
 from verta._internal_utils import _file_utils
 
@@ -71,7 +71,7 @@ class TestFileUtils:
 
         # create files
         for filepath in filepaths:
-            filepath = pathlib2.Path(filepath)
+            filepath = pathlib.Path(filepath)
             filepath.parent.mkdir(parents=True, exist_ok=True)
             filepath.touch()
 

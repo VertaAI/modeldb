@@ -213,46 +213,44 @@ def torch_models():
 
 
 def xgboost_models():
-    # TODO: re-enable with VR-11963
-    # np = pytest.importorskip("numpy")
-    # xgb = pytest.importorskip("xgboost")
+    np = pytest.importorskip("numpy")
+    xgb = pytest.importorskip("xgboost")
 
     models = []
 
-    # model = xgb.XGBClassifier(use_label_encoder=False)
-    # model.fit(
-    #     np.random.random(size=(3, 3)),
-    #     [0, 0, 1],
-    # )
-    # models.append(model)
+    model = xgb.XGBClassifier(use_label_encoder=False)
+    model.fit(
+        np.random.random(size=(3, 3)),
+        [0, 0, 1],
+    )
+    models.append(model)
 
     return models
 
 
 def unsupported_xgboost_models():
-    # TODO: re-enable with VR-11963
-    # datasets = pytest.importorskip("sklearn.datasets")
-    # xgb = pytest.importorskip("xgboost")
+    datasets = pytest.importorskip("sklearn.datasets")
+    xgb = pytest.importorskip("xgboost")
 
     models = []
 
-    # # from https://xgboost.readthedocs.io/en/latest/python/model.html
-    # X, y = datasets.make_classification(
-    #     n_samples=100,
-    #     n_informative=5,
-    #     n_classes=3,
-    # )
-    # dtrain = xgb.DMatrix(data=X, label=y)
-    # models.append(
-    #     xgb.train(
-    #         {
-    #             "num_parallel_tree": 4,
-    #             "subsample": 0.5,
-    #             "num_class": 3,
-    #         },
-    #         num_boost_round=16,
-    #         dtrain=dtrain,
-    #     )
-    # )
+    # from https://xgboost.readthedocs.io/en/latest/python/model.html
+    X, y = datasets.make_classification(
+        n_samples=100,
+        n_informative=5,
+        n_classes=3,
+    )
+    dtrain = xgb.DMatrix(data=X, label=y)
+    models.append(
+        xgb.train(
+            {
+                "num_parallel_tree": 4,
+                "subsample": 0.5,
+                "num_class": 3,
+            },
+            num_boost_round=16,
+            dtrain=dtrain,
+        )
+    )
 
     return models

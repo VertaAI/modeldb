@@ -3,8 +3,6 @@
 import importlib
 import pkgutil
 
-from verta.external import six
-
 
 class CustomModules(object):
 
@@ -31,9 +29,6 @@ class CustomModules(object):
         str
 
         """
-        if six.PY2:
-            return pkgutil.find_loader(module_name).filename
-
         module_spec = importlib.util.find_spec(module_name)  # pylint: disable=no-member
 
         module_path = module_spec.submodule_search_locations  # module.__path__

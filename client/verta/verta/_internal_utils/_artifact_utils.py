@@ -555,7 +555,7 @@ def global_read_zipinfo(filename):
 
     References
     ----------
-    .. [1] https://github.com/python/cpython/blob/2.7/Lib/zipfile.py#L1244
+    .. [1] https://github.com/python/cpython/blob/3.9/Lib/zipfile.py#L1791
 
     .. [2] https://bugs.python.org/msg69937
 
