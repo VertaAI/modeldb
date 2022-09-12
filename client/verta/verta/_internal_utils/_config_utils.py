@@ -43,6 +43,7 @@ def read_merged_config():
     """
     config = {}
     for filepath in reversed(find_config_files()):
+        # TODO: gracefully handle config files that can't be opened
         merge(config, load(filepath))
 
     yield config
