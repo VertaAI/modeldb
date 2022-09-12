@@ -225,11 +225,12 @@ class Client(object):
         return ExperimentRuns(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def _load_config(self):
-        if not os.environ.get(VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR):
+        if (VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR in os.environ
+                and os.environ[VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR] != ""):
+            self._config = dict()
+        else:
             with _config_utils.read_merged_config() as config:
                 self._config = config
-        else:
-            self._config = dict()
 
     def _set_from_config_if_none(self, var, resource_name):
         if var is None:
