@@ -260,7 +260,7 @@ public abstract class Config {
   public void setArtifactStoreConfig(ArtifactStoreConfig artifactStoreConfig) {
     this.artifactStoreConfig = artifactStoreConfig;
   }
-  
+
   public void setSpringServer(SpringServerConfig springServer) {
     this.springServer = springServer;
   }
