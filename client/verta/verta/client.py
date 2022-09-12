@@ -120,8 +120,7 @@ class Client(object):
     """
     def __init__(self, host=None, port=None, email=None, dev_key=None,
                  max_retries=5, ignore_conn_err=False, use_git=True, debug=False, extra_auth_headers={}, jwt_token=None, jwt_token_sig=None, _connect=True):
-        if not os.environ.get("VERTA_DISABLE_CLIENT_CONFIG"):
-            self._load_config()
+        self._load_config()
 
         host = self._get_with_fallback(host, env_var="VERTA_HOST", config_var="host")
         if host is None:
@@ -218,8 +217,11 @@ class Client(object):
         return ExperimentRuns(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def _load_config(self):
-        with _config_utils.read_merged_config() as config:
-            self._config = config
+        if not os.environ.get("VERTA_DISABLE_CLIENT_CONFIG"):
+            with _config_utils.read_merged_config() as config:
+                self._config = config
+        else:
+            self._config = dict()
 
     def _set_from_config_if_none(self, var, resource_name):
         if var is None:
