@@ -2,6 +2,7 @@
 
 import contextlib
 import json
+import logging
 import os
 
 import yaml
@@ -9,6 +10,9 @@ import yaml
 from .._protos.public.client import Config_pb2 as _ConfigProtos
 
 from . import _utils
+
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: make this a named tuple, if it would help readability
@@ -39,6 +43,7 @@ def read_merged_config():
     """
     config = {}
     for filepath in reversed(find_config_files()):
+        # TODO: gracefully handle config files that can't be opened
         merge(config, load(filepath))
 
     yield config
@@ -132,6 +137,10 @@ def get_possible_config_file_dirs():
     * parent directories until the root
     * ``$HOME/.verta/``
 
+    .. versionchanged:: 0.20.4
+        Directories for which ``os.listdir()`` fails (e.g. permission denied,
+        doesn't exist for some reason) are gracefully skipped.
+
     Returns
     -------
     dirpaths : list of str
@@ -139,21 +148,32 @@ def get_possible_config_file_dirs():
         being first.
 
     """
-    dirpaths = []
+    candidates = []
 
     # current dir
     curr_dir = os.getcwd()
-    dirpaths.append(curr_dir)
+    candidates.append(curr_dir)
 
     # parent dirs
     parent_dir = os.path.dirname(curr_dir)
-    while parent_dir != dirpaths[-1]:
-        dirpaths.append(parent_dir)
+    while parent_dir != candidates[-1]:
+        candidates.append(parent_dir)
         parent_dir = os.path.dirname(parent_dir)
 
     # home verta dir
     if os.path.isdir(HOME_VERTA_DIR):
-        dirpaths.append(HOME_VERTA_DIR)
+        candidates.append(HOME_VERTA_DIR)
+
+    # filter out directories that can't be listed
+    dirpaths = []
+    for dirpath in candidates:
+        try:
+            os.listdir(dirpath)
+        except Exception as e:
+            logger.debug("skipping directory for client config:\n    %s", str(e))
+            continue
+        else:
+            dirpaths.append(dirpath)
 
     return dirpaths
 
