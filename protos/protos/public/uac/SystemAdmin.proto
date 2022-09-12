@@ -5,9 +5,13 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
+import "common/CommonService.proto";
+
 message ListSystemAdmins {
+    common.Pagination pagination = 2;
     message Response {
         repeated string user_ids = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -28,6 +32,7 @@ message RemoveSystemAdmin {
 }
 
 message PypiConfiguration {
+    reserved 6;  // previously deleted fields
     // Missing if create, present if update
     string id = 1;
 
@@ -37,13 +42,14 @@ message PypiConfiguration {
     string username = 4;
     string password = 5;
 
-    uint64 index = 6;
     bool enabled = 7;
 }
 
 message ListPypiConfiguration {
+    common.Pagination pagination = 2;
     message Response {
         repeated PypiConfiguration configurations = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -53,14 +59,56 @@ message DeletePypiConfiguration {
     message Response {}
 }
 
-message ReorderPypiConfiguration {
+message EnablePypiConfiguration {
     string id = 1;
-    uint64 new_index = 2;
+    bool new_enabled = 2;
 
     message Response {}
 }
 
-message EnablePypiConfiguration {
+message KafkaConfiguration {
+    message TLS {
+        // All fields below must be provided on an update, except when enabled=false
+        bool enabled = 1;
+        string certificate = 2;
+    }
+
+    message Kerberos {
+        reserved 4;  // previously deleted fields
+        // All fields below must be provided on an update, except when enabled=false
+        bool enabled = 1;
+        string conf = 2;
+        string keytab = 3;
+        string client_name = 5;
+        string service_name = 6;
+    }
+
+    string id = 1;
+
+    TLS tls = 3;
+    Kerberos kerberos = 4;
+    // All fields below must be provided on an update
+    string brokerAddresses = 2;
+    bool enabled = 5;
+    string name = 6;
+}
+
+
+message ListKafkaConfiguration {
+    common.Pagination pagination = 2;
+    message Response {
+        repeated KafkaConfiguration configurations = 1;
+        int64 total_records = 2;
+    }
+}
+
+message DeleteKafkaConfiguration {
+    string id = 1;
+
+    message Response {}
+}
+
+message EnableKafkaConfiguration {
     string id = 1;
     bool new_enabled = 2;
 
@@ -115,16 +163,36 @@ service SystemAdminService {
         };
     };
 
-    rpc reorderPypiConfiguration (ReorderPypiConfiguration) returns (ReorderPypiConfiguration.Response) {
+    rpc enablePypiConfiguration (EnablePypiConfiguration) returns (EnablePypiConfiguration.Response) {
         option (google.api.http) = {
-            post : "/v1/system_admin/reorderPypiConfiguration"
+            post : "/v1/system_admin/enablePypiConfiguration"
             body : "*"
         };
     };
 
-    rpc enablePypiConfiguration (EnablePypiConfiguration) returns (EnablePypiConfiguration.Response) {
+    rpc createOrUpdateKafkaConfiguration (KafkaConfiguration) returns (KafkaConfiguration) {
         option (google.api.http) = {
-            post : "/v1/system_admin/enablePypiConfiguration"
+            post : "/v1/system_admin/createOrUpdateKafkaConfiguration"
+            body : "*"
+        };
+    };
+
+    rpc deleteKafkaConfiguration (DeleteKafkaConfiguration) returns (DeleteKafkaConfiguration.Response) {
+        option (google.api.http) = {
+            post : "/v1/system_admin/deleteKafkaConfiguration"
+            body : "*"
+        };
+    };
+
+    rpc listKafkaConfiguration (ListKafkaConfiguration) returns (ListKafkaConfiguration.Response) {
+        option (google.api.http) = {
+            get : "/v1/system_admin/listKafkaConfiguration"
+        };
+    };
+
+    rpc enableKafkaConfiguration (EnableKafkaConfiguration) returns (EnableKafkaConfiguration.Response) {
+        option (google.api.http) = {
+            post : "/v1/system_admin/enableKafkaConfiguration"
             body : "*"
         };
     };

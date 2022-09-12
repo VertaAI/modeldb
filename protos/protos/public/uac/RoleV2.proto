@@ -1,0 +1,93 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "common/CommonService.proto";
+import "uac/UACService.proto";
+
+
+enum ResourceTypeV2 {
+    RESOURCE_TYPE_UNKNOWN = 0;
+    DATA = 1;
+    EXPERIMENT = 2;
+    MODELS_AND_VERSIONS = 3;
+    ENDPOINTS = 4;
+    MONITOR = 5;
+}
+
+enum ActionTypeV2 {
+    ACTION_TYPE_UNKNOWN = 0;
+    READ = 1;
+    UPDATE = 2;
+    CREATE = 3;
+    DELETE = 4;
+    APPROVE_REJECT = 5;
+    REGISTER = 6;
+    DEPLOY = 7;
+    PREDICT = 8;
+}
+
+message RoleResourceActions {
+    string id = 1;
+    ResourceTypeV2 resource_type = 2;
+    repeated ActionTypeV2 allowed_actions = 3;
+}
+
+message RoleV2 {
+    string org_id = 1;
+    string id = 2;
+    string name = 3;
+    bool built_in = 4;
+    repeated RoleResourceActions resource_actions = 5;
+}
+
+message SetRoleV2 {
+    RoleV2 role = 1;
+
+    message Response {
+        RoleV2 role = 1;
+    }
+}
+
+message DeleteRoleV2 {
+    string org_id = 1;
+    string role_id = 2;
+
+    message Response {
+    }
+}
+
+message SearchRolesV2 {
+    string org_id = 1;
+    common.Pagination pagination = 2;
+
+    message Response {
+        repeated RoleV2 roles = 1;
+        int64 total_records = 2;
+        common.Pagination pagination = 3;
+    }
+}
+
+service RoleServiceV2 {
+    rpc setRole (SetRoleV2) returns (SetRoleV2.Response) {
+        option (google.api.http) = {
+            post: "/v2/organization/{role.org_id}/roles"
+            body: "*"
+        };
+    }
+
+    rpc deleteRole (DeleteRoleV2) returns (DeleteRoleV2.Response) {
+        option (google.api.http) = {
+            delete: "/v2/organization/{org_id}/roles/{role_id}"
+        };
+    }
+
+    rpc searchRoles (SearchRolesV2) returns (SearchRolesV2.Response) {
+        option (google.api.http) = {
+            get: "/v2/organization/{org_id}/roles"
+        };
+    }
+}
