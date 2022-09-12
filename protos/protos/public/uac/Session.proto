@@ -6,7 +6,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "uac/UACService.proto";
-import "common/CommonService.proto";
 
 message Session {
     uint64 id = 1;
@@ -30,11 +29,9 @@ message FindSessionRequest {
     repeated uint64 ids = 1;
     repeated string verta_user_id = 2;
     repeated string name = 3;
-    common.Pagination pagination = 4;
 
     message Response {
         repeated Session sessions = 1;
-        int64 total_records = 2;
     }
 }
 

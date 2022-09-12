@@ -44,12 +44,10 @@ message WorkspaceContainerRegistryConfiguration {
 }
 
 message GetVisibleWorkspaces {
-    common.Pagination pagination = 1;
 }
 
 message Workspaces {
     repeated Workspace workspace = 1;
-    int64 total_records = 2;
 }
 
 service WorkspaceService {

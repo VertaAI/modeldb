@@ -14,7 +14,6 @@ message Organization {
     string short_name = 7;
     string description = 3;
     string owner_id = 4;
-    IdServiceProviderEnum idp = 21;
 
     int64 created_timestamp = 5;
     int64 updated_timestamp = 6;
@@ -85,20 +84,9 @@ message GetOrganizationByShortName {
     }
 }
 
-message ListOrganizations {
-    bool externalOnly = 1;
-    common.Pagination pagination = 2;
-    message Response {
-        repeated Organization organizations = 1;
-        int64 total_records = 2;
-    }
-}
-
 message ListMyOrganizations {
-    common.Pagination pagination = 2;
     message Response {
         repeated Organization organizations = 1;
-        int64 total_records = 2;
     }
 }
 
@@ -120,22 +108,17 @@ message DeleteOrganization {
 
 message ListUsers {
     string org_id = 1;
-    common.Pagination pagination = 2;
 
     message Response {
         repeated string user_ids = 1;
-        int64 total_records = 2;
     }
 }
 
 message ListTeams {
     string org_id = 1;
-    bool external_only = 2;
-    common.Pagination pagination = 3;
 
     message Response {
         repeated string team_ids = 1;
-        int64 total_records = 2;
     }
 }
 
@@ -179,14 +162,7 @@ service OrganizationService {
         };
     };
 
-    // Lists the organizations that the current user can access
-    rpc listOrganizations (ListOrganizations) returns (ListOrganizations.Response){
-        option (google.api.http) = {
-            get: "/v1/organization/listOrganizations"
-        };
-    };
-
-    // Lists the organizations that the current user is a member of
+    // Lists the organizations that the current user can see
     rpc listMyOrganizations (ListMyOrganizations) returns (ListMyOrganizations.Response){
         option (google.api.http) = {
             get: "/v1/organization/listMyOrganizations"

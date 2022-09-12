@@ -899,8 +899,7 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN",
-        "NOT_IN"
+        "IN"
       ],
       "default": "EQ"
     },

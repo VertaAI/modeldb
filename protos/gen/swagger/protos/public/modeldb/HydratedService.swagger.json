@@ -822,8 +822,7 @@
         "READ_SECRETS",
         "CREATE_SERVICE_ACCOUNT",
         "CREATE_CONTAINER_REGISTRY",
-        "CREATE_WEBHOOK",
-        "CREATE_GROUP"
+        "CREATE_WEBHOOK"
       ],
       "default": "UNKNOWN"
     },
@@ -897,10 +896,7 @@
         "VERTA",
         "SAML",
         "AD_OAUTH2",
-        "LDAP",
-        "OKTA_SCIM",
-        "AD_SCIM",
-        "SCIM"
+        "LDAP"
       ],
       "default": "UNKNOWN"
     },
@@ -942,8 +938,7 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN",
-        "NOT_IN"
+        "IN"
       ],
       "default": "EQ"
     },
@@ -2359,9 +2354,6 @@
       ],
       "default": "UNDEFINED"
     },
-    "uacIdServiceProviderEnum": {
-      "type": "object"
-    },
     "uacOrganization": {
       "type": "object",
       "properties": {
@@ -2379,9 +2371,6 @@
         },
         "owner_id": {
           "type": "string"
-        },
-        "idp": {
-          "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
           "type": "string",
@@ -2498,9 +2487,6 @@
         "owner_id": {
           "type": "string"
         },
-        "id_service_provider": {
-          "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
-        },
         "created_timestamp": {
           "type": "string",
           "format": "int64"
@@ -2549,10 +2535,6 @@
         },
         "secondary_dev_key": {
           "type": "string"
-        },
-        "disabled": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },
