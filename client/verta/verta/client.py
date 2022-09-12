@@ -60,6 +60,10 @@ class Client(object):
     .. deprecated:: 0.13.3
        The `expt_runs` attribute will be removed in an upcoming version; consider using `proj.expt_runs` and
        `expt.expt_runs` instead.
+    .. versionadded:: 0.20.4
+       The ``VERTA_DISABLE_CLIENT_CONFIG`` environment variable, when set to
+       a non-empty value, disables discovery of client config files for use in
+       protected filesystems.
 
     This class provides functionality for starting/resuming Projects, Experiments, and Experiment Runs.
 
