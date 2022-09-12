@@ -256,4 +256,12 @@ public abstract class Config {
   public ArtifactStoreConfig getArtifactStoreConfig() {
     return artifactStoreConfig;
   }
+
+  public void setSpringServer(SpringServerConfig springServer) {
+    this.springServer = springServer;
+  }
+
+  public void setGrpcServer(GrpcServerConfig grpcServer) {
+    this.grpcServer = grpcServer;
+  }
 }
