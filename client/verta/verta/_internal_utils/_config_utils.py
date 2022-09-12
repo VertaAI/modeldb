@@ -136,6 +136,10 @@ def get_possible_config_file_dirs():
     * parent directories until the root
     * ``$HOME/.verta/``
 
+    .. versionchanged:: 0.20.4
+        Directories for which ``os.listdir()`` fails (e.g. permission denied,
+        doesn't exist for some reason) are gracefully skipped.
+
     Returns
     -------
     dirpaths : list of str
@@ -159,7 +163,18 @@ def get_possible_config_file_dirs():
     if os.path.isdir(HOME_VERTA_DIR):
         candidates.append(HOME_VERTA_DIR)
 
-    return candidates
+    # filter out directories that can't be listed
+    dirpaths = []
+    for dirpath in candidates:
+        try:
+            os.listdir(dirpath)
+        except Exception as e:
+            logger.debug("skipping directory for client config:\n    %s", str(e))
+            continue
+        else:
+            dirpaths.append(dirpath)
+
+    return dirpaths
 
 
 def find_closest_config_file():
