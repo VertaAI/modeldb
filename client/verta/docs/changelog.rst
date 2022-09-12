@@ -37,6 +37,21 @@ Changelog
      (`# <>`__)
 
 
+v0.20.4 (2022-09-12)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add ``VERTA_DISABLE_CLIENT_CONFIG`` environment variable to disable client
+  config file discovery
+  (`#3208 <https://github.com/VertaAI/modeldb/pull/3208>`__)
+
+Bug Fixes
+^^^^^^^^^
+- during client config file discovery, skip directories that cannot be read
+  (`#3208 <https://github.com/VertaAI/modeldb/pull/3208>`__)
+
+
 v0.20.3 (2022-08-31)
 --------------------
 
