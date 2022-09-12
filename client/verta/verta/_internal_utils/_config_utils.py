@@ -2,6 +2,7 @@
 
 import contextlib
 import json
+import logging
 import os
 
 import yaml
@@ -9,6 +10,9 @@ import yaml
 from .._protos.public.client import Config_pb2 as _ConfigProtos
 
 from . import _utils
+
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: make this a named tuple, if it would help readability
@@ -139,23 +143,23 @@ def get_possible_config_file_dirs():
         being first.
 
     """
-    dirpaths = []
+    candidates = []
 
     # current dir
     curr_dir = os.getcwd()
-    dirpaths.append(curr_dir)
+    candidates.append(curr_dir)
 
     # parent dirs
     parent_dir = os.path.dirname(curr_dir)
-    while parent_dir != dirpaths[-1]:
-        dirpaths.append(parent_dir)
+    while parent_dir != candidates[-1]:
+        candidates.append(parent_dir)
         parent_dir = os.path.dirname(parent_dir)
 
     # home verta dir
     if os.path.isdir(HOME_VERTA_DIR):
-        dirpaths.append(HOME_VERTA_DIR)
+        candidates.append(HOME_VERTA_DIR)
 
-    return dirpaths
+    return candidates
 
 
 def find_closest_config_file():
