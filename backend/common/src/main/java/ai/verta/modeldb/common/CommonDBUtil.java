@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common;
 
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
