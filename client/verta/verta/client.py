@@ -50,6 +50,10 @@ from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
 
+
+VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR = "VERTA_DISABLE_CLIENT_CONFIG"
+
+
 class Client(object):
     """
     Object for interfacing with the Verta backend.
@@ -221,7 +225,7 @@ class Client(object):
         return ExperimentRuns(self._conn, self._conf).with_workspace(self.get_workspace())
 
     def _load_config(self):
-        if not os.environ.get("VERTA_DISABLE_CLIENT_CONFIG"):
+        if not os.environ.get(VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR):
             with _config_utils.read_merged_config() as config:
                 self._config = config
         else:

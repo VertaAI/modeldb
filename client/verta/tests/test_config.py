@@ -9,6 +9,7 @@ import yaml
 import pytest
 
 from verta import Client
+from verta.client import VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR
 from verta._internal_utils import _config_utils
 
 from . import utils
@@ -150,10 +151,11 @@ class TestRead:
         with _config_utils.read_merged_config() as config:
             assert config == expected_config
 
-    def test_skip_client_load_config(self, expected_config):
+    def test_skip_client_load_config(self, expected_config, monkeypatch):
+        monkeypatch.delenv(VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR, raising=False)
         assert Client()._config == expected_config
 
-        os.environ["VERTA_DISABLE_CLIENT_CONFIG"] = "1"
+        monkeypatch.setenv(VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR, "1")
         assert Client()._config == dict()
 
 
