@@ -2365,7 +2365,7 @@ public class CommitTest extends TestsInit {
               .setCommitSha(commitResponse.getCommit().getCommitSha())
               .addAllLocation(location)
               .setPathDatasetComponentBlobPath(path1)
-              .setMethod(ModelDBConstants.PUT)
+              .setMethod("PUT")
               .setPartNumber(1)
               .build();
       GetUrlForBlobVersioned.Response getUrlForVersionedBlobResponse =

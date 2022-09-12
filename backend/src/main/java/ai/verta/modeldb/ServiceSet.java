@@ -1,9 +1,9 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.MDBConfig;

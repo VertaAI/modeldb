@@ -1,15 +1,13 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.CommonMessages;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.HttpCodeToGRPCCode;
+import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
-import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.AmazonServiceException;
 import com.amazonaws.HttpMethod;
 import com.amazonaws.SdkClientException;
@@ -47,21 +45,21 @@ import org.springframework.http.ResponseEntity;
 public class S3Service implements ArtifactStoreService {
 
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
-  private S3Client s3Client;
-  private String bucketName;
-  private final App app = App.getInstance();
-  private final MDBConfig mdbConfig = app.mdbConfig;
+  private final S3Client s3Client;
+  private final String bucketName;
+  private final ArtifactStoreConfig artifactStoreConfig;
 
-  public S3Service(String cloudBucketName) throws ModelDBException, IOException {
-    s3Client = new S3Client(cloudBucketName);
-    this.bucketName = cloudBucketName;
+  public S3Service(ArtifactStoreConfig artifactStoreConfig) throws ModelDBException, IOException {
+    this.artifactStoreConfig = artifactStoreConfig;
+    s3Client = new S3Client(artifactStoreConfig.getS3());
+    this.bucketName = artifactStoreConfig.getS3().getCloudBucketName();
   }
 
   private Boolean doesBucketExist(String bucketName) throws ModelDBException {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       return client.getClient().doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
-      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
           "AWS S3 could not be checked for bucket existence for artifact store : "
               + e.getErrorMessage());
@@ -77,7 +75,7 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       return client.getClient().doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
-      ModelDBUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
+      CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
           "AWS S3 could not be checked for bucket existance for artifact store : "
               + e.getErrorMessage());
@@ -97,7 +95,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
     var initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
@@ -110,7 +108,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
-    if (mdbConfig.artifactStoreConfig.S3.getS3presignedURLEnabled()) {
+    if (artifactStoreConfig.getS3().getS3presignedURLEnabled()) {
       return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {
       return getPresignedUrlViaMDB(s3Key, method, partNumber, uploadId);
@@ -122,13 +120,13 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
 
     HttpMethod reqMethod;
-    if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
+    if (method.equalsIgnoreCase("put")) {
       reqMethod = HttpMethod.PUT;
-    } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
+    } else if (method.equalsIgnoreCase("get")) {
       reqMethod = HttpMethod.GET;
     } else {
       var errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
@@ -161,7 +159,7 @@ public class S3Service implements ArtifactStoreService {
     // Validate bucket
     Boolean exist = doesBucketExist(bucketName);
     if (!exist) {
-      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
     var completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
@@ -184,7 +182,7 @@ public class S3Service implements ArtifactStoreService {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       Boolean exist = doesBucketExist(bucketName);
       if (!exist) {
-        throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+        throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
       }
 
       if (partNumber != 0 && uploadId != null && !uploadId.isEmpty()) {
@@ -246,7 +244,7 @@ public class S3Service implements ArtifactStoreService {
             resource.getObjectMetadata().getRawMetadata().entrySet()) {
           responseHeaders.add(header.getKey(), String.valueOf(header.getValue()));
         }
-        responseHeaders.add(ModelDBConstants.FILENAME, fileName);
+        responseHeaders.add("FileName", fileName);
         LOGGER.debug("getArtifact returned");
         return ResponseEntity.ok()
             .cacheControl(CacheControl.noCache())
@@ -279,7 +277,7 @@ public class S3Service implements ArtifactStoreService {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("artifact_path", artifactPath);
 
-    if (method.equalsIgnoreCase(ModelDBConstants.PUT)) {
+    if (method.equalsIgnoreCase("put")) {
       LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
       LOGGER.debug("part number: " + partNumber);
       parameters.put("part_number", partNumber);
@@ -287,23 +285,23 @@ public class S3Service implements ArtifactStoreService {
       final var url =
           getUploadUrl(
               parameters,
-              mdbConfig.artifactStoreConfig.getProtocol(),
-              mdbConfig.artifactStoreConfig.getArtifactEndpoint().getStoreArtifact(),
-              mdbConfig.artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
-              mdbConfig.artifactStoreConfig.getHost());
+              artifactStoreConfig.getProtocol(),
+              artifactStoreConfig.getArtifactEndpoint().getStoreArtifact(),
+              artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
+              artifactStoreConfig.getHost());
       LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
       return url;
-    } else if (method.equalsIgnoreCase(ModelDBConstants.GET)) {
+    } else if (method.equalsIgnoreCase("get")) {
       LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
       var filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
-      parameters.put(ModelDBConstants.FILENAME, filename);
+      parameters.put("FileName", filename);
       final var url =
           getDownloadUrl(
               parameters,
-              mdbConfig.artifactStoreConfig.getProtocol(),
-              mdbConfig.artifactStoreConfig.getArtifactEndpoint().getGetArtifact(),
-              mdbConfig.artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
-              mdbConfig.artifactStoreConfig.getHost());
+              artifactStoreConfig.getProtocol(),
+              artifactStoreConfig.getArtifactEndpoint().getGetArtifact(),
+              artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
+              artifactStoreConfig.getHost());
       LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
       return url;
     } else {
@@ -315,7 +313,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public InputStream downloadFileFromStorage(String key) throws ModelDBException {
     if (!doesBucketExist(bucketName)) {
-      throw new ModelDBException(ModelDBMessages.BUCKET_DOES_NOT_EXISTS, Code.UNAVAILABLE);
+      throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
 
     return downloadFileFromStorage(bucketName, key);

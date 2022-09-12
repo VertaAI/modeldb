@@ -11,7 +11,7 @@ public class MDBConfig extends Config {
 
   private static MDBConfig mdbConfig = null;
   public String starterProject;
-  public MDBArtifactStoreConfig artifactStoreConfig;
+
   public TelemetryConfig telemetry;
   public List<MigrationConfig> migrations;
   protected FutureJdbi jdbi;
@@ -27,10 +27,6 @@ public class MDBConfig extends Config {
   @Override
   public void validate() throws InvalidConfigException {
     super.validate();
-
-    if (artifactStoreConfig == null)
-      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.validate("artifactStoreConfig");
 
     if (getService_user() != null) {
       getService_user().validate("service_user");

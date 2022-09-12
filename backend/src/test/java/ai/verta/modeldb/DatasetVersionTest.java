@@ -1174,7 +1174,7 @@ public class DatasetVersionTest extends TestsInit {
               .setDatasetId(dataset.getId())
               .setDatasetVersionId(datasetVersion1.getId())
               .setPathDatasetComponentBlobPath(path1)
-              .setMethod(ModelDBConstants.PUT)
+              .setMethod("PUT")
               .setPartNumber(1)
               .build();
       GetUrlForDatasetBlobVersioned.Response getUrlForVersionedDatasetBlobResponse =

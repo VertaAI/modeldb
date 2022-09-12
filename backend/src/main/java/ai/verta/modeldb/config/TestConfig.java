@@ -38,9 +38,10 @@ public class TestConfig extends MDBConfig {
       entry.getValue().validate(entry.getKey());
     }
 
-    if (artifactStoreConfig == null)
+    if (getArtifactStoreConfig() == null) {
       throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
-    artifactStoreConfig.validate("artifactStoreConfig");
+    }
+    getArtifactStoreConfig().validate("artifactStoreConfig");
 
     if (migrations != null) {
       for (MigrationConfig migrationConfig : migrations) {

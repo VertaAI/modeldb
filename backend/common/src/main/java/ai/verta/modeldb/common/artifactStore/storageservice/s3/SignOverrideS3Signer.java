@@ -1,4 +1,4 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import com.amazonaws.SignableRequest;
 import com.amazonaws.services.s3.internal.AWSS3V4Signer;

@@ -1,11 +1,9 @@
-package ai.verta.modeldb.artifactStore.storageservice.s3;
+package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.S3Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import com.amazonaws.ClientConfiguration;
 import com.amazonaws.auth.*;
 import com.amazonaws.client.builder.AwsClientBuilder;
@@ -34,23 +32,18 @@ import org.apache.logging.log4j.Logger;
 public class S3Client {
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
 
-  private String bucketName;
-  private Regions awsRegion;
+  private final String bucketName;
 
   private AmazonS3 s3Client;
   private AtomicInteger referenceCounter;
   private AWSCredentials awsCredentials;
-  private App app;
-  private S3Config config;
 
-  public S3Client(String cloudBucketName) throws IOException, ModelDBException {
-    app = App.getInstance();
-    config = app.mdbConfig.artifactStoreConfig.S3;
-    String cloudAccessKey = config.getCloudAccessKey();
-    String cloudSecretKey = config.getCloudSecretKey();
-    String minioEndpoint = config.getMinioEndpoint();
-    awsRegion = Regions.fromName(config.getAwsRegion());
-    this.bucketName = cloudBucketName;
+  public S3Client(S3Config s3Config) throws IOException, ModelDBException {
+    String cloudAccessKey = s3Config.getCloudAccessKey();
+    String cloudSecretKey = s3Config.getCloudSecretKey();
+    String minioEndpoint = s3Config.getMinioEndpoint();
+    Regions awsRegion = Regions.fromName(s3Config.getAwsRegion());
+    this.bucketName = s3Config.getCloudBucketName();
 
     // Start the counter with one because this class has a reference to it
     referenceCounter = new AtomicInteger(1);
@@ -63,8 +56,8 @@ public class S3Client {
         LOGGER.debug("minio client");
         initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
       }
-    } else if (ModelDBUtils.isEnvSet(ModelDBConstants.AWS_ROLE_ARN)
-        && ModelDBUtils.isEnvSet(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+    } else if (CommonUtils.isEnvSet(CommonConstants.AWS_ROLE_ARN)
+        && CommonUtils.isEnvSet(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
       LOGGER.debug("temporary token based s3 client");
       initializeWithTemporaryCredentials(awsRegion);
     } else {
@@ -119,19 +112,19 @@ public class S3Client {
             WebIdentityTokenCredentialsProvider.builder()
                 .webIdentityTokenFile(
                     CommonUtils.appendOptionalTelepresencePath(
-                        System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
+                        System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
                 .build());
       }
       stsClient = stsClientBuilder.build();
 
-      String roleArn = System.getenv(ModelDBConstants.AWS_ROLE_ARN);
+      String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
 
       var token =
           new String(
               Files.readAllBytes(
                   Paths.get(
                       CommonUtils.appendOptionalTelepresencePath(
-                          System.getenv(ModelDBConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
+                          System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
 
       // Obtain credentials for the IAM role. Note that you cannot assume the role of
       // an AWS root account;
