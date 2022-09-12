@@ -3,9 +3,10 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                         http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
-        logicalFilePath="src/main/resources/liquibase/create-tables-changelog-1.0.xml">
+        logicalFilePath="liquibase/create-tables-changelog-1.0.xml">
 
     <changeSet author="anandJ" id="createTable-1" failOnError="false">
+        <validCheckSum>8:b64eccfe76381356d89452ebadacfdf7</validCheckSum>
         <createTable tableName="artifact_store">
             <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
@@ -39,7 +40,7 @@
         </createTable>
 
         <createTable tableName="git_snapshot">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="field_type" type="varchar(50)"/>
@@ -61,7 +62,7 @@
         </createTable>
 
         <createTable tableName="path_dataset_version_info">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="base_path" type="varchar(255)"/>
@@ -71,7 +72,7 @@
         </createTable>
 
         <createTable tableName="query_dataset_version_info">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="data_source_uri" type="varchar(255)"/>
@@ -83,7 +84,7 @@
         </createTable>
 
         <createTable tableName="raw_dataset_version_info">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="checksum" type="varchar(255)"/>
@@ -94,7 +95,7 @@
         </createTable>
 
         <createTable tableName="dataset_part_info">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="checksum" type="varchar(255)"/>
@@ -145,7 +146,7 @@
         </createTable>
 
         <createTable tableName="query_parameter">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -173,7 +174,7 @@
         </createTable>
 
         <createTable tableName="artifact">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="artifact_type" type="int4"/>
@@ -190,7 +191,7 @@
         </createTable>
 
         <createTable tableName="code_version">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="date_logged" type="int8"/>
@@ -244,7 +245,7 @@
         </createTable>
 
         <createTable tableName="feature">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -256,7 +257,7 @@
         </createTable>
 
         <createTable tableName="keyvalue">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -273,7 +274,7 @@
         </createTable>
 
         <createTable tableName="observation">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -307,7 +308,7 @@
         </createTable>
 
         <createTable tableName="tag_mapping">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -334,7 +335,7 @@
         </createTable>
 
         <createTable tableName="attribute">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -518,13 +519,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_git_snapshot">
+        <validCheckSum>8:c553ddbf35bbea1dfd52726ae2e9a9e0</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="git_snapshot"/>
             </not>
         </preConditions>
         <createTable tableName="git_snapshot">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="field_type" type="varchar(50)"/>
@@ -554,13 +556,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_path_dataset_version_info">
+        <validCheckSum>8:4d95895fd5fbc5c3dc0d19e63f639c34</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="path_dataset_version_info"/>
             </not>
         </preConditions>
         <createTable tableName="path_dataset_version_info">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="base_path" type="varchar(255)"/>
@@ -571,13 +574,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_query_dataset_version_info">
+        <validCheckSum>8:f18ae74cda86f68dc04bfc1266b65369</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="query_dataset_version_info"/>
             </not>
         </preConditions>
         <createTable tableName="query_dataset_version_info">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="data_source_uri" type="varchar(255)"/>
@@ -590,13 +594,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_raw_dataset_version_info">
+        <validCheckSum>8:634544eb9814379ff243e9a9d19ca512</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="raw_dataset_version_info"/>
             </not>
         </preConditions>
         <createTable tableName="raw_dataset_version_info">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="checksum" type="varchar(255)"/>
@@ -608,13 +613,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_dataset_part_info">
+        <validCheckSum>8:59e6b2348f27d696edb5cb76f30816ba</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="dataset_part_info"/>
             </not>
         </preConditions>
         <createTable tableName="dataset_part_info">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="checksum" type="varchar(255)"/>
@@ -680,13 +686,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_query_parameter">
+        <validCheckSum>8:12a6a9721710f0e9285e8d330c315c9f</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="query_parameter"/>
             </not>
         </preConditions>
         <createTable tableName="query_parameter">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -722,13 +729,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_artifact">
+        <validCheckSum>8:556b20b5e842ad0bddd170a348ef4d57</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="artifact"/>
             </not>
         </preConditions>
         <createTable tableName="artifact">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="artifact_type" type="int4"/>
@@ -746,13 +754,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_code_version">
+        <validCheckSum>8:b7ddcfa3873794e152bd02fe14d24ce6</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="code_version"/>
             </not>
         </preConditions>
         <createTable tableName="code_version">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="date_logged" type="int8"/>
@@ -821,13 +830,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_feature">
+        <validCheckSum>8:f6c220a4a06c5d647273e32b94d7ea7c</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="feature"/>
             </not>
         </preConditions>
         <createTable tableName="feature">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -840,13 +850,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_keyvalue">
+        <validCheckSum>8:564824a17b4cb0f34f7c0342490aaa67</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="keyvalue"/>
             </not>
         </preConditions>
         <createTable tableName="keyvalue">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -864,13 +875,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_observation">
+        <validCheckSum>8:b49e31c5614f3ef1e22f03b80521d71d</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="observation"/>
             </not>
         </preConditions>
         <createTable tableName="observation">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -912,13 +924,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_tag_mapping">
+        <validCheckSum>8:36f49c5bf1a42797f729bd496d63a7e4</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="tag_mapping"/>
             </not>
         </preConditions>
         <createTable tableName="tag_mapping">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>
@@ -946,13 +959,14 @@
     </changeSet>
 
     <changeSet author="anandJ" id="create_attribute">
+        <validCheckSum>8:5cc420512a01479694ec3e205654163a</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="attribute"/>
             </not>
         </preConditions>
         <createTable tableName="attribute">
-            <column name="id" type="int8" autoIncrement="true" incrementBy="1">
+            <column name="id" type="int8" autoIncrement="true">
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="entity_name" type="varchar(50)"/>

@@ -7,7 +7,7 @@ import copy
 import functools
 import hashlib
 import os
-import pathlib2
+import pathlib
 
 from verta.external import six
 from verta import _blob
@@ -189,7 +189,7 @@ class _Dataset(_blob.Blob):
                 downloaded_to_path = _file_utils.without_collision(downloaded_to_path)
             else:  # need to automatically determine directory
                 # NOTE: if `component_path` == "s3://" with any trailing slashes, it becomes "s3:"
-                downloaded_to_path = pathlib2.Path(component_path).name  # final path component
+                downloaded_to_path = pathlib.Path(component_path).name  # final path component
 
                 if downloaded_to_path in {".", "..", "/", "s3:"}:
                     # rather than dump everything into cwd, use new child dir
@@ -322,7 +322,7 @@ class _Dataset(_blob.Blob):
             local_path = components_to_download[path]  # dict will be updated near end of iteration
 
             # create parent dirs
-            pathlib2.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+            pathlib.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
             # TODO: clean up empty parent dirs if something later fails
 
             url = self._get_url_for_artifact(path, "GET").url

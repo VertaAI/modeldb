@@ -1,5 +1,3 @@
-import six
-
 import multiprocessing
 
 import pytest
@@ -38,7 +36,6 @@ class TestLoad:
         run.log_artifact("self", run)
         run.get_artifact("self")
 
-    @pytest.mark.skipif(six.PY2, reason="multiprocessing.Pool has issues in Python 2")
     def test_load(self, client, floats):
         client.set_project()
         client.set_experiment()

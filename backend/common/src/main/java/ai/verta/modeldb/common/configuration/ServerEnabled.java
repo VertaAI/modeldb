@@ -14,6 +14,10 @@ import org.springframework.stereotype.Component;
 public class ServerEnabled implements Condition {
   @Override
   public boolean matches(ConditionContext context, AnnotatedTypeMetadata metadata) {
+    return serverIsEnabled();
+  }
+
+  public static boolean serverIsEnabled() {
     var enableLiquibase =
         Boolean.parseBoolean(
             Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))

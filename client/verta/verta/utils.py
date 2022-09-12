@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Client utilities."""
 
-import collections
+import collections.abc
 import json
 import numbers
 import os
@@ -127,7 +127,7 @@ class ModelAPI(object):
         elif isinstance(data, six.string_types):
             return {'type': "VertaString",
                     'name': str(name)}
-        elif isinstance(data, collections.Mapping):
+        elif isinstance(data, collections.abc.Mapping):
             return {'type': "VertaJson",
                     'name': str(name),
                     'value': [ModelAPI._single_data_to_api(value, str(name))

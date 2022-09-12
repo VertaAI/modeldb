@@ -2,9 +2,12 @@ package ai.verta.modeldb;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.configuration.ServerEnabled;
 import ai.verta.modeldb.config.MDBConfig;
 import org.springframework.boot.SpringApplication;
+import org.springframework.boot.WebApplicationType;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.ApplicationPidFileWriter;
 import org.springframework.context.annotation.ComponentScan;
 
@@ -32,7 +35,13 @@ public class App {
     var pathToPidFile =
         System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
     CommonUtils.resolvePortCollisionIfExists(pathToPidFile);
-    SpringApplication application = new SpringApplication(App.class);
+    SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(App.class);
+    if (ServerEnabled.serverIsEnabled()) {
+      springApplicationBuilder.web(WebApplicationType.SERVLET);
+    } else {
+      springApplicationBuilder.web(WebApplicationType.NONE);
+    }
+    SpringApplication application = springApplicationBuilder.build();
     application.addListeners(new ApplicationPidFileWriter(pathToPidFile));
     application.run(args);
   }

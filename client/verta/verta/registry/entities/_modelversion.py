@@ -6,7 +6,7 @@ import ast
 import json
 import logging
 import os
-import pathlib2
+import pathlib
 import pickle
 import tempfile
 import warnings
@@ -555,25 +555,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             self._MODEL_KEY, download_to_path
         )
 
-    def get_artifact_parts(self, key):
-        endpoint = "{}://{}/api/v1/registry/model_versions/{}/getCommittedArtifactParts".format(
-            self._conn.scheme,
-            self._conn.socket,
-            self.id,
-        )
-        data = {'model_version_id': self.id, 'key': key}
-        response = _utils.make_request(
-            "GET", endpoint, self._conn, params=data)
-        _utils.raise_for_http_error(response)
-
-        committed_parts = _utils.body_to_json(
-            response).get('artifact_parts', [])
-        committed_parts = list(sorted(
-            committed_parts,
-            key=lambda part: int(part['part_number']),
-        ))
-        return committed_parts
-
     def del_model(self):
         """
         Deletes model of this Model Version.
@@ -710,7 +691,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         artifact = self._get_artifact_msg(key)
 
         # create parent dirs
-        pathlib2.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
+        pathlib.Path(download_to_path).parent.mkdir(parents=True, exist_ok=True)
         # TODO: clean up empty parent dirs if something later fails
 
         # get a stream of the file bytes, without loading into memory, and write to file

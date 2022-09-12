@@ -2,8 +2,6 @@
 
 from __future__ import division
 
-import collections
-
 from ..external import six
 
 from .._internal_utils import arg_handler
