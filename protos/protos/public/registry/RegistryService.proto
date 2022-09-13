@@ -257,6 +257,15 @@ message ModelVersion {
 
     // Reference: https://vertaai.atlassian.net/browse/VRD-329
     string redirect_metadata = 25;
+
+    // Reference: https://vertaai.atlassian.net/browse/CAT-84
+    string input_description = 26;
+    // Reference: https://vertaai.atlassian.net/browse/CAT-84
+    bool hide_input_label = 27;
+    // Reference: https://vertaai.atlassian.net/browse/CAT-84
+    string output_description = 28;
+    // Reference: https://vertaai.atlassian.net/browse/CAT-84
+    bool hide_output_label = 29;
 }
 
 message DockerMetadata {
