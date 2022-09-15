@@ -27,7 +27,7 @@
         <jackson.version>2.13.4</jackson.version>
         <jaegertracing.version>1.8.1</jaegertracing.version>
         <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
-        <otel.core.version>1.18.0-alpha</otel.core.version>
+        <otel.core.version>1.18.0</otel.core.version>
         <otel.core.alpha.version>${otel.core.version}-alpha</otel.core.alpha.version>
         <otel.instrumentation.version>1.16.0-alpha</otel.instrumentation.version>
         <springframework.version>5.3.22</springframework.version>
