@@ -201,13 +201,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
-            Input Description of the Model Version.
+            Description of the model's input.
         hide_input_label : bool, optional
-            Hide Input Label of the Model Version.
+            Whether to hide the model's input label.
         output_description : str, optional
-            Output Description of the Model Version.
+            Description of the model's output.
         hide_output_label : bool, optional
-            Hide Output Label of the Model Version.
+            Whether to hide the model version's output label.
 
         Returns
         -------
