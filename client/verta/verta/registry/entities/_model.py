@@ -115,13 +115,13 @@ class RegisteredModel(_entity._ModelDBEntity):
             ID of the Model Version. This parameter cannot be provided alongside `name`, and other
             parameters will be ignored.
         input_description : str, optional
-            Input Description of the Model Version.
-        hide_input_label : bool, optional
-            Hide Input Label of the Model Version.
+            Description of the model version's input.
+        hide_input_label : bool, default False
+            Whether to hide the model version's input label.
         output_description : str, optional
-            Output Description of the Model Version.
-        hide_output_label : bool, optional
-            Hide Output Label of the Model Version.
+            Description of the model version's output.
+        hide_output_label : bool, default False
+            Whether to hide the model version's output label.
 
         Returns
         -------
@@ -169,7 +169,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         Alias for :meth:`RegisteredModel.get_or_create_version()`.
 
-        """
+        """                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
         return self.get_or_create_version(*args, **kwargs)
 
     def create_version(
@@ -201,13 +201,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
-            Description of the model's input.
-        hide_input_label : bool, optional
-            Whether to hide the model's input label.
+            Description of the model version's input.
+        hide_input_label : bool, default False
+            Whether to hide the model version's input label.
         output_description : str, optional
-            Description of the model's output.
-        hide_output_label : bool, optional
-            Whether to hide the model version's output label.
+            Description of the model version's output.
+        hide_output_label : bool, default False
+            Whether to hide the model version's output label.                                                                                                                                                                                                                                                                                                                          
 
         Returns
         -------
@@ -347,13 +347,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
-            Input Description of the Model Version.
-        hide_input_label : bool, optional
-            Hide Input Label of the Model Version.
+            Description of the model version's input.
+        hide_input_label : bool, default False
+            Whether to hide the model version's input label.
         output_description : str, optional
-            Output Description of the Model Version.
-        hide_output_label : bool, optional
-            Hide Output Label of the Model Version.
+            Description of the model version's output.
+        hide_output_label : bool, default False
+            Whether to hide the model version's output label.
 
         Returns
         -------
@@ -445,13 +445,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
-            Input Description of the Model Version.
-        hide_input_label : bool, optional
-            Hide Input Label of the Model Version.
+            Description of the model version's input.
+        hide_input_label : bool, default False
+            Whether to hide the model version's input label.
         output_description : str, optional
-            Output Description of the Model Version.
-        hide_output_label : bool, optional
-            Hide Output Label of the Model Version.
+            Description of the model version's output.
+        hide_output_label : bool, default False
+            Whether to hide the model version's output label.
 
         Returns
         -------
@@ -534,13 +534,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
-            Input Description of the Model Version.
-        hide_input_label : bool, optional
-            Hide Input Label of the Model Version.
+            Description of the model version's input.
+        hide_input_label : bool, default False
+            Whether to hide the model version's input label.
         output_description : str, optional
-            Output Description of the Model Version.
-        hide_output_label : bool, optional
-            Hide Output Label of the Model Version.
+            Description of the model version's output.
+        hide_output_label : bool, default False
+            Whether to hide the model version's output label.
 
         Returns
         -------
@@ -620,13 +620,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
-            Input Description of the Model Version.
-        hide_input_label : bool, optional
-            Hide Input Label of the Model Version.
+            Description of the model version's input.
+        hide_input_label : bool, default False
+            Whether to hide the model version's input label.
         output_description : str, optional
-            Output Description of the Model Version.
-        hide_output_label : bool, optional
-            Hide Output Label of the Model Version.
+            Description of the model version's output.
+        hide_output_label : bool, default False
+            Whether to hide the model version's output label.
 
         Returns
         -------
@@ -722,13 +722,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
-            Input Description of the Model Version.
-        hide_input_label : bool, optional
-            Hide Input Label of the Model Version.
+            Description of the model version's input.
+        hide_input_label : bool, default False
+            Whether to hide the model version's input label.
         output_description : str, optional
-            Output Description of the Model Version.
-        hide_output_label : bool, optional
-            Hide Output Label of the Model Version.
+            Description of the model version's output.
+        hide_output_label : bool, default False
+            Whether to hide the model version's output label.
 
         Returns
         -------
@@ -809,13 +809,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level : :mod:`~verta.registry.lock`, default :class:`~verta.registry.lock.Open`
             Lock level to set when creating this model version.
         input_description : str, optional
-            Input Description of the Model Version.
-        hide_input_label : bool, optional
-            Hide Input Label of the Model Version.
+            Description of the model version's input.
+        hide_input_label : bool, default False
+            Whether to hide the model version's input label.
         output_description : str, optional
-            Output Description of the Model Version.
-        hide_output_label : bool, optional
-            Hide Output Label of the Model Version.
+            Description of the model version's output.
+        hide_output_label : bool, default False
+            Whether to hide the model version's output label.
 
         Returns
         -------
