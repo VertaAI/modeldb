@@ -68,10 +68,10 @@ def create_model(model_name, label, visibility, workspace, description, task_typ
 @click.option("--no-custom-modules", help="Flag to not upload any custom modules.", is_flag=True)
 @click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-@click.option("--input_description", "-d", help="Input description.")
-@click.option("--hide_input_label", help="Flag to hide input label.", is_flag=True)
-@click.option("--output_description", "-d", help="Output description.")
-@click.option("--hide_output_label", help="Flag to hide output label.", is_flag=True)
+@click.option("--input-description", help="Input description.")
+@click.option("--hide-input-label", help="Flag to hide input label.", is_flag=True)
+@click.option("--output-description", help="Output description.")
+@click.option("--hide-output-label", help="Flag to hide output label.", is_flag=True)
 @click.pass_context
 def create_model_version(ctx, model_name, version_name, label, model, custom_module,
                          no_custom_modules, artifact, workspace, requirements, from_run,
