@@ -87,9 +87,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         lock_level=None,
         id=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         """
         Gets or creates a Model Version.
@@ -181,9 +181,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         time_created=None,
         lock_level=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         """
         Creates a model registry entry.
@@ -239,9 +239,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         artifacts = artifacts or {}
         for key in artifacts.keys():
@@ -292,9 +292,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         """Create a Standard Verta Model version from a Verta Model Specification.
 
@@ -417,9 +417,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         """Create a Standard Verta Model version from a TensorFlow-backend Keras model.
 
@@ -506,9 +506,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         """Create a Standard Verta Model version from a scikit-learn model.
 
@@ -592,9 +592,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         """Create a Standard Verta Model version from a PyTorch model.
 
@@ -688,9 +688,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         """Create a Standard Verta Model version from an XGBoost model.
 
@@ -779,9 +779,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         attrs=None,
         lock_level=None,
         input_description=None,
-        hide_input_label=None,
+        hide_input_label=False,
         output_description=None,
-        hide_output_label=None,
+        hide_output_label=False,
     ):
         """Create a Containerized Model version from a Docker image.
 
