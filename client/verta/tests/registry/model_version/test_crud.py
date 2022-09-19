@@ -395,6 +395,8 @@ class TestModelIODescription:
         desc = "input description"
         model_version.set_input_description(desc)
         assert desc == model_version.get_input_description()
+        retrieved_model_version = registered_model.get_version(id=model_version.id)
+        assert desc == retrieved_model_version.get_input_description()
 
     def test_output_description(self, client, created_entities):
         registered_model = client.set_registered_model()
@@ -403,6 +405,8 @@ class TestModelIODescription:
         desc = "output description"
         model_version.set_output_description(desc)
         assert desc == model_version.get_output_description()
+        retrieved_model_version = registered_model.get_version(id=model_version.id)
+        assert desc == retrieved_model_version.get_output_description()
 
     def test_hide_input_label(self, client, created_entities):
         registered_model = client.set_registered_model()
@@ -411,6 +415,8 @@ class TestModelIODescription:
         assert model_version.get_hide_input_label() == False
         model_version.set_hide_input_label(True)
         assert model_version.get_hide_input_label() == True
+        retrieved_model_version = registered_model.get_version(id=model_version.id)
+        assert retrieved_model_version.get_hide_input_label() == True
 
     def test_hide_output_label(self, client, created_entities):
         registered_model = client.set_registered_model()
@@ -419,3 +425,5 @@ class TestModelIODescription:
         assert model_version.get_hide_output_label() == False
         model_version.set_hide_output_label(True)
         assert model_version.get_hide_output_label() == True
+        retrieved_model_version = registered_model.get_version(id=model_version.id)
+        assert retrieved_model_version.get_hide_output_label() == True
