@@ -68,10 +68,15 @@ def create_model(model_name, label, visibility, workspace, description, task_typ
 @click.option("--no-custom-modules", help="Flag to not upload any custom modules.", is_flag=True)
 @click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
 @click.option("--workspace", "-w", help="Workspace to use.")
+@click.option("--input-description", help="Input description.")
+@click.option("--hide-input-label", help="Flag to hide input label.", is_flag=True)
+@click.option("--output-description", help="Output description.")
+@click.option("--hide-output-label", help="Flag to hide output label.", is_flag=True)
 @click.pass_context
 def create_model_version(ctx, model_name, version_name, label, model, custom_module,
                          no_custom_modules, artifact, workspace, requirements, from_run,
-                         description, attribute):
+                         description, attribute, input_description, hide_input_label,
+                         output_description, hide_output_label):
     """Create a new registeredmodelversion entry.
     """
     invalid_from_run_options = (label, model, artifact, requirements)
@@ -89,7 +94,15 @@ def create_model_version(ctx, model_name, version_name, label, model, custom_mod
         registered_model.create_version_from_run(run_id=from_run, name=version_name)
         return
 
-    registered_model.create_version(name=version_name, labels=list(label), desc=description)
+    registered_model.create_version(
+        name=version_name,
+        labels=list(label),
+        desc=description,
+        input_description=input_description,
+        hide_input_label=hide_input_label,
+        output_description=output_description,
+        hide_output_label=hide_output_label,
+    )
     # labels have been added
     ctx.invoke(
         update_model_version, model_name=model_name, version_name=version_name, model=model, custom_module=custom_module,

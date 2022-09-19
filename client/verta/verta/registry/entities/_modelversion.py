@@ -111,6 +111,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                         if not key.startswith(_deployable_entity._INTERNAL_ATTR_PREFIX)
                     }
                 ),
+                "input description: {}".format(msg.input_description),
+                "hide input label: {}".format(msg.hide_input_label),
+                "output description: {}".format(msg.output_description),
+                "hide output label: {}".format(msg.hide_output_label),
                 "id: {}".format(msg.id),
                 "registered model id: {}".format(msg.registered_model_id),
                 "experiment run id: {}".format(msg.experiment_run_id),
@@ -244,6 +248,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         date_created=None,
         experiment_run_id=None,
         lock_level=None,
+        input_description=None,
+        hide_input_label=None,
+        output_description=None,
+        hide_output_label=None
     ):
         if lock_level is None:
             lock_level = lock.Open()
@@ -259,6 +267,10 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             time_updated=date_created,
             experiment_run_id=experiment_run_id,
             lock_level=lock_level._as_proto(),
+            input_description=input_description,
+            hide_input_label=hide_input_label,
+            output_description=output_description,
+            hide_output_label=hide_output_label,
         )
         endpoint = "/api/v1/registry/registered_models/{}/model_versions".format(
             registered_model_id
@@ -1465,3 +1477,39 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             self.log_artifact("reference_data", tempf.name, overwrite=overwrite)
         finally:
             os.remove(tempf.name)
+
+    def set_input_description(self, desc):
+        if not desc:
+            raise ValueError("input description is not specified")
+        self._update(self.ModelVersionMessage(input_description=desc))
+
+    def get_input_description(self):
+        self._refresh_cache()
+        return self._msg.input_description
+
+    def set_hide_input_label(self, hide):
+        if not hide:
+            raise ValueError("hide input label is not specified")
+        self._update(self.ModelVersionMessage(hide_input_label=hide))
+
+    def get_hide_input_label(self):
+        self._refresh_cache()
+        return self._msg.hide_input_label
+
+    def set_output_description(self, desc):
+        if not desc:
+            raise ValueError("output description is not specified")
+        self._update(self.ModelVersionMessage(output_description=desc))
+
+    def get_output_description(self):
+        self._refresh_cache()
+        return self._msg.output_description
+
+    def set_hide_output_label(self, hide):
+        if not hide:
+            raise ValueError("hide output label is not specified")
+        self._update(self.ModelVersionMessage(hide_output_label=hide))
+
+    def get_hide_output_label(self):
+        self._refresh_cache()
+        return self._msg.hide_output_label

@@ -717,3 +717,53 @@ class TestDataTypes:
         created_entities.append(registered_model)
 
         assert registered_model.get_data_type() == data_type
+
+
+class TestModelIODescription:
+   def test_create_version(self, client, created_entities):
+        LogisticRegression = pytest.importorskip('sklearn.linear_model').LogisticRegression
+        model_name = RegisteredModel._generate_default_name()
+        version_name = "my version"
+        input_description = "my input description"
+        output_description = "my ouput description"
+
+        filename = "tiny1.bin"
+        FILE_CONTENTS = os.urandom(2**16)
+        with open(filename, 'wb') as f:
+            f.write(FILE_CONTENTS)
+
+        classifier_name = "tiny2.pth"
+        classifier = LogisticRegression()
+        with open(classifier_name, 'wb') as f:
+            pickle.dump(classifier, f)
+
+        runner = CliRunner()
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodel', model_name],
+        )
+
+        assert not result.exception
+
+        registered_model = client.get_registered_model(model_name)
+        assert registered_model
+
+        created_entities.append(registered_model)
+
+        result = runner.invoke(
+            cli,
+            ['registry', 'create', 'registeredmodelversion', model_name, version_name, 
+             "--artifact", "file={}".format(filename), "--model", classifier_name,
+             "--input-description", input_description, "--output-description", output_description,
+             "--hide-input-label", "--hide-output-label"
+            ]
+        )
+        assert not result.exception
+
+        model_version = registered_model.get_version(name=version_name)
+        assert model_version.name in result.output
+        assert model_version.get_artifact("file").read() == FILE_CONTENTS
+        assert model_version.get_input_description() == input_description
+        assert model_version.get_output_description() == output_description
+        assert model_version.get_hide_input_label() == True
+        assert model_version.get_hide_output_label() == True
