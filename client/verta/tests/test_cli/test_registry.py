@@ -740,7 +740,7 @@ class TestModelIODescription:
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ['registry', 'create', 'registeredmodel', model_name, '-l', 'label1', '-l', 'label2'],
+            ['registry', 'create', 'registeredmodel', model_name],
         )
 
         assert not result.exception
