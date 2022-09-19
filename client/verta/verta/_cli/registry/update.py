@@ -58,10 +58,10 @@ def update_model(model_name, label, workspace, description):
 @click.option('--overwrite', help="Overwrite model and artifacts if already logged.", is_flag=True)
 @click.option("--requirements", type=click.Path(exists=True, dir_okay=False), help="Path to the requirements.txt file.")
 @click.option("--workspace", "-w", help="Workspace to use.")
-@click.option("--input_description", "-d", help="Input description.")
-@click.option("--hide_input_label", help="Flag to hide input label.", is_flag=True)
-@click.option("--output_description", "-d", help="Output description.")
-@click.option("--hide_output_label", help="Flag to hide output label.", is_flag=True)
+@click.option("--input-description", help="Input description.")
+@click.option("--hide-input-label", help="Flag to hide input label.", is_flag=True)
+@click.option("--output-description", help="Output description.")
+@click.option("--hide-output-label", help="Flag to hide output label.", is_flag=True)
 def update_model_version(model_name, version_name, label, model, custom_module, no_custom_modules,
                          artifact, workspace, overwrite, requirements,
                          description, attribute, input_description, hide_input_label,
