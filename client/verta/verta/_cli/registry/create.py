@@ -101,7 +101,7 @@ def create_model_version(ctx, model_name, version_name, label, model, custom_mod
         input_description=input_description,
         hide_input_label=hide_input_label,
         output_description=output_description,
-        hide_output_label=hide_output_label
+        hide_output_label=hide_output_label,
     )
     # labels have been added
     ctx.invoke(
