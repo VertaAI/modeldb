@@ -45,13 +45,20 @@ class TestCRUD:
 
     def test_repr(self, model_version):
         model_version.add_labels(["tag1", "tag2"])
-        repr = str(model_version)
+        model_version.set_input_description("input description")
+        model_version.set_output_description("output description")
+        model_version.set_hide_input_label(True)
+        model_version.set_hide_output_label(True)
 
         assert model_version.name in repr
         assert model_version.url in repr
         assert str(model_version.id) in repr
         assert str(model_version.registered_model_id) in repr
         assert str(model_version.get_labels()) in repr
+        assert model_version.input_description in repr
+        assert model_version.output_description in repr
+        assert model_version.hide_input_label == True
+        assert model_version.hide_output_label == True
 
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
@@ -378,3 +385,37 @@ class TestComplexAttributes:
             key2: attr2,
             key3: attr3,
         }
+
+
+class TestModelIODescription:
+    def test_input_description(self, client, created_entities):
+        registered_model = client.set_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.get_or_create_version(name="my version")
+        desc = "input description"
+        model_version.set_input_description(desc)
+        assert desc == model_version.get_input_description()
+
+    def test_output_description(self, client, created_entities):
+        registered_model = client.set_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.get_or_create_version(name="my version")
+        desc = "output description"
+        model_version.set_output_description(desc)
+        assert desc == model_version.get_output_description()
+
+    def test_hide_input_label(self, client, created_entities):
+        registered_model = client.set_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.get_or_create_version(name="my version")
+        assert model_version.get_hide_input_label() == False;
+        model_version.set_hide_input_label(True)
+        assert model_version.get_hide_input_label() == True;
+
+    def test_hide_output_label(self, client, created_entities):
+        registered_model = client.set_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.get_or_create_version(name="my version")
+        assert model_version.get_hide_output_label() == False;
+        model_version.set_hide_output_label(True)
+        assert model_version.get_hide_output_label() == True;
