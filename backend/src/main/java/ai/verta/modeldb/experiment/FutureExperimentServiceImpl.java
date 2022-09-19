@@ -79,10 +79,10 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
 
   public FutureExperimentServiceImpl(DAOSet daoSet, Executor executor) {
     this.executor = executor;
-    this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.futureExperimentDAO = daoSet.futureExperimentDAO;
-    this.futureEventDAO = daoSet.futureEventDAO;
-    this.uacApisUtil = daoSet.uacApisUtil;
+    this.futureProjectDAO = daoSet.getFutureProjectDAO();
+    this.futureExperimentDAO = daoSet.getFutureExperimentDAO();
+    this.futureEventDAO = daoSet.getFutureEventDAO();
+    this.uacApisUtil = daoSet.getUacApisUtil();
   }
 
   private InternalFuture<Void> addEvent(

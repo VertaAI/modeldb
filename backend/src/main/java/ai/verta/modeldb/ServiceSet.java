@@ -7,17 +7,28 @@ import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.MDBConfig;
-import java.io.IOException;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.PRIVATE)
 public class ServiceSet {
-  public ArtifactStoreService artifactStoreService = null;
-  public AuthService authService;
-  public UAC uac;
-  public MDBRoleService mdbRoleService;
-  public App app;
+  @JsonProperty private ArtifactStoreService artifactStoreService = null;
+  @JsonProperty private AuthService authService;
+  @JsonProperty private UAC uac;
+  @JsonProperty private MDBRoleService mdbRoleService;
+  @JsonProperty private App app;
 
   public static ServiceSet fromConfig(
-      MDBConfig mdbConfig, ArtifactStoreService artifactStoreService) throws IOException {
+      MDBConfig mdbConfig, ArtifactStoreService artifactStoreService) {
     var set = new ServiceSet();
     set.uac = UAC.FromConfig(mdbConfig);
     set.authService = MDBAuthServiceUtils.FromConfig(mdbConfig, set.uac);
@@ -31,6 +42,4 @@ public class ServiceSet {
 
     return set;
   }
-
-  private ServiceSet() {}
 }

@@ -83,7 +83,8 @@ public class TestsInit {
   protected static HydratedServiceGrpc.HydratedServiceBlockingStub
       hydratedServiceBlockingStubClient2;
   protected static ArtifactStoreGrpc.ArtifactStoreBlockingStub artifactStoreBlockingStub;
-  private static AtomicBoolean setServerAndServiceRan = new AtomicBoolean(false);
+  private static final AtomicBoolean setServerAndServiceRan = new AtomicBoolean(false);
+  private static ReconcilerInitializer reconcilerInitializer;
 
   protected static void init() throws Exception {
     if (setServerAndServiceRan.get()) {
@@ -111,9 +112,11 @@ public class TestsInit {
         new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
     services = ServiceSet.fromConfig(testConfig, artifactStoreService);
-    authService = services.authService;
+    authService = services.getAuthService();
     // Initialize data access
-    daos = DAOSet.fromServices(services, testConfig.getJdbi(), handleExecutor, testConfig);
+    daos =
+        DAOSet.fromServices(
+            services, testConfig.getJdbi(), handleExecutor, testConfig, reconcilerInitializer);
     new Migration(testConfig);
 
     new AppConfigBeans(appContext)
@@ -124,9 +127,10 @@ public class TestsInit {
     serverBuilder.intercept(new AuthInterceptor());
     // Initialize cron jobs
     new CronJobUtils().initializeCronJobs(testConfig, services);
-    new ReconcilerInitializer().initialize(testConfig, services, daos, handleExecutor);
+    reconcilerInitializer =
+        new ReconcilerInitializer().initialize(testConfig, services, daos, handleExecutor);
 
-    if (testConfig.testUsers != null && !testConfig.testUsers.isEmpty()) {
+    if (testConfig.getTestUsers() != null && !testConfig.getTestUsers().isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig);
       serviceAccountClientChannelBuilder.intercept(
           authClientInterceptor.getServiceAccountClientAuthInterceptor());
@@ -207,10 +211,10 @@ public class TestsInit {
     // Remove all entities
     // removeEntities();
     // Delete entities by cron job
-    SoftDeleteProjects softDeleteProjects = ReconcilerInitializer.softDeleteProjects;
-    SoftDeleteExperiments softDeleteExperiments = ReconcilerInitializer.softDeleteExperiments;
+    SoftDeleteProjects softDeleteProjects = reconcilerInitializer.getSoftDeleteProjects();
+    SoftDeleteExperiments softDeleteExperiments = reconcilerInitializer.getSoftDeleteExperiments();
     SoftDeleteExperimentRuns softDeleteExperimentRuns =
-        ReconcilerInitializer.softDeleteExperimentRuns;
+        reconcilerInitializer.getSoftDeleteExperimentRuns();
 
     softDeleteProjects.resync();
     while (!softDeleteProjects.isEmpty()) {
@@ -228,24 +232,24 @@ public class TestsInit {
       Thread.sleep(10);
     }
 
-    ReconcilerInitializer.softDeleteDatasets.resync();
-    ReconcilerInitializer.softDeleteRepositories.resync();
+    reconcilerInitializer.getSoftDeleteDatasets().resync();
+    reconcilerInitializer.getSoftDeleteRepositories().resync();
   }
 
   protected static void updateTimestampOfResources() throws InterruptedException {
-    var updateTimestampRepo = ReconcilerInitializer.updateRepositoryTimestampReconcile;
+    var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconcile();
     updateTimestampRepo.resync();
     while (!updateTimestampRepo.isEmpty()) {
       LOGGER.trace("Update repository timestamp is still in progress");
       Thread.sleep(10);
     }
-    var updateTimestampExp = ReconcilerInitializer.updateExperimentTimestampReconcile;
+    var updateTimestampExp = reconcilerInitializer.getUpdateExperimentTimestampReconcile();
     updateTimestampExp.resync();
     while (!updateTimestampExp.isEmpty()) {
       LOGGER.trace("Update experiment timestamp is still in progress");
       Thread.sleep(10);
     }
-    var updateTimestampProject = ReconcilerInitializer.updateProjectTimestampReconcile;
+    var updateTimestampProject = reconcilerInitializer.getUpdateProjectTimestampReconcile();
     updateTimestampProject.resync();
     while (!updateTimestampProject.isEmpty()) {
       LOGGER.trace("Update project timestamp is still in progress");

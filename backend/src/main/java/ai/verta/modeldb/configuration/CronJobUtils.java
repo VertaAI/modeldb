@@ -12,11 +12,13 @@ import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
+import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+@NoArgsConstructor
 @Configuration
 public class CronJobUtils {
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
@@ -28,25 +30,25 @@ public class CronJobUtils {
       for (Map.Entry<String, CronJobConfig> cronJob : mdbConfig.getCron_job().entrySet()) {
         TimerTask task = null;
         if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
-            && (mdbConfig.hasServiceAccount() || !services.mdbRoleService.IsImplemented())) {
+            && (mdbConfig.hasServiceAccount() || !services.getMdbRoleService().IsImplemented())) {
           task =
               new DeleteEntitiesCron(
-                  services.authService,
-                  services.mdbRoleService,
+                  services.getAuthService(),
+                  services.getMdbRoleService(),
                   cronJob.getValue().getRecord_update_limit());
         } else if (cronJob.getKey().equals(ModelDBConstants.UPDATE_RUN_ENVIRONMENTS)
-            && services.artifactStoreService != null
-            && !(services.artifactStoreService instanceof ArtifactStoreDAODisabled)) {
+            && services.getArtifactStoreService() != null
+            && !(services.getArtifactStoreService() instanceof ArtifactStoreDAODisabled)) {
           task =
               new PopulateEnvironmentInRunCron(
-                  services.artifactStoreService,
+                  services.getArtifactStoreService(),
                   cronJob.getValue().getRecord_update_limit(),
                   mdbConfig);
         } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
-            && (mdbConfig.hasServiceAccount() || !services.mdbRoleService.IsImplemented())) {
+            && (mdbConfig.hasServiceAccount() || !services.getMdbRoleService().IsImplemented())) {
           task =
               new CleanUpEntitiesCron(
-                  services.mdbRoleService, cronJob.getValue().getRecord_update_limit());
+                  services.getMdbRoleService(), cronJob.getValue().getRecord_update_limit());
         } else {
           LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
         }

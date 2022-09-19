@@ -23,11 +23,14 @@ public class TelemetryInitBean {
   @Conditional(RunLiquibaseWithMainService.class)
   public TelemetryInitBean initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
       throws FileNotFoundException, InvalidConfigException {
-    if (!mdbConfig.telemetry.opt_out) {
+    if (!mdbConfig.getTelemetry().isOpt_out()) {
       // creating an instance of task to be scheduled
-      TimerTask task = new TelemetryCron(mdbConfig.telemetry.consumer);
+      TimerTask task = new TelemetryCron(mdbConfig.getTelemetry().getConsumer());
       ModelDBUtils.scheduleTask(
-          task, mdbConfig.telemetry.frequency, mdbConfig.telemetry.frequency, TimeUnit.HOURS);
+          task,
+          mdbConfig.getTelemetry().getFrequency(),
+          mdbConfig.getTelemetry().getFrequency(),
+          TimeUnit.HOURS);
       LOGGER.info("Telemetry scheduled successfully");
     } else {
       LOGGER.info("Telemetry opt out by user");

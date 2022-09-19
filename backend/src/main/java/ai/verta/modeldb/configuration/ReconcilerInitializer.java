@@ -14,25 +14,30 @@ import ai.verta.modeldb.reconcilers.SoftDeleteRepositories;
 import ai.verta.modeldb.reconcilers.UpdateExperimentTimestampReconcile;
 import ai.verta.modeldb.reconcilers.UpdateProjectTimestampReconcile;
 import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconcile;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.concurrent.Executor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
+@NoArgsConstructor
+@Getter
 @Configuration
 public class ReconcilerInitializer {
   private static final Logger LOGGER = LogManager.getLogger(ReconcilerInitializer.class);
-  public static SoftDeleteProjects softDeleteProjects;
-  public static SoftDeleteExperiments softDeleteExperiments;
-  public static SoftDeleteExperimentRuns softDeleteExperimentRuns;
-  public static SoftDeleteRepositories softDeleteRepositories;
-  public static SoftDeleteRepositories softDeleteDatasets;
-  public static UpdateRepositoryTimestampReconcile updateRepositoryTimestampReconcile;
-  public static UpdateExperimentTimestampReconcile updateExperimentTimestampReconcile;
-  public static UpdateProjectTimestampReconcile updateProjectTimestampReconcile;
-  public static SendEventsWithCleanUp sendEventsWithCleanUp;
+  @JsonProperty private SoftDeleteProjects softDeleteProjects;
+  @JsonProperty private SoftDeleteExperiments softDeleteExperiments;
+  @JsonProperty private SoftDeleteExperimentRuns softDeleteExperimentRuns;
+  @JsonProperty private SoftDeleteRepositories softDeleteRepositories;
+  @JsonProperty private SoftDeleteRepositories softDeleteDatasets;
+  @JsonProperty private UpdateRepositoryTimestampReconcile updateRepositoryTimestampReconcile;
+  @JsonProperty private UpdateExperimentTimestampReconcile updateExperimentTimestampReconcile;
+  @JsonProperty private UpdateProjectTimestampReconcile updateProjectTimestampReconcile;
+  @JsonProperty private SendEventsWithCleanUp sendEventsWithCleanUp;
 
   @Bean
   @Conditional({RunLiquibaseWithMainService.class})
@@ -44,18 +49,20 @@ public class ReconcilerInitializer {
     ReconcilerConfig reconcilerConfig = new ReconcilerConfig(config instanceof TestConfig);
 
     softDeleteProjects =
-        new SoftDeleteProjects(reconcilerConfig, services.mdbRoleService, futureJdbi, executor);
+        new SoftDeleteProjects(
+            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor);
     softDeleteExperiments =
-        new SoftDeleteExperiments(reconcilerConfig, services.mdbRoleService, futureJdbi, executor);
+        new SoftDeleteExperiments(
+            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor);
     softDeleteExperimentRuns =
         new SoftDeleteExperimentRuns(
-            reconcilerConfig, services.mdbRoleService, futureJdbi, executor);
+            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor);
     softDeleteRepositories =
         new SoftDeleteRepositories(
-            reconcilerConfig, services.mdbRoleService, false, futureJdbi, executor);
+            reconcilerConfig, services.getMdbRoleService(), false, futureJdbi, executor);
     softDeleteDatasets =
         new SoftDeleteRepositories(
-            reconcilerConfig, services.mdbRoleService, true, futureJdbi, executor);
+            reconcilerConfig, services.getMdbRoleService(), true, futureJdbi, executor);
     updateRepositoryTimestampReconcile =
         new UpdateRepositoryTimestampReconcile(reconcilerConfig, futureJdbi, executor, config);
     updateExperimentTimestampReconcile =
@@ -66,7 +73,7 @@ public class ReconcilerInitializer {
     if (config.isEvent_system_enabled()) {
       sendEventsWithCleanUp =
           new SendEventsWithCleanUp(
-              reconcilerConfig, services.uac, daos.futureEventDAO, futureJdbi, executor);
+              reconcilerConfig, services.getUac(), daos.getFutureEventDAO(), futureJdbi, executor);
     }
 
     LOGGER.info("Exit from ReconcilerUtils: initialize()");

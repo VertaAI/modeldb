@@ -18,7 +18,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   private final MetadataDAO metadataDAO;
 
   public MetadataServiceImpl(DAOSet daoSet) {
-    this.metadataDAO = daoSet.metadataDAO;
+    this.metadataDAO = daoSet.getMetadataDAO();
   }
 
   @Override

@@ -51,16 +51,16 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final boolean isEventSystemEnabled;
 
   public VersioningServiceImpl(ServiceSet serviceSet, DAOSet daoSet, FileHasher fileHasher) {
-    this.authService = serviceSet.authService;
-    this.mdbRoleService = serviceSet.mdbRoleService;
-    this.repositoryDAO = daoSet.repositoryDAO;
-    this.commitDAO = daoSet.commitDAO;
-    this.blobDAO = daoSet.blobDAO;
-    this.experimentRunDAO = daoSet.experimentRunDAO;
-    this.artifactStoreDAO = daoSet.artifactStoreDAO;
+    this.authService = serviceSet.getAuthService();
+    this.mdbRoleService = serviceSet.getMdbRoleService();
+    this.repositoryDAO = daoSet.getRepositoryDAO();
+    this.commitDAO = daoSet.getCommitDAO();
+    this.blobDAO = daoSet.getBlobDAO();
+    this.experimentRunDAO = daoSet.getExperimentRunDAO();
+    this.artifactStoreDAO = daoSet.getArtifactStoreDAO();
     this.fileHasher = fileHasher;
-    this.futureEventDAO = daoSet.futureEventDAO;
-    this.isEventSystemEnabled = serviceSet.app.mdbConfig.isEvent_system_enabled();
+    this.futureEventDAO = daoSet.getFutureEventDAO();
+    this.isEventSystemEnabled = serviceSet.getApp().mdbConfig.isEvent_system_enabled();
   }
 
   private void addEvent(

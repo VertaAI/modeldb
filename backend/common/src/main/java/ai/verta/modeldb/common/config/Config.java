@@ -2,12 +2,14 @@ package ai.verta.modeldb.common.config;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalJdbi;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
 import io.opentelemetry.api.OpenTelemetry;
@@ -37,29 +39,38 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.PRIVATE)
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public abstract class Config {
-  public static final String MISSING_REQUIRED = "required field is missing";
-
-  private ServiceConfig authService;
-  private Map<String, CronJobConfig> cron_job = new HashMap<>();
-  private boolean populateConnectionsBasedOnPrivileges = false;
-  private DatabaseConfig database;
-  private boolean enableTrace = false;
-  private GrpcServerConfig grpcServer;
-  private SpringServerConfig springServer;
-  private ServiceUserConfig service_user;
-  private int jdbi_retry_time = 100; // Time in ms
-  private boolean event_system_enabled = false;
-  private TracingServerInterceptor tracingServerInterceptor = null;
-  private TracingClientInterceptor tracingClientInterceptor = null;
-  private volatile OpenTelemetry openTelemetry;
-  private ArtifactStoreConfig artifactStoreConfig;
+  @JsonProperty private ServiceConfig authService;
+  @JsonProperty private Map<String, CronJobConfig> cron_job = new HashMap<>();
+  @JsonProperty private boolean populateConnectionsBasedOnPrivileges = false;
+  @JsonProperty private DatabaseConfig database;
+  @JsonProperty private boolean enableTrace = false;
+  @JsonProperty private GrpcServerConfig grpcServer;
+  @JsonProperty private SpringServerConfig springServer;
+  @JsonProperty private ServiceUserConfig service_user;
+  @JsonProperty private int jdbi_retry_time = 100; // Time in ms
+  @JsonProperty private boolean event_system_enabled = false;
+  @JsonProperty private TracingServerInterceptor tracingServerInterceptor = null;
+  @JsonProperty private TracingClientInterceptor tracingClientInterceptor = null;
+  @JsonProperty private volatile OpenTelemetry openTelemetry;
+  @JsonProperty private ArtifactStoreConfig artifactStoreConfig;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
@@ -90,22 +101,22 @@ public abstract class Config {
     }
 
     if (database == null) {
-      throw new InvalidConfigException("database", MISSING_REQUIRED);
+      throw new InvalidConfigException("database", CommonMessages.MISSING_REQUIRED);
     }
     database.validate("database");
 
     if (grpcServer == null) {
-      throw new InvalidConfigException("grpcServer", MISSING_REQUIRED);
+      throw new InvalidConfigException("grpcServer", CommonMessages.MISSING_REQUIRED);
     }
     grpcServer.validate("grpcServer");
 
     if (springServer == null) {
-      throw new InvalidConfigException("springServer", MISSING_REQUIRED);
+      throw new InvalidConfigException("springServer", CommonMessages.MISSING_REQUIRED);
     }
     springServer.validate("springServer");
 
     if (artifactStoreConfig == null) {
-      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+      throw new InvalidConfigException("artifactStoreConfig", CommonMessages.MISSING_REQUIRED);
     }
     artifactStoreConfig.validate("artifactStoreConfig");
   }
@@ -210,51 +221,11 @@ public abstract class Config {
     return new InternalJdbi(Jdbi.create(hikariDataSource));
   }
 
-  public ServiceConfig getAuthService() {
-    return authService;
-  }
-
-  public Map<String, CronJobConfig> getCron_job() {
-    return cron_job;
-  }
-
-  public boolean isPopulateConnectionsBasedOnPrivileges() {
-    return populateConnectionsBasedOnPrivileges;
-  }
-
-  public DatabaseConfig getDatabase() {
-    return database;
-  }
-
-  public GrpcServerConfig getGrpcServer() {
-    return grpcServer;
-  }
-
-  public SpringServerConfig getSpringServer() {
-    return springServer;
-  }
-
-  public ServiceUserConfig getService_user() {
-    return service_user;
-  }
-
-  public int getJdbi_retry_time() {
-    return jdbi_retry_time;
-  }
-
-  public boolean isEvent_system_enabled() {
-    return event_system_enabled;
-  }
-
   public OpenTelemetry getOpenTelemetry() {
     if (openTelemetry == null) {
       openTelemetry = initializeOpenTelemetry();
     }
     return openTelemetry;
-  }
-
-  public ArtifactStoreConfig getArtifactStoreConfig() {
-    return artifactStoreConfig;
   }
 
   public void setSpringServer(SpringServerConfig springServer) {
