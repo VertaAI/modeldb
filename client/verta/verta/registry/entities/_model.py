@@ -169,7 +169,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         Alias for :meth:`RegisteredModel.get_or_create_version()`.
 
-        """                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
+        """
         return self.get_or_create_version(*args, **kwargs)
 
     def create_version(
