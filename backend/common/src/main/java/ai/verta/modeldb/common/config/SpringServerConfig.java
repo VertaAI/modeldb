@@ -24,4 +24,8 @@ public class SpringServerConfig {
     if (port == 0)
       throw new InvalidConfigException(base + ".port", CommonMessages.MISSING_REQUIRED);
   }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
 }

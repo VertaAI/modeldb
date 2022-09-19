@@ -26,4 +26,12 @@ public class GrpcServerConfig {
     if (port == 0)
       throw new InvalidConfigException(base + ".port", CommonMessages.MISSING_REQUIRED);
   }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
+
+  public void setMetrics_port(int metrics_port) {
+    this.metrics_port = metrics_port;
+  }
 }

@@ -1,6 +1,9 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
@@ -28,6 +31,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -35,34 +39,44 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ProjectTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class ProjectTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(ProjectTest.class);
 
   // Project Entities
-  private static Project project;
-  private static Project project2;
-  private static Project project3;
-  private static Map<String, Project> projectMap = new HashMap<>();
+  private Project project;
+  private Project project2;
+  private Project project3;
+  private final Map<String, Project> projectMap = new HashMap<>();
 
   // Experiment Entities
-  private static Experiment experiment;
+  private Experiment experiment;
 
   // ExperimentRun Entities
-  private static ExperimentRun experimentRun;
+  private ExperimentRun experimentRun;
 
-  private static Dataset dataset;
+  private Dataset dataset;
 
   @Before
   public void createEntities() {
+    initializedChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+      when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
+
+      setupMockUacEndpoints(uac, collaboratorMock);
+    }
+
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
@@ -81,33 +95,19 @@ public class ProjectTest extends TestsInit {
       assertTrue(deleteProjectsResponse.getStatus());
     }
 
-    project = null;
-    project2 = null;
-    project3 = null;
-
-    // Experiment Entities
-    experiment = null;
-
-    // ExperimentRun Entities
-    experimentRun = null;
-
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
     DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
     LOGGER.info("Dataset deleted successfully");
     LOGGER.info(deleteDatasetResponse.toString());
     assertTrue(deleteDatasetResponse.getStatus());
 
-    dataset = null;
-
-    projectMap = new HashMap<>();
+    projectMap.clear();
   }
 
-  private static void createProjectEntities() {
-    ProjectTest projectTest = new ProjectTest();
+  private void createProjectEntities() {
 
     // Create two project of above project
-    CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject createProjectRequest = getCreateProjectRequest();
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project = createProjectResponse.getProject();
@@ -119,7 +119,7 @@ public class ProjectTest extends TestsInit {
         project.getName());
 
     // Create project2
-    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest = getCreateProjectRequest();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project2 = createProjectResponse.getProject();
     projectMap.put(project2.getId(), project2);
@@ -130,7 +130,7 @@ public class ProjectTest extends TestsInit {
         project2.getName());
 
     // Create project3
-    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest = getCreateProjectRequest();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project3 = createProjectResponse.getProject();
     projectMap.put(project3.getId(), project3);
@@ -141,11 +141,11 @@ public class ProjectTest extends TestsInit {
         project3.getName());
   }
 
-  private static void createExperimentEntities() {
+  private void createExperimentEntities() {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment_1");
+        getCreateExperimentRequest(project.getId(), "Experiment_1");
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -174,9 +174,8 @@ public class ProjectTest extends TestsInit {
         experiment.getName());
   }
 
-  private static void createExperimentRunEntities() {
-    CreateDataset createDatasetRequest =
-        DatasetTest.getDatasetRequest("Dataset-" + new Date().getTime());
+  private void createExperimentRunEntities() {
+    CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     dataset = createDatasetResponse.getDataset();
@@ -212,8 +211,7 @@ public class ProjectTest extends TestsInit {
                     .equals(CommonConstants.S3))
             .build());
     CreateExperimentRun createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
-            project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
+        getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
     createExperimentRunRequest =
         createExperimentRunRequest.toBuilder().clearDatasets().addAllDatasets(datasets).build();
     KeyValue metric1 =
@@ -275,6 +273,15 @@ public class ProjectTest extends TestsInit {
   }
 
   public static CreateProject getCreateProjectRequest(String projectName) {
+    return CreateProject.newBuilder()
+        .setName(projectName)
+        .setDescription("This is a project description.")
+        .addTags("tag_x")
+        .addTags("tag_y")
+        .build();
+  }
+
+  private CreateProject getCreateProjectRequest() {
     List<KeyValue> metadataList = new ArrayList<>();
     Value stringValue =
         Value.newBuilder()
@@ -335,12 +342,209 @@ public class ProjectTest extends TestsInit {
             .build());
 
     return CreateProject.newBuilder()
-        .setName(projectName)
+        .setName("project-" + new Date().getTime())
         .setDescription("This is a project description.")
         .addTags("tag_x")
         .addTags("tag_y")
         .addAllAttributes(metadataList)
         .addAllArtifacts(artifactList)
+        .build();
+  }
+
+  private CreateExperiment getCreateExperimentRequest(String projectId, String experimentName) {
+    return CreateExperiment.newBuilder()
+        .setProjectId(projectId)
+        .setName(experimentName)
+        .setDescription("This is a experiment description.")
+        .setDateCreated(Calendar.getInstance().getTimeInMillis())
+        .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+        .addTags("tag_x")
+        .addTags("tag_y")
+        .build();
+  }
+
+  private CreateDataset getDatasetRequest(String datasetName) {
+    return CreateDataset.newBuilder()
+        .setName(datasetName)
+        .setVisibility(ResourceVisibility.PRIVATE)
+        .addTags("A")
+        .addTags("A0")
+        .build();
+  }
+
+  private CreateExperimentRun getCreateExperimentRunRequest(
+      String projectId, String experimentId, String experimentRunName) {
+
+    List<String> tags = new ArrayList<>();
+    tags.add("Tag_x");
+    tags.add("Tag_y");
+
+    int rangeMax = 20;
+    int rangeMin = 1;
+    Random randomNum = new Random();
+
+    List<KeyValue> attributeList = new ArrayList<>();
+    Value intValue = Value.newBuilder().setNumberValue(1.1).build();
+    attributeList.add(
+        KeyValue.newBuilder()
+            .setKey("attribute_1_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(intValue)
+            .setValueType(ValueType.NUMBER)
+            .build());
+    Value stringValue =
+        Value.newBuilder()
+            .setStringValue("attributes_value_" + Calendar.getInstance().getTimeInMillis())
+            .build();
+    attributeList.add(
+        KeyValue.newBuilder()
+            .setKey("attribute_2_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(stringValue)
+            .setValueType(ValueType.STRING)
+            .build());
+
+    double randomValue = rangeMin + (rangeMax - rangeMin) * randomNum.nextDouble();
+    List<KeyValue> hyperparameters = new ArrayList<>();
+    intValue = Value.newBuilder().setNumberValue(randomValue).build();
+    hyperparameters.add(
+        KeyValue.newBuilder()
+            .setKey("tuning_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(intValue)
+            .setValueType(ValueType.NUMBER)
+            .build());
+    stringValue =
+        Value.newBuilder()
+            .setStringValue("hyperparameters_value_" + Calendar.getInstance().getTimeInMillis())
+            .build();
+    hyperparameters.add(
+        KeyValue.newBuilder()
+            .setKey("hyperparameters_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(stringValue)
+            .setValueType(ValueType.STRING)
+            .build());
+
+    List<Artifact> artifactList = new ArrayList<>();
+    artifactList.add(
+        Artifact.newBuilder()
+            .setKey("Google developer Artifact")
+            .setPath(
+                "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Flh3.googleusercontent.com%2FFyZA5SbKPJA7Y3XCeb9-uGwow8pugxj77Z1xvs8vFS6EI3FABZDCDtA9ScqzHKjhU8av_Ck95ET-P_rPJCbC2v_OswCN8A%3Ds688&imgrefurl=https%3A%2F%2Fdevelopers.google.com%2F&docid=1MVaWrOPIjYeJM&tbnid=I7xZkRN5m6_z-M%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw..i&w=688&h=387&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw&iact=mrc&uact=8")
+            .setArtifactType(ArtifactType.BLOB)
+            .setUploadCompleted(
+                !testConfig
+                    .getArtifactStoreConfig()
+                    .getArtifactStoreType()
+                    .equals(CommonConstants.S3))
+            .build());
+    artifactList.add(
+        Artifact.newBuilder()
+            .setKey("Google Pay Artifact")
+            .setPath(
+                "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Fpay.google.com%2Fabout%2Fstatic%2Fimages%2Fsocial%2Fknowledge_graph_logo.png&imgrefurl=https%3A%2F%2Fpay.google.com%2Fabout%2F&docid=zmoE9BrSKYr4xM&tbnid=eCL1Y6f9xrPtDM%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg..i&w=1200&h=630&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg&iact=mrc&uact=8")
+            .setArtifactType(ArtifactType.IMAGE)
+            .setUploadCompleted(
+                !testConfig
+                    .getArtifactStoreConfig()
+                    .getArtifactStoreType()
+                    .equals(CommonConstants.S3))
+            .setFilenameExtension("png")
+            .build());
+
+    List<Artifact> datasets = new ArrayList<>();
+    datasets.add(
+        Artifact.newBuilder()
+            .setKey("Google developer datasets")
+            .setPath("This is data artifact type in Google developer datasets")
+            .setArtifactType(ArtifactType.MODEL)
+            .setUploadCompleted(
+                !testConfig
+                    .getArtifactStoreConfig()
+                    .getArtifactStoreType()
+                    .equals(CommonConstants.S3))
+            .setFilenameExtension("pkl")
+            .build());
+    datasets.add(
+        Artifact.newBuilder()
+            .setKey("Google Pay datasets")
+            .setPath("This is data artifact type in Google Pay datasets")
+            .setArtifactType(ArtifactType.DATA)
+            .setUploadCompleted(
+                !testConfig
+                    .getArtifactStoreConfig()
+                    .getArtifactStoreType()
+                    .equals(CommonConstants.S3))
+            .setFilenameExtension("json")
+            .build());
+
+    List<KeyValue> metrics = new ArrayList<>();
+    randomValue = rangeMin + (rangeMax - rangeMin) * randomNum.nextDouble();
+    intValue = Value.newBuilder().setNumberValue(randomValue).build();
+    metrics.add(
+        KeyValue.newBuilder()
+            .setKey("accuracy_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(intValue)
+            .setValueType(ValueType.NUMBER)
+            .build());
+    randomValue = rangeMin + (rangeMax - rangeMin) * randomNum.nextDouble();
+    intValue = Value.newBuilder().setNumberValue(randomValue).build();
+    metrics.add(
+        KeyValue.newBuilder()
+            .setKey("loss_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(intValue)
+            .setValueType(ValueType.NUMBER)
+            .build());
+    randomValue = rangeMin + (rangeMax - rangeMin) * randomNum.nextDouble();
+    Value listValue =
+        Value.newBuilder()
+            .setListValue(
+                ListValue.newBuilder()
+                    .addValues(intValue)
+                    .addValues(Value.newBuilder().setNumberValue(randomValue).build()))
+            .build();
+    metrics.add(
+        KeyValue.newBuilder()
+            .setKey("profit_" + Calendar.getInstance().getTimeInMillis())
+            .setValue(listValue)
+            .setValueType(ValueType.LIST)
+            .build());
+
+    List<Observation> observations = new ArrayList<>();
+    stringValue =
+        Value.newBuilder()
+            .setStringValue("Observation_value_" + Calendar.getInstance().getTimeInMillis())
+            .build();
+    observations.add(
+        Observation.newBuilder()
+            .setAttribute(
+                KeyValue.newBuilder()
+                    .setKey("Observation Key " + Calendar.getInstance().getTimeInMillis())
+                    .setValue(stringValue)
+                    .setValueType(ValueType.STRING))
+            .setTimestamp(Calendar.getInstance().getTimeInMillis() + 2)
+            .setEpochNumber(Value.newBuilder().setNumberValue(123))
+            .build());
+
+    List<Feature> features = new ArrayList<>();
+    features.add(Feature.newBuilder().setName("ExperimentRun Test case feature 1").build());
+    features.add(Feature.newBuilder().setName("ExperimentRun Test case feature 2").build());
+
+    return CreateExperimentRun.newBuilder()
+        .setProjectId(projectId)
+        .setExperimentId(experimentId)
+        .setName(experimentRunName)
+        .setDescription("this is a ExperimentRun description")
+        .setDateCreated(Calendar.getInstance().getTimeInMillis())
+        .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+        .setStartTime(Calendar.getInstance().getTime().getTime())
+        .setEndTime(Calendar.getInstance().getTime().getTime())
+        .setCodeVersion("1.0")
+        .addAllTags(tags)
+        .addAllAttributes(attributeList)
+        .addAllHyperparameters(hyperparameters)
+        .addAllArtifacts(artifactList)
+        .addAllDatasets(datasets)
+        .addAllMetrics(metrics)
+        .addAllObservations(observations)
+        .addAllFeatures(features)
         .build();
   }
 
@@ -1251,8 +1455,7 @@ public class ProjectTest extends TestsInit {
     Project project = null;
     try {
       // Create project
-      CreateProject createProjectRequest =
-          getCreateProjectRequest("project-" + new Date().getTime());
+      CreateProject createProjectRequest = getCreateProjectRequest();
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1303,7 +1506,7 @@ public class ProjectTest extends TestsInit {
         Project selfProject = null;
         try {
           // Create project
-          createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+          createProjectRequest = getCreateProjectRequest();
           createProjectResponse = projectServiceStub.createProject(createProjectRequest);
           selfProject = createProjectResponse.getProject();
           LOGGER.info("Project created successfully");
@@ -1375,8 +1578,7 @@ public class ProjectTest extends TestsInit {
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
 
       // Create project
-      CreateProject createProjectRequest =
-          getCreateProjectRequest("project-" + new Date().getTime());
+      CreateProject createProjectRequest = getCreateProjectRequest();
       createProjectRequest =
           createProjectRequest
               .toBuilder()
@@ -1498,7 +1700,7 @@ public class ProjectTest extends TestsInit {
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject createProjectRequest = getCreateProjectRequest();
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -1510,7 +1712,7 @@ public class ProjectTest extends TestsInit {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest = getCreateProjectRequest();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -1552,7 +1754,7 @@ public class ProjectTest extends TestsInit {
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject createProjectRequest = getCreateProjectRequest();
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -1564,7 +1766,7 @@ public class ProjectTest extends TestsInit {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest = getCreateProjectRequest();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -2056,15 +2258,12 @@ public class ProjectTest extends TestsInit {
     LOGGER.info("Project delete with cascading test start................................");
     cleanUpResources();
 
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
-
     Project project = null;
     ExperimentRun experimentRun1;
     ExperimentRun experimentRun3;
     try {
       // Create project
-      CreateProject createProjectRequest =
-          getCreateProjectRequest("project-" + new Date().getTime());
+      CreateProject createProjectRequest = getCreateProjectRequest();
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -2072,14 +2271,11 @@ public class ProjectTest extends TestsInit {
 
       // Create two experiment of above project
       CreateExperiment request =
-          ExperimentTest.getCreateExperimentRequest(
-              project.getId(), "Experiment-1-" + new Date().getTime());
+          getCreateExperimentRequest(project.getId(), "Experiment-1-" + new Date().getTime());
       CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
       Experiment experiment1 = response.getExperiment();
       LOGGER.info("\n Experiment1 created successfully \n");
-      request =
-          ExperimentTest.getCreateExperimentRequest(
-              project.getId(), "Experiment-2-" + new Date().getTime());
+      request = getCreateExperimentRequest(project.getId(), "Experiment-2-" + new Date().getTime());
       response = experimentServiceStub.createExperiment(request);
       Experiment experiment2 = response.getExperiment();
       LOGGER.info("\n Experiment2 created successfully \n");
@@ -2087,28 +2283,28 @@ public class ProjectTest extends TestsInit {
       // Create four ExperimentRun of above two experiment, each experiment has two experimentRun
       // For ExperiemntRun of Experiment1
       CreateExperimentRun createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
+          getCreateExperimentRunRequest(
               project.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
       CreateExperimentRun.Response createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
       experimentRun1 = createExperimentRunResponse.getExperimentRun();
       LOGGER.info("\n ExperimentRun1 created successfully \n");
       createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
+          getCreateExperimentRunRequest(
               project.getId(), experiment1.getId(), "ExperiemntRun-2-" + new Date().getTime());
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
       LOGGER.info("\n ExperimentRun2 created successfully \n");
 
       // For ExperiemntRun of Experiment2
       createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
+          getCreateExperimentRunRequest(
               project.getId(), experiment2.getId(), "ExperiemntRun-3-" + new Date().getTime());
       createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
       experimentRun3 = createExperimentRunResponse.getExperimentRun();
       LOGGER.info("\n ExperimentRun3 created successfully \n");
       createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
+          getCreateExperimentRunRequest(
               project.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
       LOGGER.info("\n ExperimentRun4 created successfully \n");
@@ -2232,8 +2428,7 @@ public class ProjectTest extends TestsInit {
     try {
       for (int count = 0; count < 5; count++) {
         // Create project
-        CreateProject createProjectRequest =
-            getCreateProjectRequest("project-" + new Date().getTime() + "-" + count);
+        CreateProject createProjectRequest = getCreateProjectRequest();
         CreateProject.Response createProjectResponse =
             projectServiceStub.createProject(createProjectRequest);
         projectIds.add(createProjectResponse.getProject().getId());
@@ -2242,12 +2437,11 @@ public class ProjectTest extends TestsInit {
 
         // Create two experiment of above project
         CreateExperiment request =
-            ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment1_" + count);
+            getCreateExperimentRequest(project.getId(), "Experiment1_" + count);
         CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
         Experiment experiment1 = response.getExperiment();
         LOGGER.info("\n Experiment1 created successfully \n");
-        request =
-            ExperimentTest.getCreateExperimentRequest(project.getId(), "Experiment2_" + count);
+        request = getCreateExperimentRequest(project.getId(), "Experiment2_" + count);
         response = experimentServiceStub.createExperiment(request);
         Experiment experiment2 = response.getExperiment();
         LOGGER.info("\n Experiment2 created successfully \n");
@@ -2256,28 +2450,28 @@ public class ProjectTest extends TestsInit {
         // experimentRun
         // For ExperiemntRun of Experiment1
         CreateExperimentRun createExperimentRunRequest =
-            experimentRunTest.getCreateExperimentRunRequest(
+            getCreateExperimentRunRequest(
                 project.getId(), experiment1.getId(), "ExperiemntRun1_" + count);
         CreateExperimentRun.Response createExperimentRunResponse =
             experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         experimentRun1 = createExperimentRunResponse.getExperimentRun();
         LOGGER.info("\n ExperimentRun1 created successfully \n");
         createExperimentRunRequest =
-            experimentRunTest.getCreateExperimentRunRequest(
+            getCreateExperimentRunRequest(
                 project.getId(), experiment1.getId(), "ExperiemntRun2_" + count);
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         LOGGER.info("\n ExperimentRun2 created successfully \n");
 
         // For ExperiemntRun of Experiment2
         createExperimentRunRequest =
-            experimentRunTest.getCreateExperimentRunRequest(
+            getCreateExperimentRunRequest(
                 project.getId(), experiment2.getId(), "ExperiemntRun3_" + count);
         createExperimentRunResponse =
             experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         experimentRun3 = createExperimentRunResponse.getExperimentRun();
         LOGGER.info("\n ExperimentRun3 created successfully \n");
         createExperimentRunRequest =
-            experimentRunTest.getCreateExperimentRunRequest(
+            getCreateExperimentRunRequest(
                 project.getId(), experiment2.getId(), "ExperimentRun4_" + count);
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
         LOGGER.info("\n ExperimentRun4 created successfully \n");
@@ -2415,7 +2609,7 @@ public class ProjectTest extends TestsInit {
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject createProjectRequest = getCreateProjectRequest();
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -2427,7 +2621,7 @@ public class ProjectTest extends TestsInit {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest = getCreateProjectRequest();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -2438,7 +2632,7 @@ public class ProjectTest extends TestsInit {
         project2.getName());
 
     // Create project3
-    createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest = getCreateProjectRequest();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project3 = createProjectResponse.getProject();
     projectsMap.put(project3.getId(), project3);
@@ -2545,8 +2739,7 @@ public class ProjectTest extends TestsInit {
     Project project = null;
     try {
       // Create project
-      CreateProject createProjectRequest =
-          getCreateProjectRequest("project-" + new Date().getTime());
+      CreateProject createProjectRequest = getCreateProjectRequest();
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -2841,8 +3034,7 @@ public class ProjectTest extends TestsInit {
 
   @Test
   public void createProjectWithDeletedProjectName() {
-    CreateProject createProjectRequest =
-        getCreateProjectRequest("test-" + Calendar.getInstance().getTimeInMillis());
+    CreateProject createProjectRequest = getCreateProjectRequest();
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project testProj = createProjectResponse.getProject();
@@ -2886,8 +3078,7 @@ public class ProjectTest extends TestsInit {
   @Test
   public void createAndDeleteProjectUsingServiceAccount() {
     // Create two project of above project
-    CreateProject createProjectRequest =
-        ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    CreateProject createProjectRequest = getCreateProjectRequest();
     CreateProject.Response createProjectResponse =
         serviceUserProjectServiceStub.createProject(createProjectRequest);
     DeleteProjects deleteProjects =

@@ -198,10 +198,6 @@ public class AppConfigBeans {
         up.inc();
         LOGGER.info("Current PID: {}", ProcessHandle.current().pid());
         LOGGER.info("Backend server started listening on {}", config.getGrpcServer().getPort());
-
-        // ----------- Don't exit the main thread. Wait until server is terminated -----------
-        server.awaitTermination();
-        up.dec();
       } catch (Exception ex) {
         CommonUtils.printStackTrace(LOGGER, ex);
         appContext.initiateShutdown(0);
