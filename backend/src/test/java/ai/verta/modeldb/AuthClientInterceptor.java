@@ -2,43 +2,29 @@ package ai.verta.modeldb;
 
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.config.TestConfig;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import io.grpc.*;
+import lombok.AccessLevel;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter(AccessLevel.PRIVATE)
 @SuppressWarnings("unchecked")
 public class AuthClientInterceptor {
 
-  private String client1Email;
-  private String client2Email;
-  private final ClientAuthInterceptor serviceAccountClientAuthInterceptor;
-  private final Client1AuthInterceptor client1AuthInterceptor;
-  private final Client2AuthInterceptor client2AuthInterceptor;
+  @JsonProperty private String client1Email;
+  @JsonProperty private String client2Email;
+  @JsonProperty private final ClientAuthInterceptor serviceAccountClientAuthInterceptor;
+  @JsonProperty private final Client1AuthInterceptor client1AuthInterceptor;
+  @JsonProperty private final Client2AuthInterceptor client2AuthInterceptor;
 
   public AuthClientInterceptor(TestConfig testConfig) {
     serviceAccountClientAuthInterceptor = new ClientAuthInterceptor(testConfig.getService_user());
     client1AuthInterceptor =
-        new Client1AuthInterceptor(testConfig.testUsers.getOrDefault("primaryUser", null));
+        new Client1AuthInterceptor(testConfig.getTestUsers().getOrDefault("primaryUser", null));
     client2AuthInterceptor =
-        new Client2AuthInterceptor(testConfig.testUsers.getOrDefault("secondaryUser", null));
-  }
-
-  public ClientAuthInterceptor getServiceAccountClientAuthInterceptor() {
-    return serviceAccountClientAuthInterceptor;
-  }
-
-  public Client1AuthInterceptor getClient1AuthInterceptor() {
-    return client1AuthInterceptor;
-  }
-
-  public Client2AuthInterceptor getClient2AuthInterceptor() {
-    return client2AuthInterceptor;
-  }
-
-  public String getClient1Email() {
-    return client1Email;
-  }
-
-  public String getClient2Email() {
-    return client2Email;
+        new Client2AuthInterceptor(testConfig.getTestUsers().getOrDefault("secondaryUser", null));
   }
 
   private class Client1AuthInterceptor extends ClientAuthInterceptor {
