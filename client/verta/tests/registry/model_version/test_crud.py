@@ -389,9 +389,9 @@ class TestComplexAttributes:
 
 class TestModelIODescription:
     def test_input_description(self, client, created_entities):
-        registered_model = client.set_registered_model()
+        registered_model = client.create_registered_model()
         created_entities.append(registered_model)
-        model_version = registered_model.get_or_create_version(name="my version")
+        model_version = registered_model.create_version(name="my version")
         desc = "input description"
         model_version.set_input_description(desc)
         assert desc == model_version.get_input_description()
