@@ -147,7 +147,13 @@
         <tagDatabase tag="tables-1.6"/>
     </changeSet>
 
-    <changeSet id="8-workspaces-project" author="raviS" failOnError="false">
+    <changeSet id="8-workspaces-project" author="raviS">
+        <preConditions onFail="MARK_RAN">
+            <tableExists tableName="project"/>
+            <not>
+                <columnExists tableName="project" columnName="workspace"/>
+            </not>
+        </preConditions>
         <dropIndex indexName="p_name_owner"
                    tableName="project"/>
         <addColumn tableName="project">
