@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 public class ArtifactStoreConfig {
   @JsonProperty private String artifactStoreType;
   @JsonProperty private boolean pickArtifactStoreHostFromConfig = false;

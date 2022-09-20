@@ -12,7 +12,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public class CronJobConfig {
   @JsonProperty private int initial_delay = 30;

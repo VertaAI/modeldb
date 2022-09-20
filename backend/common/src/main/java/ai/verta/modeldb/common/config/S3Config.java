@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S100"})
 public class S3Config {
   @JsonProperty private String cloudBucketName;

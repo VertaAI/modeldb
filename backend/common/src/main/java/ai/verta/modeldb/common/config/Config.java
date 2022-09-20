@@ -54,7 +54,7 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public abstract class Config {
   @JsonProperty private ServiceConfig authService;

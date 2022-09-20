@@ -39,7 +39,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 public class DAOSet {
   @JsonProperty private ArtifactStoreDAO artifactStoreDAO;
   @JsonProperty private BlobDAO blobDAO;
