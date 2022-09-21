@@ -5,16 +5,28 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.List;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.NONE)
 public class MDBConfig extends Config {
 
-  private static MDBConfig mdbConfig = null;
-  public String starterProject;
+  @JsonProperty private static MDBConfig mdbConfig = null;
+  @JsonProperty public String starterProject;
 
-  public TelemetryConfig telemetry;
-  public List<MigrationConfig> migrations;
-  protected FutureJdbi jdbi;
+  @JsonProperty private TelemetryConfig telemetry;
+  @JsonProperty private List<MigrationConfig> migrations;
+  @JsonProperty protected FutureJdbi jdbi;
 
   public static MDBConfig getInstance() throws InternalErrorException {
     if (mdbConfig == null) {

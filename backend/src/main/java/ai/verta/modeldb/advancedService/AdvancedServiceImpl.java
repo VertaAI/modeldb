@@ -61,15 +61,15 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private final Executor executor;
 
   public AdvancedServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
-    this.authService = serviceSet.authService;
-    this.mdbRoleService = serviceSet.mdbRoleService;
-    this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.experimentRunDAO = daoSet.experimentRunDAO;
-    this.commentDAO = daoSet.commentDAO;
-    this.futureExperimentDAO = daoSet.futureExperimentDAO;
-    this.datasetDAO = daoSet.datasetDAO;
-    this.datasetVersionDAO = daoSet.datasetVersionDAO;
-    this.futureExperimentRunDAO = daoSet.futureExperimentRunDAO;
+    this.authService = serviceSet.getAuthService();
+    this.mdbRoleService = serviceSet.getMdbRoleService();
+    this.futureProjectDAO = daoSet.getFutureProjectDAO();
+    this.experimentRunDAO = daoSet.getExperimentRunDAO();
+    this.commentDAO = daoSet.getCommentDAO();
+    this.futureExperimentDAO = daoSet.getFutureExperimentDAO();
+    this.datasetDAO = daoSet.getDatasetDAO();
+    this.datasetVersionDAO = daoSet.getDatasetVersionDAO();
+    this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
     this.executor = executor;
   }
 

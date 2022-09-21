@@ -44,16 +44,16 @@ public class ArtifactStoreInitBeans {
       }
 
       if (artifactStoreConfig.getArtifactStoreType().equals("NFS")
-          && artifactStoreConfig.getNfs() != null
-          && artifactStoreConfig.getNfs().getArtifactEndpoint() != null) {
+          && artifactStoreConfig.getNFS() != null
+          && artifactStoreConfig.getNFS().getArtifactEndpoint() != null) {
         System.getProperties()
             .put(
                 "artifactEndpoint.storeArtifact",
-                artifactStoreConfig.getNfs().getArtifactEndpoint().getStoreArtifact());
+                artifactStoreConfig.getNFS().getArtifactEndpoint().getStoreArtifact());
         System.getProperties()
             .put(
                 "artifactEndpoint.getArtifact",
-                artifactStoreConfig.getNfs().getArtifactEndpoint().getGetArtifact());
+                artifactStoreConfig.getNFS().getArtifactEndpoint().getGetArtifact());
       }
 
       switch (artifactStoreConfig.getArtifactStoreType()) {
@@ -65,7 +65,7 @@ public class ArtifactStoreInitBeans {
           break;
         case "NFS":
           appContext.registerBean("nfsController", NFSController.class);
-          String rootDir = artifactStoreConfig.getNfs().getNfsRootPath();
+          String rootDir = artifactStoreConfig.getNFS().getNfsRootPath();
           LOGGER.trace("NFS server root path {}", rootDir);
           final var props = new FileStorageProperties();
           props.setUploadDir(rootDir);
