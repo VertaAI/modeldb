@@ -7,7 +7,7 @@ clean:
 	rm -rf build dist verta.egg-info
 
 # upload distributions to PyPI
-upload: build
+upload:
 	python -m twine upload dist/* -u $(PYPI_USERNAME) -p $(PYPI_PASSWORD)
 
 # tag the current commit using the client's version number
