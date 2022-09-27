@@ -8,7 +8,8 @@ clean:
 
 # upload distributions to PyPI
 upload:
-	python -m twine upload dist/* -u $(PYPI_USERNAME) -p $(PYPI_PASSWORD)
+	# checking TWINE_USERNAME and TWINE_PASSWORD env vars
+	python -m twine upload dist/*
 
 # tag the current commit using the client's version number
 tag: VERSION=$$(python -c 'import verta; print(verta.__version__)')
