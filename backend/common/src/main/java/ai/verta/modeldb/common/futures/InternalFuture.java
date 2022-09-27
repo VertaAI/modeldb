@@ -275,12 +275,13 @@ public class InternalFuture<T> {
         .get()
         .whenComplete(
             (value, throwable) -> {
-              boolean retryCheckerFlag = false;
+              boolean retryCheckerFlag;
               try {
                 retryCheckerFlag = retryChecker.apply(throwable);
               } catch (Throwable e) {
                 promise.completeExceptionally(
                     new ExecutionException("retryChecker threw an exception. Not retrying.", e));
+                return;
               }
               if (throwable == null) {
                 promise.complete(value);
