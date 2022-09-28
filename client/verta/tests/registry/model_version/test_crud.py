@@ -64,10 +64,10 @@ class TestCRUD:
         assert str(model_version.id) in repr
         assert str(model_version.registered_model_id) in repr
         assert str(model_version.get_labels()) in repr
-        assert model_version.input_description in repr
-        assert model_version.output_description in repr
-        assert model_version.hide_input_label == True
-        assert model_version.hide_output_label == True
+        assert model_version.get_input_description in repr
+        assert model_version.get_output_description in repr
+        assert model_version.get_hide_input_label == True
+        assert model_version.get_hide_output_label == True
         assert "model" in repr
         assert "coef" in repr
 
