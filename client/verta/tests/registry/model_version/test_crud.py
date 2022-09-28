@@ -45,9 +45,9 @@ class TestCRUD:
 
     def test_repr(self, model_version):
         np = pytest.importorskip("numpy")
-        sklearn_linear_model = pytest.importorskip("sklearn").linear_model
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
 
-        classifier = sklearn_linear_model.LogisticRegression()
+        classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
         model_version.log_model(classifier)
         model_version.log_artifact("coef", classifier.coef_)
