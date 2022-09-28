@@ -49,7 +49,7 @@ class TestCRUD:
 
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-        model_version.log_model(classifier)
+        model_version.log_model(classifier, custom_modules=[])
         model_version.log_artifact("coef", classifier.coef_)
 
         model_version.add_labels(["tag1", "tag2"])
@@ -64,10 +64,10 @@ class TestCRUD:
         assert str(model_version.id) in repr
         assert str(model_version.registered_model_id) in repr
         assert str(model_version.get_labels()) in repr
-        assert model_version.get_input_description in repr
-        assert model_version.get_output_description in repr
-        assert model_version.get_hide_input_label == True
-        assert model_version.get_hide_output_label == True
+        assert f"input description: {model_version.get_input_description()}" in repr
+        assert f"output description: {model_version.get_output_description()}" in repr
+        assert f"hide input label: {model_version.get_hide_input_label()}" in repr
+        assert f"hide output label: {model_version.get_hide_output_label()}" in repr
         assert "model" in repr
         assert "coef" in repr
 
