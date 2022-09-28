@@ -37,6 +37,45 @@ Changelog
      (`# <>`__)
 
 
+v0.21.0 (2022-09-29)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- remove support (and prevent installation) for Python 2.7, 3.5, and 3.6
+  (`#3149 <https://github.com/VertaAI/modeldb/pull/3149>`__,
+  `#3152 <https://github.com/VertaAI/modeldb/pull/3152>`__,
+  `#3220 <https://github.com/VertaAI/modeldb/pull/3220>`__)
+- remove ``ExperimentRun.log_artifact_path()`` and ``ExperimentRun.log_image_path()``
+  (`#3159 <https://github.com/VertaAI/modeldb/pull/3159>`__)
+- remove clientside artifact storage (and the ``VERTA_ARTIFACT_DIR`` environment variable)
+  (`#3160 <https://github.com/VertaAI/modeldb/pull/3160>`__)
+- remove ``ModelVersion.get_artifact_parts()`` and ``ExperimentRun.get_artifact_parts()``
+  (`#3162 <https://github.com/VertaAI/modeldb/pull/3162>`__)
+- remove ``ExperimentRun.log_dataset()``
+  (`#3165 <https://github.com/VertaAI/modeldb/pull/3165>`__)
+
+New Features
+^^^^^^^^^^^^
+- add support for Python 3.10
+  (`#3161 <https://github.com/VertaAI/modeldb/pull/3161>`__)
+- add support for registered model versions' ``input_description``,
+  ``output_description``, ``hide_input_label``, and ``hide_output_label`` fields
+  (`#3214 <https://github.com/VertaAI/modeldb/pull/3214>`__,
+  `#3250 <https://github.com/VertaAI/modeldb/pull/3250>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- return a friendlier error message when passing incorrect Verta credentials
+  (`#3136 <https://github.com/VertaAI/modeldb/pull/3136>`__)
+- remove ``pathlib2`` dependency
+  (`#3151 <https://github.com/VertaAI/modeldb/pull/3151>`__)
+- bump ``pyyaml`` dependency version upper constraint from ``<6.0`` to ``<7.0``
+  (`#3112 <https://github.com/VertaAI/modeldb/pull/3112>`__)
+- bump ``cloudpickle`` dependency upper version constraint from ``<2.0`` to ``<3.0``
+  (`#3106 <https://github.com/VertaAI/modeldb/pull/3106>`__)
+
+
 v0.20.4 (2022-09-12)
 --------------------
 
