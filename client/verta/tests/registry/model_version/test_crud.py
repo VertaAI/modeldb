@@ -44,32 +44,30 @@ class TestCRUD:
             )
 
     def test_repr(self, model_version):
+        np = pytest.importorskip("numpy")
+        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier, custom_modules=[])
+        model_version.log_artifact("coef", classifier.coef_)
+
         model_version.add_labels(["tag1", "tag2"])
         model_version.set_input_description("input description")
         model_version.set_output_description("output description")
         model_version.set_hide_input_label(True)
         model_version.set_hide_output_label(True)
 
+        repr = str(model_version)
         assert model_version.name in repr
         assert model_version.url in repr
         assert str(model_version.id) in repr
         assert str(model_version.registered_model_id) in repr
         assert str(model_version.get_labels()) in repr
-        assert model_version.input_description in repr
-        assert model_version.output_description in repr
-        assert model_version.hide_input_label == True
-        assert model_version.hide_output_label == True
-
-        np = pytest.importorskip("numpy")
-        sklearn = pytest.importorskip("sklearn")
-        from sklearn.linear_model import LogisticRegression
-
-        classifier = LogisticRegression()
-        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-
-        model_version.log_model(classifier)
-        model_version.log_artifact("coef", classifier.coef_)
-        repr = str(model_version)
+        assert f"input description: {model_version.get_input_description()}" in repr
+        assert f"output description: {model_version.get_output_description()}" in repr
+        assert f"hide input label: {model_version.get_hide_input_label()}" in repr
+        assert f"hide output label: {model_version.get_hide_output_label()}" in repr
         assert "model" in repr
         assert "coef" in repr
 
