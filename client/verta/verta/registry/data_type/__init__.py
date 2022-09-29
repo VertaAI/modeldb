@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 """Data type for registered models."""
 
-import imp
 from verta._internal_utils import documentation
 
 from ._data_type import _DataType
