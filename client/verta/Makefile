@@ -1,3 +1,5 @@
+VERSION:=$$(python3 -c 'import verta; print(verta.__version__)')
+
 # build wheel and source distributions
 build: clean
 	python3 setup.py sdist bdist_wheel --universal
@@ -12,8 +14,6 @@ upload:
 	python3 -m twine upload --non-interactive dist/*
 
 # tag the current commit using the client's version number
-tag: VERSION=$$(python3 -c 'import verta; print(verta.__version__)')
-tag: TAG="client-v$(VERSION)"
 tag:
-	git tag -a $(TAG) -m ''
-	git push origin tag $(TAG)
+	git tag -a client-v$(VERSION) -m ''
+	git push origin tag client-v$(VERSION)
