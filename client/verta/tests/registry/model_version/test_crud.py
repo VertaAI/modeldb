@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import warnings
+
 import pytest
 import requests
 
@@ -179,7 +181,7 @@ class TestCRUD:
         assert model_version.get_attributes() == dict([old_attr, second_attr])
 
         # with `overwrite`
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings(record=True) as record:
             model_version.add_attributes(dict([new_attr, second_attr]), overwrite=True)
         assert not record  # no warning
         assert model_version.get_attributes() == dict([new_attr, second_attr])
