@@ -5,6 +5,7 @@ import six
 import itertools
 import os
 import shutil
+from urllib.parse import urlparse
 
 import requests
 
@@ -17,8 +18,6 @@ from . import utils
 import verta
 from verta._internal_utils import _utils
 import json
-
-from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 
 KWARGS = {

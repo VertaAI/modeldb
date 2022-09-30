@@ -3,11 +3,11 @@
 from __future__ import print_function
 import sys
 import time
+from urllib.parse import urlparse
 import json
 import yaml
 
 from verta.external import six
-from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from verta.deployment import DeployedModel
 from verta._internal_utils import _utils, arg_handler
@@ -116,7 +116,7 @@ class Endpoint(object):
         production_stage = self._get_production_stage()
         components =  production_stage["components"]
         # Note: the line below triggers a spurious and incorrect pylint error
-        build_id = next(six.moves.map(lambda component: component["build_id"], components),None) # pylint: disable=no-member
+        build_id = next(map(lambda component: component["build_id"], components),None)
         if build_id:
             build = self._get_build(build_id)
             return build
