@@ -14,6 +14,7 @@ import string
 import sys
 import threading
 import time
+from urllib.parse import urljoin
 import warnings
 
 import click
@@ -25,7 +26,6 @@ from google.protobuf import json_format
 from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 
 from ..external import six
-from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
 from verta.credentials import EmailCredentials, JWTCredentials
 

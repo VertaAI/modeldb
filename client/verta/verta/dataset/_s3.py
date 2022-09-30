@@ -5,9 +5,9 @@ from __future__ import print_function
 import os
 import pathlib
 import tempfile
+from urllib.parse import urlparse
 
 from ..external import six
-from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
 

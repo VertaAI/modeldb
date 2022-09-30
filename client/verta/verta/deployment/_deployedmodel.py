@@ -4,13 +4,12 @@ import json
 import gzip
 import os
 import time
+from urllib.parse import urlparse
 import warnings
 
 import requests
 
-
 from ..external import six
-from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from .._internal_utils import _utils
 from verta import credentials
@@ -247,7 +246,7 @@ class DeployedModel(object):
                 num_retries += 1
 
         _utils.raise_for_http_error(response)
-    
+
 
     def predict_with_id(self, x, compress=False, max_retries=5, always_retry_404=True, always_retry_429=True):
         num_retries = 0

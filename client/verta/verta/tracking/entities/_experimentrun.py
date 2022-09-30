@@ -6,6 +6,7 @@ import ast
 import copy
 import os
 import pathlib
+import pickle
 import pprint
 import shutil
 import sys
@@ -19,7 +20,6 @@ from verta._protos.public.modeldb import CommonService_pb2 as _CommonService
 from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
 
 from verta.external import six
-from verta.external.six.moves import cPickle as pickle  # pylint: disable=import-error, no-name-in-module
 
 from verta._internal_utils import (
     _artifact_utils,
