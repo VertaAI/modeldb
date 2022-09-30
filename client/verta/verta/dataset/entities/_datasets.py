@@ -27,15 +27,16 @@ class Datasets(_LazyList):
     """
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
-        'id',
-        'name',
-        'tags',
-        'time_created',
+        "id",
+        "name",
+        "tags",
+        "time_created",
     }
 
     def __init__(self, conn, conf):
         super(Datasets, self).__init__(
-            conn, conf,
+            conn,
+            conf,
             _DatasetService.FindDatasets(),
         )
 
@@ -43,9 +44,9 @@ class Datasets(_LazyList):
         return "<Datasets containing {} datasets>".format(self.__len__())
 
     def _call_back_end(self, msg):
-        response = self._conn.make_proto_request("POST",
-                                                 "/api/v1/modeldb/dataset/findDatasets",
-                                                 body=msg)
+        response = self._conn.make_proto_request(
+            "POST", "/api/v1/modeldb/dataset/findDatasets", body=msg
+        )
         response = self._conn.must_proto_response(response, msg.Response)
         return response.datasets, response.total_records
 

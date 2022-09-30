@@ -14,6 +14,7 @@ class _Visibility(object):
     Base class for visibility. Not for external use.
 
     """
+
     def __repr__(self):
         return "<{} visibility>".format(self.__class__.__name__)
 
@@ -80,6 +81,4 @@ class _Visibility(object):
     @property
     def _visibility_str(self):
         """Mainly for endpoint."""
-        return Collaborator_pb2.ResourceVisibility.Name(
-            self._visibility
-        )
+        return Collaborator_pb2.ResourceVisibility.Name(self._visibility)

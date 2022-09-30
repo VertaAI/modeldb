@@ -61,16 +61,16 @@ class EmailCredentials(Credentials):
 
     def headers(self):
         return {
-            'source': 'PythonClient',
-            'email': self.email,
-            'developer_key': self.dev_key,
+            "source": "PythonClient",
+            "email": self.email,
+            "developer_key": self.dev_key,
             # without underscore, for NGINX support
             # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
-            'developer-key': self.dev_key,
+            "developer-key": self.dev_key,
         }
 
     def __repr__(self):
-        key = self.dev_key[:8] + re.sub(r"[^-]", '*', self.dev_key[8:])
+        key = self.dev_key[:8] + re.sub(r"[^-]", "*", self.dev_key[8:])
         return "EmailCredentials({}, {})".format(self.email, key)
 
     @classmethod
@@ -81,6 +81,7 @@ class EmailCredentials(Credentials):
             return cls(email_env, dev_key_env)
         else:
             return None
+
 
 class JWTCredentials(Credentials):
     """Container class for JWT token credentials for the Verta Platform.
@@ -107,18 +108,20 @@ class JWTCredentials(Credentials):
 
     def headers(self):
         headers = {
-            'source': 'JWT',
-            'bearer_access_token': self.jwt_token,
+            "source": "JWT",
+            "bearer_access_token": self.jwt_token,
             # without underscore, for NGINX support
             # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
-            'bearer-access-token': self.jwt_token,
+            "bearer-access-token": self.jwt_token,
         }
         if self.jwt_token_sig:
-            headers['bearer_access_token_sig'] = headers['bearer-access-token-sig'] = self.jwt_token_sig
+            headers["bearer_access_token_sig"] = headers[
+                "bearer-access-token-sig"
+            ] = self.jwt_token_sig
         return headers
 
     def __repr__(self):
-        token = self.jwt_token[:8] + re.sub(r"[^-]", '*', self.jwt_token[8:])
+        token = self.jwt_token[:8] + re.sub(r"[^-]", "*", self.jwt_token[8:])
         return "JWTCredentials({}, {})".format(token, self.jwt_token_sig)
 
     @classmethod

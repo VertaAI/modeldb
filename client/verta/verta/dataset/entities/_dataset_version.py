@@ -7,8 +7,12 @@ import warnings
 from verta.external import six
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._protos.public.modeldb import DatasetVersionService_pb2 as _DatasetVersionService
-from verta._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from verta._protos.public.modeldb import (
+    DatasetVersionService_pb2 as _DatasetVersionService,
+)
+from verta._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 
 from verta import _blob
 from verta.tracking.entities import _entity
@@ -43,25 +47,34 @@ class DatasetVersion(_entity._ModelDBEntity):
         ID of this version's preceding version.
 
     """
+
     def __init__(self, conn, conf, msg):
-        super(DatasetVersion, self).__init__(conn, conf, _DatasetVersionService, "dataset-version", msg)
+        super(DatasetVersion, self).__init__(
+            conn, conf, _DatasetVersionService, "dataset-version", msg
+        )
 
     def __repr__(self):
         self._refresh_cache()
         msg = self._msg
 
-        return '\n'.join((
-            "version: {}".format(msg.version),
-            # TODO: "url: {}://{}/{}/datasets/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
-            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_logged))),
-            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
-            "description: {}".format(msg.description),
-            "tags: {}".format(msg.tags),
-            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
-            "id: {}".format(msg.id),
-            "content:",
-            "{}".format(self.get_content()),  # TODO: increase indentation
-        ))
+        return "\n".join(
+            (
+                "version: {}".format(msg.version),
+                # TODO: "url: {}://{}/{}/datasets/{}/summary".format(self._conn.scheme, self._conn.socket, self.workspace, self.id),
+                "time created: {}".format(
+                    _utils.timestamp_to_str(int(msg.time_logged))
+                ),
+                "time updated: {}".format(
+                    _utils.timestamp_to_str(int(msg.time_updated))
+                ),
+                "description: {}".format(msg.description),
+                "tags: {}".format(msg.tags),
+                "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+                "id: {}".format(msg.id),
+                "content:",
+                "{}".format(self.get_content()),  # TODO: increase indentation
+            )
+        )
 
     @property
     def version(self):
@@ -97,7 +110,9 @@ class DatasetVersion(_entity._ModelDBEntity):
         endpoint = "/api/v1/modeldb/dataset-version/getLatestDatasetVersionByDatasetId"
         response = conn.make_proto_request("GET", endpoint, params=msg)
 
-        dataset_version = conn.must_proto_response(response, Message.Response).dataset_version
+        dataset_version = conn.must_proto_response(
+            response, Message.Response
+        ).dataset_version
         print("got existing dataset version: {}".format(dataset_version.id))
         return cls(conn, conf, dataset_version)
 
@@ -112,7 +127,9 @@ class DatasetVersion(_entity._ModelDBEntity):
         The artifact upload methods require an object (`self`).
 
         """
-        dataset_blob = kwargs['dataset_blob']  # definitely exists: required in Dataset.create_version()
+        dataset_blob = kwargs[
+            "dataset_blob"
+        ]  # definitely exists: required in Dataset.create_version()
 
         # prepare ModelDB-versionend components for upload (after Dataset Version creation)
         if dataset_blob._mdb_versioned:
@@ -124,22 +141,46 @@ class DatasetVersion(_entity._ModelDBEntity):
         if dataset_blob._mdb_versioned:
             for component in dataset_blob._components_map.values():
                 if component._internal_versioned_path:
-                    with open(component._local_path, 'rb') as f:
-                        obj._upload_artifact(component.path, f)  # pylint: disable=no-member
+                    with open(component._local_path, "rb") as f:
+                        obj._upload_artifact(
+                            component.path, f
+                        )  # pylint: disable=no-member
 
         return obj
 
     @classmethod
-    def _create_proto_internal(cls, conn, dataset, dataset_blob, desc=None, tags=None, attrs=None, time_logged=None, time_updated=None):
+    def _create_proto_internal(
+        cls,
+        conn,
+        dataset,
+        dataset_blob,
+        desc=None,
+        tags=None,
+        attrs=None,
+        time_logged=None,
+        time_updated=None,
+    ):
         Message = _DatasetVersionService.CreateDatasetVersion
-        msg = Message(dataset_id=dataset.id, description=desc, tags=tags, attributes=attrs, time_created=time_updated,
-                      dataset_blob=dataset_blob._as_proto().dataset)
+        msg = Message(
+            dataset_id=dataset.id,
+            description=desc,
+            tags=tags,
+            attributes=attrs,
+            time_created=time_updated,
+            dataset_blob=dataset_blob._as_proto().dataset,
+        )
 
         endpoint = "/api/v1/modeldb/dataset-version/createDatasetVersion"
         response = conn.make_proto_request("POST", endpoint, body=msg)
-        dataset_version = conn.must_proto_response(response, Message.Response).dataset_version
+        dataset_version = conn.must_proto_response(
+            response, Message.Response
+        ).dataset_version
 
-        print("created new Dataset Version: {} for {}".format(dataset_version.version, dataset.name))
+        print(
+            "created new Dataset Version: {} for {}".format(
+                dataset_version.version, dataset.name
+            )
+        )
         return dataset_version
 
     def get_content(self):
@@ -294,10 +335,12 @@ class DatasetVersion(_entity._ModelDBEntity):
         # build KeyValues
         attribute_keyvals = []
         for key, value in six.viewitems(attrs):
-            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key,
-                                                                   value=_utils.python_to_val_proto(
-                                                                       value,
-                                                                       allow_collection=True)))
+            attribute_keyvals.append(
+                _CommonCommonService.KeyValue(
+                    key=key,
+                    value=_utils.python_to_val_proto(value, allow_collection=True),
+                )
+            )
 
         Message = _DatasetVersionService.AddDatasetVersionAttributes
         msg = Message(id=self.id, attributes=attribute_keyvals)
@@ -372,7 +415,9 @@ class DatasetVersion(_entity._ModelDBEntity):
         """
         msg = _DatasetVersionService.DeleteDatasetVersion(id=self.id)
         response = self._conn.make_proto_request(
-            "DELETE", "/api/v1/modeldb/dataset-version/deleteDatasetVersion", body=msg,
+            "DELETE",
+            "/api/v1/modeldb/dataset-version/deleteDatasetVersion",
+            body=msg,
         )
         self._conn.must_response(response)
 
@@ -433,7 +478,7 @@ class DatasetVersion(_entity._ModelDBEntity):
             category=FutureWarning,
         )
         self._refresh_cache()
-        version_info_oneof = self._msg.WhichOneof('dataset_version_info')
+        version_info_oneof = self._msg.WhichOneof("dataset_version_info")
         return getattr(self._msg, version_info_oneof)
 
     @property
@@ -488,18 +533,20 @@ class DatasetVersion(_entity._ModelDBEntity):
 
         url = response_msg.url
         # accommodate port-forwarded NFS store
-        if 'https://localhost' in url[:20]:
-            url = 'http' + url[5:]
-        if 'localhost%3a' in url[:20]:
-            url = url.replace('localhost%3a', 'localhost:')
-        if 'localhost%3A' in url[:20]:
-            url = url.replace('localhost%3A', 'localhost:')
+        if "https://localhost" in url[:20]:
+            url = "http" + url[5:]
+        if "localhost%3a" in url[:20]:
+            url = url.replace("localhost%3a", "localhost:")
+        if "localhost%3A" in url[:20]:
+            url = url.replace("localhost%3A", "localhost:")
         response_msg.url = url
 
         return response_msg
 
     # TODO: consolidate this with similar method in `Commit`
-    def _upload_artifact(self, dataset_component_path, file_handle, part_size=_artifact_utils._64MB):
+    def _upload_artifact(
+        self, dataset_component_path, file_handle, part_size=_artifact_utils._64MB
+    ):
         """
         Uploads `file_handle` to ModelDB artifact store.
 
@@ -516,17 +563,21 @@ class DatasetVersion(_entity._ModelDBEntity):
         file_handle.seek(0)
 
         # check if multipart upload ok
-        url_for_artifact = self._get_url_for_artifact(dataset_component_path, "PUT", part_num=1)
+        url_for_artifact = self._get_url_for_artifact(
+            dataset_component_path, "PUT", part_num=1
+        )
 
         print("uploading {} to ModelDB".format(dataset_component_path))
         if url_for_artifact.multipart_upload_ok:
             # TODO: parallelize this
-            file_parts = iter(lambda: file_handle.read(part_size), b'')
+            file_parts = iter(lambda: file_handle.read(part_size), b"")
             for part_num, file_part in enumerate(file_parts, start=1):
-                print("uploading part {}".format(part_num), end='\r')
+                print("uploading part {}".format(part_num), end="\r")
 
                 # get presigned URL
-                url = self._get_url_for_artifact(dataset_component_path, "PUT", part_num=part_num).url
+                url = self._get_url_for_artifact(
+                    dataset_component_path, "PUT", part_num=part_num
+                ).url
 
                 # wrap file part into bytestream to avoid OverflowError
                 #     Passing a bytestring >2 GB (num bytes > max val of int32) directly to
@@ -551,7 +602,7 @@ class DatasetVersion(_entity._ModelDBEntity):
                     path_dataset_component_blob_path=dataset_component_path,
                 )
                 msg.artifact_part.part_number = part_num
-                msg.artifact_part.etag = response.headers['ETag']
+                msg.artifact_part.etag = response.headers["ETag"]
                 data = _utils.proto_to_json(msg)
                 response = _utils.make_request("POST", url, self._conn, json=data)
                 _utils.raise_for_http_error(response)
@@ -574,15 +625,20 @@ class DatasetVersion(_entity._ModelDBEntity):
             if url_for_artifact.fields:
                 # if fields were returned by backend, make a POST request and supply them as form fields
                 response = _utils.make_request(
-                    "POST", url_for_artifact.url, self._conn,
+                    "POST",
+                    url_for_artifact.url,
+                    self._conn,
                     # requests uses the `files` parameter for sending multipart/form-data POSTs.
                     #     https://stackoverflow.com/a/12385661/8651995
                     # the file contents must be the final form field
                     #     https://docs.aws.amazon.com/AmazonS3/latest/dev/HTTPPOSTForms.html#HTTPPOSTFormFields
-                    files=list(url_for_artifact.fields.items()) + [('file', file_handle)],
+                    files=list(url_for_artifact.fields.items())
+                    + [("file", file_handle)],
                 )
             else:
-                response = _utils.make_request("PUT", url_for_artifact.url, self._conn, data=file_handle)
+                response = _utils.make_request(
+                    "PUT", url_for_artifact.url, self._conn, data=file_handle
+                )
             _utils.raise_for_http_error(response)
 
         print("upload complete")

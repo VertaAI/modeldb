@@ -19,4 +19,6 @@ class Closed(_LockLevel):
 
     """
 
-    _LOCK_LEVEL = RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.CLOSED
+    _LOCK_LEVEL = (
+        RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.CLOSED
+    )

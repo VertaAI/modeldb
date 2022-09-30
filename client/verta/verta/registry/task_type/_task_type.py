@@ -47,13 +47,20 @@ class _TaskType(object):
             _Unknown,
         )
 
-        for task_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, _Unknown):
+        for task_type_cls in (
+            Other,
+            Classification,
+            Clustering,
+            Detection,
+            Regression,
+            Transcription,
+            Translation,
+            _Unknown,
+        ):
             if task_type == task_type_cls._TASK_TYPE:
                 return task_type_cls()
         else:
-            raise ValueError(
-                "unrecognized task type {}".format(task_type)
-            )
+            raise ValueError("unrecognized task type {}".format(task_type))
 
     @staticmethod
     def _from_str(task_type_str):
@@ -78,11 +85,18 @@ class _TaskType(object):
             Translation,
             _Unknown,
         )
-        
-        for task_type_cls in (Other, Classification, Clustering, Detection, Regression, Transcription, Translation, _Unknown):            
+
+        for task_type_cls in (
+            Other,
+            Classification,
+            Clustering,
+            Detection,
+            Regression,
+            Transcription,
+            Translation,
+            _Unknown,
+        ):
             if task_type_str.lower() == task_type_cls.__name__.lower():
                 return task_type_cls()
         else:
-            raise ValueError(
-                "unrecognized task type {}".format(task_type_str)
-            )
+            raise ValueError("unrecognized task type {}".format(task_type_str))

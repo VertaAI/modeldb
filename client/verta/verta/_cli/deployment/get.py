@@ -17,12 +17,12 @@ def get():
     """
     pass
 
+
 @get.command(name="endpoint")
 @click.argument("path", nargs=1, required=True)
 @click.option("--workspace", "-w", help="Workspace to use.")
 def get_endpoint(path, workspace):
-    """Get detailed information about a deployment endpoint.
-    """
+    """Get detailed information about a deployment endpoint."""
     client = Client()
 
     try:

@@ -19,4 +19,6 @@ class Redact(_LockLevel):
 
     """
 
-    _LOCK_LEVEL = RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.REDACT
+    _LOCK_LEVEL = (
+        RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.REDACT
+    )

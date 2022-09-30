@@ -2,7 +2,9 @@
 
 from __future__ import print_function
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 
 from .._internal_utils import _git_utils
 from . import _code
@@ -77,16 +79,30 @@ class Git(_code._Code):
         #     in repo git@github.com:VertaAI/modeldb.git
 
     """
-    def __init__(self, repo_url=None, branch=None, tag=None, commit_hash=None, is_dirty=None, autocapture=True, _autocapture=True):
+
+    def __init__(
+        self,
+        repo_url=None,
+        branch=None,
+        tag=None,
+        commit_hash=None,
+        is_dirty=None,
+        autocapture=True,
+        _autocapture=True,
+    ):
         # TODO: switch all similar blobs from _autocapture to autocapture so they have the same API
         if _autocapture is False:
             autocapture = False
 
         if autocapture:
             # need a unique commit ref, so only one of these params is allowed
-            passed_in_refs = [arg for arg in (branch, tag, commit_hash) if arg is not None]
+            passed_in_refs = [
+                arg for arg in (branch, tag, commit_hash) if arg is not None
+            ]
             if len(passed_in_refs) > 1:
-                raise ValueError("cannot specify more than one of `branch`, `tag`, and `commit_hash`")
+                raise ValueError(
+                    "cannot specify more than one of `branch`, `tag`, and `commit_hash`"
+                )
             elif len(passed_in_refs) == 1:
                 ref = passed_in_refs[0]
             else:
@@ -101,8 +117,14 @@ class Git(_code._Code):
             self._msg.git.repo = repo_url or _git_utils.get_git_remote_url()
             self._msg.git.branch = branch or _git_utils.get_git_branch_name(ref)
             self._msg.git.tag = tag or _git_utils.get_git_commit_tag(ref)
-            self._msg.git.hash = _git_utils.get_git_commit_hash(ref)  # use full commit hash
-            self._msg.git.is_dirty = is_dirty if is_dirty is not None else _git_utils.get_git_commit_dirtiness(ref)
+            self._msg.git.hash = _git_utils.get_git_commit_hash(
+                ref
+            )  # use full commit hash
+            self._msg.git.is_dirty = (
+                is_dirty
+                if is_dirty is not None
+                else _git_utils.get_git_commit_dirtiness(ref)
+            )
         else:
             self._msg.git.repo = repo_url or ""
             self._msg.git.branch = branch or ""
@@ -113,10 +135,12 @@ class Git(_code._Code):
     def __repr__(self):
         lines = ["Git Version"]
         if self._msg.git.hash:
-            lines.append("{}commit {}".format(
-                "dirty " if self._msg.git.is_dirty else "",
-                self._msg.git.hash,
-            ))
+            lines.append(
+                "{}commit {}".format(
+                    "dirty " if self._msg.git.is_dirty else "",
+                    self._msg.git.hash,
+                )
+            )
         if self._msg.git.branch:
             lines.append("on branch {}".format(self._msg.git.branch))
         if self._msg.git.tag:

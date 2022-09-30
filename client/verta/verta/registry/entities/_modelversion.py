@@ -16,7 +16,9 @@ from google.protobuf.struct_pb2 import Value
 import requests
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from verta._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 from verta._protos.public.registry import (
     RegistryService_pb2 as _RegistryService,
     StageService_pb2 as _StageService,
@@ -106,8 +108,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "attributes: {}".format(
                     {
                         key: val
-                        for key, val
-                        in _utils.unravel_key_values(msg.attributes).items()
+                        for key, val in _utils.unravel_key_values(
+                            msg.attributes
+                        ).items()
                         if not key.startswith(_deployable_entity._INTERNAL_ATTR_PREFIX)
                     }
                 ),
@@ -251,7 +254,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         input_description=None,
         hide_input_label=None,
         output_description=None,
-        hide_output_label=None
+        hide_output_label=None,
     ):
         if lock_level is None:
             lock_level = lock.Open()
@@ -405,8 +408,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 )
             if self.has_environment:
                 raise ValueError(
-                    "environment already exists;"
-                    " consider setting overwrite=True"
+                    "environment already exists;" " consider setting overwrite=True"
                 )
 
         # log model API (first, in case there's a conflict)
@@ -440,9 +442,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         self._refresh_cache()
         if not self._msg.docker_metadata.request_port:
-            raise ValueError(
-                "Docker image information has not been logged"
-            )
+            raise ValueError("Docker image information has not been logged")
 
         return DockerImage._from_model_ver_proto(self._msg)
 
@@ -495,8 +495,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         serialized_model, method, model_type = _artifact_utils.serialize_model(model)
 
         if artifacts and model_type != "class":
-            raise ValueError(
-                "`artifacts` can only be provided if `model` is a class")
+            raise ValueError("`artifacts` can only be provided if `model` is a class")
 
         # Create artifact message and update ModelVersion's message:
         model_msg = self._create_artifact_msg(
@@ -563,9 +562,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         return _artifact_utils.deserialize_model(model_artifact, error_ok=True)
 
     def download_model(self, download_to_path):
-        return self.download_artifact(
-            self._MODEL_KEY, download_to_path
-        )
+        return self.download_artifact(self._MODEL_KEY, download_to_path)
 
     def del_model(self):
         """
@@ -614,9 +611,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         if key == self._MODEL_KEY:
             raise ValueError(
                 'the key "{}" is reserved for model;'
-                " consider using log_model() instead".format(
-                    self._MODEL_KEY
-                )
+                " consider using log_model() instead".format(self._MODEL_KEY)
             )
 
         self._fetch_with_no_cache()
@@ -993,10 +988,15 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             # clarify that the syntax error comes from `script`, and propagate details
             reason = e.args[0]
             line_no = e.args[1][1]
-            line = script.splitlines()[line_no-1]
-            six.raise_from(SyntaxError("{} in provided script on line {}:\n{}"
-                                       .format(reason, line_no, line)),
-                           e)
+            line = script.splitlines()[line_no - 1]
+            six.raise_from(
+                SyntaxError(
+                    "{} in provided script on line {}:\n{}".format(
+                        reason, line_no, line
+                    )
+                ),
+                e,
+            )
 
         # convert into bytes for upload
         script = six.ensure_binary(script)
@@ -1358,12 +1358,13 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             model_version_id=self.id,
             code_blob_map={
                 key: code_version._as_proto().code
-                for key, code_version
-                in code_versions.items()
+                for key, code_version in code_versions.items()
             },
         )
-        endpoint = "/api/v1/registry/model_versions/{}/logCodeBlobInModelVersion".format(
-            self.id,
+        endpoint = (
+            "/api/v1/registry/model_versions/{}/logCodeBlobInModelVersion".format(
+                self.id,
+            )
         )
         response = self._conn.make_proto_request("POST", endpoint, body=msg)
         self._conn.must_response(response)

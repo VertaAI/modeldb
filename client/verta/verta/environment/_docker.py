@@ -115,9 +115,9 @@ class Docker(_environment._Environment):
             sha=blob_msg.environment.docker.sha or None,
             env_vars={
                 var.name: var.value
-                for var
-                in blob_msg.environment.environment_variables
-            } or None,
+                for var in blob_msg.environment.environment_variables
+            }
+            or None,
         )
 
         return obj

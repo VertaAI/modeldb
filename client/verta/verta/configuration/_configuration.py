@@ -12,6 +12,7 @@ class _Configuration(_blob.Blob):
     Base class for configuration versioning. Not for human consumption.
 
     """
+
     def __init__(self):
         super(_Configuration, self).__init__()
 

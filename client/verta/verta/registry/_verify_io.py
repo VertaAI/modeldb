@@ -7,13 +7,17 @@ import json
 from verta.external import six
 
 
-_ALLOWED_INPUT_TYPES = {
-    dict,
-    list,
-    float,
-    bool,
-    type(None),
-} | set(six.string_types) | set(six.integer_types)
+_ALLOWED_INPUT_TYPES = (
+    {
+        dict,
+        list,
+        float,
+        bool,
+        type(None),
+    }
+    | set(six.string_types)
+    | set(six.integer_types)
+)
 _ALLOWED_OUTPUT_TYPES = _ALLOWED_INPUT_TYPES | {tuple}
 
 # for use like: `if getattr(model.predict, _DECORATED_FLAG, False)`
@@ -63,6 +67,7 @@ def verify_io(f):
     enough that misuse is unlikely.
 
     """
+
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
         for arg in itertools.chain(args, kwargs.values()):
@@ -105,8 +110,10 @@ def _check_compatible_value_helper(value, value_name, allowed_types):
     except UnicodeDecodeError as e:
         # in Python 2, json.dumps() attempts to decode binary (unlike Python 3
         # which rejects it outright), so here we clarify the potential error
-        err_msg = "{}; {} cannot contain binary; consider encoding to base64 instead".format(
-            str(e),
-            value_name,
+        err_msg = (
+            "{}; {} cannot contain binary; consider encoding to base64 instead".format(
+                str(e),
+                value_name,
+            )
         )
         six.raise_from(TypeError(err_msg), None)
