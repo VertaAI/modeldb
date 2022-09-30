@@ -39,6 +39,7 @@ def verta_callback(run):
         )
 
     """
+
     def callback(env):
         for metric, val in env.evaluation_result_list:
             try:
@@ -46,4 +47,5 @@ def verta_callback(run):
             except:
                 pass  # don't halt execution
         # TODO: support `xgb.cv()`, which gives `(metric, val, std_dev)` across folds
+
     return callback

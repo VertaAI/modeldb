@@ -132,8 +132,11 @@ class TestModel:
         registered_model.set_description(desc)
         assert desc == registered_model.get_description()
 
+
 class TestTaskTypes:
-    @pytest.mark.parametrize("task_type_cls", sorted_subclasses(task_type_module._TaskType))
+    @pytest.mark.parametrize(
+        "task_type_cls", sorted_subclasses(task_type_module._TaskType)
+    )
     def test_creation(self, client, created_entities, task_type_cls):
         if task_type_cls is task_type_module._Unknown:
             pytest.skip("unsupported task type")
@@ -146,7 +149,9 @@ class TestTaskTypes:
         registered_model = client.get_registered_model(id=registered_model.id)
         assert registered_model.get_task_type() == task_type
 
-    @pytest.mark.parametrize("task_type_cls", sorted_subclasses(task_type_module._TaskType))
+    @pytest.mark.parametrize(
+        "task_type_cls", sorted_subclasses(task_type_module._TaskType)
+    )
     def test_set(self, registered_model, task_type_cls):
         if task_type_cls is task_type_module._Unknown:
             pytest.skip("unsupported task type")
@@ -159,7 +164,9 @@ class TestTaskTypes:
 
 
 class TestDataTypes:
-    @pytest.mark.parametrize("data_type_cls", sorted_subclasses(data_type_module._DataType))
+    @pytest.mark.parametrize(
+        "data_type_cls", sorted_subclasses(data_type_module._DataType)
+    )
     def test_creation(self, client, created_entities, data_type_cls):
         if data_type_cls is data_type_module._Unknown:
             pytest.skip("unsupported data type")
@@ -172,7 +179,9 @@ class TestDataTypes:
         registered_model = client.get_registered_model(id=registered_model.id)
         assert registered_model.get_data_type() == data_type
 
-    @pytest.mark.parametrize("data_type_cls", sorted_subclasses(data_type_module._DataType))
+    @pytest.mark.parametrize(
+        "data_type_cls", sorted_subclasses(data_type_module._DataType)
+    )
     def test_set(self, registered_model, data_type_cls):
         if data_type_cls is data_type_module._Unknown:
             pytest.skip("unsupported data type")

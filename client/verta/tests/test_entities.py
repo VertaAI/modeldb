@@ -21,28 +21,40 @@ import json
 
 
 KWARGS = {
-    'desc': [None, "A test."],
-    'tags': [None, ['test']],
-    'attrs': [None, {'is_test': True}],
+    "desc": [None, "A test."],
+    "tags": [None, ["test"]],
+    "attrs": [None, {"is_test": True}],
 }
-KWARGS_COMBOS = [dict(zip(KWARGS.keys(), values))
-                 for values
-                 in itertools.product(*KWARGS.values())
-                 if values.count(None) != len(values)]
+KWARGS_COMBOS = [
+    dict(zip(KWARGS.keys(), values))
+    for values in itertools.product(*KWARGS.values())
+    if values.count(None) != len(values)
+]
 
 # for `tags` typecheck tests
 TAG = "my-tag"
 
 
 class TestClient:
-
-    @pytest.mark.skipif(not all(env_var in os.environ for env_var in ('VERTA_HOST', 'VERTA_EMAIL', 'VERTA_DEV_KEY')), reason="insufficient Verta credentials")
+    @pytest.mark.skipif(
+        not all(
+            env_var in os.environ
+            for env_var in ("VERTA_HOST", "VERTA_EMAIL", "VERTA_DEV_KEY")
+        ),
+        reason="insufficient Verta credentials",
+    )
     def test_config_file(self, in_tempdir):
-        self.config_file_with_type_util(connect = False)
+        self.config_file_with_type_util(connect=False)
 
-    @pytest.mark.skipif(not all(env_var in os.environ for env_var in ('VERTA_HOST', 'VERTA_EMAIL', 'VERTA_DEV_KEY')), reason="insufficient Verta credentials")
+    @pytest.mark.skipif(
+        not all(
+            env_var in os.environ
+            for env_var in ("VERTA_HOST", "VERTA_EMAIL", "VERTA_DEV_KEY")
+        ),
+        reason="insufficient Verta credentials",
+    )
     def test_config_file_connect(self, in_tempdir):
-        self.config_file_with_type_util(connect = True)
+        self.config_file_with_type_util(connect=True)
 
     def config_file_with_type_util(self, connect):
         PROJECT_NAME = _utils.generate_default_name()
@@ -52,19 +64,24 @@ class TestClient:
 
         HOST_KEY, EMAIL_KEY, DEV_KEY_KEY = "VERTA_HOST", "VERTA_EMAIL", "VERTA_DEV_KEY"
 
-        HOST, EMAIL, DEV_KEY = os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
+        HOST, EMAIL, DEV_KEY = (
+            os.environ[HOST_KEY],
+            os.environ[EMAIL_KEY],
+            os.environ[DEV_KEY_KEY],
+        )
         try:
             del os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY]
 
             try:
-                with open(CONFIG_FILENAME, 'w') as f:
+                with open(CONFIG_FILENAME, "w") as f:
                     json.dump(
                         {
-                            'host': HOST,
-                            'email': EMAIL, 'dev_key': DEV_KEY,
-                            'project': PROJECT_NAME,
-                            'experiment': EXPERIMENT_NAME,
-                            'dataset': DATASET_NAME,
+                            "host": HOST,
+                            "email": EMAIL,
+                            "dev_key": DEV_KEY,
+                            "project": PROJECT_NAME,
+                            "experiment": EXPERIMENT_NAME,
+                            "dataset": DATASET_NAME,
                         },
                         f,
                     )
@@ -73,12 +90,12 @@ class TestClient:
                 conn = client._conn
 
                 back_end_url = urlparse(HOST)
-                socket = back_end_url.netloc + back_end_url.path.rstrip('/')
+                socket = back_end_url.netloc + back_end_url.path.rstrip("/")
 
                 assert conn.socket == socket
-                assert conn.auth['Grpc-Metadata-email'] == EMAIL
-                assert conn.auth['Grpc-Metadata-developer_key'] == DEV_KEY
-                assert conn.auth['Grpc-Metadata-developer-key'] == DEV_KEY
+                assert conn.auth["Grpc-Metadata-email"] == EMAIL
+                assert conn.auth["Grpc-Metadata-developer_key"] == DEV_KEY
+                assert conn.auth["Grpc-Metadata-developer-key"] == DEV_KEY
 
                 if connect:
                     try:
@@ -94,24 +111,34 @@ class TestClient:
                     finally:
                         dataset.delete()
                 else:
-                    assert client._set_from_config_if_none(None, "project") == PROJECT_NAME
-                    assert client._set_from_config_if_none(None, "experiment") == EXPERIMENT_NAME
-                    assert client._set_from_config_if_none(None, "dataset") == DATASET_NAME
+                    assert (
+                        client._set_from_config_if_none(None, "project") == PROJECT_NAME
+                    )
+                    assert (
+                        client._set_from_config_if_none(None, "experiment")
+                        == EXPERIMENT_NAME
+                    )
+                    assert (
+                        client._set_from_config_if_none(None, "dataset") == DATASET_NAME
+                    )
 
             finally:
                 if os.path.exists(CONFIG_FILENAME):
                     os.remove(CONFIG_FILENAME)
         finally:
-            os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = HOST, EMAIL, DEV_KEY
+            os.environ[HOST_KEY], os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = (
+                HOST,
+                EMAIL,
+                DEV_KEY,
+            )
+
 
 class TestEntities:
     def test_cache(self, client, strs):
         client.set_project()
         client.set_experiment()
 
-        entities = (
-            client.set_experiment_run(),
-        )
+        entities = (client.set_experiment_run(),)
 
         for entity in entities:
             filename = strs[0]
@@ -126,11 +153,12 @@ class TestEntities:
             assert os.path.isfile(filepath)
             assert entity._get_cached_file(filename)
 
-            with open(filepath, 'rb') as f:
+            with open(filepath, "rb") as f:
                 assert f.read() == contents
 
     def test_context(self, client, strs):
         strs = iter(strs)
+
         def assert_new_run_in_proj():
             assert client.get_or_create_experiment_run()._msg.project_id == proj.id
             assert client.create_experiment_run()._msg.project_id == proj.id
@@ -163,7 +191,7 @@ class TestProject:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
-        with pytest.warns(UserWarning, match='.*already exists.*'):
+        with pytest.warns(UserWarning, match=".*already exists.*"):
             client.get_or_create_project(name=name, tags=["tag1", "tag2"])
 
     def test_get(self, client):
@@ -211,9 +239,11 @@ class TestProject:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = _utils.make_request("GET", endpoint, client._conn, params={'id': proj.id})
+        response = _utils.make_request(
+            "GET", endpoint, client._conn, params={"id": proj.id}
+        )
         _utils.raise_for_http_error(response)
-        assert response.json().get('tags', []) == [TAG]
+        assert response.json().get("tags", []) == [TAG]
 
 
 class TestExperiment:
@@ -230,7 +260,7 @@ class TestExperiment:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
-        with pytest.warns(UserWarning, match='.*already exists.*'):
+        with pytest.warns(UserWarning, match=".*already exists.*"):
             client.set_experiment(name=name, attrs={"a": 123})
 
     def test_get(self, client):
@@ -281,9 +311,11 @@ class TestExperiment:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = _utils.make_request("GET", endpoint, client._conn, params={'id': expt.id})
+        response = _utils.make_request(
+            "GET", endpoint, client._conn, params={"id": expt.id}
+        )
         _utils.raise_for_http_error(response)
-        assert response.json().get('tags', []) == [TAG]
+        assert response.json().get("tags", []) == [TAG]
 
 
 class TestExperimentRun:
@@ -300,7 +332,7 @@ class TestExperimentRun:
         excinfo_value = str(excinfo.value).strip()
         assert "409" in excinfo_value
         assert "already exists" in excinfo_value
-        with pytest.warns(UserWarning, match='.*already exists.*'):
+        with pytest.warns(UserWarning, match=".*already exists.*"):
             client.set_experiment_run(name=name, attrs={"a": 123})
 
     def test_get(self, client):
@@ -363,18 +395,20 @@ class TestExperimentRun:
             client._conn.scheme,
             client._conn.socket,
         )
-        response = _utils.make_request("GET", endpoint, client._conn, params={'id': run.id})
+        response = _utils.make_request(
+            "GET", endpoint, client._conn, params={"id": run.id}
+        )
         _utils.raise_for_http_error(response)
-        assert response.json().get('tags', []) == [TAG]
+        assert response.json().get("tags", []) == [TAG]
 
     @pytest.mark.skip(reason="backend bug (VR-13087); un-skip with VR-13088")
     def test_clone(self, experiment_run):
         expt_run = experiment_run
         expt_run._conf.use_git = False
-        expt_run.log_hyperparameters({"hpp1" : 1, "hpp2" : 2, "hpp3" : "hpp3"})
-        expt_run.log_metrics({"metric1" : 0.5, "metric2" : 0.6})
+        expt_run.log_hyperparameters({"hpp1": 1, "hpp2": 2, "hpp3": "hpp3"})
+        expt_run.log_metrics({"metric1": 0.5, "metric2": 0.6})
         expt_run.log_tags(["tag1", "tag2"])
-        expt_run.log_attributes({"attr1" : 10, "attr2" : {"abc": 1}})
+        expt_run.log_attributes({"attr1": 10, "attr2": {"abc": 1}})
         expt_run.log_artifact("my-artifact", "README.md")
         expt_run.log_code()
 
@@ -401,10 +435,10 @@ class TestExperimentRun:
         old_run = client.set_experiment_run()
         assert old_run._msg.experiment_id == expt2.id  # of course, but just to be sure
 
-        old_run.log_hyperparameters({"hpp1" : 1, "hpp2" : 2, "hpp3" : "hpp3"})
-        old_run.log_metrics({"metric1" : 0.5, "metric2" : 0.6})
+        old_run.log_hyperparameters({"hpp1": 1, "hpp2": 2, "hpp3": "hpp3"})
+        old_run.log_metrics({"metric1": 0.5, "metric2": 0.6})
         old_run.log_tags(["tag1", "tag2"])
-        old_run.log_attributes({"attr1" : 10, "attr2" : {"abc": 1}})
+        old_run.log_attributes({"attr1": 10, "attr2": {"abc": 1}})
         old_run.log_artifact("my-artifact", "README.md")
 
         # clone run
@@ -425,7 +459,12 @@ class TestExperimentRun:
 
     def test_log_attribute_overwrite(self, client):
         initial_attrs = {"str-attr": "attr", "int-attr": 4, "float-attr": 0.5}
-        new_attrs = {"str-attr": "new-attr", "int-attr": 5, "float-attr": 0.3, "bool-attr": False}
+        new_attrs = {
+            "str-attr": "new-attr",
+            "int-attr": 5,
+            "float-attr": 0.3,
+            "bool-attr": False,
+        }
         single_new_attr = new_attrs.popitem()
 
         experiment_run = client.set_experiment_run(attrs=initial_attrs)
@@ -509,24 +548,28 @@ class TestExperimentRuns:
         # log metadata
         hpp1, hpp2, metric1, metric2 = strs[:4]
         for run in expt.expt_runs:
-            run.log_hyperparameters({
-                hpp1: np.random.random(),
-                hpp2: np.random.random(),
-            })
-            run.log_metrics({
-                metric1: np.random.random(),
-                metric2: np.random.random(),
-            })
+            run.log_hyperparameters(
+                {
+                    hpp1: np.random.random(),
+                    hpp2: np.random.random(),
+                }
+            )
+            run.log_metrics(
+                {
+                    metric1: np.random.random(),
+                    metric2: np.random.random(),
+                }
+            )
 
         # verify that DataFrame matches
         df = expt.expt_runs.as_dataframe()
         assert set(df.index) == set(run.id for run in expt.expt_runs)
         for run in expt.expt_runs:
             row = df.loc[run.id]
-            assert row['hpp.'+hpp1] == run.get_hyperparameter(hpp1)
-            assert row['hpp.'+hpp2] == run.get_hyperparameter(hpp2)
-            assert row['metric.'+metric1] == run.get_metric(metric1)
-            assert row['metric.'+metric2] == run.get_metric(metric2)
+            assert row["hpp." + hpp1] == run.get_hyperparameter(hpp1)
+            assert row["hpp." + hpp2] == run.get_hyperparameter(hpp2)
+            assert row["metric." + metric1] == run.get_metric(metric1)
+            assert row["metric." + metric2] == run.get_metric(metric2)
 
     def test_find(self, client):
         client.set_project()
@@ -547,13 +590,26 @@ class TestExperimentRuns:
 
         runs_with_tag[-1].log_hyperparameter("some-hyper", 1)
         # compound conditions:
-        assert len(expt.expt_runs.find(["tags ~= {}".format(tag), "hyperparameters.some-hyper == 1"])) == 1  # old syntax
-        assert len(expt.expt_runs.find("tags ~= {}".format(tag), "hyperparameters.some-hyper == 1")) == 1  # new syntax
+        assert (
+            len(
+                expt.expt_runs.find(
+                    ["tags ~= {}".format(tag), "hyperparameters.some-hyper == 1"]
+                )
+            )
+            == 1
+        )  # old syntax
+        assert (
+            len(
+                expt.expt_runs.find(
+                    "tags ~= {}".format(tag), "hyperparameters.some-hyper == 1"
+                )
+            )
+            == 1
+        )  # new syntax
 
         # if any predicate is not string, should fail:
         with pytest.raises(TypeError, match="predicates must all be strings"):
             expt.expt_runs.find("tag ~= {}".format(tag), 1234)
-
 
     @pytest.mark.skip("functionality removed")
     def test_add(self, client):
@@ -564,7 +620,11 @@ class TestExperimentRuns:
         local_expt2_run_ids = set(client.set_experiment_run().id for _ in range(3))
 
         # simple concatenation
-        assert local_expt1_run_ids | local_expt2_run_ids == set(run.id for run in expt1.expt_runs + expt2.expt_runs)
+        assert local_expt1_run_ids | local_expt2_run_ids == set(
+            run.id for run in expt1.expt_runs + expt2.expt_runs
+        )
 
         # ignore duplicates
-        assert local_expt1_run_ids == set(run.id for run in expt1.expt_runs + expt1.expt_runs)
+        assert local_expt1_run_ids == set(
+            run.id for run in expt1.expt_runs + expt1.expt_runs
+        )

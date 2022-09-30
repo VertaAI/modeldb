@@ -2,6 +2,7 @@
 
 from verta._internal_utils import pagination_utils
 
+
 class TestPaginationUtils:
     def test_from_proto(self):
         fn = pagination_utils.page_limit_from_proto

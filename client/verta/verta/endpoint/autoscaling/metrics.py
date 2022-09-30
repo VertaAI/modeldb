@@ -19,10 +19,7 @@ class _AutoscalingMetric(object):
         return {
             "metric_id": self._METRIC_ID,
             "name": self._PARENT_NAME,
-            "parameters": [{
-                "name": self._NAME,
-                "value": self._value
-            }]
+            "parameters": [{"name": self._NAME, "value": self._value}],
         }
 
     @classmethod
@@ -37,7 +34,11 @@ class _AutoscalingMetric(object):
                 break
         else:
             # does not match any rule
-            raise ValueError("no metric with name {} and parameter name {} exists".format(parent_name, metric_name))
+            raise ValueError(
+                "no metric with name {} and parameter name {} exists".format(
+                    parent_name, metric_name
+                )
+            )
 
         return metric
 
@@ -59,6 +60,7 @@ class CpuUtilizationTarget(_AutoscalingMetric):
         from verta.endpoint.autoscaling.metrics import CpuUtilizationTarget
         metric = CpuUtilizationTarget(0.6)
     """
+
     _METRIC_ID = 1001
     _PARENT_NAME = "cpu_utilization"
     _NAME = "target"
@@ -82,6 +84,7 @@ class RequestsPerWorkerTarget(_AutoscalingMetric):
         metric = RequestsPerWorkerTarget(1000)
 
     """
+
     _METRIC_ID = 1002
     _PARENT_NAME = "requests_per_worker"
     _NAME = "target"
@@ -105,6 +108,7 @@ class MemoryUtilizationTarget(_AutoscalingMetric):
         metric = MemoryUtilizationTarget(0.7)
 
     """
+
     _METRIC_ID = 1003
     _PARENT_NAME = "memory_utilization"
     _NAME = "target"

@@ -66,36 +66,42 @@ class Blob(object):
         from verta import code, configuration, dataset, environment
 
         # TODO: make this more concise
-        content_type = blob_msg.WhichOneof('content')
+        content_type = blob_msg.WhichOneof("content")
         content_subtype = None
         blob_cls = None
-        if content_type == 'code':
-            content_subtype = blob_msg.code.WhichOneof('content')
-            if content_subtype == 'git':
+        if content_type == "code":
+            content_subtype = blob_msg.code.WhichOneof("content")
+            if content_subtype == "git":
                 blob_cls = code.Git
-            elif content_subtype == 'notebook':
+            elif content_subtype == "notebook":
                 blob_cls = code.Notebook
-        elif content_type == 'config':
+        elif content_type == "config":
             blob_cls = configuration.Hyperparameters
-        elif content_type == 'dataset':
-            content_subtype = blob_msg.dataset.WhichOneof('content')
-            if content_subtype == 's3':
+        elif content_type == "dataset":
+            content_subtype = blob_msg.dataset.WhichOneof("content")
+            if content_subtype == "s3":
                 blob_cls = dataset.S3
-            elif content_subtype == 'path':
+            elif content_subtype == "path":
                 blob_cls = dataset.Path
-        elif content_type == 'environment':
-            content_subtype = blob_msg.environment.WhichOneof('content')
-            if content_subtype == 'python':
+        elif content_type == "environment":
+            content_subtype = blob_msg.environment.WhichOneof("content")
+            if content_subtype == "python":
                 blob_cls = environment.Python
-            elif content_subtype == 'docker':
+            elif content_subtype == "docker":
                 raise NotImplementedError
 
         if blob_cls is None:
             if content_subtype is None:
-                raise NotImplementedError("found unexpected content type {};"
-                                        " please notify the Verta development team".format(content_type))
+                raise NotImplementedError(
+                    "found unexpected content type {};"
+                    " please notify the Verta development team".format(content_type)
+                )
             else:
-                raise NotImplementedError("found unexpected {} type {};"
-                                        " please notify the Verta development team".format(content_type, content_subtype))
+                raise NotImplementedError(
+                    "found unexpected {} type {};"
+                    " please notify the Verta development team".format(
+                        content_type, content_subtype
+                    )
+                )
 
         return blob_cls._from_proto(blob_msg)

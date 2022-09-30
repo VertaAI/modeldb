@@ -45,22 +45,24 @@ def assert_model_packaging(deployable_entity, serialization, framework):
 
 class TestUtils:
     def test_calc_sha256(self):
-        FILE_SIZE = 6*10**6  # 6 MB
+        FILE_SIZE = 6 * 10**6  # 6 MB
 
-        with tempfile.NamedTemporaryFile(suffix='.txt') as tempf:
+        with tempfile.NamedTemporaryFile(suffix=".txt") as tempf:
             tempf.truncate(FILE_SIZE)  # zero-filled
             tempf.flush()  # flush object buffer
             os.fsync(tempf.fileno())  # flush OS buffer
 
             tempf.seek(0)
-            piecewise_checksum = _artifact_utils.calc_sha256(tempf, FILE_SIZE//2)
+            piecewise_checksum = _artifact_utils.calc_sha256(tempf, FILE_SIZE // 2)
 
             tempf.seek(0)
             whole_checksum = hashlib.sha256(tempf.read()).hexdigest()
 
             assert piecewise_checksum == whole_checksum
 
-    def test_download_file_no_collision(self, deployable_entity, dir_and_files, in_tempdir):
+    def test_download_file_no_collision(
+        self, deployable_entity, dir_and_files, in_tempdir
+    ):
         source_dirpath, _ = dir_and_files
         key = "artifact"
 
@@ -74,7 +76,9 @@ class TestUtils:
         download_url = deployable_entity._get_url_for_artifact(key, "GET").url
         response = requests.get(download_url)
         downloaded_filepath = _request_utils.download_file(
-            response, filepath, overwrite_ok=False,
+            response,
+            filepath,
+            overwrite_ok=False,
         )
         downloaded_filepath = os.path.abspath(downloaded_filepath)
 
@@ -83,7 +87,9 @@ class TestUtils:
         # contents match
         assert filecmp.cmp(filepath, downloaded_filepath)
 
-    def test_download_zipped_dir_no_collision(self, deployable_entity, dir_and_files, in_tempdir):
+    def test_download_zipped_dir_no_collision(
+        self, deployable_entity, dir_and_files, in_tempdir
+    ):
         source_dirpath, _ = dir_and_files
         key = "artifact"
 
@@ -96,7 +102,9 @@ class TestUtils:
         download_url = deployable_entity._get_url_for_artifact(key, "GET").url
         response = requests.get(download_url)
         downloaded_dirpath = _request_utils.download_zipped_dir(
-            response, dirpath, overwrite_ok=False,
+            response,
+            dirpath,
+            overwrite_ok=False,
         )
         downloaded_dirpath = os.path.abspath(downloaded_dirpath)
 
@@ -109,8 +117,11 @@ class TestUtils:
 class TestArtifacts:
     def test_upload_object(self, deployable_entity, strs, all_values):
         strs, holdout = strs[:-1], strs[-1]  # reserve last key
-        all_values = (value  # log_artifact treats str value as filepath to open
-                      for value in all_values if not isinstance(value, str))
+        all_values = (
+            value  # log_artifact treats str value as filepath to open
+            for value in all_values
+            if not isinstance(value, str)
+        )
 
         for key, artifact in zip(strs, all_values):
             deployable_entity.log_artifact(key, artifact)
@@ -123,25 +134,29 @@ class TestArtifacts:
 
     def test_upload_file(self, deployable_entity, strs):
         filepaths = (
-            filepath for filepath in os.listdir('.')
-            if filepath.endswith('.py')
-            and os.path.basename(filepath) != "__init__.py"
+            filepath
+            for filepath in os.listdir(".")
+            if filepath.endswith(".py") and os.path.basename(filepath) != "__init__.py"
         )
         artifacts = list(zip(strs, filepaths))
 
         # log using file handle
-        for key, artifact_filepath in artifacts[:len(artifacts)//2]:
-            with open(artifact_filepath, 'r') as artifact_file:  # does not need to be 'rb'
+        for key, artifact_filepath in artifacts[: len(artifacts) // 2]:
+            with open(
+                artifact_filepath, "r"
+            ) as artifact_file:  # does not need to be 'rb'
                 deployable_entity.log_artifact(key, artifact_file)
 
         # log using filepath
-        for key, artifact_filepath in artifacts[len(artifacts)//2:]:
+        for key, artifact_filepath in artifacts[len(artifacts) // 2 :]:
             deployable_entity.log_artifact(key, artifact_filepath)
 
         # get
         for key, artifact_filepath in artifacts:
-            with open(artifact_filepath, 'rb') as artifact_file:
-                assert deployable_entity.get_artifact(key).read() == artifact_file.read()
+            with open(artifact_filepath, "rb") as artifact_file:
+                assert (
+                    deployable_entity.get_artifact(key).read() == artifact_file.read()
+                )
 
     def test_upload_dir(self, deployable_entity, strs, dir_and_files):
         dirpath, filepaths = dir_and_files
@@ -149,7 +164,7 @@ class TestArtifacts:
 
         deployable_entity.log_artifact(key, dirpath)
 
-        with zipfile.ZipFile(deployable_entity.get_artifact(key), 'r') as zipf:
+        with zipfile.ZipFile(deployable_entity.get_artifact(key), "r") as zipf:
             assert filepaths == set(zipf.namelist())
 
     @pytest.mark.not_oss
@@ -160,38 +175,38 @@ class TestArtifacts:
         key = "large"
 
         # create artifact
-        with tempfile.NamedTemporaryFile(suffix='.bin', dir=".", delete=False) as tempf:
+        with tempfile.NamedTemporaryFile(suffix=".bin", dir=".", delete=False) as tempf:
             # write 6 MB file in 1 MB chunks
             for _ in range(6):
-                tempf.write(os.urandom(1*(10**6)))
+                tempf.write(os.urandom(1 * (10**6)))
 
         # log artifact
         # TODO: set part size in config file when supported
-        PART_SIZE = int(5.4*(10**6))  # 5.4 MB; S3 parts must be > 5 MB
-        os.environ['VERTA_ARTIFACT_PART_SIZE'] = str(PART_SIZE)
+        PART_SIZE = int(5.4 * (10**6))  # 5.4 MB; S3 parts must be > 5 MB
+        os.environ["VERTA_ARTIFACT_PART_SIZE"] = str(PART_SIZE)
         try:
             deployable_entity.log_artifact(key, tempf.name)
         finally:
-            del os.environ['VERTA_ARTIFACT_PART_SIZE']
+            del os.environ["VERTA_ARTIFACT_PART_SIZE"]
 
         # get artifact parts
         committed_parts = deployable_entity._get_artifact_parts(key)
         assert len(committed_parts) > 1
 
         # part checksums match actual file contents
-        with open(tempf.name, 'rb') as f:
-            file_parts = iter(lambda: f.read(PART_SIZE), b'')
+        with open(tempf.name, "rb") as f:
+            file_parts = iter(lambda: f.read(PART_SIZE), b"")
             for file_part, committed_part in zip(file_parts, committed_parts):
                 part_hash = hashlib.md5(file_part).hexdigest()
-                assert part_hash == committed_part['etag'].strip('"')
+                assert part_hash == committed_part["etag"].strip('"')
 
         # retrieved artifact matches original file
         filepath = deployable_entity.download_artifact(key, download_to_path=key)
-        with open(filepath, 'rb') as f:
-            file_parts = iter(lambda: f.read(PART_SIZE), b'')
+        with open(filepath, "rb") as f:
+            file_parts = iter(lambda: f.read(PART_SIZE), b"")
             for file_part, committed_part in zip(file_parts, committed_parts):
                 part_hash = hashlib.md5(file_part).hexdigest()
-                assert part_hash == committed_part['etag'].strip('"')
+                assert part_hash == committed_part["etag"].strip('"')
 
     def test_empty(self, deployable_entity, strs):
         """uploading empty data, e.g. an empty file, raises an error"""
@@ -200,8 +215,11 @@ class TestArtifacts:
             deployable_entity.log_artifact(strs[0], six.BytesIO())
 
     def test_conflict(self, deployable_entity, strs, all_values):
-        all_values = (value  # log_artifact treats str value as filepath to open
-                      for value in all_values if not isinstance(value, str))
+        all_values = (
+            value  # log_artifact treats str value as filepath to open
+            for value in all_values
+            if not isinstance(value, str)
+        )
 
         for key, artifact in zip(strs, all_values):
             deployable_entity.log_artifact(key, artifact)
@@ -219,7 +237,7 @@ class TestArtifacts:
         FILE_CONTENTS = random_data
 
         # create file and upload as artifact
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(FILE_CONTENTS)
         deployable_entity.log_artifact(key, filename)
         os.remove(filename)
@@ -227,17 +245,19 @@ class TestArtifacts:
         # download artifact and verify contents
         new_filepath = deployable_entity.download_artifact(key, new_filename)
         assert new_filepath == os.path.abspath(new_filename)
-        with open(new_filepath, 'rb') as f:
+        with open(new_filepath, "rb") as f:
             assert f.read() == FILE_CONTENTS
 
         # object as well
-        obj = {'some': ["arbitrary", "object"]}
+        obj = {"some": ["arbitrary", "object"]}
         deployable_entity.log_artifact(key, obj, overwrite=True)
         new_filepath = deployable_entity.download_artifact(key, new_filename)
-        with open(new_filepath, 'rb') as f:
+        with open(new_filepath, "rb") as f:
             assert pickle.load(f) == obj
 
-    def test_download_directory(self, deployable_entity, strs, dir_and_files, in_tempdir):
+    def test_download_directory(
+        self, deployable_entity, strs, dir_and_files, in_tempdir
+    ):
         key, download_path = strs[:2]
         dirpath, _ = dir_and_files
 
@@ -292,7 +312,9 @@ class TestModels:
         np.random.seed(seed)
         key = strs[0]
         num_data_rows = 36
-        X = torch.tensor(np.random.random((num_data_rows, 3, 32, 32)), dtype=torch.float)
+        X = torch.tensor(
+            np.random.random((num_data_rows, 3, 32, 32)), dtype=torch.float
+        )
         y = torch.tensor(np.random.randint(10, size=num_data_rows), dtype=torch.long)
 
         class Model(nn.Module):
@@ -365,7 +387,7 @@ class TestModels:
         net = Model()
 
         # save state dict as artifact
-        with open("buffer", 'wb') as buffer:
+        with open("buffer", "wb") as buffer:
             torch.save(net.state_dict(), buffer)
         deployable_entity.log_artifact("net_state", buffer.name)
 
@@ -391,16 +413,18 @@ class TestModels:
         X = np.random.random((num_data_rows, 28, 28))
         y = np.random.random(num_data_rows)
 
-        net = keras.models.Sequential([
-            keras.layers.Flatten(input_shape=(28, 28)),
-            keras.layers.Dense(128, activation='relu'),
-            keras.layers.Dropout(0.2),
-            keras.layers.Dense(10, activation='softmax')
-        ])
+        net = keras.models.Sequential(
+            [
+                keras.layers.Flatten(input_shape=(28, 28)),
+                keras.layers.Dense(128, activation="relu"),
+                keras.layers.Dropout(0.2),
+                keras.layers.Dense(10, activation="softmax"),
+            ]
+        )
         net.compile(
-            optimizer='adam',
-            loss='sparse_categorical_crossentropy',
-            metrics=['accuracy']
+            optimizer="adam",
+            loss="sparse_categorical_crossentropy",
+            metrics=["accuracy"],
         )
         net.fit(X, y, epochs=5)
 
@@ -437,7 +461,9 @@ class TestModels:
             framework="callable",
         )
         assert deployable_entity.get_model().__defaults__ == func.__defaults__
-        assert deployable_entity.get_model()(*func_args, **func_kwargs) == func(*func_args, **func_kwargs)
+        assert deployable_entity.get_model()(*func_args, **func_kwargs) == func(
+            *func_args, **func_kwargs
+        )
 
     def test_custom_class(self, deployable_entity, strs, flat_lists, flat_dicts):
         key = strs[0]
@@ -467,17 +493,29 @@ class TestModels:
         data_filename = "census-train.csv"
         spark_model_dir = "spark-model"
 
-        pytest.importorskip("boto3").client("s3").download_file("verta-starter", data_filename, data_filename)
+        pytest.importorskip("boto3").client("s3").download_file(
+            "verta-starter", data_filename, data_filename
+        )
         SparkSession = pytest.importorskip("pyspark.sql").SparkSession
         col = pytest.importorskip("pyspark.sql.functions").col
-        LogisticRegression = pytest.importorskip("pyspark.ml.classification").LogisticRegression
-        LogisticRegressionModel = pytest.importorskip("pyspark.ml.classification").LogisticRegressionModel
+        LogisticRegression = pytest.importorskip(
+            "pyspark.ml.classification"
+        ).LogisticRegression
+        LogisticRegressionModel = pytest.importorskip(
+            "pyspark.ml.classification"
+        ).LogisticRegressionModel
         VectorAssembler = pytest.importorskip("pyspark.ml.feature").VectorAssembler
 
-        spark = SparkSession.builder.master("local").appName("parquet_example").getOrCreate()
+        spark = (
+            SparkSession.builder.master("local")
+            .appName("parquet_example")
+            .getOrCreate()
+        )
 
         df = spark.read.csv(data_filename, header=True, inferSchema=True)
-        df.repartition(5).write.mode("overwrite").parquet("datasets/census-train-parquet")
+        df.repartition(5).write.mode("overwrite").parquet(
+            "datasets/census-train-parquet"
+        )
         df = VectorAssembler(
             inputCols=[c for c in df.columns if c != ">50k"],
             outputCol="features",
@@ -500,20 +538,22 @@ class TestModels:
         assert LogisticRegressionModel.load(spark_model_dir).params == model.params
 
     def test_download_sklearn(self, deployable_entity, in_tempdir):
-        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+        LogisticRegression = pytest.importorskip(
+            "sklearn.linear_model"
+        ).LogisticRegression
 
         upload_path = "model.pkl"
         download_path = "retrieved_model.pkl"
 
         model = LogisticRegression(C=0.67, max_iter=178)  # set some non-default values
-        with open(upload_path, 'wb') as f:
+        with open(upload_path, "wb") as f:
             pickle.dump(model, f)
 
         deployable_entity.log_model(model, custom_modules=[])
         returned_path = deployable_entity.download_model(download_path)
         assert returned_path == os.path.abspath(download_path)
 
-        with open(download_path, 'rb') as f:
+        with open(download_path, "rb") as f:
             downloaded_model = pickle.load(f)
 
         assert downloaded_model.get_params() == model.get_params()
@@ -552,13 +592,13 @@ class TestArbitraryModels:
             framework=None,
         )
 
-        with zipfile.ZipFile(deployable_entity.get_model(), 'r') as zipf:
+        with zipfile.ZipFile(deployable_entity.get_model(), "r") as zipf:
             assert set(zipf.namelist()) == filepaths
 
         self._assert_no_deployment_artifacts(deployable_entity)
 
     def test_arbitrary_object(self, deployable_entity):
-        model = {'a': 1}
+        model = {"a": 1}
 
         deployable_entity.log_model(model)
         assert_model_packaging(
@@ -571,7 +611,9 @@ class TestArbitraryModels:
 
         self._assert_no_deployment_artifacts(deployable_entity)
 
-    def test_download_arbitrary_directory(self, deployable_entity, dir_and_files, strs, in_tempdir):
+    def test_download_arbitrary_directory(
+        self, deployable_entity, dir_and_files, strs, in_tempdir
+    ):
         """Model that was originally a dir is unpacked on download."""
         dirpath, _ = dir_and_files
         download_path = strs[0]
@@ -583,13 +625,15 @@ class TestArbitraryModels:
         # contents match
         utils.assert_dirs_match(dirpath, download_path)
 
-    def test_download_arbitrary_zip(self, deployable_entity, dir_and_files, strs, in_tempdir):
+    def test_download_arbitrary_zip(
+        self, deployable_entity, dir_and_files, strs, in_tempdir
+    ):
         """Model that was originally a ZIP is not unpacked on download."""
         model_dir, _ = dir_and_files
         upload_path, download_path = strs[:2]
 
         # zip `model_dir` into `upload_path`
-        with open(upload_path, 'wb') as f:
+        with open(upload_path, "wb") as f:
             shutil.copyfileobj(
                 _artifact_utils.zip_dir(model_dir),
                 f,
@@ -605,7 +649,7 @@ class TestArbitraryModels:
 
 class TestOverwrite:
     def test_artifact(self, deployable_entity):
-        artifact = ['banana']
+        artifact = ["banana"]
         new_artifact = ["coconut"]
 
         deployable_entity.log_artifact("date", artifact)
@@ -629,4 +673,6 @@ class TestOverwrite:
         deployable_entity.log_setup_script(setup_script)
         deployable_entity.log_setup_script(new_setup_script, overwrite=True)
 
-        assert deployable_entity.get_artifact("setup_script").read() == six.ensure_binary(new_setup_script)
+        assert deployable_entity.get_artifact(
+            "setup_script"
+        ).read() == six.ensure_binary(new_setup_script)

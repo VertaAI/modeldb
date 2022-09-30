@@ -50,7 +50,9 @@ class KafkaSettings(object):
         self._input_topic = self._check_non_empty_str("input_topic", input_topic)
         self._output_topic = self._check_non_empty_str("output_topic", output_topic)
         self._error_topic = self._check_non_empty_str("error_topic", error_topic)
-        self._cluster_config_id = self._check_non_empty_str("cluster_config_id", cluster_config_id)
+        self._cluster_config_id = self._check_non_empty_str(
+            "cluster_config_id", cluster_config_id
+        )
 
     def __eq__(self, other):
         if not isinstance(other, type(self)):
@@ -65,7 +67,10 @@ class KafkaSettings(object):
 
     def __repr__(self):
         return "KafkaSettings({}, {}, {}, {})".format(
-            repr(self.input_topic), repr(self.output_topic), repr(self.error_topic), repr(self.cluster_config_id)
+            repr(self.input_topic),
+            repr(self.output_topic),
+            repr(self.error_topic),
+            repr(self.cluster_config_id),
         )
 
     @property

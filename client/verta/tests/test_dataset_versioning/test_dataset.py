@@ -41,11 +41,11 @@ class TestMetadata:
         assert set(client.get_dataset(id=dataset.id).get_tags()) == {tag1, tag2, tag4}
 
     def test_attributes(self, client, created_entities):
-        Attr = collections.namedtuple('Attr', ['key', 'value'])
-        attr1 = Attr('key1', {'a': 1})
-        attr2 = Attr('key2', ['a', 1])
-        attr3 = Attr('key3', 'a')
-        attr4 = Attr('key4', 1)
+        Attr = collections.namedtuple("Attr", ["key", "value"])
+        attr1 = Attr("key1", {"a": 1})
+        attr2 = Attr("key2", ["a", 1])
+        attr3 = Attr("key3", "a")
+        attr4 = Attr("key4", 1)
 
         dataset = client.create_dataset(attrs=dict([attr1]))
         created_entities.append(dataset)
@@ -61,13 +61,15 @@ class TestMetadata:
         dataset.del_attribute(attr3.key)  # no error if nonexistent
         assert dataset.get_attributes() == dict([attr1, attr2, attr4])
 
-        assert client.get_dataset(id=dataset.id).get_attributes() == dict([attr1, attr2, attr4])
+        assert client.get_dataset(id=dataset.id).get_attributes() == dict(
+            [attr1, attr2, attr4]
+        )
 
         for attr in [attr1, attr2, attr4]:
             assert dataset.get_attribute(attr.key) == attr.value
 
         # overwrite
-        new_val = 'b'
+        new_val = "b"
         dataset.add_attribute(attr1.key, new_val)
         assert dataset.get_attribute(attr1.key) == new_val
 
@@ -116,8 +118,7 @@ class TestCreateGet:
 
     def test_find(self, client, created_entities, strs):
         name1, name2, name3, name4, tag1, tag2 = (
-            s + str(verta._internal_utils._utils.now())
-            for s in strs[:6]
+            s + str(verta._internal_utils._utils.now()) for s in strs[:6]
         )
 
         dataset1 = client.create_dataset(name1, tags=[tag1])
@@ -136,7 +137,7 @@ class TestCreateGet:
 
     def test_repr(self, client, created_entities):
         description = "this is a cool dataset"
-        tags = [u"tag1", u"tag2"]
+        tags = ["tag1", "tag2"]
         dataset = client.set_dataset(desc=description, tags=tags)
         created_entities.append(dataset)
 

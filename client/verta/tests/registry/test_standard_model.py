@@ -52,6 +52,7 @@ class TestVerifyIO:
             @verify_io
             def predict(self, _):
                 return value
+
             with pytest.raises(TypeError, match=msg_match.format("input")):
                 predict(None, value)
             with pytest.raises(TypeError, match=msg_match.format("output")):
@@ -66,6 +67,7 @@ class TestVerifyIO:
         @verify_io
         def predict(self, _):
             return value
+
         with pytest.raises(TypeError, match=msg_match.format("input")):
             predict(None, value)
         with pytest.raises(TypeError, match=msg_match.format("output")):
@@ -201,13 +203,11 @@ class TestModelValidator:
 
 
 class TestStandardModels:
-
     @staticmethod
     def assert_reserved_attributes(model_ver):
         attrs = model_ver.get_attributes()
         assert (
-            attrs[_constants.MODEL_LANGUAGE_ATTR_KEY]
-            == _constants.ModelLanguage.PYTHON
+            attrs[_constants.MODEL_LANGUAGE_ATTR_KEY] == _constants.ModelLanguage.PYTHON
         )
         assert (
             attrs[_constants.MODEL_TYPE_ATTR_KEY]

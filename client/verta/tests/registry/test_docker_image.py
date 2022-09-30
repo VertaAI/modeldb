@@ -68,7 +68,7 @@ class TestObject:
 
 class TestProto:
     @hypothesis.given(
-        port=st.integers(min_value=1, max_value=2**(32) - 1),
+        port=st.integers(min_value=1, max_value=2 ** (32) - 1),
         request_path=st.text(min_size=1),
         health_path=st.text(min_size=1),
         repository=st.text(min_size=1),
@@ -109,12 +109,8 @@ class TestProto:
         if env_vars is not None:
             msg.environment.environment_variables.extend(
                 [
-                    Environment_pb2.EnvironmentVariablesBlob(
-                        name=name,
-                        value=value
-                    )
-                    for name, value
-                    in env_vars.items()
+                    Environment_pb2.EnvironmentVariablesBlob(name=name, value=value)
+                    for name, value in env_vars.items()
                 ]
             )
 
@@ -129,7 +125,7 @@ class TestProto:
         assert docker_image.env_vars == (env_vars or None)
 
     @hypothesis.given(
-        port=st.integers(min_value=1, max_value=2**(32) - 1),
+        port=st.integers(min_value=1, max_value=2 ** (32) - 1),
         request_path=st.text(min_size=1),
         health_path=st.text(min_size=1),
         repository=st.text(min_size=1),

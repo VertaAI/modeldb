@@ -5,7 +5,6 @@ import pkgutil
 
 
 class CustomModules(object):
-
     @staticmethod
     def is_importable(module_name):
         """Return whether `module_name` can be imported.

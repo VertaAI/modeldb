@@ -118,7 +118,7 @@ class TestToBuiltin:
         assert _utils.to_builtin(val) == "banana"
 
     def test_unicode(self):
-        val = u"banana"
+        val = "banana"
 
         assert _utils.to_builtin(val) == "banana"
 
@@ -219,7 +219,7 @@ class TestToBuiltin:
 
         val = {
             "banana": np.array([1, 2, 3]),
-            u"coconut": np.array([1.0, 2.0, 3.0]),
+            "coconut": np.array([1.0, 2.0, 3.0]),
             b"date": np.array(list("banana")),
         }
 

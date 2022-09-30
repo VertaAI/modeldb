@@ -20,6 +20,7 @@ def create_custom_module_model(module_name):
     cls
 
     """
+
     class Model(VertaModelBase):
         def __init__(self, artifacts=None):
             exec("import {}".format(module_name), {})

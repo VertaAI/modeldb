@@ -167,8 +167,7 @@ class DockerImage(object):
             sha=model_ver_msg.environment.docker.sha,
             env_vars={
                 var.name: var.value
-                for var
-                in model_ver_msg.environment.environment_variables
+                for var in model_ver_msg.environment.environment_variables
             },
         )
 

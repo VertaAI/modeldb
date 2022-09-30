@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+
 def reassign_module(members, module_name):
     """Reassign the ``__module__`` attribute of `members`.
 

@@ -21,7 +21,6 @@ from .._internal_utils import (
 )
 
 
-
 DEFAULT_DOWNLOAD_DIR = "mdb-data-download"  # to be in cwd
 
 
@@ -30,6 +29,7 @@ class _Dataset(_blob.Blob):
     Base class for dataset versioning. Not for human consumption.
 
     """
+
     _CANNOT_DOWNLOAD_ERROR = RuntimeError(
         "this dataset cannot be used for downloads;"
         " consider using `dataset_version.get_content()"
@@ -76,7 +76,9 @@ class _Dataset(_blob.Blob):
             raise ValueError("dataset already contains paths: {}".format(intersection))
 
         if self._mdb_versioned != other._mdb_versioned:
-            raise ValueError("datasets must have same value for `enable_mdb_versioning`")
+            raise ValueError(
+                "datasets must have same value for `enable_mdb_versioning`"
+            )
 
         self._add_components(other._components_map.values())
         return self
@@ -86,11 +88,9 @@ class _Dataset(_blob.Blob):
         return cls([])
 
     def _add_components(self, components):
-        self._components_map.update({
-            component.path: component
-            for component
-            in components
-        })
+        self._components_map.update(
+            {component.path: component for component in components}
+        )
 
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
@@ -189,7 +189,9 @@ class _Dataset(_blob.Blob):
                 downloaded_to_path = _file_utils.without_collision(downloaded_to_path)
             else:  # need to automatically determine directory
                 # NOTE: if `component_path` == "s3://" with any trailing slashes, it becomes "s3:"
-                downloaded_to_path = pathlib.Path(component_path).name  # final path component
+                downloaded_to_path = pathlib.Path(
+                    component_path
+                ).name  # final path component
 
                 if downloaded_to_path in {".", "..", "/", "s3:"}:
                     # rather than dump everything into cwd, use new child dir
@@ -214,7 +216,9 @@ class _Dataset(_blob.Blob):
                 components_to_download[path] = local_path
         else:
             # look for files contained in `component_path` as a directory
-            component_path_as_dir = component_path if component_path.endswith('/') else component_path+'/'
+            component_path_as_dir = (
+                component_path if component_path.endswith("/") else component_path + "/"
+            )
             for path in self.list_paths():
                 if path.startswith(component_path_as_dir):
                     # rebase from `component_path` onto `downloaded_to_path`
@@ -244,7 +248,7 @@ class _Dataset(_blob.Blob):
     def _is_hidden_to_spark(path):
         # PySpark ignores certain files and raises a "does not exist" error
         # https://stackoverflow.com/a/38479545
-        return os.path.basename(path).startswith(('_', '.'))
+        return os.path.basename(path).startswith(("_", "."))
 
     @classmethod
     def with_spark(cls, sc, paths):
@@ -268,7 +272,7 @@ class _Dataset(_blob.Blob):
             paths = [paths]
 
         rdds = list(map(sc.binaryFiles, paths))
-        rdd = functools.reduce(lambda a,b: a.union(b), rdds)
+        rdd = functools.reduce(lambda a, b: a.union(b), rdds)
 
         def get_component(entry):
             filepath, content = entry
@@ -319,7 +323,9 @@ class _Dataset(_blob.Blob):
             download_to_path,
         )
         for path in components_to_download:  # component paths
-            local_path = components_to_download[path]  # dict will be updated near end of iteration
+            local_path = components_to_download[
+                path
+            ]  # dict will be updated near end of iteration
 
             # create parent dirs
             pathlib.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
@@ -332,15 +338,20 @@ class _Dataset(_blob.Blob):
                 _utils.raise_for_http_error(response)
 
                 print("downloading {} from ModelDB".format(path))
-                if (implicit_download_to_path
-                        and len(components_to_download) == 1):  # single file download
+                if (
+                    implicit_download_to_path and len(components_to_download) == 1
+                ):  # single file download
                     # update `downloaded_to_path` in case changed to avoid overwrite
-                    downloaded_to_path = _request_utils.download_file(response, local_path, overwrite_ok=False)
+                    downloaded_to_path = _request_utils.download_file(
+                        response, local_path, overwrite_ok=False
+                    )
                 else:
                     # don't update `downloaded_to_path` here because we are either downloading:
                     #     - single file with an explicit destination, so `local_path` won't change
                     #     - directory, so individual path's `local_path` isn't important
-                    _request_utils.download_file(response, local_path, overwrite_ok=True)
+                    _request_utils.download_file(
+                        response, local_path, overwrite_ok=True
+                    )
 
         return os.path.abspath(downloaded_to_path)
 
@@ -354,11 +365,9 @@ class _Dataset(_blob.Blob):
             Paths of all components.
 
         """
-        return list(sorted(
-            component.path
-            for component
-            in self._components_map.values()
-        ))
+        return list(
+            sorted(component.path for component in self._components_map.values())
+        )
 
     def list_components(self):
         """
@@ -394,12 +403,18 @@ class Component(object):
         MD5 checksum.
 
     """
+
     def __init__(
-            self,
-            path, size=None, last_modified=None,
-            sha256=None, md5=None,
-            base_path=None,
-            internal_versioned_path=None, local_path=None):
+        self,
+        path,
+        size=None,
+        last_modified=None,
+        sha256=None,
+        md5=None,
+        base_path=None,
+        internal_versioned_path=None,
+        local_path=None,
+    ):
         # metadata
         self.path = path
         self.size = size
@@ -424,7 +439,9 @@ class Component(object):
         if self.size:
             lines.append("{} bytes".format(self.size))
         if self.last_modified:
-            lines.append("last modified: {}".format(_utils.timestamp_to_str(self.last_modified)))
+            lines.append(
+                "last modified: {}".format(_utils.timestamp_to_str(self.last_modified))
+            )
         if self.sha256:
             lines.append("SHA-256 checksum: {}".format(self.sha256))
         if self.md5:
@@ -477,7 +494,6 @@ class S3Component(Component):
             lines.append("S3 version ID: {}".format(self.s3_version_id))
 
         return "\n    ".join(lines)
-
 
     @classmethod
     def _from_proto(cls, s3_component_msg):

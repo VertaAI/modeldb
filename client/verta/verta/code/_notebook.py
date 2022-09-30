@@ -4,7 +4,9 @@ from __future__ import print_function
 
 import os
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 
 from .._internal_utils import _git_utils
 from .._internal_utils import _utils
@@ -64,14 +66,17 @@ class Notebook(_code._Code):
         #         in repo git@github.com:VertaAI/examples.git
 
     """
+
     def __init__(self, notebook_path=None, _autocapture=True):
         if notebook_path is None and _autocapture:
             notebook_path = _utils.get_notebook_filepath()
             try:
                 _utils.save_notebook(notebook_path)
             except (ImportError, OSError):
-                print("unable to automatically save current Notebook;"
-                      " capturing latest checkpoint on disk")
+                print(
+                    "unable to automatically save current Notebook;"
+                    " capturing latest checkpoint on disk"
+                )
 
         super(Notebook, self).__init__()
 
@@ -80,7 +85,9 @@ class Notebook(_code._Code):
             notebook_component = _path.Path(notebook_path).list_components()[0]
             self._msg.notebook.path.CopyFrom(notebook_component._as_proto())
             try:
-                git_blob = _git.Git()  # do not store as attribute, to avoid data duplication
+                git_blob = (
+                    _git.Git()
+                )  # do not store as attribute, to avoid data duplication
                 repo_root = _git_utils.get_git_repo_root_dir()
             except OSError:
                 # TODO: impl and catch a more specific exception for git calls
@@ -103,9 +110,7 @@ class Notebook(_code._Code):
             git_blob = _git.Git(_autocapture=False)
             git_blob._msg.git.CopyFrom(self._msg.notebook.git_repo)
             # this will intentionally add a level of indentation in the final repr
-            lines.extend(
-                repr(git_blob).splitlines()
-            )
+            lines.extend(repr(git_blob).splitlines())
 
         return "\n    ".join(lines)
 

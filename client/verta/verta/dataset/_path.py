@@ -5,7 +5,9 @@ from __future__ import print_function
 import hashlib
 import os
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 
 from ..external import six
 
@@ -55,6 +57,7 @@ class Path(_dataset._Dataset):
         Returns a new dataset with paths from the dataset and all others.
 
     """
+
     def __init__(self, paths, base_path=None, enable_mdb_versioning=False):
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
@@ -71,12 +74,16 @@ class Path(_dataset._Dataset):
         # TODO: move this into _add_components()
         if base_path is not None:
             for component in components:
-                path = _file_utils.remove_prefix_dir(component.path, prefix_dir=base_path)
+                path = _file_utils.remove_prefix_dir(
+                    component.path, prefix_dir=base_path
+                )
                 if path == component.path:  # no change
-                    raise ValueError("path {} does not begin with `base_path` {}".format(
-                        component.path,
-                        base_path,
-                    ))
+                    raise ValueError(
+                        "path {} does not begin with `base_path` {}".format(
+                            component.path,
+                            base_path,
+                        )
+                    )
 
                 # update component with modified path
                 component.path = path
@@ -90,11 +97,12 @@ class Path(_dataset._Dataset):
     def _from_proto(cls, blob_msg):
         obj = cls._create_empty()
 
-        obj._add_components([
-            _dataset.Component._from_proto(component_msg)
-            for component_msg
-            in blob_msg.dataset.path.components
-        ])
+        obj._add_components(
+            [
+                _dataset.Component._from_proto(component_msg)
+                for component_msg in blob_msg.dataset.path.components
+            ]
+        )
 
         return obj
 
@@ -158,8 +166,8 @@ class Path(_dataset._Dataset):
 
         """
         file_hash = hashlib.md5()
-        with open(filepath, 'rb') as f:
-            for chunk in iter(lambda: f.read(8192), b''):
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
                 file_hash.update(chunk)
         return file_hash.hexdigest()
 
@@ -185,9 +193,11 @@ class Path(_dataset._Dataset):
             component._local_path = filepath
 
             # track MDB path to component
-            with open(filepath, 'rb') as f:
+            with open(filepath, "rb") as f:
                 artifact_hash = _artifact_utils.calc_sha256(f)
-            component._internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
+            component._internal_versioned_path = (
+                artifact_hash + "/" + os.path.basename(filepath)
+            )
 
     def _clean_up_uploaded_components(self):
         """
@@ -228,7 +238,8 @@ class Path(_dataset._Dataset):
         """
         # re-use logic in __init__
         other = self.__class__(
-            paths=paths, base_path=base_path,
+            paths=paths,
+            base_path=base_path,
             enable_mdb_versioning=self._mdb_versioned,
         )
 

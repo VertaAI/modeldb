@@ -81,9 +81,7 @@ class TestConnection:
 
     def test_jwt_auth_without_sig(self):
         fake_token = "token"
-        jwt_credentials = credentials._build(
-            jwt_token=fake_token
-        )
+        jwt_credentials = credentials._build(jwt_token=fake_token)
         conn = Connection(
             scheme=https_scheme,
             socket=fake_socket,

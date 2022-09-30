@@ -19,4 +19,6 @@ class Open(_LockLevel):
 
     """
 
-    _LOCK_LEVEL = RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.OPEN
+    _LOCK_LEVEL = (
+        RegistryService_pb2.ModelVersionLockLevelEnum.ModelVersionLockLevel.OPEN
+    )

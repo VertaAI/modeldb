@@ -12,7 +12,7 @@ class TestSimpleAttributes:
         keys = (c for c in string.printable if c not in _utils._VALID_FLAT_KEY_CHARS)
         for key in keys:
             with pytest.raises(ValueError):
-                experiment_run.log_attribute(key, 'key test')
+                experiment_run.log_attribute(key, "key test")
 
     def test_single(self, experiment_run, strs, all_values):
         strs, holdout = strs[:-1], strs[-1]  # reserve last key
@@ -69,7 +69,9 @@ class TestSimpleAttributes:
         assert experiment_run.get_attributes() == dict([first_attribute])
 
     def test_nonstring_key_error(self, experiment_run, scalar_values):
-        scalar_values = (value for value in scalar_values if not isinstance(value, str))  # rm str
+        scalar_values = (
+            value for value in scalar_values if not isinstance(value, str)
+        )  # rm str
         attributes = dict(zip(scalar_values, scalar_values))
 
         for key, val in six.viewitems(attributes):

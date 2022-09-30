@@ -12,14 +12,17 @@ from verta._internal_utils import _utils
 
 
 class TestClient:
-
-    @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
+    @pytest.mark.skipif(
+        "VERTA_EMAIL" not in os.environ or "VERTA_DEV_KEY" not in os.environ,
+        reason="insufficient Verta credentials",
+    )
     def test_auth_headers(self, host):
         expected_headers = {
-            'Grpc-Metadata-email': os.environ['VERTA_EMAIL'],
-            'Grpc-Metadata-developer_key': os.environ['VERTA_DEV_KEY'],
-            'Grpc-Metadata-developer-key': os.environ['VERTA_DEV_KEY'],
+            "Grpc-Metadata-email": os.environ["VERTA_EMAIL"],
+            "Grpc-Metadata-developer_key": os.environ["VERTA_DEV_KEY"],
+            "Grpc-Metadata-developer-key": os.environ["VERTA_DEV_KEY"],
         }
+
         def assert_contains_expected_headers(headers):
             for key, val in expected_headers.items():
                 assert key in headers
@@ -50,7 +53,7 @@ class TestClient:
             assert val == client._conn.auth[key]
 
     def test_extra_auth_headers_in_request(self, strs):
-        headers = dict(zip(strs[:len(strs)//2], strs[len(strs)//2:]))
+        headers = dict(zip(strs[: len(strs) // 2], strs[len(strs) // 2 :]))
         client = verta.Client(extra_auth_headers=headers)
 
         url = "http://httpbin.org/anything"
@@ -63,12 +66,14 @@ class TestClient:
     @pytest.mark.oss
     def test_no_auth(self, host):
         EMAIL_KEY, DEV_KEY_KEY = "VERTA_EMAIL", "VERTA_DEV_KEY"
-        EMAIL, DEV_KEY = os.environ.pop(EMAIL_KEY, None), os.environ.pop(DEV_KEY_KEY, None)
+        EMAIL, DEV_KEY = os.environ.pop(EMAIL_KEY, None), os.environ.pop(
+            DEV_KEY_KEY, None
+        )
         try:
             client = verta.Client(host)
 
             # still has source set
-            assert 'Grpc-Metadata-source' in client._conn.auth
+            assert "Grpc-Metadata-source" in client._conn.auth
 
             assert client.set_project()
 
@@ -79,8 +84,10 @@ class TestClient:
             if DEV_KEY is not None:
                 os.environ[DEV_KEY_KEY] = DEV_KEY
 
-
-    @pytest.mark.skipif('VERTA_EMAIL' not in os.environ or 'VERTA_DEV_KEY' not in os.environ, reason="insufficient Verta credentials")
+    @pytest.mark.skipif(
+        "VERTA_EMAIL" not in os.environ or "VERTA_DEV_KEY" not in os.environ,
+        reason="insufficient Verta credentials",
+    )
     def test_verta_https(self):
         hosts = [
             "app.verta.ai",
@@ -90,17 +97,17 @@ class TestClient:
             # https by default
             conn = verta.Client(host)._conn
             assert conn.scheme == "https"
-            assert conn.scheme == conn.auth['Grpc-Metadata-scheme']
+            assert conn.scheme == conn.auth["Grpc-Metadata-scheme"]
 
             # http if provided
             conn = verta.Client("http://{}".format(host))._conn
             assert conn.scheme == "http"
-            assert conn.scheme == conn.auth['Grpc-Metadata-scheme']
+            assert conn.scheme == conn.auth["Grpc-Metadata-scheme"]
 
             # https if provided
             conn = verta.Client("https://{}".format(host))._conn
             assert conn.scheme == "https"
-            assert conn.scheme == conn.auth['Grpc-Metadata-scheme']
+            assert conn.scheme == conn.auth["Grpc-Metadata-scheme"]
 
     def test_else_http(self):
         # test hosts must not redirect http to https
@@ -113,7 +120,7 @@ class TestClient:
             try:
                 verta.Client(host, max_retries=0)
             except requests.HTTPError as e:
-                assert e.request.url.split(':', 1)[0] == "http"
+                assert e.request.url.split(":", 1)[0] == "http"
             else:
                 raise RuntimeError("faulty test; expected error")
 
@@ -121,7 +128,7 @@ class TestClient:
             try:
                 verta.Client("http://{}".format(host), max_retries=0)
             except requests.HTTPError as e:
-                assert e.request.url.split(':', 1)[0] == "http"
+                assert e.request.url.split(":", 1)[0] == "http"
             else:
                 raise RuntimeError("faulty test; expected error")
 
@@ -129,7 +136,7 @@ class TestClient:
             try:
                 verta.Client("https://{}".format(host), max_retries=0)
             except requests.HTTPError as e:
-                assert e.request.url.split(':', 1)[0] == "https"
+                assert e.request.url.split(":", 1)[0] == "https"
             else:
                 raise RuntimeError("faulty test; expected error")
 
@@ -146,7 +153,10 @@ class TestClient:
                 verta.Client()
 
             excinfo_value = str(excinfo.value).strip()
-            assert "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`" in excinfo_value
+            assert (
+                "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY`"
+                in excinfo_value
+            )
         finally:
             os.environ[EMAIL_KEY], os.environ[DEV_KEY_KEY] = old_email, old_dev_key
 

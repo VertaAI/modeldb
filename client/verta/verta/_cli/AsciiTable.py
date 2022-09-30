@@ -1,5 +1,6 @@
 class AsciiTable(object):
     GAP = "   "
+
     def __init__(self, table):
         self.table = ""
         max_len = []
