@@ -142,9 +142,9 @@ class DatasetVersion(_entity._ModelDBEntity):
             for component in dataset_blob._components_map.values():
                 if component._internal_versioned_path:
                     with open(component._local_path, "rb") as f:
-                        obj._upload_artifact(
+                        obj._upload_artifact(  # pylint: disable=no-member
                             component.path, f
-                        )  # pylint: disable=no-member
+                        )
 
         return obj
 

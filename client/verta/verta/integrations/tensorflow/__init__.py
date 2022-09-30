@@ -7,13 +7,15 @@ import numbers
 import os
 
 import tensorflow as tf  # pylint: disable=import-error
-from tensorflow.core.framework.summary_pb2 import (
+from tensorflow.core.framework.summary_pb2 import (  # pylint: disable=import-error, no-name-in-module
     Summary,
-)  # pylint: disable=import-error, no-name-in-module
-from tensorflow.core.util.event_pb2 import (
+)
+from tensorflow.core.util.event_pb2 import (  # pylint: disable=import-error, no-name-in-module
     Event,
-)  # pylint: disable=import-error, no-name-in-module
-from tensorflow.compat.v1 import summary  # pylint: disable=import-error
+)
+from tensorflow.compat.v1 import (  # pylint: disable=import-error, no-name-in-module
+    summary,
+)
 
 try:
     from tensorflow.estimator import SessionRunArgs
