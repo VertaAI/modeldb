@@ -16,11 +16,13 @@ class TestLoad:
         run.log_attribute("is_test", True)
         run.get_attribute("is_test")
 
-        run.log_hyperparameters({
-            'C': next(floats),
-            'solver': next(floats),
-            'max_iter': next(floats),
-        })
+        run.log_hyperparameters(
+            {
+                "C": next(floats),
+                "solver": next(floats),
+                "max_iter": next(floats),
+            }
+        )
         run.get_hyperparameter("C")
         run.get_hyperparameter("solver")
         run.get_hyperparameter("max_iter")
@@ -40,5 +42,5 @@ class TestLoad:
         client.set_project()
         client.set_experiment()
         pool = multiprocessing.Pool(36)
-        pool.map(self.run_fake_experiment, [(client, floats)]*144)
+        pool.map(self.run_fake_experiment, [(client, floats)] * 144)
         pool.close()

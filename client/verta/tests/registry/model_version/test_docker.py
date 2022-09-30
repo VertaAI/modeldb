@@ -11,7 +11,6 @@ from verta._internal_utils import _artifact_utils
 
 
 class TestDocker:
-
     def test_log_get(self, model_version, docker_image):
         model_version.log_docker(docker_image)
 

@@ -11,13 +11,13 @@ from .. import utils
 
 
 class TestStageChange:
-
     @pytest.mark.parametrize(
-        "stage_change_cls", utils.sorted_subclasses(_StageChange),
+        "stage_change_cls",
+        utils.sorted_subclasses(_StageChange),
     )
     @hypothesis.given(
         comment=st.one_of(st.none(), st.text()),
-        model_version_id=st.integers(min_value=0, max_value=2 ** 64 - 1),
+        model_version_id=st.integers(min_value=0, max_value=2**64 - 1),
     )
     def test_to_proto_request(
         self,
@@ -35,7 +35,8 @@ class TestStageChange:
         )
 
     @pytest.mark.parametrize(
-        "stage_change_cls", utils.sorted_subclasses(_StageChange),
+        "stage_change_cls",
+        utils.sorted_subclasses(_StageChange),
     )
     @hypothesis.given(
         comment=st.one_of(st.none(), st.text()),

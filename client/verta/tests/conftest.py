@@ -27,6 +27,7 @@ from verta.registry.entities import RegisteredModelVersion
 
 import hypothesis
 import pytest
+
 pytest.register_assert_rewrite("tests.utils")
 from . import constants, utils
 from . import clean_test_accounts
@@ -90,6 +91,7 @@ def create_dummy_workspace(tmp_path_factory, worker_id):
 
     """
     dummy_orgs = []
+
     def _create_dummy_workspaces():
         for client in clean_test_accounts.get_clients():
             current_default_workspace = client._conn.get_default_workspace()
@@ -177,13 +179,13 @@ def bools(seed):
 @pytest.fixture
 def floats(seed):
     random.seed(seed)
-    return [random.uniform(-(3 ** 2), 3 ** 3) for _ in range(INPUT_LENGTH)]
+    return [random.uniform(-(3**2), 3**3) for _ in range(INPUT_LENGTH)]
 
 
 @pytest.fixture
 def ints(seed):
     random.seed(seed)
-    return [random.randint(-(3 ** 4), 3 ** 5) for _ in range(INPUT_LENGTH)]
+    return [random.randint(-(3**4), 3**5) for _ in range(INPUT_LENGTH)]
 
 
 @pytest.fixture
@@ -342,7 +344,7 @@ def random_data():
 
     """
     while True:
-        data = os.urandom(2 ** 16)
+        data = os.urandom(2**16)
         bytestream = six.BytesIO(data)
         try:
             pickle.load(bytestream)
@@ -564,17 +566,20 @@ def endpoint(client, created_entities):
 
 
 @pytest.fixture(scope="class")
-def class_endpoint_updated(class_client, class_registered_model, class_created_entities):
+def class_endpoint_updated(
+    class_client, class_registered_model, class_created_entities
+):
     ep = endpoint_factory(class_client, class_created_entities)
     mv = class_registered_model.get_or_create_version()
+
     class EchoModel(object):
         def predict(self, x):
             return x
+
     mv.log_model(EchoModel())
     mv.log_environment(Python(requirements=[]))
     ep.update(mv)
     return ep
-
 
 
 @pytest.fixture

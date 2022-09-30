@@ -40,12 +40,10 @@ def assert_parsed_reqs_match(parsed_reqs, original_reqs):
     original_reqs = set(original_reqs)
 
     parsed_mapping = {
-        req.split("==")[0]: Python._req_spec_to_msg(req)
-        for req in parsed_reqs
+        req.split("==")[0]: Python._req_spec_to_msg(req) for req in parsed_reqs
     }
     original_mapping = {
-        req.split("==")[0]: Python._req_spec_to_msg(req)
-        for req in original_reqs
+        req.split("==")[0]: Python._req_spec_to_msg(req) for req in original_reqs
     }
 
     assert parsed_mapping == original_mapping
@@ -164,7 +162,9 @@ class TestParsedRequirements:
         reqs = pin_verta_and_cloudpickle(reqs)
         assert_parsed_reqs_match(env.requirements, reqs)
 
-    def test_legacy_no_unsupported_lines(self, requirements_file_with_unsupported_lines):
+    def test_legacy_no_unsupported_lines(
+        self, requirements_file_with_unsupported_lines
+    ):
         """Unsupported lines are filtered out with legacy `skip_options=True`"""
         reqs = Python.read_pip_file(
             requirements_file_with_unsupported_lines.name,
@@ -176,7 +176,9 @@ class TestParsedRequirements:
         # only has injected requirements
         assert requirements == {"verta", "cloudpickle"}
 
-    @pytest.mark.skip(reason="environment versioning fails for locally-installed verta (VUMM-199)")
+    @pytest.mark.skip(
+        reason="environment versioning fails for locally-installed verta (VUMM-199)"
+    )
     def test_from_file_no_versions(self, requirements_file_without_versions):
         reqs = Python.read_pip_file(requirements_file_without_versions.name)
         env = Python(requirements=reqs)
@@ -214,9 +216,7 @@ class TestParsedRequirements:
 
 
 class TestRawRequirements:
-    def test_unsupported_lines(
-        self, requirements_file_with_unsupported_lines, caplog
-    ):
+    def test_unsupported_lines(self, requirements_file_with_unsupported_lines, caplog):
         """Requirements with unsupported lines get logged raw."""
         reqs = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
 
@@ -225,7 +225,10 @@ class TestRawRequirements:
             with caplog.at_level(logging.INFO, logger="verta"):
                 env = Python(requirements=[req])
 
-            assert "failed to manually parse requirements; falling back to capturing raw contents" in caplog.text
+            assert (
+                "failed to manually parse requirements; falling back to capturing raw contents"
+                in caplog.text
+            )
             caplog.clear()
 
             assert not env._msg.python.requirements
@@ -250,7 +253,9 @@ class TestRawRequirements:
 
 
 class TestParsedConstraints:
-    @pytest.mark.skip(reason="environment versioning fails for locally-installed verta (VUMM-199)")
+    @pytest.mark.skip(
+        reason="environment versioning fails for locally-installed verta (VUMM-199)"
+    )
     def test_from_file(self, requirements_file):
         reqs = Python.read_pip_file(requirements_file.name)
         env = Python(requirements=[], constraints=reqs)
@@ -261,18 +266,21 @@ class TestParsedConstraints:
 
 
 class TestRawConstraints:
-    def test_unsupported_lines(
-        self, requirements_file_with_unsupported_lines, caplog
-    ):
+    def test_unsupported_lines(self, requirements_file_with_unsupported_lines, caplog):
         """Constraints with unsupported lines get logged raw."""
-        constraints = Python.read_pip_file(requirements_file_with_unsupported_lines.name)
+        constraints = Python.read_pip_file(
+            requirements_file_with_unsupported_lines.name
+        )
 
         # each line gets logged raw
         for constraint in constraints:
             with caplog.at_level(logging.INFO, logger="verta"):
                 env = Python(requirements=[], constraints=[constraint])
 
-            assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
+            assert (
+                "failed to manually parse constraints; falling back to capturing raw contents"
+                in caplog.text
+            )
             caplog.clear()
 
             assert not env._msg.python.constraints
@@ -281,20 +289,23 @@ class TestRawConstraints:
             expected_constraints = [constraint]
             assert env.constraints == expected_constraints
 
-    def test_from_file_no_versions(
-        self, requirements_file_without_versions, caplog
-    ):
+    def test_from_file_no_versions(self, requirements_file_without_versions, caplog):
         constraints = Python.read_pip_file(requirements_file_without_versions.name)
         with caplog.at_level(logging.INFO, logger="verta"):
             env = Python(requirements=[], constraints=constraints)
 
-        assert "failed to manually parse constraints; falling back to capturing raw contents" in caplog.text
+        assert (
+            "failed to manually parse constraints; falling back to capturing raw contents"
+            in caplog.text
+        )
         assert "missing its version specifier" in caplog.text
 
         assert not env._msg.python.constraints
         assert env._msg.python.raw_constraints
 
-        assert env._msg.python.raw_constraints == requirements_file_without_versions.read()
+        assert (
+            env._msg.python.raw_constraints == requirements_file_without_versions.read()
+        )
         assert set(env.constraints) == set(constraints)
 
 
@@ -302,9 +313,15 @@ class TestVCSInstalledVerta:
     @pytest.mark.parametrize(
         "requirements",
         [
-            ["-e git+git@github.com:VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
-            ["-e git+https://github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
-            ["-e git+ssh://git@github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"],
+            [
+                "-e git+git@github.com:VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"
+            ],
+            [
+                "-e git+https://github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"
+            ],
+            [
+                "-e git+ssh://git@github.com/VertaAI/modeldb.git@master#egg=verta&subdirectory=client/verta"
+            ],
         ],
     )
     def test_vcs_installed_verta(self, requirements):

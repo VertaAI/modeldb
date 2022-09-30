@@ -47,7 +47,9 @@ class TestCRUD:
 
     def test_repr(self, model_version):
         np = pytest.importorskip("numpy")
-        LogisticRegression = pytest.importorskip("sklearn.linear_model").LogisticRegression
+        LogisticRegression = pytest.importorskip(
+            "sklearn.linear_model"
+        ).LogisticRegression
 
         classifier = LogisticRegression()
         classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
@@ -313,25 +315,41 @@ class TestLockLevels:
 
 
 class TestStages:
-
     def test_update_stage(self, model_version):
         assert model_version.stage == "unassigned"
 
-        assert model_version.change_stage(
-            stage_change.Development("Working on it."),
-        ) == model_version.stage == "development"
+        assert (
+            model_version.change_stage(
+                stage_change.Development("Working on it."),
+            )
+            == model_version.stage
+            == "development"
+        )
 
-        assert model_version.change_stage(
-            stage_change.Staging("Undergoing final testing."),
-        ) == model_version.stage == "staging"
+        assert (
+            model_version.change_stage(
+                stage_change.Staging("Undergoing final testing."),
+            )
+            == model_version.stage
+            == "staging"
+        )
 
-        assert model_version.change_stage(
-            stage_change.Production("Rolling out to prod."),
-        ) == model_version.stage == "production"
+        assert (
+            model_version.change_stage(
+                stage_change.Production("Rolling out to prod."),
+            )
+            == model_version.stage
+            == "production"
+        )
 
-        assert model_version.change_stage(
-            stage_change.Archived("Deprioritized; keeping for posterity."),
-        ) == model_version.stage == "archived"
+        assert (
+            model_version.change_stage(
+                stage_change.Archived("Deprioritized; keeping for posterity."),
+            )
+            == model_version.stage
+            == "archived"
+        )
+
 
 # TODO: combine with test_experimentrun/test_attributes.py::TestComplexAttributes
 @pytest.mark.skipif(

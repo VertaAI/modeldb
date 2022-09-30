@@ -9,9 +9,7 @@ import pytest
 @pytest.fixture
 def requirements_file_without_versions(requirements_file):
     requirements = requirements_file.read().splitlines()
-    stripped_requirements = [
-        line.split("==")[0] for line in requirements
-    ]
+    stripped_requirements = [line.split("==")[0] for line in requirements]
 
     with tempfile.NamedTemporaryFile("w+") as tempf:
         tempf.write("\n".join(stripped_requirements))

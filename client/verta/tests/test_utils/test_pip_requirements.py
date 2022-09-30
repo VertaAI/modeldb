@@ -26,7 +26,7 @@ def libraries(draw):
 
 @st.composite
 def versions(draw):
-    numbers = st.integers(min_value=0, max_value=(2 ** 31) - 1)
+    numbers = st.integers(min_value=0, max_value=(2**31) - 1)
 
     major = draw(numbers)
     minor = draw(numbers)
@@ -44,7 +44,9 @@ def metadata(draw):
 
 
 class TestPipRequirementsUtils:
-    @pytest.mark.skip(reason="environment versioning fails for locally-installed verta (VUMM-199)")
+    @pytest.mark.skip(
+        reason="environment versioning fails for locally-installed verta (VUMM-199)"
+    )
     def test_parse_pip_freeze(self):
         req_specs = _pip_requirements_utils.get_pip_freeze()
         req_specs = _pip_requirements_utils.clean_reqs_file_lines(req_specs)
@@ -112,25 +114,37 @@ class TestPipRequirementsUtils:
     def test_preserve_req_suffixes(self):
         # NOTE: these cases should match the function's docstring's examples
 
-        assert _pip_requirements_utils.preserve_req_suffixes(
-            "verta;python_version>'3.8' and python_version<'3.10'  # very important!",
-            "verta==0.20.0",
-        ) == "verta==0.20.0;python_version>'3.8' and python_version<'3.10'  # very important!"
+        assert (
+            _pip_requirements_utils.preserve_req_suffixes(
+                "verta;python_version>'3.8' and python_version<'3.10'  # very important!",
+                "verta==0.20.0",
+            )
+            == "verta==0.20.0;python_version>'3.8' and python_version<'3.10'  # very important!"
+        )
 
-        assert _pip_requirements_utils.preserve_req_suffixes(
-            "verta;python_version<='3.8'",
-            "verta==0.20.0",
-        ) == "verta==0.20.0;python_version<='3.8'"
+        assert (
+            _pip_requirements_utils.preserve_req_suffixes(
+                "verta;python_version<='3.8'",
+                "verta==0.20.0",
+            )
+            == "verta==0.20.0;python_version<='3.8'"
+        )
 
-        assert _pip_requirements_utils.preserve_req_suffixes(
-            "verta  # very important!",
-            "verta==0.20.0",
-        ) == "verta==0.20.0 # very important!"
+        assert (
+            _pip_requirements_utils.preserve_req_suffixes(
+                "verta  # very important!",
+                "verta==0.20.0",
+            )
+            == "verta==0.20.0 # very important!"
+        )
 
-        assert _pip_requirements_utils.preserve_req_suffixes(
-            "verta",
-            "verta==0.20.0",
-        ) == "verta==0.20.0"
+        assert (
+            _pip_requirements_utils.preserve_req_suffixes(
+                "verta",
+                "verta==0.20.0",
+            )
+            == "verta==0.20.0"
+        )
 
 
 class TestRemovePinnedRequirements:
@@ -156,7 +170,9 @@ class TestRemovePinnedRequirements:
         version=versions().example(),  # pylint: disable=no-member
     )
     @hypothesis.given(
-        library=st.from_regex(_pip_requirements_utils.SPACY_MODEL_PATTERN, fullmatch=True),
+        library=st.from_regex(
+            _pip_requirements_utils.SPACY_MODEL_PATTERN, fullmatch=True
+        ),
         version=versions(),
     )
     def test_remove_spacy(self, library, version):
@@ -164,7 +180,7 @@ class TestRemovePinnedRequirements:
 
         filtered_requirements = _pip_requirements_utils.remove_pinned_requirements(
             requirements=[pinned_library],
-            library_patterns=[_pip_requirements_utils.SPACY_MODEL_PATTERN]
+            library_patterns=[_pip_requirements_utils.SPACY_MODEL_PATTERN],
         )
         assert filtered_requirements == []
 
@@ -217,17 +233,14 @@ class TestPinVertaAndCloudpickle:
             "",
         ]
 
-        input_verta_reqs = [
-            "verta" + suffix for suffix in verta_reqs_suffixes
-        ]
+        input_verta_reqs = ["verta" + suffix for suffix in verta_reqs_suffixes]
         input_cloudpickle_reqs = [
             "cloudpickle" + suffix for suffix in cloudpickle_reqs_suffixes
         ]
         reqs = input_verta_reqs + input_cloudpickle_reqs
 
         expected_verta_reqs = [
-            "verta==" + verta.__version__ + suffix
-            for suffix in verta_reqs_suffixes
+            "verta==" + verta.__version__ + suffix for suffix in verta_reqs_suffixes
         ]
         expected_cloudpickle_reqs = [
             "cloudpickle==" + cloudpickle.__version__ + suffix
