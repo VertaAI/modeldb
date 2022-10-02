@@ -6,7 +6,7 @@ A subset of tests can be run solely on open-source functionality (detailed in **
 
 ## Installation
 
-To install the packages needed for running tests, refer to the **Developer Installation** instructions in [the contribution guide](../../CONTRIBUTING.md).
+To install the packages needed for running tests, use [`requirements-dev.txt`](../requirements-dev.txt).
 
 Also, set the following environment variables, which are used by the test suite for ModelDB integration tests:
 - `VERTA_HOST` e.g. `http://localhost:3000` or `app.verta.ai`
