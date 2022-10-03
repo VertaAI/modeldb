@@ -19,7 +19,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 public class ServiceSet {
   @JsonProperty private ArtifactStoreService artifactStoreService = null;
   @JsonProperty private AuthService authService;

@@ -3,7 +3,9 @@ import six
 import pytest
 
 import verta
-from verta._protos.public.modeldb import ExperimentRunService_pb2 as _ExperimentRunService
+from verta._protos.public.modeldb import (
+    ExperimentRunService_pb2 as _ExperimentRunService,
+)
 
 
 OPERATORS = six.viewkeys(verta.tracking.entities.ExperimentRuns._OP_MAP)
@@ -14,12 +16,12 @@ class TestFind:
         # known unsupported keys
         all_keys = {
             attr
-            for attr
-            in _ExperimentRunService.ExperimentRun.__dict__.keys()
-            if not attr[0].isupper()
-            and not attr.startswith('_')
+            for attr in _ExperimentRunService.ExperimentRun.__dict__.keys()
+            if not attr[0].isupper() and not attr.startswith("_")
         }
-        unsupported_keys = all_keys - verta.tracking.entities.ExperimentRuns._VALID_QUERY_KEYS
+        unsupported_keys = (
+            all_keys - verta.tracking.entities.ExperimentRuns._VALID_QUERY_KEYS
+        )
         proj = client.set_project()
         expt = client.set_experiment()
 
@@ -106,7 +108,7 @@ class TestFind:
         proj = client.set_project()
         client.set_experiment()
 
-        for i in range(1, len(tags)+1):
+        for i in range(1, len(tags) + 1):
             client.set_experiment_run(tags=tags[:i])
         expt_runs = proj.expt_runs
 
@@ -121,7 +123,6 @@ class TestFind:
             runs = [run for run in expt_runs if tag not in run.get_tags()]
             assert set(run.id for run in result) == set(run.id for run in runs)
 
-
     @pytest.mark.skip(reason="not implemented")
     def test_attributes(self, client):
         key = "attributes"
@@ -134,18 +135,27 @@ class TestFind:
         hyperparam_vals = list(reversed([floats.pop() for _ in range(5)]))
         for metric_val, hyperparam_val in zip(metric_vals, hyperparam_vals):
             run = client.set_experiment_run()
-            run.log_metric('val', metric_val)
-            run.log_hyperparameter('val', hyperparam_val)
+            run.log_metric("val", metric_val)
+            run.log_hyperparameter("val", hyperparam_val)
         expt_runs = proj.expt_runs
 
-        threshold = int(metric_vals[len(metric_vals)//2])
-        local_filtered_run_ids = set(run.id for run in expt_runs if run.get_metric('val') >= threshold)
-        backend_filtered_run_ids = set(run.id for run in expt_runs.find("metrics.val >= {}".format(threshold)))
+        threshold = int(metric_vals[len(metric_vals) // 2])
+        local_filtered_run_ids = set(
+            run.id for run in expt_runs if run.get_metric("val") >= threshold
+        )
+        backend_filtered_run_ids = set(
+            run.id for run in expt_runs.find("metrics.val >= {}".format(threshold))
+        )
         assert local_filtered_run_ids == backend_filtered_run_ids
 
-        threshold = int(hyperparam_vals[len(hyperparam_vals)//2])
-        local_filtered_run_ids = set(run.id for run in expt_runs if run.get_hyperparameter('val') >= threshold)
-        backend_filtered_run_ids = set(run.id for run in expt_runs.find("hyperparameters.val >= {}".format(threshold)))
+        threshold = int(hyperparam_vals[len(hyperparam_vals) // 2])
+        local_filtered_run_ids = set(
+            run.id for run in expt_runs if run.get_hyperparameter("val") >= threshold
+        )
+        backend_filtered_run_ids = set(
+            run.id
+            for run in expt_runs.find("hyperparameters.val >= {}".format(threshold))
+        )
         assert local_filtered_run_ids == backend_filtered_run_ids
 
     def test_negative_values(self, client):
@@ -154,12 +164,16 @@ class TestFind:
         client.set_experiment()
 
         for val in range(-6, 0):
-            client.set_experiment_run().log_metric('val', val)
+            client.set_experiment_run().log_metric("val", val)
         expt_runs = proj.expt_runs
 
         threshold = -3
-        local_filtered_run_ids = set(run.id for run in expt_runs if run.get_metric('val') >= threshold)
-        backend_filtered_run_ids = set(run.id for run in expt_runs.find("metrics.val >= {}".format(threshold)))
+        local_filtered_run_ids = set(
+            run.id for run in expt_runs if run.get_metric("val") >= threshold
+        )
+        backend_filtered_run_ids = set(
+            run.id for run in expt_runs.find("metrics.val >= {}".format(threshold))
+        )
         assert local_filtered_run_ids == backend_filtered_run_ids
 
 
@@ -173,15 +187,13 @@ class TestSort:
         hyperparam_vals = list(reversed([floats.pop() for _ in range(5)]))
         for metric_val, hyperparam_val in zip(metric_vals, hyperparam_vals):
             run = client.set_experiment_run()
-            run.log_metric('val', metric_val)
-            run.log_hyperparameter('val', hyperparam_val)
+            run.log_metric("val", metric_val)
+            run.log_hyperparameter("val", hyperparam_val)
         expt_runs = proj.expt_runs
 
         # by metric
         sorted_run_ids = [
-            run.id
-            for run in sorted(expt_runs,
-                              key=lambda run: run.get_metric('val'))
+            run.id for run in sorted(expt_runs, key=lambda run: run.get_metric("val"))
         ]
         for run_id, run in zip(sorted_run_ids, expt_runs.sort("metrics.val")):
             assert run_id == run.id
@@ -189,11 +201,13 @@ class TestSort:
         # by hyperparameter, descending
         sorted_run_ids = [
             run.id
-            for run in sorted(expt_runs,
-                              key=lambda run: run.get_hyperparameter('val'),
-                              reverse=True)
+            for run in sorted(
+                expt_runs, key=lambda run: run.get_hyperparameter("val"), reverse=True
+            )
         ]
-        for run_id, run in zip(sorted_run_ids, expt_runs.sort("hyperparameters.val", descending=True)):
+        for run_id, run in zip(
+            sorted_run_ids, expt_runs.sort("hyperparameters.val", descending=True)
+        ):
             assert run_id == run.id
 
 
@@ -204,24 +218,26 @@ class TestChain:
 
         for acc, loss in zip(range(6), reversed(range(6))):
             run = client.set_experiment_run()
-            run.log_metric('acc', acc)
-            run.log_metric('loss', loss)
+            run.log_metric("acc", acc)
+            run.log_metric("loss", loss)
 
         # chain *_k()
         runs = expt.expt_runs.bottom_k("metrics.acc", 4).top_k("metrics.acc", 2)
-        assert [run.get_metric('acc') for run in runs] == [3, 2]
+        assert [run.get_metric("acc") for run in runs] == [3, 2]
 
         # *_k() overrides prior sort()
-        runs = expt.expt_runs.sort('metrics.loss').top_k("metrics.acc", 2)
-        assert [run.get_metric('acc') for run in runs] == [5, 4]
-        runs = expt.expt_runs.sort('metrics.loss', descending=True).top_k("metrics.acc", 2)
-        assert [run.get_metric('acc') for run in runs] == [5, 4]
+        runs = expt.expt_runs.sort("metrics.loss").top_k("metrics.acc", 2)
+        assert [run.get_metric("acc") for run in runs] == [5, 4]
+        runs = expt.expt_runs.sort("metrics.loss", descending=True).top_k(
+            "metrics.acc", 2
+        )
+        assert [run.get_metric("acc") for run in runs] == [5, 4]
 
         # sort() overrides prior sort()
-        runs = expt.expt_runs.sort('metrics.loss').sort("metrics.acc")
-        assert [run.get_metric('acc') for run in runs] == [0, 1, 2, 3, 4, 5]
-        runs = expt.expt_runs.sort('metrics.acc').sort("metrics.loss")
-        assert [run.get_metric('loss') for run in runs] == [0, 1, 2, 3, 4, 5]
+        runs = expt.expt_runs.sort("metrics.loss").sort("metrics.acc")
+        assert [run.get_metric("acc") for run in runs] == [0, 1, 2, 3, 4, 5]
+        runs = expt.expt_runs.sort("metrics.acc").sort("metrics.loss")
+        assert [run.get_metric("loss") for run in runs] == [0, 1, 2, 3, 4, 5]
 
 
 class TestTopK:
@@ -235,16 +251,16 @@ class TestTopK:
         hyperparam_vals = list(reversed([floats.pop() for _ in range(5)]))
         for metric_val, hyperparam_val in zip(metric_vals, hyperparam_vals):
             run = client.set_experiment_run()
-            run.log_metric('val', metric_val)
-            run.log_hyperparameter('val', hyperparam_val)
+            run.log_metric("val", metric_val)
+            run.log_hyperparameter("val", hyperparam_val)
         expt_runs = proj.expt_runs
 
         # by metric
         top_run_ids = [
             run.id
-            for run in sorted(expt_runs,
-                              key=lambda run: run.get_metric('val'),
-                              reverse=True)
+            for run in sorted(
+                expt_runs, key=lambda run: run.get_metric("val"), reverse=True
+            )
         ][:k]
         for run_id, run in zip(top_run_ids, expt_runs.top_k("metrics.val", k)):
             assert run_id == run.id
@@ -252,9 +268,9 @@ class TestTopK:
         # by hyperparameter
         top_run_ids = [
             run.id
-            for run in sorted(expt_runs,
-                              key=lambda run: run.get_hyperparameter('val'),
-                              reverse=True)
+            for run in sorted(
+                expt_runs, key=lambda run: run.get_hyperparameter("val"), reverse=True
+            )
         ][:k]
         for run_id, run in zip(top_run_ids, expt_runs.top_k("hyperparameters.val", k)):
             assert run_id == run.id
@@ -271,15 +287,13 @@ class TestBottomK:
         hyperparam_vals = list(reversed([floats.pop() for _ in range(5)]))
         for metric_val, hyperparam_val in zip(metric_vals, hyperparam_vals):
             run = client.set_experiment_run()
-            run.log_metric('val', metric_val)
-            run.log_hyperparameter('val', hyperparam_val)
+            run.log_metric("val", metric_val)
+            run.log_hyperparameter("val", hyperparam_val)
         expt_runs = proj.expt_runs
 
         # by metric
         bottom_run_ids = [
-            run.id
-            for run in sorted(expt_runs,
-                              key=lambda run: run.get_metric('val'))
+            run.id for run in sorted(expt_runs, key=lambda run: run.get_metric("val"))
         ][:k]
         for run_id, run in zip(bottom_run_ids, expt_runs.bottom_k("metrics.val", k)):
             assert run_id == run.id
@@ -287,8 +301,9 @@ class TestBottomK:
         # by hyperparameter
         bottom_run_ids = [
             run.id
-            for run in sorted(expt_runs,
-                              key=lambda run: run.get_hyperparameter('val'))
+            for run in sorted(expt_runs, key=lambda run: run.get_hyperparameter("val"))
         ][:k]
-        for run_id, run in zip(bottom_run_ids, expt_runs.bottom_k("hyperparameters.val", k)):
+        for run_id, run in zip(
+            bottom_run_ids, expt_runs.bottom_k("hyperparameters.val", k)
+        ):
             assert run_id == run.id

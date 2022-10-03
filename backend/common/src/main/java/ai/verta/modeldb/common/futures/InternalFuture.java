@@ -76,7 +76,7 @@ public class InternalFuture<T> {
                   values.add(future.get());
                 }
                 promise.complete(values);
-              } catch (RuntimeException | InterruptedException | ExecutionException t) {
+              } catch (Throwable t) {
                 if (t instanceof InterruptedException) {
                   // Restore interrupted state...
                   Thread.currentThread().interrupt();
@@ -275,7 +275,14 @@ public class InternalFuture<T> {
         .get()
         .whenComplete(
             (value, throwable) -> {
-              boolean retryCheckerFlag = retryChecker.apply(throwable);
+              boolean retryCheckerFlag;
+              try {
+                retryCheckerFlag = retryChecker.apply(throwable);
+              } catch (Throwable e) {
+                promise.completeExceptionally(
+                    new ExecutionException("retryChecker threw an exception. Not retrying.", e));
+                return;
+              }
               if (throwable == null) {
                 promise.complete(value);
               } else if (retryCheckerFlag) {

@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 public class NFSConfig {
   @JsonProperty private String nfsUrlProtocol = "https";
   @JsonProperty private String nfsRootPath;

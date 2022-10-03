@@ -5,6 +5,7 @@ from verta.endpoint.update import DirectUpdateStrategy
 
 pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire module
 
+
 @pytest.mark.deployment
 @pytest.mark.parametrize("data, strategy", [(3, DirectUpdateStrategy()), (64, None)])
 def test_download_endpoint_manifest(client, data, strategy, in_tempdir):
@@ -12,7 +13,9 @@ def test_download_endpoint_manifest(client, data, strategy, in_tempdir):
 
     # test that `resources` can actually be used
     client.download_endpoint_manifest(
-        "deployment.yaml", "/production-prediction", "production-prediction",
+        "deployment.yaml",
+        "/production-prediction",
+        "production-prediction",
         strategy=strategy,
         resources=resources,
     )
@@ -36,22 +39,25 @@ def test_cpu_milli_negative_type(data):
 
 
 @pytest.mark.deployment
-@pytest.mark.parametrize("data", ['128974848', '129e6', '129M', '123Mi'])
+@pytest.mark.parametrize("data", ["128974848", "129e6", "129M", "123Mi"])
 def test_memory(client, data, in_tempdir):
     resources = Resources(memory=data)
 
     # test that `resources` can acutally be used
     client.download_endpoint_manifest(
-        "deployment.yaml", "/production-prediction", "production-prediction",
+        "deployment.yaml",
+        "/production-prediction",
+        "production-prediction",
         strategy=DirectUpdateStrategy(),
         resources=resources,
     )
 
 
-@pytest.mark.parametrize("data", ['12M3M', 'e12M3M', 'G', '123e6.3Gi', '123.3', '-5'])
+@pytest.mark.parametrize("data", ["12M3M", "e12M3M", "G", "123e6.3Gi", "123.3", "-5"])
 def test_memory_negative(data):
     with pytest.raises(ValueError):
         Resources(memory=data)
+
 
 @pytest.mark.parametrize("data", [12.2, 4])
 def test_memory_negative_type(data):

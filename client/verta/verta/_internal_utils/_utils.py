@@ -14,6 +14,7 @@ import string
 import sys
 import threading
 import time
+from urllib.parse import urljoin
 import warnings
 
 import click
@@ -25,7 +26,6 @@ from google.protobuf import json_format
 from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 
 from ..external import six
-from ..external.six.moves.urllib.parse import urljoin  # pylint: disable=import-error, no-name-in-module
 
 from verta.credentials import EmailCredentials, JWTCredentials
 
@@ -40,8 +40,8 @@ logger = logging.getLogger(__name__)
 
 _GRPC_PREFIX = "Grpc-Metadata-"
 
-_VALID_HTTP_METHODS = {'GET', 'POST', 'PUT', 'DELETE', 'PATCH'}
-_VALID_FLAT_KEY_CHARS = set(string.ascii_letters + string.digits + '_-/')
+_VALID_HTTP_METHODS = {"GET", "POST", "PUT", "DELETE", "PATCH"}
+_VALID_FLAT_KEY_CHARS = set(string.ascii_letters + string.digits + "_-/")
 
 THREAD_LOCALS = threading.local()
 THREAD_LOCALS.active_experiment_run = None
@@ -50,7 +50,16 @@ THREAD_LOCALS.active_experiment_run = None
 class Connection(object):
     _OSS_DEFAULT_WORKSPACE = "personal"
 
-    def __init__(self, scheme=None, socket=None, auth=None, max_retries=0, ignore_conn_err=False, credentials=None, headers=None):
+    def __init__(
+        self,
+        scheme=None,
+        socket=None,
+        auth=None,
+        max_retries=0,
+        ignore_conn_err=False,
+        credentials=None,
+        headers=None,
+    ):
         """
         HTTP connection configuration utility struct.
 
@@ -77,16 +86,21 @@ class Connection(object):
         self.scheme = scheme
         self.socket = socket
         # TODO: retry on 404s, but only if we're sure it's not legitimate e.g. from a GET
-        self.retry = Retry(total=max_retries,
-                           backoff_factor=1,  # each retry waits (2**retry_num) seconds
-                           method_whitelist=False,  # retry on all HTTP methods
-                           status_forcelist=(requests.codes.bad_gateway, requests.codes.unavailable, requests.codes.gateway_timeout),  # only retry on these status codes
-                           raise_on_redirect=False,  # return Response instead of raising after max retries
-                           raise_on_status=False)  # return Response instead of raising after max retries
+        self.retry = Retry(
+            total=max_retries,
+            backoff_factor=1,  # each retry waits (2**retry_num) seconds
+            method_whitelist=False,  # retry on all HTTP methods
+            status_forcelist=(
+                requests.codes.bad_gateway,
+                requests.codes.unavailable,
+                requests.codes.gateway_timeout,
+            ),  # only retry on these status codes
+            raise_on_redirect=False,  # return Response instead of raising after max retries
+            raise_on_status=False,
+        )  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
         self.credentials = credentials
         self.headers = headers
-
 
     @property
     def credentials(self):
@@ -118,14 +132,14 @@ class Connection(object):
     def _recompute_headers(self):
         headers = self._headers or dict()
         headers = headers.copy()
-        headers[_GRPC_PREFIX+'scheme'] = self.scheme
+        headers[_GRPC_PREFIX + "scheme"] = self.scheme
         headers.update(self.prefixed_headers_for_credentials(self.credentials))
         self._computed_headers = headers
 
     @staticmethod
     def prefixed_headers_for_credentials(credentials):
         if credentials:
-            return {(_GRPC_PREFIX + k): v for (k,v) in credentials.headers().items()}
+            return {(_GRPC_PREFIX + k): v for (k, v) in credentials.headers().items()}
         return {}
 
     def test(self, print_success=True):
@@ -152,33 +166,53 @@ class Connection(object):
 
         """
         try:
-            response = make_request("GET",
-                                           "{}://{}/api/v1/modeldb/project/verifyConnection".format(self.scheme, self.socket),
-                                           self)
+            response = make_request(
+                "GET",
+                "{}://{}/api/v1/modeldb/project/verifyConnection".format(
+                    self.scheme, self.socket
+                ),
+                self,
+            )
         except requests.ConnectionError as err:
-            err.args = ("connection failed; please check `host` and `port`; error message: \n\n{}".format(err.args[0]),) + err.args[1:]
+            err.args = (
+                "connection failed; please check `host` and `port`; error message: \n\n{}".format(
+                    err.args[0]
+                ),
+            ) + err.args[1:]
             six.raise_from(err, None)
 
-        if response.status_code in (requests.codes.unauthorized, requests.codes.forbidden):
+        if response.status_code in (
+            requests.codes.unauthorized,
+            requests.codes.forbidden,
+        ):
             try:
                 response.raise_for_status()
             except requests.HTTPError as e:
-                e.args = ("authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY` or JWT credentials\n\n{}".format(
-                    e.args[0]),) + e.args[1:]
+                e.args = (
+                    "authentication failed; please check `VERTA_EMAIL` and `VERTA_DEV_KEY` or JWT credentials\n\n{}".format(
+                        e.args[0]
+                    ),
+                ) + e.args[1:]
                 raise e
         raise_for_http_error(response)
         if print_success:
             print("connection successfully established")
         return True
 
-    def make_proto_request(self, method, path, params=None, body=None, include_default=True):
+    def make_proto_request(
+        self, method, path, params=None, body=None, include_default=True
+    ):
         if params is not None:
             params = proto_to_json(params)
         if body is not None:
             body = proto_to_json(body, include_default)
-        response = make_request(method,
-                                "{}://{}{}".format(self.scheme, self.socket, path),
-                                self, params=params, json=body)
+        response = make_request(
+            method,
+            "{}://{}{}".format(self.scheme, self.socket, path),
+            self,
+            params=params,
+            json=body,
+        )
 
         return response
 
@@ -188,8 +222,13 @@ class Connection(object):
             response_msg = json_to_proto(body_to_json(response), response_type)
             return response_msg
         else:
-            if ((response.status_code == requests.codes.forbidden and body_to_json(response)['code'] == 7)
-                    or (response.status_code == requests.codes.not_found and body_to_json(response)['code'] == 5)):
+            if (
+                response.status_code == requests.codes.forbidden
+                and body_to_json(response)["code"] == 7
+            ) or (
+                response.status_code == requests.codes.not_found
+                and body_to_json(response)["code"] == 5
+            ):
                 return NoneProtoResponse()
             else:
                 raise_for_http_error(response)
@@ -208,9 +247,9 @@ class Connection(object):
 
     @staticmethod
     def is_html_response(response):
-        content_type = response.headers.get('Content-Type')
+        content_type = response.headers.get("Content-Type")
         if content_type:
-            return content_type.startswith('text/html')
+            return content_type.startswith("text/html")
         return False
 
     @property
@@ -221,7 +260,9 @@ class Connection(object):
             return None
 
     def _get_visible_orgs(self):
-        response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces")
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces"
+        )
         response = self.must_proto_response(response, Workspace_pb2.Workspaces)
 
         org_names = map(lambda workspace: workspace.org_name, response.workspace)
@@ -230,19 +271,29 @@ class Connection(object):
 
     def _set_default_workspace(self, name):
         msg = Workspace_pb2.GetWorkspaceByName(name=name)
-        response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg)
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg
+        )
         workspace = self.must_proto_response(response, Workspace_pb2.Workspace)
 
-        response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getCurrentUser")
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/uac/getCurrentUser"
+        )
         user_info = self.must_proto_response(response, UACService_pb2.UserInfo)
 
-        msg = UACService_pb2.UpdateUser(info=user_info, default_workspace_id=workspace.id)
-        response = self.make_proto_request("POST", "/api/v1/uac-proxy/uac/updateUser", body=msg)
+        msg = UACService_pb2.UpdateUser(
+            info=user_info, default_workspace_id=workspace.id
+        )
+        response = self.make_proto_request(
+            "POST", "/api/v1/uac-proxy/uac/updateUser", body=msg
+        )
         raise_for_http_error(response)
 
     def is_workspace(self, workspace_name):
         msg = Workspace_pb2.GetWorkspaceByName(name=workspace_name)
-        response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg)
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/workspace/getWorkspaceByName", params=msg
+        )
 
         return response.ok
 
@@ -250,13 +301,19 @@ class Connection(object):
         """For project, dataset, and repository, which were pre-workspace service."""
         # try getting organization
         msg = Organization_pb2.GetOrganizationById(org_id=workspace_id)
-        response = self.make_proto_request("GET", "/api/v1/uac-proxy/organization/getOrganizationById", params=msg)
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/organization/getOrganizationById", params=msg
+        )
         if not response.ok:
             # try getting user
             msg = UACService_pb2.GetUser(user_id=workspace_id)
-            response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getUser", params=msg)
+            response = self.make_proto_request(
+                "GET", "/api/v1/uac-proxy/uac/getUser", params=msg
+            )
             # workspace is user
-            return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
+            return self.must_proto_response(
+                response, UACService_pb2.UserInfo
+            ).verta_info.username
         else:
             # workspace is organization
             return self.must_proto_response(response, msg.Response).organization.name
@@ -264,29 +321,39 @@ class Connection(object):
     def get_workspace_name_from_id(self, workspace_id):
         """For registry, which uses workspace service."""
         msg = Workspace_pb2.GetWorkspaceById(id=int(workspace_id))
-        response = self.make_proto_request("GET", "/api/v1/uac-proxy/workspace/getWorkspaceById", params=msg)
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/workspace/getWorkspaceById", params=msg
+        )
 
         workspace = self.must_proto_response(response, Workspace_pb2.Workspace)
         return workspace.username or workspace.org_name
 
     def get_personal_workspace(self):
-        email = self.auth.get('Grpc-Metadata-email')
+        email = self.auth.get("Grpc-Metadata-email")
         if email is not None:
             msg = UACService_pb2.GetUser(email=email)
-            response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getUser", params=msg)
+            response = self.make_proto_request(
+                "GET", "/api/v1/uac-proxy/uac/getUser", params=msg
+            )
 
-            if ((response.ok and self.is_html_response(response))  # fetched webapp
-                    or response.status_code == requests.codes.not_found):  # UAC not found
+            if (
+                response.ok and self.is_html_response(response)
+            ) or response.status_code == requests.codes.not_found:  # fetched webapp  # UAC not found
                 pass  # fall through to OSS default workspace
             else:
-                return self.must_proto_response(response, UACService_pb2.UserInfo).verta_info.username
+                return self.must_proto_response(
+                    response, UACService_pb2.UserInfo
+                ).verta_info.username
         return self._OSS_DEFAULT_WORKSPACE
 
     def get_default_workspace(self):
-        response = self.make_proto_request("GET", "/api/v1/uac-proxy/uac/getCurrentUser")
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/uac/getCurrentUser"
+        )
 
-        if ((response.ok and self.is_html_response(response))  # fetched webapp
-                or response.status_code == 404):  # UAC not found
+        if (
+            response.ok and self.is_html_response(response)
+        ) or response.status_code == 404:  # fetched webapp  # UAC not found
             return self._OSS_DEFAULT_WORKSPACE
 
         user_info = self.must_proto_response(response, UACService_pb2.UserInfo)
@@ -300,8 +367,10 @@ class Connection(object):
 class NoneProtoResponse(object):
     def __init__(self):
         pass
+
     def __getattr__(self, item):
         return None
+
     def HasField(self, name):
         return False
 
@@ -347,7 +416,7 @@ def make_request(method, url, conn, stream=False, **kwargs):
         raise ValueError("`method` must be one of {}".format(_VALID_HTTP_METHODS))
 
     # add auth to headers
-    kwargs.setdefault('headers', {}).update(conn.headers)
+    kwargs.setdefault("headers", {}).update(conn.headers)
 
     with requests.Session() as session:
         session.mount(url, HTTPAdapter(max_retries=conn.retry))
@@ -356,13 +425,14 @@ def make_request(method, url, conn, stream=False, **kwargs):
 
             # retry loop for broken connections
             MAX_RETRIES = conn.retry.total
-            for retry_num in range(MAX_RETRIES+1):
+            for retry_num in range(MAX_RETRIES + 1):
                 logger.debug("Making request ({} retries)".format(retry_num))
                 try:
-                    response = _make_request(session, request, conn.ignore_conn_err, stream=stream)
+                    response = _make_request(
+                        session, request, conn.ignore_conn_err, stream=stream
+                    )
                 except requests.ConnectionError as e:
-                    if ((retry_num == MAX_RETRIES)
-                            or ("BrokenPipeError" not in str(e))):
+                    if (retry_num == MAX_RETRIES) or ("BrokenPipeError" not in str(e)):
                         if not conn.ignore_conn_err:
                             raise e
                         else:
@@ -371,8 +441,10 @@ def make_request(method, url, conn, stream=False, **kwargs):
                 else:
                     break
 
-        except (requests.exceptions.BaseHTTPError,
-                requests.exceptions.RequestException) as e:
+        except (
+            requests.exceptions.BaseHTTPError,
+            requests.exceptions.RequestException,
+        ) as e:
             if not conn.ignore_conn_err:
                 raise e
             # else fall through to fabricate 200 response
@@ -422,8 +494,12 @@ def _make_request(session, request, ignore_conn_err=False, **kwargs):
     response = session.send(request, allow_redirects=False, **kwargs)
 
     # manually inspect initial response and subsequent redirects to stop on 302s
-    history = []  # track history because `requests` doesn't since we're redirecting manually
-    responses = itertools.chain([response], session.resolve_redirects(response, request))
+    history = (
+        []
+    )  # track history because `requests` doesn't since we're redirecting manually
+    responses = itertools.chain(
+        [response], session.resolve_redirects(response, request)
+    )
     for response in responses:
         if response.status_code == 302:
             if not ignore_conn_err:
@@ -487,8 +563,8 @@ def raise_for_http_error(response):
             reason = response.text.strip()  # response is not json
 
         if isinstance(reason, dict):
-            if 'message' in reason:
-                reason = reason['message']
+            if "message" in reason:
+                reason = reason["message"]
             else:
                 # fall back to entire text
                 reason = response.text.strip()
@@ -496,7 +572,9 @@ def raise_for_http_error(response):
         reason = six.ensure_str(reason)
 
         if not reason:
-            e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
+            e.args = (e.args[0] + time_str,) + e.args[
+                1:
+            ]  # attach time to error message
             six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
@@ -506,7 +584,9 @@ def raise_for_http_error(response):
                 cause = "Server"
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
-            message = "{} {} Error: {} for url: {}".format(response.status_code, cause, reason, response.url)
+            message = "{} {} Error: {} for url: {}".format(
+                response.status_code, cause, reason, response.url
+            )
             message += time_str  # attach time to error message
             six.raise_from(requests.HTTPError(message, response=response), None)
 
@@ -534,12 +614,14 @@ def body_to_json(response):
     try:
         return response.json()
     except ValueError:  # not JSON response
-        msg = '\n'.join([
-            "expected JSON response from {}, but instead got:".format(response.url),
-            response.text or "<empty response>",
-            "",
-            "Please notify the Verta development team.",
-        ])
+        msg = "\n".join(
+            [
+                "expected JSON response from {}, but instead got:".format(response.url),
+                response.text or "<empty response>",
+                "",
+                "Please notify the Verta development team.",
+            ]
+        )
         msg = six.ensure_str(msg)
         six.raise_from(ValueError(msg), None)
 
@@ -576,10 +658,12 @@ def is_in_venv(path):
 
 
 def is_hidden(path):  # to avoid "./".startswith('.')
-    return os.path.basename(path.rstrip('/')).startswith('.') and path != "."
+    return os.path.basename(path.rstrip("/")).startswith(".") and path != "."
 
 
-def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=False, followlinks=True):
+def find_filepaths(
+    paths, extensions=None, include_hidden=False, include_venv=False, followlinks=True
+):
     """
     Unravels a list of file and directory paths into a list of only filepaths by walking through the
     directories.
@@ -609,18 +693,26 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
         extensions = [extensions]
     if extensions is not None:
         # prepend period to file extensions where missing
-        extensions = map(lambda ext: ext if ext.startswith('.') else ('.' + ext), extensions)
+        extensions = map(
+            lambda ext: ext if ext.startswith(".") else ("." + ext), extensions
+        )
         extensions = set(extensions)
 
     filepaths = set()
     for path in paths:
         if os.path.isdir(path):
-            for parent_dir, dirnames, filenames in os.walk(path, followlinks=followlinks):
+            for parent_dir, dirnames, filenames in os.walk(
+                path, followlinks=followlinks
+            ):
                 if not include_hidden:
                     # skip hidden directories
-                    dirnames[:] = [dirname for dirname in dirnames if not is_hidden(dirname)]
+                    dirnames[:] = [
+                        dirname for dirname in dirnames if not is_hidden(dirname)
+                    ]
                     # skip hidden files
-                    filenames[:] = [filename for filename in filenames if not is_hidden(filename)]
+                    filenames[:] = [
+                        filename for filename in filenames if not is_hidden(filename)
+                    ]
 
                 # If we don't want to include venvs, there are the following scenarios for us:
                 # 1) the path passed is a venv but we explicitly asked for that path, so it should be included
@@ -630,7 +722,10 @@ def find_filepaths(paths, extensions=None, include_hidden=False, include_venv=Fa
                     continue
 
                 for filename in filenames:
-                    if extensions is None or os.path.splitext(filename)[1] in extensions:
+                    if (
+                        extensions is None
+                        or os.path.splitext(filename)[1] in extensions
+                    ):
                         filepaths.add(os.path.join(parent_dir, filename))
         else:
             filepaths.add(path)
@@ -655,10 +750,14 @@ def proto_to_json(msg, include_default=True):
         JSON object representing `msg`.
 
     """
-    return json.loads(json_format.MessageToJson(msg,
-                                                including_default_value_fields=include_default,
-                                                preserving_proto_field_name=True,
-                                                use_integers_for_enums=True))
+    return json.loads(
+        json_format.MessageToJson(
+            msg,
+            including_default_value_fields=include_default,
+            preserving_proto_field_name=True,
+            use_integers_for_enums=True,
+        )
+    )
 
 
 def json_to_proto(response_json, response_cls, ignore_unknown_fields=True):
@@ -682,9 +781,11 @@ def json_to_proto(response_json, response_cls, ignore_unknown_fields=True):
         `protobuf` `Message` object represented by `response_json`.
 
     """
-    return json_format.Parse(json.dumps(response_json),
-                             response_cls(),
-                             ignore_unknown_fields=ignore_unknown_fields)
+    return json_format.Parse(
+        json.dumps(response_json),
+        response_cls(),
+        ignore_unknown_fields=ignore_unknown_fields,
+    )
 
 
 def get_bool_types():
@@ -720,15 +821,15 @@ def to_builtin(obj):
     """
     # jump through ludicrous hoops to avoid having hard dependencies in the Client
     cls_ = obj.__class__
-    obj_class = getattr(cls_, '__name__', None)
-    obj_module = getattr(cls_, '__module__', None)
+    obj_class = getattr(cls_, "__name__", None)
+    obj_module = getattr(cls_, "__module__", None)
 
     # booleans
     if isinstance(obj, get_bool_types()):
         return True if obj else False
 
     # NumPy scalars
-    if obj_module == "numpy" and obj_class.startswith(('int', 'uint', 'float', 'str')):
+    if obj_module == "numpy" and obj_class.startswith(("int", "uint", "float", "str")):
         return obj.item()
 
     # scientific library collections
@@ -807,11 +908,21 @@ def python_to_val_proto(raw_val, allow_collection=False):
                     struct_value.update(val)  # pylint: disable=no-member
                     return Value(struct_value=struct_value)
                 else:  # protobuf's fault
-                    raise TypeError("struct keys must be strings; consider using log_artifact() instead")
+                    raise TypeError(
+                        "struct keys must be strings; consider using log_artifact() instead"
+                    )
         else:
-            raise TypeError("unsupported type {}; consider using log_attribute() instead".format(type(raw_val)))
+            raise TypeError(
+                "unsupported type {}; consider using log_attribute() instead".format(
+                    type(raw_val)
+                )
+            )
     else:
-        raise TypeError("unsupported type {}; consider using log_artifact() instead".format(type(raw_val)))
+        raise TypeError(
+            "unsupported type {}; consider using log_artifact() instead".format(
+                type(raw_val)
+            )
+        )
 
 
 def val_proto_to_python(msg):
@@ -835,17 +946,18 @@ def val_proto_to_python(msg):
     elif value_kind == "bool_value":
         return msg.bool_value
     elif value_kind == "number_value":
-        return int(msg.number_value) if msg.number_value.is_integer() else msg.number_value
+        return (
+            int(msg.number_value) if msg.number_value.is_integer() else msg.number_value
+        )
     elif value_kind == "string_value":
         return msg.string_value
     elif value_kind == "list_value":
-        return [val_proto_to_python(val_msg)
-                for val_msg
-                in msg.list_value.values]
+        return [val_proto_to_python(val_msg) for val_msg in msg.list_value.values]
     elif value_kind == "struct_value":
-        return {key: val_proto_to_python(val_msg)
-                for key, val_msg
-                in msg.struct_value.fields.items()}
+        return {
+            key: val_proto_to_python(val_msg)
+            for key, val_msg in msg.struct_value.fields.items()
+        }
     else:
         raise NotImplementedError("retrieved value type is not supported")
 
@@ -865,9 +977,10 @@ def unravel_key_values(rpt_key_value_msg):
         Names and values.
 
     """
-    return {key_value.key: val_proto_to_python(key_value.value)
-            for key_value
-            in rpt_key_value_msg}
+    return {
+        key_value.key: val_proto_to_python(key_value.value)
+        for key_value in rpt_key_value_msg
+    }
 
 
 def unravel_artifacts(rpt_artifact_msg):
@@ -885,9 +998,7 @@ def unravel_artifacts(rpt_artifact_msg):
         Names of artifacts.
 
     """
-    return [artifact.key
-            for artifact
-            in rpt_artifact_msg]
+    return [artifact.key for artifact in rpt_artifact_msg]
 
 
 def unravel_observation(obs_msg):
@@ -911,7 +1022,11 @@ def unravel_observation(obs_msg):
         value = obs_msg.attribute.value
     elif obs_msg.WhichOneof("oneOf") == "artifact":
         key = obs_msg.artifact.key
-        value = "{} artifact".format(_CommonCommonService.ArtifactTypeEnum.ArtifactType.Name(obs_msg.artifact.artifact_type))
+        value = "{} artifact".format(
+            _CommonCommonService.ArtifactTypeEnum.ArtifactType.Name(
+                obs_msg.artifact.artifact_type
+            )
+        )
     return (
         key,
         val_proto_to_python(value),
@@ -966,8 +1081,10 @@ def validate_flat_key(key):
     """
     for c in key:
         if c not in _VALID_FLAT_KEY_CHARS:
-            raise ValueError("`key` may only contain alphanumeric characters, underscores, dashes,"
-                             " and forward slashes")
+            raise ValueError(
+                "`key` may only contain alphanumeric characters, underscores, dashes,"
+                " and forward slashes"
+            )
 
 
 def generate_default_name():
@@ -984,11 +1101,12 @@ def generate_default_name():
         String generated from the current process ID and Unix timestamp.
 
     """
-    return "{}{}".format(os.getpid(), str(time.time()).replace('.', ''))
+    return "{}{}".format(os.getpid(), str(time.time()).replace(".", ""))
 
 
 class UTC(datetime.tzinfo):
     """UTC timezone class for Python 2 timestamp calculations"""
+
     def utcoffset(self, dt):
         return datetime.timedelta(0)
 
@@ -1014,8 +1132,8 @@ def timestamp_to_ms(timestamp):
         `timestamp` with millisecond resolution (13 integer digits).
 
     """
-    num_integer_digits = len(str(timestamp).split('.')[0])
-    return int(timestamp*10**(13 - num_integer_digits))
+    num_integer_digits = len(str(timestamp).split(".")[0])
+    return int(timestamp * 10 ** (13 - num_integer_digits))
 
 
 def ensure_timestamp(timestamp):
@@ -1044,11 +1162,16 @@ def ensure_timestamp(timestamp):
             try:  # attempt with pandas, which can parse many time string formats
                 return timestamp_to_ms(pd.Timestamp(timestamp).timestamp())
             except ValueError:  # can't be handled by pandas
-                six.raise_from(ValueError("unable to parse datetime string \"{}\"".format(timestamp)),
-                            None)
+                six.raise_from(
+                    ValueError(
+                        'unable to parse datetime string "{}"'.format(timestamp)
+                    ),
+                    None,
+                )
         else:
-            six.raise_from(ValueError("pandas must be installed to parse datetime strings"),
-                           None)
+            six.raise_from(
+                ValueError("pandas must be installed to parse datetime strings"), None
+            )
     elif isinstance(timestamp, numbers.Real):
         return timestamp_to_ms(timestamp)
     elif isinstance(timestamp, datetime.datetime):
@@ -1074,7 +1197,7 @@ def timestamp_to_str(timestamp, utc=False):
 
     """
     num_digits = len(str(timestamp))
-    ts_as_sec = timestamp*10**(10 - num_digits)
+    ts_as_sec = timestamp * 10 ** (10 - num_digits)
     if utc:
         datetime_obj = datetime.datetime.utcfromtimestamp(ts_as_sec)
     else:
@@ -1105,7 +1228,7 @@ def get_python_version():
         Python version number in the form "{major}.{minor}.{patch}".
 
     """
-    return '.'.join(map(str, sys.version_info[:3]))
+    return ".".join(map(str, sys.version_info[:3]))
 
 
 def save_notebook(notebook_path=None, timeout=5):
@@ -1140,11 +1263,15 @@ def save_notebook(notebook_path=None, timeout=5):
         notebook_path = get_notebook_filepath()
     modtime = os.path.getmtime(notebook_path)
 
-    IPython_display.display(IPython_display.Javascript('''
+    IPython_display.display(
+        IPython_display.Javascript(
+            """
     require(["base/js/namespace"],function(Jupyter) {
         Jupyter.notebook.save_checkpoint();
     });
-    '''))
+    """
+        )
+    )
 
     # wait for file to be modified
     start_time = time.time()
@@ -1157,10 +1284,10 @@ def save_notebook(notebook_path=None, timeout=5):
         raise OSError("unable to save notebook")
 
     # wait for file to be rewritten
-    timeout -= (time.time() - start_time)  # remaining time
+    timeout -= time.time() - start_time  # remaining time
     start_time = time.time()
     while time.time() - start_time < timeout:
-        with open(notebook_path, 'r') as f:
+        with open(notebook_path, "r") as f:
             contents = f.read()
         if contents:
             return six.StringIO(contents)
@@ -1203,19 +1330,20 @@ def get_notebook_filepath():
 
     try:
         connection_file = ipykernel.connect.get_connection_file()
-    except (NameError,  # Jupyter not installed
-            RuntimeError):  # not in a Notebook
+    except (NameError, RuntimeError):  # Jupyter not installed  # not in a Notebook
         pass
     else:
-        kernel_id = re.search('kernel-(.*).json', connection_file).group(1)
+        kernel_id = re.search("kernel-(.*).json", connection_file).group(1)
         for server in notebookapp.list_running_servers():
-            response = requests.get(urljoin(server['url'], 'api/sessions'),
-                                    params={'token': server.get('token', '')})
+            response = requests.get(
+                urljoin(server["url"], "api/sessions"),
+                params={"token": server.get("token", "")},
+            )
             if response.ok:
                 for session in body_to_json(response):
-                    if session['kernel']['id'] == kernel_id:
-                        relative_path = session['notebook']['path']
-                        return os.path.join(server['notebook_dir'], relative_path)
+                    if session["kernel"]["id"] == kernel_id:
+                        relative_path = session["notebook"]["path"]
+                        return os.path.join(server["notebook_dir"], relative_path)
     raise OSError("unable to find notebook file")
 
 
@@ -1238,7 +1366,7 @@ def get_script_filepath():
     """
     for frame_info in inspect.stack():
         module = inspect.getmodule(frame_info[0])
-        if module is None or module.__name__.split('.', 1)[0] != "verta":
+        if module is None or module.__name__.split(".", 1)[0] != "verta":
             filepath = frame_info[1]
             if os.path.exists(filepath):  # e.g. Jupyter fakes the filename for cells
                 return filepath
@@ -1250,8 +1378,11 @@ def get_script_filepath():
 def is_org(workspace_name, conn):
     response = make_request(
         "GET",
-        "{}://{}/api/v1/uac-proxy/organization/getOrganizationByName".format(conn.scheme, conn.socket),
-        conn, params={'org_name': workspace_name},
+        "{}://{}/api/v1/uac-proxy/organization/getOrganizationByName".format(
+            conn.scheme, conn.socket
+        ),
+        conn,
+        params={"org_name": workspace_name},
     )
 
     return response.status_code != 404
@@ -1286,33 +1417,40 @@ def as_list_of_str(tags):
 
         for tag in tags:
             if not isinstance(tag, six.string_types):
-                raise TypeError("`tags` must be list of str, but found {}".format(type(tag)))
+                raise TypeError(
+                    "`tags` must be list of str, but found {}".format(type(tag))
+                )
 
     return tags
 
 
 def _multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
     name = name
-    argument = list(map(lambda s: s.split('='), argument))
-    if argument and len(argument) > len(
-            set(map(lambda pair: pair[0], argument))):
+    argument = list(map(lambda s: s.split("="), argument))
+    if argument and len(argument) > len(set(map(lambda pair: pair[0], argument))):
         raise click.BadParameter("cannot have duplicate {} keys".format(name))
     if argument:
         argument_keys = set(get_keys())
 
         for pair in argument:
             if len(pair) != 2:
-                raise click.BadParameter("key and path for {}s must be separated by a '='".format(name))
+                raise click.BadParameter(
+                    "key and path for {}s must be separated by a '='".format(name)
+                )
             (key, _) = pair
             if key == "model":
-                raise click.BadParameter("the key \"model\" is reserved for model")
+                raise click.BadParameter('the key "model" is reserved for model')
 
             if not overwrite and key in argument_keys:
                 raise click.BadParameter(
-                    "key \"{}\" already exists; consider using --overwrite flag".format(key))
+                    'key "{}" already exists; consider using --overwrite flag'.format(
+                        key
+                    )
+                )
 
         for (key, path) in argument:
             action(key, path)
+
 
 def check_unnecessary_params_warning(resource_name, name, param_names, params):
     if any(param is not None for param in params):

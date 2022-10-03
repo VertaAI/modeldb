@@ -18,7 +18,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 public class MDBConfig extends Config {
 
   @JsonProperty private static MDBConfig mdbConfig = null;

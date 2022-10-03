@@ -35,7 +35,7 @@ def download_response(response, chunk_size=_artifact_utils._32MB):
     """
     tempf = None
     try:
-        with tempfile.NamedTemporaryFile('wb', delete=False) as tempf:
+        with tempfile.NamedTemporaryFile("wb", delete=False) as tempf:
             for chunk in response.iter_content(chunk_size=chunk_size):
                 tempf.write(chunk)
     except Exception as e:
@@ -112,7 +112,7 @@ def download_zipped_dir(response, dirpath, overwrite_ok=False):
             dirpath = _file_utils.without_collision(dirpath)
 
         # extract request contents to `dirpath`
-        with zipfile.ZipFile(temp_filepath, 'r') as zipf:
+        with zipfile.ZipFile(temp_filepath, "r") as zipf:
             zipf.extractall(dirpath)
     finally:
         os.remove(temp_filepath)

@@ -21,19 +21,20 @@ class RegisteredModelVersions(_LazyList):
 
     # keys that yield predictable, sensible results
     _VALID_QUERY_KEYS = {
-        'id',
-        'registered_model_id',
-        'experiment_run_id',
-        'version',
-        'time_created',
-        'time_updated',
-        'labels',
-        'stage',
+        "id",
+        "registered_model_id",
+        "experiment_run_id",
+        "version",
+        "time_created",
+        "time_updated",
+        "labels",
+        "stage",
     }
 
     def __init__(self, conn, conf):
         super(RegisteredModelVersions, self).__init__(
-            conn, conf,
+            conn,
+            conf,
             _RegistryService.FindModelVersionRequest(),
         )
 
@@ -43,11 +44,15 @@ class RegisteredModelVersions(_LazyList):
     def _call_back_end(self, msg):
         if self._msg.id.registered_model_id == 0:
             if self._msg.id.named_id.workspace_name:
-                url = "/api/v1/registry/workspaces/{}/model_versions/find".format(self._msg.id.named_id.workspace_name)
+                url = "/api/v1/registry/workspaces/{}/model_versions/find".format(
+                    self._msg.id.named_id.workspace_name
+                )
             else:
                 url = "/api/v1/registry/model_versions/find"
         else:
-            url = "/api/v1/registry/registered_models/{}/model_versions/find".format(self._msg.id.registered_model_id)
+            url = "/api/v1/registry/registered_models/{}/model_versions/find".format(
+                self._msg.id.registered_model_id
+            )
         response = self._conn.make_proto_request("POST", url, body=msg)
         response = self._conn.must_proto_response(response, msg.Response)
         return response.model_versions, response.total_records
@@ -61,7 +66,7 @@ class RegisteredModelVersions(_LazyList):
             new_list._msg.id.registered_model_id = registered_model.id
         else:
             new_list._msg.id.registered_model_id = 0
-        new_list._msg.id.ClearField('named_id')
+        new_list._msg.id.ClearField("named_id")
         return new_list
 
     def _set_page_limit(self, msg, param):
@@ -93,6 +98,6 @@ class RegisteredModelVersions(_LazyList):
 
         """
         new_list = copy.deepcopy(self)
-        new_list._msg.id.ClearField('registered_model_id')
-        new_list._msg.id.named_id.workspace_name = workspace or ''
+        new_list._msg.id.ClearField("registered_model_id")
+        new_list._msg.id.named_id.workspace_name = workspace or ""
         return new_list

@@ -76,7 +76,6 @@ class TestArbitraryModels:
 
 
 class TestEnvironment:
-
     def test_del_environment(self, model_version, environment):
         model_version.log_environment(environment)
 

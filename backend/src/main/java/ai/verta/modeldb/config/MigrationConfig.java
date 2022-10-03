@@ -14,7 +14,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 public class MigrationConfig {
   @JsonProperty public String name;
   @JsonProperty public boolean enabled = false;

@@ -23,6 +23,7 @@ class Endpoints(object):
             endpoint.delete()
 
     """
+
     def __init__(self, conn, conf, workspace_name):
         self._conn = conn
         self._conf = conf
@@ -33,13 +34,15 @@ class Endpoints(object):
 
     def _get_ids(self):
         endpoints = Endpoint._get_endpoints(self._conn, self._workspace_name)
-        return list(map(lambda endpoint: endpoint['id'], endpoints))
+        return list(map(lambda endpoint: endpoint["id"], endpoints))
 
     def __repr__(self):
         return "<{} Endpoints>".format(self.__len__())
 
     def __getitem__(self, index):
-        return Endpoint._get_by_id(self._conn, self._conf, self._workspace_name, self._ids[index])
+        return Endpoint._get_by_id(
+            self._conn, self._conf, self._workspace_name, self._ids[index]
+        )
 
     def __len__(self):
         return len(self._ids)

@@ -34,10 +34,11 @@ class TestInternalFunctions:
         with pytest.raises(TypeError):
             fn("banana", 0)
 
+
 class TestHyperparameters:
-    HYPERPARAMETERS = {'banana': "foo"}
-    HYPERPARAMETER_RANGES = {'coconut': (0, 12, 3)}
-    HYPERPARAMETER_SETS = {'durian': list(range(0, 12, 3))}
+    HYPERPARAMETERS = {"banana": "foo"}
+    HYPERPARAMETER_RANGES = {"coconut": (0, 12, 3)}
+    HYPERPARAMETER_SETS = {"durian": list(range(0, 12, 3))}
 
     def test_hyperparameters(self):
         config = verta.configuration.Hyperparameters(
@@ -49,7 +50,7 @@ class TestHyperparameters:
         hyperparam_msg = config._msg.hyperparameters[0]
         assert hyperparam_msg.name == name
         value_msg = hyperparam_msg.value
-        assert getattr(value_msg, value_msg.WhichOneof('value')) == value
+        assert getattr(value_msg, value_msg.WhichOneof("value")) == value
 
     def test_hyperparamater_ranges(self):
         config = verta.configuration.Hyperparameters(
@@ -61,11 +62,11 @@ class TestHyperparameters:
         hyperparam_msg = config._msg.hyperparameter_set[0]
         assert hyperparam_msg.name == name
         begin_msg = hyperparam_msg.continuous.interval_begin
-        assert getattr(begin_msg, begin_msg.WhichOneof('value')) == begin
+        assert getattr(begin_msg, begin_msg.WhichOneof("value")) == begin
         end_msg = hyperparam_msg.continuous.interval_end
-        assert getattr(end_msg, end_msg.WhichOneof('value')) == end
+        assert getattr(end_msg, end_msg.WhichOneof("value")) == end
         step_msg = hyperparam_msg.continuous.interval_step
-        assert getattr(step_msg, step_msg.WhichOneof('value')) == step
+        assert getattr(step_msg, step_msg.WhichOneof("value")) == step
 
     def test_hyperparameter_sets(self):
         config = verta.configuration.Hyperparameters(
@@ -77,19 +78,22 @@ class TestHyperparameters:
         hyperparam_msg = config._msg.hyperparameter_set[0]
         assert hyperparam_msg.name == name
         for value_msg, value in zip(hyperparam_msg.discrete.values, sequence):
-            assert getattr(value_msg, value_msg.WhichOneof('value')) == value
+            assert getattr(value_msg, value_msg.WhichOneof("value")) == value
 
     def test_repr(self):
         """Tests that __repr__() executes without error"""
         config = verta.configuration.Hyperparameters(
             hyperparameters={
-                'a': 1, 'b': 1,
+                "a": 1,
+                "b": 1,
             },
             hyperparameter_ranges={
-                'c': (1, 5, 1), 'd': (1, 5, 1),
+                "c": (1, 5, 1),
+                "d": (1, 5, 1),
             },
             hyperparameter_sets={
-                'e': [1, 2], 'f': [1, 2],
+                "e": [1, 2],
+                "f": [1, 2],
             },
         )
 

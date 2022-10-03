@@ -18,6 +18,7 @@ def args_to_builtin(ignore_self):
         methods).
 
     """
+
     def decorator(f):
         @functools.wraps(f)
         def wrapper(*args, **kwargs):
@@ -26,13 +27,17 @@ def args_to_builtin(ignore_self):
             else:
                 args = list(map(_utils.to_builtin, args))
 
-            kwargs = dict(zip(
-                kwargs.keys(),
-                map(_utils.to_builtin, kwargs.values()),
-            ))
+            kwargs = dict(
+                zip(
+                    kwargs.keys(),
+                    map(_utils.to_builtin, kwargs.values()),
+                )
+            )
 
             return f(*args, **kwargs)
+
         return wrapper
+
     return decorator
 
 

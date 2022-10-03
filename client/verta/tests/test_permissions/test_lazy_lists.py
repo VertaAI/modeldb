@@ -12,6 +12,7 @@ from verta._internal_utils import _utils
 
 class TestClient:
     """Attributes on client."""
+
     def test_projects(self, client, organization, created_entities):
         client.set_workspace(organization.name)
 
@@ -58,7 +59,9 @@ class TestClient:
             created_entities.append(reg_model)
             reg_model_ids.add(reg_model.id)
 
-        assert set(reg_model.id for reg_model in client.registered_models) == reg_model_ids
+        assert (
+            set(reg_model.id for reg_model in client.registered_models) == reg_model_ids
+        )
 
     def test_registered_model_versions(self, client, organization, created_entities):
         client.set_workspace(organization.name)
@@ -70,7 +73,10 @@ class TestClient:
             for _ in range(2):
                 model_ver_ids.add(reg_model.create_version().id)
 
-        assert set(model_ver.id for model_ver in client.registered_model_versions) == model_ver_ids
+        assert (
+            set(model_ver.id for model_ver in client.registered_model_versions)
+            == model_ver_ids
+        )
 
     @pytest.mark.deployment
     def test_endpoints(self, client, organization, created_entities):
@@ -106,14 +112,12 @@ class TestClient:
 
 class TestEntitites:
     """Attributes on entity objects."""
+
     def test_proj_expts(self, client, organization, created_entities):
         proj = client.create_project(workspace=organization.name)
         created_entities.append(proj)
 
-        expt_ids = {
-            client.create_experiment().id
-            for _ in range(2)
-        }
+        expt_ids = {client.create_experiment().id for _ in range(2)}
 
         assert set(expt.id for expt in proj.experiments) == expt_ids
 
@@ -124,10 +128,7 @@ class TestEntitites:
         run_ids = set()
         for _ in range(2):
             client.create_experiment()
-            run_ids.update({
-                client.create_experiment_run().id
-                for _ in range(2)
-            })
+            run_ids.update({client.create_experiment_run().id for _ in range(2)})
 
         assert set(run.id for run in proj.expt_runs) == run_ids
 
@@ -136,10 +137,7 @@ class TestEntitites:
         created_entities.append(proj)
         expt = client.create_experiment()
 
-        run_ids = {
-            client.create_experiment_run().id
-            for _ in range(2)
-        }
+        run_ids = {client.create_experiment_run().id for _ in range(2)}
 
         assert set(run.id for run in expt.expt_runs) == run_ids
 
@@ -158,9 +156,6 @@ class TestEntitites:
         model = client.create_registered_model(workspace=organization.name)
         created_entities.append(model)
 
-        version_ids = {
-            model.create_version().id
-            for filename in os.listdir(".")[:2]
-        }
+        version_ids = {model.create_version().id for filename in os.listdir(".")[:2]}
 
         assert set(version.id for version in model.versions) == version_ids

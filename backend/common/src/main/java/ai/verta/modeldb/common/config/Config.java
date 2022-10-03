@@ -27,6 +27,7 @@ import io.opentelemetry.sdk.extension.resources.HostResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.grpc.ActiveSpanContextSource;
 import io.opentracing.contrib.grpc.ActiveSpanSource;
@@ -54,7 +55,7 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public abstract class Config {
   @JsonProperty private ServiceConfig authService;
@@ -164,6 +165,7 @@ public abstract class Config {
     SdkTracerProvider tracerProvider =
         SdkTracerProvider.builder()
             .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
+            .setSampler(createOpenTelemetrySampler())
             .setResource(
                 Resource.getDefault()
                     .merge(
@@ -183,6 +185,15 @@ public abstract class Config {
                 TextMapPropagator.composite(
                     W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
         .buildAndRegisterGlobal();
+  }
+
+  /**
+   * Override this method to provide a custom sampler implementation for spans.
+   *
+   * <p>todo: figure out how to do this without requiring a subclass.
+   */
+  protected Sampler createOpenTelemetrySampler() {
+    return Sampler.alwaysOn();
   }
 
   public Optional<TracingServerInterceptor> getTracingServerInterceptor() {
@@ -234,5 +245,9 @@ public abstract class Config {
 
   public void setGrpcServer(GrpcServerConfig grpcServer) {
     this.grpcServer = grpcServer;
+  }
+
+  public boolean tracingEnabled() {
+    return enableTrace;
   }
 }

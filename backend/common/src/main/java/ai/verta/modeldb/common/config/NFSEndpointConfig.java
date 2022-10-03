@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 public class NFSEndpointConfig {
   @JsonProperty private String getArtifact;
   @JsonProperty private String storeArtifact;

@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 public class TelemetryConfig {
   @JsonProperty private boolean opt_out = false;
   @JsonProperty private int frequency = 1;

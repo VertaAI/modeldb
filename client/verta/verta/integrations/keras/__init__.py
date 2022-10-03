@@ -42,6 +42,7 @@ class VertaCallback(keras.callbacks.Callback):
         )
 
     """
+
     def __init__(self, run):
         self.run = run
 
@@ -81,12 +82,16 @@ class VertaCallback(keras.callbacks.Callback):
                 pass  # don't halt execution
 
             try:
-                self.run.log_hyperparameter("layer_{}_activation".format(i), layer.activation.__name__)
+                self.run.log_hyperparameter(
+                    "layer_{}_activation".format(i), layer.activation.__name__
+                )
             except:
                 pass  # don't halt execution
 
             try:
-                self.run.log_hyperparameter("layer_{}_dropoutrate".format(i), layer.rate)
+                self.run.log_hyperparameter(
+                    "layer_{}_dropoutrate".format(i), layer.rate
+                )
             except:
                 pass  # don't halt execution
 

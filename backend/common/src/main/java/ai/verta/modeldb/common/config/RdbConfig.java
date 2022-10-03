@@ -18,7 +18,7 @@ import org.apache.logging.log4j.Logger;
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
-@Setter(AccessLevel.PRIVATE)
+@Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public class RdbConfig {
 

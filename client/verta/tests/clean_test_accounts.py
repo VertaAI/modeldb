@@ -47,9 +47,7 @@ def get_clients():
     clients = []
     for email, dev_key in credentials:
         if email and dev_key:
-            clients.append(
-                Client(constants.HOST, email=email, dev_key=dev_key)
-            )
+            clients.append(Client(constants.HOST, email=email, dev_key=dev_key))
 
     return clients
 
@@ -107,10 +105,9 @@ def delete_builds(clients):
     """
     logger.info("deleting builds")
     for client in clients:
-        workspaces = (
-            client._conn._get_visible_orgs()
-            + [client._conn.get_personal_workspace()]
-        )
+        workspaces = client._conn._get_visible_orgs() + [
+            client._conn.get_personal_workspace()
+        ]
         for workspace in workspaces:
             # get builds
             response = requests.get(
@@ -133,7 +130,10 @@ def delete_builds(clients):
 
             build_ids = [build["id"] for build in response.json().get("builds", [])]
             p = multiprocessing.Pool(12)
-            p.map(delete_build, zip(itertools.repeat(client), itertools.repeat(workspace), build_ids))
+            p.map(
+                delete_build,
+                zip(itertools.repeat(client), itertools.repeat(workspace), build_ids),
+            )
             p.close()
 
 
@@ -147,10 +147,9 @@ def delete_endpoints(clients):
     """
     logger.info("deleting endpoints")
     for client in clients:
-        workspaces = (
-            client._conn._get_visible_orgs()
-            + [client._conn.get_personal_workspace()]
-        )
+        workspaces = client._conn._get_visible_orgs() + [
+            client._conn.get_personal_workspace()
+        ]
         for workspace in workspaces:
             for endpoint in client.endpoints.with_workspace(workspace):
                 path = endpoint.path  # need to get from obj before deletion

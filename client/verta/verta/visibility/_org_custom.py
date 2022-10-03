@@ -31,17 +31,22 @@ class OrgCustom(_Visibility):
         client.create_project("My Project", workspace="my-org", visibility=visibility)
 
     """
+
     def __init__(self, write=False, deploy=False):
         if not isinstance(write, bool):
             raise TypeError("`write` must be of type bool, not {}".format(type(write)))
         if not isinstance(deploy, bool):
-            raise TypeError("`deploy` must be of type bool, not {}".format(type(deploy)))
+            raise TypeError(
+                "`deploy` must be of type bool, not {}".format(type(deploy))
+            )
 
         self._write = write
         self._deploy = deploy
 
     def __repr__(self):
-        return "<{}(write={}, deploy={}) visibility>".format(self.__class__.__name__, self._write, self._deploy)
+        return "<{}(write={}, deploy={}) visibility>".format(
+            self.__class__.__name__, self._write, self._deploy
+        )
 
     def _to_public_within_org(self):
         # NOTE: old backends will unavoidably not receive `_write` and `_deploy`

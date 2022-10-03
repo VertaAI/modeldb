@@ -24,7 +24,8 @@ class Environment(_Environment):
 
 class TestEnvironmentVariables:
     @pytest.mark.parametrize(
-        "env_vars", [None, [], {}],
+        "env_vars",
+        [None, [], {}],
     )
     def test_empty(self, env_vars):
         env = Environment(
@@ -63,10 +64,7 @@ class TestEnvironmentVariables:
         )
         env.add_env_vars(names)
 
-        expected_env_vars = {
-            name: os.environ[name]
-            for name in names
-        }
+        expected_env_vars = {name: os.environ[name] for name in names}
         expected_env_vars.update(env_vars)
         assert env.env_vars == (expected_env_vars or None)
 

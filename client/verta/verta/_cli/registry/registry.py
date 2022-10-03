@@ -6,6 +6,7 @@ import click
 # TODO: format of output
 # TODO: workspace
 
+
 @click.group()
 def registry():
     """Sub-CLI for the Verta registry."""

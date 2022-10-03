@@ -9,7 +9,8 @@ import click
 from .registry.registry import registry
 from .deployment.deployment import deployment
 
-CONTEXT_SETTINGS = dict(help_option_names=['-h', '--help'])
+CONTEXT_SETTINGS = dict(help_option_names=["-h", "--help"])
+
 
 @click.group(context_settings=CONTEXT_SETTINGS)
 def cli():

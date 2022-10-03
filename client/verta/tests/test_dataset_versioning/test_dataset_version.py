@@ -38,11 +38,11 @@ class TestMetadata:  # essentially copied from test_dataset.py
         assert set(dataset.get_version(id=version.id).get_tags()) == {tag1, tag2, tag4}
 
     def test_attributes(self, client, dataset):
-        Attr = collections.namedtuple('Attr', ['key', 'value'])
-        attr1 = Attr('key1', {'a': 1})
-        attr2 = Attr('key2', ['a', 1])
-        attr3 = Attr('key3', 'a')
-        attr4 = Attr('key4', 1)
+        Attr = collections.namedtuple("Attr", ["key", "value"])
+        attr1 = Attr("key1", {"a": 1})
+        attr2 = Attr("key2", ["a", 1])
+        attr3 = Attr("key3", "a")
+        attr4 = Attr("key4", 1)
 
         version = dataset.create_version(Path("conftest.py"), attrs=dict([attr1]))
         assert version.get_attributes() == dict([attr1])
@@ -57,13 +57,15 @@ class TestMetadata:  # essentially copied from test_dataset.py
         version.del_attribute(attr3.key)  # no error if nonexistent
         assert version.get_attributes() == dict([attr1, attr2, attr4])
 
-        assert dataset.get_version(id=version.id).get_attributes() == dict([attr1, attr2, attr4])
+        assert dataset.get_version(id=version.id).get_attributes() == dict(
+            [attr1, attr2, attr4]
+        )
 
         for attr in [attr1, attr2, attr4]:
             assert version.get_attribute(attr.key) == attr.value
 
         # overwrite
-        new_val = 'b'
+        new_val = "b"
         dataset.add_attribute(attr1.key, new_val)
         assert dataset.get_attribute(attr1.key) == new_val
 
@@ -78,10 +80,14 @@ class TestMetadata:  # essentially copied from test_dataset.py
 class TestCreateGet:
     def test_create_get_path(self, client, dataset):
         dataset_version = dataset.create_version(Path(["modelapi_hypothesis/"]))
-        dataset_version2 = dataset.create_version(Path(["modelapi_hypothesis/api_generator.py"]))
+        dataset_version2 = dataset.create_version(
+            Path(["modelapi_hypothesis/api_generator.py"])
+        )
 
         assert dataset_version.id == client.get_dataset_version(dataset_version.id).id
-        assert dataset_version2.id == client.get_dataset_version(id=dataset_version2.id).id
+        assert (
+            dataset_version2.id == client.get_dataset_version(id=dataset_version2.id).id
+        )
         assert dataset_version2.id == dataset.get_latest_version().id
 
     def test_get_latest_printing(self, client, dataset, capsys):
@@ -89,26 +95,37 @@ class TestCreateGet:
         dataset.get_latest_version()
 
         captured = capsys.readouterr()
-        assert "got existing dataset version: {}".format(dataset_version.id) in captured.out
+        assert (
+            "got existing dataset version: {}".format(dataset_version.id)
+            in captured.out
+        )
 
     def test_create_get_s3(self, client, dataset, with_boto3):
         pytest.importorskip("boto3")
 
-        dataset_version = dataset.create_version(S3(["s3://verta-starter/", "s3://verta-starter/census-test.csv"]))
+        dataset_version = dataset.create_version(
+            S3(["s3://verta-starter/", "s3://verta-starter/census-test.csv"])
+        )
 
         assert dataset_version.id == dataset.get_version(id=dataset_version.id).id
 
-    def test_find(self, client, dataset, strs):  # essentially copied from test_dataset.py
+    def test_find(
+        self, client, dataset, strs
+    ):  # essentially copied from test_dataset.py
         tag1, tag2, tag3 = strs[:3]
 
         version1 = dataset.create_version(Path("conftest.py"), tags=[tag1])
         version2 = dataset.create_version(Path("conftest.py"), tags=[tag1])
         version3 = dataset.create_version(Path("conftest.py"), tags=[tag1, tag2])
-        version4 = dataset.create_version(Path("conftest.py"), tags=[      tag2, tag3])
+        version4 = dataset.create_version(Path("conftest.py"), tags=[tag2, tag3])
 
         versions = dataset.versions.find("tags ~= {}".format(tag1))
         assert len(versions) == 3
-        assert set(version.id for version in versions) == {version1.id, version2.id, version3.id}
+        assert set(version.id for version in versions) == {
+            version1.id,
+            version2.id,
+            version3.id,
+        }
 
         versions = dataset.versions.find("tags ~= {}".format(tag2))
         assert len(versions) == 2
@@ -120,8 +137,10 @@ class TestCreateGet:
 
     def test_repr(self, client, dataset):  # essentially copied from test_dataset.py
         description = "this is a cool version"
-        tags = [u"tag1", u"tag2"]
-        version = dataset.create_version(Path("conftest.py"), desc=description, tags=tags)
+        tags = ["tag1", "tag2"]
+        version = dataset.create_version(
+            Path("conftest.py"), desc=description, tags=tags
+        )
 
         str_repr = repr(version)
 
@@ -168,18 +187,18 @@ class TestManagedVersioning:
     def test_path(self, client, dataset):
         filename = "tiny1.bin"
         FILE_CONTENTS = os.urandom(2**16)
-        with open(filename, 'wb') as f:
+        with open(filename, "wb") as f:
             f.write(FILE_CONTENTS)
 
         content = Path(filename, enable_mdb_versioning=True)
         version = dataset.create_version(content)
 
         downloaded_filename = version.get_content().download(filename)
-        with open(downloaded_filename, 'rb') as f:
+        with open(downloaded_filename, "rb") as f:
             assert f.read() == FILE_CONTENTS
 
     def test_s3(self, client, dataset):
-        s3 = pytest.importorskip("boto3").client('s3')
+        s3 = pytest.importorskip("boto3").client("s3")
 
         filename = "tiny1.bin"
         bucket = "verta-versioned-bucket"
@@ -188,7 +207,7 @@ class TestManagedVersioning:
 
         # get file contents directly from S3 for reference
         s3.download_file(bucket, key, filename)
-        with open(filename, 'rb') as f:
+        with open(filename, "rb") as f:
             FILE_CONTENTS = f.read()
         os.remove(filename)
 
@@ -196,5 +215,5 @@ class TestManagedVersioning:
         version = dataset.create_version(content)
 
         downloaded_filename = version.get_content().download(s3_key)
-        with open(downloaded_filename, 'rb') as f:
+        with open(downloaded_filename, "rb") as f:
             assert f.read() == FILE_CONTENTS

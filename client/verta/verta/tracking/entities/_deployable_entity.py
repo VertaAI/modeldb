@@ -30,7 +30,7 @@ from ._entity import _ModelDBEntity
 
 
 # location in DeploymentService model container
-_CUSTOM_MODULES_DIR = os.environ.get('VERTA_CUSTOM_MODULES_DIR', "/app/custom_modules/")
+_CUSTOM_MODULES_DIR = os.environ.get("VERTA_CUSTOM_MODULES_DIR", "/app/custom_modules/")
 
 # for caching files
 _CACHE_DIR = os.path.join(
@@ -46,7 +46,6 @@ _TRAINING_DATA_ATTR_PREFIX = _INTERNAL_ATTR_PREFIX + "training_data_"
 
 @six.add_metaclass(abc.ABCMeta)
 class _DeployableEntity(_ModelDBEntity):
-
     @abc.abstractproperty
     def _MODEL_KEY(self):
         """Artifact key used for models.
@@ -327,30 +326,30 @@ class _DeployableEntity(_ModelDBEntity):
             os.fsync(tempf.fileno())  # flush OS buffer
 
         name, extension = os.path.splitext(filename)
-        if extension == '.zip':
+        if extension == ".zip":
             temp_path = tempfile.mkdtemp()
 
-            with zipfile.ZipFile(tempf.name, 'r') as zipf:
+            with zipfile.ZipFile(tempf.name, "r") as zipf:
                 zipf.extractall(temp_path)
             os.remove(tempf.name)
-        elif extension == '.tgz':
+        elif extension == ".tgz":
             temp_path = tempfile.mkdtemp()
 
-            with tarfile.open(tempf.name, 'r:gz') as tarf:
+            with tarfile.open(tempf.name, "r:gz") as tarf:
                 tarf.extractall(temp_path)
             os.remove(tempf.name)
-        elif extension == '.tar':
+        elif extension == ".tar":
             temp_path = tempfile.mkdtemp()
 
-            with tarfile.open(tempf.name, 'r') as tarf:
+            with tarfile.open(tempf.name, "r") as tarf:
                 tarf.extractall(temp_path)
             os.remove(tempf.name)
-        elif extension == '.gz' and os.path.splitext(name)[1] == '.tar':
+        elif extension == ".gz" and os.path.splitext(name)[1] == ".tar":
             name = os.path.splitext(name)[0]
 
             temp_path = tempfile.mkdtemp()
 
-            with tarfile.open(tempf.name, 'r:gz') as tarf:
+            with tarfile.open(tempf.name, "r:gz") as tarf:
                 tarf.extractall(temp_path)
             os.remove(tempf.name)
         else:
@@ -372,13 +371,13 @@ class _DeployableEntity(_ModelDBEntity):
 
     def _get_cached_file(self, filename):
         name, extension = os.path.splitext(filename)
-        if extension == '.zip':
+        if extension == ".zip":
             pass
-        elif extension == '.tgz':
+        elif extension == ".tgz":
             pass
-        elif extension == '.tar':
+        elif extension == ".tar":
             pass
-        elif extension == '.gz' and os.path.splitext(name)[1] == '.tar':
+        elif extension == ".gz" and os.path.splitext(name)[1] == ".tar":
             name = os.path.splitext(name)[0]
         else:
             name = filename
@@ -422,8 +421,10 @@ class _DeployableEntity(_ModelDBEntity):
             # upload complete (model_api.json)
 
         """
-        if not (isinstance(keys, list)
-                and all(isinstance(key, six.string_types) for key in keys)):
+        if not (
+            isinstance(keys, list)
+            and all(isinstance(key, six.string_types) for key in keys)
+        ):
             raise TypeError("`keys` must be list of str, not {}".format(type(keys)))
 
         # validate that `keys` are actually logged
@@ -431,11 +432,14 @@ class _DeployableEntity(_ModelDBEntity):
         existing_artifact_keys = {artifact.key for artifact in self._msg.artifacts}
         unlogged_artifact_keys = set(keys) - existing_artifact_keys
         if unlogged_artifact_keys:
-            raise ValueError("`keys` contains keys that have not been logged: {}".format(sorted(unlogged_artifact_keys)))
+            raise ValueError(
+                "`keys` contains keys that have not been logged: {}".format(
+                    sorted(unlogged_artifact_keys)
+                )
+            )
 
         # get artifact checksums
-        paths = {artifact.key: artifact.path
-                 for artifact in self._msg.artifacts}
+        paths = {artifact.key: artifact.path for artifact in self._msg.artifacts}
 
         artifacts = dict()
         for key in keys:
@@ -480,7 +484,11 @@ class _DeployableEntity(_ModelDBEntity):
                     if os.path.exists(abspath):
                         new_paths.append(abspath)
                     else:
-                        raise ValueError("custom module {} does not correspond to an existing folder or module".format(p))
+                        raise ValueError(
+                            "custom module {} does not correspond to an existing folder or module".format(
+                                p
+                            )
+                        )
 
             paths = new_paths
 
@@ -497,27 +505,36 @@ class _DeployableEntity(_ModelDBEntity):
         ## remove paths that don't exist
         local_sys_paths = list(filter(os.path.exists, local_sys_paths))
         ## remove .ipython
-        local_sys_paths = list(filter(lambda path: not path.endswith(".ipython"), local_sys_paths))
+        local_sys_paths = list(
+            filter(lambda path: not path.endswith(".ipython"), local_sys_paths)
+        )
         ## remove virtual (and real) environments
-        local_sys_paths = list(filter(lambda path: not _utils.is_in_venv(path), local_sys_paths))
+        local_sys_paths = list(
+            filter(lambda path: not _utils.is_in_venv(path), local_sys_paths)
+        )
 
         # get paths to files within
         if paths is None:
             # Python files within filtered sys.path dirs
             paths = local_sys_paths
-            extensions = ['py', 'pyc', 'pyo']
+            extensions = ["py", "pyc", "pyo"]
         else:
             # all user-specified files
             paths = paths
             extensions = None
         local_filepaths = _utils.find_filepaths(
-            paths, extensions=extensions,
+            paths,
+            extensions=extensions,
             include_hidden=True,
             include_venv=False,  # ignore virtual environments nested within
         )
         ## remove .git
-        local_filepaths = set(filter(lambda path: not path.endswith(".git") and ".git/" not in path,
-                                      local_filepaths))
+        local_filepaths = set(
+            filter(
+                lambda path: not path.endswith(".git") and ".git/" not in path,
+                local_filepaths,
+            )
+        )
 
         # obtain deepest common directory
         #     This directory on the local system will be mirrored in `_CUSTOM_MODULES_DIR` in
@@ -528,39 +545,56 @@ class _DeployableEntity(_ModelDBEntity):
         common_dir = os.path.dirname(common_prefix)
 
         # replace `common_dir` with `_CUSTOM_MODULES_DIR` for deployment sys.path
-        depl_sys_paths = list(map(lambda path: os.path.relpath(path, common_dir), local_sys_paths + forced_local_sys_paths))
-        depl_sys_paths = list(map(lambda path: os.path.join(_CUSTOM_MODULES_DIR, path), depl_sys_paths))
+        depl_sys_paths = list(
+            map(
+                lambda path: os.path.relpath(path, common_dir),
+                local_sys_paths + forced_local_sys_paths,
+            )
+        )
+        depl_sys_paths = list(
+            map(lambda path: os.path.join(_CUSTOM_MODULES_DIR, path), depl_sys_paths)
+        )
 
         bytestream = six.BytesIO()
-        with zipfile.ZipFile(bytestream, 'w') as zipf:
+        with zipfile.ZipFile(bytestream, "w") as zipf:
             for filepath in local_filepaths:
-                arcname = os.path.relpath(filepath, common_dir)  # filepath relative to archive root
+                arcname = os.path.relpath(
+                    filepath, common_dir
+                )  # filepath relative to archive root
                 try:
                     zipf.write(filepath, arcname)
                 except:
                     # maybe file has corrupt metadata; try reading then writing contents
-                    with open(filepath, 'rb') as f:
+                    with open(filepath, "rb") as f:
                         zipf.writestr(
                             _artifact_utils.global_read_zipinfo(arcname),
                             f.read(),
                         )
 
             # add verta config file for sys.path and chdir
-            working_dir = os.path.join(_CUSTOM_MODULES_DIR, os.path.relpath(curr_dir, common_dir))
+            working_dir = os.path.join(
+                _CUSTOM_MODULES_DIR, os.path.relpath(curr_dir, common_dir)
+            )
             zipf.writestr(
                 _artifact_utils.global_read_zipinfo("_verta_config.py"),
-                six.ensure_binary('\n'.join([
-                    "import os, sys",
-                    "",
-                    "",
-                    "sys.path = sys.path[:1] + {} + sys.path[1:]".format(depl_sys_paths),
-                    "",
-                    "try:",
-                    "    os.makedirs(\"{}\")".format(working_dir),
-                    "except OSError:  # already exists",
-                    "    pass",
-                    "os.chdir(\"{}\")".format(working_dir),
-                ]))
+                six.ensure_binary(
+                    "\n".join(
+                        [
+                            "import os, sys",
+                            "",
+                            "",
+                            "sys.path = sys.path[:1] + {} + sys.path[1:]".format(
+                                depl_sys_paths
+                            ),
+                            "",
+                            "try:",
+                            '    os.makedirs("{}")'.format(working_dir),
+                            "except OSError:  # already exists",
+                            "    pass",
+                            'os.chdir("{}")'.format(working_dir),
+                        ]
+                    )
+                ),
             )
 
             # add __init__.py
@@ -604,23 +638,35 @@ class _DeployableEntity(_ModelDBEntity):
         )
 
         if train_features.__class__.__name__ != "DataFrame":
-            raise TypeError("`train_features` must be a pandas DataFrame, not {}".format(type(train_features)))
+            raise TypeError(
+                "`train_features` must be a pandas DataFrame, not {}".format(
+                    type(train_features)
+                )
+            )
         if train_targets.__class__.__name__ == "Series":
             train_targets = train_targets.to_frame()
         elif train_targets.__class__.__name__ != "DataFrame":
-            raise TypeError("`train_targets` must be a pandas DataFrame or Series, not {}".format(type(train_targets)))
+            raise TypeError(
+                "`train_targets` must be a pandas DataFrame or Series, not {}".format(
+                    type(train_targets)
+                )
+            )
 
         # check for overlapping column names
         common_column_names = set(train_features.columns) & set(train_targets.columns)
         if common_column_names:
-            raise ValueError("`train_features` and `train_targets` combined have overlapping column names;"
-                             " please ensure column names are unique")
+            raise ValueError(
+                "`train_features` and `train_targets` combined have overlapping column names;"
+                " please ensure column names are unique"
+            )
 
         train_df = train_features.join(train_targets)
 
         histograms = _histogram_utils.calculate_histograms(train_df)
 
-        response = _utils.make_request("PUT", self._histogram_endpoint, self._conn, json=histograms)
+        response = _utils.make_request(
+            "PUT", self._histogram_endpoint, self._conn, json=histograms
+        )
         _utils.raise_for_http_error(response)
 
     def _get_histogram(self):
@@ -639,7 +685,11 @@ class _DeployableEntity(_ModelDBEntity):
             _utils.raise_for_http_error(response)
         except requests.HTTPError as e:
             if e.response.status_code == 404:
-                e.args = ("log_training_data() may not yet have been called; error message: \n\n{}".format(e.args[0]),) + e.args[1:]
+                e.args = (
+                    "log_training_data() may not yet have been called; error message: \n\n{}".format(
+                        e.args[0]
+                    ),
+                ) + e.args[1:]
 
             raise e
 
