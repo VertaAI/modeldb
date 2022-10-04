@@ -22,7 +22,7 @@
         <postgres.version>42.5.0</postgres.version>
         <liquibase.version>4.9.1</liquibase.version>
         <prometheus.version>0.16.0</prometheus.version>
-        <protobuf.version>3.21.5</protobuf.version>
+        <protobuf.version>3.21.7</protobuf.version>
         <aws.version>1.12.302</aws.version>
         <jackson.version>2.13.4</jackson.version>
         <jaegertracing.version>1.8.1</jaegertracing.version>
@@ -383,7 +383,7 @@
                 <plugin>
                     <groupId>com.diffplug.spotless</groupId>
                     <artifactId>spotless-maven-plugin</artifactId>
-                    <version>2.26.0</version>
+                    <version>2.27.1</version>
                     <configuration>
                         <java>
                             <googleJavaFormat>
