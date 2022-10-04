@@ -126,7 +126,7 @@ class _ModelDBEntity(object):
     @classmethod
     def _get_or_create_by_name(cls, conn, name, getter, creator, checker):
         if name is None:
-            name = cls._generate_default_name()
+            return creator(name)
 
         obj = getter(name)
         if obj is None:
@@ -152,9 +152,6 @@ class _ModelDBEntity(object):
 
     @classmethod
     def _create(cls, conn, conf, *args, **kwargs):
-        if "name" in kwargs and kwargs["name"] is None:
-            kwargs["name"] = cls._generate_default_name()
-
         # translate between `public_within_org` and `visibility`
         VISIBILITY_KEY = "visibility"
         PUBLIC_WITHIN_ORG_KEY = "public_within_org"
