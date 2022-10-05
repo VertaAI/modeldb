@@ -16,7 +16,7 @@ class TestModel:
         assert registered_model
         created_entities.append(registered_model)
 
-        registered_model = client.create_registered_model(name)
+        registered_model = client.create_registered_model()
         assert registered_model
         created_entities.append(registered_model)
 

@@ -17,7 +17,7 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 class TestCRUD:
     def test_create(self, registered_model):
-        version = registered_model.create_version(name)
+        version = registered_model.create_version()
         assert version
 
         with pytest.raises(requests.HTTPError, match="409.*already exists") as excinfo:
