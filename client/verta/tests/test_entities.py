@@ -183,15 +183,15 @@ class TestProject:
     def test_create(self, client):
         assert client.set_project()
         assert client.proj is not None
-        name = _utils.generate_default_name()
-        assert client.create_project(name)
+
+        assert client.create_project()
         assert client.proj is not None
-        with pytest.raises(requests.HTTPError) as excinfo:
+
+        name = client.proj.name
+        with pytest.raises(requests.HTTPError, match="409.*already exists"):
             assert client.create_project(name)
-        excinfo_value = str(excinfo.value).strip()
-        assert "409" in excinfo_value
-        assert "already exists" in excinfo_value
-        with pytest.warns(UserWarning, match=".*already exists.*"):
+
+        with pytest.warns(UserWarning, match="already exists"):
             client.get_or_create_project(name=name, tags=["tag1", "tag2"])
 
     def test_get(self, client):
@@ -200,7 +200,7 @@ class TestProject:
         with pytest.raises(ValueError):
             client.get_project(name)
 
-        proj = client.set_project(name)
+        proj = client.create_project(name)
 
         assert proj.id == client.get_project(proj.name).id
         assert proj.id == client.get_project(id=proj.id).id
@@ -252,15 +252,14 @@ class TestExperiment:
         assert client.set_experiment()
         assert client.expt is not None
 
-        name = _utils.generate_default_name()
-        assert client.create_experiment(name)
+        assert client.create_experiment()
         assert client.expt is not None
-        with pytest.raises(requests.HTTPError) as excinfo:
+
+        name = client.expt.name
+        with pytest.raises(requests.HTTPError, match="409.*already exists"):
             assert client.create_experiment(name)
-        excinfo_value = str(excinfo.value).strip()
-        assert "409" in excinfo_value
-        assert "already exists" in excinfo_value
-        with pytest.warns(UserWarning, match=".*already exists.*"):
+
+        with pytest.warns(UserWarning, match="already exists"):
             client.set_experiment(name=name, attrs={"a": 123})
 
     def test_get(self, client):
@@ -270,7 +269,7 @@ class TestExperiment:
         with pytest.raises(ValueError):
             client.get_experiment(name)
 
-        expt = client.set_experiment(name)
+        expt = client.create_experiment(name)
 
         assert expt.id == client.get_experiment(expt.name).id
         assert expt.id == client.get_experiment(id=expt.id).id
@@ -325,14 +324,14 @@ class TestExperimentRun:
 
         assert client.set_experiment_run()
 
-        name = _utils.generate_default_name()
-        assert client.create_experiment_run(name)
-        with pytest.raises(requests.HTTPError) as excinfo:
+        run = client.create_experiment_run()
+        assert run
+
+        name = run.name
+        with pytest.raises(requests.HTTPError, match="409.*already exists"):
             assert client.create_experiment_run(name)
-        excinfo_value = str(excinfo.value).strip()
-        assert "409" in excinfo_value
-        assert "already exists" in excinfo_value
-        with pytest.warns(UserWarning, match=".*already exists.*"):
+
+        with pytest.warns(UserWarning, match="already exists"):
             client.set_experiment_run(name=name, attrs={"a": 123})
 
     def test_get(self, client):
@@ -343,7 +342,7 @@ class TestExperimentRun:
         with pytest.raises(ValueError):
             client.get_experiment_run(name)
 
-        run = client.set_experiment_run(name)
+        run = client.create_experiment_run(name)
 
         assert run.id == client.get_experiment_run(run.name).id
         assert run.id == client.get_experiment_run(id=run.id).id

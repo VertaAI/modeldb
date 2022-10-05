@@ -14,8 +14,7 @@ class TestProject:
         """
         User 1 share a project in personal workspace to user 2.
         """
-        project_name = _utils.generate_default_name()
-        project = client.create_project(project_name)
+        project = client.create_project()
         project._add_collaborator(email=email_2)
 
         assert client_2.get_project(id=project.id)
@@ -25,9 +24,8 @@ class TestProject:
         """
         User 2 tries to access a org-public project created by a user in the same organization.
         """
-        project_name = _utils.generate_default_name()
         project = client.create_project(
-            project_name, workspace=organization.name, public_within_org=True
+            workspace=organization.name, public_within_org=True
         )
 
         organization.add_member(email_2)
@@ -41,9 +39,8 @@ class TestProject:
         """
         User 2 tries to access a non-org-public project created by a user in the same organization.
         """
-        project_name = _utils.generate_default_name()
         project = client.create_project(
-            project_name, workspace=organization.name, public_within_org=False
+            workspace=organization.name, public_within_org=False
         )
 
         organization.add_member(email_2)
@@ -56,9 +53,8 @@ class TestProject:
         """
         User 2 tries to access a non-org-public project created by another user, but has been shared to user 2.
         """
-        project_name = _utils.generate_default_name()
         project = client.create_project(
-            project_name, workspace=organization.name, public_within_org=False
+            workspace=organization.name, public_within_org=False
         )
 
         organization.add_member(email_2)
@@ -75,9 +71,8 @@ class TestDataset:
         """
         User 2 tries to access a org-public dataset created by a user in the same organization.
         """
-        dataset_name = _utils.generate_default_name()
         dataset = client.create_dataset(
-            dataset_name, workspace=organization.name, public_within_org=True
+            workspace=organization.name, public_within_org=True
         )
         created_entities.append(dataset)
 
@@ -92,9 +87,8 @@ class TestDataset:
         """
         User 2 tries to access a non-org-public dataset created by a user in the same organization.
         """
-        dataset_name = _utils.generate_default_name()
         dataset = client.create_dataset(
-            dataset_name, workspace=organization.name, public_within_org=False
+            workspace=organization.name, public_within_org=False
         )
         created_entities.append(dataset)
 
@@ -112,9 +106,8 @@ class TestRegisteredModel:
         """
         User 2 tries to access a org-public registered_model created by a user in the same organization.
         """
-        registered_model_name = _utils.generate_default_name()
         registered_model = client.create_registered_model(
-            registered_model_name, workspace=organization.name, public_within_org=True
+            workspace=organization.name, public_within_org=True
         )
         created_entities.append(registered_model)
 
@@ -131,9 +124,8 @@ class TestRegisteredModel:
         """
         User 2 tries to access a non-org-public registered_model created by a user in the same organization.
         """
-        registered_model_name = _utils.generate_default_name()
         registered_model = client.create_registered_model(
-            registered_model_name, workspace=organization.name, public_within_org=False
+            workspace=organization.name, public_within_org=False
         )
         created_entities.append(registered_model)
 

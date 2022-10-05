@@ -16,16 +16,15 @@ class TestModel:
         assert registered_model
         created_entities.append(registered_model)
 
-        name = verta._internal_utils._utils.generate_default_name()
         registered_model = client.create_registered_model(name)
         assert registered_model
         created_entities.append(registered_model)
-        with pytest.raises(requests.HTTPError) as excinfo:
+
+        name = registered_model.name
+        with pytest.raises(requests.HTTPError, match="409.*already exists"):
             assert client.create_registered_model(name)
-        excinfo_value = str(excinfo.value).strip()
-        assert "409" in excinfo_value
-        assert "already exists" in excinfo_value
-        with pytest.warns(UserWarning, match=".*already exists.*"):
+
+        with pytest.warns(UserWarning, match="already exists"):
             client.set_registered_model(
                 name=registered_model.name, desc="new description"
             )
@@ -36,7 +35,7 @@ class TestModel:
         with pytest.raises(ValueError):
             client.get_registered_model(name)
 
-        registered_model = client.set_registered_model(name)
+        registered_model = client.create_registered_model(name)
         created_entities.append(registered_model)
 
         assert (
@@ -84,10 +83,10 @@ class TestModel:
         assert str(registered_model.get_labels()) in repr
 
     def test_find(self, client, created_entities):
-        name = verta._internal_utils._utils.generate_default_name()
-        registered_model = client.set_registered_model(name)
+        registered_model = client.create_registered_model()
         created_entities.append(registered_model)
 
+        name = registered_model.name
         find = client.registered_models.find(["name == '{}'".format(name)])
         assert len(find) == 1
         for item in find:

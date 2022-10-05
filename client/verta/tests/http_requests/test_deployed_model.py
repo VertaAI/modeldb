@@ -19,7 +19,7 @@ class TestDeployedModel:
         ).LogisticRegression
 
         # create entities
-        registered_model = https_client.create_registered_model(generate_default_name())
+        registered_model = https_client.create_registered_model()
         created_entities.append(registered_model)
         endpoint = https_client.create_endpoint(generate_default_name())
         created_entities.append(endpoint)
