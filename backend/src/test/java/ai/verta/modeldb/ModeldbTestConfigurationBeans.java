@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.GrpcServerConfig;
+import ai.verta.modeldb.common.config.ServiceConfig;
 import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.TestConfig;
@@ -24,30 +25,40 @@ public class ModeldbTestConfigurationBeans {
   }
 
   @Bean
-  UAC uac(Config config) {
-    if (config.getDatabase().getRdbConfiguration().isH2()) {
-      return mock(UAC.class, RETURNS_DEEP_STUBS);
-    }
-    return UAC.FromConfig(config);
+  public boolean runningIsolated(TestConfig testConfig) {
+    return testConfig.testsShouldRunIsolatedFromDependencies();
+  }
+
+  @Bean
+  UAC uac(Config config, boolean runningIsolated) {
+    return runningIsolated ? mock(UAC.class, RETURNS_DEEP_STUBS) : UAC.FromConfig(config);
   }
 
   private static TestConfig initializeTestConfig() {
     var testConfig = TestConfig.getInstance();
 
-    final int randomGrpcPort = new Random().nextInt(10000) + 1024;
-    final int randomWebPort = randomGrpcPort + 1;
-    final int useRandomPortsPort = 99999;
-    SpringServerConfig springServerConfig = testConfig.getSpringServer();
-    if (springServerConfig.getPort() == useRandomPortsPort) {
-      springServerConfig.setPort(randomWebPort);
-      testConfig.setSpringServer(springServerConfig);
-    }
+    if (testConfig.testsShouldRunIsolatedFromDependencies()) {
+      final int randomGrpcPort = new Random().nextInt(10000) + 1024;
+      final int randomWebPort = randomGrpcPort + 1;
+      final int useRandomPortsPort = 99999;
+      SpringServerConfig springServerConfig = testConfig.getSpringServer();
+      if (springServerConfig.getPort() == useRandomPortsPort) {
+        springServerConfig.setPort(randomWebPort);
+        testConfig.setSpringServer(springServerConfig);
+      }
 
-    GrpcServerConfig grpcServerConfig = testConfig.getGrpcServer();
-    if (testConfig.getGrpcServer().getPort() == useRandomPortsPort) {
-      grpcServerConfig.setPort(randomGrpcPort);
-      grpcServerConfig.setMetrics_port(randomGrpcPort + 1);
-      testConfig.setGrpcServer(grpcServerConfig);
+      GrpcServerConfig grpcServerConfig = testConfig.getGrpcServer();
+      if (testConfig.getGrpcServer().getPort() == useRandomPortsPort) {
+        grpcServerConfig.setPort(randomGrpcPort);
+        grpcServerConfig.setMetrics_port(randomGrpcPort + 1);
+        testConfig.setGrpcServer(grpcServerConfig);
+      }
+
+      ServiceConfig serviceConfig = testConfig.getAuthService();
+      if (serviceConfig.getPort() == useRandomPortsPort) {
+        serviceConfig.setPort(randomGrpcPort);
+        testConfig.setAuthService(serviceConfig);
+      }
     }
     return testConfig;
   }

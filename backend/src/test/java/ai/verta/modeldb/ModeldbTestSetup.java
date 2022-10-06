@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
+import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
@@ -16,14 +17,21 @@ import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceFutureStub;
+import ai.verta.uac.DeleteResources;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.GetUser;
 import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Resources;
+import ai.verta.uac.RoleServiceGrpc;
+import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.SetResource;
+import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.VertaUserInfo;
@@ -47,6 +55,9 @@ public abstract class ModeldbTestSetup extends TestCase {
   @Autowired Executor executor;
   @Autowired ReconcilerInitializer reconcilerInitializer;
 
+  protected static UserInfo testUser1;
+  protected static UserInfo testUser2;
+
   protected static ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
   protected static ProjectServiceGrpc.ProjectServiceBlockingStub client2ProjectServiceStub;
   protected static ProjectServiceBlockingStub serviceUserProjectServiceStub;
@@ -66,6 +77,28 @@ public abstract class ModeldbTestSetup extends TestCase {
   protected static AuthClientInterceptor authClientInterceptor;
   protected final String random = String.valueOf((long) (Math.random() * 1_000_000));
   private static boolean runningIsolated;
+
+  protected CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorMock =
+      mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+  protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorBlockingMock =
+      mock(CollaboratorServiceGrpc.CollaboratorServiceBlockingStub.class);
+  protected AuthzServiceGrpc.AuthzServiceFutureStub authzMock =
+      mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
+  protected AuthzServiceGrpc.AuthzServiceBlockingStub authzBlockingMock =
+      mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
+  protected UACServiceGrpc.UACServiceFutureStub uacMock =
+      mock(UACServiceGrpc.UACServiceFutureStub.class);
+  protected UACServiceGrpc.UACServiceBlockingStub uacBlockingMock =
+      mock(UACServiceGrpc.UACServiceBlockingStub.class);
+  protected WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceMock =
+      mock(WorkspaceServiceGrpc.WorkspaceServiceFutureStub.class);
+  protected WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceBlockingMock =
+      mock(WorkspaceServiceGrpc.WorkspaceServiceBlockingStub.class);
+  protected RoleServiceGrpc.RoleServiceFutureStub roleServiceMock =
+      mock(RoleServiceGrpc.RoleServiceFutureStub.class);
+  protected RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingMock =
+      mock(RoleServiceGrpc.RoleServiceBlockingStub.class);
+  protected AuthServiceChannel authChannelMock = mock(AuthServiceChannel.class);
 
   /**
    * Whether the tests should contain all of their external dependencies as mocks, or should use
@@ -101,22 +134,7 @@ public abstract class ModeldbTestSetup extends TestCase {
             .usePlaintext()
             .executor(executor)
             .build();
-    var authServiceChannel =
-        ManagedChannelBuilder.forTarget(
-                testConfig.getAuthService().getHost() + ":" + testConfig.getAuthService().getPort())
-            .usePlaintext()
-            .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
-            .intercept(authClientInterceptor.getClient1AuthInterceptor())
-            .build();
-    var authServiceChannelClient2 =
-        ManagedChannelBuilder.forTarget(
-                testConfig.getAuthService().getHost() + ":" + testConfig.getAuthService().getPort())
-            .usePlaintext()
-            .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
-            .intercept(authClientInterceptor.getClient2AuthInterceptor())
-            .build();
 
-    // Create all service blocking stub
     // Create all service blocking stub
     projectServiceStub = ProjectServiceGrpc.newBlockingStub(channel);
     client2ProjectServiceStub = ProjectServiceGrpc.newBlockingStub(channelUser2);
@@ -126,42 +144,110 @@ public abstract class ModeldbTestSetup extends TestCase {
     commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
-    uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
-    collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
-    collaboratorServiceStubClient2 =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
+
+    if (!runningIsolated) {
+      var authServiceChannel =
+          ManagedChannelBuilder.forTarget(
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
+              .usePlaintext()
+              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
+              .intercept(authClientInterceptor.getClient1AuthInterceptor())
+              .build();
+      var authServiceChannelClient2 =
+          ManagedChannelBuilder.forTarget(
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
+              .usePlaintext()
+              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
+              .intercept(authClientInterceptor.getClient2AuthInterceptor())
+              .build();
+      uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
+      collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
+      collaboratorServiceStubClient2 =
+          CollaboratorServiceGrpc.newBlockingStub(authServiceChannelClient2);
+
+      GetUser getUserRequest =
+          GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
+      // Get the user info by vertaId form the AuthService
+      testUser1 = uacServiceStub.getUser(getUserRequest);
+      getUserRequest =
+          GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
+      testUser2 = uacServiceStub.getUser(getUserRequest);
+    } else {
+      testUser1 =
+          UserInfo.newBuilder()
+              .setEmail(authClientInterceptor.getClient1Email())
+              .setVertaInfo(
+                  VertaUserInfo.newBuilder()
+                      .setUserId(String.valueOf(authClientInterceptor.getClient1WorkspaceId()))
+                      .setUsername(authClientInterceptor.getClient1UserName())
+                      .setDefaultWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
+                      .setWorkspaceId(String.valueOf(authClientInterceptor.getClient1WorkspaceId()))
+                      .build())
+              .build();
+
+      testUser2 =
+          UserInfo.newBuilder()
+              .setEmail(authClientInterceptor.getClient2Email())
+              .setVertaInfo(
+                  VertaUserInfo.newBuilder()
+                      .setUserId(String.valueOf(authClientInterceptor.getClient2WorkspaceId()))
+                      .setUsername(authClientInterceptor.getClient2UserName())
+                      .setDefaultWorkspaceId(authClientInterceptor.getClient2WorkspaceId())
+                      .setWorkspaceId(String.valueOf(authClientInterceptor.getClient2WorkspaceId()))
+                      .build())
+              .build();
+    }
 
     LOGGER.info("Test service infrastructure config complete.");
   }
 
-  protected void setupMockUacEndpoints(UAC uac, CollaboratorServiceFutureStub collaboratorMock) {
-    var uacMock = mock(UACServiceGrpc.UACServiceFutureStub.class);
+  protected void setupMockUacEndpoints(UAC uac) {
+    when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
+    when(uac.getAuthzService()).thenReturn(authzMock);
     when(uac.getUACService()).thenReturn(uacMock);
-    var testUser1 =
-        UserInfo.newBuilder()
-            .setEmail(authClientInterceptor.getClient1Email())
-            .setVertaInfo(
-                VertaUserInfo.newBuilder()
-                    .setUserId(authClientInterceptor.getClient1UserName())
-                    .setUsername(authClientInterceptor.getClient1UserName())
-                    .setDefaultWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
-                    .setWorkspaceId(String.valueOf(authClientInterceptor.getClient1WorkspaceId()))
-                    .build())
-            .build();
+    when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
+    when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzBlockingMock);
+    when(authChannelMock.getUacServiceBlockingStub()).thenReturn(uacBlockingMock);
+    when(authChannelMock.getWorkspaceServiceBlockingStub()).thenReturn(workspaceBlockingMock);
+    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
+    when(uac.getWorkspaceService()).thenReturn(workspaceMock);
+    when(uac.getServiceAccountRoleServiceFutureStub()).thenReturn(roleServiceMock);
+    when(authChannelMock.getRoleServiceBlockingStubForServiceUser())
+        .thenReturn(roleServiceBlockingMock);
+
     when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
     when(uacMock.getUser(any())).thenReturn(Futures.immediateFuture(testUser1));
-
-    var authzMock = mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
-    when(uac.getAuthzService()).thenReturn(authzMock);
     when(authzMock.isSelfAllowed(any()))
         .thenReturn(
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
-
+    when(authzBlockingMock.isSelfAllowed(any()))
+        .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+    when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+    when(workspaceBlockingMock.getWorkspaceByName(any()))
+        .thenReturn(
+            Workspace.newBuilder()
+                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                .setUsername(testUser1.getVertaInfo().getUsername())
+                .build());
+    when(workspaceBlockingMock.getWorkspaceById(any()))
+        .thenReturn(
+            Workspace.newBuilder()
+                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                .setUsername(testUser1.getVertaInfo().getUsername())
+                .build());
+    when(collaboratorBlockingMock.setResource(any()))
+        .thenReturn(SetResource.Response.newBuilder().build());
+    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
+        .thenReturn(collaboratorBlockingMock);
+    when(collaboratorBlockingMock.deleteResources(any()))
+        .thenReturn(DeleteResources.Response.newBuilder().build());
     // allow any SetResource call
     when(collaboratorMock.setResource(any()))
         .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
-    var workspaceMock = mock(WorkspaceServiceGrpc.WorkspaceServiceFutureStub.class);
-    when(uac.getWorkspaceService()).thenReturn(workspaceMock);
     when(workspaceMock.getWorkspaceById(
             GetWorkspaceById.newBuilder()
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
@@ -180,7 +266,6 @@ public abstract class ModeldbTestSetup extends TestCase {
                 Workspace.newBuilder()
                     .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                     .build()));
-
     when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
@@ -197,6 +282,8 @@ public abstract class ModeldbTestSetup extends TestCase {
                             .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                             .build())
                     .build()));
+    when(roleServiceMock.setRoleBinding(any()))
+        .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
   }
 
   protected void cleanUpResources() {
@@ -241,24 +328,22 @@ public abstract class ModeldbTestSetup extends TestCase {
                     .build()));
   }
 
-  public void mockGetResourcesForAllEntity(
-      CollaboratorServiceFutureStub collaboratorMock, Map<Long, Project> projectMap) {
+  protected void mockGetResourcesForAllEntity(Map<String, Project> projectMap, UserInfo userInfo) {
+    var resourcesResponse =
+        GetResources.Response.newBuilder()
+            .addAllItem(
+                projectMap.values().stream()
+                    .map(
+                        project ->
+                            GetResourcesResponseItem.newBuilder()
+                                .setResourceId(project.getId())
+                                .setWorkspaceId(userInfo.getVertaInfo().getDefaultWorkspaceId())
+                                .build())
+                    .collect(Collectors.toList()))
+            .build();
     when(collaboratorMock.getResources(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                GetResources.Response.newBuilder()
-                    .addAllItem(
-                        projectMap.values().stream()
-                            .map(
-                                project ->
-                                    GetResourcesResponseItem.newBuilder()
-                                        .setResourceId(project.getId())
-                                        .setWorkspaceId(
-                                            authClientInterceptor.getClient1WorkspaceId())
-                                        .build())
-                            .collect(Collectors.toList()))
-                    .build()));
-
+        .thenReturn(Futures.immediateFuture(resourcesResponse));
+    when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
     when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
@@ -281,5 +366,29 @@ public abstract class ModeldbTestSetup extends TestCase {
                                         .build())
                             .collect(Collectors.toList()))
                     .build()));
+    var allowedResourcesResponse =
+        projectMap.values().stream()
+            .map(
+                project ->
+                    Resources.newBuilder()
+                        .addResourceIds(project.getId())
+                        .setResourceType(
+                            ResourceType.newBuilder()
+                                .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
+                                .build())
+                        .setService(Service.MODELDB_SERVICE)
+                        .build())
+            .collect(Collectors.toList());
+    when(authzMock.getSelfAllowedResources(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                GetSelfAllowedResources.Response.newBuilder()
+                    .addAllResources(allowedResourcesResponse)
+                    .build()));
+    when(authzBlockingMock.getSelfAllowedResources(any()))
+        .thenReturn(
+            GetSelfAllowedResources.Response.newBuilder()
+                .addAllResources(allowedResourcesResponse)
+                .build());
   }
 }

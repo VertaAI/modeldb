@@ -1,6 +1,7 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -10,11 +11,17 @@ import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CodeVersion;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.AuthServiceChannel;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
+import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -34,6 +41,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -71,10 +79,7 @@ public class ProjectTest extends ModeldbTestSetup {
     initializedChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
-      var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
-      when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
-
-      setupMockUacEndpoints(uac, collaboratorMock);
+      setupMockUacEndpoints(uac);
     }
 
     // Create all entities
@@ -86,6 +91,21 @@ public class ProjectTest extends ModeldbTestSetup {
   @After
   public void removeEntities() {
     if (!projectMap.isEmpty()) {
+      if (isRunningIsolated()) {
+        /*var collaboratorMock = mock(CollaboratorServiceFutureStub.class);
+        when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
+
+        var authChannelMock = mock(AuthServiceChannel.class);
+        when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
+        var collaboratorBlockingMock = mock(CollaboratorServiceBlockingStub.class);
+        when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
+        var authzServiceFutureStub = mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
+        when(uac.getAuthzService()).thenReturn(authzServiceFutureStub);
+        var authzServiceBlockingStub = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
+        when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzServiceBlockingStub);*/
+        mockGetResourcesForAllEntity(projectMap, testUser1);
+      }
+
       DeleteProjects deleteProjects =
           DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
       DeleteProjects.Response deleteProjectsResponse =
@@ -93,6 +113,27 @@ public class ProjectTest extends ModeldbTestSetup {
       LOGGER.info("Project deleted successfully");
       LOGGER.info(deleteProjectsResponse.toString());
       assertTrue(deleteProjectsResponse.getStatus());
+    }
+
+    if (isRunningIsolated()) {
+      var authChannelMock = mock(AuthServiceChannel.class);
+      when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
+      var collaboratorBlockingMock = mock(CollaboratorServiceBlockingStub.class);
+      when(authChannelMock.getCollaboratorServiceBlockingStub())
+          .thenReturn(collaboratorBlockingMock);
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setResourceId(dataset.getId())
+                      .setWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      var authzServiceBlockingStub = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
+      when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzServiceBlockingStub);
+      when(authzServiceBlockingStub.isSelfAllowed(any()))
+          .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
     }
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
@@ -139,13 +180,17 @@ public class ProjectTest extends ModeldbTestSetup {
         "Project name not match with expected project name",
         createProjectRequest.getName(),
         project3.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllEntity(projectMap, testUser1);
+    }
   }
 
   private void createExperimentEntities() {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        getCreateExperimentRequest(project.getId(), "Experiment_1");
+        getCreateExperimentRequest(project.getId(), "Experiment-1-" + random);
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -555,6 +600,10 @@ public class ProjectTest extends ModeldbTestSetup {
     CreateProject createProjectRequest = getCreateProjectRequest(project.getName());
 
     try {
+      if (isRunningIsolated()) {
+        when(collaboratorMock.setResource(any()))
+            .thenThrow(new AlreadyExistsException("Already exists"));
+      }
       projectServiceStub.createProject(createProjectRequest);
       fail();
     } catch (StatusRuntimeException e) {
@@ -941,6 +990,12 @@ public class ProjectTest extends ModeldbTestSetup {
             .setAttribute(project.getAttributesList().get(0))
             .build();
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       projectServiceStub.updateProjectAttributes(updateProjectAttributesRequest);
       fail();
     } catch (StatusRuntimeException e) {
@@ -1038,6 +1093,12 @@ public class ProjectTest extends ModeldbTestSetup {
         AddProjectTags.newBuilder().setId("sdasd").addAllTags(project.getTagsList()).build();
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       projectServiceStub.addProjectTags(addProjectTagsRequest);
       fail();
     } catch (StatusRuntimeException e) {
@@ -1096,6 +1157,12 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       AddProjectTag addProjectTagRequest = AddProjectTag.newBuilder().setId("xzy").build();
       projectServiceStub.addProjectTag(addProjectTagRequest);
       fail();
@@ -1255,6 +1322,12 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       DeleteProjectTag deleteProjectTagRequest = DeleteProjectTag.newBuilder().setId("xyz").build();
       projectServiceStub.deleteProjectTag(deleteProjectTagRequest);
       fail();
@@ -1327,6 +1400,12 @@ public class ProjectTest extends ModeldbTestSetup {
     getProjectAttributesRequest =
         GetAttributes.newBuilder().setId("jfhdsjfhdsfjk").setGetAll(true).build();
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       projectServiceStub.getProjectAttributes(getProjectAttributesRequest);
       fail();
     } catch (StatusRuntimeException ex) {
@@ -1414,6 +1493,9 @@ public class ProjectTest extends ModeldbTestSetup {
   public void j_getProjectById() {
     LOGGER.info("Get Project by ID test start................................");
 
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+    }
     GetProjectById getProject = GetProjectById.newBuilder().setId(project.getId()).build();
     GetProjectById.Response response = projectServiceStub.getProjectById(getProject);
     LOGGER.info("Response List : " + response.getProject());
@@ -1438,6 +1520,8 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     try {
+      when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+          .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
       GetProjectById getProject = GetProjectById.newBuilder().setId("xyz").build();
       projectServiceStub.getProjectById(getProject);
       fail();
@@ -1449,8 +1533,46 @@ public class ProjectTest extends ModeldbTestSetup {
   }
 
   @Test
-  public void k_getProjectByName() {
+  public void k_getProjectByName() throws ExecutionException, InterruptedException {
     LOGGER.info("Get Project by name test start................................");
+
+    if (isRunningIsolated()) {
+      when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+      when(workspaceMock.getWorkspaceByName(
+              GetWorkspaceByName.newBuilder()
+                  .setName(testUser2.getVertaInfo().getUsername())
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  Workspace.newBuilder()
+                      .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .build()));
+      when(workspaceMock.getWorkspaceById(
+              GetWorkspaceById.newBuilder()
+                  .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  Workspace.newBuilder()
+                      .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .build()));
+      when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  GetResources.Response.newBuilder()
+                      .addItem(
+                          GetResourcesResponseItem.newBuilder()
+                              .setVisibility(ResourceVisibility.PRIVATE)
+                              .setResourceType(
+                                  ResourceType.newBuilder()
+                                      .setModeldbServiceResourceType(
+                                          ModelDBServiceResourceTypes.PROJECT)
+                                      .build())
+                              .setOwnerId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                              .setWorkspaceId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                              .build())
+                      .build()));
+    }
 
     Project project = null;
     try {
@@ -1465,6 +1587,10 @@ public class ProjectTest extends ModeldbTestSetup {
           createProjectRequest.getName(),
           project.getName());
 
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser2);
+      }
+
       GetProjectByName getProject =
           GetProjectByName.newBuilder().setName(project.getName()).build();
 
@@ -1478,15 +1604,38 @@ public class ProjectTest extends ModeldbTestSetup {
       }
 
       if (testConfig.hasAuth()) {
-        AddCollaboratorRequest addCollaboratorRequest =
-            CollaboratorUtils.addCollaboratorRequestProject(
-                project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
+        if (isRunningIsolated()) {
+          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+          mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+          when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      GetResources.Response.newBuilder()
+                          .addItem(
+                              GetResourcesResponseItem.newBuilder()
+                                  .setVisibility(ResourceVisibility.PRIVATE)
+                                  .setResourceType(
+                                      ResourceType.newBuilder()
+                                          .setModeldbServiceResourceType(
+                                              ModelDBServiceResourceTypes.PROJECT)
+                                          .build())
+                                  .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                                  .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                                  .build())
+                          .build()));
+        } else {
+          AddCollaboratorRequest addCollaboratorRequest =
+              CollaboratorUtils.addCollaboratorRequestProject(
+                  project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
-        AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-            collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-        LOGGER.info(
-            "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
-        assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
+          var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+          AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
+              collaboratorMock.addOrUpdateProjectCollaborator(addCollaboratorRequest).get();
+          LOGGER.info(
+              "Collaborator added in server : "
+                  + addOrUpdateProjectCollaboratorResponse.getStatus());
+          assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
+        }
 
         GetProjectByName.Response getProjectByNameResponse =
             projectServiceStub.getProjectByName(getProject);
@@ -1514,6 +1663,10 @@ public class ProjectTest extends ModeldbTestSetup {
               "Project name not match with expected project name",
               createProjectRequest.getName(),
               selfProject.getName());
+
+          if (isRunningIsolated()) {
+            mockGetResourcesForAllEntity(Map.of(selfProject.getId(), selfProject), testUser1);
+          }
 
           getProject = GetProjectByName.newBuilder().setName(selfProject.getName()).build();
           getProjectByNameResponse = projectServiceStub.getProjectByName(getProject);
@@ -1569,20 +1722,24 @@ public class ProjectTest extends ModeldbTestSetup {
     Project selfProject = null;
     Project project = null;
     try {
-      GetUser getUserRequest =
-          GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
-      // Get the user info by vertaId form the AuthService
-      UserInfo secondUserInfo = uacServiceStub.getUser(getUserRequest);
 
-      getUserRequest =
-          GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-
+      if (isRunningIsolated()) {
+        when(workspaceMock.getWorkspaceByName(
+                GetWorkspaceByName.newBuilder()
+                    .setName(testUser2.getVertaInfo().getUsername())
+                    .build()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    Workspace.newBuilder()
+                        .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                        .build()));
+      }
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest();
       createProjectRequest =
           createProjectRequest
               .toBuilder()
-              .setWorkspaceName(secondUserInfo.getVertaInfo().getUsername())
+              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
               .build();
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
@@ -1593,15 +1750,21 @@ public class ProjectTest extends ModeldbTestSetup {
           createProjectRequest.getName(),
           project.getName());
 
-      AddCollaboratorRequest addCollaboratorRequest =
-          CollaboratorUtils.addCollaboratorRequestProject(
-              project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
+      var projectMap = new HashMap<String, Project>();
+      if (isRunningIsolated()) {
+        projectMap.put(project.getId(), project);
+        mockGetResourcesForAllEntity(projectMap, testUser1);
+      } else {
+        AddCollaboratorRequest addCollaboratorRequest =
+            CollaboratorUtils.addCollaboratorRequestProject(
+                project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
-      AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-          collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info(
-          "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
-      assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
+        AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
+            collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info(
+            "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
+        assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
+      }
 
       // Create project
       createProjectRequest = getCreateProjectRequest(project.getName());
@@ -1613,10 +1776,15 @@ public class ProjectTest extends ModeldbTestSetup {
           createProjectRequest.getName(),
           selfProject.getName());
 
+      if (isRunningIsolated()) {
+        projectMap.put(selfProject.getId(), selfProject);
+        mockGetResourcesForAllEntity(projectMap, testUser1);
+      }
+
       GetProjectByName getProject =
           GetProjectByName.newBuilder()
               .setName(selfProject.getName())
-              .setWorkspaceName(secondUserInfo.getVertaInfo().getUsername())
+              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
               .build();
       GetProjectByName.Response getProjectByNameResponse =
           projectServiceStub.getProjectByName(getProject);
@@ -1678,6 +1846,10 @@ public class ProjectTest extends ModeldbTestSetup {
     LOGGER.info("Get Project by name NOT_FOUND test start................................");
 
     try {
+      if (isRunningIsolated()) {
+        when(collaboratorMock.getResources(any()))
+            .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+      }
       GetProjectByName getProject = GetProjectByName.newBuilder().setName("test").build();
       projectServiceStub.getProjectByName(getProject);
       fail();
@@ -1721,6 +1893,11 @@ public class ProjectTest extends ModeldbTestSetup {
         "Project name not match with expected project name",
         createProjectRequest.getName(),
         project2.getName());
+
+    if (isRunningIsolated()) {
+      projectsMap.putAll(projectMap);
+      mockGetResourcesForAllEntity(projectsMap, testUser1);
+    }
 
     getProjects = GetProjects.newBuilder().build();
     response = projectServiceStub.getProjects(getProjects);
@@ -1776,6 +1953,10 @@ public class ProjectTest extends ModeldbTestSetup {
         createProjectRequest.getName(),
         project2.getName());
 
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllEntity(projectsMap, testUser1);
+    }
+
     GetProjects getProjects = GetProjects.newBuilder().build();
     GetProjects.Response response = projectServiceStub.getProjects(getProjects);
     LOGGER.info("GetProjects Count : " + response.getProjectsCount());
@@ -1811,6 +1992,23 @@ public class ProjectTest extends ModeldbTestSetup {
   @Test
   public void m_getProjectSummary() throws IOException {
     LOGGER.info("Get Project summary test start................................");
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+      when(authzMock.getSelfAllowedResources(
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+    }
 
     GetSummary getSummaryRequest = GetSummary.newBuilder().setEntityId(project.getId()).build();
     GetSummary.Response response = projectServiceStub.getSummary(getSummaryRequest);
@@ -2256,6 +2454,10 @@ public class ProjectTest extends ModeldbTestSetup {
   @Test
   public void y_projectCascadeDeleteTest() throws InterruptedException {
     LOGGER.info("Project delete with cascading test start................................");
+    if (isRunningIsolated()) {
+      when(roleServiceBlockingMock.deleteRoleBindings(any()))
+          .thenReturn(DeleteRoleBindings.Response.newBuilder().setStatus(true).build());
+    }
     cleanUpResources();
 
     Project project = null;
@@ -2331,7 +2533,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
       // Create two collaborator for above project
       // For Collaborator1
-      if (testConfig.hasAuth()) {
+      if (testConfig.hasAuth() && !isRunningIsolated()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2390,37 +2592,40 @@ public class ProjectTest extends ModeldbTestSetup {
       checkEqualsAssert(e);
     }
 
-    // Start cross-checking for comment of experimentRun
-    // For experimentRun1
-    GetComments getCommentsRequest =
-        GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
-    GetComments.Response getCommentsResponse;
-    try {
-      commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-      if (testConfig.hasAuth()) {
-        fail();
-      }
-    } catch (StatusRuntimeException e) {
-      checkEqualsAssert(e);
-    }
-    // For experimentRun3
-    getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
-    try {
-      getCommentsResponse = commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-      assertTrue(getCommentsResponse.getCommentsList().isEmpty());
-    } catch (StatusRuntimeException e) {
-      checkEqualsAssert(e);
-    }
-
-    // Start cross-checking for project collaborator
-    if (testConfig.hasAuth()) {
-      GetCollaborator getCollaboratorRequest =
-          GetCollaborator.newBuilder().setEntityId(project.getId()).build();
+    if (!isRunningIsolated()) {
+      // Start cross-checking for comment of experimentRun
+      // For experimentRun1
+      GetComments getCommentsRequest =
+          GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
+      GetComments.Response getCommentsResponse;
       try {
-        collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
-        fail();
+        commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+        if (testConfig.hasAuth()) {
+          fail();
+        }
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
+      }
+      // For experimentRun3
+      getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
+      try {
+        getCommentsResponse =
+            commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+        assertTrue(getCommentsResponse.getCommentsList().isEmpty());
+      } catch (StatusRuntimeException e) {
+        checkEqualsAssert(e);
+      }
+
+      // Start cross-checking for project collaborator
+      if (testConfig.hasAuth()) {
+        GetCollaborator getCollaboratorRequest =
+            GetCollaborator.newBuilder().setEntityId(project.getId()).build();
+        try {
+          collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
+          fail();
+        } catch (StatusRuntimeException e) {
+          checkEqualsAssert(e);
+        }
       }
     }
 
@@ -2500,7 +2705,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
         // Create two collaborator for above project
         // For Collaborator1
-        if (testConfig.hasAuth()) {
+        if (testConfig.hasAuth() && !isRunningIsolated()) {
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorUtils.addCollaboratorRequestProjectInterceptor(
                   project, CollaboratorType.READ_WRITE, authClientInterceptor);
@@ -2558,40 +2763,43 @@ public class ProjectTest extends ModeldbTestSetup {
         checkEqualsAssert(e);
       }
 
-      // Start cross-checking for comment of experimentRun
-      // For experimentRun1
-      getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
-      try {
-        commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        if (testConfig.hasAuth()) {
-          fail();
-        }
-      } catch (StatusRuntimeException e) {
-        checkEqualsAssert(e);
-      }
-
-      // For experimentRun3
-      getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
-      try {
-        commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
-        if (testConfig.hasAuth()) {
-          fail();
-        }
-      } catch (StatusRuntimeException e) {
-        checkEqualsAssert(e);
-      }
-
-      // Start cross-checking for project collaborator
-      if (testConfig.hasAuth()) {
-        GetCollaborator getCollaboratorRequest =
-            GetCollaborator.newBuilder().setEntityId(project.getId()).build();
+      if (!isRunningIsolated()) {
+        // Start cross-checking for comment of experimentRun
+        // For experimentRun1
+        var getCommentsRequest =
+            GetComments.newBuilder().setEntityId(experimentRun1.getId()).build();
         try {
-          GetCollaborator.Response getCollaboratorResponse =
-              collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
-          assertTrue(getCollaboratorResponse.getSharedUsersList().isEmpty());
-          fail();
+          commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+          if (testConfig.hasAuth()) {
+            fail();
+          }
         } catch (StatusRuntimeException e) {
           checkEqualsAssert(e);
+        }
+
+        // For experimentRun3
+        getCommentsRequest = GetComments.newBuilder().setEntityId(experimentRun3.getId()).build();
+        try {
+          commentServiceBlockingStub.getExperimentRunComments(getCommentsRequest);
+          if (testConfig.hasAuth()) {
+            fail();
+          }
+        } catch (StatusRuntimeException e) {
+          checkEqualsAssert(e);
+        }
+
+        // Start cross-checking for project collaborator
+        if (testConfig.hasAuth()) {
+          GetCollaborator getCollaboratorRequest =
+              GetCollaborator.newBuilder().setEntityId(project.getId()).build();
+          try {
+            GetCollaborator.Response getCollaboratorResponse =
+                collaboratorServiceStubClient1.getProjectCollaborators(getCollaboratorRequest);
+            assertTrue(getCollaboratorResponse.getSharedUsersList().isEmpty());
+            fail();
+          } catch (StatusRuntimeException e) {
+            checkEqualsAssert(e);
+          }
         }
       }
     }
@@ -2642,6 +2850,11 @@ public class ProjectTest extends ModeldbTestSetup {
         createProjectRequest.getName(),
         project3.getName());
 
+    if (isRunningIsolated()) {
+      projectsMap.putAll(projectMap);
+      mockGetResourcesForAllEntity(projectsMap, testUser1);
+    }
+
     getProjects = GetProjects.newBuilder().build();
     response = projectServiceStub.getProjects(getProjects);
     List<Project> responseList = new ArrayList<>();
@@ -2655,6 +2868,9 @@ public class ProjectTest extends ModeldbTestSetup {
         "Projects count not match with expected projects count",
         projectsMap.size(),
         responseList.size());
+    if (isRunningIsolated()) {
+      projectMap.forEach((s, project4) -> projectsMap.remove(s));
+    }
     assertEquals(
         "Projects count not match with expected projects count",
         projectsMap.size(),
@@ -2748,6 +2964,10 @@ public class ProjectTest extends ModeldbTestSetup {
           "Project name not match with expected project name",
           createProjectRequest.getName(),
           project.getName());
+
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+      }
 
       LogProjectCodeVersion logProjectCodeVersionRequest =
           LogProjectCodeVersion.newBuilder()
@@ -2931,6 +3151,13 @@ public class ProjectTest extends ModeldbTestSetup {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
+    if (isRunningIsolated()) {
+      when(authzMock.isSelfAllowed(any()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+    }
+
     logArtifactRequest =
         LogProjectArtifacts.newBuilder().setId("asda").addAllArtifacts(artifacts).build();
     try {
@@ -2946,6 +3173,12 @@ public class ProjectTest extends ModeldbTestSetup {
             .addAllArtifacts(project.getArtifactsList())
             .build();
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+      }
       projectServiceStub.logArtifacts(logArtifactRequest);
       fail();
     } catch (StatusRuntimeException ex) {
@@ -2992,6 +3225,12 @@ public class ProjectTest extends ModeldbTestSetup {
     getArtifactsRequest = GetArtifacts.newBuilder().setId("dssaa").build();
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       projectServiceStub.getArtifacts(getArtifactsRequest);
       fail();
     } catch (StatusRuntimeException ex) {

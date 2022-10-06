@@ -15,6 +15,7 @@ import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.EnabledMigration;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
@@ -105,10 +106,15 @@ public class AppConfigBeans {
   }
 
   @Bean
-  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService)
+  UAC uac(Config config) {
+    return UAC.FromConfig(config);
+  }
+
+  @Bean
+  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService, UAC uac)
       throws IOException {
     // Initialize services that we depend on
-    return ServiceSet.fromConfig(config, artifactStoreService);
+    return ServiceSet.fromConfig(config, artifactStoreService, uac);
   }
 
   @Bean
