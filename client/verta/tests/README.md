@@ -6,7 +6,7 @@ A subset of tests can be run solely on open-source functionality (detailed in **
 
 ## Installation
 
-To install the packages needed for running tests, refer to the **Developer Installation** instructions in [the contribution guide](../../CONTRIBUTING.md).
+To install the packages needed for running tests, use [`requirements-dev.txt`](../requirements-dev.txt).
 
 Also, set the following environment variables, which are used by the test suite for ModelDB integration tests:
 - `VERTA_HOST` e.g. `http://localhost:3000` or `app.verta.ai`
@@ -87,3 +87,17 @@ Most fixtures are defined in [`conftest.py`](conftest.py).
 To use a fixture: simply write the name of the fixture as a parameter to your test function; `pytest` will automatically pass it in at runtime.
 
 To write a fixture: write code for setup, `yield` the object that should be passed to the test function, then write code for cleanup.
+
+### Parametrization
+
+The `pytest.mark.parametrize` decorator is used to re-run a test function for a series of similar arguments.
+
+For example, we use it [here](https://github.com/VertaAI/modeldb/blob/b1c0106/client/verta/tests/registry/test_model.py#L137-L150) to verify that every one of our registry task type objects can be correctly set and retrieved from a registered model.
+
+### Hypothesis
+
+`hypothesis` is used to test against a large space of possible arguments. This is useful for catching unexpected edge cases, since we pick an input space for the test—rather than specific input values—and `hypothesis` will draw values from that space which often surpass the human imagination.
+
+For example, we define strategies [here](https://github.com/VertaAI/modeldb/blob/b1c0106/client/verta/tests/test_utils/test_pip_requirements.py#L21-L35) for valid Python library names and version numbers, and use those strategies [here](https://github.com/VertaAI/modeldb/blob/b1c0106/client/verta/tests/test_utils/test_pip_requirements.py#L151-L166) to assert that our pip parsing utilities can handle any valid value.
+
+Because `hypothesis` will run tests a large number of times, it should only be used for unit tests, and not for any tests that make backend calls.
