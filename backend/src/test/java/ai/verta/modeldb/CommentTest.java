@@ -2,7 +2,6 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 
-import ai.verta.modeldb.authservice.*;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
@@ -88,7 +87,7 @@ public class CommentTest extends TestsInit {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);

@@ -5,7 +5,6 @@ import static org.junit.Assume.assumeTrue;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
-import ai.verta.modeldb.authservice.*;
 import com.google.api.client.util.IOUtils;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
@@ -80,7 +79,7 @@ public class NFSArtifactStoreTest extends TestsInit {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_1");
+        experimentTest.getCreateExperimentRequestForOtherTests(project.getId(), "Experiment_1");
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     experiment = createExperimentResponse.getExperiment();

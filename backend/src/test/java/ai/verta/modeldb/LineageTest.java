@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static ai.verta.modeldb.ExperimentTest.getCreateExperimentRequest;
+import static ai.verta.modeldb.ExperimentTest.getCreateExperimentRequestForOtherTests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
 
@@ -10,7 +10,6 @@ import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStu
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.authservice.*;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -356,7 +355,8 @@ public class LineageTest extends TestsInit {
       ExperimentServiceBlockingStub experimentServiceStub,
       Project project) {
     CreateExperiment createExperimentRequest =
-        getCreateExperimentRequest(project.getId(), "Experiment-" + new Date().getTime());
+        getCreateExperimentRequestForOtherTests(
+            project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment = createExperimentResponse.getExperiment();

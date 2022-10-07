@@ -165,7 +165,7 @@ public class ExperimentRunTest extends TestsInit {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project.getId(), "Experiment-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
@@ -196,7 +196,7 @@ public class ExperimentRunTest extends TestsInit {
 
     // Create two experiment of above project
     createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project.getId(), "Experiment-" + new Date().getTime());
     createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
     experiment2 = createExperimentResponse.getExperiment();
@@ -2294,7 +2294,7 @@ public class ExperimentRunTest extends TestsInit {
 
       // Create two experiment of above project
       CreateExperiment createExperimentRequest =
-          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+          experimentTest.getCreateExperimentRequestForOtherTests(project.getId(), "Experiment_n_sprt_abc");
       CreateExperiment.Response createExperimentResponse =
           experimentServiceStub.createExperiment(createExperimentRequest);
       Experiment experiment = createExperimentResponse.getExperiment();
@@ -2454,7 +2454,7 @@ public class ExperimentRunTest extends TestsInit {
 
       // Create two experiment of above project
       CreateExperiment createExperimentRequest =
-          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+          experimentTest.getCreateExperimentRequestForOtherTests(project.getId(), "Experiment_n_sprt_abc");
       CreateExperiment.Response createExperimentResponse =
           experimentServiceStub.createExperiment(createExperimentRequest);
       Experiment experiment = createExperimentResponse.getExperiment();
@@ -2576,7 +2576,7 @@ public class ExperimentRunTest extends TestsInit {
 
       // Create two experiment of above project
       CreateExperiment createExperimentRequest =
-          experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_n_sprt_abc");
+          experimentTest.getCreateExperimentRequestForOtherTests(project.getId(), "Experiment_n_sprt_abc");
       CreateExperiment.Response createExperimentResponse =
           experimentServiceStub.createExperiment(createExperimentRequest);
       Experiment experiment = createExperimentResponse.getExperiment();
@@ -4573,7 +4573,7 @@ public class ExperimentRunTest extends TestsInit {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        experimentTest.getCreateExperimentRequest(project.getId(), "Experiment_zys");
+        experimentTest.getCreateExperimentRequestForOtherTests(project.getId(), "Experiment_zys");
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
     Experiment experiment = createExperimentResponse.getExperiment();
@@ -5237,7 +5237,7 @@ public class ExperimentRunTest extends TestsInit {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
@@ -5303,7 +5303,7 @@ public class ExperimentRunTest extends TestsInit {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(createExperimentRequest);
@@ -8115,7 +8115,7 @@ public class ExperimentRunTest extends TestsInit {
     try {
       // Create two experiment of above project
       CreateExperiment createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(
+          ExperimentTest.getCreateExperimentRequestForOtherTests(
               project1.getId(), "Experiment-1-" + new Date().getTime());
       CreateExperiment.Response createExperimentResponse =
           experimentServiceStub.createExperiment(createExperimentRequest);
@@ -8123,7 +8123,7 @@ public class ExperimentRunTest extends TestsInit {
       LOGGER.info("Experiment1 created successfully");
 
       createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(
+          ExperimentTest.getCreateExperimentRequestForOtherTests(
               project2.getId(), "Experiment-2-" + new Date().getTime());
       createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
       Experiment experiment2 = createExperimentResponse.getExperiment();

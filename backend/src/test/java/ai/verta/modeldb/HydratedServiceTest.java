@@ -208,7 +208,7 @@ public class HydratedServiceTest extends TestsInit {
   private static void createExperimentEntities() {
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
@@ -240,7 +240,7 @@ public class HydratedServiceTest extends TestsInit {
 
     // experiment2 of above project
     createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
@@ -272,7 +272,7 @@ public class HydratedServiceTest extends TestsInit {
 
     // experiment3 of above project
     createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
@@ -304,7 +304,7 @@ public class HydratedServiceTest extends TestsInit {
 
     // experiment4 of above project
     createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
@@ -3039,7 +3039,7 @@ public class HydratedServiceTest extends TestsInit {
       assertTrue(projectCollaboratorResponse.getStatus());
 
       CreateExperiment createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(
+          ExperimentTest.getCreateExperimentRequestForOtherTests(
               project.getId(), "Experiment-1-" + new Date().getTime());
       CreateExperiment.Response createExperimentResponse =
           experimentServiceStub.createExperiment(createExperimentRequest);
@@ -3051,7 +3051,7 @@ public class HydratedServiceTest extends TestsInit {
           createExperimentResponse.getExperiment().getName());
 
       createExperimentRequest =
-          ExperimentTest.getCreateExperimentRequest(
+          ExperimentTest.getCreateExperimentRequestForOtherTests(
               project.getId(), "Experiment-2-" + new Date().getTime());
       createExperimentResponse = experimentServiceStub.createExperiment(createExperimentRequest);
       Experiment experiment2 = createExperimentResponse.getExperiment();

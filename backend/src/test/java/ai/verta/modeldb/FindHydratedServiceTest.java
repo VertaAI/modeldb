@@ -94,13 +94,13 @@ public class FindHydratedServiceTest extends TestsInit {
   private static void createExperimentEntities() {
     // Create two experiment of above project
     CreateExperiment request =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-1-" + new Date().getTime());
     CreateExperiment.Response response = experimentServiceStub.createExperiment(request);
     experiment1 = response.getExperiment();
     LOGGER.info("Experiment1 created successfully");
     request =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-2-" + new Date().getTime());
     response = experimentServiceStub.createExperiment(request);
     experiment2 = response.getExperiment();

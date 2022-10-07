@@ -215,7 +215,7 @@ public class FindProjectEntitiesTest extends TestsInit {
   private static void createExperimentEntities() {
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
@@ -246,7 +246,7 @@ public class FindProjectEntitiesTest extends TestsInit {
 
     // experiment2 of above project
     createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
@@ -277,7 +277,7 @@ public class FindProjectEntitiesTest extends TestsInit {
 
     // experiment3 of above project
     createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
@@ -308,7 +308,7 @@ public class FindProjectEntitiesTest extends TestsInit {
 
     // experiment4 of above project
     createExperimentRequest =
-        ExperimentTest.getCreateExperimentRequest(
+        ExperimentTest.getCreateExperimentRequestForOtherTests(
             project1.getId(), "Experiment-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
