@@ -345,7 +345,7 @@ public class FindProjectEntitiesTest extends TestsInit {
 
   private static void createExperimentRunEntities() {
     CreateExperimentRun createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment1.getId(), "ExperimentRun-1-" + new Date().getTime());
     KeyValue metric1 =
         KeyValue.newBuilder()
@@ -380,7 +380,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         experimentRun11.getName());
 
     createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment1.getId(), "ExperimentRun-2-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
@@ -415,7 +415,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         experimentRun12.getName());
 
     createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment2.getId(), "ExperimentRun-3-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()
@@ -450,7 +450,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         experimentRun21.getName());
 
     createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
     metric1 =
         KeyValue.newBuilder()

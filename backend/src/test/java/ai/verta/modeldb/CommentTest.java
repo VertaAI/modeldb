@@ -101,7 +101,7 @@ public class CommentTest extends TestsInit {
 
   private static void createExperimentRunEntities() {
     CreateExperimentRun createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);

@@ -94,7 +94,7 @@ public class NFSArtifactStoreTest extends TestsInit {
     ExperimentRunTest experimentRunTest = new ExperimentRunTest();
 
     CreateExperimentRun createExperimentRunRequest =
-        experimentRunTest.getCreateExperimentRunRequest(
+        experimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
     createExperimentRunRequest =
         createExperimentRunRequest
