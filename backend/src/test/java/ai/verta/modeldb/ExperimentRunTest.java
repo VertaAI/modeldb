@@ -4,7 +4,6 @@ import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectIn
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
@@ -17,7 +16,6 @@ import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.GetExperimentRunById.Response;
 import ai.verta.modeldb.common.CommonConstants;
-import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -39,14 +37,11 @@ import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetUser;
-import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceType;
@@ -55,8 +50,6 @@ import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
-import ai.verta.uac.WorkspaceServiceGrpc;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -191,16 +184,16 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     if (isRunningIsolated()) {
       mockGetResourcesForAllEntity(projectMap, testUser1);
       when(authzMock.getSelfAllowedResources(
-          GetSelfAllowedResources.newBuilder()
-              .addActions(
-                  Action.newBuilder()
-                      .setModeldbServiceAction(ModelDBServiceActions.READ)
-                      .setService(ServiceEnum.Service.MODELDB_SERVICE))
-              .setService(ServiceEnum.Service.MODELDB_SERVICE)
-              .setResourceType(
-                  ResourceType.newBuilder()
-                      .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-              .build()))
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
           .thenReturn(
               Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
     }
@@ -6585,7 +6578,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       AddCollaboratorRequest addCollaboratorRequest = null;
       AddCollaboratorRequest.Response addCollaboratorResponse = null;
       if (testConfig.hasAuth()) {
-        if (isRunningIsolated()){
+        if (isRunningIsolated()) {
           when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
           mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser2);
           when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
@@ -6605,16 +6598,17 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                                   .build())
                           .build()));
           when(authzMock.getSelfAllowedResources(
-              GetSelfAllowedResources.newBuilder()
-                  .addActions(
-                      Action.newBuilder()
-                          .setModeldbServiceAction(ModelDBServiceActions.READ)
-                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                  .setResourceType(
-                      ResourceType.newBuilder()
-                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                  .build()))
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
               .thenReturn(
                   Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
         } else {
@@ -6664,28 +6658,33 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               response.getExperimentRuns(0).getHyperparametersCount());
         }
 
-        if (isRunningIsolated()){
+        if (isRunningIsolated()) {
           when(authzMock.getSelfAllowedResources(
-              GetSelfAllowedResources.newBuilder()
-                  .addActions(
-                      Action.newBuilder()
-                          .setModeldbServiceAction(ModelDBServiceActions.READ)
-                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                  .setResourceType(
-                      ResourceType.newBuilder()
-                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                  .build()))
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
               .thenReturn(
-                  Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().addResources(
-                      Resources.newBuilder()
-                          .addResourceIds(String.valueOf(repoId))
-                          .setResourceType(
-                              ResourceType.newBuilder()
-                                  .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY)
+                  Futures.immediateFuture(
+                      GetSelfAllowedResources.Response.newBuilder()
+                          .addResources(
+                              Resources.newBuilder()
+                                  .addResourceIds(String.valueOf(repoId))
+                                  .setResourceType(
+                                      ResourceType.newBuilder()
+                                          .setModeldbServiceResourceType(
+                                              ModelDBServiceResourceTypes.REPOSITORY)
+                                          .build())
+                                  .setService(Service.MODELDB_SERVICE)
                                   .build())
-                          .setService(Service.MODELDB_SERVICE)
-                          .build()).build()));
+                          .build()));
         } else {
           addCollaboratorRequest =
               AddCollaboratorRequest.newBuilder()
