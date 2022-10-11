@@ -323,6 +323,15 @@ public class InternalFuture<T> {
     }
   }
 
+  public InternalFuture<Try<T>> asTry(Executor executor) {
+    return this.handle((val, t) -> {
+      if (t == null) {
+        return Try.success(val);
+      }
+      return Try.failure(t);
+    }, executor);
+  }
+
   public CompletionStage<T> toCompletionStage() {
     return stage;
   }
