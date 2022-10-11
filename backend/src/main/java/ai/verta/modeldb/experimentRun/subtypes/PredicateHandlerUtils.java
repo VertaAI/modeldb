@@ -9,6 +9,10 @@ public class PredicateHandlerUtils {
   private static final MDBConfig mdbConfig = App.getInstance().mdbConfig;
 
   protected String columnAsNumber(String colName, boolean isString) {
+    if (mdbConfig.getDatabase().getRdbConfiguration().isH2()) {
+      return String.format("cast(trim('\"' from %s) as double precision)", colName);
+    }
+
     if (mdbConfig.getDatabase().getRdbConfiguration().isPostgres()) {
       if (isString) {
         return String.format("cast(trim('\"' from %s) as double precision)", colName);
