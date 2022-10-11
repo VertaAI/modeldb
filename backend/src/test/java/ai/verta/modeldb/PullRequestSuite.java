@@ -16,7 +16,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.DatasetVersionTest",
   "ai.verta.modeldb.DiffTest",
   "ai.verta.modeldb.ExperimentRunTest",
-  "ai.verta.modeldb.ExperimentTest",
   "ai.verta.modeldb.FindDatasetEntitiesTest",
   "ai.verta.modeldb.FindHydratedServiceTest",
   "ai.verta.modeldb.FindProjectEntitiesTest",
@@ -30,5 +29,5 @@ import org.junit.platform.suite.api.Suite;
   ".*TestSequenceSuite",
 })
 @SelectPackages({"ai.verta.modeldb"})
-@SelectClasses({ProjectTest.class})
+@SelectClasses({ProjectTest.class, ExperimentTest.class})
 public class PullRequestSuite {}

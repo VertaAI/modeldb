@@ -92,17 +92,6 @@ public class ProjectTest extends ModeldbTestSetup {
   public void removeEntities() {
     if (!projectMap.isEmpty()) {
       if (isRunningIsolated()) {
-        /*var collaboratorMock = mock(CollaboratorServiceFutureStub.class);
-        when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
-
-        var authChannelMock = mock(AuthServiceChannel.class);
-        when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
-        var collaboratorBlockingMock = mock(CollaboratorServiceBlockingStub.class);
-        when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
-        var authzServiceFutureStub = mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
-        when(uac.getAuthzService()).thenReturn(authzServiceFutureStub);
-        var authzServiceBlockingStub = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
-        when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzServiceBlockingStub);*/
         mockGetResourcesForAllEntity(projectMap, testUser1);
       }
 
