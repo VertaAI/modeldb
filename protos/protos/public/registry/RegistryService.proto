@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package ai.verta.registry;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry";
+option go_package = "github.com/VertaAI/protos-all/protos/gen/go/protos/private/registry";
 
 option java_multiple_files = true;
 
@@ -418,6 +418,74 @@ message LogDockerMetadataInModelVersion {
     message Response { }
 }
 
+message ExternalDeployment {    
+    // internal id
+    uint64 id = 1;
+
+    // id of the model this belongs to
+    uint64 model_version_id = 2;
+
+    // Timestamp recorded when this ``external_deployment`` was created.
+    int64 time_created = 3;
+
+    // Timestamp recorded when metadata for this ``external_deployment`` was last updated.
+    int64 time_updated = 4;
+
+    // Location where container will be deployed
+    string location_deployed = 5;
+
+    // Deploy URL, path or title
+    string url_path_title = 6;
+
+    // Brief description
+    string description = 7;
+}   
+
+message ExternalDeploymentIdentification {
+    uint64 external_deployment_id = 1;
+
+    ModelVersionIdentification model_version_id = 2;
+}
+
+//  CRUD for External Deployment
+message GetExternalDeploymentRequest {
+    
+    ExternalDeploymentIdentification id = 1;
+
+    message Response {
+        ExternalDeployment external_deployment = 1;
+    }
+}
+
+message FindExternalDeploymentRequest {
+    ExternalDeploymentIdentification id = 1;
+    repeated common.KeyValueQuery predicates = 2;
+    common.Pagination pagination = 3;
+    bool ascending = 4;
+    string sort_key = 5;
+
+    message Response {
+        repeated ExternalDeployment external_deployment = 1;
+        int64 total_records = 2;
+    }
+}
+
+message SetExternalDeployment {
+    ExternalDeploymentIdentification id = 1;
+    ExternalDeployment external_deployment = 2;
+    google.protobuf.FieldMask update_mask = 3;
+
+    message Response {
+        ExternalDeployment external_deployment = 1;
+    }
+}
+
+message DeleteExternalDeploymentRequest {
+    ExternalDeploymentIdentification id = 1;
+
+    message Response { }
+}
+
 service RegistryService {
    // CRUD for RegisteredModel
     rpc FindRegisteredModel(FindRegisteredModelRequest) returns (FindRegisteredModelRequest.Response) {
@@ -631,5 +699,100 @@ service RegistryService {
             body: "*"
         };
     };
+
+    //  CRUD for External Deployment
+    rpc FindExternalDeployment(FindExternalDeploymentRequest) returns (FindExternalDeploymentRequest.Response) {    
+        option (google.api.http) = {
+            post: "/v1/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/find"
+            body: "*"
+            additional_bindings {
+                post: "/v1/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments/find"
+                body: "*"
+            }
+            additional_bindings {
+                post: "/v1/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/model_versions/external_deployments/find"
+                body: "*"
+            }
+            additional_bindings {
+                post: "/v1/registry/model_versions/{id.model_version_id.model_version_id}/external_deployments/find"
+                body: "*"
+            }
+            additional_bindings {
+                post: "/v1/registry/model_versions/external_deployments/find"
+                body: "*"
+            }
+        };
+    };
+
+    rpc GetExternalDeployment(GetExternalDeploymentRequest) returns (GetExternalDeploymentRequest.Response) {
+        option (google.api.http) = {
+            get: "/v1/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}"
+            additional_bindings {
+                get: "/v1/registry/model_versions/external_deployments/{id.external_deployment_id}"
+            }
+        };
+    };
+
+    rpc CreateExternalDeployment(SetExternalDeployment) returns (SetExternalDeployment.Response) {
+        option (google.api.http) = {
+            post: "/v1/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments"
+            body: "external_deployment"
+            additional_bindings {
+                post: "/v1/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments"
+                body: "external_deployment"
+            }
+            additional_bindings {
+                post: "/v1/registry/registered_models/model_versions/{id.model_version_id.model_version_id}/external_deployments"
+                body: "external_deployment"
+            }
+        };
+    }
+
+    rpc UpdateExternalDeployment(SetExternalDeployment) returns (SetExternalDeployment.Response) {
+        option (google.api.http) = {
+            patch: "/v1/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}"
+            body: "external_deployment"
+            additional_bindings {
+                patch: "/v1/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}"
+                body: "external_deployment"
+            }
+            additional_bindings {
+                patch: "/v1/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}/full_body"
+                body: "*"
+            }
+            additional_bindings {
+                patch: "/v1/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}/full_body"
+                body: "*"
+            }
+            additional_bindings {
+                put: "/v1/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}"
+                body: "external_deployment"
+            }
+            additional_bindings {
+                put: "/v1/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}"
+                body: "external_deployment"
+            }
+            additional_bindings {
+                put: "/v1/registry/registered_models/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}"
+                body: "external_deployment"
+            }
+            additional_bindings {
+                put: "/v1/registry/registered_models/model_versions/external_deployments/{id.external_deployment_id}"
+                body: "external_deployment"
+            }
+        };
+    }
+
+    rpc DeleteExternalDeployment(DeleteExternalDeploymentRequest) returns (DeleteModelVersionRequest.Response) {
+        option (google.api.http) = {
+            delete: "/v1/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}"
+            additional_bindings {
+                delete: "/v1/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}"
+            }
+            additional_bindings {
+                delete: "/v1/registry/model_versions/external_deployments/{id.external_deployment_id}"
+            }
+        };
+    }
 
 }

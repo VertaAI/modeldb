@@ -114,6 +114,31 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.Response.FromString,
         )
+    self.FindExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/FindExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.FindExternalDeploymentRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.FindExternalDeploymentRequest.Response.FromString,
+        )
+    self.GetExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/GetExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.GetExternalDeploymentRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.GetExternalDeploymentRequest.Response.FromString,
+        )
+    self.CreateExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/CreateExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.SetExternalDeployment.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.SetExternalDeployment.Response.FromString,
+        )
+    self.UpdateExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/UpdateExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.SetExternalDeployment.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.SetExternalDeployment.Response.FromString,
+        )
+    self.DeleteExternalDeployment = channel.unary_unary(
+        '/ai.verta.registry.RegistryService/DeleteExternalDeployment',
+        request_serializer=registry_dot_RegistryService__pb2.DeleteExternalDeploymentRequest.SerializeToString,
+        response_deserializer=registry_dot_RegistryService__pb2.DeleteModelVersionRequest.Response.FromString,
+        )
 
 
 class RegistryServiceServicer(object):
@@ -260,6 +285,41 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def FindExternalDeployment(self, request, context):
+    """CRUD for External Deployment
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def GetExternalDeployment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def CreateExternalDeployment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def UpdateExternalDeployment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def DeleteExternalDeployment(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_RegistryServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -362,6 +422,31 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.logDockerMetadataInModelVersion,
           request_deserializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.FromString,
           response_serializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.Response.SerializeToString,
+      ),
+      'FindExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.FindExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.FindExternalDeploymentRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.FindExternalDeploymentRequest.Response.SerializeToString,
+      ),
+      'GetExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.GetExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.GetExternalDeploymentRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.GetExternalDeploymentRequest.Response.SerializeToString,
+      ),
+      'CreateExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.CreateExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.SetExternalDeployment.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.SetExternalDeployment.Response.SerializeToString,
+      ),
+      'UpdateExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.UpdateExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.SetExternalDeployment.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.SetExternalDeployment.Response.SerializeToString,
+      ),
+      'DeleteExternalDeployment': grpc.unary_unary_rpc_method_handler(
+          servicer.DeleteExternalDeployment,
+          request_deserializer=registry_dot_RegistryService__pb2.DeleteExternalDeploymentRequest.FromString,
+          response_serializer=registry_dot_RegistryService__pb2.DeleteModelVersionRequest.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
