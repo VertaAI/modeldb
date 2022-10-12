@@ -2908,8 +2908,7 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN",
-        "NOT_IN"
+        "IN"
       ],
       "default": "EQ"
     },
@@ -3046,20 +3045,6 @@
           "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
-    },
-    "commonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -3215,7 +3200,7 @@
           }
         },
         "pagination": {
-          "$ref": "#/definitions/commonPagination"
+          "$ref": "#/definitions/vertacommonPagination"
         },
         "ascending": {
           "type": "boolean",
@@ -3256,7 +3241,7 @@
           "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
         },
         "pagination": {
-          "$ref": "#/definitions/commonPagination",
+          "$ref": "#/definitions/vertacommonPagination",
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
@@ -3298,7 +3283,7 @@
           "title": "Filtering supported on\n1. name\n2. labels\n3. description"
         },
         "pagination": {
-          "$ref": "#/definitions/commonPagination",
+          "$ref": "#/definitions/vertacommonPagination",
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
@@ -4082,6 +4067,20 @@
           "type": "string"
         }
       }
+    },
+    "vertacommonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     }
   },
   "basePath": "/v1"

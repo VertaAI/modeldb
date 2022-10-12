@@ -8,9 +8,10 @@ package registry
 
 import (
 	context "context"
-	common "github.com/VertaAI/protos-all/protos/gen/go/protos/private/common"
-	versioning "github.com/VertaAI/protos-all/protos/gen/go/protos/private/modeldb/versioning"
-	uac "github.com/VertaAI/protos-all/protos/gen/go/protos/private/uac"
+	common "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
+	versioning "github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb/versioning"
+	registry "github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry"
+	uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 	proto "github.com/golang/protobuf/proto"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	field_mask "google.golang.org/genproto/protobuf/field_mask"
@@ -1096,7 +1097,7 @@ type ModelVersion struct {
 	// Other attributes
 	Attributes []*common.KeyValue `protobuf:"bytes,17,rep,name=attributes,proto3" json:"attributes,omitempty"`
 	// Stage of the model version. This field must be searchable as per our "find" operation
-	Stage StageEnum_Stage `protobuf:"varint,18,opt,name=stage,proto3,enum=ai.verta.registry.StageEnum_Stage" json:"stage,omitempty"`
+	Stage registry.StageEnum_Stage `protobuf:"varint,18,opt,name=stage,proto3,enum=ai.verta.registry.StageEnum_Stage" json:"stage,omitempty"`
 	// Current lock level for this model version
 	LockLevel   ModelVersionLockLevelEnum_ModelVersionLockLevel `protobuf:"varint,19,opt,name=lock_level,json=lockLevel,proto3,enum=ai.verta.registry.ModelVersionLockLevelEnum_ModelVersionLockLevel" json:"lock_level,omitempty"`
 	Datasets    []*common.Artifact                              `protobuf:"bytes,20,rep,name=datasets,proto3" json:"datasets,omitempty"`
@@ -1275,11 +1276,11 @@ func (x *ModelVersion) GetAttributes() []*common.KeyValue {
 	return nil
 }
 
-func (x *ModelVersion) GetStage() StageEnum_Stage {
+func (x *ModelVersion) GetStage() registry.StageEnum_Stage {
 	if x != nil {
 		return x.Stage
 	}
-	return StageEnum_UNKNOWN
+	return registry.StageEnum_UNKNOWN
 }
 
 func (x *ModelVersion) GetLockLevel() ModelVersionLockLevelEnum_ModelVersionLockLevel {
@@ -4997,7 +4998,7 @@ var file_registry_RegistryService_proto_goTypes = []interface{}{
 	(*field_mask.FieldMask)(nil),                     // 70: google.protobuf.FieldMask
 	(*versioning.EnvironmentBlob)(nil),               // 71: ai.verta.modeldb.versioning.EnvironmentBlob
 	(common.TernaryEnum_Ternary)(0),                  // 72: ai.verta.common.TernaryEnum.Ternary
-	(StageEnum_Stage)(0),                             // 73: ai.verta.registry.StageEnum.Stage
+	(registry.StageEnum_Stage)(0),                    // 73: ai.verta.registry.StageEnum.Stage
 	(common.ArtifactTypeEnum_ArtifactType)(0),        // 74: ai.verta.common.ArtifactTypeEnum.ArtifactType
 	(*common.ArtifactPart)(nil),                      // 75: ai.verta.common.ArtifactPart
 	(*versioning.CodeBlob)(nil),                      // 76: ai.verta.modeldb.versioning.CodeBlob
@@ -5130,7 +5131,6 @@ func file_registry_RegistryService_proto_init() {
 	if File_registry_RegistryService_proto != nil {
 		return
 	}
-	file_registry_StageService_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_registry_RegistryService_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DataTypeEnum); i {
