@@ -1,7 +1,6 @@
 package ai.verta.modeldb;
 
 import org.junit.platform.suite.api.ExcludeClassNamePatterns;
-import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 
@@ -17,7 +16,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.DiffTest",
   "ai.verta.modeldb.FindDatasetEntitiesTest",
   "ai.verta.modeldb.FindHydratedServiceTest",
-  "ai.verta.modeldb.FindProjectEntitiesTest",
   "ai.verta.modeldb.GlobalSharingTest",
   "ai.verta.modeldb.HydratedServiceTest",
   "ai.verta.modeldb.IntegrationTest",
@@ -28,5 +26,4 @@ import org.junit.platform.suite.api.Suite;
   ".*TestSequenceSuite",
 })
 @SelectPackages({"ai.verta.modeldb"})
-@SelectClasses({ProjectTest.class, ExperimentTest.class, ExperimentRunTest.class})
 public class PullRequestSuite {}

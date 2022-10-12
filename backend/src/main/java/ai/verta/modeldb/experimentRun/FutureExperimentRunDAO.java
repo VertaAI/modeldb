@@ -747,7 +747,7 @@ public class FutureExperimentRunDAO {
               localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
               localQueryContext.getConditions().add("p.deleted = :deleted");
               localQueryContext.getConditions().add("e.deleted = :deleted");
-              localQueryContext.getBinds().add(q -> q.bind("deleted", 0));
+              localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
                 localQueryContext
