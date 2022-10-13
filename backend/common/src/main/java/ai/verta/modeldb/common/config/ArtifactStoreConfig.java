@@ -1,40 +1,56 @@
 package ai.verta.modeldb.common.config;
 
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.rpc.Code;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.NONE)
 public class ArtifactStoreConfig {
-  private String artifactStoreType;
-  private boolean pickArtifactStoreHostFromConfig = false;
-  private boolean enabled = true;
-  private String protocol = "https";
-  private String host = "";
+  @JsonProperty private String artifactStoreType;
+  @JsonProperty private boolean pickArtifactStoreHostFromConfig = false;
+  @JsonProperty private boolean enabled = true;
+  @JsonProperty private String protocol = "https";
+  @JsonProperty private String host = "";
 
   @SuppressWarnings({"squid:S116"})
+  @JsonProperty
   private S3Config S3;
 
   @SuppressWarnings({"squid:S116"})
+  @JsonProperty
   private NFSConfig NFS;
 
-  private NFSEndpointConfig artifactEndpoint;
+  @JsonProperty private NFSEndpointConfig artifactEndpoint;
 
   public void validate(String base) throws InvalidConfigException {
     if (getArtifactStoreType() == null || getArtifactStoreType().isEmpty()) {
-      throw new InvalidConfigException(base + ".artifactStoreType", Config.MISSING_REQUIRED);
+      throw new InvalidConfigException(
+          base + ".artifactStoreType", CommonMessages.MISSING_REQUIRED);
     }
 
     switch (getArtifactStoreType()) {
       case "S3":
-        if (S3 == null) {
-          throw new InvalidConfigException(base + ".S3", Config.MISSING_REQUIRED);
+        if (getS3() == null) {
+          throw new InvalidConfigException(base + ".S3", CommonMessages.MISSING_REQUIRED);
         }
-        S3.validate(base + ".S3");
+        getS3().validate(base + ".S3");
         break;
       case "NFS":
-        if (getNfs() == null) {
-          throw new InvalidConfigException(base + ".NFS", Config.MISSING_REQUIRED);
+        if (getNFS() == null) {
+          throw new InvalidConfigException(base + ".NFS", CommonMessages.MISSING_REQUIRED);
         }
-        getNfs().validate(base + ".NFS");
+        getNFS().validate(base + ".NFS");
         break;
       default:
         throw new InvalidConfigException(
@@ -46,52 +62,20 @@ public class ArtifactStoreConfig {
     }
   }
 
-  public String getArtifactStoreType() {
-    return artifactStoreType;
-  }
-
-  public boolean isPickArtifactStoreHostFromConfig() {
-    return pickArtifactStoreHostFromConfig;
-  }
-
-  public boolean isEnabled() {
-    return enabled;
-  }
-
-  public String getProtocol() {
-    return protocol;
-  }
-
-  public String getHost() {
-    return host;
-  }
-
   public void setHost(String host) {
     this.host = host;
-  }
-
-  public S3Config getS3() {
-    return S3;
-  }
-
-  public NFSConfig getNfs() {
-    return NFS;
   }
 
   public void setNFS(NFSConfig nfs) {
     this.NFS = nfs;
   }
 
-  public NFSEndpointConfig getArtifactEndpoint() {
-    return artifactEndpoint;
-  }
-
   public String storeTypePathPrefix() {
     switch (getArtifactStoreType()) {
       case "S3":
-        return S3.storeTypePathPrefix();
+        return getS3().storeTypePathPrefix();
       case "NFS":
-        return getNfs().storeTypePathPrefix();
+        return getNFS().storeTypePathPrefix();
       default:
         throw new ModelDBException("Unknown artifact store type", Code.INTERNAL);
     }
@@ -100,9 +84,9 @@ public class ArtifactStoreConfig {
   public String getPathPrefixWithSeparator() {
     switch (getArtifactStoreType()) {
       case "S3":
-        return S3.getCloudBucketPrefix();
+        return getS3().getCloudBucketPrefix();
       case "NFS":
-        return getNfs().getNfsPathPrefix();
+        return getNFS().getNfsPathPrefix();
       default:
         return "";
     }

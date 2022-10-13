@@ -127,8 +127,13 @@ public class AppConfigBeans {
 
   @Bean
   @Conditional(RunLiquibaseWithMainService.class)
-  public DAOSet daoSet(MDBConfig config, ServiceSet services, Executor grpcExecutor) {
-    return DAOSet.fromServices(services, config.getJdbi(), grpcExecutor, config);
+  public DAOSet daoSet(
+      MDBConfig config,
+      ServiceSet services,
+      Executor grpcExecutor,
+      ReconcilerInitializer reconcilerInitializer) {
+    return DAOSet.fromServices(
+        services, config.getJdbi(), grpcExecutor, config, reconcilerInitializer);
   }
 
   @Bean

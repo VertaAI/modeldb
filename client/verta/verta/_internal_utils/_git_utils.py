@@ -12,7 +12,9 @@ def get_git_commit_hash(ref="HEAD"):
     # if `ref` is an annotated tag, follow it to a commit hash
     try:
         # https://stackoverflow.com/a/54318490
-        git_output = subprocess.check_output(["git", "rev-parse", "{}^{{commit}}".format(ref)])
+        git_output = subprocess.check_output(
+            ["git", "rev-parse", "{}^{{commit}}".format(ref)]
+        )
     except:
         pass
     else:
@@ -70,10 +72,10 @@ def get_git_branch_name(ref="HEAD"):
         branches = git_output.strip().splitlines()
 
         # get currently-checked-out branch
-        INDICATOR = '* '
+        INDICATOR = "* "
         for branch in branches:
             if branch.startswith(INDICATOR):
-                return branch[len(INDICATOR):]
+                return branch[len(INDICATOR) :]
 
         # fall back to first alphabetically-listed branch
         return branches[0] if branches else ""

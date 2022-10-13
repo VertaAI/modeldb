@@ -70,8 +70,8 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
 
   public FutureProjectServiceImpl(DAOSet daoSet, Executor executor) {
     this.executor = executor;
-    this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.futureEventDAO = daoSet.futureEventDAO;
+    this.futureProjectDAO = daoSet.getFutureProjectDAO();
+    this.futureEventDAO = daoSet.getFutureEventDAO();
   }
 
   private InternalFuture<Void> addEvent(

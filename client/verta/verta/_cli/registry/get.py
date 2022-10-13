@@ -28,11 +28,15 @@ def get():
 
 @get.command(name="registeredmodel")
 @click.argument("model_name", nargs=1, required=True)
-@click.option("--output", "-o", type=click.Choice(['json'], case_sensitive=False), help="Print the output in the given format instead of regular text.")
+@click.option(
+    "--output",
+    "-o",
+    type=click.Choice(["json"], case_sensitive=False),
+    help="Print the output in the given format instead of regular text.",
+)
 @click.option("--workspace", "-w", help="Workspace to use")
 def get_model(model_name, output, workspace):
-    """Get detailed information about a model.
-    """
+    """Get detailed information about a model."""
     client = Client()
 
     try:
@@ -48,14 +52,19 @@ def get_model(model_name, output, workspace):
     click.echo()
     click.echo(model_repr)
 
+
 @get.command(name="registeredmodelversion")
 @click.argument("model_name", nargs=1, required=True)
 @click.argument("version_name", nargs=1, required=True)
-@click.option("--output", "-o", type=click.Choice(['json'], case_sensitive=False), help="Print the output in the given format instead of regular text.")
+@click.option(
+    "--output",
+    "-o",
+    type=click.Choice(["json"], case_sensitive=False),
+    help="Print the output in the given format instead of regular text.",
+)
 @click.option("--workspace", "-w", help="Workspace to use")
 def get_model_version(model_name, version_name, output, workspace):
-    """Get detailed information about a model version.
-    """
+    """Get detailed information about a model version."""
     client = Client()
 
     try:

@@ -48,9 +48,7 @@ def must_torch(model):
     if torch_nn is None:
         raise TypeError("torch is not installed;" " try `pip install torch`")
     if not isinstance(model, torch_nn.Module):
-        raise TypeError(
-            "model must be a torch.nn.Module, not {}".format(type(model))
-        )
+        raise TypeError("model must be a torch.nn.Module, not {}".format(type(model)))
 
     return True
 

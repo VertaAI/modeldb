@@ -36,10 +36,10 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   String experimentRunEntity = ExperimentRunEntity.class.getSimpleName();
 
   public CommentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
-    this.authService = serviceSet.authService;
-    this.mdbRoleService = serviceSet.mdbRoleService;
-    this.commentDAO = daoSet.commentDAO;
-    this.experimentRunDAO = daoSet.experimentRunDAO;
+    this.authService = serviceSet.getAuthService();
+    this.mdbRoleService = serviceSet.getMdbRoleService();
+    this.commentDAO = daoSet.getCommentDAO();
+    this.experimentRunDAO = daoSet.getExperimentRunDAO();
   }
 
   /**

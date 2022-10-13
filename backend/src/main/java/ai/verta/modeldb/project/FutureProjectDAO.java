@@ -119,6 +119,7 @@ public class FutureProjectDAO {
   private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final UACApisUtil uacApisUtil;
   private final CreateProjectHandler createProjectHandler;
+  private final ReconcilerInitializer reconcilerInitializer;
 
   public FutureProjectDAO(
       Executor executor,
@@ -128,7 +129,8 @@ public class FutureProjectDAO {
       DatasetVersionDAO datasetVersionDAO,
       MDBConfig mdbConfig,
       FutureExperimentRunDAO futureExperimentRunDAO,
-      UACApisUtil uacApisUtil) {
+      UACApisUtil uacApisUtil,
+      ReconcilerInitializer reconcilerInitializer) {
     this.jdbi = jdbi;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
     this.executor = executor;
@@ -156,6 +158,7 @@ public class FutureProjectDAO {
     createProjectHandler =
         new CreateProjectHandler(
             executor, jdbi, mdbConfig, uac, attributeHandler, tagsHandler, artifactHandler);
+    this.reconcilerInitializer = reconcilerInitializer;
   }
 
   public InternalFuture<Void> deleteAttributes(DeleteProjectAttributes request) {
@@ -855,8 +858,9 @@ public class FutureProjectDAO {
                               updatedCount);
                           allowedProjectResources.forEach(
                               allowedResource ->
-                                  ReconcilerInitializer.softDeleteProjects.insert(
-                                      allowedResource.getResourceId()));
+                                  reconcilerInitializer
+                                      .getSoftDeleteProjects()
+                                      .insert(allowedResource.getResourceId()));
                           LOGGER.debug("Project deleted successfully");
                         })
                     .thenApply(unused -> allowedProjectResources, executor),

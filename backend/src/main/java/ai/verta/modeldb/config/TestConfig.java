@@ -1,24 +1,35 @@
 package ai.verta.modeldb.config;
 
 import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
 
+@Data
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.NONE)
 public class TestConfig extends MDBConfig {
-  private static TestConfig config = null;
+  @JsonProperty private static TestConfig config = null;
 
-  public Map<String, ServiceUserConfig> testUsers = new HashMap<>();
+  @JsonProperty private final Map<String, ServiceUserConfig> testUsers = new HashMap<>();
 
   public static TestConfig getInstance() throws InternalErrorException {
     if (config == null) {
@@ -53,15 +64,16 @@ public class TestConfig extends MDBConfig {
 
   @Override
   public void validate() throws InvalidConfigException {
-    if (getDatabase() == null) throw new InvalidConfigException("database", MISSING_REQUIRED);
+    if (getDatabase() == null)
+      throw new InvalidConfigException("database", CommonMessages.MISSING_REQUIRED);
     getDatabase().validate("database");
 
     if (getService_user() != null) {
       getService_user().validate("service_user");
     }
 
-    if (config.hasAuth() && testUsers == null) {
-      throw new InvalidConfigException("testUsers", MISSING_REQUIRED);
+    if (config.hasAuth() && testUsers.isEmpty()) {
+      throw new InvalidConfigException("testUsers", CommonMessages.MISSING_REQUIRED);
     }
 
     for (Map.Entry<String, ServiceUserConfig> entry : testUsers.entrySet()) {
@@ -69,12 +81,12 @@ public class TestConfig extends MDBConfig {
     }
 
     if (getArtifactStoreConfig() == null) {
-      throw new InvalidConfigException("artifactStoreConfig", MISSING_REQUIRED);
+      throw new InvalidConfigException("artifactStoreConfig", CommonMessages.MISSING_REQUIRED);
     }
     getArtifactStoreConfig().validate("artifactStoreConfig");
 
-    if (migrations != null) {
-      for (MigrationConfig migrationConfig : migrations) {
+    if (getMigrations() != null) {
+      for (MigrationConfig migrationConfig : getMigrations()) {
         migrationConfig.validate("migration");
       }
     }
@@ -89,6 +101,7 @@ public class TestConfig extends MDBConfig {
     return getService_user() != null;
   }
 
+  @Override
   public FutureJdbi getJdbi() {
     if (this.jdbi == null) {
       // Initialize HikariCP and jdbi

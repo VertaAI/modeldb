@@ -5,11 +5,13 @@ from __future__ import print_function
 import os
 import pathlib
 import tempfile
+from urllib.parse import urlparse
 
 from ..external import six
-from ..external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 
 from .._internal_utils import (
     _artifact_utils,
@@ -61,6 +63,7 @@ class S3(_dataset._Dataset):
         Returns a new dataset with paths from the dataset and all others.
 
     """
+
     _S3_PATH = "s3://{}/{}"
 
     def __init__(self, paths, enable_mdb_versioning=False):
@@ -87,11 +90,12 @@ class S3(_dataset._Dataset):
     def _from_proto(cls, blob_msg):
         obj = cls._create_empty()
 
-        obj._add_components([
-            _dataset.S3Component._from_proto(component_msg)
-            for component_msg
-            in blob_msg.dataset.s3.components
-        ])
+        obj._add_components(
+            [
+                _dataset.S3Component._from_proto(component_msg)
+                for component_msg in blob_msg.dataset.s3.components
+            ]
+        )
 
         return obj
 
@@ -111,30 +115,35 @@ class S3(_dataset._Dataset):
         except ImportError:
             e = ImportError("Boto 3 is not installed; try `pip install boto3`")
             six.raise_from(e, None)
-        s3 = boto3.client('s3')
+        s3 = boto3.client("s3")
 
-        if (s3_loc.key is None  # bucket
-                or s3_loc.key.endswith('/')):  # folder
+        if s3_loc.key is None or s3_loc.key.endswith("/"):  # bucket  # folder
             if s3_loc.key is None:
                 # TODO: handle `bucket_name` not found
                 obj_versions = s3.list_object_versions(Bucket=s3_loc.bucket)
             else:
-                obj_versions = s3.list_object_versions(Bucket=s3_loc.bucket, Prefix=s3_loc.key)
-                if 'Versions' not in obj_versions:  # boto3 doesn't error, so we have to catch this
+                obj_versions = s3.list_object_versions(
+                    Bucket=s3_loc.bucket, Prefix=s3_loc.key
+                )
+                if (
+                    "Versions" not in obj_versions
+                ):  # boto3 doesn't error, so we have to catch this
                     s3_path = cls._S3_PATH.format(s3_loc.bucket, s3_loc.key)
                     raise ValueError("folder {} not found".format(s3_path))
 
-            for obj in obj_versions['Versions']:
-                if obj['Key'].endswith('/'):  # folder, not object
+            for obj in obj_versions["Versions"]:
+                if obj["Key"].endswith("/"):  # folder, not object
                     continue
-                if not obj['IsLatest']:
+                if not obj["IsLatest"]:
                     continue
-                yield cls._s3_obj_to_component(obj, s3_loc.bucket, obj['Key'])
+                yield cls._s3_obj_to_component(obj, s3_loc.bucket, obj["Key"])
         else:
             # TODO: handle `key` not found
             if s3_loc.version_id is not None:
                 # TODO: handle `version_id` not found
-                obj = s3.head_object(Bucket=s3_loc.bucket, Key=s3_loc.key, VersionId=s3_loc.version_id)
+                obj = s3.head_object(
+                    Bucket=s3_loc.bucket, Key=s3_loc.key, VersionId=s3_loc.version_id
+                )
             else:
                 obj = s3.head_object(Bucket=s3_loc.bucket, Key=s3_loc.key)
             yield cls._s3_obj_to_component(obj, s3_loc.bucket, s3_loc.key)
@@ -143,12 +152,18 @@ class S3(_dataset._Dataset):
     def _s3_obj_to_component(cls, obj, bucket_name, key):
         component = _dataset.S3Component(
             path=cls._S3_PATH.format(bucket_name, key),
-            size=obj.get('Size') or obj.get('ContentLength') or 0,
-            last_modified=_utils.timestamp_to_ms(_utils.ensure_timestamp(obj['LastModified'])),
-            md5=obj['ETag'].strip('"'),  # NOTE: ETag for multipart is not MD5 https://stackoverflow.com/a/19304527
+            size=obj.get("Size") or obj.get("ContentLength") or 0,
+            last_modified=_utils.timestamp_to_ms(
+                _utils.ensure_timestamp(obj["LastModified"])
+            ),
+            md5=obj["ETag"].strip(
+                '"'
+            ),  # NOTE: ETag for multipart is not MD5 https://stackoverflow.com/a/19304527
         )
-        if obj.get('VersionId', 'null') != 'null':  # S3's API returns 'null' when there's no version ID
-            component.s3_version_id = obj['VersionId']
+        if (
+            obj.get("VersionId", "null") != "null"
+        ):  # S3's API returns 'null' when there's no version ID
+            component.s3_version_id = obj["VersionId"]
 
         return component
 
@@ -192,7 +207,7 @@ class S3(_dataset._Dataset):
         except ImportError:
             e = ImportError("Boto 3 is not installed; try `pip install boto3`")
             six.raise_from(e, None)
-        s3 = boto3.client('s3')
+        s3 = boto3.client("s3")
 
         # download files to local disk
         for component in self._components_map.values():
@@ -202,11 +217,13 @@ class S3(_dataset._Dataset):
             tempdir = os.path.join(_config_utils.HOME_VERTA_DIR, "temp")
             pathlib.Path(tempdir).mkdir(parents=True, exist_ok=True)
             print("downloading {} from S3".format(component.path))
-            with tempfile.NamedTemporaryFile('w+b', dir=tempdir, delete=False) as tempf:
+            with tempfile.NamedTemporaryFile("w+b", dir=tempdir, delete=False) as tempf:
                 s3.download_fileobj(
                     Bucket=s3_loc.bucket,
                     Key=s3_loc.key,
-                    ExtraArgs={'VersionId': s3_loc.version_id} if s3_loc.version_id else None,
+                    ExtraArgs={"VersionId": s3_loc.version_id}
+                    if s3_loc.version_id
+                    else None,
                     Fileobj=tempf,
                 )
             print("download complete")
@@ -215,9 +232,9 @@ class S3(_dataset._Dataset):
             component._local_path = tempf.name
 
             # add MDB path to component blob
-            with open(tempf.name, 'rb') as f:
+            with open(tempf.name, "rb") as f:
                 artifact_hash = _artifact_utils.calc_sha256(f)
-            component._internal_versioned_path = artifact_hash + '/' + s3_loc.key
+            component._internal_versioned_path = artifact_hash + "/" + s3_loc.key
 
     def _clean_up_uploaded_components(self):
         """
@@ -270,13 +287,15 @@ class S3Location(object):
     @staticmethod
     def _parse_s3_url(path):
         url_components = urlparse(path, allow_fragments=False)
-        if url_components.scheme != 's3':
-            raise ValueError("`path` \"{}\" must be either \"s3://<bucket-name>\""
-                             " or \"s3://<bucket-name>/<key>\"".format(path))
+        if url_components.scheme != "s3":
+            raise ValueError(
+                '`path` "{}" must be either "s3://<bucket-name>"'
+                ' or "s3://<bucket-name>/<key>"'.format(path)
+            )
 
         bucket_name = url_components.netloc
         key = url_components.path
-        if key.startswith('/'):
+        if key.startswith("/"):
             key = key[1:]
         if key == "":
             key = None

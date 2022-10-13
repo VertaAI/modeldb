@@ -18,4 +18,5 @@ public abstract class CommonMessages {
   public static final String AUTH_SERVICE_RES_RECEIVED_MSG = "AuthService response received";
   public static final String READY_STATUS = "Setting isReady to true, was {}";
   public static final String ENTITY_ID_IS_EMPTY_ERROR = "Entity id is empty";
+  public static final String MISSING_REQUIRED = "required field is missing";
 }

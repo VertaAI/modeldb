@@ -30,6 +30,7 @@
         <otel.core.version>1.17.0</otel.core.version>
         <otel.instrumentation.version>1.16.0-alpha</otel.instrumentation.version>
         <springframework.version>5.3.22</springframework.version>
+        <lombok.version>1.18.24</lombok.version>
 
         <junit-jupiter.version>5.9.0</junit-jupiter.version>
         <jacoco.version>0.8.8</jacoco.version>
@@ -282,7 +283,7 @@
             <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>3.0.7</version>
+            <version>2.7.4</version>
             </dependency>
             <dependency>
                 <groupId>io.jaegertracing</groupId>
@@ -325,6 +326,11 @@
                 <groupId>com.google.code.gson</groupId>
                 <artifactId>gson</artifactId>
                 <version>2.9.1</version>
+            </dependency>
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <scope>compile</scope>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -377,7 +383,7 @@
                 <plugin>
                     <groupId>com.diffplug.spotless</groupId>
                     <artifactId>spotless-maven-plugin</artifactId>
-                    <version>2.26.0</version>
+                    <version>2.27.1</version>
                     <configuration>
                         <java>
                             <googleJavaFormat>
@@ -405,6 +411,13 @@
                         <source>11</source>
                         <target>11</target>
                         <release>11</release>
+                        <annotationProcessorPaths>
+                            <path>
+                                <groupId>org.projectlombok</groupId>
+                                <artifactId>lombok</artifactId>
+                                <version>${lombok.version}</version>
+                            </path>
+                        </annotationProcessorPaths>
                     </configuration>
                 </plugin>
                 <plugin>

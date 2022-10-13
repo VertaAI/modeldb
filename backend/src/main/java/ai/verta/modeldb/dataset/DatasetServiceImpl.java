@@ -75,16 +75,16 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final boolean isEventSystemEnabled;
 
   public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
-    this.authService = serviceSet.authService;
-    this.mdbRoleService = serviceSet.mdbRoleService;
-    this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.futureExperimentDAO = daoSet.futureExperimentDAO;
-    this.experimentRunDAO = daoSet.experimentRunDAO;
-    this.repositoryDAO = daoSet.repositoryDAO;
-    this.commitDAO = daoSet.commitDAO;
-    this.metadataDAO = daoSet.metadataDAO;
-    this.futureEventDAO = daoSet.futureEventDAO;
-    this.isEventSystemEnabled = serviceSet.app.mdbConfig.isEvent_system_enabled();
+    this.authService = serviceSet.getAuthService();
+    this.mdbRoleService = serviceSet.getMdbRoleService();
+    this.futureProjectDAO = daoSet.getFutureProjectDAO();
+    this.futureExperimentDAO = daoSet.getFutureExperimentDAO();
+    this.experimentRunDAO = daoSet.getExperimentRunDAO();
+    this.repositoryDAO = daoSet.getRepositoryDAO();
+    this.commitDAO = daoSet.getCommitDAO();
+    this.metadataDAO = daoSet.getMetadataDAO();
+    this.futureEventDAO = daoSet.getFutureEventDAO();
+    this.isEventSystemEnabled = serviceSet.getApp().mdbConfig.isEvent_system_enabled();
   }
 
   private void addEvent(

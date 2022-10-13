@@ -39,9 +39,7 @@ class _Environment(_blob.Blob):
 
     @property
     def env_vars(self):
-        return {
-            var.name: var.value for var in self._msg.environment_variables
-        } or None
+        return {var.name: var.value for var in self._msg.environment_variables} or None
 
     @classmethod
     def _from_env_proto(cls, env_msg):
@@ -110,9 +108,11 @@ class _Environment(_blob.Blob):
             try:
                 env_vars_dict = {name: os.environ[name] for name in env_vars}
             except KeyError as e:
-                new_e = KeyError("'{}' not found in environment".format(
-                    six.ensure_str(e.args[0]),
-                ))
+                new_e = KeyError(
+                    "'{}' not found in environment".format(
+                        six.ensure_str(e.args[0]),
+                    )
+                )
                 six.raise_from(new_e, None)
 
         self._msg.environment_variables.extend(

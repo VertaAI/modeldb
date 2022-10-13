@@ -1,36 +1,49 @@
 package ai.verta.modeldb.common.config;
 
+import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public class RdbConfig {
 
   private static final Logger LOGGER = LogManager.getLogger(RdbConfig.class);
 
-  private String RdbDatabaseName;
+  @JsonProperty private String RdbDatabaseName;
   // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled
-  private String RdbDriver;
-  private String RdbDialect;
-  private String RdbUrl;
-  private String RdbUsername;
-  private String RdbPassword;
-  private String sslMode = "DISABLED";
-  private Boolean sslEnabled = false;
-  private String DBConnectionURL;
+  @JsonProperty private String RdbDriver;
+  @JsonProperty private String RdbDialect;
+  @JsonProperty private String RdbUrl;
+  @JsonProperty private String RdbUsername;
+  @JsonProperty private String RdbPassword;
+  @JsonProperty private String sslMode = "DISABLED";
+  @JsonProperty private Boolean sslEnabled = false;
+  @JsonProperty private String DBConnectionURL;
 
   public void validate(String base) throws InvalidConfigException {
     if (RdbDriver == null || RdbDriver.isEmpty()) {
-      throw new InvalidConfigException(base + ".RdbDriver", Config.MISSING_REQUIRED);
+      throw new InvalidConfigException(base + ".RdbDriver", CommonMessages.MISSING_REQUIRED);
     }
     if (RdbDialect == null || RdbDialect.isEmpty()) {
-      throw new InvalidConfigException(base + ".RdbDialect", Config.MISSING_REQUIRED);
+      throw new InvalidConfigException(base + ".RdbDialect", CommonMessages.MISSING_REQUIRED);
     }
     if (RdbUsername == null || RdbUsername.isEmpty()) {
-      throw new InvalidConfigException(base + ".RdbUsername", Config.MISSING_REQUIRED);
+      throw new InvalidConfigException(base + ".RdbUsername", CommonMessages.MISSING_REQUIRED);
     }
     if (!isPostgres() && !isMysql() && !isMssql() && !isH2()) {
       throw new InvalidConfigException(base + ".RdbDialect", "Unknown or unsupported dialect.");
@@ -38,13 +51,14 @@ public class RdbConfig {
 
     if (DBConnectionURL == null) {
       if (RdbDatabaseName == null || RdbDatabaseName.isEmpty()) {
-        throw new InvalidConfigException(base + ".RdbDatabaseName", Config.MISSING_REQUIRED);
+        throw new InvalidConfigException(
+            base + ".RdbDatabaseName", CommonMessages.MISSING_REQUIRED);
       }
       if (RdbUrl == null || RdbUrl.isEmpty()) {
-        throw new InvalidConfigException(base + ".RdbUrl", Config.MISSING_REQUIRED);
+        throw new InvalidConfigException(base + ".RdbUrl", CommonMessages.MISSING_REQUIRED);
       }
       if (sslMode == null || sslMode.isEmpty()) {
-        throw new InvalidConfigException(base + ".sslMode", Config.MISSING_REQUIRED);
+        throw new InvalidConfigException(base + ".sslMode", CommonMessages.MISSING_REQUIRED);
       }
     }
   }
@@ -155,37 +169,5 @@ public class RdbConfig {
       throw new ModelDBException("Database name not found in the database connection URL");
     }
     return dbName;
-  }
-
-  public String getRdbDatabaseName() {
-    return RdbDatabaseName;
-  }
-
-  public String getRdbDialect() {
-    return RdbDialect;
-  }
-
-  public String getRdbUrl() {
-    return RdbUrl;
-  }
-
-  public String getRdbUsername() {
-    return RdbUsername;
-  }
-
-  public String getRdbPassword() {
-    return RdbPassword;
-  }
-
-  public String getSslMode() {
-    return sslMode;
-  }
-
-  public String getRdbDriver() {
-    return RdbDriver;
-  }
-
-  public String getDBConnectionURL() {
-    return DBConnectionURL;
   }
 }

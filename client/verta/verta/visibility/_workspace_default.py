@@ -8,6 +8,7 @@ class _WorkspaceDefault(_Visibility):
     Default for the workspace. Not for external use.
 
     """
+
     def _to_public_within_org(self):
         return None
 

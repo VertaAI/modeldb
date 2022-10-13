@@ -41,6 +41,4 @@ class _LockLevel(object):
             if lock_level == lock_level_cls._LOCK_LEVEL:
                 return lock_level_cls()
         else:
-            raise ValueError(
-                "unrecognized lock level {}".format(lock_level)
-            )
+            raise ValueError("unrecognized lock level {}".format(lock_level))

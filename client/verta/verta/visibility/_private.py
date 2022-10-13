@@ -16,6 +16,7 @@ class Private(_Visibility):
         client.create_project("My Project", workspace="my-org", visibility=visibility)
 
     """
+
     def _to_public_within_org(self):
         return False
 

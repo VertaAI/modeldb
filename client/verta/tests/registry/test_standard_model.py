@@ -4,6 +4,7 @@
 
 from datetime import timedelta
 import re
+import warnings
 
 import hypothesis
 import hypothesis.strategies as st
@@ -51,6 +52,7 @@ class TestVerifyIO:
             @verify_io
             def predict(self, _):
                 return value
+
             with pytest.raises(TypeError, match=msg_match.format("input")):
                 predict(None, value)
             with pytest.raises(TypeError, match=msg_match.format("output")):
@@ -65,6 +67,7 @@ class TestVerifyIO:
         @verify_io
         def predict(self, _):
             return value
+
         with pytest.raises(TypeError, match=msg_match.format("input")):
             predict(None, value)
         with pytest.raises(TypeError, match=msg_match.format("output")):
@@ -90,7 +93,7 @@ class TestModelValidator:
         decorated_verta_models,
     )
     def test_decorated_verta(self, model):
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings(record=True) as record:
             model_validator.must_verta(model)
         assert not record  # no warning of missing decorator on predict()
 
@@ -200,13 +203,11 @@ class TestModelValidator:
 
 
 class TestStandardModels:
-
     @staticmethod
     def assert_reserved_attributes(model_ver):
         attrs = model_ver.get_attributes()
         assert (
-            attrs[_constants.MODEL_LANGUAGE_ATTR_KEY]
-            == _constants.ModelLanguage.PYTHON
+            attrs[_constants.MODEL_LANGUAGE_ATTR_KEY] == _constants.ModelLanguage.PYTHON
         )
         assert (
             attrs[_constants.MODEL_TYPE_ATTR_KEY]
@@ -254,7 +255,7 @@ class TestStandardModels:
     def test_decorated_verta(self, registered_model, endpoint, model):
         np = pytest.importorskip("numpy")
 
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings(record=True) as record:
             model_ver = registered_model.create_standard_model(
                 model,
                 Python(["pytest"]),  # source module imports pytest

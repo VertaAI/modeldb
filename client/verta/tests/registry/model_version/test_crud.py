@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+import warnings
+
 import pytest
 import requests
 
@@ -44,25 +46,32 @@ class TestCRUD:
             )
 
     def test_repr(self, model_version):
-        model_version.add_labels(["tag1", "tag2"])
-        repr = str(model_version)
+        np = pytest.importorskip("numpy")
+        LogisticRegression = pytest.importorskip(
+            "sklearn.linear_model"
+        ).LogisticRegression
 
+        classifier = LogisticRegression()
+        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
+        model_version.log_model(classifier, custom_modules=[])
+        model_version.log_artifact("coef", classifier.coef_)
+
+        model_version.add_labels(["tag1", "tag2"])
+        model_version.set_input_description("input description")
+        model_version.set_output_description("output description")
+        model_version.set_hide_input_label(True)
+        model_version.set_hide_output_label(True)
+
+        repr = str(model_version)
         assert model_version.name in repr
         assert model_version.url in repr
         assert str(model_version.id) in repr
         assert str(model_version.registered_model_id) in repr
         assert str(model_version.get_labels()) in repr
-
-        np = pytest.importorskip("numpy")
-        sklearn = pytest.importorskip("sklearn")
-        from sklearn.linear_model import LogisticRegression
-
-        classifier = LogisticRegression()
-        classifier.fit(np.random.random((36, 12)), np.random.random(36).round())
-
-        model_version.log_model(classifier)
-        model_version.log_artifact("coef", classifier.coef_)
-        repr = str(model_version)
+        assert f"input description: {model_version.get_input_description()}" in repr
+        assert f"output description: {model_version.get_output_description()}" in repr
+        assert f"hide input label: {model_version.get_hide_input_label()}" in repr
+        assert f"hide output label: {model_version.get_hide_output_label()}" in repr
         assert "model" in repr
         assert "coef" in repr
 
@@ -174,7 +183,7 @@ class TestCRUD:
         assert model_version.get_attributes() == dict([old_attr, second_attr])
 
         # with `overwrite`
-        with pytest.warns(None) as record:
+        with warnings.catch_warnings(record=True) as record:
             model_version.add_attributes(dict([new_attr, second_attr]), overwrite=True)
         assert not record  # no warning
         assert model_version.get_attributes() == dict([new_attr, second_attr])
@@ -306,25 +315,41 @@ class TestLockLevels:
 
 
 class TestStages:
-
     def test_update_stage(self, model_version):
         assert model_version.stage == "unassigned"
 
-        assert model_version.change_stage(
-            stage_change.Development("Working on it."),
-        ) == model_version.stage == "development"
+        assert (
+            model_version.change_stage(
+                stage_change.Development("Working on it."),
+            )
+            == model_version.stage
+            == "development"
+        )
 
-        assert model_version.change_stage(
-            stage_change.Staging("Undergoing final testing."),
-        ) == model_version.stage == "staging"
+        assert (
+            model_version.change_stage(
+                stage_change.Staging("Undergoing final testing."),
+            )
+            == model_version.stage
+            == "staging"
+        )
 
-        assert model_version.change_stage(
-            stage_change.Production("Rolling out to prod."),
-        ) == model_version.stage == "production"
+        assert (
+            model_version.change_stage(
+                stage_change.Production("Rolling out to prod."),
+            )
+            == model_version.stage
+            == "production"
+        )
 
-        assert model_version.change_stage(
-            stage_change.Archived("Deprioritized; keeping for posterity."),
-        ) == model_version.stage == "archived"
+        assert (
+            model_version.change_stage(
+                stage_change.Archived("Deprioritized; keeping for posterity."),
+            )
+            == model_version.stage
+            == "archived"
+        )
+
 
 # TODO: combine with test_experimentrun/test_attributes.py::TestComplexAttributes
 @pytest.mark.skipif(
@@ -378,3 +403,45 @@ class TestComplexAttributes:
             key2: attr2,
             key3: attr3,
         }
+
+
+class TestModelIODescription:
+    def test_input_description(self, client, created_entities):
+        registered_model = client.create_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.create_version(name="my version")
+        desc = "input description"
+        model_version.set_input_description(desc)
+        assert desc == model_version.get_input_description()
+        retrieved_model_version = registered_model.get_version(id=model_version.id)
+        assert desc == retrieved_model_version.get_input_description()
+
+    def test_output_description(self, client, created_entities):
+        registered_model = client.create_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.create_version(name="my version")
+        desc = "output description"
+        model_version.set_output_description(desc)
+        assert desc == model_version.get_output_description()
+        retrieved_model_version = registered_model.get_version(id=model_version.id)
+        assert desc == retrieved_model_version.get_output_description()
+
+    def test_hide_input_label(self, client, created_entities):
+        registered_model = client.create_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.create_version(name="my version")
+        assert model_version.get_hide_input_label() == False
+        model_version.set_hide_input_label(True)
+        assert model_version.get_hide_input_label() == True
+        retrieved_model_version = registered_model.get_version(id=model_version.id)
+        assert retrieved_model_version.get_hide_input_label() == True
+
+    def test_hide_output_label(self, client, created_entities):
+        registered_model = client.create_registered_model()
+        created_entities.append(registered_model)
+        model_version = registered_model.create_version(name="my version")
+        assert model_version.get_hide_output_label() == False
+        model_version.set_hide_output_label(True)
+        assert model_version.get_hide_output_label() == True
+        retrieved_model_version = registered_model.get_version(id=model_version.id)
+        assert retrieved_model_version.get_hide_output_label() == True

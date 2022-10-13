@@ -91,8 +91,8 @@ public class FutureExperimentDAO {
     this.jdbi = jdbi;
     this.uac = uac;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
-    this.futureProjectDAO = daoSet.futureProjectDAO;
-    this.uacApisUtil = daoSet.uacApisUtil;
+    this.futureProjectDAO = daoSet.getFutureProjectDAO();
+    this.uacApisUtil = daoSet.getUacApisUtil();
 
     var entityName = "ExperimentEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
@@ -106,8 +106,8 @@ public class FutureExperimentDAO {
             entityName,
             codeVersionHandler,
             datasetHandler,
-            daoSet.artifactStoreDAO,
-            daoSet.datasetVersionDAO,
+            daoSet.getArtifactStoreDAO(),
+            daoSet.getDatasetVersionDAO(),
             mdbConfig);
     predicatesHandler = new PredicatesHandler(executor, "experiment", "experiment", uacApisUtil);
     sortingHandler = new SortingHandler("experiment");

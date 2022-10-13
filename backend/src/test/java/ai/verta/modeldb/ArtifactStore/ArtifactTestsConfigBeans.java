@@ -44,7 +44,7 @@ public class ArtifactTestsConfigBeans {
     System.getProperties().put("server.port", config.getSpringServer().getPort());
     var artifactStoreConfig = config.getArtifactStoreConfig();
     artifactStoreConfig.setHost("localhost:" + config.getSpringServer().getPort());
-    var nfsConfig = artifactStoreConfig.getNfs();
+    var nfsConfig = artifactStoreConfig.getNFS();
     String rootPath = System.getProperty("user.dir");
     nfsConfig.setNfsRootPath(rootPath);
     artifactStoreConfig.setNFS(nfsConfig);

@@ -45,6 +45,7 @@ class Dataset(_entity._ModelDBEntity):
         Versions of this dataset.
 
     """
+
     def __init__(self, conn, conf, msg):
         super(Dataset, self).__init__(conn, conf, _DatasetService, "dataset", msg)
 
@@ -52,16 +53,22 @@ class Dataset(_entity._ModelDBEntity):
         self._refresh_cache()
         msg = self._msg
 
-        return '\n'.join((
-            "name: {}".format(msg.name),
-            "url: {}".format(self.url),
-            "time created: {}".format(_utils.timestamp_to_str(int(msg.time_created))),
-            "time updated: {}".format(_utils.timestamp_to_str(int(msg.time_updated))),
-            "description: {}".format(msg.description),
-            "tags: {}".format(msg.tags),
-            "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
-            "id: {}".format(msg.id),
-        ))
+        return "\n".join(
+            (
+                "name: {}".format(msg.name),
+                "url: {}".format(self.url),
+                "time created: {}".format(
+                    _utils.timestamp_to_str(int(msg.time_created))
+                ),
+                "time updated: {}".format(
+                    _utils.timestamp_to_str(int(msg.time_updated))
+                ),
+                "description: {}".format(msg.description),
+                "tags: {}".format(msg.tags),
+                "attributes: {}".format(_utils.unravel_key_values(msg.attributes)),
+                "id: {}".format(msg.id),
+            )
+        )
 
     @property
     def name(self):
@@ -118,13 +125,35 @@ class Dataset(_entity._ModelDBEntity):
             return None
 
     @classmethod
-    def _create_proto_internal(cls, conn, ctx, name, desc=None, tags=None, attrs=None, time_created=None, public_within_org=None, visibility=None):
+    def _create_proto_internal(
+        cls,
+        conn,
+        ctx,
+        name,
+        desc=None,
+        tags=None,
+        attrs=None,
+        time_created=None,
+        public_within_org=None,
+        visibility=None,
+    ):
         Message = _DatasetService.CreateDataset
-        msg = Message(name=name, description=desc, tags=tags, attributes=attrs, workspace_name=ctx.workspace_name, time_created=time_created)
-        if (public_within_org
-                and ctx.workspace_name is not None  # not user's personal workspace
-                and _utils.is_org(ctx.workspace_name, conn)):  # not anyone's personal workspace
-            msg.dataset_visibility = _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
+        msg = Message(
+            name=name,
+            description=desc,
+            tags=tags,
+            attributes=attrs,
+            workspace_name=ctx.workspace_name,
+            time_created=time_created,
+        )
+        if (
+            public_within_org
+            and ctx.workspace_name is not None  # not user's personal workspace
+            and _utils.is_org(ctx.workspace_name, conn)
+        ):  # not anyone's personal workspace
+            msg.dataset_visibility = (
+                _DatasetService.DatasetVisibilityEnum.ORG_SCOPED_PUBLIC
+            )
         msg.custom_permission.CopyFrom(visibility._custom_permission)
         msg.visibility = visibility._visibility
 
@@ -263,7 +292,12 @@ class Dataset(_entity._ModelDBEntity):
         # build KeyValues
         attribute_keyvals = []
         for key, value in six.viewitems(attrs):
-            attribute_keyvals.append(_CommonCommonService.KeyValue(key=key, value=_utils.python_to_val_proto(value, allow_collection=True)))
+            attribute_keyvals.append(
+                _CommonCommonService.KeyValue(
+                    key=key,
+                    value=_utils.python_to_val_proto(value, allow_collection=True),
+                )
+            )
 
         Message = _DatasetService.AddDatasetAttributes
         msg = Message(id=self.id, attributes=attribute_keyvals)
@@ -326,7 +360,9 @@ class Dataset(_entity._ModelDBEntity):
         endpoint = "/api/v1/modeldb/dataset/deleteDatasetAttributes"
         self._update(msg, Message.Response, endpoint, "DELETE")
 
-    def create_version(self, content, desc=None, tags=None, attrs=None, date_created=None):  # TODO: enable_mdb_versioning
+    def create_version(
+        self, content, desc=None, tags=None, attrs=None, date_created=None
+    ):  # TODO: enable_mdb_versioning
         """
         Creates a dataset version.
 
@@ -354,10 +390,15 @@ class Dataset(_entity._ModelDBEntity):
 
         """
         return DatasetVersion._create(
-            self._conn, self._conf,
-            dataset=self, dataset_blob=content,
-            desc=desc, tags=tags, attrs=attrs,
-            time_logged=date_created, time_updated=date_created,
+            self._conn,
+            self._conf,
+            dataset=self,
+            dataset_blob=content,
+            desc=desc,
+            tags=tags,
+            attrs=attrs,
+            time_logged=date_created,
+            time_updated=date_created,
         )
 
     def get_version(self, id):
@@ -385,7 +426,9 @@ class Dataset(_entity._ModelDBEntity):
         :class:`~verta.dataset.entities.DatasetVersion`
 
         """
-        return DatasetVersion._get_latest_version_by_dataset_id(self._conn, self._conf, self.id)
+        return DatasetVersion._get_latest_version_by_dataset_id(
+            self._conn, self._conf, self.id
+        )
 
     def _update(self, msg, response_proto, endpoint, method):
         response = self._conn.make_proto_request(method, endpoint, body=msg)
@@ -399,7 +442,9 @@ class Dataset(_entity._ModelDBEntity):
         """
         msg = _DatasetService.DeleteDataset(id=self.id)
         response = self._conn.make_proto_request(
-            "DELETE", "/api/v1/modeldb/dataset/deleteDataset", body=msg,
+            "DELETE",
+            "/api/v1/modeldb/dataset/deleteDataset",
+            body=msg,
         )
         self._conn.must_response(response)
 

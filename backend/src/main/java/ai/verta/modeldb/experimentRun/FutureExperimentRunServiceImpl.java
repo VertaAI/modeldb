@@ -50,9 +50,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
 
   public FutureExperimentRunServiceImpl(DAOSet daoSet, Executor executor) {
     this.executor = executor;
-    this.futureExperimentRunDAO = daoSet.futureExperimentRunDAO;
-    this.futureEventDAO = daoSet.futureEventDAO;
-    this.uacApisUtil = daoSet.uacApisUtil;
+    this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
+    this.futureEventDAO = daoSet.getFutureEventDAO();
+    this.uacApisUtil = daoSet.getUacApisUtil();
   }
 
   private InternalFuture<Void> addEvent(

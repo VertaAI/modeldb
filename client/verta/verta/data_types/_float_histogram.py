@@ -100,7 +100,8 @@ class FloatHistogram(_VertaDataType):
         if self._bucket_limits != other._bucket_limits:
             raise ValueError(
                 "bucket limits must match (self: {}, other: {})".format(
-                    self._bucket_limits, other._bucket_limits,
+                    self._bucket_limits,
+                    other._bucket_limits,
                 )
             )
 

@@ -27,9 +27,9 @@ public class LineageServiceImpl extends LineageServiceImplBase {
   private final LineageDAO lineageDAO;
 
   public LineageServiceImpl(DAOSet daoSet) {
-    this.lineageDAO = daoSet.lineageDAO;
-    this.experimentDAO = daoSet.experimentRunDAO;
-    this.commitDAO = daoSet.commitDAO;
+    this.lineageDAO = daoSet.getLineageDAO();
+    this.experimentDAO = daoSet.getExperimentRunDAO();
+    this.commitDAO = daoSet.getCommitDAO();
   }
 
   @Override

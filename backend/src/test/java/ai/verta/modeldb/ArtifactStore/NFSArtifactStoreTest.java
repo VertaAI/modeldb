@@ -27,9 +27,6 @@ import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
-import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
-import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
-import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.GetResources;
@@ -215,10 +212,9 @@ public class NFSArtifactStoreTest {
     // Remove all entities
     // removeEntities();
     // Delete entities by cron job
-    SoftDeleteProjects softDeleteProjects = reconcilerInitializer.softDeleteProjects;
-    SoftDeleteExperiments softDeleteExperiments = reconcilerInitializer.softDeleteExperiments;
-    SoftDeleteExperimentRuns softDeleteExperimentRuns =
-        reconcilerInitializer.softDeleteExperimentRuns;
+    var softDeleteProjects = reconcilerInitializer.getSoftDeleteProjects();
+    var softDeleteExperiments = reconcilerInitializer.getSoftDeleteExperiments();
+    var softDeleteExperimentRuns = reconcilerInitializer.getSoftDeleteExperimentRuns();
 
     softDeleteProjects.resync();
     while (!softDeleteProjects.isEmpty()) {
@@ -236,10 +232,10 @@ public class NFSArtifactStoreTest {
       Thread.sleep(10);
     }
 
-    ReconcilerInitializer.softDeleteDatasets.resync();
-    ReconcilerInitializer.softDeleteRepositories.resync();
+    reconcilerInitializer.getSoftDeleteDatasets().resync();
+    reconcilerInitializer.getSoftDeleteRepositories().resync();
 
-    File downloadedFile = new File(testConfig.getArtifactStoreConfig().getNfs().getNfsPathPrefix());
+    File downloadedFile = new File(testConfig.getArtifactStoreConfig().getNFS().getNfsPathPrefix());
     if (downloadedFile.exists()) {
       FileUtils.deleteDirectory(downloadedFile);
     }

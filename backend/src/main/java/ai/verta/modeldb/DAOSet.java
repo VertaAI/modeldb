@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreSer
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
+import ai.verta.modeldb.configuration.ReconcilerInitializer;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
@@ -25,66 +26,85 @@ import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ServiceEnum;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.concurrent.Executor;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.NONE)
 public class DAOSet {
-  public ArtifactStoreDAO artifactStoreDAO;
-  public BlobDAO blobDAO;
-  public CommentDAO commentDAO;
-  public CommitDAO commitDAO;
-  public DatasetDAO datasetDAO;
-  public DatasetVersionDAO datasetVersionDAO;
-  public FutureExperimentDAO futureExperimentDAO;
-  public ExperimentRunDAO experimentRunDAO;
-  public FutureExperimentRunDAO futureExperimentRunDAO;
-  public FutureProjectDAO futureProjectDAO;
-  public LineageDAO lineageDAO;
-  public MetadataDAO metadataDAO;
-  public RepositoryDAO repositoryDAO;
-  public FutureEventDAO futureEventDAO;
-  public UACApisUtil uacApisUtil;
+  @JsonProperty private ArtifactStoreDAO artifactStoreDAO;
+  @JsonProperty private BlobDAO blobDAO;
+  @JsonProperty private CommentDAO commentDAO;
+  @JsonProperty private CommitDAO commitDAO;
+  @JsonProperty private DatasetDAO datasetDAO;
+  @JsonProperty private DatasetVersionDAO datasetVersionDAO;
+  @JsonProperty private FutureExperimentDAO futureExperimentDAO;
+  @JsonProperty private ExperimentRunDAO experimentRunDAO;
+  @JsonProperty private FutureExperimentRunDAO futureExperimentRunDAO;
+  @JsonProperty private FutureProjectDAO futureProjectDAO;
+  @JsonProperty private LineageDAO lineageDAO;
+  @JsonProperty private MetadataDAO metadataDAO;
+  @JsonProperty private RepositoryDAO repositoryDAO;
+  @JsonProperty private FutureEventDAO futureEventDAO;
+  @JsonProperty private UACApisUtil uacApisUtil;
 
   public static DAOSet fromServices(
-      ServiceSet services, FutureJdbi jdbi, Executor executor, MDBConfig mdbConfig) {
+      ServiceSet services,
+      FutureJdbi jdbi,
+      Executor executor,
+      MDBConfig mdbConfig,
+      ReconcilerInitializer reconcilerInitializer) {
     var set = new DAOSet();
-    set.uacApisUtil = new UACApisUtil(executor, services.uac);
+    set.uacApisUtil = new UACApisUtil(executor, services.getUac());
 
     set.metadataDAO = new MetadataDAORdbImpl();
-    set.commitDAO = new CommitDAORdbImpl(services.authService, services.mdbRoleService);
+    set.commitDAO = new CommitDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
     set.repositoryDAO =
         new RepositoryDAORdbImpl(
-            services.authService, services.mdbRoleService, set.commitDAO, set.metadataDAO);
-    set.blobDAO = new BlobDAORdbImpl(services.authService, services.mdbRoleService);
+            services.getAuthService(),
+            services.getMdbRoleService(),
+            set.commitDAO,
+            set.metadataDAO);
+    set.blobDAO = new BlobDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
 
     set.experimentRunDAO =
         new ExperimentRunDAORdbImpl(
             mdbConfig,
-            services.authService,
-            services.mdbRoleService,
+            services.getAuthService(),
+            services.getMdbRoleService(),
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO,
             set.metadataDAO);
-    if (services.artifactStoreService == null
-        || services.artifactStoreService instanceof NoopArtifactStoreService) {
+    if (services.getArtifactStoreService() == null
+        || services.getArtifactStoreService() instanceof NoopArtifactStoreService) {
       set.artifactStoreDAO = new ArtifactStoreDAODisabled();
     } else {
       set.artifactStoreDAO =
           new ArtifactStoreDAORdbImpl(
-              services.artifactStoreService, mdbConfig.getArtifactStoreConfig());
+              services.getArtifactStoreService(), mdbConfig.getArtifactStoreConfig());
     }
 
-    set.commentDAO = new CommentDAORdbImpl(services.authService);
-    set.datasetDAO = new DatasetDAORdbImpl(services.authService, services.mdbRoleService);
+    set.commentDAO = new CommentDAORdbImpl(services.getAuthService());
+    set.datasetDAO = new DatasetDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
     set.lineageDAO = new LineageDAORdbImpl();
     set.datasetVersionDAO =
-        new DatasetVersionDAORdbImpl(services.authService, services.mdbRoleService);
+        new DatasetVersionDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,
             jdbi,
             mdbConfig,
-            services.uac,
+            services.getUac(),
             set.artifactStoreDAO,
             set.datasetVersionDAO,
             set.repositoryDAO,
@@ -95,18 +115,18 @@ public class DAOSet {
         new FutureProjectDAO(
             executor,
             jdbi,
-            services.uac,
+            services.getUac(),
             set.artifactStoreDAO,
             set.datasetVersionDAO,
             mdbConfig,
             set.futureExperimentRunDAO,
-            set.uacApisUtil);
+            set.uacApisUtil,
+            reconcilerInitializer);
     set.futureEventDAO =
         new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
-    set.futureExperimentDAO = new FutureExperimentDAO(executor, jdbi, services.uac, mdbConfig, set);
+    set.futureExperimentDAO =
+        new FutureExperimentDAO(executor, jdbi, services.getUac(), mdbConfig, set);
 
     return set;
   }
-
-  private DAOSet() {}
 }

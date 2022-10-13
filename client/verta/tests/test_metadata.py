@@ -23,7 +23,7 @@ class TestTags:
 
     def test_ignore_duplicates(self, experiment_run, strs):
         """duplicate tags do not raise an error, and instead are ignored"""
-        experiment_run.log_tags(strs*2)
+        experiment_run.log_tags(strs * 2)
 
         assert set(experiment_run.get_tags()) == set(strs)
 
@@ -47,7 +47,7 @@ class TestHyperparameters:
         keys = (c for c in string.printable if c not in _utils._VALID_FLAT_KEY_CHARS)
         for key in keys:
             with pytest.raises(ValueError):
-                experiment_run.log_hyperparameter(key, 'key test')
+                experiment_run.log_hyperparameter(key, "key test")
 
     def test_single(self, experiment_run, strs, scalar_values):
         strs, holdout = strs[:-1], strs[-1]  # reserve last key
@@ -123,7 +123,7 @@ class TestMetrics:
         keys = (c for c in string.printable if c not in _utils._VALID_FLAT_KEY_CHARS)
         for key in keys:
             with pytest.raises(ValueError):
-                experiment_run.log_metric(key, 'key test')
+                experiment_run.log_metric(key, "key test")
 
     def test_single(self, experiment_run, strs, scalar_values):
         strs, holdout = strs[:-1], strs[-1]  # reserve last key
@@ -200,13 +200,12 @@ class TestObservations:
         keys = (c for c in string.printable if c not in _utils._VALID_FLAT_KEY_CHARS)
         for key in keys:
             with pytest.raises(ValueError):
-                experiment_run.log_observation(key, 'key test')
+                experiment_run.log_observation(key, "key test")
 
     def test_single(self, experiment_run, strs, scalar_values):
         strs, holdout = strs[:-1], strs[-1]  # reserve last key
         observations = {
-            key: [scalar_value]*3
-            for key, scalar_value in zip(strs, scalar_values)
+            key: [scalar_value] * 3 for key, scalar_value in zip(strs, scalar_values)
         }
 
         for key, vals in six.viewitems(observations):
@@ -217,15 +216,19 @@ class TestObservations:
             experiment_run.get_observation(holdout)
 
         for key, val in six.viewitems(observations):
-            assert [obs_tuple[0] for obs_tuple in experiment_run.get_observation(key)] == val
+            assert [
+                obs_tuple[0] for obs_tuple in experiment_run.get_observation(key)
+            ] == val
 
-        assert {key: [obs_tuple[0] for obs_tuple in obs_seq]
-                for key, obs_seq in experiment_run.get_observations().items()} == observations
+        assert {
+            key: [obs_tuple[0] for obs_tuple in obs_seq]
+            for key, obs_seq in experiment_run.get_observations().items()
+        } == observations
 
     def test_collection_error(self, experiment_run, strs, collection_values):
         """do not permit logging lists or dicts"""
         observations = {
-            key: [collection_value]*3
+            key: [collection_value] * 3
             for key, collection_value in zip(strs, collection_values)
         }
 
@@ -257,8 +260,7 @@ class TestObservations:
 
         value_to_epoch = {
             obs_tuple[0]: obs_tuple[2]
-            for obs_tuple
-            in experiment_run.get_observation(key)
+            for obs_tuple in experiment_run.get_observation(key)
         }
         assert value_to_epoch[value1] == 0  # start at 0
         assert value_to_epoch[value2] == epoch_num  # manual

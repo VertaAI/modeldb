@@ -3,11 +3,11 @@
 from __future__ import print_function
 import sys
 import time
+from urllib.parse import urlparse
 import json
 import yaml
 
 from verta.external import six
-from verta.external.six.moves.urllib.parse import urlparse  # pylint: disable=import-error, no-name-in-module
 
 from verta.deployment import DeployedModel
 from verta._internal_utils import _utils, arg_handler
@@ -114,9 +114,9 @@ class Endpoint(object):
             A build object with an id and status.
         """
         production_stage = self._get_production_stage()
-        components =  production_stage["components"]
+        components = production_stage["components"]
         # Note: the line below triggers a spurious and incorrect pylint error
-        build_id = next(six.moves.map(lambda component: component["build_id"], components),None) # pylint: disable=no-member
+        build_id = next(map(lambda component: component["build_id"], components), None)
         if build_id:
             build = self._get_build(build_id)
             return build
@@ -252,7 +252,6 @@ class Endpoint(object):
                 return endpoint
         return None
 
-
     def log_ground_truth(self, id, labels, colname):
         conn = self._conn
         url = "{}://{}/api/v1/monitoring/ingest/decorate/batch/endpoint/{}".format(
@@ -267,16 +266,15 @@ class Endpoint(object):
             {
                 "id": "{}[{}]".format(id, i),
                 "attributes": {
-                    "ground_truth.output."+colname: val,
+                    "ground_truth.output." + colname: val,
                     "source": "ground_truth",
-                }
+                },
             }
             for i, val in enumerate(labels)
         ]
 
         response = _utils.make_request("POST", url, conn, json=data)
         _utils.raise_for_http_error(response)
-
 
     def update(
         self,
@@ -317,7 +315,9 @@ class Endpoint(object):
         status : dict of str to {None, bool, float, int, str, list, dict}
 
         """
-        if not isinstance(model_reference, (RegisteredModelVersion, ExperimentRun, Build)):
+        if not isinstance(
+            model_reference, (RegisteredModelVersion, ExperimentRun, Build)
+        ):
             raise TypeError(
                 "`model_reference` must be an ExperimentRun, RegisteredModelVersion, or Build"
             )
@@ -347,15 +347,14 @@ class Endpoint(object):
                 local_path = model_version._get_artifact_msg("reference_data").path
             except:
                 return ret
-            bucket = urlparse(model_version._get_url_for_artifact("reference_data", "GET").url).hostname.split('.')[0]
+            bucket = urlparse(
+                model_version._get_url_for_artifact("reference_data", "GET").url
+            ).hostname.split(".")[0]
             conn = self._conn
             url = "{}://{}/api/v1/monitoring/ingest/reference/endpoint/{}".format(
                 conn.scheme, conn.socket, self.id
             )
-            ingestRequest = {
-                "bucket": bucket,
-                "path": local_path
-            }
+            ingestRequest = {"bucket": bucket, "path": local_path}
             response = _utils.make_request("POST", url, conn, json=ingestRequest)
             _utils.raise_for_http_error(response)
         return ret
@@ -400,7 +399,9 @@ class Endpoint(object):
 
             print()
             if status_dict["status"] == "error":
-                failure_msg = status_dict['components'][-1].get('message', "no error message available")
+                failure_msg = status_dict["components"][-1].get(
+                    "message", "no error message available"
+                )
                 # NOTE: we might consider truncating the length of the logs here,
                 #     e.g. first and last 25 lines, if too unwieldy
                 raise RuntimeError("endpoint update failed;\n{}".format(failure_msg))
@@ -435,7 +436,6 @@ class Endpoint(object):
             time.sleep(polling_seconds)
             current_build = self._get_build(build_id)
         return current_build
-
 
     def _create_build(self, model_reference):
         url = "{}://{}/api/v1/deployment/workspace/{}/builds".format(
@@ -473,7 +473,6 @@ class Endpoint(object):
         else:
             raise NotImplementedError("currently not supported other stages")
 
-
     def _get_stages(self):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
             self._conn.scheme, self._conn.socket, self.workspace, self.id
@@ -487,14 +486,12 @@ class Endpoint(object):
         else:
             return []
 
-
     def _get_production_stage(self):
         stages = self._get_stages()
         if stages:
             return stages[0]
         else:
             return None
-
 
     def _create_stage(self, name="production"):
         url = "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages".format(
@@ -558,7 +555,10 @@ class Endpoint(object):
             stage_id,
         )
         response = _utils.make_request(
-            "PUT", url, self._conn, json={"disabled": True},
+            "PUT",
+            url,
+            self._conn,
+            json={"disabled": True},
         )
         _utils.raise_for_http_error(response)
 
@@ -862,7 +862,6 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
         return response.json()
-
 
     def _get_build(self, build_id):
         url = "{}://{}/api/v1/deployment/workspace/{}/builds/{}".format(

@@ -1,22 +1,28 @@
 package ai.verta.modeldb.common.config;
 
+import ai.verta.modeldb.common.CommonMessages;
+import com.fasterxml.jackson.annotation.JsonProperty;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S100"})
 public class ServiceUserConfig {
-  private String email;
-  private String devKey;
+  @JsonProperty private String email;
+  @JsonProperty private String devKey;
 
   public void validate(String base) throws InvalidConfigException {
     if (email == null || email.isEmpty())
-      throw new InvalidConfigException(base + ".email", Config.MISSING_REQUIRED);
+      throw new InvalidConfigException(base + ".email", CommonMessages.MISSING_REQUIRED);
     if (devKey == null || devKey.isEmpty())
-      throw new InvalidConfigException(base + ".devKey", Config.MISSING_REQUIRED);
-  }
-
-  public String getEmail() {
-    return email;
-  }
-
-  public String getDevKey() {
-    return devKey;
+      throw new InvalidConfigException(base + ".devKey", CommonMessages.MISSING_REQUIRED);
   }
 }
