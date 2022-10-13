@@ -11,42 +11,10 @@
     "application/json"
   ],
   "paths": {
-    "/registry/model_versions/external_deployments/find": {
-      "post": {
-        "summary": "CRUD for External Deployment",
-        "operationId": "RegistryService_FindExternalDeployment5",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequest"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/model_versions/external_deployments/{id.external_deployment_id}": {
+    "/registry/external_deployments/{external_deployment_id}": {
       "get": {
-        "operationId": "RegistryService_GetExternalDeployment2",
+        "summary": "CRUD for External Deployment",
+        "operationId": "RegistryService_GetExternalDeployment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -63,98 +31,9 @@
         },
         "parameters": [
           {
-            "name": "id.external_deployment_id",
+            "name": "external_deployment_id",
             "in": "path",
             "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      },
-      "delete": {
-        "operationId": "RegistryService_DeleteExternalDeployment3",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryDeleteModelVersionRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
             "type": "string",
             "format": "uint64"
           }
@@ -189,47 +68,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryFindModelVersionRequest"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/model_versions/{id.model_version_id.model_version_id}/external_deployments/find": {
-      "post": {
-        "summary": "CRUD for External Deployment",
-        "operationId": "RegistryService_FindExternalDeployment4",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequest"
             }
           }
         ],
@@ -762,9 +600,38 @@
         ]
       }
     },
-    "/registry/registered_models/model_versions/external_deployments/{id.external_deployment_id}": {
+    "/registry/registered_models/model_versions/external_deployments/{external_deployment_id}": {
+      "delete": {
+        "operationId": "RegistryService_DeleteExternalDeployment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryDeleteModelVersionRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "external_deployment_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
       "put": {
-        "operationId": "RegistryService_UpdateExternalDeployment8",
+        "operationId": "RegistryService_UpdateExternalDeployment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -781,7 +648,7 @@
         },
         "parameters": [
           {
-            "name": "id.external_deployment_id",
+            "name": "external_deployment_id",
             "in": "path",
             "required": true,
             "type": "string",
@@ -801,9 +668,9 @@
         ]
       }
     },
-    "/registry/registered_models/model_versions/{id.model_version_id.model_version_id}/external_deployments": {
+    "/registry/registered_models/model_versions/{model_version_id}/external_deployments": {
       "post": {
-        "operationId": "RegistryService_CreateExternalDeployment3",
+        "operationId": "RegistryService_CreateExternalDeployment",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -820,55 +687,7 @@
         },
         "parameters": [
           {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryExternalDeployment"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/registered_models/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}": {
-      "put": {
-        "operationId": "RegistryService_UpdateExternalDeployment7",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
+            "name": "model_version_id",
             "in": "path",
             "required": true,
             "type": "string",
@@ -1114,325 +933,6 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/registrySetModelVersion"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments": {
-      "post": {
-        "operationId": "RegistryService_CreateExternalDeployment2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryExternalDeployment"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments/find": {
-      "post": {
-        "summary": "CRUD for External Deployment",
-        "operationId": "RegistryService_FindExternalDeployment2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequest"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}": {
-      "delete": {
-        "operationId": "RegistryService_DeleteExternalDeployment2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryDeleteModelVersionRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      },
-      "put": {
-        "operationId": "RegistryService_UpdateExternalDeployment6",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryExternalDeployment"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      },
-      "patch": {
-        "operationId": "RegistryService_UpdateExternalDeployment2",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryExternalDeployment"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}/full_body": {
-      "patch": {
-        "operationId": "RegistryService_UpdateExternalDeployment4",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeployment"
             }
           }
         ],
@@ -1998,454 +1498,6 @@
         ]
       }
     },
-    "/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/model_versions/external_deployments/find": {
-      "post": {
-        "summary": "CRUD for External Deployment",
-        "operationId": "RegistryService_FindExternalDeployment3",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequest"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments": {
-      "post": {
-        "operationId": "RegistryService_CreateExternalDeployment",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryExternalDeployment"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/find": {
-      "post": {
-        "summary": "CRUD for External Deployment",
-        "operationId": "RegistryService_FindExternalDeployment",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryFindExternalDeploymentRequest"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}": {
-      "get": {
-        "operationId": "RegistryService_GetExternalDeployment",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryGetExternalDeploymentRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      },
-      "delete": {
-        "operationId": "RegistryService_DeleteExternalDeployment",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registryDeleteModelVersionRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.model_version_id.model_id.registered_model_id",
-            "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "uint64"
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      },
-      "put": {
-        "operationId": "RegistryService_UpdateExternalDeployment5",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryExternalDeployment"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      },
-      "patch": {
-        "operationId": "RegistryService_UpdateExternalDeployment",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registryExternalDeployment"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
-    "/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.named_id.name}/model_versions/{id.model_version_id.model_version_id}/external_deployments/{id.external_deployment_id}/full_body": {
-      "patch": {
-        "operationId": "RegistryService_UpdateExternalDeployment3",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeploymentResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "id.model_version_id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_id.named_id.name",
-            "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "id.model_version_id.model_version_id",
-            "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "id.external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
-            "format": "uint64"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/registrySetExternalDeployment"
-            }
-          }
-        ],
-        "tags": [
-          "RegistryService"
-        ]
-      }
-    },
     "/registry/workspaces/{id.named_id.workspace_name}/model_versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
@@ -2908,7 +1960,8 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
     },
@@ -3046,6 +2099,20 @@
         }
       }
     },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -3175,57 +2242,6 @@
         }
       }
     },
-    "registryExternalDeploymentIdentification": {
-      "type": "object",
-      "properties": {
-        "external_deployment_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "model_version_id": {
-          "$ref": "#/definitions/registryModelVersionIdentification"
-        }
-      }
-    },
-    "registryFindExternalDeploymentRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/registryExternalDeploymentIdentification"
-        },
-        "predicates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValueQuery"
-          }
-        },
-        "pagination": {
-          "$ref": "#/definitions/vertacommonPagination"
-        },
-        "ascending": {
-          "type": "boolean",
-          "format": "boolean"
-        },
-        "sort_key": {
-          "type": "string"
-        }
-      }
-    },
-    "registryFindExternalDeploymentRequestResponse": {
-      "type": "object",
-      "properties": {
-        "external_deployment": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/registryExternalDeployment"
-          }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
-        }
-      }
-    },
     "registryFindModelVersionRequest": {
       "type": "object",
       "properties": {
@@ -3241,7 +2257,7 @@
           "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
         },
         "pagination": {
-          "$ref": "#/definitions/vertacommonPagination",
+          "$ref": "#/definitions/commonPagination",
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
@@ -3283,7 +2299,7 @@
           "title": "Filtering supported on\n1. name\n2. labels\n3. description"
         },
         "pagination": {
-          "$ref": "#/definitions/vertacommonPagination",
+          "$ref": "#/definitions/commonPagination",
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
@@ -3606,6 +2622,12 @@
           "type": "boolean",
           "format": "boolean",
           "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "external_deployments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryExternalDeployment"
+          }
         }
       }
     },
@@ -3744,20 +2766,6 @@
         "workspace_name": {
           "type": "string",
           "title": "WorkspaceName"
-        }
-      }
-    },
-    "registrySetExternalDeployment": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/registryExternalDeploymentIdentification"
-        },
-        "external_deployment": {
-          "$ref": "#/definitions/registryExternalDeployment"
-        },
-        "update_mask": {
-          "$ref": "#/definitions/protobufFieldMask"
         }
       }
     },
@@ -4067,20 +3075,6 @@
           "type": "string"
         }
       }
-    },
-    "vertacommonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     }
   },
   "basePath": "/v1"

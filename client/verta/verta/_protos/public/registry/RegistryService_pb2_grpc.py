@@ -114,11 +114,6 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.Response.FromString,
         )
-    self.FindExternalDeployment = channel.unary_unary(
-        '/ai.verta.registry.RegistryService/FindExternalDeployment',
-        request_serializer=registry_dot_RegistryService__pb2.FindExternalDeploymentRequest.SerializeToString,
-        response_deserializer=registry_dot_RegistryService__pb2.FindExternalDeploymentRequest.Response.FromString,
-        )
     self.GetExternalDeployment = channel.unary_unary(
         '/ai.verta.registry.RegistryService/GetExternalDeployment',
         request_serializer=registry_dot_RegistryService__pb2.GetExternalDeploymentRequest.SerializeToString,
@@ -285,16 +280,9 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def FindExternalDeployment(self, request, context):
+  def GetExternalDeployment(self, request, context):
     """CRUD for External Deployment
     """
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def GetExternalDeployment(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
@@ -422,11 +410,6 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.logDockerMetadataInModelVersion,
           request_deserializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.FromString,
           response_serializer=registry_dot_RegistryService__pb2.LogDockerMetadataInModelVersion.Response.SerializeToString,
-      ),
-      'FindExternalDeployment': grpc.unary_unary_rpc_method_handler(
-          servicer.FindExternalDeployment,
-          request_deserializer=registry_dot_RegistryService__pb2.FindExternalDeploymentRequest.FromString,
-          response_serializer=registry_dot_RegistryService__pb2.FindExternalDeploymentRequest.Response.SerializeToString,
       ),
       'GetExternalDeployment': grpc.unary_unary_rpc_method_handler(
           servicer.GetExternalDeployment,
