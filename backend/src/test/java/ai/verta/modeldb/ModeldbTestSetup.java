@@ -16,7 +16,6 @@ import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceFutureStub;
 import ai.verta.uac.DeleteResources;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -304,28 +303,6 @@ public abstract class ModeldbTestSetup extends TestCase {
 
     reconcilerInitializer.getSoftDeleteDatasets().resync();
     reconcilerInitializer.getSoftDeleteRepositories().resync();
-  }
-
-  public void mockGetResourcesForProject(
-      Project project, CollaboratorServiceFutureStub collaboratorMock) {
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                GetResources.Response.newBuilder()
-                    .addItem(
-                        GetResourcesResponseItem.newBuilder()
-                            .setVisibility(ResourceVisibility.PRIVATE)
-                            .setResourceId(project.getId())
-                            .setResourceName(project.getName())
-                            .setResourceType(
-                                ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(
-                                        ModelDBServiceResourceTypes.PROJECT)
-                                    .build())
-                            .setOwnerId(project.getWorkspaceServiceId())
-                            .setWorkspaceId(project.getWorkspaceServiceId())
-                            .build())
-                    .build()));
   }
 
   protected void mockGetResourcesForAllEntity(Map<String, Project> projectMap, UserInfo userInfo) {
