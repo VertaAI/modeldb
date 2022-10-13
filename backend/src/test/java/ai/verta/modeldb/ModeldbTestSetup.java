@@ -16,17 +16,24 @@ import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
+import ai.verta.uac.Action;
+import ai.verta.uac.Actions;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceFutureStub;
 import ai.verta.uac.DeleteResources;
+import ai.verta.uac.Entities;
+import ai.verta.uac.GetAllowedEntities;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedActionsBatch;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
@@ -41,6 +48,7 @@ import ai.verta.uac.Workspace;
 import ai.verta.uac.WorkspaceServiceGrpc;
 import com.google.common.util.concurrent.Futures;
 import io.grpc.ManagedChannelBuilder;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -77,6 +85,9 @@ public abstract class ModeldbTestSetup extends TestCase {
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
       versioningServiceBlockingStubClient2;
   protected static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
+  protected static HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub;
+  protected static HydratedServiceGrpc.HydratedServiceBlockingStub
+      hydratedServiceBlockingStubClient2;
   protected static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
   protected static CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
       collaboratorServiceStubClient1;
@@ -157,6 +168,8 @@ public abstract class ModeldbTestSetup extends TestCase {
     commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
+    hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
+    hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(channelUser2);
 
     if (!runningIsolated) {
       var authServiceChannel =
@@ -239,7 +252,23 @@ public abstract class ModeldbTestSetup extends TestCase {
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
     when(authzBlockingMock.isSelfAllowed(any()))
         .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+    when(authzBlockingMock.getSelfAllowedActionsBatch(any()))
+        .thenReturn(
+            GetSelfAllowedActionsBatch.Response.newBuilder()
+                .putActions(
+                    "READ",
+                    Actions.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(ModelDBServiceActions.READ)
+                                .setService(Service.MODELDB_SERVICE)
+                                .build())
+                        .build())
+                .build());
     when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+    when(uacBlockingMock.getUsers(any()))
+        .thenReturn(
+            GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build());
     when(workspaceBlockingMock.getWorkspaceByName(any()))
         .thenReturn(
             Workspace.newBuilder()
@@ -402,6 +431,19 @@ public abstract class ModeldbTestSetup extends TestCase {
         .thenReturn(
             GetSelfAllowedResources.Response.newBuilder()
                 .addAllResources(allowedResourcesResponse)
+                .build());
+    var authzBlockingMock = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
+    when(authChannelMock.getAuthzServiceBlockingStub(any())).thenReturn(authzBlockingMock);
+    when(authzBlockingMock.getAllowedEntities(any()))
+        .thenReturn(
+            GetAllowedEntities.Response.newBuilder()
+                .addEntities(
+                    Entities.newBuilder()
+                        .addAllUserIds(
+                            List.of(
+                                testUser1.getVertaInfo().getUserId(),
+                                testUser2.getVertaInfo().getUserId()))
+                        .build())
                 .build());
   }
 }

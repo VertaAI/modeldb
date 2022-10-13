@@ -3,11 +3,18 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProject;
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.CollaboratorTypeEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.UserInfo;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ServiceEnum;
+import com.google.common.util.concurrent.Futures;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -18,15 +25,16 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FindHydratedServiceTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class FindHydratedServiceTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER =
       LogManager.getLogger(FindHydratedServiceTest.class.getName());
@@ -49,6 +57,12 @@ public class FindHydratedServiceTest extends TestsInit {
 
   @Before
   public void createEntities() {
+    initializedChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
@@ -70,28 +84,43 @@ public class FindHydratedServiceTest extends TestsInit {
     experimentRunMap = new HashMap<>();
   }
 
-  private static void createProjectEntities() {
-    ProjectTest projectTest = new ProjectTest();
-
+  private void createProjectEntities() {
     // Create project1
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("project-1-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("project-1-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project1 = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
 
     // Create project2
-    createProjectRequest = projectTest.getCreateProjectRequest("project-2-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("project-2-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project2 = createProjectResponse.getProject();
     LOGGER.info("Project2 created successfully");
 
     projectMap.put(project1.getId(), project1);
     projectMap.put(project2.getId(), project2);
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllEntity(projectMap, testUser1);
+      when(authzMock.getSelfAllowedResources(
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+    }
   }
 
-  private static void createExperimentEntities() {
+  private void createExperimentEntities() {
     // Create two experiment of above project
     CreateExperiment request =
         ExperimentTest.getCreateExperimentRequestForOtherTests(
@@ -107,7 +136,7 @@ public class FindHydratedServiceTest extends TestsInit {
     LOGGER.info("Experiment2 created successfully");
   }
 
-  private static void createExperimentRun() {
+  private void createExperimentRun() {
     CreateExperimentRun createExperimentRunRequest =
         ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
@@ -175,13 +204,16 @@ public class FindHydratedServiceTest extends TestsInit {
     commentServiceBlockingStub.addExperimentRunComment(addCommentRequest);
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
-    // For Collaborator1
-    AddCollaboratorRequest addCollaboratorRequest =
-        addCollaboratorRequestProjectInterceptor(
-            project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
-    AddCollaboratorRequest.Response addCollaboratorResponse =
-        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-    LOGGER.info("Collaborator1 added successfully");
+    AddCollaboratorRequest.Response addCollaboratorResponse = null;
+    if (!isRunningIsolated()) {
+      // For Collaborator1
+      AddCollaboratorRequest addCollaboratorRequest =
+          addCollaboratorRequestProjectInterceptor(
+              project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+      addCollaboratorResponse =
+          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+      LOGGER.info("Collaborator1 added successfully");
+    }
 
     GetHydratedProjects.Response getHydratedProjectsResponse =
         hydratedServiceBlockingStub.getHydratedProjects(GetHydratedProjects.newBuilder().build());
@@ -201,9 +233,11 @@ public class FindHydratedServiceTest extends TestsInit {
             "HydratedProjects collaborator count does not match with added collaborator count",
             1,
             hydratedProject.getCollaboratorUserInfosCount());
-        assertEquals(
-            hydratedProject.getCollaboratorUserInfosList().get(0).getCollaboratorUserInfo(),
-            addCollaboratorResponse.getCollaboratorUserInfo());
+        if (!isRunningIsolated()) {
+          assertEquals(
+              hydratedProject.getCollaboratorUserInfosList().get(0).getCollaboratorUserInfo(),
+              addCollaboratorResponse.getCollaboratorUserInfo());
+        }
       }
     }
 
@@ -215,8 +249,11 @@ public class FindHydratedServiceTest extends TestsInit {
       assertEquals(
           "Expected project owner does not match with the hydratedProject owner",
           existingProject.getOwner(),
-          authService.getVertaIdFromUserInfo(
-              hydratedProjectMap.get(existingProject.getId()).getOwnerUserInfo()));
+          hydratedProjectMap
+              .get(existingProject.getId())
+              .getOwnerUserInfo()
+              .getVertaInfo()
+              .getUserId());
     }
 
     LOGGER.info("FindHydratedProjects with single user collaborator test stop............");
@@ -248,22 +285,19 @@ public class FindHydratedServiceTest extends TestsInit {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (testConfig.hasAuth()) {
-      GetUser getUserRequest =
-          GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
-      // Get the user info by vertaId form the AuthService
-      UserInfo shareWithUserInfo = uacServiceStub.getUser(getUserRequest);
-
       // Create two collaborator for above project
       List<String> collaboratorUsers = new ArrayList<>();
-      // For Collaborator1
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProject(
-              project1,
-              shareWithUserInfo.getEmail(),
-              CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
-      collaboratorUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
-      collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator1 added successfully");
+      collaboratorUsers.add(testUser2.getVertaInfo().getUserId());
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllEntity(Map.of(project1.getId(), project1), testUser1);
+      } else {
+        // For Collaborator1
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProject(
+                project1, testUser2.getEmail(), CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator1 added successfully");
+      }
 
       GetHydratedProjectById.Response getHydratedProjectResponse =
           hydratedServiceBlockingStub.getHydratedProjectById(
@@ -277,8 +311,11 @@ public class FindHydratedServiceTest extends TestsInit {
       assertEquals(
           "Expected project owner does not match with the hydratedProject owner",
           project1.getOwner(),
-          authService.getVertaIdFromUserInfo(
-              getHydratedProjectResponse.getHydratedProject().getOwnerUserInfo()));
+          getHydratedProjectResponse
+              .getHydratedProject()
+              .getOwnerUserInfo()
+              .getVertaInfo()
+              .getUserId());
 
       assertEquals(
           "Expected shared project user count does not match with the hydratedProject shared project user count",
@@ -295,8 +332,7 @@ public class FindHydratedServiceTest extends TestsInit {
             LOGGER.info("existing project collborator : " + existingUserId);
             LOGGER.info(
                 "Hydrated project collborator : "
-                    + authService.getVertaIdFromUserInfo(
-                        collaboratorUserInfo.getCollaboratorUserInfo()));
+                    + collaboratorUserInfo.getCollaboratorUserInfo().getVertaInfo().getUserId());
             match = true;
             break;
           }
