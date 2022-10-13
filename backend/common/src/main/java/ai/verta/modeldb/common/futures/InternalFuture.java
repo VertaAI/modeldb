@@ -311,6 +311,10 @@ public class InternalFuture<T> {
     return InternalFuture.from(promise);
   }
 
+  static public <U> InternalFuture<Optional<U>> flipOptional(Optional<InternalFuture<U>> val, Executor executor) {
+    return val.map(future->future.thenApply(Optional::of, executor)).orElse(InternalFuture.completedInternalFuture(Optional.empty()));
+  }
+
   public T get() {
     try {
       return stage.toCompletableFuture().get();
