@@ -1,5 +1,7 @@
 package ai.verta.modeldb.common.futures;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
@@ -7,6 +9,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -108,5 +111,17 @@ class InternalFutureTest {
                     .get())
         .isInstanceOf(ModelDBException.class)
         .hasRootCauseMessage("io failed");
+  }
+
+  @Test
+    void flipOptional() {
+      ExecutorService executor = Executors.newSingleThreadExecutor();
+
+      final var res1 = InternalFuture.flipOptional(Optional.of(InternalFuture.completedInternalFuture("123")), executor).get();
+      assertTrue(res1.isPresent());
+      assertEquals("123", res1.get());
+
+      final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
+      assertTrue(res2.isEmpty());
   }
 }
