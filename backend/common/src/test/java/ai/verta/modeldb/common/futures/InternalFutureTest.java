@@ -1,9 +1,9 @@
 package ai.verta.modeldb.common.futures;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -114,14 +114,17 @@ class InternalFutureTest {
   }
 
   @Test
-    void flipOptional() {
-      ExecutorService executor = Executors.newSingleThreadExecutor();
+  void flipOptional() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
 
-      final var res1 = InternalFuture.flipOptional(Optional.of(InternalFuture.completedInternalFuture("123")), executor).get();
-      assertTrue(res1.isPresent());
-      assertEquals("123", res1.get());
+    final var res1 =
+        InternalFuture.flipOptional(
+                Optional.of(InternalFuture.completedInternalFuture("123")), executor)
+            .get();
+    assertTrue(res1.isPresent());
+    assertEquals("123", res1.get());
 
-      final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
-      assertTrue(res2.isEmpty());
+    final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
+    assertTrue(res2.isEmpty());
   }
 }
