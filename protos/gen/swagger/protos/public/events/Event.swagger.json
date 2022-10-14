@@ -1,0 +1,1385 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "events/Event.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/events/createEvent": {
+      "post": {
+        "operationId": "EventService_createEvent",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertacommonEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/eventsCreateEventRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/events/createWebhook": {
+      "post": {
+        "operationId": "EventService_createWebhook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/eventsWebhook"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/eventsCreateWebhookRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/events/deleteWebhook": {
+      "delete": {
+        "operationId": "EventService_deleteWebhook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertacommonEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/eventsDeleteWebhookRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/events/findWebhook": {
+      "post": {
+        "operationId": "EventService_findWebhook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/eventsFindWebhookRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/eventsFindWebhookRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/events/findWebhookCall": {
+      "post": {
+        "operationId": "EventService_findWebhookCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/eventsFindWebhookCallRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/eventsFindWebhookCallRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/events/retriggerWebhookCall": {
+      "post": {
+        "operationId": "EventService_retriggerWebhookCall",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/eventsWebhookCall"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/eventsRetriggerWebhookCallRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/events/triggerTest": {
+      "post": {
+        "operationId": "EventService_triggerTest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/eventsTestWebhookRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/eventsTestWebhookRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    },
+    "/events/updateWebhook": {
+      "post": {
+        "operationId": "EventService_updateWebhook",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/eventsWebhook"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/eventsUpdateWebhookRequest"
+            }
+          }
+        ],
+        "tags": [
+          "EventService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "ActionTypeEnumActionType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "CLASSIFICATION",
+        "CLUSTERING",
+        "DETECTION",
+        "REGRESSION",
+        "TRANSCRIPTION",
+        "TRANSLATION"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ArtifactTypeEnumArtifactType": {
+      "type": "string",
+      "enum": [
+        "IMAGE",
+        "MODEL",
+        "TENSORBOARD",
+        "DATA",
+        "BLOB",
+        "STRING",
+        "CODE",
+        "CONTAINER"
+      ],
+      "default": "IMAGE"
+    },
+    "AuthzResourceEnumAuthzServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ORGANIZATION",
+        "TEAM",
+        "WORKSPACE",
+        "USER",
+        "SERVICE_ACCOUNT",
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "EVENT",
+        "WEBHOOK",
+        "SYSTEM_ADMIN",
+        "PYPI_CONFIGURATION",
+        "KAFKA_CONFIGURATION",
+        "SCIM_CONFIGURATION",
+        "GROUP"
+      ],
+      "default": "UNKNOWN"
+    },
+    "CollaboratorTypeEnumCollaboratorType": {
+      "type": "string",
+      "enum": [
+        "READ_ONLY",
+        "READ_WRITE"
+      ],
+      "default": "READ_ONLY"
+    },
+    "CreateEventRequestEventType": {
+      "type": "string",
+      "enum": [
+        "CREATE",
+        "READ",
+        "UPDATE",
+        "DELETE",
+        "PROMOTE",
+        "REQUEST_SCAN"
+      ],
+      "default": "CREATE"
+    },
+    "DataTypeEnumDataType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "AUDIO",
+        "IMAGE",
+        "TABULAR",
+        "TEXT",
+        "VIDEO"
+      ],
+      "default": "UNKNOWN"
+    },
+    "DeploymentResourceEnumDeploymentServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ENDPOINT",
+        "BUILD"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ModelDBResourceEnumModelDBServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "PROJECT",
+        "EXPERIMENT",
+        "EXPERIMENT_RUN",
+        "DATASET",
+        "DATASET_VERSION",
+        "DASHBOARD",
+        "REPOSITORY",
+        "REGISTERED_MODEL",
+        "REGISTERED_MODEL_VERSION",
+        "MONITORED_ENTITY",
+        "NOTIFICATION_CHANNEL",
+        "ENDPOINT",
+        "BUILD",
+        "ORGANIZATION",
+        "TEAM",
+        "WORKSPACE",
+        "USER",
+        "SERVICE_ACCOUNT",
+        "CONTAINER_REGISTRY_CONFIGURATION",
+        "STAGE",
+        "PROFILER"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ModelVersionLockLevelEnumModelVersionLockLevel": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OPEN",
+        "CLOSED",
+        "REDACT"
+      ],
+      "default": "UNKNOWN"
+    },
+    "RoleResourceEnumRoleServiceResourceTypes": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ALL",
+        "ROLE",
+        "ROLE_BINDING"
+      ],
+      "default": "UNKNOWN"
+    },
+    "StageEnumStage": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "DEVELOPMENT",
+        "STAGING",
+        "PRODUCTION",
+        "ARCHIVED",
+        "UNASSIGNED"
+      ],
+      "default": "UNKNOWN"
+    },
+    "TaskTypeEnumTaskType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "CLASSIFICATION",
+        "CLUSTERING",
+        "DETECTION",
+        "REGRESSION",
+        "TRANSCRIPTION",
+        "TRANSLATION"
+      ],
+      "default": "UNKNOWN"
+    },
+    "TernaryEnumTernary": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "TRUE",
+        "FALSE"
+      ],
+      "default": "UNKNOWN"
+    },
+    "ValueTypeEnumValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "LIST",
+        "BLOB"
+      ],
+      "default": "STRING"
+    },
+    "VisibilityEnumVisibility": {
+      "type": "string",
+      "enum": [
+        "PRIVATE",
+        "PUBLIC",
+        "ORG_SCOPED_PUBLIC",
+        "ORG_DEFAULT"
+      ],
+      "default": "PRIVATE",
+      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
+    },
+    "WebhookCallStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "SUCCESS",
+        "FAILURE",
+        "IN_PROGRESS"
+      ],
+      "default": "UNKNOWN"
+    },
+    "commonArtifact": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "path_only": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "artifact_type": {
+          "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
+        },
+        "linked_artifact_id": {
+          "type": "string"
+        },
+        "filename_extension": {
+          "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
+          "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "commonKeyValue": {
+      "type": "object",
+      "properties": {
+        "key": {
+          "type": "string"
+        },
+        "value": {
+          "type": "object"
+        },
+        "value_type": {
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
+        }
+      }
+    },
+    "deploymentBuildExternalScanRequest": {
+      "type": "object",
+      "properties": {
+        "buildId": {
+          "type": "string",
+          "format": "int64"
+        },
+        "imageUrl": {
+          "type": "string"
+        }
+      }
+    },
+    "eventsCreateEventRequest": {
+      "type": "object",
+      "properties": {
+        "event_uuid": {
+          "type": "string"
+        },
+        "event_type": {
+          "$ref": "#/definitions/CreateEventRequestEventType"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "original_entity": {
+          "$ref": "#/definitions/eventsEventEntity"
+        },
+        "new_entity": {
+          "$ref": "#/definitions/eventsEventEntity"
+        }
+      }
+    },
+    "eventsCreateWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mutual_secret": {
+          "type": "string"
+        },
+        "event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "all_events": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "resource_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResourceType"
+          }
+        }
+      }
+    },
+    "eventsDeleteWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      }
+    },
+    "eventsEventEntity": {
+      "type": "object",
+      "properties": {
+        "registered_model": {
+          "$ref": "#/definitions/registryRegisteredModel"
+        },
+        "model_version": {
+          "$ref": "#/definitions/registryModelVersion"
+        },
+        "scan_request": {
+          "$ref": "#/definitions/deploymentBuildExternalScanRequest"
+        },
+        "entity_workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "Lists all of the entity types that we support events for."
+    },
+    "eventsFindWebhookCallRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "webhook_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "event_uuids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/WebhookCallStatus"
+          }
+        }
+      }
+    },
+    "eventsFindWebhookCallRequestResponse": {
+      "type": "object",
+      "properties": {
+        "calls": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/eventsWebhookCall"
+          }
+        }
+      }
+    },
+    "eventsFindWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "workspace_id": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "resource_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResourceType"
+          }
+        }
+      }
+    },
+    "eventsFindWebhookRequestResponse": {
+      "type": "object",
+      "properties": {
+        "webhooks": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/eventsWebhook"
+          }
+        }
+      }
+    },
+    "eventsRetriggerWebhookCallRequest": {
+      "type": "object",
+      "properties": {
+        "call_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "The call returned for this has a completely new ID"
+    },
+    "eventsTestWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "webhook_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "eventsTestWebhookRequestResponse": {
+      "type": "object",
+      "properties": {
+        "status_code": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "eventsUpdateWebhookRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "new_location": {
+          "type": "string"
+        },
+        "mutual_secret": {
+          "type": "string"
+        },
+        "add_event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "delete_event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "set_all_events": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "clear_all_events": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "add_resource_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResourceType"
+          }
+        },
+        "delete_resource_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResourceType"
+          }
+        }
+      }
+    },
+    "eventsWebhook": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "location": {
+          "type": "string"
+        },
+        "mutual_secret": {
+          "type": "string"
+        },
+        "event_types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "resource_types": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResourceType"
+          }
+        }
+      }
+    },
+    "eventsWebhookCall": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "webhook_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "event_uuid": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/WebhookCallStatus"
+        },
+        "response": {
+          "$ref": "#/definitions/protobufAny"
+        }
+      },
+      "title": "Single call of a webhook to deliver a given event"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        },
+        "value": {
+          "type": "string",
+          "format": "byte",
+          "description": "Must be a valid serialized protocol buffer of the above specified type."
+        }
+      },
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "registryDockerMetadata": {
+      "type": "object",
+      "properties": {
+        "request_port": {
+          "type": "integer",
+          "format": "int64"
+        },
+        "request_path": {
+          "type": "string"
+        },
+        "health_path": {
+          "type": "string"
+        }
+      }
+    },
+    "registryModelVersion": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "registered_model_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the model this belongs to"
+        },
+        "version": {
+          "type": "string",
+          "title": "Model's tag. Unique for a model nmae"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "description": "Timestamp recorded when metadata for this ``model_version`` was last updated."
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "description": "Timestamp recorded when this ``model_version`` was created."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of this ``model_version``."
+        },
+        "experiment_run_id": {
+          "type": "string"
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Labels added to the registered models"
+        },
+        "model": {
+          "$ref": "#/definitions/commonArtifact",
+          "title": "Model"
+        },
+        "environment": {
+          "$ref": "#/definitions/versioningEnvironmentBlob",
+          "title": "Requirement"
+        },
+        "docker_metadata": {
+          "$ref": "#/definitions/registryDockerMetadata"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          },
+          "title": "Other artifacts"
+        },
+        "archived": {
+          "$ref": "#/definitions/TernaryEnumTernary",
+          "title": "flag to archive a model version currently does nothing other than storing the information in DB"
+        },
+        "readme_text": {
+          "type": "string",
+          "title": "readme"
+        },
+        "apis": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "APIs"
+        },
+        "owner": {
+          "type": "string",
+          "title": "owner's verta_id"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          },
+          "title": "Other attributes"
+        },
+        "stage": {
+          "$ref": "#/definitions/StageEnumStage",
+          "title": "Stage of the model version. This field must be searchable as per our \"find\" operation"
+        },
+        "lock_level": {
+          "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel",
+          "title": "Current lock level for this model version"
+        },
+        "datasets": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          }
+        },
+        "code_blob_map": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/versioningCodeBlob"
+          }
+        },
+        "readme_text_updated": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Is true if the readme text has been updated at least once"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+        },
+        "redirect_metadata": {
+          "type": "string",
+          "title": "Reference: https://vertaai.atlassian.net/browse/VRD-329"
+        },
+        "input_description": {
+          "type": "string",
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "hide_input_label": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "output_description": {
+          "type": "string",
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "hide_output_label": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        }
+      }
+    },
+    "registryRegisteredModel": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "name": {
+          "type": "string",
+          "description": "Unique name for the model within the workspace."
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "description": "Timestamp recorded when this ``registered_model`` was created."
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "description": "Timestamp recorded when metadata for this ``registered_model`` was last updated."
+        },
+        "description": {
+          "type": "string",
+          "description": "Description of this ``registered_model``."
+        },
+        "labels": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Labels added to the registered models"
+        },
+        "visibility": {
+          "$ref": "#/definitions/VisibilityEnumVisibility",
+          "title": "Visibility of Registered Models"
+        },
+        "workspace_id": {
+          "type": "string",
+          "title": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
+        },
+        "readme_text": {
+          "type": "string",
+          "title": "readme"
+        },
+        "owner": {
+          "type": "string",
+          "title": "owner's verta_id"
+        },
+        "attributes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonKeyValue"
+          },
+          "title": "Other attributes"
+        },
+        "workspace_service_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "custom_permission": {
+          "$ref": "#/definitions/uacCollaboratorPermissions",
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+        },
+        "resource_visibility": {
+          "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "artifacts": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/commonArtifact"
+          },
+          "title": "Other artifacts"
+        },
+        "readme_text_updated": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "Is true if the readme text has been updated at least once"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+        },
+        "data_type": {
+          "$ref": "#/definitions/DataTypeEnumDataType",
+          "title": "Fields for model's task_type. Those fields must be searchable as per our \"find\" operation"
+        },
+        "action_type": {
+          "$ref": "#/definitions/ActionTypeEnumActionType"
+        },
+        "task_type": {
+          "$ref": "#/definitions/TaskTypeEnumTaskType"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "uacCollaboratorPermissions": {
+      "type": "object",
+      "properties": {
+        "collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
+        },
+        "can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "uacResourceType": {
+      "type": "object",
+      "properties": {
+        "role_service_resource_type": {
+          "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
+          "title": "Separate based on the service itself"
+        },
+        "authz_service_resource_type": {
+          "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
+        },
+        "modeldb_service_resource_type": {
+          "$ref": "#/definitions/ModelDBResourceEnumModelDBServiceResourceTypes"
+        },
+        "deployment_service_resource_type": {
+          "$ref": "#/definitions/DeploymentResourceEnumDeploymentServiceResourceTypes"
+        }
+      }
+    },
+    "uacResourceVisibility": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "ORG_DEFAULT",
+        "ORG_CUSTOM",
+        "PRIVATE",
+        "WORKSPACE_DEFAULT"
+      ],
+      "default": "UNKNOWN"
+    },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "versioningCodeBlob": {
+      "type": "object",
+      "properties": {
+        "git": {
+          "$ref": "#/definitions/versioningGitCodeBlob"
+        },
+        "notebook": {
+          "$ref": "#/definitions/versioningNotebookCodeBlob"
+        }
+      }
+    },
+    "versioningDockerEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "repository": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "sha": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "python": {
+          "$ref": "#/definitions/versioningPythonEnvironmentBlob"
+        },
+        "docker": {
+          "$ref": "#/definitions/versioningDockerEnvironmentBlob"
+        },
+        "environment_variables": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
+          }
+        },
+        "command_line": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
+        }
+      }
+    },
+    "versioningEnvironmentVariablesBlob": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningGitCodeBlob": {
+      "type": "object",
+      "properties": {
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "branch": {
+          "type": "string"
+        },
+        "tag": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "versioningNotebookCodeBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "git_repo": {
+          "$ref": "#/definitions/versioningGitCodeBlob"
+        }
+      }
+    },
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_modified_at_source": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "md5": {
+          "type": "string"
+        },
+        "internal_versioned_path": {
+          "type": "string"
+        },
+        "base_path": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningPythonEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "$ref": "#/definitions/versioningVersionEnvironmentBlob"
+        },
+        "requirements": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
+          }
+        },
+        "constraints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
+          }
+        },
+        "raw_requirements": {
+          "type": "string",
+          "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
+        },
+        "raw_constraints": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningPythonRequirementEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "library": {
+          "type": "string"
+        },
+        "constraint": {
+          "type": "string"
+        },
+        "version": {
+          "$ref": "#/definitions/versioningVersionEnvironmentBlob"
+        }
+      }
+    },
+    "versioningVersionEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "major": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "minor": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "patch": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "suffix": {
+          "type": "string"
+        }
+      }
+    },
+    "vertacommonEmpty": {
+      "type": "object"
+    }
+  },
+  "basePath": "/v1"
+}
