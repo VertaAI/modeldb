@@ -2,12 +2,22 @@ package ai.verta.modeldb.common.futures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.util.concurrent.MoreExecutors;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 
 class InternalFutureTest {
   @Test
@@ -69,5 +79,52 @@ class InternalFutureTest {
             executor);
     assertThatThrownBy(result::get).hasMessageContaining("failed");
     assertThat(secondWasCalled).isFalse();
+  }
+
+  @Test
+  @Timeout(2)
+  void retry_retryCheckerThrows() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    assertThatThrownBy(
+            () ->
+                InternalFuture.retriableStage(
+                        () -> InternalFuture.failedStage(new NullPointerException()),
+                        throwable -> {
+                          // retry checker throws an exception....
+                          throw new RuntimeException("uh oh!");
+                        },
+                        executor)
+                    .get())
+        .isInstanceOf(ModelDBException.class)
+        .hasCauseInstanceOf(ExecutionException.class)
+        .hasRootCauseMessage("uh oh!");
+  }
+
+  @Test
+  @Timeout(2)
+  void sequence_exceptionHandling() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    assertThatThrownBy(
+            () ->
+                InternalFuture.sequence(
+                        List.of(InternalFuture.failedStage(new IOException("io failed"))), executor)
+                    .get())
+        .isInstanceOf(ModelDBException.class)
+        .hasRootCauseMessage("io failed");
+  }
+
+  @Test
+  void flipOptional() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    final var res1 =
+        InternalFuture.flipOptional(
+                Optional.of(InternalFuture.completedInternalFuture("123")), executor)
+            .get();
+    assertTrue(res1.isPresent());
+    assertEquals("123", res1.get());
+
+    final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
+    assertTrue(res2.isEmpty());
   }
 }
