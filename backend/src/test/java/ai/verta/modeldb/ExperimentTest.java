@@ -103,6 +103,19 @@ public class ExperimentTest extends TestsInit {
     }
   }
 
+  public static CreateExperiment getCreateExperimentRequestForOtherTests(
+      String projectId, String experimentName) {
+    return CreateExperiment.newBuilder()
+        .setProjectId(projectId)
+        .setName(experimentName)
+        .setDescription("This is a experiment description.")
+        .setDateCreated(Calendar.getInstance().getTimeInMillis())
+        .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+        .addTags("tag_x")
+        .addTags("tag_y")
+        .build();
+  }
+
   public static CreateExperiment getCreateExperimentRequest(
       String projectId, String experimentName) {
     List<KeyValue> attributeList = new ArrayList<>();

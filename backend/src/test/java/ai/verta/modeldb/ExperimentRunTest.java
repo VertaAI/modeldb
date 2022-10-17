@@ -306,6 +306,21 @@ public class ExperimentRunTest extends TestsInit {
         .build();
   }
 
+  public static CreateExperimentRun getCreateExperimentRunRequestForOtherTests(
+      String projectId, String experimentId, String experimentRunName) {
+    return CreateExperimentRun.newBuilder()
+        .setProjectId(projectId)
+        .setExperimentId(experimentId)
+        .setName(experimentRunName)
+        .setDescription("this is a ExperimentRun description")
+        .setDateCreated(Calendar.getInstance().getTimeInMillis())
+        .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+        .setStartTime(Calendar.getInstance().getTime().getTime())
+        .setEndTime(Calendar.getInstance().getTime().getTime())
+        .setCodeVersion("1.0")
+        .build();
+  }
+
   public static CreateExperimentRun getCreateExperimentRunRequest(
       String projectId, String experimentId, String experimentRunName) {
 
@@ -2320,7 +2335,7 @@ public class ExperimentRunTest extends TestsInit {
 
       DatasetTest datasetTest = new DatasetTest();
       CreateDataset createDatasetRequest =
-          datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
+          datasetTest.getDatasetRequestForOtherTests("rental_TEXT_train_data.csv");
       CreateDataset.Response createDatasetResponse =
           datasetServiceStub.createDataset(createDatasetRequest);
       LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
@@ -2602,7 +2617,7 @@ public class ExperimentRunTest extends TestsInit {
 
       DatasetTest datasetTest = new DatasetTest();
       CreateDataset createDatasetRequest =
-          datasetTest.getDatasetRequest("rental_TEXT_train_data.csv");
+          datasetTest.getDatasetRequestForOtherTests("rental_TEXT_train_data.csv");
       CreateDataset.Response createDatasetResponse =
           datasetServiceStub.createDataset(createDatasetRequest);
       Dataset dataset = createDatasetResponse.getDataset();
@@ -7637,7 +7652,7 @@ public class ExperimentRunTest extends TestsInit {
 
     List<Dataset> datasetList = new ArrayList<>();
     CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("Dataset-" + new Date().getTime());
+        datasetTest.getDatasetRequestForOtherTests("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset1 = createDatasetResponse.getDataset();
@@ -7648,7 +7663,8 @@ public class ExperimentRunTest extends TestsInit {
         createDatasetRequest.getName(),
         dataset1.getName());
 
-    createDatasetRequest = datasetTest.getDatasetRequest("rental_TEXT_train_data_1.csv");
+    createDatasetRequest =
+        datasetTest.getDatasetRequestForOtherTests("rental_TEXT_train_data_1.csv");
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset2 = createDatasetResponse.getDataset();
     datasetList.add(dataset2);
