@@ -1,19 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import json
 import gzip
-import os
+import json
 import time
-from urllib.parse import urlparse
-import warnings
 
 import requests
-
-from ..external import six
+from urllib.parse import urlparse
+from verta import credentials
 
 from .._internal_utils import _utils
-from verta import credentials
 from .._internal_utils.access_token import AccessToken
+from ..external import six
+
 
 # NOTE: DeployedModel's mechanism for making requests is independent from the
 # rest of the client; Client's Connection deliberately instantiates a new
