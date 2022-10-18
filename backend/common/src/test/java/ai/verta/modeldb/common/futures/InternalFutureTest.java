@@ -127,4 +127,24 @@ class InternalFutureTest {
     final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
     assertTrue(res2.isEmpty());
   }
+
+  @Test
+  void recover() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+
+    final var value =
+        InternalFuture.completedInternalFuture(123)
+            .thenApply(
+                v -> {
+                  if (true) {
+                    throw new RuntimeException();
+                  }
+                  return 123;
+                },
+                executor)
+            .recover(t -> 456, executor)
+            .get();
+
+    assertEquals(456, value);
+  }
 }
