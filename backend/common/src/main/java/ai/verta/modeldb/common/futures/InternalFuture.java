@@ -229,6 +229,17 @@ public class InternalFuture<T> {
         stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
   }
 
+  public InternalFuture<T> recover(Function<Throwable, ? extends T> fn, Executor executor) {
+    return handle(
+        (v, t) -> {
+          if (t != null) {
+            return fn.apply(t);
+          }
+          return v;
+        },
+        executor);
+  }
+
   private BiConsumer<? super T, ? super Throwable> traceBiConsumer(
       BiConsumer<? super T, ? super Throwable> action) {
     if (!DEEP_TRACING_ENABLED) {
