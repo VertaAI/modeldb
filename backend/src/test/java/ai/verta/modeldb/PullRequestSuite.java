@@ -24,7 +24,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.IntegrationTest",
   "ai.verta.modeldb.LineageTest",
   "ai.verta.modeldb.MergeTest",
-  "ai.verta.modeldb.NFSArtifactStoreTest",
   "ai.verta.modeldb.RepositoryTest",
   ".*TestSequenceSuite",
 })

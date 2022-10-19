@@ -86,12 +86,20 @@ public class AppConfigBeans {
   public MDBConfig config() {
     var config = MDBConfig.getInstance();
     App.getInstance().mdbConfig = config;
-
-    // Configure spring HTTP server
-    LOGGER.info("Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
-    System.getProperties().put("server.port", config.getSpringServer().getPort());
-
+    initializeSystemProperties(config);
     return config;
+  }
+
+  private static void initializeSystemProperties(MDBConfig config) {
+    // Configure spring HTTP server
+    var webPort = config.getSpringServer().getPort();
+    if (webPort == 0) {
+      var grpcServerConfig = config.getGrpcServer();
+      var grpcServerPort = grpcServerConfig.getPort();
+      webPort = grpcServerPort + 1;
+    }
+    System.getProperties().put("server.port", webPort);
+    LOGGER.info("Configuring spring HTTP traffic on port: {}", webPort);
   }
 
   @Bean
