@@ -72,6 +72,7 @@ public abstract class ModeldbTestSetup extends TestCase {
   protected static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
   protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStub;
+  protected static LineageServiceGrpc.LineageServiceBlockingStub lineageServiceStub;
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
       versioningServiceBlockingStub;
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
@@ -157,6 +158,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
+    lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
 
     if (!runningIsolated) {
       var authServiceChannel =
