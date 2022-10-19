@@ -21,6 +21,7 @@ import ai.verta.modeldb.ExperimentRun;
 import ai.verta.modeldb.ExperimentRunServiceGrpc;
 import ai.verta.modeldb.ExperimentServiceGrpc;
 import ai.verta.modeldb.GetUrlForArtifact;
+import ai.verta.modeldb.ModeldbTestConfigurationBeans;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectServiceGrpc;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
@@ -74,7 +75,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
-@ContextConfiguration(classes = {ArtifactTestsConfigBeans.class})
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class NFSArtifactStoreTest {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSArtifactStoreTest.class);

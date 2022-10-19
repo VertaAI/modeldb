@@ -39,29 +39,6 @@ public class TestConfig extends MDBConfig {
     return config;
   }
 
-  public static TestConfig getInstance(String path) throws InternalErrorException {
-    if (config == null) {
-      config = readConfig(TestConfig.class, path);
-      config.validate();
-    }
-    return config;
-  }
-
-  private static <T> T readConfig(Class<T> configType, String configFile)
-      throws InternalErrorException {
-    try {
-      var yaml = new Yaml(new Constructor(configType));
-      configFile = CommonUtils.appendOptionalTelepresencePath(configFile);
-      InputStream inputStream = new FileInputStream(configFile);
-      yaml.setBeanAccess(BeanAccess.FIELD);
-      return yaml.loadAs(inputStream, configType);
-    } catch (ModelDBException | NullPointerException ex) {
-      throw ex;
-    } catch (Exception ex) {
-      throw new InternalErrorException(ex.getMessage());
-    }
-  }
-
   @Override
   public void validate() throws InvalidConfigException {
     if (getDatabase() == null)
