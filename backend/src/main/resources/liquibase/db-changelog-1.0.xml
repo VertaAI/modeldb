@@ -688,7 +688,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="migration_name" type="varchar(255)"/>
-            <column name="status" type="tinyint"/>
+            <column name="status" type="tinyint(1)"/>
         </createTable>
     </changeSet>
 

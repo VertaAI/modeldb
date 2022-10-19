@@ -28,9 +28,9 @@ public class ServiceSet {
   @JsonProperty private App app;
 
   public static ServiceSet fromConfig(
-      MDBConfig mdbConfig, ArtifactStoreService artifactStoreService, UAC uac) {
+      MDBConfig mdbConfig, ArtifactStoreService artifactStoreService) {
     var set = new ServiceSet();
-    set.uac = uac;
+    set.uac = UAC.FromConfig(mdbConfig);
     set.authService = MDBAuthServiceUtils.FromConfig(mdbConfig, set.uac);
     set.mdbRoleService = MDBRoleServiceUtils.FromConfig(mdbConfig, set.authService, set.uac);
 

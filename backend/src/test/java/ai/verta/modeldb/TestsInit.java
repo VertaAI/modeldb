@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.ArtifactStoreInitBeans;
-import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
@@ -112,7 +111,7 @@ public class TestsInit {
     ArtifactStoreService artifactStoreService =
         new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, artifactStoreService, UAC.FromConfig(testConfig));
+    services = ServiceSet.fromConfig(testConfig, artifactStoreService);
     authService = services.getAuthService();
     // Initialize data access
     daos =
