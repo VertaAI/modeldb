@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -24,8 +24,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.SetOrganization;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.VertaUserInfo;
 import ai.verta.uac.Workspace;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
@@ -1581,7 +1579,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
       if (isRunningIsolated()) {
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
-        mockGetResources(Set.of(project.getId()), testUser1);
+        mockGetResources(Map.of(project.getId(), project.getName()), testUser1);
         mockGetSelfAllowedResources(
             Set.of(project.getId()),
             ModelDBServiceResourceTypes.PROJECT,
@@ -1834,7 +1832,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
       if (isRunningIsolated()) {
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
-        mockGetResources(Set.of(project.getId()), testUser1);
+        mockGetResources(Map.of(project.getId(), project.getName()), testUser1);
         mockGetSelfAllowedResources(
             Set.of(project.getId()),
             ModelDBServiceResourceTypes.PROJECT,
@@ -2088,17 +2086,6 @@ public class DatasetTest extends ModeldbTestSetup {
         datasetServiceStubServiceAccount.createDataset(createDatasetRequest);
 
     if (isRunningIsolated()) {
-      var serviceUser =
-          UserInfo.newBuilder()
-              .setEmail("test@test.com")
-              .setVertaInfo(
-                  VertaUserInfo.newBuilder()
-                      .setUserId("1111")
-                      .setUsername("test_test")
-                      .setDefaultWorkspaceId(1111)
-                      .setWorkspaceId("1111")
-                      .build())
-              .build();
       var dataset = createDatasetResponse.getDataset();
       mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
     }
