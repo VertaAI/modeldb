@@ -1617,9 +1617,8 @@ public class ProjectTest extends ModeldbTestSetup {
               CollaboratorUtils.addCollaboratorRequestProject(
                   project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
-          var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
           AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-              collaboratorMock.addOrUpdateProjectCollaborator(addCollaboratorRequest).get();
+              collaboratorBlockingMock.addOrUpdateProjectCollaborator(addCollaboratorRequest);
           LOGGER.info(
               "Collaborator added in server : "
                   + addOrUpdateProjectCollaboratorResponse.getStatus());
