@@ -678,6 +678,7 @@
     <include file="liquibase/create-index-changelog.xml"/>
     <changeSet author="anandJ" id="migration_status_table">
         <validCheckSum>8:2f8041b76b63bee2ef78e46b3184e35b</validCheckSum>
+        <validCheckSum>8:23a646e9679add18b289b4e2346d43e5</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
                 <tableExists tableName="migration_status"/>
