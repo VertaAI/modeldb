@@ -3,15 +3,15 @@ package ai.verta.modeldb.common.connections;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
+import io.grpc.ClientInterceptor;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.stub.AbstractStub;
-import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class Connection {
-  private final Optional<TracingClientInterceptor> tracingClientInterceptor;
+  private final Optional<ClientInterceptor> tracingClientInterceptor;
 
   protected Connection(Config config) {
     tracingClientInterceptor = config.getTracingClientInterceptor();
