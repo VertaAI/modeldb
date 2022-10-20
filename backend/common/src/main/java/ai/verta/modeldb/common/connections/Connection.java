@@ -20,12 +20,10 @@ public abstract class Connection {
   // Place the interceptors in the reverse order of their stacking (the ones attached later will be
   // used first)
   protected <T extends AbstractStub<T>> T attachInterceptors(io.grpc.stub.AbstractStub<T> stub) {
+    stub = stub.withInterceptors(MetadataForwarder.clientInterceptor());
     if (tracingClientInterceptor.isPresent()) {
       stub = stub.withInterceptors(tracingClientInterceptor.get());
     }
-
-    stub = stub.withInterceptors(MetadataForwarder.clientInterceptor());
-
     return (T) stub;
   }
 
