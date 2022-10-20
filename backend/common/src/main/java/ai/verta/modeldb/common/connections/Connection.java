@@ -21,9 +21,13 @@ public abstract class Connection {
   // used first)
   protected <T extends AbstractStub<T>> T attachInterceptors(io.grpc.stub.AbstractStub<T> stub) {
     stub = stub.withInterceptors(MetadataForwarder.clientInterceptor());
+
+    // add the tracing interceptor 2nd, so we preserve the OTel Context when making the client
+    // calls.
     if (tracingClientInterceptor.isPresent()) {
       stub = stub.withInterceptors(tracingClientInterceptor.get());
     }
+
     return (T) stub;
   }
 
