@@ -10,7 +10,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.ArtifactStoreTest",
   "ai.verta.modeldb.BranchTest",
   "ai.verta.modeldb.CommentTest",
-  "ai.verta.modeldb.CommitTest",
   "ai.verta.modeldb.DatasetVersionTest",
   "ai.verta.modeldb.DiffTest",
   "ai.verta.modeldb.ExperimentRunTest",
