@@ -6,7 +6,6 @@ import org.junit.platform.suite.api.Suite;
 
 @Suite
 @ExcludeClassNamePatterns({
-  "ai.verta.modeldb.metadata.MetadataTest",
   "ai.verta.modeldb.ArtifactStoreTest",
   "ai.verta.modeldb.BranchTest",
   "ai.verta.modeldb.CommentTest",
