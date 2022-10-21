@@ -36,9 +36,8 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
+import io.opentelemetry.instrumentation.spring.webmvc.v5_3.SpringWebMvcTelemetry;
 import io.prometheus.client.Gauge;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -73,7 +72,7 @@ public class AppConfigBeans {
 
   @Bean
   public Filter webMvcTracingFilter(OpenTelemetry openTelemetry) {
-    return SpringWebMvcTelemetry.builder(openTelemetry).build().newServletFilter();
+    return SpringWebMvcTelemetry.builder(openTelemetry).build().createServletFilter();
   }
 
   @Bean
@@ -105,8 +104,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService)
-      throws IOException {
+  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService) {
     // Initialize services that we depend on
     return ServiceSet.fromConfig(config, artifactStoreService);
   }

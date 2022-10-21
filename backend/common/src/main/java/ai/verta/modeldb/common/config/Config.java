@@ -12,6 +12,8 @@ import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.zaxxer.hikari.HikariDataSource;
 import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
+import io.grpc.ClientInterceptor;
+import io.grpc.ServerInterceptor;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -20,19 +22,16 @@ import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
+import io.opentelemetry.instrumentation.grpc.v1_6.GrpcTelemetry;
+import io.opentelemetry.instrumentation.resources.ContainerResource;
+import io.opentelemetry.instrumentation.resources.HostResource;
 import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.extension.resources.ContainerResource;
-import io.opentelemetry.sdk.extension.resources.HostResource;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentracing.Tracer;
-import io.opentracing.contrib.grpc.ActiveSpanContextSource;
-import io.opentracing.contrib.grpc.ActiveSpanSource;
-import io.opentracing.contrib.grpc.TracingClientInterceptor;
-import io.opentracing.contrib.grpc.TracingServerInterceptor;
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.util.GlobalTracer;
 import java.io.FileInputStream;
@@ -40,12 +39,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
@@ -68,8 +62,8 @@ public abstract class Config {
   @JsonProperty private ServiceUserConfig service_user;
   @JsonProperty private int jdbi_retry_time = 100; // Time in ms
   @JsonProperty private boolean event_system_enabled = false;
-  @JsonProperty private TracingServerInterceptor tracingServerInterceptor = null;
-  @JsonProperty private TracingClientInterceptor tracingClientInterceptor = null;
+  @JsonProperty private ServerInterceptor tracingServerInterceptor = null;
+  @JsonProperty private ClientInterceptor tracingClientInterceptor = null;
   @JsonProperty private volatile OpenTelemetry openTelemetry;
   @JsonProperty private ArtifactStoreConfig artifactStoreConfig;
 
@@ -130,30 +124,27 @@ public abstract class Config {
 
   // todo: move all tracing related things to a class that exposes spring @Beans, rather than doing
   // all of this here.
-  private void initializeTracing() {
+  private void initializeTracingInterceptors() {
     if (!enableTrace) {
       return;
     }
 
+    OpenTelemetry openTelemetry = getOpenTelemetry();
+    GrpcTelemetry grpcTelemetry = GrpcTelemetry.create(openTelemetry);
     if (tracingServerInterceptor == null) {
-      OpenTelemetry openTelemetry = getOpenTelemetry();
-      Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
-
-      tracingServerInterceptor =
-          TracingServerInterceptor.newBuilder().withTracer(tracerShim).build();
-      GlobalTracer.registerIfAbsent(tracerShim);
-      TracingDriver.load();
-      TracingDriver.setInterceptorMode(true);
-      TracingDriver.setInterceptorProperty(true);
+      tracingServerInterceptor = grpcTelemetry.newServerInterceptor();
     }
     if (tracingClientInterceptor == null) {
-      tracingClientInterceptor =
-          TracingClientInterceptor.newBuilder()
-              .withTracer(GlobalTracer.get())
-              .withActiveSpanContextSource(ActiveSpanContextSource.GRPC_CONTEXT)
-              .withActiveSpanSource(ActiveSpanSource.GRPC_CONTEXT)
-              .build();
+      tracingClientInterceptor = grpcTelemetry.newClientInterceptor();
     }
+  }
+
+  private void initializeOpenTracingShim(OpenTelemetry openTelemetry) {
+    Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
+    GlobalTracer.registerIfAbsent(tracerShim);
+    TracingDriver.load();
+    TracingDriver.setInterceptorMode(true);
+    TracingDriver.setInterceptorProperty(true);
   }
 
   private OpenTelemetry initializeOpenTelemetry() {
@@ -178,13 +169,16 @@ public abstract class Config {
                     .merge(HostResource.get())
                     .merge(ContainerResource.get()))
             .build();
-    return OpenTelemetrySdk.builder()
-        .setTracerProvider(tracerProvider)
-        .setPropagators(
-            ContextPropagators.create(
-                TextMapPropagator.composite(
-                    W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
-        .buildAndRegisterGlobal();
+    OpenTelemetrySdk openTelemetry =
+        OpenTelemetrySdk.builder()
+            .setTracerProvider(tracerProvider)
+            .setPropagators(
+                ContextPropagators.create(
+                    TextMapPropagator.composite(
+                        W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
+            .buildAndRegisterGlobal();
+    initializeOpenTracingShim(openTelemetry);
+    return openTelemetry;
   }
 
   /**
@@ -196,13 +190,13 @@ public abstract class Config {
     return Sampler.alwaysOn();
   }
 
-  public Optional<TracingServerInterceptor> getTracingServerInterceptor() {
-    initializeTracing();
+  public Optional<ServerInterceptor> getTracingServerInterceptor() {
+    initializeTracingInterceptors();
     return Optional.ofNullable(tracingServerInterceptor);
   }
 
-  public Optional<TracingClientInterceptor> getTracingClientInterceptor() {
-    initializeTracing();
+  public Optional<ClientInterceptor> getTracingClientInterceptor() {
+    initializeTracingInterceptors();
     return Optional.ofNullable(tracingClientInterceptor);
   }
 
@@ -215,7 +209,7 @@ public abstract class Config {
   }
 
   public InternalJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
-    initializeTracing();
+    initializeTracingInterceptors();
     final var hikariDataSource = new HikariDataSource();
     final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.getRdbConfiguration());
     hikariDataSource.setJdbcUrl(dbUrl);
