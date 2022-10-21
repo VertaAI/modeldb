@@ -236,7 +236,7 @@ public class TestsInit {
     reconcilerInitializer.getSoftDeleteRepositories().resync();
   }
 
-  protected static void updateTimestampOfResources() throws InterruptedException {
+  protected static void updateTimestampOfResources() throws Exception {
     var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconcile();
     updateTimestampRepo.resync();
     while (!updateTimestampRepo.isEmpty()) {

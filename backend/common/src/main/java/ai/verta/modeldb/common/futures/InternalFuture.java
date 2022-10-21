@@ -328,10 +328,14 @@ public class InternalFuture<T> {
         .orElse(InternalFuture.completedInternalFuture(Optional.empty()));
   }
 
-  public T get() {
+  public T get() throws Exception {
     try {
       return stage.toCompletableFuture().get();
     } catch (ExecutionException ex) {
+      Throwable cause = ex.getCause();
+      if (cause instanceof Exception) {
+        throw (Exception) cause;
+      }
       throw new ModelDBException(ex);
     } catch (InterruptedException ex) {
       // Restore interrupted state...

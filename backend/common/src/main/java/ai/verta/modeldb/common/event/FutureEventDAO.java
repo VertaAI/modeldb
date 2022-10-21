@@ -30,7 +30,11 @@ public class FutureEventDAO {
 
   public void addLocalEventWithBlocking(
       String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
-    addLocalEvent(resourceType, eventType, workspaceId, eventMetadata).get();
+    try {
+      addLocalEvent(resourceType, eventType, workspaceId, eventMetadata).get();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
   }
 
   public InternalFuture<Void> addLocalEventWithAsync(
@@ -68,7 +72,11 @@ public class FutureEventDAO {
   }
 
   public Void deleteLocalEventWithBlocking(List<String> eventUUIDs) {
-    return deleteLocalEvent(eventUUIDs).get();
+    try {
+      return deleteLocalEvent(eventUUIDs).get();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
   }
 
   public InternalFuture<Void> deleteLocalEventWithAsync(List<String> eventUUIDs) {
