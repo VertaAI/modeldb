@@ -332,7 +332,11 @@ public class InternalFuture<T> {
     try {
       return stage.toCompletableFuture().get();
     } catch (ExecutionException ex) {
-      throw new ModelDBException(ex);
+      final var cause = ex.getCause();
+      if (cause instanceof ModelDBException) {
+        throw (ModelDBException) cause;
+      }
+      throw new ModelDBException(cause);
     } catch (InterruptedException ex) {
       // Restore interrupted state...
       Thread.currentThread().interrupt();
