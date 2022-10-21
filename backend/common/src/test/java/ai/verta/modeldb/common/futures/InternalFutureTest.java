@@ -35,7 +35,7 @@ class InternalFutureTest {
                 },
                 executor);
 
-    assertThatThrownBy(testFuture::get).hasMessage("borken");
+    assertThatThrownBy(testFuture::get).isInstanceOf(RuntimeException.class).hasMessage("borken");
   }
 
   @Test
@@ -75,7 +75,9 @@ class InternalFutureTest {
                     },
                     executor),
             executor);
-    assertThatThrownBy(result::get).hasMessageContaining("failed");
+    assertThatThrownBy(result::get)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("failed");
     assertThat(secondWasCalled).isFalse();
   }
 
@@ -93,8 +95,8 @@ class InternalFutureTest {
                         },
                         executor)
                     .get())
-        .isInstanceOf(ModelDBException.class)
-        .hasCauseInstanceOf(ExecutionException.class)
+        .isInstanceOf(ExecutionException.class)
+        .hasRootCauseInstanceOf(RuntimeException.class)
         .hasRootCauseMessage("uh oh!");
   }
 
@@ -107,8 +109,8 @@ class InternalFutureTest {
                 InternalFuture.sequence(
                         List.of(InternalFuture.failedStage(new IOException("io failed"))), executor)
                     .get())
-        .isInstanceOf(ModelDBException.class)
-        .hasRootCauseMessage("io failed");
+        .isInstanceOf(IOException.class)
+        .hasMessage("io failed");
   }
 
   @Test
