@@ -3,7 +3,6 @@ package ai.verta.modeldb.common.futures;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.util.List;
