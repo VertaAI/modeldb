@@ -2,10 +2,8 @@ package ai.verta.modeldb.common.futures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.awaitility.Awaitility.await;
 
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.util.List;
@@ -15,6 +13,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -37,11 +36,11 @@ class InternalFutureTest {
                 },
                 executor);
 
-    assertThatThrownBy(testFuture::get).getRootCause().hasMessage("borken");
+    assertThatThrownBy(testFuture::get).isInstanceOf(RuntimeException.class).hasMessage("borken");
   }
 
   @Test
-  void thenSupply() {
+  void thenSupply() throws Exception {
     AtomicBoolean firstWasCalled = new AtomicBoolean();
     Executor executor = MoreExecutors.directExecutor();
     InternalFuture<Void> testFuture =
@@ -77,7 +76,9 @@ class InternalFutureTest {
                     },
                     executor),
             executor);
-    assertThatThrownBy(result::get).hasMessageContaining("failed");
+    assertThatThrownBy(result::get)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("failed");
     assertThat(secondWasCalled).isFalse();
   }
 
@@ -95,8 +96,8 @@ class InternalFutureTest {
                         },
                         executor)
                     .get())
-        .isInstanceOf(ModelDBException.class)
-        .hasCauseInstanceOf(ExecutionException.class)
+        .isInstanceOf(ExecutionException.class)
+        .hasRootCauseInstanceOf(RuntimeException.class)
         .hasRootCauseMessage("uh oh!");
   }
 
@@ -109,27 +110,26 @@ class InternalFutureTest {
                 InternalFuture.sequence(
                         List.of(InternalFuture.failedStage(new IOException("io failed"))), executor)
                     .get())
-        .isInstanceOf(ModelDBException.class)
-        .hasRootCauseMessage("io failed");
+        .isInstanceOf(IOException.class)
+        .hasMessage("io failed");
   }
 
   @Test
-  void flipOptional() {
+  void flipOptional() throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     final var res1 =
         InternalFuture.flipOptional(
                 Optional.of(InternalFuture.completedInternalFuture("123")), executor)
             .get();
-    assertTrue(res1.isPresent());
-    assertEquals("123", res1.get());
+    assertThat(res1).isPresent().hasValue("123");
 
     final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
-    assertTrue(res2.isEmpty());
+    assertThat(res2).isEmpty();
   }
 
   @Test
-  void recover() {
+  void recover() throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     final var value =
@@ -145,6 +145,18 @@ class InternalFutureTest {
             .recover(t -> 456, executor)
             .get();
 
-    assertEquals(456, value);
+    assertThat(value).isEqualTo(456);
+  }
+
+  @Test
+  void fireAndForget() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    AtomicBoolean executed = new AtomicBoolean();
+    AtomicReference<String> forgottenResult = new AtomicReference<>();
+    InternalFuture.runAsync(() -> forgottenResult.set("complete!"), executor)
+        .whenComplete((u, throwable) -> executed.set(true), executor);
+
+    await().until(executed::get);
+    assertThat(forgottenResult).hasValue("complete!");
   }
 }

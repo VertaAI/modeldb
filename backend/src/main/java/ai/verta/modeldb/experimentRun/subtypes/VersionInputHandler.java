@@ -246,11 +246,16 @@ public class VersionInputHandler {
       VersioningEntry versioningEntry,
       Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
       String entityId) {
-    var existingVersioningEntry =
-        getVersionedInputs(Collections.singleton(entityId))
-            .thenApply(
-                existingVersioningEntryMap -> existingVersioningEntryMap.get(entityId), executor)
-            .get();
+    VersioningEntry existingVersioningEntry;
+    try {
+      existingVersioningEntry =
+          getVersionedInputs(Collections.singleton(entityId))
+              .thenApply(
+                  existingVersioningEntryMap -> existingVersioningEntryMap.get(entityId), executor)
+              .get();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
 
     if (existingVersioningEntry != null) {
       if (existingVersioningEntry.getRepositoryId() != versioningEntry.getRepositoryId()

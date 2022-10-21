@@ -30,11 +30,11 @@ public class UpdateRepositoryTimestampReconcile
   }
 
   @Override
-  public void resync() {
+  public void resync() throws Exception {
     getEntriesForDateUpdate().forEach(this::insert);
   }
 
-  private List<SimpleEntry<Long, Long>> getEntriesForDateUpdate() {
+  private List<SimpleEntry<Long, Long>> getEntriesForDateUpdate() throws Exception {
     var tableName = "commit";
     if (mdbConfig.getDatabase().getRdbConfiguration().isMssql()) {
       tableName = "\"commit\"";
@@ -69,7 +69,8 @@ public class UpdateRepositoryTimestampReconcile
   }
 
   @Override
-  protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap) {
+  protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap)
+      throws Exception {
     logger.debug(
         "Reconciling update timestamp for repositories: "
             + updatedMaxDateMap.stream()

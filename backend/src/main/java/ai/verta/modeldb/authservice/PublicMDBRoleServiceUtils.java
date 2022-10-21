@@ -5,6 +5,7 @@ import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.dataset.DatasetDAO;
 import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
@@ -93,9 +94,12 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       ModelDBServiceActions modelDBServiceActions) {
     if (resourceId != null && !resourceId.isEmpty()) {
       if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-        if (futureProjectDAO.getProjectById(resourceId).get() != null) {
-          String errorMessage = ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID;
-          throw new NotFoundException(errorMessage);
+        try {
+          if (futureProjectDAO.getProjectById(resourceId).get() != null) {
+            throw new NotFoundException(ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID);
+          }
+        } catch (Exception e) {
+          throw new ModelDBException(e);
         }
       } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
         datasetDAO.getDatasetById(resourceId);

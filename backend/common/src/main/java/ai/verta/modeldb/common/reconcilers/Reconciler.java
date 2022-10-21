@@ -144,9 +144,9 @@ public abstract class Reconciler<T> {
     return ret;
   }
 
-  public abstract void resync();
+  public abstract void resync() throws Exception;
 
-  protected abstract ReconcileResult reconcile(Set<T> objs);
+  protected abstract ReconcileResult reconcile(Set<T> objs) throws Exception;
 
   public boolean isEmpty() {
     return processingIdSet.isEmpty() && elements.isEmpty();
