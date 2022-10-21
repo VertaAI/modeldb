@@ -18,10 +18,7 @@ import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
-import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.common.exceptions.UnimplementedException;
+import ai.verta.modeldb.common.exceptions.*;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.dataset.DatasetDAO;
@@ -356,11 +353,16 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     LOGGER.trace("experimentIds {}", experimentIds);
     List<Experiment> experimentList = new ArrayList<>();
     if (!experimentIds.isEmpty()) {
-      var findExperimentResponse =
-          futureExperimentDAO
-              .findExperiments(
-                  FindExperiments.newBuilder().addAllExperimentIds(experimentIds).build())
-              .get();
+      FindExperiments.Response findExperimentResponse = null;
+      try {
+        findExperimentResponse =
+            futureExperimentDAO
+                .findExperiments(
+                    FindExperiments.newBuilder().addAllExperimentIds(experimentIds).build())
+                .get();
+      } catch (Exception e) {
+        throw new ModelDBException(e);
+      }
       experimentList = findExperimentResponse.getExperimentsList();
     }
     LOGGER.trace("experimentList {}", experimentList);
@@ -1081,7 +1083,12 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private AdvancedQueryProjectsResponse createQueryProjectsResponse(
       FindProjects findProjectsRequest) {
 
-    var projectResponse = futureProjectDAO.findProjects(findProjectsRequest).get();
+    FindProjects.Response projectResponse = null;
+    try {
+      projectResponse = futureProjectDAO.findProjects(findProjectsRequest).get();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
     LOGGER.debug(ModelDBMessages.PROJECT_RECORD_COUNT_MSG, projectResponse.getTotalRecords());
 
     List<HydratedProject> hydratedProjects = new ArrayList<>();

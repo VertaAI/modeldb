@@ -2,8 +2,6 @@ package ai.verta.modeldb.common.futures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -37,11 +35,11 @@ class InternalFutureTest {
                 },
                 executor);
 
-    assertThatThrownBy(testFuture::get).getRootCause().hasMessage("borken");
+    assertThatThrownBy(testFuture::get).hasMessage("borken");
   }
 
   @Test
-  void thenSupply() {
+  void thenSupply() throws Exception {
     AtomicBoolean firstWasCalled = new AtomicBoolean();
     Executor executor = MoreExecutors.directExecutor();
     InternalFuture<Void> testFuture =
@@ -114,22 +112,21 @@ class InternalFutureTest {
   }
 
   @Test
-  void flipOptional() {
+  void flipOptional() throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     final var res1 =
         InternalFuture.flipOptional(
                 Optional.of(InternalFuture.completedInternalFuture("123")), executor)
             .get();
-    assertTrue(res1.isPresent());
-    assertEquals("123", res1.get());
+    assertThat(res1).isPresent().hasValue("123");
 
     final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
-    assertTrue(res2.isEmpty());
+    assertThat(res2).isEmpty();
   }
 
   @Test
-  void recover() {
+  void recover() throws Exception {
     ExecutorService executor = Executors.newSingleThreadExecutor();
 
     final var value =
@@ -145,6 +142,6 @@ class InternalFutureTest {
             .recover(t -> 456, executor)
             .get();
 
-    assertEquals(456, value);
+    assertThat(value).isEqualTo(456);
   }
 }
