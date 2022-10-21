@@ -2,8 +2,8 @@ package ai.verta.modeldb.common.futures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.awaitility.Awaitility.await;
 
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.util.List;
@@ -13,6 +13,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -145,5 +146,17 @@ class InternalFutureTest {
             .get();
 
     assertThat(value).isEqualTo(456);
+  }
+
+  @Test
+  void fireAndForget() {
+    ExecutorService executor = Executors.newSingleThreadExecutor();
+    AtomicBoolean executed = new AtomicBoolean();
+    AtomicReference<String> forgottenResult = new AtomicReference<>();
+    InternalFuture.runAsync(() -> forgottenResult.set("complete!"), executor)
+        .whenComplete((u, throwable) -> executed.set(true), executor);
+
+    await().until(executed::get);
+    assertThat(forgottenResult).hasValue("complete!");
   }
 }
