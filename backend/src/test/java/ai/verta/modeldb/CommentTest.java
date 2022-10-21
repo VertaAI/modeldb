@@ -1,26 +1,37 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.uac.Action;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ServiceEnum;
+import com.google.common.util.concurrent.Futures;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CommentTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class CommentTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentTest.class);
   // Project Entities
@@ -35,6 +46,12 @@ public class CommentTest extends TestsInit {
 
   @Before
   public void createEntities() {
+    initializedChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     createProjectEntities();
     createExperimentEntities();
     createExperimentRunEntities();
@@ -67,12 +84,10 @@ public class CommentTest extends TestsInit {
     commentList = new ArrayList<>();
   }
 
-  private static void createProjectEntities() {
-    ProjectTest projectTest = new ProjectTest();
-
+  private void createProjectEntities() {
     // Create two project of above project
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project = createProjectResponse.getProject();
@@ -81,9 +96,26 @@ public class CommentTest extends TestsInit {
         "Project name not match with expected Project name",
         createProjectRequest.getName(),
         project.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+      when(authzMock.getSelfAllowedResources(
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+    }
   }
 
-  private static void createExperimentEntities() {
+  private void createExperimentEntities() {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
@@ -99,7 +131,7 @@ public class CommentTest extends TestsInit {
         experiment.getName());
   }
 
-  private static void createExperimentRunEntities() {
+  private void createExperimentRunEntities() {
     CreateExperimentRun createExperimentRunRequest =
         ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
