@@ -19,7 +19,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.Status.Code;
 import java.util.*;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -41,7 +40,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
   private final int artifactEntityType;
 
   public ArtifactHandler(
-          FutureExecutor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       String entityName,
       CodeVersionHandler codeVersionHandler,

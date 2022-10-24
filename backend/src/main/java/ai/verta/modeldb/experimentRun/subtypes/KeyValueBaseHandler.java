@@ -10,11 +10,10 @@ import com.google.protobuf.Value;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
-import java.util.concurrent.Executor;
 
 public class KeyValueBaseHandler extends KeyValueHandler<String> {
   public KeyValueBaseHandler(
-          FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
+      FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     super(executor, jdbi, fieldType, entityName);
   }
 

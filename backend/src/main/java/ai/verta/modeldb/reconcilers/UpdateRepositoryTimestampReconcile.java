@@ -10,7 +10,6 @@ import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 
@@ -20,7 +19,10 @@ public class UpdateRepositoryTimestampReconcile
   private final MDBConfig mdbConfig;
 
   public UpdateRepositoryTimestampReconcile(
-          ReconcilerConfig config, FutureJdbi futureJdbi, FutureExecutor executor, MDBConfig mdbConfig) {
+      ReconcilerConfig config,
+      FutureJdbi futureJdbi,
+      FutureExecutor executor,
+      MDBConfig mdbConfig) {
     super(
         config,
         LogManager.getLogger(UpdateRepositoryTimestampReconcile.class),

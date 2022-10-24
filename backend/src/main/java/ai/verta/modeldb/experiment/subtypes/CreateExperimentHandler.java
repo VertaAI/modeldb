@@ -35,7 +35,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -56,7 +55,7 @@ public class CreateExperimentHandler extends HandlerUtil {
   private final CodeVersionHandler codeVersionHandler;
 
   public CreateExperimentHandler(
-          FutureExecutor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       Config config,
       UAC uac,

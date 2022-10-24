@@ -3,7 +3,6 @@ package ai.verta.modeldb.common.futures;
 import ai.verta.modeldb.common.CommonUtils;
 import com.google.protobuf.GeneratedMessageV3;
 import io.grpc.stub.StreamObserver;
-import java.util.concurrent.Executor;
 
 @SuppressWarnings({"squid:S100"})
 public class FutureGrpc {

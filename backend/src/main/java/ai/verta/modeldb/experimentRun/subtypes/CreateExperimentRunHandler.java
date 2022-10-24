@@ -15,7 +15,6 @@ import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import java.util.*;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
@@ -41,7 +40,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
   private final VersionInputHandler versionInputHandler;
 
   public CreateExperimentRunHandler(
-          FutureExecutor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       Config config,
       UAC uac,

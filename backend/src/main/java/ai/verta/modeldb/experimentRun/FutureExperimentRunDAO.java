@@ -114,7 +114,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -150,7 +149,7 @@ public class FutureExperimentRunDAO {
   private final UACApisUtil uacApisUtil;
 
   public FutureExperimentRunDAO(
-          FutureExecutor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       MDBConfig config,
       UAC uac,

@@ -58,7 +58,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -83,7 +82,7 @@ public class FutureExperimentDAO {
   private final UACApisUtil uacApisUtil;
 
   public FutureExperimentDAO(
-          FutureExecutor executor, FutureJdbi jdbi, UAC uac, MDBConfig mdbConfig, DAOSet daoSet) {
+      FutureExecutor executor, FutureJdbi jdbi, UAC uac, MDBConfig mdbConfig, DAOSet daoSet) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;

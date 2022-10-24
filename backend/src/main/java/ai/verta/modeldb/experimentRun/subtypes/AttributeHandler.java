@@ -10,7 +10,6 @@ import com.google.protobuf.Value;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.AbstractMap;
-import java.util.concurrent.Executor;
 
 public class AttributeHandler extends KeyValueHandler<String> {
   public AttributeHandler(FutureExecutor executor, FutureJdbi jdbi, String entityName) {

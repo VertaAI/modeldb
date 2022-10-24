@@ -3,7 +3,6 @@ package ai.verta.modeldb.common.futures;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -12,7 +11,8 @@ public class BatchLoader<T, R> {
   private final FutureExecutor executor;
   private int maxBatchSize = 1000;
 
-  public BatchLoader(Function<List<T>, InternalFuture<List<R>>> processor, FutureExecutor executor) {
+  public BatchLoader(
+      Function<List<T>, InternalFuture<List<R>>> processor, FutureExecutor executor) {
     this.processor = processor;
     this.executor = executor;
   }

@@ -13,7 +13,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -24,7 +23,7 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
   private final FutureExecutor executor;
 
   public HyperparametersFromConfigHandler(
-          FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
+      FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     super(executor, jdbi, fieldType, entityName);
     this.executor = executor;
     this.jdbi = jdbi;

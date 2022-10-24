@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
@@ -56,7 +55,8 @@ public abstract class KeyValueHandler<T> {
     return CommonUtils.getStringFromProtoObject(kv.getValue());
   }
 
-  public KeyValueHandler(FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
+  public KeyValueHandler(
+      FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.fieldType = fieldType;

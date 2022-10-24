@@ -19,7 +19,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.jdbi.v3.core.statement.Query;
 
@@ -35,7 +34,7 @@ public abstract class CommonArtifactHandler<T> {
   }
 
   public CommonArtifactHandler(
-          FutureExecutor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       ArtifactStoreConfig artifactStoreConfig,
       String entityName) {

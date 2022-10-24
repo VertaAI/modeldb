@@ -28,7 +28,6 @@ import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ServiceEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.concurrent.Executor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;

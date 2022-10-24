@@ -32,7 +32,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -58,7 +57,7 @@ public class VersionInputHandler {
       ModelDBHibernateUtil.getInstance();
 
   public VersionInputHandler(
-          FutureExecutor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       String entityName,
       RepositoryDAO repositoryDAO,
