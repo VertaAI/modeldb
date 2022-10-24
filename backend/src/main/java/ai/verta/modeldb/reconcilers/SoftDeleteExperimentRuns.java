@@ -14,7 +14,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.hibernate.query.Query;
 

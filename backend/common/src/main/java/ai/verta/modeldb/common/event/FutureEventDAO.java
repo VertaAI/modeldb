@@ -10,7 +10,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -22,7 +21,8 @@ public class FutureEventDAO {
   private final Config config;
   private final String serviceType;
 
-  public FutureEventDAO(FutureExecutor executor, FutureJdbi jdbi, Config config, String serviceType) {
+  public FutureEventDAO(
+      FutureExecutor executor, FutureJdbi jdbi, Config config, String serviceType) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.config = config;

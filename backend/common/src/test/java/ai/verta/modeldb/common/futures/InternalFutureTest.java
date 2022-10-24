@@ -4,14 +4,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
-import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.assertj.core.api.Assertions;
@@ -21,7 +17,7 @@ import org.junit.jupiter.api.Timeout;
 class InternalFutureTest {
   @Test
   void composition_failsFast() {
-      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<String> testFuture =
         InternalFuture.completedInternalFuture("cheese")
             .thenApply(
@@ -42,7 +38,7 @@ class InternalFutureTest {
   @Test
   void thenSupply() throws Exception {
     AtomicBoolean firstWasCalled = new AtomicBoolean();
-      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<Void> testFuture =
         InternalFuture.supplyAsync(
             () -> {
@@ -59,7 +55,7 @@ class InternalFutureTest {
   @Test
   void thenSupply_exception() {
     AtomicBoolean secondWasCalled = new AtomicBoolean();
-      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<Void> testFuture =
         InternalFuture.supplyAsync(
             () -> {
@@ -85,7 +81,7 @@ class InternalFutureTest {
   @Test
   @Timeout(2)
   void retry_retryCheckerThrows() {
-      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     assertThatThrownBy(
             () ->
                 InternalFuture.retriableStage(
@@ -104,7 +100,7 @@ class InternalFutureTest {
   @Test
   @Timeout(2)
   void sequence_exceptionHandling() {
-      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     assertThatThrownBy(
             () ->
                 InternalFuture.sequence(
@@ -116,7 +112,7 @@ class InternalFutureTest {
 
   @Test
   void flipOptional() throws Exception {
-      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
 
     final var res1 =
         InternalFuture.flipOptional(
@@ -130,7 +126,7 @@ class InternalFutureTest {
 
   @Test
   void recover() throws Exception {
-      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
 
     final var value =
         InternalFuture.completedInternalFuture(123)
@@ -150,7 +146,7 @@ class InternalFutureTest {
 
   @Test
   void fireAndForget() {
-      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     AtomicBoolean executed = new AtomicBoolean();
     AtomicReference<String> forgottenResult = new AtomicReference<>();
     InternalFuture.runAsync(() -> forgottenResult.set("complete!"), executor)

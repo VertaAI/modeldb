@@ -17,7 +17,6 @@ import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -223,7 +222,10 @@ public class AppConfigBeans {
   }
 
   public void initializeBackendServices(
-      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, FutureExecutor grpcExecutor) {
+      ServerBuilder<?> serverBuilder,
+      ServiceSet services,
+      DAOSet daos,
+      FutureExecutor grpcExecutor) {
     serverBuilder.addService(new FutureProjectServiceImpl(daos, grpcExecutor));
     LOGGER.trace("Project serviceImpl initialized");
     serverBuilder.addService(new FutureExperimentServiceImpl(daos, grpcExecutor));

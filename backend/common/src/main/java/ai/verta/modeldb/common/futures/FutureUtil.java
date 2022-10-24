@@ -3,12 +3,7 @@ package ai.verta.modeldb.common.futures;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import io.grpc.Context;
-import io.opentracing.Scope;
-import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ForkJoinPool;
 import org.springframework.lang.NonNull;
 
 public final class FutureUtil {

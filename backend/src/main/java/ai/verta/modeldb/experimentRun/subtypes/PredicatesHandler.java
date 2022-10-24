@@ -26,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 public class PredicatesHandler extends PredicateHandlerUtils {
@@ -42,7 +41,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private final UACApisUtil uacApisUtil;
 
   public PredicatesHandler(
-          FutureExecutor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
+      FutureExecutor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
     this.executor = executor;
     this.tableName = tableName;
     this.alias = alias;

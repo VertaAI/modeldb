@@ -113,7 +113,8 @@ public class InternalFuture<T> {
             executor));
   }
 
-  public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, FutureExecutor executor) {
+  public <U> InternalFuture<U> thenApply(
+      Function<? super T, ? extends U> fn, FutureExecutor executor) {
     return from(
         stage.thenApplyAsync(
             traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
@@ -260,7 +261,8 @@ public class InternalFuture<T> {
    * Syntactic sugar for {@link #thenCompose(Function, Executor)} with the function ignoring the
    * input.
    */
-  public <U> InternalFuture<U> thenSupply(Supplier<InternalFuture<U>> supplier, FutureExecutor executor) {
+  public <U> InternalFuture<U> thenSupply(
+      Supplier<InternalFuture<U>> supplier, FutureExecutor executor) {
     return thenCompose(ignored -> supplier.get(), executor);
   }
 

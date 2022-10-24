@@ -7,7 +7,6 @@ import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.Executor;
 
 public class TagsHandler extends TagsHandlerBase<String> {
 

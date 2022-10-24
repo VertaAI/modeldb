@@ -16,7 +16,6 @@ import ai.verta.modeldb.reconcilers.UpdateExperimentTimestampReconcile;
 import ai.verta.modeldb.reconcilers.UpdateProjectTimestampReconcile;
 import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconcile;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.concurrent.Executor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.LogManager;
