@@ -21,7 +21,7 @@ import org.junit.jupiter.api.Timeout;
 class InternalFutureTest {
   @Test
   void composition_failsFast() {
-    Executor executor = MoreExecutors.directExecutor();
+      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<String> testFuture =
         InternalFuture.completedInternalFuture("cheese")
             .thenApply(
@@ -42,7 +42,7 @@ class InternalFutureTest {
   @Test
   void thenSupply() throws Exception {
     AtomicBoolean firstWasCalled = new AtomicBoolean();
-    Executor executor = MoreExecutors.directExecutor();
+      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<Void> testFuture =
         InternalFuture.supplyAsync(
             () -> {
@@ -59,7 +59,7 @@ class InternalFutureTest {
   @Test
   void thenSupply_exception() {
     AtomicBoolean secondWasCalled = new AtomicBoolean();
-    Executor executor = MoreExecutors.directExecutor();
+      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<Void> testFuture =
         InternalFuture.supplyAsync(
             () -> {
@@ -85,7 +85,7 @@ class InternalFutureTest {
   @Test
   @Timeout(2)
   void retry_retryCheckerThrows() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     assertThatThrownBy(
             () ->
                 InternalFuture.retriableStage(
@@ -104,7 +104,7 @@ class InternalFutureTest {
   @Test
   @Timeout(2)
   void sequence_exceptionHandling() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     assertThatThrownBy(
             () ->
                 InternalFuture.sequence(
@@ -116,7 +116,7 @@ class InternalFutureTest {
 
   @Test
   void flipOptional() throws Exception {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
 
     final var res1 =
         InternalFuture.flipOptional(
@@ -130,7 +130,7 @@ class InternalFutureTest {
 
   @Test
   void recover() throws Exception {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
 
     final var value =
         InternalFuture.completedInternalFuture(123)
@@ -150,7 +150,7 @@ class InternalFutureTest {
 
   @Test
   void fireAndForget() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+      FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     AtomicBoolean executed = new AtomicBoolean();
     AtomicReference<String> forgottenResult = new AtomicReference<>();
     InternalFuture.runAsync(() -> forgottenResult.set("complete!"), executor)

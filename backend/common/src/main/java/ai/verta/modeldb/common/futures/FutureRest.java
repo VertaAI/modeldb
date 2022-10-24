@@ -8,7 +8,7 @@ public class FutureRest {
   private FutureRest() {}
 
   // Injects the result of the future into the grpc StreamObserver as the return of the server
-  public static <T> CompletableFuture<T> serverResponse(InternalFuture<T> future, Executor ex) {
+  public static <T> CompletableFuture<T> serverResponse(InternalFuture<T> future, FutureExecutor ex) {
     CompletableFuture<T> promise = new CompletableFuture<>();
     future.whenComplete(
         (v, t) -> {

@@ -12,6 +12,7 @@ import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -46,7 +47,7 @@ public class VersionInputHandler {
   private static final String VERSIONING_LOCATION_QUERY_PARAM = "versioning_location";
   private static Logger LOGGER = LogManager.getLogger(VersionInputHandler.class);
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final String entity_type;
   private final String entityIdReferenceColumn;
@@ -57,7 +58,7 @@ public class VersionInputHandler {
       ModelDBHibernateUtil.getInstance();
 
   public VersionInputHandler(
-      Executor executor,
+          FutureExecutor executor,
       FutureJdbi jdbi,
       String entityName,
       RepositoryDAO repositoryDAO,

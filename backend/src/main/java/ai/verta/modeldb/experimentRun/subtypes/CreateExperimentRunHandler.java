@@ -8,10 +8,7 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
@@ -27,7 +24,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
 
   private static Logger LOGGER = LogManager.getLogger(CreateExperimentRunHandler.class);
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
   private final Config config;
@@ -44,7 +41,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
   private final VersionInputHandler versionInputHandler;
 
   public CreateExperimentRunHandler(
-      Executor executor,
+          FutureExecutor executor,
       FutureJdbi jdbi,
       Config config,
       UAC uac,

@@ -11,7 +11,7 @@ public class FutureGrpc {
 
   // Injects the result of the Scala future into the grpc StreamObserver as the return of the server
   public static <T extends GeneratedMessageV3> void ServerResponse(
-      StreamObserver<T> observer, InternalFuture<T> f, Executor ex) {
+      StreamObserver<T> observer, InternalFuture<T> f, FutureExecutor ex) {
     f.whenComplete(
         (v, t) -> {
           if (t == null) {

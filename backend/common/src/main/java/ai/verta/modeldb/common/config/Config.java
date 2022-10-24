@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalJdbi;
@@ -202,10 +203,10 @@ public abstract class Config {
 
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
     final var jdbi = initializeJdbi(databaseConfig, poolName);
-    final var dbExecutor = FutureUtil.initializeExecutor(databaseConfig.getThreadCount());
+    final var dbExecutor = FutureExecutor.initializeExecutor(databaseConfig.getThreadCount());
     // wrap the executor in the OpenTelemetry context wrapper to make sure the context propagates
     // into any jdbi threads.
-    return new FutureJdbi(jdbi, Context.taskWrapping(dbExecutor));
+    return new FutureJdbi(jdbi, dbExecutor);
   }
 
   public InternalJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {

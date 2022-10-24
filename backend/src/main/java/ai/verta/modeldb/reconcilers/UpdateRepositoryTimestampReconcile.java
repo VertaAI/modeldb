@@ -1,5 +1,6 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -19,7 +20,7 @@ public class UpdateRepositoryTimestampReconcile
   private final MDBConfig mdbConfig;
 
   public UpdateRepositoryTimestampReconcile(
-      ReconcilerConfig config, FutureJdbi futureJdbi, Executor executor, MDBConfig mdbConfig) {
+          ReconcilerConfig config, FutureJdbi futureJdbi, FutureExecutor executor, MDBConfig mdbConfig) {
     super(
         config,
         LogManager.getLogger(UpdateRepositoryTimestampReconcile.class),

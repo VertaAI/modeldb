@@ -41,6 +41,7 @@ import ai.verta.modeldb.UpdateProjectDescription;
 import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.gson.Gson;
@@ -59,7 +60,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class FutureProjectServiceImpl extends ProjectServiceImplBase {
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureProjectDAO futureProjectDAO;
   private final FutureEventDAO futureEventDAO;
 
@@ -68,7 +69,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
   private static final String UPDATE_PROJECT_EVENT_TYPE =
       "update.resource.project.update_project_succeeded";
 
-  public FutureProjectServiceImpl(DAOSet daoSet, Executor executor) {
+  public FutureProjectServiceImpl(DAOSet daoSet, FutureExecutor executor) {
     this.executor = executor;
     this.futureProjectDAO = daoSet.getFutureProjectDAO();
     this.futureEventDAO = daoSet.getFutureEventDAO();

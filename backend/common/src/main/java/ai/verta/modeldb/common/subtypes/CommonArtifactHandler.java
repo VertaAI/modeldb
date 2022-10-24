@@ -5,6 +5,7 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -24,7 +25,7 @@ import org.jdbi.v3.core.statement.Query;
 
 public abstract class CommonArtifactHandler<T> {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
-  protected final Executor executor;
+  protected final FutureExecutor executor;
   protected final FutureJdbi jdbi;
   private final ArtifactStoreConfig artifactStoreConfig;
   protected final String entityName;
@@ -34,7 +35,7 @@ public abstract class CommonArtifactHandler<T> {
   }
 
   public CommonArtifactHandler(
-      Executor executor,
+          FutureExecutor executor,
       FutureJdbi jdbi,
       ArtifactStoreConfig artifactStoreConfig,
       String entityName) {

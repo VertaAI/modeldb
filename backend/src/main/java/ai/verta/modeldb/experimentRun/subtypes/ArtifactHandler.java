@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.MDBConfig;
@@ -40,7 +41,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
   private final int artifactEntityType;
 
   public ArtifactHandler(
-      Executor executor,
+          FutureExecutor executor,
       FutureJdbi jdbi,
       String entityName,
       CodeVersionHandler codeVersionHandler,

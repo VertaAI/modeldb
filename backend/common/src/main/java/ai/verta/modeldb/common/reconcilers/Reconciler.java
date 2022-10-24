@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.reconcilers;
 
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -26,13 +27,13 @@ public abstract class Reconciler<T> {
 
   protected final ReconcilerConfig config;
   protected final FutureJdbi futureJdbi;
-  protected final Executor executor;
+  protected final FutureExecutor executor;
 
   protected Reconciler(
       ReconcilerConfig config,
       Logger logger,
       FutureJdbi futureJdbi,
-      Executor executor,
+      FutureExecutor executor,
       boolean deduplicate) {
     this.logger = logger;
     this.config = config;

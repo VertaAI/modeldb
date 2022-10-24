@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.ArtifactStoreInitBeans;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
@@ -44,7 +45,7 @@ public class TestsInit {
 
   protected static TestConfig testConfig;
   protected static AuthService authService;
-  protected static Executor handleExecutor;
+  protected static FutureExecutor handleExecutor;
   protected static ServiceSet services;
   protected static DAOSet daos;
 
@@ -103,7 +104,7 @@ public class TestsInit {
     testConfig = TestConfig.getInstance();
     var app = App.getInstance();
     app.mdbConfig = testConfig;
-    handleExecutor = FutureUtil.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
+    handleExecutor = FutureExecutor.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
 
     // TODO: FIXME: fix init flow as per spring bean initialization
 

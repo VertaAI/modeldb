@@ -1,5 +1,6 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -16,7 +17,7 @@ public class UpdateProjectTimestampReconcile
     extends Reconciler<AbstractMap.SimpleEntry<String, Long>> {
 
   public UpdateProjectTimestampReconcile(
-      ReconcilerConfig config, FutureJdbi futureJdbi, Executor executor) {
+      ReconcilerConfig config, FutureJdbi futureJdbi, FutureExecutor executor) {
     super(
         config,
         LogManager.getLogger(UpdateProjectTimestampReconcile.class),

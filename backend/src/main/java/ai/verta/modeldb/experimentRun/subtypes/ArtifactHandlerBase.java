@@ -5,6 +5,7 @@ import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -30,7 +31,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
   protected String entityIdReferenceColumn;
 
   public ArtifactHandlerBase(
-      Executor executor,
+          FutureExecutor executor,
       FutureJdbi jdbi,
       String fieldType,
       String entityName,

@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.modeldb.Feature;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -21,12 +22,12 @@ public class FeatureHandler {
   private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final String entityName;
   private final String entityIdReferenceColumn;
 
-  public FeatureHandler(Executor executor, FutureJdbi jdbi, String entityName) {
+  public FeatureHandler(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.entityName = entityName;

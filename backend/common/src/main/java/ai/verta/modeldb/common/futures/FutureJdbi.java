@@ -5,10 +5,10 @@ import java.util.concurrent.Executor;
 import org.jdbi.v3.core.statement.StatementExceptions;
 
 public class FutureJdbi {
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final InternalJdbi jdbi;
 
-  public FutureJdbi(InternalJdbi jdbi, Executor executor) {
+  public FutureJdbi(InternalJdbi jdbi, FutureExecutor executor) {
     this.executor = executor;
     this.jdbi = jdbi;
     // Ensure that we do not log any sensitive/private data when exceptions are logged

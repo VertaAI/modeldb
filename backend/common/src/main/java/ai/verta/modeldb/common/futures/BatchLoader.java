@@ -9,10 +9,10 @@ import java.util.stream.Collectors;
 
 public class BatchLoader<T, R> {
   private final Function<List<T>, InternalFuture<List<R>>> processor;
-  private final Executor executor;
+  private final FutureExecutor executor;
   private int maxBatchSize = 1000;
 
-  public BatchLoader(Function<List<T>, InternalFuture<List<R>>> processor, Executor executor) {
+  public BatchLoader(Function<List<T>, InternalFuture<List<R>>> processor, FutureExecutor executor) {
     this.processor = processor;
     this.executor = executor;
   }

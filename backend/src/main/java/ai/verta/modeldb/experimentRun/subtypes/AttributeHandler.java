@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import com.google.protobuf.Value;
@@ -12,7 +13,7 @@ import java.util.AbstractMap;
 import java.util.concurrent.Executor;
 
 public class AttributeHandler extends KeyValueHandler<String> {
-  public AttributeHandler(Executor executor, FutureJdbi jdbi, String entityName) {
+  public AttributeHandler(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
     super(executor, jdbi, "attributes", entityName);
   }
 

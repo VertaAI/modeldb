@@ -28,10 +28,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
@@ -70,7 +67,7 @@ import org.jdbi.v3.core.statement.Query;
 public class FutureExperimentDAO {
   private static final Logger LOGGER = LogManager.getLogger(FutureExperimentDAO.class);
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
   private final boolean isMssql;
@@ -86,7 +83,7 @@ public class FutureExperimentDAO {
   private final UACApisUtil uacApisUtil;
 
   public FutureExperimentDAO(
-      Executor executor, FutureJdbi jdbi, UAC uac, MDBConfig mdbConfig, DAOSet daoSet) {
+          FutureExecutor executor, FutureJdbi jdbi, UAC uac, MDBConfig mdbConfig, DAOSet daoSet) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;

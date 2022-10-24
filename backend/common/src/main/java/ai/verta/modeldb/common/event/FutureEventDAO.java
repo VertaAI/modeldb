@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.event;
 
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.gson.JsonObject;
@@ -16,12 +17,12 @@ import org.apache.logging.log4j.Logger;
 
 public class FutureEventDAO {
   private static final Logger LOGGER = LogManager.getLogger(FutureEventDAO.class);
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final Config config;
   private final String serviceType;
 
-  public FutureEventDAO(Executor executor, FutureJdbi jdbi, Config config, String serviceType) {
+  public FutureEventDAO(FutureExecutor executor, FutureJdbi jdbi, Config config, String serviceType) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.config = config;
