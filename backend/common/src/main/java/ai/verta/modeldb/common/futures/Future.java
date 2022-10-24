@@ -374,6 +374,12 @@ public class Future<T> {
     }
   }
 
+  /** @deprecated Only use this as a part of the conversion process between versions of Futures. */
+  @Deprecated
+  public InternalFuture<T> toInternalFuture() {
+    return InternalFuture.from(stage);
+  }
+
   @VisibleForTesting
   static void resetExecutorForTest() {
     futureExecutor = null;
