@@ -13,7 +13,7 @@ public class FutureExecutor implements Executor {
         final Executor other;
 
     FutureExecutor(Executor other) {
-            this.other = other;
+            this.other = io.opentelemetry.context.Context.taskWrapping(other);
         }
 
     // Wraps an Executor and make it compatible with grpc's context
