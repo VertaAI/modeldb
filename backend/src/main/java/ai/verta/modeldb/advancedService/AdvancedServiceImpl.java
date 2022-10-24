@@ -19,6 +19,7 @@ import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.*;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.dataset.DatasetDAO;
@@ -39,7 +40,6 @@ import io.grpc.Metadata;
 import io.grpc.stub.StreamObserver;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -55,9 +55,9 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private final FutureExperimentDAO futureExperimentDAO;
   private final DatasetDAO datasetDAO;
   private final DatasetVersionDAO datasetVersionDAO;
-  private final Executor executor;
+  private final FutureExecutor executor;
 
-  public AdvancedServiceImpl(ServiceSet serviceSet, DAOSet daoSet, Executor executor) {
+  public AdvancedServiceImpl(ServiceSet serviceSet, DAOSet daoSet, FutureExecutor executor) {
     this.authService = serviceSet.getAuthService();
     this.mdbRoleService = serviceSet.getMdbRoleService();
     this.futureProjectDAO = daoSet.getFutureProjectDAO();

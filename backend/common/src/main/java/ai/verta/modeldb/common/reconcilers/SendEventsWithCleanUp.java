@@ -3,6 +3,7 @@ package ai.verta.modeldb.common.reconcilers;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.event.FutureEventDAO;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -12,7 +13,6 @@ import com.google.protobuf.Value;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 
 public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
@@ -24,7 +24,7 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
       UAC uac,
       FutureEventDAO futureEventDAO,
       FutureJdbi futureJdbi,
-      Executor executor) {
+      FutureExecutor executor) {
     super(config, LogManager.getLogger(SendEventsWithCleanUp.class), futureJdbi, executor, false);
     this.uac = uac;
     this.futureEventDAO = futureEventDAO;

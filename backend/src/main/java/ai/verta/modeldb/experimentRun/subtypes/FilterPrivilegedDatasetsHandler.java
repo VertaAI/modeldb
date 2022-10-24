@@ -4,6 +4,7 @@ import ai.verta.common.Artifact;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.interfaces.CheckEntityPermissionBasedOnResourceTypesFunction;
@@ -18,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,10 +26,10 @@ import org.apache.logging.log4j.Logger;
 public class FilterPrivilegedDatasetsHandler {
   private static Logger LOGGER = LogManager.getLogger(FilterPrivilegedDatasetsHandler.class);
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
 
-  public FilterPrivilegedDatasetsHandler(Executor executor, FutureJdbi jdbi) {
+  public FilterPrivilegedDatasetsHandler(FutureExecutor executor, FutureJdbi jdbi) {
     this.executor = executor;
     this.jdbi = jdbi;
   }

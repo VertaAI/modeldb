@@ -4,6 +4,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -14,7 +15,6 @@ import java.util.AbstractMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -28,10 +28,10 @@ public class ObservationHandler {
   private static final String EPOCH_QUERY_PARAM = "epoch";
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
 
-  public ObservationHandler(Executor executor, FutureJdbi jdbi) {
+  public ObservationHandler(FutureExecutor executor, FutureJdbi jdbi) {
     this.executor = executor;
     this.jdbi = jdbi;
   }

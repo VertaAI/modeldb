@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -14,7 +15,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -23,13 +23,13 @@ public class CodeVersionHandler {
   private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);
   private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final String entityTableName;
 
-  public CodeVersionHandler(Executor executor, FutureJdbi jdbi, String entityTableName) {
+  public CodeVersionHandler(FutureExecutor executor, FutureJdbi jdbi, String entityTableName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.entityTableName = entityTableName;

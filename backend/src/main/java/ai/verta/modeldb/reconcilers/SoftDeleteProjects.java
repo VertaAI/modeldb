@@ -2,6 +2,7 @@ package ai.verta.modeldb.reconcilers;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -13,7 +14,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 
 public class SoftDeleteProjects extends Reconciler<String> {
@@ -25,7 +25,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
       ReconcilerConfig config,
       MDBRoleService mdbRoleService,
       FutureJdbi futureJdbi,
-      Executor executor) {
+      FutureExecutor executor) {
     super(config, LogManager.getLogger(SoftDeleteProjects.class), futureJdbi, executor, true);
     this.mdbRoleService = mdbRoleService;
   }
