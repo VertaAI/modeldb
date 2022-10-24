@@ -16,7 +16,7 @@ import ai.verta.modeldb.common.configuration.EnabledMigration;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.futures.FutureUtil;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -99,9 +99,9 @@ public class AppConfigBeans {
   }
 
   @Bean
-  Executor grpcExecutor(Config config) {
+  FutureExecutor grpcExecutor(Config config) {
     // Initialize executor so we don't lose context using Futures
-    return FutureUtil.initializeExecutor(config.getGrpcServer().getThreadCount());
+    return FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
   }
 
   @Bean
@@ -116,7 +116,7 @@ public class AppConfigBeans {
   public DAOSet daoSet(
       MDBConfig config,
       ServiceSet services,
-      Executor grpcExecutor,
+      FutureExecutor grpcExecutor,
       ReconcilerInitializer reconcilerInitializer) {
     return DAOSet.fromServices(
         services, config.getJdbi(), grpcExecutor, config, reconcilerInitializer);
@@ -176,7 +176,7 @@ public class AppConfigBeans {
       MDBConfig config,
       ServiceSet services,
       DAOSet daos,
-      Executor grpcExecutor) {
+      FutureExecutor grpcExecutor) {
     return args -> {
       try {
         LOGGER.info("Backend server starting.");
@@ -224,7 +224,10 @@ public class AppConfigBeans {
   }
 
   public void initializeBackendServices(
-      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor grpcExecutor) {
+      ServerBuilder<?> serverBuilder,
+      ServiceSet services,
+      DAOSet daos,
+      FutureExecutor grpcExecutor) {
     serverBuilder.addService(new FutureProjectServiceImpl(daos, grpcExecutor));
     LOGGER.trace("Project serviceImpl initialized");
     serverBuilder.addService(new FutureExperimentServiceImpl(daos, grpcExecutor));

@@ -41,6 +41,7 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -58,7 +59,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
@@ -71,13 +71,13 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       "update.resource.experiment.update_experiment_succeeded";
   private static final String DELETE_EXPERIMENT_EVENT_TYPE =
       "delete.resource.experiment.delete_experiment_succeeded";
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureProjectDAO futureProjectDAO;
   private final FutureExperimentDAO futureExperimentDAO;
   private final FutureEventDAO futureEventDAO;
   private final UACApisUtil uacApisUtil;
 
-  public FutureExperimentServiceImpl(DAOSet daoSet, Executor executor) {
+  public FutureExperimentServiceImpl(DAOSet daoSet, FutureExecutor executor) {
     this.executor = executor;
     this.futureProjectDAO = daoSet.getFutureProjectDAO();
     this.futureExperimentDAO = daoSet.getFutureExperimentDAO();

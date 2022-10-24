@@ -44,6 +44,7 @@ import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.*;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -92,7 +93,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -102,7 +102,7 @@ public class FutureProjectDAO {
   private static final Logger LOGGER = LogManager.getLogger(FutureProjectDAO.class);
 
   private final FutureJdbi jdbi;
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final UAC uac;
   private final boolean isMssql;
 
@@ -118,7 +118,7 @@ public class FutureProjectDAO {
   private final ReconcilerInitializer reconcilerInitializer;
 
   public FutureProjectDAO(
-      Executor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
