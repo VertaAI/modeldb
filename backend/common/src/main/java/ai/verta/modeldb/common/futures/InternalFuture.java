@@ -50,7 +50,8 @@ public class InternalFuture<T> {
   // Convert a list of futures to a future of a list
   @SuppressWarnings("unchecked")
   public static <T> InternalFuture<List<T>> sequence(
-      final List<InternalFuture<T>> futures, FutureExecutor executor) {
+      final List<InternalFuture<T>> futures, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     if (futures.isEmpty()) {
       return InternalFuture.completedInternalFuture(new LinkedList<>());
     }
@@ -102,7 +103,8 @@ public class InternalFuture<T> {
   }
 
   public <U> InternalFuture<U> thenCompose(
-      Function<? super T, InternalFuture<U>> fn, FutureExecutor executor) {
+      Function<? super T, InternalFuture<U>> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(
         stage.thenComposeAsync(
             traceFunction(
@@ -114,7 +116,8 @@ public class InternalFuture<T> {
   }
 
   public <U> InternalFuture<U> thenApply(
-      Function<? super T, ? extends U> fn, FutureExecutor executor) {
+      Function<? super T, ? extends U> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(
         stage.thenApplyAsync(
             traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
@@ -143,7 +146,8 @@ public class InternalFuture<T> {
   }
 
   public <U> InternalFuture<U> handle(
-      BiFunction<? super T, Throwable, ? extends U> fn, FutureExecutor executor) {
+      BiFunction<? super T, Throwable, ? extends U> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(
         stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor));
   }
@@ -166,7 +170,8 @@ public class InternalFuture<T> {
   public <U, V> InternalFuture<V> thenCombine(
       InternalFuture<? extends U> other,
       BiFunction<? super T, ? super U, ? extends V> fn,
-      FutureExecutor executor) {
+      FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(
         stage.thenCombineAsync(
             other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor));
@@ -187,7 +192,8 @@ public class InternalFuture<T> {
     };
   }
 
-  public InternalFuture<Void> thenAccept(Consumer<? super T> action, FutureExecutor executor) {
+  public InternalFuture<Void> thenAccept(Consumer<? super T> action, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(
         stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor));
   }
@@ -206,7 +212,8 @@ public class InternalFuture<T> {
     };
   }
 
-  public <U> InternalFuture<Void> thenRun(Runnable runnable, FutureExecutor executor) {
+  public <U> InternalFuture<Void> thenRun(Runnable runnable, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(stage.thenRunAsync(callingContext.wrap(traceRunnable(runnable)), executor));
   }
 
@@ -225,12 +232,14 @@ public class InternalFuture<T> {
   }
 
   public InternalFuture<T> whenComplete(
-      BiConsumer<? super T, ? super Throwable> action, FutureExecutor executor) {
+      BiConsumer<? super T, ? super Throwable> action, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(
         stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
   }
 
-  public InternalFuture<T> recover(Function<Throwable, ? extends T> fn, FutureExecutor executor) {
+  public InternalFuture<T> recover(Function<Throwable, ? extends T> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return handle(
         (v, t) -> {
           if (t != null) {
@@ -262,15 +271,18 @@ public class InternalFuture<T> {
    * input.
    */
   public <U> InternalFuture<U> thenSupply(
-      Supplier<InternalFuture<U>> supplier, FutureExecutor executor) {
+      Supplier<InternalFuture<U>> supplier, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return thenCompose(ignored -> supplier.get(), executor);
   }
 
-  public static <U> InternalFuture<Void> runAsync(Runnable runnable, FutureExecutor executor) {
+  public static <U> InternalFuture<Void> runAsync(Runnable runnable, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(CompletableFuture.runAsync(runnable, executor));
   }
 
-  public static <U> InternalFuture<U> supplyAsync(Supplier<U> supplier, FutureExecutor executor) {
+  public static <U> InternalFuture<U> supplyAsync(Supplier<U> supplier, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(CompletableFuture.supplyAsync(supplier, executor));
   }
 
@@ -281,7 +293,8 @@ public class InternalFuture<T> {
   public static <U> InternalFuture<U> retriableStage(
       Supplier<InternalFuture<U>> supplier,
       Function<Throwable, Boolean> retryChecker,
-      FutureExecutor executor) {
+      FutureExecutor ex) {
+    final var executor = ex.captureContext();
     final var promise = new CompletableFuture<U>();
 
     supplier
@@ -325,7 +338,8 @@ public class InternalFuture<T> {
   }
 
   public static <U> InternalFuture<Optional<U>> flipOptional(
-      Optional<InternalFuture<U>> val, FutureExecutor executor) {
+      Optional<InternalFuture<U>> val, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return val.map(future -> future.thenApply(Optional::of, executor))
         .orElse(InternalFuture.completedInternalFuture(Optional.empty()));
   }
