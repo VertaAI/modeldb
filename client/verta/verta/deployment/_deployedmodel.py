@@ -3,6 +3,7 @@
 import gzip
 import json
 import time
+import warnings
 
 import requests
 from urllib.parse import urlparse
@@ -83,10 +84,14 @@ class DeployedModel(object):
     def __repr__(self):
         return "<{} at {}>".format(self.__class__.__name__, self.prediction_url)
 
+    # TODO: Remove this method after release of 0.22.0
     @classmethod
     def from_url(cls, url, token=None, creds=None):
         """
         Returns a :class:`DeployedModel` based on a custom URL and token.
+
+        .. deprecated:: 0.22.0
+           Simply call the ``DeployedModel`` class directly with the same parameters instead.
 
         Parameters
         ----------
@@ -114,6 +119,11 @@ class DeployedModel(object):
             # <DeployedModel at https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901>
 
         """
+        warnings.warn(
+            "This method is deprecated and will be removed in an upcoming version;"
+            " Drop \".from_url\" and call the DeployedModel class directly with the same parameters.",
+            category=FutureWarning,
+        )
         return cls(prediction_url=url, token=token, creds=creds)
 
     @property
