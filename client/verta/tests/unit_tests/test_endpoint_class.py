@@ -1,10 +1,5 @@
 # -*- coding: utf-8 -*-
-# Unit tests for the Endpoint class.
-#
-#  Mocked API responses are declared as static test fixtures for now.  This is a brittle approach, as any schema changes
-#  in those calls will not be reflected here unless manually updated.  Long term, we'll want to generate these fixtures
-#  dynamically from a shared schema, like swagger.  Additionally, some of the patching of methods is a tad cumbersome.
-#  We'll want to consider a less verbose approach for patching in the future (decorators).
+""" Unit tests for the Endpoint class. """
 
 import os
 import pytest
@@ -17,10 +12,6 @@ from verta.endpoint import Endpoint
 from verta._internal_utils._utils import Connection, Configuration
 from verta.credentials import EmailCredentials
 
-#---------------------------------------------------------------------------------------------------------------------
-# TEST FIXTURES
-#---------------------------------------------------------------------------------------------------------------------
-# This section contains the test fixtures required for testing the Endpoint class,
 
 @pytest.fixture
 @patch.dict(os.environ, {'VERTA_EMAIL': 'test_email@verta.ai', 'VERTA_DEV_KEY':'123test1232dev1232key123'})
@@ -42,17 +33,11 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
     """ Use the mocked elements above to generate  an object of the Endpoint class for use in tests """
     return Endpoint(conn=mock_conn, conf=mock_config, workspace=456, id=123)
 
-#---------------------------------------------------------------------------------------------------------------------
-# GLOBAL VARIABLES
-#---------------------------------------------------------------------------------------------------------------------
-# A few helpful variables and some big, ugly simulated responses from the back-end API called by these methods.  See
-# note at top of file about the long term strategy for generating those types of test fixtures dynamically.
+VERTA_CLASS: str= 'verta.endpoint.Endpoint.'
+WORKSPACE_ID: int = 456
+DEPLOYMENT_ID: int = 123
 
-VERTA_CLASS: str= 'verta.endpoint.Endpoint.'  # patch() requires the complete path to the module being
-                # patched.  This variable just avoids clutter caused by the length of paths for the client.
-WORKSPACE_ID: int = 456  # Maintain a consistent value across all tests
-DEPLOYMENT_ID: int = 123  # Maintain a consistent value across all tests
-
+# TODO: Generate responses dynamically from swagger to ensure ongoing consistency with back-end API schemas
 # Expected response from the _get_json_by_id method as of 2022-10-24
 GET_JSON_BY_ID_RESPONSE: Dict[str, Any] = {
     "creator_request": {
@@ -96,10 +81,8 @@ GET_STATUS_RESPONSE: Dict[str, Any] = {
 
 # Expected response from the get_access_token method as of 2022-10-24
 GET_ACCESS_TOKEN_RESPONSE: str =  '123-test-456-token-789'
-#---------------------------------------------------------------------------------------------------------------------
-# UNIT TESTS
-#---------------------------------------------------------------------------------------------------------------------
 
+# TODO: Implement a less verbose, more universal method of patching method and http calls.
 @patch(f'{VERTA_CLASS}get_status', return_value=GET_STATUS_RESPONSE)
 @patch(f'{VERTA_CLASS}_get_json_by_id', return_value=GET_JSON_BY_ID_RESPONSE)
 @patch(f'{VERTA_CLASS}get_access_token', return_value=GET_ACCESS_TOKEN_RESPONSE)
