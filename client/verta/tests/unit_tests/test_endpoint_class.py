@@ -13,9 +13,9 @@ from copy import deepcopy
 from typing import Dict, Any
 from unittest.mock import patch
 
-from client.verta.verta.endpoint import Endpoint
-from client.verta.verta._internal_utils._utils import Connection, Configuration
-from client.verta.verta.credentials import EmailCredentials
+from verta.endpoint import Endpoint
+from verta._internal_utils._utils import Connection, Configuration
+from verta.credentials import EmailCredentials
 
 #---------------------------------------------------------------------------------------------------------------------
 # TEST FIXTURES
@@ -48,7 +48,7 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
 # A few helpful variables and some big, ugly simulated responses from the back-end API called by these methods.  See
 # note at top of file about the long term strategy for generating those types of test fixtures dynamically.
 
-VERTA_CLASS: str= 'client.verta.verta.endpoint.Endpoint.'  # patch() requires the complete path to the module being
+VERTA_CLASS: str= 'verta.endpoint.Endpoint.'  # patch() requires the complete path to the module being
                 # patched.  This variable just avoids clutter caused by the length of paths for the client.
 WORKSPACE_ID: int = 456  # Maintain a consistent value across all tests
 DEPLOYMENT_ID: int = 123  # Maintain a consistent value across all tests
