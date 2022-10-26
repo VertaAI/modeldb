@@ -32,7 +32,7 @@
         <springframework.version>5.3.22</springframework.version>
         <lombok.version>1.18.24</lombok.version>
 
-        <junit-jupiter.version>5.9.0</junit-jupiter.version>
+        <junit-jupiter.version>5.9.1</junit-jupiter.version>
         <jacoco.version>0.8.8</jacoco.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>

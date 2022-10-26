@@ -17,4 +17,8 @@ public class MetadataForwarder implements ServerInterceptor {
   public static ClientInterceptor clientInterceptor() {
     return MetadataUtils.newAttachHeadersInterceptor(METADATA_INFO.get());
   }
+
+  public static Metadata getMetadata() {
+    return METADATA_INFO.get();
+  }
 }
