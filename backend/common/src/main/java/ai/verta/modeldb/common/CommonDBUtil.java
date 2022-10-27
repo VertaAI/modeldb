@@ -205,7 +205,7 @@ public abstract class CommonDBUtil {
         if (config.getRdbConfiguration().isMssql()) {
           LOGGER.info("MSSQL detected. Using custom update to liquibase filename records.");
           // looks like sql server doesn't support the "length" function, so hardcode it here.
-          trimOperation = "trim('/src/main/resources/' FROM FILENAME)";
+          trimOperation = "REPLACE(FILENAME, '/src/main/resources/', '')";
         } else {
           trimOperation = "substring(FILENAME, length('/src/main/resources/'))";
         }
