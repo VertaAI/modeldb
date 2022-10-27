@@ -11,7 +11,6 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.sql.*;
 import java.util.EnumSet;
 import liquibase.exception.LiquibaseException;

@@ -7,7 +7,6 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import java.io.FileNotFoundException;
 import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
