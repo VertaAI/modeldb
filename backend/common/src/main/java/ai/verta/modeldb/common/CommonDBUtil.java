@@ -4,17 +4,24 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.StringReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
+
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -255,25 +262,23 @@ public abstract class CommonDBUtil {
 
   private static void resetChangeSetLogData(JdbcConnection jdbcCon, String changeLogTableName) {
     try {
-      var rootPath = CommonDBUtil.class.getClassLoader().getResource("liquibase");
-      File migrationDirectory = new File(rootPath.toURI());
-      File file = new File(migrationDirectory, "reset_filepath_database_change_log_2022_10.json");
-      if (file.exists()) {
-        Gson gson = new Gson();
-        JsonReader reader = new JsonReader(new FileReader(file));
-        ChangeSetId[] changeSetIdArray = gson.fromJson(reader, ChangeSetId[].class);
-        var changeSetIds = Arrays.asList(changeSetIdArray);
-        var updateQuery = "update %s set FILENAME=? WHERE ID=?";
-        try (var statement =
-            jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
-          for (var changeSetId : changeSetIds) {
-            statement.setString(1, changeSetId.getFileName());
-            statement.setString(2, changeSetId.getId());
-            statement.addBatch();
-          }
-          int[] count = statement.executeBatch();
-          LOGGER.trace("Reset database_change_log file path entries: {}", count.length);
+      URL url = Resources.getResource("liquibase/reset_filepath_database_change_log_2022_10.json");
+      List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
+      String json = lines.stream().collect(Collectors.joining());
+      Gson gson = new Gson();
+      JsonReader reader = new JsonReader(new StringReader(json));
+      ChangeSetId[] changeSetIdArray = gson.fromJson(reader, ChangeSetId[].class);
+      var changeSetIds = Arrays.asList(changeSetIdArray);
+      var updateQuery = "update %s set FILENAME=? WHERE ID=?";
+      try (var statement =
+          jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
+        for (var changeSetId : changeSetIds) {
+          statement.setString(1, changeSetId.getFileName());
+          statement.setString(2, changeSetId.getId());
+          statement.addBatch();
         }
+        int[] count = statement.executeBatch();
+        LOGGER.trace("Reset database_change_log file path entries: {}", count.length);
       }
     } catch (Exception ex) {
       throw new ModelDBException(ex);
