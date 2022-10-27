@@ -7,15 +7,11 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import java.io.FileNotFoundException;
 import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
@@ -186,6 +182,17 @@ public abstract class CommonDBUtil {
       String liquibaseRootPath,
       ResourceAccessor resourceAccessor)
       throws LiquibaseException, SQLException, InterruptedException {
+    createTablesLiquibaseMigration(
+        config, changeSetToRevertUntilTag, liquibaseRootPath, resourceAccessor, Optional.empty());
+  }
+
+  protected void createTablesLiquibaseMigration(
+      DatabaseConfig config,
+      String changeSetToRevertUntilTag,
+      String liquibaseRootPath,
+      ResourceAccessor resourceAccessor,
+      Optional<String> changeSetRemappingFile)
+      throws LiquibaseException, SQLException, InterruptedException {
     var rdb = config.getRdbConfiguration();
 
     // Get database connection
@@ -199,7 +206,8 @@ public abstract class CommonDBUtil {
           System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
 
       if (tableExists(con, config, changeLogTableName)) {
-        resetChangeSetLogData(jdbcCon, changeLogTableName);
+        changeSetRemappingFile.ifPresent(
+            filename -> resetChangeSetLogData(jdbcCon, changeLogTableName, filename));
 
         String trimOperation;
         if (config.getRdbConfiguration().isMssql()) {
@@ -259,9 +267,10 @@ public abstract class CommonDBUtil {
     }
   }
 
-  private static void resetChangeSetLogData(JdbcConnection jdbcCon, String changeLogTableName) {
+  private static void resetChangeSetLogData(
+      JdbcConnection jdbcCon, String changeLogTableName, String filename) {
     try {
-      URL url = Resources.getResource("liquibase/reset_filepath_database_change_log_2022_10.json");
+      URL url = Resources.getResource(filename);
       List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
       String json = lines.stream().collect(Collectors.joining());
       Gson gson = new Gson();
@@ -348,7 +357,10 @@ public abstract class CommonDBUtil {
   }
 
   protected void runLiquibaseMigration(
-      DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
+      DatabaseConfig config,
+      String liquibaseRootPath,
+      ResourceAccessor resourceAccessor,
+      Optional<String> changeSetRemappingFile)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
     String changeLogTableName = "database_change_log";
@@ -378,7 +390,11 @@ public abstract class CommonDBUtil {
 
     // Run tables liquibase migration
     createTablesLiquibaseMigration(
-        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath, resourceAccessor);
+        config,
+        config.getChangeSetToRevertUntilTag(),
+        liquibaseRootPath,
+        resourceAccessor,
+        changeSetRemappingFile);
   }
 
   protected static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
