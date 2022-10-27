@@ -180,16 +180,6 @@ public abstract class CommonDBUtil {
       DatabaseConfig config,
       String changeSetToRevertUntilTag,
       String liquibaseRootPath,
-      ResourceAccessor resourceAccessor)
-      throws LiquibaseException, SQLException, InterruptedException {
-    createTablesLiquibaseMigration(
-        config, changeSetToRevertUntilTag, liquibaseRootPath, resourceAccessor, Optional.empty());
-  }
-
-  protected void createTablesLiquibaseMigration(
-      DatabaseConfig config,
-      String changeSetToRevertUntilTag,
-      String liquibaseRootPath,
       ResourceAccessor resourceAccessor,
       Optional<String> changeSetRemappingFile)
       throws LiquibaseException, SQLException, InterruptedException {
@@ -354,6 +344,12 @@ public abstract class CommonDBUtil {
       LOGGER.error(e.getMessage(), e);
       throw e;
     }
+  }
+
+  protected void runLiquibaseMigration(
+      DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
+      throws InterruptedException, LiquibaseException, SQLException {
+    runLiquibaseMigration(config, liquibaseRootPath, resourceAccessor, Optional.empty());
   }
 
   protected void runLiquibaseMigration(
