@@ -185,7 +185,7 @@ public abstract class CommonDBUtil {
       String changeSetToRevertUntilTag,
       String liquibaseRootPath,
       ResourceAccessor resourceAccessor)
-      throws LiquibaseException, SQLException, InterruptedException, FileNotFoundException {
+      throws LiquibaseException, SQLException, InterruptedException {
     var rdb = config.getRdbConfiguration();
 
     // Get database connection
@@ -349,7 +349,7 @@ public abstract class CommonDBUtil {
 
   protected void runLiquibaseMigration(
       DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
-      throws InterruptedException, LiquibaseException, SQLException, FileNotFoundException {
+      throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
     String changeLogTableName = "database_change_log";
     String changeLogLockTableName = "database_change_log_lock";
