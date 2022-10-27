@@ -2,6 +2,7 @@ package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
@@ -253,11 +254,11 @@ public abstract class CommonDBUtil {
   }
 
   private static void resetChangeSetLogData(JdbcConnection jdbcCon, String changeLogTableName) {
-    var rootPath = System.getProperty(CommonConstants.USER_DIR);
-    File migrationDirectory = new File(rootPath, "backend/src/main/resources/liquibase");
-    File file = new File(migrationDirectory, "reset_filepath_database_change_log_2022_10.json");
-    if (file.exists()) {
-      try {
+    try {
+      var rootPath = CommonDBUtil.class.getClassLoader().getResource("liquibase");
+      File migrationDirectory = new File(rootPath.toURI());
+      File file = new File(migrationDirectory, "reset_filepath_database_change_log_2022_10.json");
+      if (file.exists()) {
         Gson gson = new Gson();
         JsonReader reader = new JsonReader(new FileReader(file));
         ChangeSetId[] changeSetIdArray = gson.fromJson(reader, ChangeSetId[].class);
@@ -273,9 +274,9 @@ public abstract class CommonDBUtil {
           int[] count = statement.executeBatch();
           LOGGER.trace("Reset database_change_log file path entries: {}", count.length);
         }
-      } catch (Exception ex) {
-        ex.printStackTrace();
       }
+    } catch (Exception ex) {
+      throw new ModelDBException(ex);
     }
   }
 
