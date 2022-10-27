@@ -255,7 +255,7 @@ public abstract class CommonDBUtil {
   private static void resetChangeSetLogData(JdbcConnection jdbcCon, String changeLogTableName) {
     var rootPath = System.getProperty(CommonConstants.USER_DIR);
     File migrationDirectory = new File(rootPath, "backend/src/main/resources/liquibase");
-    File file = new File(migrationDirectory, "database_change_log_2022_10.json");
+    File file = new File(migrationDirectory, "reset_filepath_database_change_log_2022_10.json");
     if (file.exists()) {
       try {
         Gson gson = new Gson();
