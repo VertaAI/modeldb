@@ -270,7 +270,8 @@ public abstract class CommonDBUtil {
       try (var statement =
           jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
         for (var changeSetId : changeSetIdArray) {
-          LOGGER.debug("Adding to batch: filename '{}', ID '{}'", changeSetId.fileName, changeSetId.id);
+          LOGGER.debug(
+              "Adding to batch: filename '{}', ID '{}'", changeSetId.fileName, changeSetId.id);
           statement.setString(1, changeSetId.getFileName());
           statement.setString(2, changeSetId.getId());
           statement.addBatch();
