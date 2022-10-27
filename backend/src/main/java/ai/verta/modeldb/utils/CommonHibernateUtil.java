@@ -11,6 +11,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.sql.*;
 import java.util.EnumSet;
 import liquibase.exception.LiquibaseException;
@@ -253,7 +254,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
   }
 
   public void runLiquibaseMigration(DatabaseConfig config)
-      throws InterruptedException, LiquibaseException, SQLException {
+      throws InterruptedException, LiquibaseException, SQLException, FileNotFoundException {
     runLiquibaseMigration(
         config,
         liquibaseRootFilePath,

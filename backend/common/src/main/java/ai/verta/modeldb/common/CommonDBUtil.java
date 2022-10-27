@@ -3,7 +3,13 @@ package ai.verta.modeldb.common;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.sql.*;
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Locale;
 import java.util.concurrent.CompletionException;
@@ -174,7 +180,7 @@ public abstract class CommonDBUtil {
       String changeSetToRevertUntilTag,
       String liquibaseRootPath,
       ResourceAccessor resourceAccessor)
-      throws LiquibaseException, SQLException, InterruptedException {
+      throws LiquibaseException, SQLException, InterruptedException, FileNotFoundException {
     var rdb = config.getRdbConfiguration();
 
     // Get database connection
@@ -188,6 +194,8 @@ public abstract class CommonDBUtil {
           System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
 
       if (tableExists(con, config, changeLogTableName)) {
+        resetChangeSetLogData(jdbcCon, changeLogTableName);
+
         String trimOperation;
         if (config.getRdbConfiguration().isMssql()) {
           LOGGER.info("MSSQL detected. Using custom update to liquibase filename records.");
@@ -240,6 +248,33 @@ public abstract class CommonDBUtil {
           LOGGER.warn("CommonDBUtil createTablesLiquibaseMigration() getting LockException ", ex);
           releaseLiquibaseLock(config);
         }
+      }
+    }
+  }
+
+  private static void resetChangeSetLogData(JdbcConnection jdbcCon, String changeLogTableName) {
+    var rootPath = System.getProperty(CommonConstants.USER_DIR);
+    File migrationDirectory = new File(rootPath, "backend/src/main/resources/liquibase");
+    File file = new File(migrationDirectory, "database_change_log_2022_10.json");
+    if (file.exists()) {
+      try {
+        Gson gson = new Gson();
+        JsonReader reader = new JsonReader(new FileReader(file));
+        ChangeSetId[] changeSetIdArray = gson.fromJson(reader, ChangeSetId[].class);
+        var changeSetIds = Arrays.asList(changeSetIdArray);
+        var updateQuery = "update %s set FILENAME=? WHERE ID=?";
+        try (var statement =
+            jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
+          for (var changeSetId : changeSetIds) {
+            statement.setString(1, changeSetId.getFileName());
+            statement.setString(2, changeSetId.getId());
+            statement.addBatch();
+          }
+          int[] count = statement.executeBatch();
+          LOGGER.trace("Reset database_change_log file path entries: {}", count.length);
+        }
+      } catch (Exception ex) {
+        ex.printStackTrace();
       }
     }
   }
@@ -309,7 +344,7 @@ public abstract class CommonDBUtil {
 
   protected void runLiquibaseMigration(
       DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
-      throws InterruptedException, LiquibaseException, SQLException {
+      throws InterruptedException, LiquibaseException, SQLException, FileNotFoundException {
     // Change liquibase default table names
     String changeLogTableName = "database_change_log";
     String changeLogLockTableName = "database_change_log_lock";
@@ -386,5 +421,18 @@ public abstract class CommonDBUtil {
       return cause.getMessage().toLowerCase(Locale.ROOT).contains("unable to advance");
     }
     return false;
+  }
+
+  protected static class ChangeSetId {
+    private String id;
+    private String fileName;
+
+    public String getId() {
+      return id;
+    }
+
+    public String getFileName() {
+      return fileName;
+    }
   }
 }
