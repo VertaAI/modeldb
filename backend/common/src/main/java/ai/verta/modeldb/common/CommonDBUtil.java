@@ -7,9 +7,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.StringReader;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
@@ -21,7 +19,6 @@ import java.util.Locale;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
-
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
