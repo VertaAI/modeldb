@@ -14,7 +14,6 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -260,23 +259,24 @@ public abstract class CommonDBUtil {
   private static void resetChangeSetLogData(
       JdbcConnection jdbcCon, String changeLogTableName, String filename) {
     try {
+      LOGGER.info("Resetting changeset data using file {}", filename);
       URL url = Resources.getResource(filename);
       List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
-      String json = lines.stream().collect(Collectors.joining());
+      String json = String.join("", lines);
       Gson gson = new Gson();
       JsonReader reader = new JsonReader(new StringReader(json));
       ChangeSetId[] changeSetIdArray = gson.fromJson(reader, ChangeSetId[].class);
-      var changeSetIds = Arrays.asList(changeSetIdArray);
       var updateQuery = "update %s set FILENAME=? WHERE ID=?";
       try (var statement =
           jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
-        for (var changeSetId : changeSetIds) {
+        for (var changeSetId : changeSetIdArray) {
+          LOGGER.debug("Adding to batch: filename '{}', ID '{}'", changeSetId.fileName, changeSetId.id);
           statement.setString(1, changeSetId.getFileName());
           statement.setString(2, changeSetId.getId());
           statement.addBatch();
         }
         int[] count = statement.executeBatch();
-        LOGGER.trace("Reset database_change_log file path entries: {}", count.length);
+        LOGGER.info("Reset database_change_log file path entries: {}", count.length);
       }
     } catch (Exception ex) {
       throw new ModelDBException(ex);
