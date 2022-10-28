@@ -275,7 +275,9 @@ public abstract class CommonDBUtil {
           int numberUpdated = statement.executeUpdate();
           if (numberUpdated > 0) {
             LOGGER.info(
-                    "Updated changelog for: filename '{}', ID '{}'", changeSetId.fileName, changeSetId.id);
+                "Updated changelog for: filename '{}', ID '{}'",
+                changeSetId.fileName,
+                changeSetId.id);
           }
           totalUpdated += numberUpdated;
         }
