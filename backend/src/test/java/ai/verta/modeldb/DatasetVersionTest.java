@@ -1363,4 +1363,71 @@ public class DatasetVersionTest extends TestsInit {
           datasetVersion);
     }
   }
+
+  @Test
+  public void validateInternalVersionedPathInDatasetBlob() {
+    LOGGER.info("Get Url for VersionedDatasetBlob test start................................");
+    String path1 = "verta/test/test1.txt";
+    String path2 = "verta/test/test2.txt";
+    String internalPath1 = "test/internalDatasetBlobPaths/blobs/test1.txt";
+    String internalPath2 = "test/internalDatasetBlobPaths/blobs/test2.txt";
+    // location.add("test.txt");
+    DatasetBlob datasetBlob =
+        DatasetBlob.newBuilder()
+            .setS3(
+                S3DatasetBlob.newBuilder()
+                    .addComponents(
+                        S3DatasetComponentBlob.newBuilder()
+                            .setS3VersionId("1.0")
+                            .setPath(
+                                PathDatasetComponentBlob.newBuilder()
+                                    .setPath(path1)
+                                    .setSize(2)
+                                    .setLastModifiedAtSource(new Date().getTime())
+                                    .setInternalVersionedPath(internalPath1)
+                                    .build())
+                            .build())
+                    .addComponents(
+                        S3DatasetComponentBlob.newBuilder()
+                            .setS3VersionId("1.0")
+                            .setPath(
+                                PathDatasetComponentBlob.newBuilder()
+                                    .setPath(path2)
+                                    .setSize(2)
+                                    .setLastModifiedAtSource(new Date().getTime())
+                                    .setInternalVersionedPath(internalPath2)
+                                    .build())
+                            .build())
+                    .build())
+            .build();
+    CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
+    createDatasetVersionRequest =
+        createDatasetVersionRequest.toBuilder().setDatasetBlob(datasetBlob).build();
+    CreateDatasetVersion.Response createDatasetVersionResponse =
+        datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
+    DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
+    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
+
+    // Expected path format would be s3://BUCKET-NAME/foo/bar where foo/bar is a path
+    var expectedPath1 = testConfig.getArtifactStoreConfig().storeTypePathPrefix() + path1;
+    var expectedPath2 = testConfig.getArtifactStoreConfig().storeTypePathPrefix() + path2;
+    assertEquals(
+        "internal_versioned_path not matched",
+        expectedPath1,
+        datasetVersion1
+            .getDatasetBlob()
+            .getS3()
+            .getComponents(0)
+            .getPath()
+            .getInternalVersionedPath());
+    assertEquals(
+        "internal_versioned_path not matched",
+        expectedPath2,
+        datasetVersion1
+            .getDatasetBlob()
+            .getS3()
+            .getComponents(1)
+            .getPath()
+            .getInternalVersionedPath());
+  }
 }
