@@ -204,9 +204,8 @@ public abstract class CommonDBUtil {
           // looks like sql server doesn't support the "length" function, so hardcode it here.
           trimOperation = "REPLACE(FILENAME, 'src/main/resources/', '')";
         } else {
-          // note: the leading slash here is a trick; the column doesn't have the leading slash, but
-          // adding it makes the length turn out right.
-          trimOperation = "substring(FILENAME, length('/src/main/resources/'))";
+          // note: we add 1 to the length because substring is 1-based instead of 0-based
+          trimOperation = "substring(FILENAME, length('src/main/resources/')+1)";
         }
         var updateQuery = "update %s set FILENAME=" + trimOperation + " WHERE FILENAME LIKE ?";
         try (var statement =
