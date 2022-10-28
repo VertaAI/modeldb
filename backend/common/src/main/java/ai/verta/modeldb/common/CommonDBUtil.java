@@ -266,17 +266,22 @@ public abstract class CommonDBUtil {
       JsonReader reader = new JsonReader(new StringReader(json));
       ChangeSetId[] changeSetIdArray = gson.fromJson(reader, ChangeSetId[].class);
       var updateQuery = "update %s set FILENAME=? WHERE ID=?";
+      int totalUpdated = 0;
       try (var statement =
           jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
         for (var changeSetId : changeSetIdArray) {
-          LOGGER.info(
-              "Adding to batch: filename '{}', ID '{}'", changeSetId.fileName, changeSetId.id);
           statement.setString(1, changeSetId.getFileName());
           statement.setString(2, changeSetId.getId());
-          statement.addBatch();
+          int numberUpdated = statement.executeUpdate();
+          if (numberUpdated > 0) {
+            LOGGER.info(
+                "Updated changelog for: filename '{}', ID '{}'",
+                changeSetId.fileName,
+                changeSetId.id);
+          }
+          totalUpdated += numberUpdated;
         }
-        int[] count = statement.executeBatch();
-        LOGGER.info("Reset database_change_log file path entries: {}", count.length);
+        LOGGER.info("Reset database_change_log file path entries: {}", totalUpdated);
       }
     } catch (Exception ex) {
       throw new ModelDBException(ex);
