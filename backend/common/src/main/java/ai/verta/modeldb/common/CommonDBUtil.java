@@ -2,10 +2,16 @@ package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import java.io.StringReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.util.Calendar;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
@@ -173,7 +179,8 @@ public abstract class CommonDBUtil {
       DatabaseConfig config,
       String changeSetToRevertUntilTag,
       String liquibaseRootPath,
-      ResourceAccessor resourceAccessor)
+      ResourceAccessor resourceAccessor,
+      Optional<String> changeSetRemappingFile)
       throws LiquibaseException, SQLException, InterruptedException {
     var rdb = config.getRdbConfiguration();
 
@@ -188,13 +195,17 @@ public abstract class CommonDBUtil {
           System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
 
       if (tableExists(con, config, changeLogTableName)) {
+        changeSetRemappingFile.ifPresent(
+            filename -> resetChangeSetLogData(jdbcCon, changeLogTableName, filename));
+
         String trimOperation;
         if (config.getRdbConfiguration().isMssql()) {
           LOGGER.info("MSSQL detected. Using custom update to liquibase filename records.");
           // looks like sql server doesn't support the "length" function, so hardcode it here.
-          trimOperation = "substring(FILENAME, 1, 19)";
+          trimOperation = "REPLACE(FILENAME, 'src/main/resources/', '')";
         } else {
-          trimOperation = "substring(FILENAME, length('/src/main/resources/'))";
+          // note: we add 1 to the length because substring is 1-based instead of 0-based
+          trimOperation = "substring(FILENAME, length('src/main/resources/')+1)";
         }
         var updateQuery = "update %s set FILENAME=" + trimOperation + " WHERE FILENAME LIKE ?";
         try (var statement =
@@ -241,6 +252,34 @@ public abstract class CommonDBUtil {
           releaseLiquibaseLock(config);
         }
       }
+    }
+  }
+
+  private static void resetChangeSetLogData(
+      JdbcConnection jdbcCon, String changeLogTableName, String filename) {
+    try {
+      LOGGER.info("Resetting changeset data using file {}", filename);
+      URL url = Resources.getResource(filename);
+      List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
+      String json = String.join("", lines);
+      Gson gson = new Gson();
+      JsonReader reader = new JsonReader(new StringReader(json));
+      ChangeSetId[] changeSetIdArray = gson.fromJson(reader, ChangeSetId[].class);
+      var updateQuery = "update %s set FILENAME=? WHERE ID=?";
+      try (var statement =
+          jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
+        for (var changeSetId : changeSetIdArray) {
+          LOGGER.info(
+              "Adding to batch: filename '{}', ID '{}'", changeSetId.fileName, changeSetId.id);
+          statement.setString(1, changeSetId.getFileName());
+          statement.setString(2, changeSetId.getId());
+          statement.addBatch();
+        }
+        int[] count = statement.executeBatch();
+        LOGGER.info("Reset database_change_log file path entries: {}", count.length);
+      }
+    } catch (Exception ex) {
+      throw new ModelDBException(ex);
     }
   }
 
@@ -310,6 +349,15 @@ public abstract class CommonDBUtil {
   protected void runLiquibaseMigration(
       DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
       throws InterruptedException, LiquibaseException, SQLException {
+    runLiquibaseMigration(config, liquibaseRootPath, resourceAccessor, Optional.empty());
+  }
+
+  protected void runLiquibaseMigration(
+      DatabaseConfig config,
+      String liquibaseRootPath,
+      ResourceAccessor resourceAccessor,
+      Optional<String> changeSetRemappingFile)
+      throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
     String changeLogTableName = "database_change_log";
     String changeLogLockTableName = "database_change_log_lock";
@@ -338,7 +386,11 @@ public abstract class CommonDBUtil {
 
     // Run tables liquibase migration
     createTablesLiquibaseMigration(
-        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath, resourceAccessor);
+        config,
+        config.getChangeSetToRevertUntilTag(),
+        liquibaseRootPath,
+        resourceAccessor,
+        changeSetRemappingFile);
   }
 
   protected static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
@@ -386,5 +438,18 @@ public abstract class CommonDBUtil {
       return cause.getMessage().toLowerCase(Locale.ROOT).contains("unable to advance");
     }
     return false;
+  }
+
+  protected static class ChangeSetId {
+    private String id;
+    private String fileName;
+
+    public String getId() {
+      return id;
+    }
+
+    public String getFileName() {
+      return fileName;
+    }
   }
 }
