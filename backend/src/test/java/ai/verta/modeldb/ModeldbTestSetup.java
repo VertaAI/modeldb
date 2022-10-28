@@ -109,7 +109,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     return runningIsolated;
   }
 
-  protected void initializedChannelBuilderAndExternalServiceStubs() {
+  protected void initializeChannelBuilderAndExternalServiceStubs() {
     runningIsolated = testConfig.testsShouldRunIsolatedFromDependencies();
     authClientInterceptor = new AuthClientInterceptor(testConfig);
     var channel =
@@ -305,7 +305,8 @@ public abstract class ModeldbTestSetup extends TestCase {
     reconcilerInitializer.getSoftDeleteRepositories().resync();
   }
 
-  protected void mockGetResourcesForAllEntity(Map<String, Project> projectMap, UserInfo userInfo) {
+  protected void mockGetResourcesForAllEntities(
+      Map<String, Project> projectMap, UserInfo userInfo) {
     var resourcesResponse =
         GetResources.Response.newBuilder()
             .addAllItem(
