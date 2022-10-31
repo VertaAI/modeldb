@@ -34,7 +34,6 @@ import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
 import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.SetResource;
 import ai.verta.uac.SetRoleBinding;
@@ -125,7 +124,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     return runningIsolated;
   }
 
-  protected void initializedChannelBuilderAndExternalServiceStubs() {
+  protected void initializeChannelBuilderAndExternalServiceStubs() {
     runningIsolated = testConfig.testsShouldRunIsolatedFromDependencies();
     authClientInterceptor = new AuthClientInterceptor(testConfig);
     var channel =
@@ -328,7 +327,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     reconcilerInitializer.getSoftDeleteRepositories().resync();
   }
 
-  protected void updateTimestampOfResources() throws InterruptedException {
+  protected void updateTimestampOfResources() throws Exception {
     var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconcile();
     updateTimestampRepo.resync();
     while (!updateTimestampRepo.isEmpty()) {
@@ -400,8 +399,8 @@ public abstract class ModeldbTestSetup extends TestCase {
             .addActions(
                 Action.newBuilder()
                     .setModeldbServiceAction(modelDBServiceActions)
-                    .setService(ServiceEnum.Service.MODELDB_SERVICE))
-            .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .setService(Service.MODELDB_SERVICE))
+            .setService(Service.MODELDB_SERVICE)
             .setResourceType(ResourceType.newBuilder().setModeldbServiceResourceType(resourceTypes))
             .build();
     var response = GetSelfAllowedResources.Response.newBuilder();

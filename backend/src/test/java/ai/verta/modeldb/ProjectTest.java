@@ -75,7 +75,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
   @Before
   public void createEntities() {
-    initializedChannelBuilderAndExternalServiceStubs();
+    initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
       setupMockUacEndpoints(uac);
@@ -106,24 +106,6 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     if (isRunningIsolated()) {
-      /*var authChannelMock = mock(AuthServiceChannel.class);
-      when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
-      var collaboratorBlockingMock = mock(CollaboratorServiceBlockingStub.class);
-      when(authChannelMock.getCollaboratorServiceBlockingStub())
-          .thenReturn(collaboratorBlockingMock);
-      var resourcesResponse =
-          GetResources.Response.newBuilder()
-              .addItem(
-                  GetResourcesResponseItem.newBuilder()
-                      .setResourceId(dataset.getId())
-                      .setWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
-                      .build())
-              .build();
-      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
-      var authzServiceBlockingStub = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
-      when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzServiceBlockingStub);
-      when(authzServiceBlockingStub.isSelfAllowed(any()))
-          .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());*/
       mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
     }
 

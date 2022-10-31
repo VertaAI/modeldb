@@ -24,8 +24,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.SetOrganization;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.VertaUserInfo;
 import ai.verta.uac.Workspace;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
@@ -67,7 +65,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
   @Before
   public void createEntities() {
-    initializedChannelBuilderAndExternalServiceStubs();
+    initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
       setupMockUacEndpoints(uac);
@@ -104,7 +102,6 @@ public class DatasetTest extends ModeldbTestSetup {
           GetResources.Response.newBuilder()
               .addItem(
                   GetResourcesResponseItem.newBuilder()
-                      .setResourceId("1")
                       .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                       .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                       .build())
@@ -1391,7 +1388,7 @@ public class DatasetTest extends ModeldbTestSetup {
   }
 
   @Test
-  public void getLastExperimentByDataset() throws InterruptedException {
+  public void getLastExperimentByDataset() throws Exception {
     LOGGER.info("Get last experiment by dataset test start................................");
     // Create project
     CreateProject createProjectRequest =
@@ -2088,17 +2085,6 @@ public class DatasetTest extends ModeldbTestSetup {
         datasetServiceStubServiceAccount.createDataset(createDatasetRequest);
 
     if (isRunningIsolated()) {
-      var serviceUser =
-          UserInfo.newBuilder()
-              .setEmail("test@test.com")
-              .setVertaInfo(
-                  VertaUserInfo.newBuilder()
-                      .setUserId("1111")
-                      .setUsername("test_test")
-                      .setDefaultWorkspaceId(1111)
-                      .setWorkspaceId("1111")
-                      .build())
-              .build();
       var dataset = createDatasetResponse.getDataset();
       mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
     }

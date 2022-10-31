@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.Action;
@@ -30,17 +31,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class UACApisUtil {
   private static final Logger LOGGER = LogManager.getLogger(UACApisUtil.class);
-  protected final Executor executor;
+  protected final FutureExecutor executor;
   protected final UAC uac;
 
-  public UACApisUtil(Executor executor, UAC uac) {
+  public UACApisUtil(FutureExecutor executor, UAC uac) {
     this.executor = executor;
     this.uac = uac;
   }

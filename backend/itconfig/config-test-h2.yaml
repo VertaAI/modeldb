@@ -35,7 +35,7 @@ testUsers:
 
 artifactStoreConfig:
   artifactStoreType: NFS
-  enabled: false
+  enabled: true
   protocol: http
   host: localhost:99999
   pickArtifactStoreHostFromConfig: true
@@ -53,7 +53,7 @@ artifactStoreConfig:
     nfsRootPath: ./
     nfsServerHost: localhost
     nfsUrlProtocol: http
-    nfsPathPrefix: test_prefix
+    nfsPathPrefix: test_prefix/
     artifactEndpoint:
       getArtifact: "/v1/artifact/getArtifact"
       storeArtifact: "/v1/artifact/storeArtifact"

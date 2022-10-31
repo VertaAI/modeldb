@@ -1,5 +1,6 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -8,7 +9,6 @@ import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 
@@ -16,7 +16,7 @@ public class UpdateExperimentTimestampReconcile
     extends Reconciler<AbstractMap.SimpleEntry<String, Long>> {
 
   public UpdateExperimentTimestampReconcile(
-      ReconcilerConfig config, FutureJdbi futureJdbi, Executor executor) {
+      ReconcilerConfig config, FutureJdbi futureJdbi, FutureExecutor executor) {
     super(
         config,
         LogManager.getLogger(UpdateExperimentTimestampReconcile.class),
@@ -26,11 +26,11 @@ public class UpdateExperimentTimestampReconcile
   }
 
   @Override
-  public void resync() {
+  public void resync() throws Exception {
     getEntitiesForDateUpdate().forEach(this::insert);
   }
 
-  private List<SimpleEntry<String, Long>> getEntitiesForDateUpdate() {
+  private List<SimpleEntry<String, Long>> getEntitiesForDateUpdate() throws Exception {
     var fetchUpdatedExperimentIds =
         new StringBuilder("SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
             .append(" FROM experiment_run expr INNER JOIN experiment e ")
@@ -55,8 +55,8 @@ public class UpdateExperimentTimestampReconcile
   }
 
   @Override
-  protected ReconcileResult reconcile(
-      Set<AbstractMap.SimpleEntry<String, Long>> updatedMaxDateMap) {
+  protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<String, Long>> updatedMaxDateMap)
+      throws Exception {
     logger.debug(
         "Reconciling update timestamp for experiments: "
             + updatedMaxDateMap.stream()

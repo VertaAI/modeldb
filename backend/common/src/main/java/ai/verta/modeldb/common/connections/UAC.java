@@ -29,9 +29,17 @@ public class UAC extends Connection {
   private final OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub;
   private final EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub;
 
+  /** @deprecated Please use {@link #fromConfig(Config)}. */
+  @Deprecated
   public static UAC FromConfig(Config config) {
-    if (!config.hasAuth()) return null;
-    else return new UAC(config);
+    return fromConfig(config);
+  }
+
+  public static UAC fromConfig(Config config) {
+    if (!config.hasAuth()) {
+      return null;
+    }
+    return new UAC(config);
   }
 
   private UAC(Config config) {
