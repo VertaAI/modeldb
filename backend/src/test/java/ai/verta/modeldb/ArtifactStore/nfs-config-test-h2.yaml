@@ -52,17 +52,17 @@ artifactStoreConfig:
     nfsRootPath: ./
     nfsServerHost: localhost
     nfsUrlProtocol: http
-    nfsPathPrefix: test_prefix
+    nfsPathPrefix: test_prefix/
     artifactEndpoint:
       getArtifact: "/v1/artifact/getArtifact"
       storeArtifact: "/v1/artifact/storeArtifact"
 
 authService:
   host: localhost
-  port: 50051
+  port: 99999
 
 telemetry:
- opt_out: true
+  opt_out: true
 
 migrations:
 

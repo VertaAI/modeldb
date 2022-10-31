@@ -171,9 +171,11 @@ public class NFSArtifactStoreTest {
 
   @Before
   public void createEntities() {
-    initializedChannelBuilderAndExternalServiceStubs();
+    if (testConfig.getDatabase().getRdbConfiguration().isH2()) {
+      initializedChannelBuilderAndExternalServiceStubs();
 
-    setupMockUacEndpoints(uac);
+      setupMockUacEndpoints(uac);
+    }
     createProjectEntities();
     createExperimentEntities();
     createExperimentRunEntities();
@@ -250,18 +252,20 @@ public class NFSArtifactStoreTest {
     LOGGER.info("Project created successfully");
     assertEquals("Project name not match with expected Project name", name, project.getName());
 
-    var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
-    when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
-    when(collaboratorMock.getResources(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                GetResources.Response.newBuilder()
-                    .addItem(
-                        GetResourcesResponseItem.newBuilder()
-                            .setResourceId(project.getId())
-                            .setWorkspaceId(1L)
-                            .build())
-                    .build()));
+    if (testConfig.getDatabase().getRdbConfiguration().isH2()) {
+      var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+      when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
+      when(collaboratorMock.getResources(any()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  GetResources.Response.newBuilder()
+                      .addItem(
+                          GetResourcesResponseItem.newBuilder()
+                              .setResourceId(project.getId())
+                              .setWorkspaceId(1L)
+                              .build())
+                      .build()));
+    }
   }
 
   private static void createExperimentEntities() {
