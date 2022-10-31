@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
 import ai.verta.modeldb.common.event.FutureEventDAO;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
@@ -27,7 +28,6 @@ import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.ServiceEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.concurrent.Executor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -60,7 +60,7 @@ public class DAOSet {
   public static DAOSet fromServices(
       ServiceSet services,
       FutureJdbi jdbi,
-      Executor executor,
+      FutureExecutor executor,
       MDBConfig mdbConfig,
       ReconcilerInitializer reconcilerInitializer) {
     var set = new DAOSet();

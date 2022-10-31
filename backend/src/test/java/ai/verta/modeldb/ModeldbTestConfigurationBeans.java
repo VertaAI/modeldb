@@ -59,17 +59,6 @@ public class ModeldbTestConfigurationBeans {
         serviceConfig.setPort(randomGrpcPort);
         testConfig.setAuthService(serviceConfig);
       }
-
-      if (testConfig.getArtifactStoreConfig().isEnabled()) {
-        System.getProperties().put("server.port", testConfig.getSpringServer().getPort());
-        var artifactStoreConfig = testConfig.getArtifactStoreConfig();
-        artifactStoreConfig.setHost("localhost:" + testConfig.getSpringServer().getPort());
-        var nfsConfig = artifactStoreConfig.getNFS();
-        String rootPath = System.getProperty("user.dir");
-        nfsConfig.setNfsRootPath(rootPath);
-        artifactStoreConfig.setNFS(nfsConfig);
-        testConfig.setArtifactStoreConfig(artifactStoreConfig);
-      }
     }
     return testConfig;
   }

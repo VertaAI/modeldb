@@ -60,6 +60,7 @@ import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -113,7 +114,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -123,7 +123,7 @@ public class FutureExperimentRunDAO {
   private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
   private static final String EXPERIMENT_RUN_ENTITY_NAME = "ExperimentRunEntity";
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
 
@@ -149,7 +149,7 @@ public class FutureExperimentRunDAO {
   private final UACApisUtil uacApisUtil;
 
   public FutureExperimentRunDAO(
-      Executor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       MDBConfig config,
       UAC uac,
@@ -516,9 +516,8 @@ public class FutureExperimentRunDAO {
             handle ->
                 handle
                     .createQuery(
-                        "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=:deleted")
+                        "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=0")
                     .bindList("ids", finalRunIds)
-                    .bind("deleted", false)
                     .mapTo(String.class)
                     .list());
 

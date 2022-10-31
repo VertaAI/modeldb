@@ -3,6 +3,7 @@ package ai.verta.modeldb.reconcilers;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -19,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import javax.persistence.OptimisticLockException;
 import org.apache.logging.log4j.LogManager;
@@ -40,7 +40,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       MDBRoleService mdbRoleService,
       boolean isDataset,
       FutureJdbi futureJdbi,
-      Executor executor) {
+      FutureExecutor executor) {
     super(config, LogManager.getLogger(SoftDeleteRepositories.class), futureJdbi, executor, true);
     this.mdbRoleService = mdbRoleService;
     this.isDataset = isDataset;

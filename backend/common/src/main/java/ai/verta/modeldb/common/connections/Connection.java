@@ -3,15 +3,15 @@ package ai.verta.modeldb.common.connections;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
+import io.grpc.ClientInterceptor;
 import io.grpc.Context;
 import io.grpc.Metadata;
 import io.grpc.stub.AbstractStub;
-import io.opentracing.contrib.grpc.TracingClientInterceptor;
 import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class Connection {
-  private final Optional<TracingClientInterceptor> tracingClientInterceptor;
+  private final Optional<ClientInterceptor> tracingClientInterceptor;
 
   protected Connection(Config config) {
     tracingClientInterceptor = config.getTracingClientInterceptor();
@@ -20,11 +20,13 @@ public abstract class Connection {
   // Place the interceptors in the reverse order of their stacking (the ones attached later will be
   // used first)
   protected <T extends AbstractStub<T>> T attachInterceptors(io.grpc.stub.AbstractStub<T> stub) {
+    stub = stub.withInterceptors(MetadataForwarder.clientInterceptor());
+
+    // add the tracing interceptor 2nd, so we preserve the OTel Context when making the client
+    // calls.
     if (tracingClientInterceptor.isPresent()) {
       stub = stub.withInterceptors(tracingClientInterceptor.get());
     }
-
-    stub = stub.withInterceptors(MetadataForwarder.clientInterceptor());
 
     return (T) stub;
   }

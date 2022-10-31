@@ -10,7 +10,7 @@ import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.ArtifactStoreInitBeans;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.futures.FutureUtil;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.AppConfigBeans;
@@ -31,7 +31,6 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
-import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -45,7 +44,7 @@ public class TestsInit {
 
   protected static TestConfig testConfig;
   protected static AuthService authService;
-  protected static Executor handleExecutor;
+  protected static FutureExecutor handleExecutor;
   protected static ServiceSet services;
   protected static DAOSet daos;
 
@@ -104,7 +103,7 @@ public class TestsInit {
     testConfig = TestConfig.getInstance();
     var app = App.getInstance();
     app.mdbConfig = testConfig;
-    handleExecutor = FutureUtil.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
+    handleExecutor = FutureExecutor.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
 
     // TODO: FIXME: fix init flow as per spring bean initialization
 
@@ -237,7 +236,7 @@ public class TestsInit {
     reconcilerInitializer.getSoftDeleteRepositories().resync();
   }
 
-  protected static void updateTimestampOfResources() throws InterruptedException {
+  protected static void updateTimestampOfResources() throws Exception {
     var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconcile();
     updateTimestampRepo.resync();
     while (!updateTimestampRepo.isEmpty()) {

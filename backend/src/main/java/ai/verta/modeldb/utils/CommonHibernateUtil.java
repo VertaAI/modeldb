@@ -13,6 +13,7 @@ import io.grpc.health.v1.HealthCheckResponse;
 import java.io.File;
 import java.sql.*;
 import java.util.EnumSet;
+import java.util.Optional;
 import liquibase.exception.LiquibaseException;
 import liquibase.resource.FileSystemResourceAccessor;
 import org.apache.logging.log4j.LogManager;
@@ -257,6 +258,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
     runLiquibaseMigration(
         config,
         liquibaseRootFilePath,
-        new FileSystemResourceAccessor(new File(System.getProperty(CommonConstants.USER_DIR))));
+        new FileSystemResourceAccessor(new File(System.getProperty(CommonConstants.USER_DIR))),
+        Optional.of("liquibase/reset_filepath_database_change_log_2022_10.json"));
   }
 }

@@ -1283,7 +1283,7 @@ public class DatasetTest extends TestsInit {
   }
 
   @Test
-  public void getLastExperimentByDataset() throws InterruptedException {
+  public void getLastExperimentByDataset() throws Exception {
     LOGGER.info("Get last experiment by dataset test start................................");
     ProjectTest projectTest = new ProjectTest();
     DatasetVersionTest datasetVersionTest = new DatasetVersionTest();
