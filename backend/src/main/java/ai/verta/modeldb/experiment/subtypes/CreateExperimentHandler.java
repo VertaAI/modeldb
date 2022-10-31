@@ -12,10 +12,7 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
@@ -38,7 +35,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -48,7 +44,7 @@ public class CreateExperimentHandler extends HandlerUtil {
 
   private static Logger LOGGER = LogManager.getLogger(CreateExperimentHandler.class);
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final Config config;
   private final UAC uac;
@@ -59,7 +55,7 @@ public class CreateExperimentHandler extends HandlerUtil {
   private final CodeVersionHandler codeVersionHandler;
 
   public CreateExperimentHandler(
-      Executor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       Config config,
       UAC uac,

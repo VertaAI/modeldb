@@ -2,6 +2,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.interfaces.CheckEntityPermissionBasedOnResourceTypesFunction;
@@ -12,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -20,10 +20,10 @@ public class FilterPrivilegedVersionedInputsHandler {
 
   private static Logger LOGGER = LogManager.getLogger(FilterPrivilegedVersionedInputsHandler.class);
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
 
-  public FilterPrivilegedVersionedInputsHandler(Executor executor, FutureJdbi jdbi) {
+  public FilterPrivilegedVersionedInputsHandler(FutureExecutor executor, FutureJdbi jdbi) {
     this.executor = executor;
     this.jdbi = jdbi;
   }

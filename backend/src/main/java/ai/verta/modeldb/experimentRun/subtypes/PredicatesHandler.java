@@ -11,6 +11,7 @@ import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnimplementedException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.utils.UACApisUtil;
@@ -25,7 +26,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 
 public class PredicatesHandler extends PredicateHandlerUtils {
@@ -37,11 +37,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private HyperparameterPredicatesHandler hyperparameterPredicatesHandler;
   private final String tableName;
   private final String alias;
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final UACApisUtil uacApisUtil;
 
   public PredicatesHandler(
-      Executor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
+      FutureExecutor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
     this.executor = executor;
     this.tableName = tableName;
     this.alias = alias;
@@ -85,7 +85,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   }
 
   public InternalFuture<QueryFilterContext> processPredicates(
-      List<KeyValueQuery> predicates, Executor executor) {
+      List<KeyValueQuery> predicates, FutureExecutor executor) {
     final var futureFilters = new LinkedList<InternalFuture<QueryFilterContext>>();
     for (final var item : new EnumerateList<>(predicates).getList()) {
       futureFilters.add(processPredicate(item.getIndex(), item.getValue()));

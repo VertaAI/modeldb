@@ -2,19 +2,14 @@ package ai.verta.modeldb.common.futures;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.awaitility.Awaitility.await;
 
-import ai.verta.modeldb.common.exceptions.ModelDBException;
-import com.google.common.util.concurrent.MoreExecutors;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -22,7 +17,7 @@ import org.junit.jupiter.api.Timeout;
 class InternalFutureTest {
   @Test
   void composition_failsFast() {
-    Executor executor = MoreExecutors.directExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<String> testFuture =
         InternalFuture.completedInternalFuture("cheese")
             .thenApply(
@@ -37,13 +32,13 @@ class InternalFutureTest {
                 },
                 executor);
 
-    assertThatThrownBy(testFuture::get).getRootCause().hasMessage("borken");
+    assertThatThrownBy(testFuture::get).isInstanceOf(RuntimeException.class).hasMessage("borken");
   }
 
   @Test
-  void thenSupply() {
+  void thenSupply() throws Exception {
     AtomicBoolean firstWasCalled = new AtomicBoolean();
-    Executor executor = MoreExecutors.directExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<Void> testFuture =
         InternalFuture.supplyAsync(
             () -> {
@@ -60,7 +55,7 @@ class InternalFutureTest {
   @Test
   void thenSupply_exception() {
     AtomicBoolean secondWasCalled = new AtomicBoolean();
-    Executor executor = MoreExecutors.directExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     InternalFuture<Void> testFuture =
         InternalFuture.supplyAsync(
             () -> {
@@ -77,14 +72,16 @@ class InternalFutureTest {
                     },
                     executor),
             executor);
-    assertThatThrownBy(result::get).hasMessageContaining("failed");
+    assertThatThrownBy(result::get)
+        .isInstanceOf(IllegalStateException.class)
+        .hasMessageContaining("failed");
     assertThat(secondWasCalled).isFalse();
   }
 
   @Test
   @Timeout(2)
   void retry_retryCheckerThrows() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     assertThatThrownBy(
             () ->
                 InternalFuture.retriableStage(
@@ -95,42 +92,41 @@ class InternalFutureTest {
                         },
                         executor)
                     .get())
-        .isInstanceOf(ModelDBException.class)
-        .hasCauseInstanceOf(ExecutionException.class)
+        .isInstanceOf(ExecutionException.class)
+        .hasRootCauseInstanceOf(RuntimeException.class)
         .hasRootCauseMessage("uh oh!");
   }
 
   @Test
   @Timeout(2)
   void sequence_exceptionHandling() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
     assertThatThrownBy(
             () ->
                 InternalFuture.sequence(
                         List.of(InternalFuture.failedStage(new IOException("io failed"))), executor)
                     .get())
-        .isInstanceOf(ModelDBException.class)
-        .hasRootCauseMessage("io failed");
+        .isInstanceOf(IOException.class)
+        .hasMessage("io failed");
   }
 
   @Test
-  void flipOptional() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+  void flipOptional() throws Exception {
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
 
     final var res1 =
         InternalFuture.flipOptional(
                 Optional.of(InternalFuture.completedInternalFuture("123")), executor)
             .get();
-    assertTrue(res1.isPresent());
-    assertEquals("123", res1.get());
+    assertThat(res1).isPresent().hasValue("123");
 
     final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
-    assertTrue(res2.isEmpty());
+    assertThat(res2).isEmpty();
   }
 
   @Test
-  void recover() {
-    ExecutorService executor = Executors.newSingleThreadExecutor();
+  void recover() throws Exception {
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
 
     final var value =
         InternalFuture.completedInternalFuture(123)
@@ -145,6 +141,18 @@ class InternalFutureTest {
             .recover(t -> 456, executor)
             .get();
 
-    assertEquals(456, value);
+    assertThat(value).isEqualTo(456);
+  }
+
+  @Test
+  void fireAndForget() {
+    FutureExecutor executor = FutureExecutor.newSingleThreadExecutor();
+    AtomicBoolean executed = new AtomicBoolean();
+    AtomicReference<String> forgottenResult = new AtomicReference<>();
+    InternalFuture.runAsync(() -> forgottenResult.set("complete!"), executor)
+        .whenComplete((u, throwable) -> executed.set(true), executor);
+
+    await().until(executed::get);
+    assertThat(forgottenResult).hasValue("complete!");
   }
 }
