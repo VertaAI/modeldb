@@ -1,5 +1,0 @@
-{
-  "VERTA_MODELDB_TEST_CONFIG": "src/test/java/ai/verta/modeldb/ArtifactStore/nfs-config-test-h2.yaml",
-  "LIQUIBASE_MIGRATION": "true",
-  "RUN_LIQUIBASE_SEPARATE": "false"
-}

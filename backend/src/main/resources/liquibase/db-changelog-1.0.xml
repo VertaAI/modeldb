@@ -693,7 +693,7 @@
         </createTable>
     </changeSet>
 
-    <changeSet author="anandJ" id="migration_status_table_for_h2">
+    <changeSet author="anandJ" id="migration_status_table_h2">
         <preConditions onFail="MARK_RAN">
             <dbms type="h2"/>
             <not>

@@ -110,4 +110,8 @@ public class TestConfig extends MDBConfig {
     }
     return this.jdbi;
   }
+
+  public boolean testsShouldRunIsolatedFromDependencies() {
+    return getDatabase().getRdbConfiguration().isH2();
+  }
 }

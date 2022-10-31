@@ -7,8 +7,9 @@ grpcServer:
 springServer:
   port: 99999
   shutdownTimeout: 30
+
 service_user:
-  email: registry_admin@verta.ai
+  email: modeldb_admin@verta.ai
   devKey: abc111
 
 database:
@@ -16,20 +17,20 @@ database:
   timeout: 4
   liquibaseLockThreshold: 60
   RdbConfiguration:
-    RdbDatabaseName: "artifactStoreTestDB"
+    RdbDatabaseName: "modeldbTestDB"
     RdbDriver: org.h2.Driver
     RdbDialect: org.hibernate.dialect.H2Dialect
-    RdbUrl: "jdbc:h2:mem:artifactStoreTestDB"
+    RdbUrl: "jdbc:h2:mem:modeldbTestDB"
     RdbUsername: sa
     RdbPassword: password
     sslMode: DISABLED
 
 testUsers:
   primaryUser:
-    email: registry_test1@verta.ai
+    email: modeldb_test1@verta.ai
     devKey: abc123
   secondaryUser:
-    email: registry_test2@verta.ai
+    email: modeldb_test2@verta.ai
     devKey: abc456
 
 artifactStoreConfig:

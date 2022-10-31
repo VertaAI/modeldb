@@ -1,8 +1,6 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.ArtifactStore.NFSArtifactStoreTest;
 import org.junit.platform.suite.api.ExcludeClassNamePatterns;
-import org.junit.platform.suite.api.SelectClasses;
 import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 
@@ -25,10 +23,8 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.IntegrationTest",
   "ai.verta.modeldb.LineageTest",
   "ai.verta.modeldb.MergeTest",
-  "ai.verta.modeldb.ProjectTest",
   "ai.verta.modeldb.RepositoryTest",
   ".*TestSequenceSuite",
 })
 @SelectPackages({"ai.verta.modeldb"})
-@SelectClasses({NFSArtifactStoreTest.class})
 public class PullRequestSuite {}

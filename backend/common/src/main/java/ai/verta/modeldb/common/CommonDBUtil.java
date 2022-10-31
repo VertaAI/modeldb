@@ -366,12 +366,6 @@ public abstract class CommonDBUtil {
     // Change liquibase default table names
     String changeLogTableName = "database_change_log";
     String changeLogLockTableName = "database_change_log_lock";
-    if (config.getRdbConfiguration().isH2()) {
-      // H2 upper cases all table names, and liquibase has issues if you don't make this also upper
-      // case.
-      changeLogTableName = changeLogTableName.toUpperCase();
-      changeLogLockTableName = changeLogLockTableName.toUpperCase();
-    }
     System.getProperties().put("liquibase.databaseChangeLogTableName", changeLogTableName);
     System.getProperties().put("liquibase.databaseChangeLogLockTableName", changeLogLockTableName);
 
