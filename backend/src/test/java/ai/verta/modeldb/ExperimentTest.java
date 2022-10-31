@@ -50,7 +50,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
   @Before
   public void createEntities() {
-    initializedChannelBuilderAndExternalServiceStubs();
+    initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
       setupMockUacEndpoints(uac);
@@ -88,7 +88,7 @@ public class ExperimentTest extends ModeldbTestSetup {
         project.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+      mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
     }
   }
 

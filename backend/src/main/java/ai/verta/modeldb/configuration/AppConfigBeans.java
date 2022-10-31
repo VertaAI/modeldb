@@ -17,7 +17,7 @@ import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
-import ai.verta.modeldb.common.futures.FutureUtil;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -37,9 +37,8 @@ import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.instrumentation.spring.webmvc.SpringWebMvcTelemetry;
+import io.opentelemetry.instrumentation.spring.webmvc.v5_3.SpringWebMvcTelemetry;
 import io.prometheus.client.Gauge;
-import java.io.IOException;
 import java.util.Optional;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
@@ -74,7 +73,7 @@ public class AppConfigBeans {
 
   @Bean
   public Filter webMvcTracingFilter(OpenTelemetry openTelemetry) {
-    return SpringWebMvcTelemetry.builder(openTelemetry).build().newServletFilter();
+    return SpringWebMvcTelemetry.builder(openTelemetry).build().createServletFilter();
   }
 
   @Bean
@@ -86,12 +85,20 @@ public class AppConfigBeans {
   public MDBConfig config() {
     var config = MDBConfig.getInstance();
     App.getInstance().mdbConfig = config;
-
-    // Configure spring HTTP server
-    LOGGER.info("Configuring spring HTTP traffic on port: {}", config.getSpringServer().getPort());
-    System.getProperties().put("server.port", config.getSpringServer().getPort());
-
+    initializeSystemProperties(config);
     return config;
+  }
+
+  private static void initializeSystemProperties(MDBConfig config) {
+    // Configure spring HTTP server
+    var webPort = config.getSpringServer().getPort();
+    if (webPort == 0) {
+      var grpcServerConfig = config.getGrpcServer();
+      var grpcServerPort = grpcServerConfig.getPort();
+      webPort = grpcServerPort + 1;
+    }
+    System.getProperties().put("server.port", webPort);
+    LOGGER.info("Configuring spring HTTP traffic on port: {}", webPort);
   }
 
   @Bean
@@ -100,9 +107,9 @@ public class AppConfigBeans {
   }
 
   @Bean
-  Executor grpcExecutor(Config config) {
+  FutureExecutor grpcExecutor(Config config) {
     // Initialize executor so we don't lose context using Futures
-    return FutureUtil.initializeExecutor(config.getGrpcServer().getThreadCount());
+    return FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
   }
 
   @Bean
@@ -111,8 +118,7 @@ public class AppConfigBeans {
   }
 
   @Bean
-  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService, UAC uac)
-      throws IOException {
+  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService, UAC uac) {
     // Initialize services that we depend on
     return ServiceSet.fromConfig(config, artifactStoreService, uac);
   }
@@ -122,7 +128,7 @@ public class AppConfigBeans {
   public DAOSet daoSet(
       MDBConfig config,
       ServiceSet services,
-      Executor grpcExecutor,
+      FutureExecutor grpcExecutor,
       ReconcilerInitializer reconcilerInitializer) {
     return DAOSet.fromServices(
         services, config.getJdbi(), grpcExecutor, config, reconcilerInitializer);
@@ -182,7 +188,7 @@ public class AppConfigBeans {
       MDBConfig config,
       ServiceSet services,
       DAOSet daos,
-      Executor grpcExecutor) {
+      FutureExecutor grpcExecutor) {
     return args -> {
       try {
         LOGGER.info("Backend server starting.");
@@ -226,7 +232,10 @@ public class AppConfigBeans {
   }
 
   public void initializeBackendServices(
-      ServerBuilder<?> serverBuilder, ServiceSet services, DAOSet daos, Executor grpcExecutor) {
+      ServerBuilder<?> serverBuilder,
+      ServiceSet services,
+      DAOSet daos,
+      FutureExecutor grpcExecutor) {
     serverBuilder.addService(new FutureProjectServiceImpl(daos, grpcExecutor));
     LOGGER.trace("Project serviceImpl initialized");
     serverBuilder.addService(new FutureExperimentServiceImpl(daos, grpcExecutor));

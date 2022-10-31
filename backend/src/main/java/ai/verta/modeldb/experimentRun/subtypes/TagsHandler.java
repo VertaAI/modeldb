@@ -1,16 +1,16 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
-import java.util.concurrent.Executor;
 
 public class TagsHandler extends TagsHandlerBase<String> {
 
-  public TagsHandler(Executor executor, FutureJdbi jdbi, String entityName) {
+  public TagsHandler(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
     super(executor, jdbi, entityName);
   }
 

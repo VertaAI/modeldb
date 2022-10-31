@@ -1,5 +1,6 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
@@ -9,7 +10,6 @@ import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 
@@ -19,7 +19,10 @@ public class UpdateRepositoryTimestampReconcile
   private final MDBConfig mdbConfig;
 
   public UpdateRepositoryTimestampReconcile(
-      ReconcilerConfig config, FutureJdbi futureJdbi, Executor executor, MDBConfig mdbConfig) {
+      ReconcilerConfig config,
+      FutureJdbi futureJdbi,
+      FutureExecutor executor,
+      MDBConfig mdbConfig) {
     super(
         config,
         LogManager.getLogger(UpdateRepositoryTimestampReconcile.class),
@@ -30,11 +33,11 @@ public class UpdateRepositoryTimestampReconcile
   }
 
   @Override
-  public void resync() {
+  public void resync() throws Exception {
     getEntriesForDateUpdate().forEach(this::insert);
   }
 
-  private List<SimpleEntry<Long, Long>> getEntriesForDateUpdate() {
+  private List<SimpleEntry<Long, Long>> getEntriesForDateUpdate() throws Exception {
     var tableName = "commit";
     if (mdbConfig.getDatabase().getRdbConfiguration().isMssql()) {
       tableName = "\"commit\"";
@@ -69,7 +72,8 @@ public class UpdateRepositoryTimestampReconcile
   }
 
   @Override
-  protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap) {
+  protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap)
+      throws Exception {
     logger.debug(
         "Reconciling update timestamp for repositories: "
             + updatedMaxDateMap.stream()
