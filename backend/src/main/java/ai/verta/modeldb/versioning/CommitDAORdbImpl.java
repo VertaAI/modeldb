@@ -5,6 +5,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.DatasetPartInfo;
 import ai.verta.modeldb.DatasetVersion;
+import ai.verta.modeldb.DatasetVersion.DatasetVersionInfoCase;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.MDBRoleService;
@@ -49,7 +50,6 @@ import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
 import org.hibernate.query.Query;
-import org.jetbrains.annotations.NotNull;
 
 public class CommitDAORdbImpl implements CommitDAO {
 
@@ -61,13 +61,13 @@ public class CommitDAORdbImpl implements CommitDAO {
   private static final String REPOSITORY_ID_QUERY_PARAM = "repositoryId";
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
-  private final MDBConfig mdbConfig;
+  private final String storeTypePathPrefix;
 
   public CommitDAORdbImpl(
       AuthService authService, MDBRoleService mdbRoleService, MDBConfig mdbConfig) {
     this.authService = authService;
     this.mdbRoleService = mdbRoleService;
-    this.mdbConfig = mdbConfig;
+    this.storeTypePathPrefix = mdbConfig.getArtifactStoreConfig().storeTypePathPrefix();
   }
 
   private static final long CACHE_SIZE = 1000;
@@ -285,89 +285,93 @@ public class CommitDAORdbImpl implements CommitDAO {
     }
   }
 
-  @NotNull
   private Blob getBlobBuilderFromDatasetVersion(DatasetVersion datasetVersion) {
     var blobBuilder = Blob.newBuilder();
     if (datasetVersion.hasDatasetBlob()) {
       blobBuilder.setDataset(populateInternalPathInDatasetBlob(datasetVersion.getDatasetBlob()));
-    } else {
-      var datasetBlobBuilder = DatasetBlob.newBuilder();
-      switch (datasetVersion.getDatasetVersionInfoCase()) {
-        case PATH_DATASET_VERSION_INFO:
-          var pathDatasetVersionInfo = datasetVersion.getPathDatasetVersionInfo();
-          List<DatasetPartInfo> partInfos = pathDatasetVersionInfo.getDatasetPartInfosList();
-          Stream<PathDatasetComponentBlob> result =
-              partInfos.stream()
-                  .map(
-                      datasetPartInfo ->
-                          componentFromPart(datasetPartInfo, pathDatasetVersionInfo.getBasePath()));
-          if (pathDatasetVersionInfo.getLocationType() == PathLocationType.S3_FILE_SYSTEM) {
-            datasetBlobBuilder.setS3(
-                S3DatasetBlob.newBuilder()
-                    .addAllComponents(
-                        result
-                            .map(path -> S3DatasetComponentBlob.newBuilder().setPath(path).build())
-                            .collect(Collectors.toList())));
-          } else {
-            datasetBlobBuilder.setPath(
-                PathDatasetBlob.newBuilder().addAllComponents(result.collect(Collectors.toList())));
-          }
-          break;
-        case DATASETVERSIONINFO_NOT_SET:
-        default:
-          throw new ModelDBException("Wrong dataset version type", Code.INVALID_ARGUMENT);
+      return blobBuilder.build();
+    }
+
+    var datasetBlobBuilder = DatasetBlob.newBuilder();
+    if (datasetVersion
+        .getDatasetVersionInfoCase()
+        .equals(DatasetVersionInfoCase.PATH_DATASET_VERSION_INFO)) {
+      var pathDatasetVersionInfo = datasetVersion.getPathDatasetVersionInfo();
+      List<DatasetPartInfo> partInfos = pathDatasetVersionInfo.getDatasetPartInfosList();
+      Stream<PathDatasetComponentBlob> result =
+          partInfos.stream()
+              .map(
+                  datasetPartInfo ->
+                      componentFromPart(datasetPartInfo, pathDatasetVersionInfo.getBasePath()));
+      if (pathDatasetVersionInfo.getLocationType() == PathLocationType.S3_FILE_SYSTEM) {
+        datasetBlobBuilder.setS3(
+            S3DatasetBlob.newBuilder()
+                .addAllComponents(
+                    result
+                        .map(path -> S3DatasetComponentBlob.newBuilder().setPath(path).build())
+                        .collect(Collectors.toList())));
+      } else {
+        datasetBlobBuilder.setPath(
+            PathDatasetBlob.newBuilder().addAllComponents(result.collect(Collectors.toList())));
       }
       blobBuilder.setDataset(datasetBlobBuilder);
+      return blobBuilder.build();
     }
-    return blobBuilder.build();
+    throw new ModelDBException("Wrong dataset version type", Code.INVALID_ARGUMENT);
   }
 
   private DatasetBlob populateInternalPathInDatasetBlob(DatasetBlob datasetBlob) {
     switch (datasetBlob.getContentCase()) {
       case S3:
-        var s3DatasetBlob = datasetBlob.getS3().toBuilder();
-        if (s3DatasetBlob.getComponentsList().isEmpty()) {
-          return datasetBlob;
-        }
-        var pathUpdatedComponentList =
-            s3DatasetBlob.getComponentsList().stream()
-                .map(
-                    s3DatasetComponentBlob -> {
-                      if (!s3DatasetComponentBlob.hasPath()) {
-                        return s3DatasetComponentBlob;
-                      }
-                      var s3ComponentBlobBuilder = s3DatasetComponentBlob.toBuilder();
-                      var pathBuilder = s3ComponentBlobBuilder.getPath().toBuilder();
-                      pathBuilder.setInternalVersionedPath(
-                          getInternalVersionedPath(pathBuilder.getPath()));
-                      return s3ComponentBlobBuilder
-                          .clearPath()
-                          .setPath(pathBuilder.build())
-                          .build();
-                    })
-                .collect(Collectors.toList());
-        s3DatasetBlob.clearComponents().addAllComponents(pathUpdatedComponentList).build();
-        return datasetBlob.toBuilder().clearS3().setS3(s3DatasetBlob.build()).build();
+        return getPopulatedInternalPathInS3DatasetBlob(datasetBlob);
       case PATH:
-        var pathDatasetBlob = datasetBlob.getPath().toBuilder();
-        var pathUpdatedComponents =
-            pathDatasetBlob.getComponentsList().stream()
-                .map(
-                    pathDatasetComponentBlob -> {
-                      var pathBuilder = pathDatasetComponentBlob.toBuilder();
-                      pathBuilder.setInternalVersionedPath(
-                          getInternalVersionedPath(pathBuilder.getPath()));
-                      return pathBuilder.build();
-                    })
-                .collect(Collectors.toList());
-        pathDatasetBlob.clearComponents().addAllComponents(pathUpdatedComponents).build();
-        return datasetBlob.toBuilder().clearPath().setPath(pathDatasetBlob.build()).build();
+        return getPopulatedInternalPathInPathDatasetBlob(datasetBlob);
       case QUERY:
         return datasetBlob;
       case CONTENT_NOT_SET:
       default:
         throw new ModelDBException("Wrong dataset blob type", Code.INVALID_ARGUMENT);
     }
+  }
+
+  private DatasetBlob getPopulatedInternalPathInPathDatasetBlob(DatasetBlob datasetBlob) {
+    var pathDatasetBlob = datasetBlob.getPath().toBuilder();
+    var pathUpdatedComponents =
+        pathDatasetBlob.getComponentsList().stream()
+            .map(
+                pathDatasetComponentBlob -> {
+                  var pathBuilder = pathDatasetComponentBlob.toBuilder();
+                  pathBuilder.setInternalVersionedPath(
+                      getInternalVersionedPath(pathBuilder.getPath()));
+                  return pathBuilder.build();
+                })
+            .collect(Collectors.toList());
+    pathDatasetBlob.clearComponents().addAllComponents(pathUpdatedComponents).build();
+    return datasetBlob.toBuilder().clearPath().setPath(pathDatasetBlob.build()).build();
+  }
+
+  private DatasetBlob getPopulatedInternalPathInS3DatasetBlob(DatasetBlob datasetBlob) {
+    var s3DatasetBlob = datasetBlob.getS3().toBuilder();
+    if (s3DatasetBlob.getComponentsList().isEmpty()) {
+      return datasetBlob;
+    }
+
+    var pathUpdatedComponentList =
+        s3DatasetBlob.getComponentsList().stream()
+            .map(
+                s3DatasetComponentBlob -> {
+                  if (!s3DatasetComponentBlob.hasPath()) {
+                    return s3DatasetComponentBlob;
+                  }
+                  var s3ComponentBlobBuilder = s3DatasetComponentBlob.toBuilder();
+                  var pathBuilder = s3ComponentBlobBuilder.getPath().toBuilder();
+                  pathBuilder.setInternalVersionedPath(
+                      getInternalVersionedPath(pathBuilder.getPath()));
+                  return s3ComponentBlobBuilder.clearPath().setPath(pathBuilder.build()).build();
+                })
+            .collect(Collectors.toList());
+    s3DatasetBlob.clearComponents().addAllComponents(pathUpdatedComponentList).build();
+    return datasetBlob.toBuilder().clearS3().setS3(s3DatasetBlob.build()).build();
   }
 
   private PathDatasetComponentBlob componentFromPart(DatasetPartInfo part, String basePath) {
@@ -382,7 +386,7 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   private String getInternalVersionedPath(String path) {
-    return mdbConfig.getArtifactStoreConfig().storeTypePathPrefix() + path;
+    return storeTypePathPrefix + path;
   }
 
   @Override

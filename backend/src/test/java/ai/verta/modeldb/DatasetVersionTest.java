@@ -1366,12 +1366,10 @@ public class DatasetVersionTest extends TestsInit {
 
   @Test
   public void validateInternalVersionedPathInDatasetBlob() {
-    LOGGER.info("Get Url for VersionedDatasetBlob test start................................");
     String path1 = "verta/test/test1.txt";
     String path2 = "verta/test/test2.txt";
     String internalPath1 = "test/internalDatasetBlobPaths/blobs/test1.txt";
     String internalPath2 = "test/internalDatasetBlobPaths/blobs/test2.txt";
-    // location.add("test.txt");
     DatasetBlob datasetBlob =
         DatasetBlob.newBuilder()
             .setS3(
@@ -1405,8 +1403,7 @@ public class DatasetVersionTest extends TestsInit {
         createDatasetVersionRequest.toBuilder().setDatasetBlob(datasetBlob).build();
     CreateDatasetVersion.Response createDatasetVersionResponse =
         datasetVersionServiceStub.createDatasetVersion(createDatasetVersionRequest);
-    DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
-    LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
+    DatasetVersion datasetVersion = createDatasetVersionResponse.getDatasetVersion();
 
     // Expected path format would be s3://BUCKET-NAME/foo/bar where foo/bar is a path
     var expectedPath1 = testConfig.getArtifactStoreConfig().storeTypePathPrefix() + path1;
@@ -1414,7 +1411,7 @@ public class DatasetVersionTest extends TestsInit {
     assertEquals(
         "internal_versioned_path not matched",
         expectedPath1,
-        datasetVersion1
+        datasetVersion
             .getDatasetBlob()
             .getS3()
             .getComponents(0)
@@ -1423,7 +1420,7 @@ public class DatasetVersionTest extends TestsInit {
     assertEquals(
         "internal_versioned_path not matched",
         expectedPath2,
-        datasetVersion1
+        datasetVersion
             .getDatasetBlob()
             .getS3()
             .getComponents(1)
