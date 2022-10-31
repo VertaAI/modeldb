@@ -7,6 +7,7 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
@@ -22,7 +23,6 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -32,7 +32,7 @@ public class CreateProjectHandler extends HandlerUtil {
 
   private static Logger LOGGER = LogManager.getLogger(CreateProjectHandler.class);
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
   private final Config config;
@@ -43,7 +43,7 @@ public class CreateProjectHandler extends HandlerUtil {
   private final CodeVersionHandler codeVersionHandler;
 
   public CreateProjectHandler(
-      Executor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       Config config,
       UAC uac,

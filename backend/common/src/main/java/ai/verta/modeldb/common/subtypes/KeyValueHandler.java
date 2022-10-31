@@ -4,6 +4,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -18,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.logging.log4j.LogManager;
@@ -33,7 +33,7 @@ public abstract class KeyValueHandler<T> {
   private static final String VALUE_QUERY_PARAM = "value";
   private static final String TYPE_QUERY_PARAM = "type";
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final String fieldType;
   private final String entityName;
@@ -55,7 +55,8 @@ public abstract class KeyValueHandler<T> {
     return CommonUtils.getStringFromProtoObject(kv.getValue());
   }
 
-  public KeyValueHandler(Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
+  public KeyValueHandler(
+      FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.fieldType = fieldType;

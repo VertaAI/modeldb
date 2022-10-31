@@ -3,6 +3,7 @@ package ai.verta.modeldb.configuration;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
 import ai.verta.modeldb.config.MDBConfig;
@@ -15,7 +16,6 @@ import ai.verta.modeldb.reconcilers.UpdateExperimentTimestampReconcile;
 import ai.verta.modeldb.reconcilers.UpdateProjectTimestampReconcile;
 import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconcile;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.concurrent.Executor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -42,7 +42,7 @@ public class ReconcilerInitializer {
   @Bean
   @Conditional({RunLiquibaseWithMainService.class})
   public ReconcilerInitializer initialize(
-      MDBConfig config, ServiceSet services, DAOSet daos, Executor executor) {
+      MDBConfig config, ServiceSet services, DAOSet daos, FutureExecutor executor) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
 
     var futureJdbi = config.getJdbi();

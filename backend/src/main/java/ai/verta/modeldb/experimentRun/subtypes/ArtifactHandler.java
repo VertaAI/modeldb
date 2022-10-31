@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.MDBConfig;
@@ -18,7 +19,6 @@ import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.VersioningUtils;
 import io.grpc.Status.Code;
 import java.util.*;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +40,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
   private final int artifactEntityType;
 
   public ArtifactHandler(
-      Executor executor,
+      FutureExecutor executor,
       FutureJdbi jdbi,
       String entityName,
       CodeVersionHandler codeVersionHandler,

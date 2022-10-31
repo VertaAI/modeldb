@@ -14,6 +14,7 @@ import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.utils.UACApisUtil;
@@ -32,7 +33,6 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -43,12 +43,12 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       "update.resource.experiment_run.update_experiment_run_succeeded";
   private final String ADD_EVENT_TYPE = "add.resource.experiment_run.add_experiment_run_succeeded";
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final FutureEventDAO futureEventDAO;
   private final UACApisUtil uacApisUtil;
 
-  public FutureExperimentRunServiceImpl(DAOSet daoSet, Executor executor) {
+  public FutureExperimentRunServiceImpl(DAOSet daoSet, FutureExecutor executor) {
     this.executor = executor;
     this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
     this.futureEventDAO = daoSet.getFutureEventDAO();
