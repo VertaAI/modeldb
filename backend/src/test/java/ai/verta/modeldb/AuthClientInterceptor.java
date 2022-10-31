@@ -14,8 +14,14 @@ import lombok.Setter;
 public class AuthClientInterceptor {
 
   @JsonProperty private String client1Email;
+  @JsonProperty private String client1UserName;
+  @JsonProperty private long client1WorkspaceId;
+  @JsonProperty private String client1DevKey;
   @JsonProperty private String client2Email;
   @JsonProperty private final ClientAuthInterceptor serviceAccountClientAuthInterceptor;
+  @JsonProperty private String client2UserName;
+  @JsonProperty private long client2WorkspaceId;
+  @JsonProperty private String client2DevKey;
   @JsonProperty private final Client1AuthInterceptor client1AuthInterceptor;
   @JsonProperty private final Client2AuthInterceptor client2AuthInterceptor;
 
@@ -32,6 +38,8 @@ public class AuthClientInterceptor {
     Client1AuthInterceptor(ServiceUserConfig user) {
       super(user);
       client1Email = user.getEmail();
+      client1WorkspaceId = 1L;
+      client1UserName = "testUser1";
     }
 
     public String getClient1Email() {
@@ -44,6 +52,8 @@ public class AuthClientInterceptor {
     Client2AuthInterceptor(ServiceUserConfig user) {
       super(user);
       client2Email = user.getEmail();
+      client2WorkspaceId = 2L;
+      client2UserName = "testUser2";
     }
 
     public String getClient2Email() {

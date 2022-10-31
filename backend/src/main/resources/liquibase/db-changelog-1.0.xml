@@ -680,6 +680,7 @@
         <validCheckSum>8:2f8041b76b63bee2ef78e46b3184e35b</validCheckSum>
         <preConditions onFail="MARK_RAN">
             <not>
+                <dbms type="h2"/>
                 <tableExists tableName="migration_status"/>
             </not>
         </preConditions>
@@ -689,6 +690,22 @@
             </column>
             <column name="migration_name" type="varchar(255)"/>
             <column name="status" type="tinyint(1)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="migration_status_table_h2">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="h2"/>
+            <not>
+                <tableExists tableName="migration_status"/>
+            </not>
+        </preConditions>
+        <createTable tableName="migration_status">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="migration_name" type="varchar(255)"/>
+            <column name="status" type="tinyint"/>
         </createTable>
     </changeSet>
 
