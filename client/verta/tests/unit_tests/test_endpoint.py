@@ -33,7 +33,7 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
     """ Use the mocked elements above to generate  an object of the Endpoint class for use in tests """
     return Endpoint(conn=mock_conn, conf=mock_config, workspace=456, id=123)
 
-VERTA_CLASS: str= 'verta.endpoint.Endpoint.'
+VERTA_CLASS: str= 'verta.endpoint.Endpoint'
 WORKSPACE_ID: int = 456
 DEPLOYMENT_ID: int = 123
 
@@ -83,12 +83,12 @@ GET_STATUS_RESPONSE: Dict[str, Any] = {
 GET_ACCESS_TOKEN_RESPONSE: str =  '123-test-456-token-789'
 
 # TODO: Implement a less verbose, more universal method of patching method and http calls.
-@patch(f'{VERTA_CLASS}get_status', return_value=GET_STATUS_RESPONSE)
-@patch(f'{VERTA_CLASS}_get_json_by_id', return_value=GET_JSON_BY_ID_RESPONSE)
-@patch(f'{VERTA_CLASS}get_access_token', return_value=GET_ACCESS_TOKEN_RESPONSE)
-def test_get_deployed_model_call_get_status(mock_get_status,
+@patch(f'{VERTA_CLASS}.get_status', return_value=GET_STATUS_RESPONSE)
+@patch(f'{VERTA_CLASS}._get_json_by_id', return_value=GET_JSON_BY_ID_RESPONSE)
+@patch(f'{VERTA_CLASS}.get_access_token', return_value=GET_ACCESS_TOKEN_RESPONSE)
+def test_get_deployed_model_call_get_status(mock_get_access_token,
                                             mock_get_json_by_id,
-                                            mock_get_access_token,
+                                            mock_get_status,
                                             mock_endpoint,
                                             mock_conn) -> None:
     """ Verify that get_deployed_model calls the methods it should with the expected params """
@@ -98,12 +98,12 @@ def test_get_deployed_model_call_get_status(mock_get_status,
     mock_get_access_token.assert_called_once()
 
 
-@patch(f'{VERTA_CLASS}get_status', return_value=GET_STATUS_RESPONSE)
-@patch(f'{VERTA_CLASS}_get_json_by_id', return_value=GET_JSON_BY_ID_RESPONSE)
-@patch(f'{VERTA_CLASS}get_access_token', return_value=GET_ACCESS_TOKEN_RESPONSE)
-def test_get_deployed_model_with_full_url(mock_get_status,  # pass in patched methods in order
+@patch(f'{VERTA_CLASS}.get_status', return_value=GET_STATUS_RESPONSE)
+@patch(f'{VERTA_CLASS}._get_json_by_id', return_value=GET_JSON_BY_ID_RESPONSE)
+@patch(f'{VERTA_CLASS}.get_access_token', return_value=GET_ACCESS_TOKEN_RESPONSE)
+def test_get_deployed_model_with_full_url(mock_get_access_token, # pass in patched methods in order
                                           mock_get_json_by_id,
-                                          mock_get_access_token,
+                                          mock_get_status,
                                           mock_endpoint) -> None:
     """ Verify that the get_deployed_model method returns the correct value for the full_url when it is returned
        by the get_json_by_id method.  The 'full_url' key was added to the schema of the response 10/2022.
@@ -114,12 +114,12 @@ def test_get_deployed_model_with_full_url(mock_get_status,  # pass in patched me
 
 GET_JSON_BY_ID_RESPONSE_MISSING_URL: Dict[str, Any] = deepcopy(GET_JSON_BY_ID_RESPONSE)
 GET_JSON_BY_ID_RESPONSE_MISSING_URL.pop('full_url')  # Remove the full url key and value from the dict.
-@patch(f'{VERTA_CLASS}get_status', return_value=GET_STATUS_RESPONSE)
-@patch(f'{VERTA_CLASS}_get_json_by_id', return_value=GET_JSON_BY_ID_RESPONSE_MISSING_URL)
-@patch(f'{VERTA_CLASS}get_access_token', return_value=GET_ACCESS_TOKEN_RESPONSE)
-def test_get_deployed_model_missing_full_url(mock_get_status,  # pass in patched methods in order
+@patch(f'{VERTA_CLASS}.get_status', return_value=GET_STATUS_RESPONSE)
+@patch(f'{VERTA_CLASS}._get_json_by_id', return_value=GET_JSON_BY_ID_RESPONSE_MISSING_URL)
+@patch(f'{VERTA_CLASS}.get_access_token', return_value=GET_ACCESS_TOKEN_RESPONSE)
+def test_get_deployed_model_missing_full_url(mock_get_access_token, # pass in patched methods in order
                                              mock_get_json_by_id,
-                                             mock_get_access_token,
+                                             mock_get_status,
                                              mock_endpoint) -> None:
     """ Verify that the get_deployed_model method returns the correct value for the full_url when it is returned
        by the get_json_by_id method.  The 'full_url' key was added to the schema of the response 10/2022.
