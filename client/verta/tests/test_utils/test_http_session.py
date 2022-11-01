@@ -13,6 +13,8 @@ from urllib3 import Retry
 
 from verta._internal_utils import http_session
 
+# Pytest fixtures cannot be passed to the @patch decorator
+# as return values, hence the use of global vars instead.
 # Retry object for patching
 MOCK_RETRY_OBJECT: Retry = http_session.retry_config(
     max_retries=11,
