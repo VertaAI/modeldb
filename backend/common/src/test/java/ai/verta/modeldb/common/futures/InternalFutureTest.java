@@ -5,14 +5,13 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.assertEquals;
 
+import io.grpc.Context;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-
-import io.grpc.Context;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -159,41 +158,50 @@ class InternalFutureTest {
     assertThat(forgottenResult).hasValue("complete!");
   }
 
-    @Test
-    public void context() throws Exception {
-        final var rootContext = Context.ROOT;
-        final var executor = FutureExecutor.initializeExecutor(10);
-        final Context.Key<String> key = Context.key("key");
-        rootContext.call(() -> {
-            assertEquals(null, key.get());
-            final var context1 = rootContext.withValue(key, "1");
-            final var future1 = context1.call(() -> {
-                assertEquals("1", key.get());
-                return InternalFuture.supplyAsync(() -> {
+  @Test
+  public void context() throws Exception {
+    final var rootContext = Context.ROOT;
+    final var executor = FutureExecutor.initializeExecutor(10);
+    final Context.Key<String> key = Context.key("key");
+    rootContext.call(
+        () -> {
+          assertEquals(null, key.get());
+          final var context1 = rootContext.withValue(key, "1");
+          final var future1 =
+              context1.call(
+                  () -> {
                     assertEquals("1", key.get());
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    return key.get();
-                }, executor);
-            });
-            final var context2 = context1.withValue(key, "2");
-            final var future2 = context2.call(() -> {
-                assertEquals("2", key.get());
-                return future1.thenApply(val -> {
+                    return InternalFuture.supplyAsync(
+                        () -> {
+                          assertEquals("1", key.get());
+                          try {
+                            Thread.sleep(10);
+                          } catch (InterruptedException e) {
+                            e.printStackTrace();
+                          }
+                          return key.get();
+                        },
+                        executor);
+                  });
+          final var context2 = context1.withValue(key, "2");
+          final var future2 =
+              context2.call(
+                  () -> {
                     assertEquals("2", key.get());
-                    try {
-                        Thread.sleep(10);
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                    return key.get();
-                }, executor);
-            });
-            assertEquals("2", future2.get());
-            return null;
+                    return future1.thenApply(
+                        val -> {
+                          assertEquals("2", key.get());
+                          try {
+                            Thread.sleep(10);
+                          } catch (InterruptedException e) {
+                            e.printStackTrace();
+                          }
+                          return key.get();
+                        },
+                        executor);
+                  });
+          assertEquals("2", future2.get());
+          return null;
         });
-    }
+  }
 }
