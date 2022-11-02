@@ -76,7 +76,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
   @Before
   public void createEntities() {
-    initializedChannelBuilderAndExternalServiceStubs();
+    initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
       setupMockUacEndpoints(uac);
@@ -92,7 +92,7 @@ public class ProjectTest extends ModeldbTestSetup {
   public void removeEntities() {
     if (!projectMap.isEmpty()) {
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntity(projectMap, testUser1);
+        mockGetResourcesForAllEntities(projectMap, testUser1);
       }
 
       DeleteProjects deleteProjects =
@@ -171,7 +171,7 @@ public class ProjectTest extends ModeldbTestSetup {
         project3.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntity(projectMap, testUser1);
+      mockGetResourcesForAllEntities(projectMap, testUser1);
     }
   }
 
@@ -1483,7 +1483,7 @@ public class ProjectTest extends ModeldbTestSetup {
     LOGGER.info("Get Project by ID test start................................");
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+      mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
     }
     GetProjectById getProject = GetProjectById.newBuilder().setId(project.getId()).build();
     GetProjectById.Response response = projectServiceStub.getProjectById(getProject);
@@ -1577,7 +1577,7 @@ public class ProjectTest extends ModeldbTestSetup {
           project.getName());
 
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser2);
+        mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser2);
       }
 
       GetProjectByName getProject =
@@ -1595,7 +1595,7 @@ public class ProjectTest extends ModeldbTestSetup {
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
           when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
-          mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+          mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
           when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
               .thenReturn(
                   Futures.immediateFuture(
@@ -1617,9 +1617,8 @@ public class ProjectTest extends ModeldbTestSetup {
               CollaboratorUtils.addCollaboratorRequestProject(
                   project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
-          var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
-          AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-              collaboratorMock.addOrUpdateProjectCollaborator(addCollaboratorRequest).get();
+          var addOrUpdateProjectCollaboratorResponse =
+              collaboratorBlockingMock.addOrUpdateProjectCollaborator(addCollaboratorRequest);
           LOGGER.info(
               "Collaborator added in server : "
                   + addOrUpdateProjectCollaboratorResponse.getStatus());
@@ -1654,7 +1653,7 @@ public class ProjectTest extends ModeldbTestSetup {
               selfProject.getName());
 
           if (isRunningIsolated()) {
-            mockGetResourcesForAllEntity(Map.of(selfProject.getId(), selfProject), testUser1);
+            mockGetResourcesForAllEntities(Map.of(selfProject.getId(), selfProject), testUser1);
           }
 
           getProject = GetProjectByName.newBuilder().setName(selfProject.getName()).build();
@@ -1742,7 +1741,7 @@ public class ProjectTest extends ModeldbTestSetup {
       var projectMap = new HashMap<String, Project>();
       if (isRunningIsolated()) {
         projectMap.put(project.getId(), project);
-        mockGetResourcesForAllEntity(projectMap, testUser1);
+        mockGetResourcesForAllEntities(projectMap, testUser1);
       } else {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProject(
@@ -1767,7 +1766,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
       if (isRunningIsolated()) {
         projectMap.put(selfProject.getId(), selfProject);
-        mockGetResourcesForAllEntity(projectMap, testUser1);
+        mockGetResourcesForAllEntities(projectMap, testUser1);
       }
 
       GetProjectByName getProject =
@@ -1885,7 +1884,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       projectsMap.putAll(projectMap);
-      mockGetResourcesForAllEntity(projectsMap, testUser1);
+      mockGetResourcesForAllEntities(projectsMap, testUser1);
     }
 
     getProjects = GetProjects.newBuilder().build();
@@ -1943,7 +1942,7 @@ public class ProjectTest extends ModeldbTestSetup {
         project2.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntity(projectsMap, testUser1);
+      mockGetResourcesForAllEntities(projectsMap, testUser1);
     }
 
     GetProjects getProjects = GetProjects.newBuilder().build();
@@ -1983,7 +1982,7 @@ public class ProjectTest extends ModeldbTestSetup {
     LOGGER.info("Get Project summary test start................................");
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+      mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
                   .addActions(
@@ -2841,7 +2840,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       projectsMap.putAll(projectMap);
-      mockGetResourcesForAllEntity(projectsMap, testUser1);
+      mockGetResourcesForAllEntities(projectsMap, testUser1);
     }
 
     getProjects = GetProjects.newBuilder().build();
@@ -2955,7 +2954,7 @@ public class ProjectTest extends ModeldbTestSetup {
           project.getName());
 
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser1);
+        mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
       }
 
       LogProjectCodeVersion logProjectCodeVersionRequest =

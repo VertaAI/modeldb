@@ -3,6 +3,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
@@ -12,7 +13,6 @@ import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,10 +20,10 @@ import org.apache.logging.log4j.Logger;
 public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
   private static Logger LOGGER = LogManager.getLogger(HyperparametersFromConfigHandler.class);
   private final FutureJdbi jdbi;
-  private final Executor executor;
+  private final FutureExecutor executor;
 
   public HyperparametersFromConfigHandler(
-      Executor executor, FutureJdbi jdbi, String fieldType, String entityName) {
+      FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     super(executor, jdbi, fieldType, entityName);
     this.executor = executor;
     this.jdbi = jdbi;
