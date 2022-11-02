@@ -9,7 +9,6 @@ import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.EntitiesEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
-import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.ValueTypeEnum;
@@ -40,10 +39,6 @@ import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -58,7 +53,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -155,40 +149,6 @@ public class RepositoryTest extends ModeldbTestSetup {
     if (isRunningIsolated()) {
       mockGetResourcesForAllRepositories(repositoryMap, testUser1);
     }
-  }
-
-  protected void mockGetResourcesForAllRepositories(
-      Map<Long, Repository> repositoryMap, UserInfo userInfo) {
-    var repoIdNameMap =
-        repositoryMap.entrySet().stream()
-            .collect(
-                Collectors.toMap(
-                    entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
-    mockGetResources(repoIdNameMap, userInfo);
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                GetResources.Response.newBuilder()
-                    .addAllItem(
-                        repositoryMap.values().stream()
-                            .map(
-                                repository ->
-                                    GetResourcesResponseItem.newBuilder()
-                                        .setVisibility(ResourceVisibility.PRIVATE)
-                                        .setResourceId(String.valueOf(repository.getId()))
-                                        .setResourceName(repository.getName())
-                                        .setResourceType(
-                                            ResourceType.newBuilder()
-                                                .setModeldbServiceResourceType(
-                                                    ModelDBServiceResourceTypes.REPOSITORY)
-                                                .build())
-                                        .setOwnerId(repository.getWorkspaceServiceId())
-                                        .setWorkspaceId(repository.getWorkspaceServiceId())
-                                        .build())
-                            .collect(Collectors.toList()))
-                    .build()));
-    mockGetSelfAllowedResources(
-        repoIdNameMap.keySet(), ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
   }
 
   public static Long createRepository(
