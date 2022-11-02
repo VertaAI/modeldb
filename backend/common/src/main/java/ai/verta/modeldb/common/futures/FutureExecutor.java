@@ -1,21 +1,27 @@
 package ai.verta.modeldb.common.futures;
 
-import io.opentelemetry.context.Context;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.With;
 import org.springframework.lang.NonNull;
 
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class FutureExecutor implements Executor {
   private final Executor delegate;
+  @With private final io.opentelemetry.context.Context otelContext;
+  @With private final io.grpc.Context grpcContext;
 
-  private FutureExecutor(Executor delegate) {
-    this.delegate = Context.taskWrapping(delegate);
+  public FutureExecutor captureContext() {
+    return withOtelContext(io.opentelemetry.context.Context.current())
+        .withGrpcContext(io.grpc.Context.current());
   }
 
   // Wraps an Executor and make it compatible with grpc's context
-  public static FutureExecutor makeCompatibleExecutor(Executor delegate) {
-    return new FutureExecutor(delegate);
+  public static FutureExecutor makeCompatibleExecutor(Executor ex) {
+    return new FutureExecutor(ex, null, null);
   }
 
   public static FutureExecutor initializeExecutor(Integer threadCount) {
@@ -32,7 +38,14 @@ public class FutureExecutor implements Executor {
   }
 
   @Override
-  public void execute(@NonNull Runnable runnable) {
-    delegate.execute(runnable);
+  public void execute(@NonNull Runnable r) {
+    if (otelContext != null) {
+      r = otelContext.wrap(r);
+    }
+    if (grpcContext != null) {
+      r = grpcContext.wrap(r);
+    }
+
+    other.execute(r);
   }
 }

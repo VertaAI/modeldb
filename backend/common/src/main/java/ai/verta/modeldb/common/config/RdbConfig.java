@@ -109,7 +109,7 @@ public class RdbConfig {
     }
 
     if (rdb.isH2()) {
-      return rdb.RdbUrl + ";DB_CLOSE_DELAY=-1";
+      return rdb.RdbUrl + ";DB_CLOSE_DELAY=-1;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     }
 
     if (rdb.isMssql()) {

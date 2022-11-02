@@ -243,4 +243,8 @@ public abstract class Config {
   public boolean tracingEnabled() {
     return enableTrace;
   }
+
+  public void setAuthService(ServiceConfig authService) {
+    this.authService = authService;
+  }
 }
