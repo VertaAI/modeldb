@@ -1,12 +1,10 @@
 package ai.verta.modeldb.common.futures;
 
-import io.grpc.Context;
 import io.opentracing.Scope;
 import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
-
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.With;
@@ -19,7 +17,8 @@ public class FutureExecutor implements Executor {
   @With private final io.grpc.Context grpcContext;
 
   public FutureExecutor captureContext() {
-    return withOtelContext(io.opentelemetry.context.Context.current()).withGrpcContext(io.grpc.Context.current());
+    return withOtelContext(io.opentelemetry.context.Context.current())
+        .withGrpcContext(io.grpc.Context.current());
   }
 
   // Wraps an Executor and make it compatible with grpc's context
@@ -54,12 +53,11 @@ public class FutureExecutor implements Executor {
       final var span = tracer.scopeManager().activeSpan();
       Runnable finalR = r;
       other.execute(
-
-                  () -> {
-                    try (Scope s = tracer.scopeManager().activate(span)) {
-                      finalR.run();
-                    }
-                  });
+          () -> {
+            try (Scope s = tracer.scopeManager().activate(span)) {
+              finalR.run();
+            }
+          });
     } else {
       other.execute(r);
     }
