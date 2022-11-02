@@ -233,7 +233,7 @@ class FutureTest {
                         tracer.spanBuilder("two").startSpan().end();
                         return "two";
                       }))
-          .thenRun(() -> tracer.spanBuilder("four").startSpan().end())
+          .thenRun(() -> tracer.spanBuilder("three").startSpan().end())
           .get();
     } finally {
       outside.end();
@@ -248,8 +248,7 @@ class FutureTest {
                     s -> s.hasName("outer").hasEnded(),
                     s -> s.hasName("one").hasEnded(),
                     s -> s.hasName("two").hasEnded(),
-                    s -> s.hasName("three").hasEnded(),
-                    s -> s.hasName("four").hasEnded()));
+                    s -> s.hasName("three").hasEnded()));
   }
 
   @Test
@@ -291,7 +290,7 @@ class FutureTest {
                           return Future.of(key.get());
                         });
                   });
-          assertThat(key.get()).isEqualTo("2");
+          assertThat(future2.get()).isEqualTo("2");
           return null;
         });
   }
