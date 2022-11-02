@@ -5,13 +5,11 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.function.*;
 import java.util.stream.Collectors;
 
@@ -27,10 +25,6 @@ public class InternalFuture<T> {
   private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
   private final String formattedStack;
   private CompletionStage<T> stage;
-
-  // keep the calling OpenTelemetry context, so we can use it to wrap the actual invocation of the
-  // future's implementation
-  private final Context callingContext = Context.current();
 
   private InternalFuture() {
     if (!DEEP_TRACING_ENABLED) {
@@ -108,19 +102,15 @@ public class InternalFuture<T> {
     return from(
         stage.thenComposeAsync(
             traceFunction(
-                callingContext.wrapFunction(
-                    traceFunction(
-                        fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose")),
+                traceFunction(
+                    fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose"),
                 "futureThenApply"),
             executor));
   }
 
   public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, FutureExecutor ex) {
     final var executor = ex.captureContext();
-    return from(stage.thenApplyAsync(fn, executor));
-    //    return from(
-    //        stage.thenApplyAsync(
-    //            traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
+    return from(stage.thenApplyAsync(traceFunction(fn, "futureThenApply"), executor));
   }
 
   private <U> Function<? super T, ? extends U> traceFunction(
@@ -148,8 +138,7 @@ public class InternalFuture<T> {
   public <U> InternalFuture<U> handle(
       BiFunction<? super T, Throwable, ? extends U> fn, FutureExecutor ex) {
     final var executor = ex.captureContext();
-    return from(
-        stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor));
+    return from(stage.handleAsync(traceBiFunctionThrowable(fn), executor));
   }
 
   private <U> BiFunction<? super T, Throwable, ? extends U> traceBiFunctionThrowable(
@@ -172,9 +161,8 @@ public class InternalFuture<T> {
       BiFunction<? super T, ? super U, ? extends V> fn,
       FutureExecutor ex) {
     final var executor = ex.captureContext();
-    return from(
-        stage.thenCombineAsync(
-            other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor));
+    BiFunction<? super T, ? super U, ? extends V> tracedBiFunction = traceBiFunction(fn);
+    return from(stage.thenCombineAsync(other.stage, tracedBiFunction, executor));
   }
 
   private <U, V> BiFunction<? super T, ? super U, ? extends V> traceBiFunction(
@@ -194,8 +182,7 @@ public class InternalFuture<T> {
 
   public InternalFuture<Void> thenAccept(Consumer<? super T> action, FutureExecutor ex) {
     final var executor = ex.captureContext();
-    return from(
-        stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor));
+    return from(stage.thenAcceptAsync(traceConsumer(action), executor));
   }
 
   private Consumer<? super T> traceConsumer(Consumer<? super T> action) {
@@ -214,7 +201,7 @@ public class InternalFuture<T> {
 
   public <U> InternalFuture<Void> thenRun(Runnable runnable, FutureExecutor ex) {
     final var executor = ex.captureContext();
-    return from(stage.thenRunAsync(callingContext.wrap(traceRunnable(runnable)), executor));
+    return from(stage.thenRunAsync(traceRunnable(runnable), executor));
   }
 
   private Runnable traceRunnable(Runnable r) {
@@ -234,8 +221,7 @@ public class InternalFuture<T> {
   public InternalFuture<T> whenComplete(
       BiConsumer<? super T, ? super Throwable> action, FutureExecutor ex) {
     final var executor = ex.captureContext();
-    return from(
-        stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
+    return from(stage.whenCompleteAsync(traceBiConsumer(action), executor));
   }
 
   public InternalFuture<T> recover(Function<Throwable, ? extends T> fn, FutureExecutor ex) {
@@ -267,15 +253,15 @@ public class InternalFuture<T> {
   }
 
   /**
-   * Syntactic sugar for {@link #thenCompose(Function, Executor)} with the function ignoring the
-   * input.
+   * Syntactic sugar for {@link #thenCompose(Function, FutureExecutor)} with the function ignoring
+   * the input.
    */
   public <U> InternalFuture<U> thenSupply(Supplier<InternalFuture<U>> supplier, FutureExecutor ex) {
     final var executor = ex.captureContext();
     return thenCompose(ignored -> supplier.get(), executor);
   }
 
-  public static <U> InternalFuture<Void> runAsync(Runnable runnable, FutureExecutor ex) {
+  public static InternalFuture<Void> runAsync(Runnable runnable, FutureExecutor ex) {
     final var executor = ex.captureContext();
     return from(CompletableFuture.runAsync(runnable, executor));
   }

@@ -1,7 +1,5 @@
 package ai.verta.modeldb.common.futures;
 
-import io.opentracing.Scope;
-import io.opentracing.util.GlobalTracer;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
@@ -48,18 +46,6 @@ public class FutureExecutor implements Executor {
       r = grpcContext.wrap(r);
     }
 
-    if (GlobalTracer.isRegistered()) {
-      final var tracer = GlobalTracer.get();
-      final var span = tracer.scopeManager().activeSpan();
-      Runnable finalR = r;
-      other.execute(
-          () -> {
-            try (Scope s = tracer.scopeManager().activate(span)) {
-              finalR.run();
-            }
-          });
-    } else {
-      other.execute(r);
-    }
+    other.execute(r);
   }
 }
