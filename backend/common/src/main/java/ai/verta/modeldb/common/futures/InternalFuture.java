@@ -118,9 +118,10 @@ public class InternalFuture<T> {
   public <U> InternalFuture<U> thenApply(
       Function<? super T, ? extends U> fn, FutureExecutor ex) {
     final var executor = ex.captureContext();
-    return from(
-        stage.thenApplyAsync(
-            traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
+    return from(stage.thenApplyAsync(fn, executor));
+//    return from(
+//        stage.thenApplyAsync(
+//            traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
   }
 
   private <U> Function<? super T, ? extends U> traceFunction(
