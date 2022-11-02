@@ -286,13 +286,10 @@ public class CommitDAORdbImpl implements CommitDAO {
   }
 
   private Blob getBlobBuilderFromDatasetVersion(DatasetVersion datasetVersion) {
-    var blobBuilder = Blob.newBuilder();
     if (datasetVersion.hasDatasetBlob()) {
-      blobBuilder.setDataset(populateInternalPathInDatasetBlob(datasetVersion.getDatasetBlob()));
-      return blobBuilder.build();
+      return populateInternalPathInDatasetBlob(datasetVersion.getDatasetBlob());
     }
 
-    var datasetBlobBuilder = DatasetBlob.newBuilder();
     if (datasetVersion
         .getDatasetVersionInfoCase()
         .equals(DatasetVersionInfoCase.PATH_DATASET_VERSION_INFO)) {
@@ -303,6 +300,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               .map(
                   datasetPartInfo ->
                       componentFromPart(datasetPartInfo, pathDatasetVersionInfo.getBasePath()));
+      var datasetBlobBuilder = DatasetBlob.newBuilder();
       if (pathDatasetVersionInfo.getLocationType() == PathLocationType.S3_FILE_SYSTEM) {
         datasetBlobBuilder.setS3(
             S3DatasetBlob.newBuilder()
@@ -314,24 +312,30 @@ public class CommitDAORdbImpl implements CommitDAO {
         datasetBlobBuilder.setPath(
             PathDatasetBlob.newBuilder().addAllComponents(result.collect(Collectors.toList())));
       }
+      var blobBuilder = Blob.newBuilder();
       blobBuilder.setDataset(datasetBlobBuilder);
       return blobBuilder.build();
     }
     throw new ModelDBException("Wrong dataset version type", Code.INVALID_ARGUMENT);
   }
 
-  private DatasetBlob populateInternalPathInDatasetBlob(DatasetBlob datasetBlob) {
+  private Blob populateInternalPathInDatasetBlob(DatasetBlob datasetBlob) {
+    var blobBuilder = Blob.newBuilder();
     switch (datasetBlob.getContentCase()) {
       case S3:
-        return getPopulatedInternalPathInS3DatasetBlob(datasetBlob);
+        blobBuilder.setDataset(getPopulatedInternalPathInS3DatasetBlob(datasetBlob));
+        break;
       case PATH:
-        return getPopulatedInternalPathInPathDatasetBlob(datasetBlob);
+        blobBuilder.setDataset(getPopulatedInternalPathInPathDatasetBlob(datasetBlob));
+        break;
       case QUERY:
-        return datasetBlob;
+        blobBuilder.setDataset(datasetBlob);
+        break;
       case CONTENT_NOT_SET:
       default:
         throw new ModelDBException("Wrong dataset blob type", Code.INVALID_ARGUMENT);
     }
+    return blobBuilder.build();
   }
 
   private DatasetBlob getPopulatedInternalPathInPathDatasetBlob(DatasetBlob datasetBlob) {
