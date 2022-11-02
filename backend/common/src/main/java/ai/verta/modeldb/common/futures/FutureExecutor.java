@@ -46,6 +46,6 @@ public class FutureExecutor implements Executor {
       r = grpcContext.wrap(r);
     }
 
-    other.execute(r);
+    delegate.execute(r);
   }
 }

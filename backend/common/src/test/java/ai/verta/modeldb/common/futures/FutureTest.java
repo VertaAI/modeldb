@@ -4,6 +4,11 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
+import io.grpc.Context;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
+import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
@@ -16,8 +21,11 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
+import org.junit.jupiter.api.extension.RegisterExtension;
 
 class FutureTest {
+  @RegisterExtension
+  static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
 
   @AfterEach
   void tearDown() {
@@ -206,5 +214,85 @@ class FutureTest {
 
     await().until(executed::get);
     assertThat(forgottenResult).hasValue("complete!");
+  }
+
+  @Test
+  void trace() throws Exception {
+    Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
+    Span outside = tracer.spanBuilder("outer").startSpan();
+    try (Scope ignored = outside.makeCurrent()) {
+      Future.supplyAsync(
+              () -> {
+                tracer.spanBuilder("one").startSpan().end();
+                return "one";
+              })
+          .thenCompose(
+              a ->
+                  Future.supplyAsync(
+                      () -> {
+                        tracer.spanBuilder("two").startSpan().end();
+                        return "two";
+                      }))
+          .thenRun(() -> tracer.spanBuilder("four").startSpan().end())
+          .get();
+    } finally {
+      outside.end();
+    }
+
+    otelTesting
+        .assertTraces()
+        .hasSize(1)
+        .hasTracesSatisfyingExactly(
+            trace ->
+                trace.hasSpansSatisfyingExactlyInAnyOrder(
+                    s -> s.hasName("outer").hasEnded(),
+                    s -> s.hasName("one").hasEnded(),
+                    s -> s.hasName("two").hasEnded(),
+                    s -> s.hasName("three").hasEnded(),
+                    s -> s.hasName("four").hasEnded()));
+  }
+
+  @Test
+  public void context() throws Exception {
+    final var rootContext = Context.ROOT;
+    final Context.Key<String> key = Context.key("key");
+    rootContext.call(
+        () -> {
+          assertThat(key.get()).isNull();
+          final var context1 = rootContext.withValue(key, "1");
+          final var future1 =
+              context1.call(
+                  () -> {
+                    assertThat(key.get()).isEqualTo("1");
+                    return Future.supplyAsync(
+                        () -> {
+                          assertThat(key.get()).isEqualTo("1");
+                          try {
+                            Thread.sleep(10);
+                          } catch (InterruptedException e) {
+                            e.printStackTrace();
+                          }
+                          return key.get();
+                        });
+                  });
+          final var context2 = context1.withValue(key, "2");
+          final var future2 =
+              context2.call(
+                  () -> {
+                    assertThat(key.get()).isEqualTo("2");
+                    return future1.thenCompose(
+                        val -> {
+                          assertThat(key.get()).isEqualTo("2");
+                          try {
+                            Thread.sleep(10);
+                          } catch (InterruptedException e) {
+                            e.printStackTrace();
+                          }
+                          return Future.of(key.get());
+                        });
+                  });
+          assertThat(key.get()).isEqualTo("2");
+          return null;
+        });
   }
 }

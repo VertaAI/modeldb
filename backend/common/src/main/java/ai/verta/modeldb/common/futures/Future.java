@@ -7,7 +7,6 @@ import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
@@ -37,10 +36,6 @@ public class Future<T> {
   private final String formattedStack;
   private final CompletionStage<T> stage;
 
-  // keep the calling OpenTelemetry context, so we can use it to wrap the actual invocation of the
-  // future's implementation
-  private final Context callingContext = Context.current();
-
   private Future(CompletionStage<T> stage) {
     if (!DEEP_TRACING_ENABLED) {
       formattedStack = null;
@@ -63,7 +58,7 @@ public class Future<T> {
     if (futures.isEmpty()) {
       return Future.of(List.of());
     }
-
+    final var executor = futureExecutor.captureContext();
     final var promise = new CompletableFuture<List<T>>();
     final var values = new ArrayList<T>(futures.size());
     final CompletableFuture<T>[] futuresArray =
@@ -93,7 +88,7 @@ public class Future<T> {
                 promise.completeExceptionally(t);
               }
             },
-            futureExecutor);
+            executor);
 
     return Future.from(promise);
   }
@@ -101,7 +96,7 @@ public class Future<T> {
   static <R> Future<R> from(CompletionStage<R> other) {
     Preconditions.checkNotNull(
         futureExecutor, "A FutureExecutor is required to create a new Future.");
-    return new Future<R>(other);
+    return new Future<>(other);
   }
 
   /** @deprecated Use {@link #of(Object)} instead. */
@@ -115,20 +110,20 @@ public class Future<T> {
   public static <R> Future<R> of(R value) {
     Preconditions.checkNotNull(
         futureExecutor, "A FutureExecutor is required to create a new Future.");
-    return new Future<R>(CompletableFuture.completedFuture(value));
+    return new Future<>(CompletableFuture.completedFuture(value));
   }
 
   public <U> Future<U> thenCompose(Function<? super T, Future<U>> fn) {
     Preconditions.checkNotNull(
         futureExecutor, "A FutureExecutor is required to be present for this method.");
+    final var executor = futureExecutor.captureContext();
     return from(
         stage.thenComposeAsync(
             traceFunction(
-                callingContext.wrapFunction(
-                    traceFunction(
-                        fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose")),
+                traceFunction(
+                    fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose"),
                 "futureThenApply"),
-            futureExecutor));
+            executor));
   }
 
   private <U> Function<? super T, ? extends U> traceFunction(
@@ -157,9 +152,8 @@ public class Future<T> {
     Preconditions.checkNotNull(
         futureExecutor,
         "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
-    return from(
-        stage.handleAsync(
-            traceBiFunctionThrowable(callingContext.wrapFunction(fn)), futureExecutor));
+    final var executor = futureExecutor.captureContext();
+    return from(stage.handleAsync(traceBiFunctionThrowable(fn), executor));
   }
 
   private <U> BiFunction<? super T, Throwable, ? extends U> traceBiFunctionThrowable(
@@ -182,9 +176,9 @@ public class Future<T> {
     Preconditions.checkNotNull(
         futureExecutor,
         "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
-    return from(
-        stage.thenCombineAsync(
-            other.stage, callingContext.wrapFunction(traceBiFunction(fn)), futureExecutor));
+    final var executor = futureExecutor.captureContext();
+    BiFunction<? super T, ? super U, ? extends V> tracedBiFunction = traceBiFunction(fn);
+    return from(stage.thenCombineAsync(other.stage, tracedBiFunction, executor));
   }
 
   private <U, V> BiFunction<? super T, ? super U, ? extends V> traceBiFunction(
@@ -206,8 +200,8 @@ public class Future<T> {
     Preconditions.checkNotNull(
         futureExecutor,
         "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
-    return from(
-        stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), futureExecutor));
+    final var executor = futureExecutor.captureContext();
+    return from(stage.thenAcceptAsync(traceConsumer(action), executor));
   }
 
   private Consumer<? super T> traceConsumer(Consumer<? super T> action) {
@@ -224,11 +218,12 @@ public class Future<T> {
     };
   }
 
-  public <U> Future<Void> thenRun(Runnable runnable) {
+  public Future<Void> thenRun(Runnable runnable) {
     Preconditions.checkNotNull(
         futureExecutor,
         "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
-    return from(stage.thenRunAsync(callingContext.wrap(traceRunnable(runnable)), futureExecutor));
+    final var executor = futureExecutor.captureContext();
+    return from(stage.thenRunAsync(traceRunnable(runnable), executor));
   }
 
   private Runnable traceRunnable(Runnable r) {
@@ -246,9 +241,8 @@ public class Future<T> {
   }
 
   public Future<T> whenComplete(BiConsumer<? super T, ? super Throwable> action) {
-    return from(
-        stage.whenCompleteAsync(
-            callingContext.wrapConsumer(traceBiConsumer(action)), futureExecutor));
+    final var executor = futureExecutor.captureContext();
+    return from(stage.whenCompleteAsync(traceBiConsumer(action), executor));
   }
 
   public Future<T> recover(Function<Throwable, ? extends T> fn) {
@@ -285,12 +279,14 @@ public class Future<T> {
     return thenCompose(ignored -> supplier.get());
   }
 
-  public static <U> Future<Void> runAsync(Runnable runnable) {
-    return from(CompletableFuture.runAsync(runnable, futureExecutor));
+  public static Future<Void> runAsync(Runnable runnable) {
+    final var executor = futureExecutor.captureContext();
+    return from(CompletableFuture.runAsync(runnable, executor));
   }
 
   public static <U> Future<U> supplyAsync(Supplier<U> supplier) {
-    return from(CompletableFuture.supplyAsync(supplier, futureExecutor));
+    final var executor = futureExecutor.captureContext();
+    return from(CompletableFuture.supplyAsync(supplier, executor));
   }
 
   public static <U> Future<U> failedStage(Throwable ex) {
