@@ -189,19 +189,19 @@ class DeployedModel(object):
         """
         Makes a prediction using input `x`.
 
-        .. deprecated:: 0.22.0
+        .. deprecated:: 0.23.0
            The ``always_retry_404`` parameter is deprecated. 404 is included by default in the
            ``retry_status`` parameter.  Default is 13 retries over 10 minutes.  This behavior
            can be changed by adjusting ``max_retries`` and ``backoff_factor``.
-        .. deprecated:: 0.22.0
+        .. deprecated:: 0.23.0
            The ``always_retry_429`` parameter is deprecated. 429 is included by default in the
            ``retry_status`` parameter.  Default is 13 retries over 10 minutes.  This behavior
            can be changed by adjusting ``max_retries`` and ``backoff_factor``.
-        .. versionadded:: 0.22.0
+        .. versionadded:: 0.23.0
            The ``prediction_id`` parameter.
-        .. versionadded:: 0.22.0
+        .. versionadded:: 0.23.0
            The ``retry_status`` parameter.
-        .. versionadded:: 0.22.0
+        .. versionadded:: 0.23.0
            The ``backoff_factor`` parameter.
 
         Parameters
@@ -271,11 +271,11 @@ class DeployedModel(object):
         Makes a prediction using input `x` the same as `predict`, but returns a tuple including the ID of the
         prediction request along with the prediction results.
 
-        .. versionadded:: 0.22.0
+        .. versionadded:: 0.23.0
            The `prediction_id` parameter.
-        .. versionadded:: 0.22.0
+        .. versionadded:: 0.23.0
            The `retry_status` parameter.
-        .. versionadded:: 0.22.0
+        .. versionadded:: 0.23.0
            The `backoff_factor` parameter.
 
         Parameters
@@ -341,35 +341,9 @@ class DeployedModel(object):
         """
         Returns a :class:`DeployedModel` based on a custom URL and token.
 
-        .. deprecated:: 0.22.0
+        .. deprecated:: 0.23.0
            For most use cases, call :meth:`Endpoint.get_deployed_model() <verta.endpoint.Endpoint.get_deployed_model>`.
-           For lowel-level needs, call the ``DeployedModel`` class directly with the same parameters.
-
-        Parameters
-        ----------
-        url : str
-            Full prediction endpoint URL. Can be copy and pasted directly from the Verta Web App.
-        token : str, optional
-            Prediction token. Can be copy and pasted directly from the Verta Web App.
-        creds : :class:`~verta.credentials.Credentials`, optional
-            Authentication credentials to attach to each prediction request.
-
-        Returns
-        -------
-        :class:`DeployedModel`
-
-        Examples
-        --------
-        .. code-block:: python
-
-            # run.id == "01234567-0123-0123-0123-012345678901"
-            # token == "abcdefgh-abcd-abcd-abcd-abcdefghijkl"
-            DeployedModel.from_url(
-                url="https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901",
-                token="abcdefgh-abcd-abcd-abcd-abcdefghijkl",
-            )
-            # <DeployedModel at https://app.verta.ai/api/v1/predict/01234567-0123-0123-0123-012345678901>
-
+           For lower-level needs, call the ``DeployedModel`` class directly with the same parameters.
         """
         warnings.warn(
             "This method is deprecated and will be removed in an upcoming version;"
