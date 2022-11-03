@@ -123,6 +123,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "experiment run id: {}".format(msg.experiment_run_id),
                 # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
                 "artifact keys: {}".format(artifact_keys),
+                "datasets: {}".format(msg.datasets),
+                "code_blob_map: {}".format(msg.code_blob_map),
             )
         )
 
@@ -1514,3 +1516,98 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def get_hide_output_label(self):
         self._refresh_cache()
         return self._msg.hide_output_label
+
+    def log_dataset(self, key, path, path_only, artifact_type, linked_artifact_id):
+        """
+        Logs a dataset to this Model Version.
+
+        Parameters
+        ----------
+        key : str
+            Artifact key.
+        path : str
+            Artifact path.
+        path_only : bool
+            Whether path only.
+        artifact_type : CommonService_pb2.ArtifactTypeEnum variant
+            Category to which the artifact belongs (e.g. MODEL, DATA).
+        linked_artifact_id : str
+            Linked artifact id.
+
+        """
+        if not key:
+            raise ValueError("key is not specified")
+        if not path:
+            raise ValueError("artifact_path is not specified")
+        if not path_only:
+            raise ValueError("path_only is not specified")
+        if not artifact_type:
+            raise ValueError("artifact_type is not specified")
+        if not linked_artifact_id:
+            raise ValueError("linked_artifact_id is not specified")
+
+        artifact_msg = _CommonCommonService.Artifact(
+            key=key,
+            path=path,
+            path_only=path_only,
+            artifact_type=artifact_type,
+            linked_artifact_id=linked_artifact_id,
+        )
+
+        msg = _RegistryService.LogDatasetsInModelVersion(
+            model_version_id=self.id,
+            datasets=[artifact_msg],
+        )
+
+        endpoint = "/api/v1/registry/model_versions/{}/logDatasets".format(
+            self.id,
+        )
+
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
+        self._clear_cache()
+
+    def get_dataset_keys(self):
+        """
+        Gets the dataset keys of this Model Version.
+
+        Returns
+        -------
+        list of str
+            List of dataset keys of this Model Version.
+
+        """
+        self._refresh_cache()
+        return list(map(lambda dataset: dataset.key, self._msg.datasets))
+
+    def get_dataset(self, key):
+        """
+        Get a dataset.
+
+        Parameters
+        ----------
+        key : str
+            Artifact key.
+
+        Returns
+        -------
+        `CommonService_pb2.Artifact`.
+
+        """
+        for dataset in self._msg.datasets:
+            if dataset.key == key:
+                return dataset
+
+        raise KeyError("no dataset found with key {}".format(key))
+
+    def get_datasets(self):
+        """
+        Gets all datasets of this Model Version.
+
+        Returns
+        -------
+        list of `CommonService_pb2.Artifact`.
+
+        """
+        self._refresh_cache()
+        return list(map(lambda dataset: dataset, self._msg.datasets))
