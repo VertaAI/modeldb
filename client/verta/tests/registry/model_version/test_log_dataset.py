@@ -15,7 +15,7 @@ class TestLogDataset:
             path="ModelVersionEntity/191/train",
             path_only=True,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.DATA,
-            linked_artifact_id="fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6200",
+            linked_artifact_id="fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6191",
         )
 
         model_version.log_dataset(
@@ -23,7 +23,7 @@ class TestLogDataset:
             path="ModelVersionEntity/192/train",
             path_only=True,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.BLOB,
-            linked_artifact_id="fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6200",
+            linked_artifact_id="fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6192",
         )
 
         model_version.log_dataset(
@@ -31,7 +31,7 @@ class TestLogDataset:
             path="ModelVersionEntity/193/train",
             path_only=True,
             artifact_type=_CommonCommonService.ArtifactTypeEnum.MODEL,
-            linked_artifact_id="fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6200",
+            linked_artifact_id="fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6193",
         )
 
         keys = model_version.get_dataset_keys()
@@ -51,9 +51,12 @@ class TestLogDataset:
 
         dataset = model_version.get_dataset(key1)
         assert dataset.artifact_type == _CommonCommonService.ArtifactTypeEnum.DATA
+        assert "fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6191" in dataset.linked_artifact_id
 
         dataset = model_version.get_dataset(key2)
         assert dataset.artifact_type == _CommonCommonService.ArtifactTypeEnum.BLOB
+        assert "fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6192" in dataset.linked_artifact_id
 
         dataset = model_version.get_dataset(key3)
         assert dataset.artifact_type == _CommonCommonService.ArtifactTypeEnum.MODEL
+        assert "fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6193" in dataset.linked_artifact_id
