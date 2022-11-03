@@ -39,15 +39,16 @@ public class FutureJdbi {
   private <R, T extends Exception> InternalFuture<R> withHandleOrTransaction(
       SupplierWithException<R, T> supplier) {
     CompletableFuture<R> promise = new CompletableFuture<>();
-
-    executor.execute(
-        () -> {
-          try {
-            promise.complete(supplier.get());
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          }
-        });
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                promise.complete(supplier.get());
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
 
     return InternalFuture.from(promise);
   }
@@ -71,16 +72,17 @@ public class FutureJdbi {
   private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(
       final RunnableWithException<T> runnableWithException) {
     CompletableFuture<Void> promise = new CompletableFuture<>();
-
-    executor.execute(
-        () -> {
-          try {
-            runnableWithException.run();
-            promise.complete(null);
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          }
-        });
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                runnableWithException.run();
+                promise.complete(null);
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
 
     return InternalFuture.from(promise);
   }
