@@ -1,19 +1,13 @@
 package ai.verta.modeldb.common.futures;
 
-import io.grpc.Context;
-import io.grpc.Metadata;
-import org.jdbi.v3.core.config.ConfigRegistry;
-import org.jdbi.v3.core.config.JdbiConfig;
-import org.jdbi.v3.core.statement.StatementExceptions;
-import org.jetbrains.annotations.Nullable;
-import org.junit.jupiter.api.Test;
-
-import java.util.concurrent.Callable;
-import java.util.concurrent.atomic.AtomicReference;
-
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
+
+import io.grpc.Context;
+import java.util.concurrent.atomic.AtomicReference;
+import org.jdbi.v3.core.statement.StatementExceptions;
+import org.junit.jupiter.api.Test;
 
 class FutureJdbiTest {
 
