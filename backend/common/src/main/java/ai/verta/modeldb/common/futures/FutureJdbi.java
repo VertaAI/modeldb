@@ -1,7 +1,5 @@
 package ai.verta.modeldb.common.futures;
 
-import ai.verta.modeldb.common.interceptors.MetadataForwarder;
-import io.grpc.Context;
 import java.util.concurrent.CompletableFuture;
 import org.jdbi.v3.core.statement.StatementExceptions;
 
@@ -41,20 +39,16 @@ public class FutureJdbi {
   private <R, T extends Exception> InternalFuture<R> withHandleOrTransaction(
       SupplierWithException<R, T> supplier) {
     CompletableFuture<R> promise = new CompletableFuture<>();
-
-    var metadata = MetadataForwarder.getMetadata();
-    executor.execute(
-        () -> {
-          var context =
-              Context.current().withValue(MetadataForwarder.METADATA_INFO, metadata).attach();
-          try {
-            promise.complete(supplier.get());
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          } finally {
-            Context.current().detach(context);
-          }
-        });
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                promise.complete(supplier.get());
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
 
     return InternalFuture.from(promise);
   }
@@ -78,21 +72,17 @@ public class FutureJdbi {
   private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(
       final RunnableWithException<T> runnableWithException) {
     CompletableFuture<Void> promise = new CompletableFuture<>();
-
-    var metadata = MetadataForwarder.getMetadata();
-    executor.execute(
-        () -> {
-          var context =
-              Context.current().withValue(MetadataForwarder.METADATA_INFO, metadata).attach();
-          try {
-            runnableWithException.run();
-            promise.complete(null);
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          } finally {
-            Context.current().detach(context);
-          }
-        });
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                runnableWithException.run();
+                promise.complete(null);
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
 
     return InternalFuture.from(promise);
   }
