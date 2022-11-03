@@ -224,7 +224,7 @@ class DeployedModel(object):
             Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value of
             {404, 429}.  Expand the set to include more: ```retry_status={404, 429, <NEW_STATUS_CODE>}```
         backoff_factor : float, default 0.3
-            A backoff factor to apply between attempts after the second try.  Uses standard urllib3 sleep pattern:
+            A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
             120 seconds.
         Returns
@@ -293,7 +293,7 @@ class DeployedModel(object):
             Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value of
             {404, 429}.  Expand the set to include more: ``retry_status={404, 429, <NEW_STATUS_CODE>}``
         backoff_factor : float, default 0.3
-            A backoff factor to apply between attempts after the second try.  Uses standard urllib3 sleep pattern:
+            A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
             120 seconds.
         Returns
