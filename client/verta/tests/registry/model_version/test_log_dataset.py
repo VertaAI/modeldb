@@ -29,9 +29,7 @@ class TestLogDataset:
         assert dataset_version1.id in dataset.linked_artifact_id
 
         dataset = model_version.get_dataset_version(key2)
-        #assert dataset.artifact_type == _CommonCommonService.ArtifactTypeEnum.BLOB
-        #assert "fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6192" in dataset.linked_artifact_id
+        assert dataset_version2.id in dataset.linked_artifact_id
 
         dataset = model_version.get_dataset_version(key3)
-        #assert dataset.artifact_type == _CommonCommonService.ArtifactTypeEnum.MODEL
-        #assert "fbcbd389db61d78c479634b0824cf063ffc63a6af7ba5d763388a42001ed6193" in dataset.linked_artifact_id
+        assert dataset_version3.id in dataset.linked_artifact_id
