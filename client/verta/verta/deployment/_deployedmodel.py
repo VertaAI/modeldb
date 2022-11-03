@@ -180,8 +180,8 @@ class DeployedModel(object):
         self,
         x: List[Any],
         compress=False,
-        prediction_id: Optional[str] = None,
         max_retries: Optional[int] = http_session.DEFAULT_MAX_RETRIES,
+        prediction_id: Optional[str] = None,
         always_retry_404=False,
         always_retry_429=False,
         retry_status: Optional[Set[int]] = http_session.DEFAULT_STATUS_FORCELIST,
@@ -211,10 +211,10 @@ class DeployedModel(object):
             A batch of inputs for the model.
         compress : bool, default False
             Whether to compress the request body.
-        prediction_id: str, default None
-            A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
         max_retries : int, default 13
             Maximum number of times to retry a request.
+        prediction_id: str, default None
+            A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
         always_retry_404 : bool, default True
             Deprecated: Whether to retry on 404s indefinitely. This is to accommodate model deployment warm-up.
         always_retry_429 : bool, default True
@@ -263,8 +263,8 @@ class DeployedModel(object):
             self,
             x: List[Any],
             compress=False,
-            prediction_id: Optional[str] = None,
             max_retries: Optional[int] = http_session.DEFAULT_MAX_RETRIES,
+            prediction_id: Optional[str] = None,
             retry_status: Optional[Set[int]] = http_session.DEFAULT_STATUS_FORCELIST,
             backoff_factor: Optional[float] = http_session.DEFAULT_BACKOFF_FACTOR
             ) -> Tuple[str, Dict[str, Any]]:
