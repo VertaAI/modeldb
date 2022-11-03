@@ -53,7 +53,7 @@ class DeployedModel(object):
     Examples
     --------
     .. code-block:: python
-       :emphasize-lines: 3,4
+       :emphasize-lines: 1,2
 
         # Preferred method for instantiating an object.
         deployed_model_x = verta.Client().get_or_create_endpoint('endpoint_name').get_deployed_model()
