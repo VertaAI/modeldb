@@ -236,7 +236,7 @@ class DeployedModel(object):
         ------
         RuntimeError
             If the deployed model encounters an error while running the prediction.
-        HTTPError
+        requests.HTTPError
             If the server encounters an error while handing the HTTP request.
 
         """
@@ -306,7 +306,7 @@ class DeployedModel(object):
         ------
         RuntimeError
             If the deployed model encounters an error while running the prediction.
-        HTTPError
+        requests.HTTPError
             If the server encounters an error while handing the HTTP request.
 
         """
