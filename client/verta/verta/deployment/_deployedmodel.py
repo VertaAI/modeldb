@@ -236,10 +236,10 @@ class DeployedModel(object):
         ------
         RuntimeError
             If the deployed model encounters an error while running the prediction.
-        requests.HTTPError
+        HTTPError
             If the server encounters an error while handing the HTTP request.
 
-        """
+        """i
         if always_retry_404 or always_retry_429:
             warnings.warn(
                 "Deprecation warning: The `always_retry_404` and `always_retry_429`"
@@ -306,7 +306,7 @@ class DeployedModel(object):
         ------
         RuntimeError
             If the deployed model encounters an error while running the prediction.
-        requests.HTTPError
+        HTTPError
             If the server encounters an error while handing the HTTP request.
 
         """
