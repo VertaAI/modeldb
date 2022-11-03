@@ -53,11 +53,12 @@ class DeployedModel(object):
     Examples
     --------
     .. code-block:: python
-       :emphasize-lines: 1,2
+       :emphasize-lines: 1,3
 
         # Preferred method for instantiating an object.
-        deployed_model_x = verta.Client().get_or_create_endpoint('endpoint_name').get_deployed_model()
-        deployed_model_x.predict(['here is a prediction'])
+        endpoint = client.get_or_create_endpoint('endpoint_name')
+        deployed_model = endpoint.get_deployed_model()
+        deployed_model.predict(['here is a prediction'])
 
         # Instantiating directly is also possible.
         DeployedModel(
