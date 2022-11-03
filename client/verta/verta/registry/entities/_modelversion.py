@@ -42,6 +42,9 @@ from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
 from ..stage_change import _StageChange
 
+from verta.dataset.entities import (
+    _dataset
+)
 
 logger = logging.getLogger(__name__)
 
@@ -1517,41 +1520,26 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._refresh_cache()
         return self._msg.hide_output_label
 
-    def log_dataset(self, key, path, path_only, artifact_type, linked_artifact_id):
+    def log_dataset_version(self, key, dataset_version):
         """
-        Logs a dataset to this Model Version.
+        Logs a Verta DatasetVersion to this Model Version with the given key.
 
         Parameters
         ----------
         key : str
-            Artifact key.
-        path : str
-            Artifact path.
-        path_only : bool
-            Whether path only.
-        artifact_type : CommonService_pb2.ArtifactTypeEnum variant
-            Category to which the artifact belongs (e.g. MODEL, DATA).
-        linked_artifact_id : str
-            Linked artifact id.
+            Name of the dataset version.
+        dataset_version : :class:`~verta.dataset.entities.DatasetVersion`
+            Dataset version.
 
         """
-        if not key:
-            raise ValueError("key is not specified")
-        if not path:
-            raise ValueError("artifact_path is not specified")
-        if not path_only:
-            raise ValueError("path_only is not specified")
-        if not artifact_type:
-            raise ValueError("artifact_type is not specified")
-        if not linked_artifact_id:
-            raise ValueError("linked_artifact_id is not specified")
+        if not isinstance(dataset_version, _dataset.DatasetVersion):
+            raise TypeError("`dataset_version` must be of type DatasetVersion")
 
         artifact_msg = _CommonCommonService.Artifact(
             key=key,
-            path=path,
-            path_only=path_only,
-            artifact_type=artifact_type,
-            linked_artifact_id=linked_artifact_id,
+            path_only=True,
+            artifact_type=_CommonCommonService.ArtifactTypeEnum.DATA,
+            linked_artifact_id=dataset_version.id,
         )
 
         msg = _RegistryService.LogDatasetsInModelVersion(
@@ -1567,31 +1555,19 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._conn.must_response(response)
         self._clear_cache()
 
-    def get_dataset_keys(self):
+    def get_dataset_version(self, key):
         """
-        Gets the dataset keys of this Model Version.
-
-        Returns
-        -------
-        list of str
-            List of dataset keys of this Model Version.
-
-        """
-        self._refresh_cache()
-        return list(map(lambda dataset: dataset.key, self._msg.datasets))
-
-    def get_dataset(self, key):
-        """
-        Get a dataset.
+        Gets the DatasetVersion with name `key` from this Model Version.
 
         Parameters
         ----------
         key : str
-            Artifact key.
+            Name of the dataset version.
 
         Returns
         -------
-        `CommonService_pb2.Artifact`.
+        `DatasetVersion <dataset.html>`_
+            DatasetVersion associated with the given key.
 
         """
         for dataset in self._msg.datasets:
@@ -1599,15 +1575,3 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 return dataset
 
         raise KeyError("no dataset found with key {}".format(key))
-
-    def get_datasets(self):
-        """
-        Gets all datasets of this Model Version.
-
-        Returns
-        -------
-        list of `CommonService_pb2.Artifact`.
-
-        """
-        self._refresh_cache()
-        return list(map(lambda dataset: dataset, self._msg.datasets))
