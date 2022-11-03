@@ -21,7 +21,7 @@ class FutureJdbiTest {
 
     Context contextWithData = Context.ROOT.withValue(testKey, "cheddar");
     AtomicReference<String> captured = new AtomicReference<>();
-    InternalFuture<String> result =
+    String result =
         contextWithData
             .wrap(
                 () ->
@@ -30,8 +30,9 @@ class FutureJdbiTest {
                           captured.set(testKey.get());
                           return "foo";
                         }))
-            .call();
-    assertThat(result.get()).isEqualTo("foo");
+            .call()
+            .get();
+    assertThat(result).isEqualTo("foo");
     assertThat(captured).hasValue("cheddar");
   }
 
