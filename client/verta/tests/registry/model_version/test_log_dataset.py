@@ -26,7 +26,7 @@ class TestLogDataset:
         assert "no dataset found with key" in str(excinfo.value)
 
         dataset = model_version.get_dataset_version(key1)
-        assert dataset_version1.id in dataset.linked_artifact_id
+        assert dataset_version1.id == dataset.linked_artifact_id
 
         dataset = model_version.get_dataset_version(key2)
         assert dataset_version2.id in dataset.linked_artifact_id
