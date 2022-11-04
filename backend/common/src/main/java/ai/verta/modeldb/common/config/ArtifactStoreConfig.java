@@ -62,6 +62,14 @@ public class ArtifactStoreConfig {
     }
   }
 
+  public void setHost(String host) {
+    this.host = host;
+  }
+
+  public void setNFS(NFSConfig nfs) {
+    this.NFS = nfs;
+  }
+
   public String storeTypePathPrefix() {
     switch (getArtifactStoreType()) {
       case "S3":
