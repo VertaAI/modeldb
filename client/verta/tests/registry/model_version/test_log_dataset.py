@@ -20,10 +20,8 @@ class TestLogDataset:
 
         model_version = client.get_registered_model_version(id=model_version.id)
 
-        with pytest.raises(KeyError) as excinfo:
+        with pytest.raises(KeyError, match="no dataset found with key"):
             model_version.get_dataset_version("fake")
-
-        assert "no dataset found with key" in str(excinfo.value)
 
         dataset = model_version.get_dataset_version(key1)
         assert dataset_version1.id == dataset.linked_artifact_id
