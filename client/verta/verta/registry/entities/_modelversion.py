@@ -43,7 +43,7 @@ from .. import lock, DockerImage
 from ..stage_change import _StageChange
 
 from verta.dataset.entities import (
-    _dataset
+    _dataset_version
 )
 
 logger = logging.getLogger(__name__)
