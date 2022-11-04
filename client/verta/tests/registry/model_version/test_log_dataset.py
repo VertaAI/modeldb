@@ -24,10 +24,20 @@ class TestLogDataset:
             model_version.get_dataset_version("fake")
 
         dataset = model_version.get_dataset_version(key1)
-        assert dataset_version1.id == dataset.linked_artifact_id
+        assert dataset_version1.id == dataset.id
 
         dataset = model_version.get_dataset_version(key2)
-        assert dataset_version2.id in dataset.linked_artifact_id
+        assert dataset_version2.id == dataset.id
 
         dataset = model_version.get_dataset_version(key3)
-        assert dataset_version3.id in dataset.linked_artifact_id
+        assert dataset_version3.id == dataset.id
+
+        with pytest.raises(KeyError, match="no dataset found with key"):
+            model_version.del_dataset_version("fake")
+
+        model_version.del_dataset_version(key3)
+
+        model_version = client.get_registered_model_version(id=model_version.id)
+
+        with pytest.raises(KeyError, match="no dataset found with key"):
+            model_version.get_dataset_version(key3)
