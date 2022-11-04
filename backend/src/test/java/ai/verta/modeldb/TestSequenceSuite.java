@@ -37,6 +37,5 @@ import org.junit.runners.Suite;
   ValidatorBlobTest.class,
   ValidatorBlobDiffTest.class,
   GlobalSharingTest.class
-  //  ArtifactStoreTest.class
 })
 public class TestSequenceSuite {}

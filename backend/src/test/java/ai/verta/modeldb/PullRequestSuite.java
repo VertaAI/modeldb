@@ -7,7 +7,6 @@ import org.junit.platform.suite.api.Suite;
 @Suite
 @ExcludeClassNamePatterns({
   "ai.verta.modeldb.metadata.MetadataTest",
-  "ai.verta.modeldb.ArtifactStoreTest",
   "ai.verta.modeldb.BranchTest",
   "ai.verta.modeldb.CommentTest",
   "ai.verta.modeldb.CommitTest",
@@ -22,7 +21,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.IntegrationTest",
   "ai.verta.modeldb.LineageTest",
   "ai.verta.modeldb.MergeTest",
-  "ai.verta.modeldb.NFSArtifactStoreTest",
   "ai.verta.modeldb.RepositoryTest",
   ".*TestSequenceSuite",
 })
