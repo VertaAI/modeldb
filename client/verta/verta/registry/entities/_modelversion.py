@@ -1572,6 +1572,12 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         for dataset in self._msg.datasets:
             if dataset.key == key:
-                return dataset
+                return _dataset_version.DatasetVersion(
+                    self._conn,
+                    self._conf,
+                    _dataset_version.DatasetVersion._get_proto_by_id(
+                        self._conn, dataset.linked_artifact_id
+                    ),
+                )
 
         raise KeyError("no dataset found with key {}".format(key))
