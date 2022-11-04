@@ -1532,7 +1532,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             Dataset version.
 
         """
-        if not isinstance(dataset_version, _dataset.DatasetVersion):
+        if not isinstance(dataset_version, _dataset_version.DatasetVersion):
             raise TypeError("`dataset_version` must be of type DatasetVersion")
 
         artifact_msg = _CommonCommonService.Artifact(
@@ -1566,7 +1566,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         Returns
         -------
-        `DatasetVersion <dataset.html>`_
+        :class:`~verta.dataset.entities.DatasetVersion`
             DatasetVersion associated with the given key.
 
         """
@@ -1581,3 +1581,33 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 )
 
         raise KeyError("no dataset found with key {}".format(key))
+
+    def del_dataset_version(self, key):
+        """
+        Deletes the DatasetVersion with name `key` from this Model Version.
+
+        Parameters
+        ----------
+        key : str
+            Name of dataset version.
+
+        """
+        if key == self._MODEL_KEY:
+            raise ValueError(
+                "model can't be deleted through del_dataset_version(); consider using del_model() instead"
+            )
+
+        self._fetch_with_no_cache()
+
+        ind = -1
+        for i in range(len(self._msg.datasets)):
+            dataset = self._msg.datasets[i]
+            if dataset.key == key:
+                ind = i
+                break
+
+        if ind == -1:
+            raise KeyError("no dataset found with key {}".format(key))
+
+        del self._msg.datasets[ind]
+        self._update(self._msg, method="PUT")
