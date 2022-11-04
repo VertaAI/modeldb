@@ -232,6 +232,10 @@ public abstract class Config {
     return openTelemetry;
   }
 
+  public void setArtifactStoreConfig(ArtifactStoreConfig artifactStoreConfig) {
+    this.artifactStoreConfig = artifactStoreConfig;
+  }
+
   public void setSpringServer(SpringServerConfig springServer) {
     this.springServer = springServer;
   }

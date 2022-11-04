@@ -516,8 +516,9 @@ public class FutureExperimentRunDAO {
             handle ->
                 handle
                     .createQuery(
-                        "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=0")
+                        "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=:deleted")
                     .bindList("ids", finalRunIds)
+                    .bind("deleted", false)
                     .mapTo(String.class)
                     .list());
 
