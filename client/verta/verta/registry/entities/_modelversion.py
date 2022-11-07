@@ -1593,11 +1593,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             Name of dataset version.
 
         """
-        if key == self._MODEL_KEY:
-            raise ValueError(
-                "model can't be deleted through del_dataset_version(); consider using del_model() instead"
-            )
-
         self._fetch_with_no_cache()
 
         ind = -1
