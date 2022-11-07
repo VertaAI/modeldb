@@ -190,19 +190,19 @@ class DeployedModel(object):
         """
         Makes a prediction using input `x`.
 
-        .. deprecated:: 0.23.0
+        .. deprecated:: 0.22.0
            The ``always_retry_404`` parameter is deprecated. 404 is included by default in the
            ``retry_status`` parameter.  Default is 13 retries over 10 minutes.  This behavior
            can be changed by adjusting ``max_retries`` and ``backoff_factor``.
-        .. deprecated:: 0.23.0
+        .. deprecated:: 0.22.0
            The ``always_retry_429`` parameter is deprecated. 429 is included by default in the
            ``retry_status`` parameter.  Default is 13 retries over 10 minutes.  This behavior
            can be changed by adjusting ``max_retries`` and ``backoff_factor``.
-        .. versionadded:: 0.23.0
+        .. versionadded:: 0.22.0
            The ``prediction_id`` parameter.
-        .. versionadded:: 0.23.0
+        .. versionadded:: 0.22.0
            The ``retry_status`` parameter.
-        .. versionadded:: 0.23.0
+        .. versionadded:: 0.22.0
            The ``backoff_factor`` parameter.
 
         Parameters
@@ -272,11 +272,11 @@ class DeployedModel(object):
         Makes a prediction using input `x` the same as `predict`, but returns a tuple including the ID of the
         prediction request along with the prediction results.
 
-        .. versionadded:: 0.23.0
+        .. versionadded:: 0.22.0
            The `prediction_id` parameter.
-        .. versionadded:: 0.23.0
+        .. versionadded:: 0.22.0
            The `retry_status` parameter.
-        .. versionadded:: 0.23.0
+        .. versionadded:: 0.22.0
            The `backoff_factor` parameter.
 
         Parameters
@@ -342,7 +342,7 @@ class DeployedModel(object):
         """
         Returns a :class:`DeployedModel` based on a custom URL and token.
 
-        .. deprecated:: 0.23.0
+        .. deprecated:: 0.22.0
            For most use cases, call :meth:`Endpoint.get_deployed_model() <verta.endpoint.Endpoint.get_deployed_model>`.
            For lower-level needs, call the ``DeployedModel`` class directly with the same parameters.
         """
