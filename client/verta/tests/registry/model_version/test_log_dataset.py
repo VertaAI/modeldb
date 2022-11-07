@@ -37,7 +37,5 @@ class TestLogDataset:
 
         model_version.del_dataset_version(key3)
 
-        model_version = client.get_registered_model_version(id=model_version.id)
-
         with pytest.raises(KeyError, match="no dataset found with key"):
             model_version.get_dataset_version(key3)
