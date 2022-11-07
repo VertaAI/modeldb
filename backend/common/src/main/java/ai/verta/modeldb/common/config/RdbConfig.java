@@ -21,14 +21,13 @@ public class RdbConfig {
   private static final Logger LOGGER = LogManager.getLogger(RdbConfig.class);
 
   @JsonProperty private String RdbDatabaseName;
-  // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled
   @JsonProperty private String RdbDriver;
   @JsonProperty private String RdbDialect;
   @JsonProperty private String RdbUrl;
   @JsonProperty private String RdbUsername;
   @JsonProperty private String RdbPassword;
-  @JsonProperty private String sslMode = "DISABLED";
-  @JsonProperty private Boolean sslEnabled = false;
+  @Builder.Default @JsonProperty private String sslMode = "DISABLED";
+  @Builder.Default @JsonProperty private Boolean sslEnabled = false;
   @JsonProperty private String DBConnectionURL;
 
   public void validate(String base) throws InvalidConfigException {
