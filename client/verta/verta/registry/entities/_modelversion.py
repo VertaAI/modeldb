@@ -1570,6 +1570,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             DatasetVersion associated with the given key.
 
         """
+        self._refresh_cache()
         for dataset in self._msg.datasets:
             if dataset.key == key:
                 return _dataset_version.DatasetVersion(
