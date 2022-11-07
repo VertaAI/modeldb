@@ -5,16 +5,12 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -94,7 +90,7 @@ public class RdbConfig {
         rdb.RdbUrl
             + "/"
             + rdb.getRdbDatabaseName()
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true"
             + "&sslEnabled="
             + rdb.sslEnabled
             + "&sslMode="
