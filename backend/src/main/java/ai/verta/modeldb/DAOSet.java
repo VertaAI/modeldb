@@ -67,7 +67,8 @@ public class DAOSet {
     set.uacApisUtil = new UACApisUtil(executor, services.getUac());
 
     set.metadataDAO = new MetadataDAORdbImpl();
-    set.commitDAO = new CommitDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
+    set.commitDAO =
+        new CommitDAORdbImpl(services.getAuthService(), services.getMdbRoleService(), mdbConfig);
     set.repositoryDAO =
         new RepositoryDAORdbImpl(
             services.getAuthService(),

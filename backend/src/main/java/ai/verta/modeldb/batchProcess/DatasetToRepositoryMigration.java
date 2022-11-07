@@ -75,7 +75,7 @@ public class DatasetToRepositoryMigration {
     authService = MDBAuthServiceUtils.FromConfig(config, uac);
     mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
 
-    commitDAO = new CommitDAORdbImpl(authService, mdbRoleService);
+    commitDAO = new CommitDAORdbImpl(authService, mdbRoleService, config);
     repositoryDAO = new RepositoryDAORdbImpl(authService, mdbRoleService, commitDAO, metadataDAO);
     blobDAO = new BlobDAORdbImpl(authService, mdbRoleService);
     metadataDAO = new MetadataDAORdbImpl();
