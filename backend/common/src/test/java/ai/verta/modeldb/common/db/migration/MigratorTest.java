@@ -134,7 +134,7 @@ class MigratorTest {
         .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
         .RdbDatabaseName("migrationTestDb")
         .RdbUsername("root")
-        .RdbPassword("bmy-GVX9rpr!gky7qjv") // TODO : JOHN DON'T COMMIT THIS!!!!
+        .RdbPassword("fill me in")
         .sslEnabled(false)
         .build();
   }
