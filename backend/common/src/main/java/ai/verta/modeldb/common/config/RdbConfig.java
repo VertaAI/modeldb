@@ -21,7 +21,6 @@ public class RdbConfig {
   private static final Logger LOGGER = LogManager.getLogger(RdbConfig.class);
 
   @JsonProperty private String RdbDatabaseName;
-  // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled
   @JsonProperty private String RdbDriver;
   @JsonProperty private String RdbDialect;
   @JsonProperty private String RdbUrl;
