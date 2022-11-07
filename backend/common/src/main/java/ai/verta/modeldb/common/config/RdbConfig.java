@@ -27,8 +27,8 @@ public class RdbConfig {
   @JsonProperty private String RdbUrl;
   @JsonProperty private String RdbUsername;
   @JsonProperty private String RdbPassword;
-  @JsonProperty private String sslMode = "DISABLED";
-  @JsonProperty private Boolean sslEnabled = false;
+  @Builder.Default @JsonProperty private String sslMode = "DISABLED";
+  @Builder.Default @JsonProperty private Boolean sslEnabled = false;
   @JsonProperty private String DBConnectionURL;
 
   public void validate(String base) throws InvalidConfigException {

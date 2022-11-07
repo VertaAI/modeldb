@@ -45,6 +45,11 @@ public class SqlServerMigrationDatabase implements MigrationDatastore {
     }
   }
 
+  @Override
+  public void ensureMigrationTableExists(Connection connection) throws SQLException {
+    //todo: implement me
+  }
+
   private String generateLockId() throws SQLException {
     String schema = connection.getSchema();
     return MigrationTools.generateLockId(schema, "schema_migrations");

@@ -5,10 +5,14 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public interface MigrationDatastore {
+  String SCHEMA_MIGRATIONS_TABLE = "schema_migrations";
+
   /** Lock the database in order to perform migrations. */
   void lock() throws SQLException;
 
   void unlock() throws SQLException;
+
+  void ensureMigrationTableExists(Connection connection) throws SQLException;
 
   static MigrationDatastore create(RdbConfig config, Connection connection) {
     if (config.isH2()) {
