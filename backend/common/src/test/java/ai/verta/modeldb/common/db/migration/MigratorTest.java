@@ -36,7 +36,7 @@ class MigratorTest {
             .sslEnabled(false)
             .build();
     CommonDBUtil.createDBIfNotExists(config);
-    Connection connection = buildSqlServerConnection(config);
+    Connection connection = buildStandardDbConnection(config);
 
     Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
 
@@ -57,7 +57,7 @@ class MigratorTest {
             .sslEnabled(false)
             .build();
     CommonDBUtil.createDBIfNotExists(config);
-    Connection connection = buildSqlServerConnection(config);
+    Connection connection = buildStandardDbConnection(config);
 
     Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
 
@@ -85,18 +85,19 @@ class MigratorTest {
   }
 
   private static Connection buildH2Connection() throws SQLException {
-    String connectionString =
-        RdbConfig.buildDatabaseConnectionString(
-            RdbConfig.builder()
-                .DBConnectionURL("jdbc:h2:mem:migratorTestDb")
-                .RdbDriver("org.h2.Driver")
-                .RdbDialect("org.hibernate.dialect.H2Dialect")
-                .RdbDatabaseName("modeldbTestDB")
-                .build());
-    return DriverManager.getConnection(connectionString, "sa", "password");
+    RdbConfig config =
+        RdbConfig.builder()
+            .DBConnectionURL("jdbc:h2:mem:migratorTestDb")
+            .RdbDriver("org.h2.Driver")
+            .RdbDialect("org.hibernate.dialect.H2Dialect")
+            .RdbDatabaseName("modeldbTestDB")
+            .RdbPassword("password")
+            .RdbUsername("sa")
+            .build();
+    return buildStandardDbConnection(config);
   }
 
-  private static Connection buildSqlServerConnection(RdbConfig rdbConfig) throws SQLException {
+  private static Connection buildStandardDbConnection(RdbConfig rdbConfig) throws SQLException {
     String connectionString = RdbConfig.buildDatabaseConnectionString(rdbConfig);
     return DriverManager.getConnection(
         connectionString, rdbConfig.getRdbUsername(), rdbConfig.getRdbPassword());
