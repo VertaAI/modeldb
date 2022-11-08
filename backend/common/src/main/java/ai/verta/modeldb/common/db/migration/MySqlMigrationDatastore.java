@@ -5,10 +5,10 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MySqlMigrationDatabase implements MigrationDatastore {
+public class MySqlMigrationDatastore implements MigrationDatastore {
   private final Connection connection;
 
-  public MySqlMigrationDatabase(Connection connection) {
+  public MySqlMigrationDatastore(Connection connection) {
     this.connection = connection;
   }
 
@@ -45,7 +45,7 @@ public class MySqlMigrationDatabase implements MigrationDatastore {
   }
 
   @Override
-  public void ensureMigrationTableExists(Connection connection) throws SQLException {
+  public void ensureMigrationTableExists() throws SQLException {
     try (PreparedStatement ps =
         connection.prepareStatement(
             "CREATE TABLE IF NOT EXISTS "

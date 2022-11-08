@@ -24,7 +24,7 @@ public class Migrator {
     log.info("Starting database migration process");
     MigrationDatastore migrationDatastore = MigrationDatastore.create(config, connection);
 
-    migrationDatastore.ensureMigrationTableExists(connection);
+    migrationDatastore.ensureMigrationTableExists();
 
     MigrationTools.lockDatabase(migrationDatastore);
     try {

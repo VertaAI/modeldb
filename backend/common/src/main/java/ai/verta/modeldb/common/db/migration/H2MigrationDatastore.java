@@ -7,6 +7,11 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public class H2MigrationDatastore implements MigrationDatastore {
   private final ReentrantLock lock = new ReentrantLock();
+  private final Connection connection;
+
+  public H2MigrationDatastore(Connection connection) {
+    this.connection = connection;
+  }
 
   @Override
   public void lock() throws SQLException {
@@ -21,7 +26,7 @@ public class H2MigrationDatastore implements MigrationDatastore {
   }
 
   @Override
-  public void ensureMigrationTableExists(Connection connection) throws SQLException {
+  public void ensureMigrationTableExists() throws SQLException {
     try (PreparedStatement ps =
         connection.prepareStatement(
             "CREATE TABLE IF NOT EXISTS "
