@@ -108,7 +108,7 @@ class MigratorTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("only run manually to test things against sqlserver for now")
   void performMigration_sqlServer() throws Exception {
     RdbConfig config = createSqlServerConfig();
     CommonDBUtil.createDBIfNotExists(config);
@@ -119,7 +119,7 @@ class MigratorTest {
   }
 
   @Test
-  @Disabled
+  @Disabled("only run manually to test things against mysql for now")
   void performMigration_mySql() throws Exception {
     RdbConfig config = createMysqlConfig();
     CommonDBUtil.createDBIfNotExists(config);

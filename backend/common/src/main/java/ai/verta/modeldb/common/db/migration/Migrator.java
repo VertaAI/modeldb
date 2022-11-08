@@ -47,7 +47,10 @@ public class Migrator {
     int versionToTarget =
         desiredVersion != null
             ? desiredVersion
-            : gatherMigrations(migration -> true, migration -> true).size() / 2;
+            : gatherMigrations(migration -> true, migration -> true).stream()
+                .map(Migration::getNumber)
+                .max(Integer::compareTo)
+                .orElse(0);
     log.info("Starting database migration process to version: " + versionToTarget);
 
     if (currentState.getVersion() == versionToTarget) {
