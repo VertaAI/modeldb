@@ -33,7 +33,7 @@ class MigratorTest {
     Connection connection = buildStandardDbConnection(config);
 
     try {
-      Migrator migrator = new Migrator(connection, "migration/release_ddl/mysql");
+      Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
 
       verifyRelease202208DdlExecution(connection, migrator);
     } finally {
