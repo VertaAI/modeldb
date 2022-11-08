@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -46,12 +47,13 @@ class MigratorTest {
   @Test
   @Disabled("only run manually to test things against mysql for now")
   void singleMigration_mysql() throws Exception {
+    var testDBName = "modeldbTestDB";
     RdbConfig config =
         RdbConfig.builder()
             .RdbUrl("jdbc:mysql://localhost:3306")
             .RdbDriver("org.mariadb.jdbc.Driver")
             .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
-            .RdbDatabaseName("modeldbTestDB")
+            .RdbDatabaseName(testDBName)
             .RdbUsername("root")
             .RdbPassword("replace me with your password")
             .sslEnabled(false)
@@ -59,9 +61,15 @@ class MigratorTest {
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
 
-    Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
+    try {
+      Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
 
-    verifyDdlExecution(connection, migrator);
+      verifyDdlExecution(connection, migrator);
+    } finally {
+      try (Statement statement = connection.createStatement()) {
+        statement.executeUpdate(String.format("drop database %s;", testDBName));
+      }
+    }
   }
 
   private static void verifyDdlExecution(Connection connection, Migrator migrator)
