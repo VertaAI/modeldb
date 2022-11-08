@@ -12,19 +12,19 @@ public interface MigrationDatastore {
 
   void unlock() throws SQLException;
 
-  void ensureMigrationTableExists(Connection connection) throws SQLException;
+  void ensureMigrationTableExists() throws SQLException;
 
   static MigrationDatastore create(RdbConfig config, Connection connection) {
     if (config.isH2()) {
-      return new H2MigrationDatastore();
+      return new H2MigrationDatastore(connection);
     }
 
     if (config.isMssql()) {
-      return new SqlServerMigrationDatabase(connection);
+      return new SqlServerMigrationDatastore(connection);
     }
 
     if (config.isMysql()) {
-      return new MySqlMigrationDatabase(connection);
+      return new MySqlMigrationDatastore(connection);
     }
 
     throw new UnsupportedOperationException(

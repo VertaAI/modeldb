@@ -86,7 +86,7 @@ public class Migrator {
 
   private MigrationDatastore setupDatastore(RdbConfig config) throws SQLException {
     MigrationDatastore migrationDatastore = MigrationDatastore.create(config, connection);
-    migrationDatastore.ensureMigrationTableExists(connection);
+    migrationDatastore.ensureMigrationTableExists();
     MigrationState currentState = findCurrentState();
     if (currentState == null) {
       try (PreparedStatement ps =
