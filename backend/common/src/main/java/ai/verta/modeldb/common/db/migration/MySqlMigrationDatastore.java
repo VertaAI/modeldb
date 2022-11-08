@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class MySqlMigrationDatastore implements MigrationDatastore {
+class MySqlMigrationDatastore implements MigrationDatastore {
   private final Connection connection;
 
   public MySqlMigrationDatastore(Connection connection) {

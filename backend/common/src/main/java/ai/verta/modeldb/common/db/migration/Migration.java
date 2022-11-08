@@ -3,7 +3,7 @@ package ai.verta.modeldb.common.db.migration;
 import lombok.Value;
 
 @Value
-public class Migration implements Comparable<Migration> {
+class Migration implements Comparable<Migration> {
   String filename;
 
   @Override
@@ -21,17 +21,17 @@ public class Migration implements Comparable<Migration> {
     return versionDiff;
   }
 
-  public int getNumber() {
+  int getNumber() {
     String[] pieces = filename.split("_");
     return Integer.parseInt(pieces[0]);
   }
 
-  public boolean isUp() {
+  boolean isUp() {
     String[] pieces = filename.split("\\.");
     return "up".equals(pieces[1]);
   }
 
-  public boolean isDown() {
+  boolean isDown() {
     String[] pieces = filename.split("\\.");
     return "down".equals(pieces[1]);
   }
