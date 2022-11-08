@@ -47,7 +47,18 @@ public class SqlServerMigrationDatabase implements MigrationDatastore {
 
   @Override
   public void ensureMigrationTableExists(Connection connection) throws SQLException {
-    //todo: implement me
+    String sql =
+        "IF NOT EXISTS"
+            + "(SELECT *  FROM sysobjects  WHERE id = object_id(N'[dbo].["
+            + SCHEMA_MIGRATIONS_TABLE
+            + "]') "
+            + " AND OBJECTPROPERTY(id, N'IsUserTable') = 1 )"
+            + "CREATE TABLE "
+            + SCHEMA_MIGRATIONS_TABLE
+            + " ( version BIGINT PRIMARY KEY NOT NULL, dirty BIT NOT NULL );";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ps.execute();
+    }
   }
 
   private String generateLockId() throws SQLException {
