@@ -40,9 +40,7 @@ public class Migrator {
     MigrationState currentState = findCurrentState();
 
     if (currentState.isDirty()) {
-      // todo: implement dirty handling
-      throw new MigrationException(
-          "Database is in a dirty state. Bailing out until dirty handling is implemented.");
+      currentState = cleanUpDirtyDatabase(currentState);
     }
     int versionToTarget =
         desiredVersion != null
@@ -60,6 +58,22 @@ public class Migrator {
     NavigableSet<Migration> migrationsToPerform =
         gatherMigrationsToPerform(currentState, versionToTarget);
     runMigrations(migrationDatastore, migrationsToPerform);
+  }
+
+  private MigrationState cleanUpDirtyDatabase(MigrationState currentState)
+      throws MigrationException, SQLException {
+    if (currentState.getVersion() <= 1) {
+      // todo: are we really comfortable implementing the database drop functionality at this point?
+      throw new MigrationException(
+          "Database is in a dirty state at version "
+              + currentState.getVersion()
+              + ". Bailing out until dropping the database is implemented.");
+    }
+    // We assume if a migration failed, that it wasn't applied, so it should be safe to simply
+    // revert the number and unset the dirty flag.
+    int revertedVersion = currentState.getVersion() - 1;
+    updateVersion(false, revertedVersion);
+    return new MigrationState(revertedVersion, false);
   }
 
   private NavigableSet<Migration> gatherMigrationsToPerform(
@@ -125,13 +139,15 @@ public class Migrator {
   }
 
   private void updateVersion(Migration pendingMigration, boolean dirty) throws SQLException {
+    int newVersion =
+        pendingMigration.isUp() ? pendingMigration.getNumber() : pendingMigration.getNumber() - 1;
+    updateVersion(dirty, newVersion);
+  }
+
+  private void updateVersion(boolean dirty, int newVersion) throws SQLException {
     try (PreparedStatement ps =
         connection.prepareStatement("UPDATE schema_migrations set version = ?, dirty = ?")) {
-      ps.setInt(
-          1,
-          pendingMigration.isUp()
-              ? pendingMigration.getNumber()
-              : pendingMigration.getNumber() - 1);
+      ps.setInt(1, newVersion);
       ps.setBoolean(2, dirty);
       int rowsUpdated = ps.executeUpdate();
       if (rowsUpdated != 1) {
