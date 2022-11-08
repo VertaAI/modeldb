@@ -400,7 +400,7 @@ public abstract class CommonDBUtil {
         changeSetRemappingFile);
   }
 
-  protected static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
+  public static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
     final var databaseName = RdbConfig.buildDatabaseName(rdbConfiguration);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
     LOGGER.debug("Connecting to DB URL " + dbUrl);
