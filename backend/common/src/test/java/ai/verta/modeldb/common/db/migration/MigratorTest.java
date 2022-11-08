@@ -25,16 +25,7 @@ class MigratorTest {
   @Test
   @Disabled("only run manually to test things against sqlserver for now")
   void singleMigration_sqlserver() throws Exception {
-    RdbConfig config =
-        RdbConfig.builder()
-            .RdbUrl("jdbc:sqlserver://localhost:1433")
-            .RdbDriver("com.microsoft.sqlserver.jdbc.SQLServerDriver")
-            .RdbDialect("org.hibernate.dialect.SQLServer2008Dialect")
-            .RdbDatabaseName("modeldbTestDB")
-            .RdbUsername("SA")
-            .RdbPassword("MyPass@word")
-            .sslEnabled(false)
-            .build();
+    RdbConfig config = createSqlServerConfig();
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
 
@@ -46,16 +37,7 @@ class MigratorTest {
   @Test
   @Disabled("only run manually to test things against mysql for now")
   void singleMigration_mysql() throws Exception {
-    RdbConfig config =
-        RdbConfig.builder()
-            .RdbUrl("jdbc:mysql://localhost:3306")
-            .RdbDriver("org.mariadb.jdbc.Driver")
-            .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
-            .RdbDatabaseName("modeldbTestDB")
-            .RdbUsername("root")
-            .RdbPassword("replace me with your password")
-            .sslEnabled(false)
-            .build();
+    RdbConfig config = createMysqlConfig();
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
 
@@ -84,22 +66,76 @@ class MigratorTest {
     }
   }
 
+  @Test
+  void performMigration_h2() throws Exception {
+    RdbConfig config = createH2Config();
+    Migrator migrator = new Migrator(buildStandardDbConnection(config), "migrations/testing/h2");
+
+    migrator.performMigration(config);
+  }
+
+  @Test
+  @Disabled
+  void performMigration_sqlServer() throws Exception {
+    RdbConfig config = createSqlServerConfig();
+    CommonDBUtil.createDBIfNotExists(config);
+    Migrator migrator =
+        new Migrator(buildStandardDbConnection(config), "migrations/testing/sqlsvr");
+
+    migrator.performMigration(config);
+  }
+
+  @Test
+  @Disabled
+  void performMigration_mySql() throws Exception {
+    RdbConfig config = createMysqlConfig();
+    CommonDBUtil.createDBIfNotExists(config);
+    Migrator migrator = new Migrator(buildStandardDbConnection(config), "migrations/testing/mysql");
+    migrator.performMigration(config);
+  }
+
   private static Connection buildH2Connection() throws SQLException {
-    RdbConfig config =
-        RdbConfig.builder()
-            .DBConnectionURL("jdbc:h2:mem:migratorTestDb")
-            .RdbDriver("org.h2.Driver")
-            .RdbDialect("org.hibernate.dialect.H2Dialect")
-            .RdbDatabaseName("modeldbTestDB")
-            .RdbPassword("password")
-            .RdbUsername("sa")
-            .build();
-    return buildStandardDbConnection(config);
+    return buildStandardDbConnection(createH2Config());
   }
 
   private static Connection buildStandardDbConnection(RdbConfig rdbConfig) throws SQLException {
     String connectionString = RdbConfig.buildDatabaseConnectionString(rdbConfig);
     return DriverManager.getConnection(
         connectionString, rdbConfig.getRdbUsername(), rdbConfig.getRdbPassword());
+  }
+
+  private static RdbConfig createH2Config() {
+    return RdbConfig.builder()
+        .DBConnectionURL("jdbc:h2:mem:migratorTestDb")
+        .RdbDriver("org.h2.Driver")
+        .RdbDialect("org.hibernate.dialect.H2Dialect")
+        .RdbDatabaseName("migrationTestDb")
+        .RdbPassword("password")
+        .RdbUsername("sa")
+        .build();
+  }
+
+  private static RdbConfig createSqlServerConfig() {
+    return RdbConfig.builder()
+        .RdbUrl("jdbc:sqlserver://localhost:1433")
+        .RdbDriver("com.microsoft.sqlserver.jdbc.SQLServerDriver")
+        .RdbDialect("org.hibernate.dialect.SQLServer2008Dialect")
+        .RdbDatabaseName("migrationTestDb")
+        .RdbUsername("SA")
+        .RdbPassword("MyPass@word")
+        .sslEnabled(false)
+        .build();
+  }
+
+  private static RdbConfig createMysqlConfig() {
+    return RdbConfig.builder()
+        .RdbUrl("jdbc:mysql://localhost:3306")
+        .RdbDriver("org.mariadb.jdbc.Driver")
+        .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
+        .RdbDatabaseName("migrationTestDb")
+        .RdbUsername("root")
+        .RdbPassword("fill me in")
+        .sslEnabled(false)
+        .build();
   }
 }
