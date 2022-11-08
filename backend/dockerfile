@@ -4,8 +4,9 @@ FROM $BASE_IMAGE
 RUN mkdir -p modeldb-project-work-dir
 WORKDIR /modeldb-project-work-dir
 
-COPY target/modeldb-1.0-SNAPSHOT-client-build.jar modeldb-1.0-SNAPSHOT-client-build.jar
-COPY src/main/resources/liquibase/ src/main/resources/liquibase/
+COPY backend/common/target/common-1.0-SNAPSHOT.jar common-1.0-SNAPSHOT.jar
+COPY backend/server/target/modeldb-1.0-SNAPSHOT-client-build.jar modeldb-1.0-SNAPSHOT-client-build.jar
+COPY backend/server/src/main/resources/liquibase/ src/main/resources/liquibase/
 # COPY src/main/resources/c3p0.properties c3p0.properties
 
 # Define environment variable
