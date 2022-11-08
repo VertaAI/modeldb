@@ -8,7 +8,17 @@ public class Migration implements Comparable<Migration> {
 
   @Override
   public int compareTo(Migration o) {
-    return this.getNumber() - o.getNumber();
+    int versionDiff = this.getNumber() - o.getNumber();
+    if (versionDiff == 0) {
+      if (this.isUp() && o.isUp()) {
+        return 0;
+      }
+      if (this.isUp()) {
+        return 1;
+      }
+      return -1;
+    }
+    return versionDiff;
   }
 
   public int getNumber() {
