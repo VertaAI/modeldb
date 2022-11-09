@@ -116,7 +116,6 @@ class MigratorTest {
     Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
 
     verifyAllStateTransitions(config, connection, migrator);
-    verifyMigrations(connection);
   }
 
   @Test
@@ -128,7 +127,6 @@ class MigratorTest {
     Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
 
     verifyAllStateTransitions(config, connection, migrator);
-    verifyMigrations(connection);
   }
 
   private static Connection buildH2Connection() throws SQLException {
