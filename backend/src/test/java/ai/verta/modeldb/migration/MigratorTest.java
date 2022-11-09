@@ -47,7 +47,7 @@ class MigratorTest {
 
   private static void verifyMySqlRelease202208DdlExecution(Connection connection, Migrator migrator)
       throws IOException, SQLException {
-    migrator.executeMigration(new Migration("mysql_release_2022_08.up.sql"));
+    migrator.executeMigration(new Migration("1_release_2022_08.up.sql"));
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
       assertThat(tables.next()).isTrue();
       assertThat(tables.getString("TABLE_NAME")).isEqualToIgnoringCase("artifact");
@@ -62,7 +62,7 @@ class MigratorTest {
           .isEqualToIgnoringCase("versioning_modeldb_entity_mapping_config_blob");
     }
 
-    migrator.executeMigration(new Migration("mysql_release_2022_08.down.sql"));
+    migrator.executeMigration(new Migration("1_release_2022_08.down.sql"));
 
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
       assertThat(tables.next()).isFalse();
