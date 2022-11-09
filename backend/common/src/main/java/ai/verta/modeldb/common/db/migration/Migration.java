@@ -26,11 +26,19 @@ class Migration implements Comparable<Migration> {
     return Integer.parseInt(pieces[0]);
   }
 
+  /**
+   * An "up" migration could also be called the "forward" migration. It is the migration that
+   * applies a change to an existing database.
+   */
   boolean isUp() {
     String[] pieces = filename.split("\\.");
     return "up".equals(pieces[1]);
   }
 
+  /**
+   * A "down" migration could also be called the "reverse" migration. It is the migration that
+   * reverts the change from the corresponding "up" migration.
+   */
   boolean isDown() {
     String[] pieces = filename.split("\\.");
     return "down".equals(pieces[1]);
