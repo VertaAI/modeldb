@@ -5,22 +5,26 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 public interface MigrationDatastore {
+  String SCHEMA_MIGRATIONS_TABLE = "schema_migrations";
+
   /** Lock the database in order to perform migrations. */
   void lock() throws SQLException;
 
   void unlock() throws SQLException;
 
+  void ensureMigrationTableExists() throws SQLException;
+
   static MigrationDatastore create(RdbConfig config, Connection connection) {
     if (config.isH2()) {
-      return new H2MigrationDatastore();
+      return new H2MigrationDatastore(connection);
     }
 
     if (config.isMssql()) {
-      return new SqlServerMigrationDatabase(connection);
+      return new SqlServerMigrationDatastore(connection);
     }
 
     if (config.isMysql()) {
-      return new MySqlMigrationDatabase(connection);
+      return new MySqlMigrationDatastore(connection);
     }
 
     throw new UnsupportedOperationException(
