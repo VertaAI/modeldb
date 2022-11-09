@@ -26,12 +26,13 @@ class MigratorTest {
   @Test
   @Disabled("only run manually to test things against sqlserver for now")
   void singleMigration_sqlserver() throws Exception {
+    var dbName = "modeldbTestDB";
     RdbConfig config =
         RdbConfig.builder()
             .RdbUrl("jdbc:sqlserver://localhost:1433")
             .RdbDriver("com.microsoft.sqlserver.jdbc.SQLServerDriver")
             .RdbDialect("org.hibernate.dialect.SQLServer2008Dialect")
-            .RdbDatabaseName("modeldbTestDB")
+            .RdbDatabaseName(dbName)
             .RdbUsername("SA")
             .RdbPassword("MyPass@word")
             .sslEnabled(false)
@@ -39,9 +40,15 @@ class MigratorTest {
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
 
-    Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
+    try {
+      Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
 
-    verifyDdlExecution(connection, migrator);
+      verifyDdlExecution(connection, migrator);
+    } finally {
+      try (Statement statement = connection.createStatement()) {
+        statement.executeUpdate(String.format("USE Master; drop database %s;", dbName));
+      }
+    }
   }
 
   @Test
