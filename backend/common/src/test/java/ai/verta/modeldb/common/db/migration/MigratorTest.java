@@ -45,7 +45,7 @@ class MigratorTest {
 
   private static void verifyDdlExecution(Connection connection, Migrator migrator)
       throws IOException, SQLException {
-    migrator.executeMigration(new Migration("1_create_test_table.up.sql"));
+    migrator.executeSingleMigration(new Migration("1_create_test_table.up.sql"));
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "TEST_TABLE", null)) {
       assertThat(tables.next()).isTrue();
       assertThat(tables.getString("TABLE_NAME")).isEqualToIgnoringCase("TEST_TABLE");
@@ -56,7 +56,7 @@ class MigratorTest {
       assertThat(rs.getInt("i")).isEqualTo(999);
     }
 
-    migrator.executeMigration(new Migration("1_create_test_table.down.sql"));
+    migrator.executeSingleMigration(new Migration("1_create_test_table.down.sql"));
 
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "TEST_TABLE", null)) {
       assertThat(tables.next()).isFalse();
@@ -69,41 +69,64 @@ class MigratorTest {
     Connection connection = buildStandardDbConnection(config);
     Migrator migrator = new Migrator(connection, "migrations/testing/h2");
 
-    migrator.performMigration(config);
-
-    verifyMigrations(connection);
+    verifyAllStateTransitions(config, connection, migrator);
   }
 
-  private static void verifyMigrations(Connection connection) throws SQLException {
+  private static void verifyAllStateTransitions(
+      RdbConfig config, Connection connection, Migrator migrator)
+      throws SQLException, MigrationException {
+    migrator.performMigration(config, 0);
+    verifyVersionState(connection, 0);
+
+    migrator.performMigration(config, 1);
+    verifyVersionState(connection, 1);
+
+    migrator.performMigration(config, 2);
+    verifyVersionState(connection, 2);
+
+    migrator.performMigration(config, 0);
+    verifyVersionState(connection, 0);
+    migrator.performMigration(config);
+    verifyVersionState(connection, 2);
+
+    migrator.performMigration(config, 1);
+    verifyVersionState(connection, 1);
+
+    migrator.performMigration(config);
+    verifyVersionState(connection, 2);
+  }
+
+  private static void verifyVersionState(Connection connection, int expectedVersion)
+      throws SQLException {
     try (PreparedStatement ps =
-        connection.prepareStatement("select count(*) from schema_migrations")) {
+        connection.prepareStatement("select version, dirty from schema_migrations")) {
       ResultSet resultSet = ps.executeQuery();
       assertThat(resultSet.next()).isTrue();
-      assertThat(resultSet.getLong(1)).isEqualTo(0);
+      assertThat(resultSet.getLong(1)).isEqualTo(expectedVersion);
+      assertThat(resultSet.getBoolean(2)).isEqualTo(false);
     }
   }
 
   @Test
-  @Disabled
+  @Disabled("only run manually to test things against sqlserver for now")
   void performMigration_sqlServer() throws Exception {
     RdbConfig config = createSqlServerConfig();
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
     Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
 
-    migrator.performMigration(config);
-    verifyMigrations(connection);
+    verifyAllStateTransitions(config, connection, migrator);
   }
 
   @Test
-  @Disabled
+  @Disabled("only run manually to test things against mysql for now")
   void performMigration_mySql() throws Exception {
     RdbConfig config = createMysqlConfig();
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
     Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
-    migrator.performMigration(config);
-    verifyMigrations(connection);
+
+    verifyAllStateTransitions(config, connection, migrator);
   }
 
   private static Connection buildH2Connection() throws SQLException {

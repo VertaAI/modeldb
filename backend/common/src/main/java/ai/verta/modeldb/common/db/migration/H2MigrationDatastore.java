@@ -5,7 +5,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.util.concurrent.locks.ReentrantLock;
 
-public class H2MigrationDatastore implements MigrationDatastore {
+class H2MigrationDatastore implements MigrationDatastore {
   private final ReentrantLock lock = new ReentrantLock();
   private final Connection connection;
 
