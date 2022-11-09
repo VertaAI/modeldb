@@ -38,7 +38,10 @@ public class Migrator {
       throws SQLException, MigrationException {
     MigrationDatastore migrationDatastore = setupDatastore(config);
     MigrationState currentState = findCurrentState();
-
+    if (currentState == null) {
+      throw new IllegalStateException(
+          "The schema_migrations table contains no records. Migration process cannot start.");
+    }
     if (currentState.isDirty()) {
       // todo: implement dirty handling
       throw new MigrationException(
