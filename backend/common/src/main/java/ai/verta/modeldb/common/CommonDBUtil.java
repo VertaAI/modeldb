@@ -2,6 +2,8 @@ package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
+import ai.verta.modeldb.common.db.migration.MigrationException;
+import ai.verta.modeldb.common.db.migration.Migrator;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.google.common.io.Resources;
@@ -349,6 +351,46 @@ public abstract class CommonDBUtil {
       LOGGER.error(e.getMessage(), e);
       throw e;
     }
+  }
+
+  public void runMigrations(DatabaseConfig config, String migrationResourcesRootDirectory)
+      throws SQLException, MigrationException {
+    RdbConfig rdbConfiguration = config.getRdbConfiguration();
+    createDBIfNotExists(rdbConfiguration);
+    Connection connection = acquireDatabaseConnection(config, rdbConfiguration);
+    Migrator migrator =
+        new Migrator(
+            connection, findResourcesDirectory(migrationResourcesRootDirectory, rdbConfiguration));
+    migrator.performMigration(rdbConfiguration);
+  }
+
+  private String findResourcesDirectory(String rootDirectory, RdbConfig rdbConfiguration) {
+    if (rdbConfiguration.isMysql()) {
+      return rootDirectory + "/mysql";
+    }
+    if (rdbConfiguration.isMssql()) {
+      return rootDirectory + "/sqlsvr";
+    }
+    if (rdbConfiguration.isH2()) {
+      return rootDirectory + "/h2";
+    }
+    throw new IllegalArgumentException("Unsupported database type for migrations");
+  }
+
+  private static Connection acquireDatabaseConnection(
+      DatabaseConfig config, RdbConfig rdbConfiguration) throws SQLException {
+    // Check DB is up or not
+    boolean dbConnectionStatus =
+        checkDBConnection(config.getRdbConfiguration(), config.getTimeout());
+    if (!dbConnectionStatus) {
+      try {
+        checkDBConnectionInLoop(config, true);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException("Interrupted while getting a database connection.");
+      }
+    }
+    return getDBConnection(rdbConfiguration);
   }
 
   protected void runLiquibaseMigration(
