@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.query;
 
 import ai.verta.modeldb.common.config.DatabaseConfig;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CopyOnWriteArrayList;
