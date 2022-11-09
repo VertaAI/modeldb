@@ -4,6 +4,7 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.Consumer;
 import org.jdbi.v3.core.statement.Query;
 
@@ -15,9 +16,9 @@ public class QueryFilterContext {
   private Optional<Integer> pageSize;
 
   public QueryFilterContext() {
-    conditions = new LinkedList<>();
-    binds = new LinkedList<>();
-    orderItems = new LinkedList<>();
+    conditions = new CopyOnWriteArrayList<>();
+    binds = new CopyOnWriteArrayList<>();
+    orderItems = new CopyOnWriteArrayList<>();
     pageNumber = Optional.empty();
     pageSize = Optional.empty();
   }
