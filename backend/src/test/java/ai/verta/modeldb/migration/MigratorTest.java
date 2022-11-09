@@ -28,7 +28,7 @@ class MigratorTest {
             .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
             .RdbDatabaseName(dbName)
             .RdbUsername("root")
-            .RdbPassword("root")
+            .RdbPassword("replace me with your password")
             .sslEnabled(false)
             .build();
     CommonDBUtil.createDBIfNotExists(config);
@@ -56,7 +56,7 @@ class MigratorTest {
             .RdbDialect("org.hibernate.dialect.SQLServer2008Dialect")
             .RdbDatabaseName(dbName)
             .RdbUsername("SA")
-            .RdbPassword("admin@123")
+            .RdbPassword("replace me with your password")
             .sslEnabled(false)
             .build();
     CommonDBUtil.createDBIfNotExists(config);
