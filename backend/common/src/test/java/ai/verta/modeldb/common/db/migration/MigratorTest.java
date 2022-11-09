@@ -114,7 +114,6 @@ class MigratorTest {
   }
 
   private static void setDirtyAtVersion(Connection connection, int version) throws SQLException {
-    // manually set the dirty flag with the '2' migration.
     try (PreparedStatement ps =
         connection.prepareStatement("update schema_migrations set dirty = ?, version = ?")) {
       ps.setBoolean(1, true);
