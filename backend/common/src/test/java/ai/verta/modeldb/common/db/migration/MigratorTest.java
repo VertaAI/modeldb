@@ -72,6 +72,56 @@ class MigratorTest {
     verifyAllStateTransitions(config, connection, migrator);
   }
 
+  @Test
+  void handleDirty_h2() throws Exception {
+    RdbConfig config = createH2Config();
+    Connection connection = buildStandardDbConnection(config);
+    Migrator migrator = new Migrator(connection, "migrations/testing/h2");
+    migrator.performMigration(config, 1);
+
+    setDirtyAtVersion(connection, 2);
+
+    migrator.performMigration(config);
+    verifyVersionState(connection, 2);
+  }
+
+  @Test
+  @Disabled("only run manually to test things against mysql for now")
+  void handleDirty_mysql() throws Exception {
+    RdbConfig config = createMysqlConfig();
+    Connection connection = buildStandardDbConnection(config);
+    Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
+    migrator.performMigration(config, 1);
+
+    setDirtyAtVersion(connection, 2);
+
+    migrator.performMigration(config);
+    verifyVersionState(connection, 2);
+  }
+
+  @Test
+  @Disabled("only run manually to test things against sqlserver for now")
+  void handleDirty_sqlserver() throws Exception {
+    RdbConfig config = createSqlServerConfig();
+    Connection connection = buildStandardDbConnection(config);
+    Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
+    migrator.performMigration(config, 1);
+
+    setDirtyAtVersion(connection, 2);
+
+    migrator.performMigration(config);
+    verifyVersionState(connection, 2);
+  }
+
+  private static void setDirtyAtVersion(Connection connection, int version) throws SQLException {
+    try (PreparedStatement ps =
+        connection.prepareStatement("update schema_migrations set dirty = ?, version = ?")) {
+      ps.setBoolean(1, true);
+      ps.setInt(2, version);
+      ps.executeUpdate();
+    }
+  }
+
   private static void verifyAllStateTransitions(
       RdbConfig config, Connection connection, Migrator migrator)
       throws SQLException, MigrationException {
