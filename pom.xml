@@ -2,18 +2,24 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>2.7.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <relativePath/> <!-- lookup parent from maven repository -->
     </parent>
+
     <groupId>ai.verta.modeldb</groupId>
-    <artifactId>modeldb-parent</artifactId>
+    <artifactId>modeldb-root</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>modeldb-parent</name>
+    <name>modeldb-root</name>
     <url>http://maven.apache.org</url>
+
+    <modules>
+        <module>backend</module>
+    </modules>
 
     <properties>
         <hibernate.version>5.6.11.Final</hibernate.version>
@@ -39,12 +45,6 @@
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/coverage-reports/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.language>java</sonar.language>
     </properties>
-
-    <modules>
-        <module>backend/common</module>
-        <module>backend</module>
-    </modules>
-
 
     <dependencyManagement>
         <dependencies>
