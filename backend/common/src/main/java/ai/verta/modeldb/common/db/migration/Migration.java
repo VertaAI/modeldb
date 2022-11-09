@@ -13,7 +13,7 @@ class Migration implements Comparable<Migration> {
       if (this.isUp() && o.isUp()) {
         return 0;
       }
-      if (this.isUp()) {
+      if (this.isDown()) {
         return 1;
       }
       return -1;
