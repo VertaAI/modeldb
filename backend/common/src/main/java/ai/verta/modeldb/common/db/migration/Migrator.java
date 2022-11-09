@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.NavigableSet;
+import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -47,44 +48,61 @@ public class Migrator {
       throw new MigrationException(
           "Database is in a dirty state. Bailing out until dirty handling is implemented.");
     }
-    int versionToTarget =
-        desiredVersion != null
-            ? desiredVersion
-            : gatherMigrations(migration -> true, migration -> true).stream()
-                .map(Migration::getNumber)
-                .max(Integer::compareTo)
-                .orElse(0);
+    int versionToTarget = findVersionToTarget(desiredVersion);
     log.info("Starting database migration process to version: " + versionToTarget);
 
     if (currentState.getVersion() == versionToTarget) {
       log.info("No migrations to perform. Database is already at version " + versionToTarget);
       return;
     }
-    NavigableSet<Migration> migrationsToPerform =
+    SortedSet<Migration> migrationsToPerform =
         gatherMigrationsToPerform(currentState, versionToTarget);
     runMigrations(migrationDatastore, migrationsToPerform);
   }
 
-  private NavigableSet<Migration> gatherMigrationsToPerform(
+  private int findVersionToTarget(Integer desiredVersion) throws MigrationException {
+    return desiredVersion != null
+        ? desiredVersion
+        : gatherMigrations(migration -> true, migration -> true).stream()
+            .map(Migration::getNumber)
+            .max(Integer::compareTo)
+            .orElse(0);
+  }
+
+  private SortedSet<Migration> gatherMigrationsToPerform(
       MigrationState currentState, int versionToTarget) throws MigrationException {
-    NavigableSet<Migration> migrationsToPerform;
+    // if we're currently below the targeted version, we want up migrations in the right range,
+    // otherwise the down ones.
     if (currentState.getVersion() < versionToTarget) {
-      migrationsToPerform =
-          gatherMigrations(
-              Migration::isUp,
-              migration ->
-                  (migration.getNumber() > currentState.getVersion())
-                      && (migration.getNumber() <= versionToTarget));
-    } else {
-      migrationsToPerform =
-          gatherMigrations(
-                  Migration::isDown,
-                  migration ->
-                      migration.getNumber() > versionToTarget
-                          && migration.getNumber() <= currentState.getVersion())
-              .descendingSet();
+      return gatherMigrations(
+          Migration::isUp,
+          migration -> migrationLessThanTargetedVersion(currentState, versionToTarget, migration));
     }
-    return migrationsToPerform;
+    return gatherMigrations(
+            Migration::isDown,
+            migration ->
+                migrationGreaterThanTargetedVersion(currentState, versionToTarget, migration))
+        .descendingSet();
+  }
+
+  /**
+   * Returns whether the current migration is greater than targeted version, and less than or equal
+   * to the current state's version.
+   */
+  private static boolean migrationGreaterThanTargetedVersion(
+      MigrationState currentState, int versionToTarget, Migration migration) {
+    return migration.getNumber() > versionToTarget
+        && migration.getNumber() <= currentState.getVersion();
+  }
+
+  /**
+   * Returns whether the current migration is less than or equal to the targeted version, and
+   * greater than to the current state's version.
+   */
+  private static boolean migrationLessThanTargetedVersion(
+      MigrationState currentState, int versionToTarget, Migration migration) {
+    return (migration.getNumber() > currentState.getVersion())
+        && (migration.getNumber() <= versionToTarget);
   }
 
   private MigrationDatastore setupDatastore(RdbConfig config) throws SQLException {
@@ -109,7 +127,7 @@ public class Migrator {
   }
 
   private void runMigrations(
-      MigrationDatastore migrationDatastore, NavigableSet<Migration> migrationsToPerform)
+      MigrationDatastore migrationDatastore, SortedSet<Migration> migrationsToPerform)
       throws MigrationException, SQLException {
     MigrationTools.lockDatabase(migrationDatastore);
     try {
@@ -145,7 +163,7 @@ public class Migrator {
   }
 
   private NavigableSet<Migration> gatherMigrations(
-      Predicate<Migration> upOrDown, Predicate<Migration> versionPredicate)
+      Predicate<Migration> migrationDirectionFilter, Predicate<Migration> migrationVersionFilter)
       throws MigrationException {
     try {
       URI uri = Resources.getResource(resourcesDirectory).toURI();
@@ -153,8 +171,8 @@ public class Migrator {
       return Arrays.stream(directory.toFile().listFiles())
           .map(File::getName)
           .map(Migration::new)
-          .filter(upOrDown)
-          .filter(versionPredicate)
+          .filter(migrationDirectionFilter)
+          .filter(migrationVersionFilter)
           .collect(Collectors.toCollection(TreeSet::new));
     } catch (URISyntaxException e) {
       throw new MigrationException("Failed to read migration files.", e);
