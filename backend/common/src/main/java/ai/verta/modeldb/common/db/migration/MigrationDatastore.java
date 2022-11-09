@@ -4,7 +4,7 @@ import ai.verta.modeldb.common.config.RdbConfig;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-public interface MigrationDatastore {
+interface MigrationDatastore {
   String SCHEMA_MIGRATIONS_TABLE = "schema_migrations";
 
   /** Lock the database in order to perform migrations. */
