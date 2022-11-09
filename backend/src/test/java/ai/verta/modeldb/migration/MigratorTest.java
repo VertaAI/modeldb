@@ -12,11 +12,13 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class MigratorTest {
 
   @Test
+  @Disabled("only run manually to test things against mysql for now")
   void release_2022_08_ddl_migration_mysql() throws Exception {
     var dbName = "modeldbTestDB";
     RdbConfig config =
@@ -45,7 +47,7 @@ class MigratorTest {
 
   private static void verifyRelease202208DdlExecution(Connection connection, Migrator migrator)
       throws IOException, SQLException {
-    migrator.executeMigration(new Migration("mysql_release_2022_08.up.sql"));
+    migrator.executeMigration(new Migration("1_release_2022_08.up.sql"));
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
       assertThat(tables.next()).isTrue();
       assertThat(tables.getString("TABLE_NAME")).isEqualToIgnoringCase("artifact");
@@ -60,7 +62,7 @@ class MigratorTest {
           .isEqualToIgnoringCase("versioning_modeldb_entity_mapping_config_blob");
     }
 
-    migrator.executeMigration(new Migration("mysql_release_2022_08.down.sql"));
+    migrator.executeMigration(new Migration("1_release_2022_08.down.sql"));
 
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
       assertThat(tables.next()).isFalse();
