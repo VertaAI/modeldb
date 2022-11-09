@@ -353,15 +353,49 @@ public abstract class CommonDBUtil {
     }
   }
 
-  public void runMigrations(DatabaseConfig config, String migrationResourcesRootDirectory)
+  /**
+   * This method will use the {@link Migrator} tool to run migrations against the database. It does
+   * not assume that the database currently exists, and will create it if necessary.
+   *
+   * <p>The currentVersion parameter is used during the transition from liquibase to the new
+   * migrator. The table belows explains when it will be used. That is, it will only be used if the
+   * database already exists, the liquibase changelog table exists, and, the new migration table has
+   * not been initialized. In that specific case, the new migration table will be initialized with
+   * the provided value.
+   *
+   * <pre>
+   *     ________________________________________________________________________________________________________
+   *     | Database exists? | Liquibase changelog table exists? | migration table exists? | currentVersion used |
+   *     |       N          |              N/A                  |         N/A             |         N           |
+   *     |       Y          |               N                   |          Y              |         N           |
+   *     |       Y          |               N                   |          N              |         N           |
+   *     |       Y          |               Y                   |          Y              |         N           |
+   *     |       Y          |               Y                   |          N              |         Y           |
+   *     --------------------------------------------------------------------------------------------------------
+   * </pre>
+   *
+   * @param config The database configuration to use.
+   * @param migrationResourcesRootDirectory The subdirectory under resources to pull migrations
+   *     from.
+   * @param currentVersion The version that the database is assumed to be in, already, if converting
+   *     from liquibase.
+   */
+  public void runMigrations(
+      DatabaseConfig config,
+      String migrationResourcesRootDirectory,
+      Optional<Integer> currentVersion)
       throws SQLException, MigrationException {
     RdbConfig rdbConfiguration = config.getRdbConfiguration();
     createDBIfNotExists(rdbConfiguration);
     Connection connection = acquireDatabaseConnection(config, rdbConfiguration);
     Migrator migrator =
         new Migrator(
-            connection, findResourcesDirectory(migrationResourcesRootDirectory, rdbConfiguration));
-    migrator.performMigration(rdbConfiguration);
+            connection,
+            findResourcesDirectory(migrationResourcesRootDirectory, rdbConfiguration),
+            rdbConfiguration);
+    boolean liquibaseTableExists = tableExists(connection, config, "database_change_log");
+    migrator.preInitializeIfRequired(liquibaseTableExists, currentVersion);
+    migrator.performMigration();
   }
 
   private String findResourcesDirectory(String rootDirectory, RdbConfig rdbConfiguration) {
