@@ -5,10 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.config.RdbConfig;
 import java.io.IOException;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
@@ -69,9 +66,21 @@ class MigratorTest {
   @Test
   void performMigration_h2() throws Exception {
     RdbConfig config = createH2Config();
-    Migrator migrator = new Migrator(buildStandardDbConnection(config), "migrations/testing/h2");
+    Connection connection = buildStandardDbConnection(config);
+    Migrator migrator = new Migrator(connection, "migrations/testing/h2");
 
     migrator.performMigration(config);
+
+    verifyMigrations(connection);
+  }
+
+  private static void verifyMigrations(Connection connection) throws SQLException {
+    try (PreparedStatement ps =
+        connection.prepareStatement("select count(*) from schema_migrations")) {
+      ResultSet resultSet = ps.executeQuery();
+      assertThat(resultSet.next()).isTrue();
+      assertThat(resultSet.getLong(1)).isEqualTo(0);
+    }
   }
 
   @Test
@@ -79,10 +88,11 @@ class MigratorTest {
   void performMigration_sqlServer() throws Exception {
     RdbConfig config = createSqlServerConfig();
     CommonDBUtil.createDBIfNotExists(config);
-    Migrator migrator =
-        new Migrator(buildStandardDbConnection(config), "migrations/testing/sqlsvr");
+    Connection connection = buildStandardDbConnection(config);
+    Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
 
     migrator.performMigration(config);
+    verifyMigrations(connection);
   }
 
   @Test
@@ -90,8 +100,10 @@ class MigratorTest {
   void performMigration_mySql() throws Exception {
     RdbConfig config = createMysqlConfig();
     CommonDBUtil.createDBIfNotExists(config);
-    Migrator migrator = new Migrator(buildStandardDbConnection(config), "migrations/testing/mysql");
+    Connection connection = buildStandardDbConnection(config);
+    Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
     migrator.performMigration(config);
+    verifyMigrations(connection);
   }
 
   private static Connection buildH2Connection() throws SQLException {
@@ -134,7 +146,7 @@ class MigratorTest {
         .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
         .RdbDatabaseName("migrationTestDb")
         .RdbUsername("root")
-        .RdbPassword("fill me in")
+        .RdbPassword("MyN3wP4ssw0rd!")
         .sslEnabled(false)
         .build();
   }
