@@ -23,6 +23,9 @@ public class Migrator {
   public void performMigration(RdbConfig config) throws SQLException, MigrationException {
     log.info("Starting database migration process");
     MigrationDatastore migrationDatastore = MigrationDatastore.create(config, connection);
+
+    migrationDatastore.ensureMigrationTableExists();
+
     MigrationTools.lockDatabase(migrationDatastore);
     try {
       // todo: actually do some migration work

@@ -6,16 +6,19 @@ import java.util.zip.CRC32;
 import lombok.extern.log4j.Log4j2;
 
 @Log4j2
-public class MigrationTools {
-  public static String generateLockId(String database, String otherLockInfo) {
+class MigrationTools {
+
+  private static final int MAX_LOCK_TRIES = 15;
+
+  static String generateLockId(String database, String otherLockInfo) {
     CRC32 crc32 = new CRC32();
     crc32.update((database + ":" + otherLockInfo).getBytes(StandardCharsets.UTF_8));
     return String.valueOf(crc32.getValue());
   }
 
-  public static void lockDatabase(MigrationDatastore datastore) throws MigrationException {
+  static void lockDatabase(MigrationDatastore datastore) throws MigrationException {
     int tries = 0;
-    while (tries++ < 15) {
+    while (tries++ < MAX_LOCK_TRIES) {
       try {
         datastore.lock();
         return;

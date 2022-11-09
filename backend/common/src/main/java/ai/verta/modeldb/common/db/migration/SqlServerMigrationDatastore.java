@@ -2,10 +2,10 @@ package ai.verta.modeldb.common.db.migration;
 
 import java.sql.*;
 
-public class SqlServerMigrationDatabase implements MigrationDatastore {
+public class SqlServerMigrationDatastore implements MigrationDatastore {
   private final Connection connection;
 
-  public SqlServerMigrationDatabase(Connection connection) {
+  public SqlServerMigrationDatastore(Connection connection) {
     this.connection = connection;
   }
 
@@ -42,6 +42,22 @@ public class SqlServerMigrationDatabase implements MigrationDatastore {
         throw new SQLException(
             "Failed to unlock the database post-migration. Result code: " + outValue);
       }
+    }
+  }
+
+  @Override
+  public void ensureMigrationTableExists() throws SQLException {
+    String sql =
+        "IF NOT EXISTS"
+            + "(SELECT *  FROM sysobjects  WHERE id = object_id(N'[dbo].["
+            + SCHEMA_MIGRATIONS_TABLE
+            + "]') "
+            + " AND OBJECTPROPERTY(id, N'IsUserTable') = 1 )"
+            + "CREATE TABLE "
+            + SCHEMA_MIGRATIONS_TABLE
+            + " ( version BIGINT PRIMARY KEY NOT NULL, dirty BIT NOT NULL );";
+    try (PreparedStatement ps = connection.prepareStatement(sql)) {
+      ps.execute();
     }
   }
 
