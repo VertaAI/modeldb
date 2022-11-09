@@ -37,42 +37,11 @@ class MigratorTest {
     try {
       Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
 
-      verifyMySqlRelease202208DdlExecution(connection, migrator);
+      verifyRelease202208DdlExecution(connection, migrator);
     } finally {
       try (Statement statement = connection.createStatement()) {
         statement.executeUpdate(String.format("drop database %s;", dbName));
       }
-    }
-  }
-
-  private static void verifyMySqlRelease202208DdlExecution(Connection connection, Migrator migrator)
-      throws IOException, SQLException {
-    migrator.executeMigration(new Migration("1_release_2022_08.up.sql"));
-    try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
-      assertThat(tables.next()).isTrue();
-      assertThat(tables.getString("TABLE_NAME")).isEqualToIgnoringCase("artifact");
-    }
-
-    try (ResultSet tables =
-        connection
-            .getMetaData()
-            .getTables(null, null, "versioning_modeldb_entity_mapping_config_blob", null)) {
-      assertThat(tables.next()).isTrue();
-      assertThat(tables.getString("TABLE_NAME"))
-          .isEqualToIgnoringCase("versioning_modeldb_entity_mapping_config_blob");
-    }
-
-    migrator.executeMigration(new Migration("1_release_2022_08.down.sql"));
-
-    try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
-      assertThat(tables.next()).isFalse();
-    }
-
-    try (ResultSet tables =
-        connection
-            .getMetaData()
-            .getTables(null, null, "versioning_modeldb_entity_mapping_config_blob", null)) {
-      assertThat(tables.next()).isFalse();
     }
   }
 
@@ -96,7 +65,7 @@ class MigratorTest {
     try {
       Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
 
-      verifySqlserverRelease202208DdlExecution(connection, migrator);
+      verifyRelease202208DdlExecution(connection, migrator);
     } finally {
       try (Statement statement = connection.createStatement()) {
         statement.executeUpdate(String.format("USE Master; drop database %s;", dbName));
@@ -104,8 +73,8 @@ class MigratorTest {
     }
   }
 
-  private static void verifySqlserverRelease202208DdlExecution(
-      Connection connection, Migrator migrator) throws IOException, SQLException {
+  private static void verifyRelease202208DdlExecution(Connection connection, Migrator migrator)
+      throws IOException, SQLException {
     migrator.executeMigration(new Migration("1_release_2022_08.up.sql"));
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
       assertThat(tables.next()).isTrue();
