@@ -38,9 +38,16 @@ class MigratorTest {
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
 
-    Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr", config);
+    try {
+      Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr", config);
 
-    verifyDdlExecution(connection, migrator);
+      verifyDdlExecution(connection, migrator);
+    } finally {
+      try (Statement statement = connection.createStatement()) {
+        statement.executeUpdate(
+            String.format("USE master; drop database %s;", config.getRdbDatabaseName()));
+      }
+    }
   }
 
   @Test
@@ -50,9 +57,15 @@ class MigratorTest {
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
 
-    Migrator migrator = new Migrator(connection, "migrations/testing/mysql", config);
+    try {
+      Migrator migrator = new Migrator(connection, "migrations/testing/mysql", config);
 
-    verifyDdlExecution(connection, migrator);
+      verifyDdlExecution(connection, migrator);
+    } finally {
+      try (Statement statement = connection.createStatement()) {
+        statement.executeUpdate(String.format("drop database %s;", config.getRdbDatabaseName()));
+      }
+    }
   }
 
   private static void verifyDdlExecution(Connection connection, Migrator migrator)
