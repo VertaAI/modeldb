@@ -42,6 +42,9 @@ from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
 from ..stage_change import _StageChange
 
+from verta.dataset.entities import (
+    _dataset_version
+)
 
 logger = logging.getLogger(__name__)
 
@@ -123,6 +126,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "experiment run id: {}".format(msg.experiment_run_id),
                 # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
                 "artifact keys: {}".format(artifact_keys),
+                "datasets: {}".format(msg.datasets),
+                "code_blob_map: {}".format(msg.code_blob_map),
             )
         )
 
@@ -1514,3 +1519,92 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def get_hide_output_label(self):
         self._refresh_cache()
         return self._msg.hide_output_label
+
+    def log_dataset_version(self, key, dataset_version):
+        """
+        Logs a Verta DatasetVersion to this Model Version with the given key.
+
+        Parameters
+        ----------
+        key : str
+            Name of the dataset version.
+        dataset_version : :class:`~verta.dataset.entities.DatasetVersion`
+            Dataset version.
+
+        """
+        if not isinstance(dataset_version, _dataset_version.DatasetVersion):
+            raise TypeError("`dataset_version` must be of type DatasetVersion")
+
+        artifact_msg = _CommonCommonService.Artifact(
+            key=key,
+            path_only=True,
+            artifact_type=_CommonCommonService.ArtifactTypeEnum.DATA,
+            linked_artifact_id=dataset_version.id,
+        )
+
+        msg = _RegistryService.LogDatasetsInModelVersion(
+            model_version_id=self.id,
+            datasets=[artifact_msg],
+        )
+
+        endpoint = "/api/v1/registry/model_versions/{}/logDatasets".format(
+            self.id,
+        )
+
+        response = self._conn.make_proto_request("POST", endpoint, body=msg)
+        self._conn.must_response(response)
+        self._clear_cache()
+
+    def get_dataset_version(self, key):
+        """
+        Gets the DatasetVersion with name `key` from this Model Version.
+
+        Parameters
+        ----------
+        key : str
+            Name of the dataset version.
+
+        Returns
+        -------
+        :class:`~verta.dataset.entities.DatasetVersion`
+            DatasetVersion associated with the given key.
+
+        """
+        self._refresh_cache()
+
+        for dataset in self._msg.datasets:
+            if dataset.key == key:
+                return _dataset_version.DatasetVersion(
+                    self._conn,
+                    self._conf,
+                    _dataset_version.DatasetVersion._get_proto_by_id(
+                        self._conn, dataset.linked_artifact_id
+                    ),
+                )
+
+        raise KeyError("no dataset found with key {}".format(key))
+
+    def del_dataset_version(self, key):
+        """
+        Deletes the DatasetVersion with name `key` from this Model Version.
+
+        Parameters
+        ----------
+        key : str
+            Name of dataset version.
+
+        """
+        self._fetch_with_no_cache()
+
+        ind = -1
+        for i in range(len(self._msg.datasets)):
+            dataset = self._msg.datasets[i]
+            if dataset.key == key:
+                ind = i
+                break
+
+        if ind == -1:
+            raise KeyError("no dataset found with key {}".format(key))
+
+        del self._msg.datasets[ind]
+        self._update(self._msg, method="PUT")

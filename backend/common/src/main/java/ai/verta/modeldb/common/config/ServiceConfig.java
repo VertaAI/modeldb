@@ -25,4 +25,8 @@ public class ServiceConfig {
     if (host == null || host.isEmpty())
       throw new InvalidConfigException(base + ".host", CommonMessages.MISSING_REQUIRED);
   }
+
+  public void setPort(int port) {
+    this.port = port;
+  }
 }

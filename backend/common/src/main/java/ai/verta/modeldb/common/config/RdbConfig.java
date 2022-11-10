@@ -5,16 +5,12 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 @Data
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
@@ -25,14 +21,13 @@ public class RdbConfig {
   private static final Logger LOGGER = LogManager.getLogger(RdbConfig.class);
 
   @JsonProperty private String RdbDatabaseName;
-  // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled
   @JsonProperty private String RdbDriver;
   @JsonProperty private String RdbDialect;
   @JsonProperty private String RdbUrl;
   @JsonProperty private String RdbUsername;
   @JsonProperty private String RdbPassword;
-  @JsonProperty private String sslMode = "DISABLED";
-  @JsonProperty private Boolean sslEnabled = false;
+  @Builder.Default @JsonProperty private String sslMode = "DISABLED";
+  @Builder.Default @JsonProperty private Boolean sslEnabled = false;
   @JsonProperty private String DBConnectionURL;
 
   public void validate(String base) throws InvalidConfigException {
@@ -94,7 +89,7 @@ public class RdbConfig {
         rdb.RdbUrl
             + "/"
             + rdb.getRdbDatabaseName()
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true"
             + "&sslEnabled="
             + rdb.sslEnabled
             + "&sslMode="
@@ -109,7 +104,7 @@ public class RdbConfig {
     }
 
     if (rdb.isH2()) {
-      return rdb.RdbUrl + ";DB_CLOSE_DELAY=-1";
+      return rdb.RdbUrl + ";DB_CLOSE_DELAY=-1;CASE_INSENSITIVE_IDENTIFIERS=TRUE";
     }
 
     if (rdb.isMssql()) {
