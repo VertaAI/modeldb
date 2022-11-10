@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.db.migration.Migration;
+import ai.verta.modeldb.common.db.migration.MigrationException;
 import ai.verta.modeldb.common.db.migration.Migrator;
 import java.io.IOException;
 import java.sql.Connection;
@@ -39,9 +40,7 @@ class MigratorTest {
 
     try {
       Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
-      migrator.performMigration(config);
-      verifyRelease202208DdlExecution(connection, migrator);
-      verifyMigrations(connection);
+      verifyAllStateTransitions(config, connection, migrator);
     } finally {
       try (Statement statement = connection.createStatement()) {
         statement.executeUpdate(String.format("drop database %s;", config.getRdbDatabaseName()));
@@ -51,7 +50,7 @@ class MigratorTest {
 
   private static void verifyRelease202208DdlExecution(Connection connection, Migrator migrator)
       throws IOException, SQLException {
-    migrator.executeMigration(new Migration("1_release_2022_08.up.sql"));
+    migrator.executeSingleMigration(new Migration("1_release_2022_08.up.sql"));
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
       assertThat(tables.next()).isTrue();
       assertThat(tables.getString("TABLE_NAME")).isEqualToIgnoringCase("artifact");
@@ -66,7 +65,7 @@ class MigratorTest {
           .isEqualToIgnoringCase("versioning_modeldb_entity_mapping_config_blob");
     }
 
-    migrator.executeMigration(new Migration("1_release_2022_08.down.sql"));
+    migrator.executeSingleMigration(new Migration("1_release_2022_08.down.sql"));
 
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
       assertThat(tables.next()).isFalse();
@@ -86,12 +85,24 @@ class MigratorTest {
         connectionString, rdbConfig.getRdbUsername(), rdbConfig.getRdbPassword());
   }
 
-  private static void verifyMigrations(Connection connection) throws SQLException {
+  private static void verifyAllStateTransitions(
+      RdbConfig config, Connection connection, Migrator migrator)
+      throws SQLException, MigrationException {
+    migrator.performMigration(config, 0);
+    verifyVersionState(connection, 0);
+
+    migrator.performMigration(config, 1);
+    verifyVersionState(connection, 1);
+  }
+
+  private static void verifyVersionState(Connection connection, int expectedVersion)
+      throws SQLException {
     try (PreparedStatement ps =
-        connection.prepareStatement("select count(*) from schema_migrations")) {
+        connection.prepareStatement("select version, dirty from schema_migrations")) {
       ResultSet resultSet = ps.executeQuery();
       assertThat(resultSet.next()).isTrue();
-      assertThat(resultSet.getLong(1)).isEqualTo(0);
+      assertThat(resultSet.getLong(1)).isEqualTo(expectedVersion);
+      assertThat(resultSet.getBoolean(2)).isEqualTo(false);
     }
   }
 }
