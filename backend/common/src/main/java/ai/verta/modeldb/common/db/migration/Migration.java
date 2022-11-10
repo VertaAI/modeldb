@@ -8,20 +8,38 @@ public class Migration implements Comparable<Migration> {
 
   @Override
   public int compareTo(Migration o) {
-    return this.getNumber() - o.getNumber();
+    int versionDiff = this.getNumber() - o.getNumber();
+    if (versionDiff == 0) {
+      if (this.isUp() && o.isUp()) {
+        return 0;
+      }
+      if (this.isDown()) {
+        return 1;
+      }
+      return -1;
+    }
+    return versionDiff;
   }
 
-  public int getNumber() {
+  int getNumber() {
     String[] pieces = filename.split("_");
     return Integer.parseInt(pieces[0]);
   }
 
-  public boolean isUp() {
+  /**
+   * An "up" migration could also be called the "forward" migration. It is the migration that
+   * applies a change to an existing database.
+   */
+  boolean isUp() {
     String[] pieces = filename.split("\\.");
     return "up".equals(pieces[1]);
   }
 
-  public boolean isDown() {
+  /**
+   * A "down" migration could also be called the "reverse" migration. It is the migration that
+   * reverts the change from the corresponding "up" migration.
+   */
+  boolean isDown() {
     String[] pieces = filename.split("\\.");
     return "down".equals(pieces[1]);
   }
