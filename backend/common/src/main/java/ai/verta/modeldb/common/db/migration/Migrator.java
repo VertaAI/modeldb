@@ -225,12 +225,13 @@ public class Migrator {
    * Pre-initializes the schema migrations table, in cases where the database is being converted
    * from a legacy migration tool (i.e. liquibase).
    *
-   * <p>_If and only if_ ALL the following conditions are met, then the <code>schema_migrations</code>
-   * table will be initialized with the value of <code>assumedCurrentVersion</code>: 
+   * <p>_If and only if_ ALL the following conditions are met, then the <code>schema_migrations
+   * </code> table will be initialized with the value of <code>assumedCurrentVersion</code>:
+   *
    * <ul>
-   * <li> there are legacy migrations present
-   * <li> there is no existing <code>schema_migrations</code> table
-   * <li> an <code>assumedCurrentVersion</code> value is provided
+   *   <li>there are legacy migrations present
+   *   <li>there is no existing <code>schema_migrations</code> table
+   *   <li>an <code>assumedCurrentVersion</code> value is provided
    * </ul>
    *
    * <p>If legacy migrations are in place, and you do not provide an assumed current version, this
