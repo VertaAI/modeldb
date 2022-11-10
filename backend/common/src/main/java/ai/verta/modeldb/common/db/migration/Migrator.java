@@ -178,6 +178,7 @@ public class Migrator {
     try {
       List<String> fileNames =
           Resources.readLines(Resources.getResource(resourcesDirectory), StandardCharsets.UTF_8);
+      log.info("Found migration filenames: " + fileNames);
       return fileNames.stream()
           .map(Migration::new)
           .filter(migrationDirectionFilter)
