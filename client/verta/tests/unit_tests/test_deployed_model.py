@@ -186,10 +186,8 @@ def test_predict_with_prediction_id_provided(mocked_responses) -> None:
     mocked_responses.post(
         PREDICTION_URL,
         json={'test1': 'test1'},
-        headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
         status=200,
-        match=[matchers.header_matcher({'verta-request-id': 'hereISaTESTidFROMtheUSER'})]
-        # matches the headers of the outgoing request
+        headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
         )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
@@ -229,10 +227,8 @@ def test_predict_with_id_prediction_id_provided(mocked_responses) -> None:
       includes the id provided in the response with the prediction results """
     mocked_responses.post(
         PREDICTION_URL,
-        headers={'verta-request-id': 'hereISoneTESTidFROMtheUSER'},
+        headers={'verta-request-id': 'hereISomeTESTidFROMtheUSER'},
         # Adds this header to the mocked http response.
-        match=[matchers.header_matcher({'verta-request-id': 'hereISoneTESTidFROMtheUSER'})],
-        # matches the headers of the outgoing request
         json={'test2': 'test2'},
         status=200,
         )
@@ -245,9 +241,9 @@ def test_predict_with_id_prediction_id_provided(mocked_responses) -> None:
     with mocked_responses as mr:
         prediction = dm.predict_with_id(
             x=['test_prediction'],
-            prediction_id='hereISoneTESTidFROMtheUSER'
+            prediction_id='hereISomeTESTidFROMtheUSER'
             )
-        assert prediction == ('hereISoneTESTidFROMtheUSER', {'test2': 'test2'})
+        assert prediction == ('hereISomeTESTidFROMtheUSER', {'test2': 'test2'})
 
 
 def test_predict_with_id_http_defaults_200(mocked_responses) -> None:

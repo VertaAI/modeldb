@@ -91,15 +91,13 @@ class DeployedModel(object):
         session: Session = http_session.init_session(retry=self._retry_config)
 
         if self._credentials:
-            http_session.update_session_headers(
-                session,
+            session.headers.update(
                 Connection.prefixed_headers_for_credentials(self._credentials)
-            )
+                )
         if self._access_token:
-            http_session.update_session_headers(
-                session,
+            session.headers.update(
                 AccessToken(self._access_token).headers()
-            )
+                )
         self._session = session
 
     def __repr__(self):
@@ -121,29 +119,31 @@ class DeployedModel(object):
 
 
     # TODO: Implement dynamic compression via separate utility and call it from here
-    def _predict(self, x, compress=False):
+    def _predict(
+            self,
+            x: Any,
+            compress: bool=False,
+            prediction_id: Optional[str]=None,
+            ):
         """This is like ``DeployedModel.predict()``, but returns the raw ``Response``
          for debugging."""
+        request_headers = dict()
+        if prediction_id:
+            request_headers.update({'verta-request-id': prediction_id})
+
         x = _utils.to_builtin(x)
         if compress:
+            request_headers.update({'Content-Encoding': 'gzip'})
             # create gzip
             gzstream = six.BytesIO()
             with gzip.GzipFile(fileobj=gzstream, mode="wb") as gzf:
                 gzf.write(six.ensure_binary(json.dumps(x)))
             gzstream.seek(0)
 
-            http_session.update_session_headers(
-                self._session,
-                {"Content-Encoding": "gzip"},
-            )
             response = self._session.post(
                 self._prediction_url,
+                headers=request_headers,
                 data=gzstream.read(),
-            )
-            http_session.update_session_headers(
-                self._session,
-                {"Content-Encoding": "gzip"},
-                remove=True,
             )
             return response
         else:
@@ -318,20 +318,7 @@ class DeployedModel(object):
             backoff_factor=backoff_factor,
             )
 
-        # Remove request id header from previous requests if present.
-        if 'verta-request-id' in self._session.headers.keys():
-            http_session.update_session_headers(
-                self._session,
-                {'verta-request-id': ''},
-                remove=True
-                )
-
-        if prediction_id:
-            http_session.update_session_headers(
-                self._session,
-                {'verta-request-id': prediction_id},
-                )
-        response = self._predict(x, compress)
+        response = self._predict(x, compress, prediction_id)
         id = response.headers['verta-request-id']
         return (id, _utils.body_to_json(response))
 
