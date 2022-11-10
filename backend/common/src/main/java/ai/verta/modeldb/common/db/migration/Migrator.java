@@ -39,7 +39,7 @@ public class Migrator {
     performMigration(null);
   }
 
-  void performMigration(Integer desiredVersion) throws SQLException, MigrationException {
+  public void performMigration(Integer desiredVersion) throws SQLException, MigrationException {
     MigrationDatastore migrationDatastore = setupDatastore();
     MigrationState currentState = findCurrentState();
     if (currentState == null) {
@@ -210,7 +210,7 @@ public class Migrator {
     }
   }
 
-  void executeSingleMigration(Migration migration) throws IOException, SQLException {
+  public void executeSingleMigration(Migration migration) throws IOException, SQLException {
     log.info("executing migration: " + migration);
     String sql =
         Resources.toString(
