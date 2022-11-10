@@ -23,10 +23,6 @@ public class Migration {
     modelDBHibernateUtil.runMigrations(databaseConfig, "migration", Optional.of(1));
     LOGGER.info("Migrations Complete");
 
-    //    LOGGER.info("Liquibase migration starting");
-    //    modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
-    //    LOGGER.info("Liquibase migration done");
-
     // Initialized session factory before code migration and after liquibase migration
     modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
