@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.db.migration.Migrator;
 import java.io.IOException;
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -17,30 +18,33 @@ import org.junit.jupiter.api.Test;
 
 class MigratorTest {
 
+  private static RdbConfig createMysqlConfig() {
+    return RdbConfig.builder()
+        .RdbUrl("jdbc:mysql://localhost:3306")
+        .RdbDriver("org.mariadb.jdbc.Driver")
+        .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
+        .RdbDatabaseName("migrationTestDb")
+        .RdbUsername("root")
+        .RdbPassword("MyN3wP4ssw0rd!")
+        .sslEnabled(false)
+        .build();
+  }
+
   @Test
   @Disabled("only run manually to test things against mysql for now")
   void release_2022_08_ddl_migration_mysql() throws Exception {
-    var dbName = "modeldbTestDB";
-    RdbConfig config =
-        RdbConfig.builder()
-            .RdbUrl("jdbc:mysql://localhost:3306")
-            .RdbDriver("org.mariadb.jdbc.Driver")
-            .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
-            .RdbDatabaseName(dbName)
-            .RdbUsername("root")
-            .RdbPassword("root")
-            .sslEnabled(false)
-            .build();
+    RdbConfig config = createMysqlConfig();
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
 
     try {
       Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
-
+      migrator.performMigration(config);
       verifyRelease202208DdlExecution(connection, migrator);
+      verifyMigrations(connection);
     } finally {
       try (Statement statement = connection.createStatement()) {
-        statement.executeUpdate(String.format("drop database %s;", dbName));
+        statement.executeUpdate(String.format("drop database %s;", config.getRdbDatabaseName()));
       }
     }
   }
@@ -80,5 +84,14 @@ class MigratorTest {
     String connectionString = RdbConfig.buildDatabaseConnectionString(rdbConfig);
     return DriverManager.getConnection(
         connectionString, rdbConfig.getRdbUsername(), rdbConfig.getRdbPassword());
+  }
+
+  private static void verifyMigrations(Connection connection) throws SQLException {
+    try (PreparedStatement ps =
+        connection.prepareStatement("select count(*) from schema_migrations")) {
+      ResultSet resultSet = ps.executeQuery();
+      assertThat(resultSet.next()).isTrue();
+      assertThat(resultSet.getLong(1)).isEqualTo(0);
+    }
   }
 }

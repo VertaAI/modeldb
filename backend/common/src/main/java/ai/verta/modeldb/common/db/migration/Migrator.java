@@ -34,7 +34,7 @@ public class Migrator {
     }
   }
 
-  void executeMigration(Migration migration) throws IOException, SQLException {
+  public void executeMigration(Migration migration) throws IOException, SQLException {
     String sql =
         Resources.toString(
             Resources.getResource(resourcesDirectory + "/" + migration.getFilename()),
