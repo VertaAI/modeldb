@@ -39,8 +39,8 @@ class MigratorTest {
     Connection connection = buildStandardDbConnection(config);
 
     try {
-      Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
-      verifyAllStateTransitions(config, connection, migrator);
+      Migrator migrator = new Migrator(connection, "migrations/testing/mysql", config);
+      verifyStateTransitions(connection, migrator);
     } finally {
       try (Statement statement = connection.createStatement()) {
         statement.executeUpdate(String.format("drop database %s;", config.getRdbDatabaseName()));
@@ -85,13 +85,12 @@ class MigratorTest {
         connectionString, rdbConfig.getRdbUsername(), rdbConfig.getRdbPassword());
   }
 
-  private static void verifyAllStateTransitions(
-      RdbConfig config, Connection connection, Migrator migrator)
+  private static void verifyStateTransitions(Connection connection, Migrator migrator)
       throws SQLException, MigrationException {
-    migrator.performMigration(config, 0);
+    migrator.performMigration(0);
     verifyVersionState(connection, 0);
 
-    migrator.performMigration(config, 1);
+    migrator.performMigration(1);
     verifyVersionState(connection, 1);
   }
 
