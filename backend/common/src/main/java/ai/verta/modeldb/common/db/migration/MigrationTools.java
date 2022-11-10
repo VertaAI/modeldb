@@ -7,7 +7,6 @@ import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 class MigrationTools {
-
   private static final int MAX_LOCK_TRIES = 15;
 
   static String generateLockId(String database, String otherLockInfo) {

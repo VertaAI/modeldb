@@ -2,7 +2,7 @@ package ai.verta.modeldb.common.db.migration;
 
 import java.sql.*;
 
-public class SqlServerMigrationDatastore implements MigrationDatastore {
+class SqlServerMigrationDatastore implements MigrationDatastore {
   private final Connection connection;
 
   public SqlServerMigrationDatastore(Connection connection) {
