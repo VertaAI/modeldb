@@ -181,11 +181,11 @@ class DeployedModel(object):
         x: List[Any],
         compress=False,
         max_retries: Optional[int] = http_session.DEFAULT_MAX_RETRIES,
-        prediction_id: Optional[str] = None,
         always_retry_404=False,
         always_retry_429=False,
         retry_status: Optional[Set[int]] = http_session.DEFAULT_STATUS_FORCELIST,
-        backoff_factor: Optional[float] = http_session.DEFAULT_BACKOFF_FACTOR
+        backoff_factor: Optional[float] = http_session.DEFAULT_BACKOFF_FACTOR,
+        prediction_id: Optional[str] = None,
         ) -> Dict[str, Any]:
         """
         Makes a prediction using input `x`.
@@ -199,11 +199,11 @@ class DeployedModel(object):
            ``retry_status`` parameter.  Default is 13 retries over 10 minutes.  This behavior
            can be changed by adjusting ``max_retries`` and ``backoff_factor``.
         .. versionadded:: 0.22.0
-           The ``prediction_id`` parameter.
-        .. versionadded:: 0.22.0
            The ``retry_status`` parameter.
         .. versionadded:: 0.22.0
            The ``backoff_factor`` parameter.
+        .. versionadded:: 0.22.0
+           The ``prediction_id`` parameter.
 
         Parameters
         ----------
@@ -213,8 +213,6 @@ class DeployedModel(object):
             Whether to compress the request body.
         max_retries : int, default 13
             Maximum number of times to retry a request.
-        prediction_id: str, default None
-            A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
         always_retry_404 : bool, default True
             Deprecated: Whether to retry on 404s indefinitely. This is to accommodate model deployment warm-up.
         always_retry_429 : bool, default True
@@ -227,6 +225,8 @@ class DeployedModel(object):
             A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
             120 seconds.
+        prediction_id: str, default None
+            A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
         Returns
         -------
         prediction : list
@@ -264,9 +264,9 @@ class DeployedModel(object):
             x: List[Any],
             compress=False,
             max_retries: Optional[int] = http_session.DEFAULT_MAX_RETRIES,
-            prediction_id: Optional[str] = None,
             retry_status: Optional[Set[int]] = http_session.DEFAULT_STATUS_FORCELIST,
-            backoff_factor: Optional[float] = http_session.DEFAULT_BACKOFF_FACTOR
+            backoff_factor: Optional[float] = http_session.DEFAULT_BACKOFF_FACTOR,
+            prediction_id: Optional[str] = None,
             ) -> Tuple[str, Dict[str, Any]]:
         """
         Makes a prediction using input `x` the same as `predict`, but returns a tuple including the ID of the
@@ -285,8 +285,6 @@ class DeployedModel(object):
             A batch of inputs for the model.
         compress : bool, default False
             Whether to compress the request body.
-        prediction_id: str, default None
-            A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
         max_retries : int, default 13
             Maximum number of times to retry a request.
         retry_status : set, default {404, 429}
@@ -296,6 +294,8 @@ class DeployedModel(object):
             A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
             120 seconds.
+        prediction_id: str, default None
+            A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
         Returns
         -------
         id, prediction: Tuple(str, list)
