@@ -1,20 +1,32 @@
 package ai.verta.modeldb.common.db.migration;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.config.RdbConfig;
 import java.io.IOException;
 import java.sql.*;
+import java.util.Optional;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class MigratorTest {
+  @BeforeEach
+  void setUp() throws SQLException {
+    try (Connection connection = buildH2Connection();
+        Statement statement = connection.createStatement()) {
+      statement.executeUpdate("DROP TABLE IF EXISTS test_table");
+      statement.executeUpdate("DROP TABLE IF EXISTS schema_migrations");
+    }
+  }
+
   @Test
   void singleMigration_h2() throws Exception {
     Connection connection = buildH2Connection();
 
-    Migrator migrator = new Migrator(connection, "migrations/testing/h2");
+    Migrator migrator = new Migrator(connection, "migrations/testing/h2", createH2Config());
 
     verifyDdlExecution(connection, migrator);
   }
@@ -27,7 +39,7 @@ class MigratorTest {
     Connection connection = buildStandardDbConnection(config);
 
     try {
-      Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
+      Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr", config);
 
       verifyDdlExecution(connection, migrator);
     } finally {
@@ -46,7 +58,7 @@ class MigratorTest {
     Connection connection = buildStandardDbConnection(config);
 
     try {
-      Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
+      Migrator migrator = new Migrator(connection, "migrations/testing/mysql", config);
 
       verifyDdlExecution(connection, migrator);
     } finally {
@@ -80,21 +92,62 @@ class MigratorTest {
   void performMigration_h2() throws Exception {
     RdbConfig config = createH2Config();
     Connection connection = buildStandardDbConnection(config);
-    Migrator migrator = new Migrator(connection, "migrations/testing/h2");
+    Migrator migrator = new Migrator(connection, "migrations/testing/h2", config);
 
     verifyAllStateTransitions(config, connection, migrator);
+  }
+
+  @Test
+  void preMigration_h2() throws Exception {
+    RdbConfig config = createH2Config();
+    Connection connection = buildStandardDbConnection(config);
+    Migrator migrator = new Migrator(connection, "migrations/testing/h2", config);
+
+    // clean, never before initialized database with no legacy version expected:
+    migrator.preInitializeIfRequired(false, Optional.empty());
+    verifyNoSchemaMigrationTableExists(connection);
+
+    // clean, never before initialized database, with a specific legacy version expected:
+    migrator.preInitializeIfRequired(false, Optional.of(2));
+    verifyNoSchemaMigrationTableExists(connection);
+
+    // existing database with legacy migrations already applied, but no assumed current version.
+    // This should never be done!
+    assertThatThrownBy(() -> migrator.preInitializeIfRequired(true, Optional.empty()))
+        .isInstanceOf(IllegalStateException.class);
+    verifyNoSchemaMigrationTableExists(connection);
+
+    // existing database with legacy migrations already applied, at an assumed version of 5.
+    migrator.preInitializeIfRequired(true, Optional.of(5));
+    verifyVersionState(connection, 5);
+
+    // since the schema_versions table exists now, the pre-initializer should do nothing.
+    // existing database with both legacy and migrator migrations applied
+    migrator.preInitializeIfRequired(true, Optional.of(1));
+    verifyVersionState(connection, 5);
+    migrator.preInitializeIfRequired(false, Optional.of(1));
+    verifyVersionState(connection, 5);
+    migrator.preInitializeIfRequired(false, Optional.empty());
+    verifyVersionState(connection, 5);
+  }
+
+  private void verifyNoSchemaMigrationTableExists(Connection connection) throws SQLException {
+    try (ResultSet tables =
+        connection.getMetaData().getTables(null, null, "SCHEMA_MIGRATIONS", null)) {
+      assertThat(tables.next()).isFalse();
+    }
   }
 
   @Test
   void handleDirty_h2() throws Exception {
     RdbConfig config = createH2Config();
     Connection connection = buildStandardDbConnection(config);
-    Migrator migrator = new Migrator(connection, "migrations/testing/h2");
-    migrator.performMigration(config, 1);
+    Migrator migrator = new Migrator(connection, "migrations/testing/h2", config);
+    migrator.performMigration(1);
 
     setDirtyAtVersion(connection, 2);
 
-    migrator.performMigration(config);
+    migrator.performMigration();
     verifyVersionState(connection, 2);
   }
 
@@ -103,12 +156,12 @@ class MigratorTest {
   void handleDirty_mysql() throws Exception {
     RdbConfig config = createMysqlConfig();
     Connection connection = buildStandardDbConnection(config);
-    Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
-    migrator.performMigration(config, 1);
+    Migrator migrator = new Migrator(connection, "migrations/testing/mysql", config);
+    migrator.performMigration(1);
 
     setDirtyAtVersion(connection, 2);
 
-    migrator.performMigration(config);
+    migrator.performMigration();
     verifyVersionState(connection, 2);
   }
 
@@ -117,19 +170,25 @@ class MigratorTest {
   void handleDirty_sqlserver() throws Exception {
     RdbConfig config = createSqlServerConfig();
     Connection connection = buildStandardDbConnection(config);
-    Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
-    migrator.performMigration(config, 1);
+    Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr", config);
+    migrator.performMigration(1);
 
     setDirtyAtVersion(connection, 2);
 
-    migrator.performMigration(config);
+    migrator.performMigration();
     verifyVersionState(connection, 2);
   }
 
   private static void setDirtyAtVersion(Connection connection, int version) throws SQLException {
+    setDirtyAtVersion(connection, version, true);
+  }
+
+  private static void setDirtyAtVersion(Connection connection, int version, boolean dirtyState)
+      throws SQLException {
+    // manually set the dirty flag with the '2' migration.
     try (PreparedStatement ps =
         connection.prepareStatement("update schema_migrations set dirty = ?, version = ?")) {
-      ps.setBoolean(1, true);
+      ps.setBoolean(1, dirtyState);
       ps.setInt(2, version);
       ps.executeUpdate();
     }
@@ -138,24 +197,24 @@ class MigratorTest {
   private static void verifyAllStateTransitions(
       RdbConfig config, Connection connection, Migrator migrator)
       throws SQLException, MigrationException {
-    migrator.performMigration(config, 0);
+    migrator.performMigration(0);
     verifyVersionState(connection, 0);
 
-    migrator.performMigration(config, 1);
+    migrator.performMigration(1);
     verifyVersionState(connection, 1);
 
-    migrator.performMigration(config, 2);
+    migrator.performMigration(2);
     verifyVersionState(connection, 2);
 
-    migrator.performMigration(config, 0);
+    migrator.performMigration(0);
     verifyVersionState(connection, 0);
-    migrator.performMigration(config);
+    migrator.performMigration();
     verifyVersionState(connection, 2);
 
-    migrator.performMigration(config, 1);
+    migrator.performMigration(1);
     verifyVersionState(connection, 1);
 
-    migrator.performMigration(config);
+    migrator.performMigration();
     verifyVersionState(connection, 2);
   }
 
@@ -176,7 +235,7 @@ class MigratorTest {
     RdbConfig config = createSqlServerConfig();
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
-    Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr");
+    Migrator migrator = new Migrator(connection, "migrations/testing/sqlsvr", config);
 
     verifyAllStateTransitions(config, connection, migrator);
   }
@@ -187,7 +246,7 @@ class MigratorTest {
     RdbConfig config = createMysqlConfig();
     CommonDBUtil.createDBIfNotExists(config);
     Connection connection = buildStandardDbConnection(config);
-    Migrator migrator = new Migrator(connection, "migrations/testing/mysql");
+    Migrator migrator = new Migrator(connection, "migrations/testing/mysql", config);
 
     verifyAllStateTransitions(config, connection, migrator);
   }
