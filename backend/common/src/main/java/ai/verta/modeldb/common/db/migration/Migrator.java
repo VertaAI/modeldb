@@ -2,19 +2,10 @@ package ai.verta.modeldb.common.db.migration;
 
 import ai.verta.modeldb.common.config.RdbConfig;
 import com.google.common.io.Resources;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.*;
-import java.util.Arrays;
-import java.util.NavigableSet;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.Value;
@@ -185,15 +176,14 @@ public class Migrator {
       Predicate<Migration> migrationDirectionFilter, Predicate<Migration> migrationVersionFilter)
       throws MigrationException {
     try {
-      URI uri = Resources.getResource(resourcesDirectory).toURI();
-      Path directory = Paths.get(uri);
-      return Arrays.stream(directory.toFile().listFiles())
-          .map(File::getName)
+      List<String> fileNames =
+          Resources.readLines(Resources.getResource(resourcesDirectory), StandardCharsets.UTF_8);
+      return fileNames.stream()
           .map(Migration::new)
           .filter(migrationDirectionFilter)
           .filter(migrationVersionFilter)
           .collect(Collectors.toCollection(TreeSet::new));
-    } catch (URISyntaxException e) {
+    } catch (Exception e) {
       throw new MigrationException("Failed to read migration files.", e);
     }
   }
