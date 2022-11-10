@@ -3,7 +3,7 @@ package ai.verta.modeldb.common.db.migration;
 import lombok.Value;
 
 @Value
-class Migration implements Comparable<Migration> {
+public class Migration implements Comparable<Migration> {
   String filename;
 
   @Override
