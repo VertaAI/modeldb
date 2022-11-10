@@ -10,6 +10,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 @Log4j2
 public class Migrator {
@@ -176,9 +178,12 @@ public class Migrator {
       Predicate<Migration> migrationDirectionFilter, Predicate<Migration> migrationVersionFilter)
       throws MigrationException {
     try {
+      // todo: let's not use spring code for this, but figure out how to do it ourselves...
+      Resource[] resources =
+          new PathMatchingResourcePatternResolver().getResources(resourcesDirectory + "/*.sql");
       List<String> fileNames =
-          Resources.readLines(Resources.getResource(resourcesDirectory), StandardCharsets.UTF_8);
-      log.info("Found migration filenames: " + fileNames);
+          Arrays.stream(resources).map(Resource::getFilename).collect(Collectors.toList());
+      log.info("In '" + resourcesDirectory + "', found migration filenames: " + fileNames);
       return fileNames.stream()
           .map(Migration::new)
           .filter(migrationDirectionFilter)
