@@ -42,6 +42,17 @@ class MigratorTest {
         .build();
   }
 
+  private static RdbConfig createH2Config() {
+    return RdbConfig.builder()
+        .DBConnectionURL("jdbc:h2:mem:migratorTestDb")
+        .RdbDriver("org.h2.Driver")
+        .RdbDialect("org.hibernate.dialect.H2Dialect")
+        .RdbDatabaseName("migrationTestDb")
+        .RdbPassword("password")
+        .RdbUsername("sa")
+        .build();
+  }
+
   @Test
   @Disabled("only run manually to test things against mysql for now")
   void release_2022_08_ddl_migration_mysql() throws Exception {
@@ -78,8 +89,38 @@ class MigratorTest {
     }
   }
 
-  private static void verifyRelease202208DdlExecution(Connection connection, Migrator migrator)
-      throws SQLException {
+  @Test
+  void singleMigration_h2() throws Exception {
+    var config = createH2Config();
+    Connection connection = buildH2Connection(config);
+
+    Migrator migrator = new Migrator(connection, "migrations/testing/h2");
+
+    verifyAllStateTransitions(config, connection, migrator);
+  }
+
+  private static void verifyH2Release202208DdlExecution(Connection connection, Migrator migrator)
+      throws SQLException, IOException {
+    try (ResultSet tables = connection.getMetaData().getTables(null, null, "ARTIFACT", null)) {
+      assertThat(tables.next()).isTrue();
+      assertThat(tables.getString("TABLE_NAME")).isEqualToIgnoringCase("artifact");
+    }
+
+    try (ResultSet tables =
+        connection
+            .getMetaData()
+            .getTables(null, null, "VERSIONING_MODELDB_ENTITY_MAPPING_CONFIG_BLOB", null)) {
+      assertThat(tables.next()).isTrue();
+      assertThat(tables.getString("TABLE_NAME"))
+          .isEqualToIgnoringCase("versioning_modeldb_entity_mapping_config_blob");
+    }
+  }
+
+  static Connection buildH2Connection(RdbConfig config) throws SQLException {
+    return buildStandardDbConnection(config);
+  }
+
+  private static void verifyRelease202208DdlExecution(Connection connection) throws SQLException {
     try (ResultSet tables = connection.getMetaData().getTables(null, null, "artifact", null)) {
       assertThat(tables.next()).isTrue();
       assertThat(tables.getString("TABLE_NAME")).isEqualToIgnoringCase("artifact");
@@ -110,7 +151,16 @@ class MigratorTest {
     migrator.performMigration(config, 1);
     verifyVersionState(connection, 1);
 
-    verifyRelease202208DdlExecution(connection, migrator);
+    if (config.isH2()) {
+      verifyH2Release202208DdlExecution(connection, migrator);
+      migrator.performMigration(config, 0);
+      verifyVersionState(connection, 0);
+      try (ResultSet tables = connection.getMetaData().getTables(null, null, "TEST_TABLE", null)) {
+        assertThat(tables.next()).isFalse();
+      }
+    } else {
+      verifyRelease202208DdlExecution(connection);
+    }
   }
 
   private static void verifyVersionState(Connection connection, int expectedVersion)
