@@ -222,8 +222,8 @@ public class Migrator {
   }
 
   /**
-   * Method to pre-initialize the schema migrations table, in cases where the database is being
-   * converted from a legacy migration tool (i.e. liquibase).
+   * Pre-initializes the schema migrations table, in cases where the database is being converted
+   * from a legacy migration tool (i.e. liquibase).
    *
    * <p>_If and only if_ there are legacy migrations in place, there is no existing
    * schema_migrations table, AND an assumed current version is provided will the schema_versions
