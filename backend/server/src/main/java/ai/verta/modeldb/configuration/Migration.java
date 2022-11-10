@@ -3,6 +3,7 @@ package ai.verta.modeldb.configuration;
 import ai.verta.modeldb.common.MssqlMigrationUtil;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,9 +19,13 @@ public class Migration {
     var modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
     modelDBHibernateUtil.initializedConfigAndDatabase(config, databaseConfig);
 
-    LOGGER.info("Liquibase migration starting");
-    modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
-    LOGGER.info("Liquibase migration done");
+    LOGGER.info("Starting Migrations");
+    modelDBHibernateUtil.runMigrations(databaseConfig, "migration", Optional.of(1));
+    LOGGER.info("Migrations Complete");
+
+    //    LOGGER.info("Liquibase migration starting");
+    //    modelDBHibernateUtil.runLiquibaseMigration(databaseConfig);
+    //    LOGGER.info("Liquibase migration done");
 
     // Initialized session factory before code migration and after liquibase migration
     modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
