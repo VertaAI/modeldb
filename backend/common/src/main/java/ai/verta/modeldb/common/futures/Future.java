@@ -1,6 +1,8 @@
 package ai.verta.modeldb.common.futures;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Preconditions;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
@@ -12,8 +14,16 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.*;
 import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 
-public class InternalFuture<T> {
+@Log4j2
+public class Future<T> {
+  /**
+   * This instance is the global executor for all Futures. Everything will fail if it is not set
+   * properly.
+   */
+  private static FutureExecutor futureExecutor;
+
   private static final boolean DEEP_TRACING_ENABLED;
   public static final AttributeKey<String> STACK_ATTRIBUTE_KEY = AttributeKey.stringKey("stack");
 
@@ -24,9 +34,9 @@ public class InternalFuture<T> {
 
   private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
   private final String formattedStack;
-  private CompletionStage<T> stage;
+  private final CompletionStage<T> stage;
 
-  private InternalFuture() {
+  private Future(CompletionStage<T> stage) {
     if (!DEEP_TRACING_ENABLED) {
       formattedStack = null;
     } else {
@@ -39,17 +49,16 @@ public class InternalFuture<T> {
               .map(StackTraceElement::toString)
               .collect(Collectors.joining("\nat "));
     }
+    this.stage = stage;
   }
 
   // Convert a list of futures to a future of a list
   @SuppressWarnings("unchecked")
-  public static <T> InternalFuture<List<T>> sequence(
-      final List<InternalFuture<T>> futures, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public static <T> Future<List<T>> sequence(final List<Future<T>> futures) {
     if (futures.isEmpty()) {
-      return InternalFuture.completedInternalFuture(new LinkedList<>());
+      return Future.of(List.of());
     }
-
+    final var executor = futureExecutor.captureContext();
     final var promise = new CompletableFuture<List<T>>();
     final var values = new ArrayList<T>(futures.size());
     final CompletableFuture<T>[] futuresArray =
@@ -81,24 +90,33 @@ public class InternalFuture<T> {
             },
             executor);
 
-    return InternalFuture.from(promise);
+    return Future.from(promise);
   }
 
-  public static <R> InternalFuture<R> from(CompletionStage<R> other) {
-    var ret = new InternalFuture<R>();
-    ret.stage = other;
-    return ret;
+  static <R> Future<R> from(CompletionStage<R> other) {
+    Preconditions.checkNotNull(
+        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    return new Future<>(other);
   }
 
-  public static <R> InternalFuture<R> completedInternalFuture(R value) {
-    var ret = new InternalFuture<R>();
-    ret.stage = CompletableFuture.completedFuture(value);
-    return ret;
+  /** @deprecated Use {@link #of(Object)} instead. */
+  @Deprecated
+  public static <R> Future<R> completedInternalFuture(R value) {
+    Preconditions.checkNotNull(
+        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    return of(value);
   }
 
-  public <U> InternalFuture<U> thenCompose(
-      Function<? super T, InternalFuture<U>> fn, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public static <R> Future<R> of(R value) {
+    Preconditions.checkNotNull(
+        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    return new Future<>(CompletableFuture.completedFuture(value));
+  }
+
+  public <U> Future<U> thenCompose(Function<? super T, Future<U>> fn) {
+    Preconditions.checkNotNull(
+        futureExecutor, "A FutureExecutor is required to be present for this method.");
+    final var executor = futureExecutor.captureContext();
     return from(
         stage.thenComposeAsync(
             traceFunction(
@@ -106,11 +124,6 @@ public class InternalFuture<T> {
                     fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose"),
                 "futureThenApply"),
             executor));
-  }
-
-  public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, FutureExecutor ex) {
-    final var executor = ex.captureContext();
-    return from(stage.thenApplyAsync(traceFunction(fn, "futureThenApply"), executor));
   }
 
   private <U> Function<? super T, ? extends U> traceFunction(
@@ -135,9 +148,11 @@ public class InternalFuture<T> {
         .startSpan();
   }
 
-  public <U> InternalFuture<U> handle(
-      BiFunction<? super T, Throwable, ? extends U> fn, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public <U> Future<U> handle(BiFunction<? super T, Throwable, ? extends U> fn) {
+    Preconditions.checkNotNull(
+        futureExecutor,
+        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    final var executor = futureExecutor.captureContext();
     return from(stage.handleAsync(traceBiFunctionThrowable(fn), executor));
   }
 
@@ -156,11 +171,12 @@ public class InternalFuture<T> {
     };
   }
 
-  public <U, V> InternalFuture<V> thenCombine(
-      InternalFuture<? extends U> other,
-      BiFunction<? super T, ? super U, ? extends V> fn,
-      FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public <U, V> Future<V> thenCombine(
+      Future<? extends U> other, BiFunction<? super T, ? super U, ? extends V> fn) {
+    Preconditions.checkNotNull(
+        futureExecutor,
+        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    final var executor = futureExecutor.captureContext();
     BiFunction<? super T, ? super U, ? extends V> tracedBiFunction = traceBiFunction(fn);
     return from(stage.thenCombineAsync(other.stage, tracedBiFunction, executor));
   }
@@ -180,8 +196,11 @@ public class InternalFuture<T> {
     };
   }
 
-  public InternalFuture<Void> thenAccept(Consumer<? super T> action, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public Future<Void> thenAccept(Consumer<? super T> action) {
+    Preconditions.checkNotNull(
+        futureExecutor,
+        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    final var executor = futureExecutor.captureContext();
     return from(stage.thenAcceptAsync(traceConsumer(action), executor));
   }
 
@@ -199,8 +218,11 @@ public class InternalFuture<T> {
     };
   }
 
-  public <U> InternalFuture<Void> thenRun(Runnable runnable, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public Future<Void> thenRun(Runnable runnable) {
+    Preconditions.checkNotNull(
+        futureExecutor,
+        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    final var executor = futureExecutor.captureContext();
     return from(stage.thenRunAsync(traceRunnable(runnable), executor));
   }
 
@@ -218,22 +240,19 @@ public class InternalFuture<T> {
     };
   }
 
-  public InternalFuture<T> whenComplete(
-      BiConsumer<? super T, ? super Throwable> action, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public Future<T> whenComplete(BiConsumer<? super T, ? super Throwable> action) {
+    final var executor = futureExecutor.captureContext();
     return from(stage.whenCompleteAsync(traceBiConsumer(action), executor));
   }
 
-  public InternalFuture<T> recover(Function<Throwable, ? extends T> fn, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public Future<T> recover(Function<Throwable, ? extends T> fn) {
     return handle(
         (v, t) -> {
           if (t != null) {
             return fn.apply(t);
           }
           return v;
-        },
-        executor);
+        });
   }
 
   private BiConsumer<? super T, ? super Throwable> traceBiConsumer(
@@ -252,34 +271,30 @@ public class InternalFuture<T> {
     };
   }
 
-  /**
-   * Syntactic sugar for {@link #thenCompose(Function, FutureExecutor)} with the function ignoring
-   * the input.
-   */
-  public <U> InternalFuture<U> thenSupply(Supplier<InternalFuture<U>> supplier, FutureExecutor ex) {
-    final var executor = ex.captureContext();
-    return thenCompose(ignored -> supplier.get(), executor);
+  /** Syntactic sugar for {@link #thenCompose(Function)} with the function ignoring the input. */
+  public <U> Future<U> thenSupply(Supplier<Future<U>> supplier) {
+    Preconditions.checkNotNull(
+        futureExecutor,
+        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    return thenCompose(ignored -> supplier.get());
   }
 
-  public static InternalFuture<Void> runAsync(Runnable runnable, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public static Future<Void> runAsync(Runnable runnable) {
+    final var executor = futureExecutor.captureContext();
     return from(CompletableFuture.runAsync(runnable, executor));
   }
 
-  public static <U> InternalFuture<U> supplyAsync(Supplier<U> supplier, FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public static <U> Future<U> supplyAsync(Supplier<U> supplier) {
+    final var executor = futureExecutor.captureContext();
     return from(CompletableFuture.supplyAsync(supplier, executor));
   }
 
-  public static <U> InternalFuture<U> failedStage(Throwable ex) {
+  public static <U> Future<U> failedStage(Throwable ex) {
     return from(CompletableFuture.failedFuture(ex));
   }
 
-  public static <U> InternalFuture<U> retriableStage(
-      Supplier<InternalFuture<U>> supplier,
-      Function<Throwable, Boolean> retryChecker,
-      FutureExecutor ex) {
-    final var executor = ex.captureContext();
+  public static <U> Future<U> retriableStage(
+      Supplier<Future<U>> supplier, Function<Throwable, Boolean> retryChecker) {
     final var promise = new CompletableFuture<U>();
 
     supplier
@@ -303,7 +318,7 @@ public class InternalFuture<T> {
                 // out how to do better
                 // with Java constraints of final vars in lambdas and not using uninitialized
                 // variables.
-                retriableStage(supplier, retryChecker, executor)
+                retriableStage(supplier, retryChecker)
                     .whenComplete(
                         (v, t) -> {
                           if (t == null) {
@@ -311,22 +326,18 @@ public class InternalFuture<T> {
                           } else {
                             promise.completeExceptionally(t);
                           }
-                        },
-                        executor);
+                        });
               } else {
                 promise.completeExceptionally(throwable);
               }
-            },
-            executor);
+            });
 
-    return InternalFuture.from(promise);
+    return Future.from(promise);
   }
 
-  public static <U> InternalFuture<Optional<U>> flipOptional(
-      Optional<InternalFuture<U>> val, FutureExecutor ex) {
-    final var executor = ex.captureContext();
-    return val.map(future -> future.thenApply(Optional::of, executor))
-        .orElse(InternalFuture.completedInternalFuture(Optional.empty()));
+  public static <U> Future<Optional<U>> flipOptional(Optional<Future<U>> val) {
+    return val.map(future -> future.thenCompose(u -> Future.of(Optional.ofNullable(u))))
+        .orElse(Future.of(Optional.empty()));
   }
 
   public T get() throws Exception {
@@ -349,7 +360,24 @@ public class InternalFuture<T> {
     return stage;
   }
 
-  public Future<T> toFuture() {
-    return Future.from(stage);
+  public static void setFutureExecutor(FutureExecutor executor) {
+    if (futureExecutor == null) {
+      futureExecutor = executor;
+    } else {
+      log.warn(
+          "A FutureExecutor has already been set. Ignoring this call.",
+          new RuntimeException("call-site capturer"));
+    }
+  }
+
+  /** @deprecated Only use this as a part of the conversion process between versions of Futures. */
+  @Deprecated
+  public InternalFuture<T> toInternalFuture() {
+    return InternalFuture.from(stage);
+  }
+
+  @VisibleForTesting
+  static void resetExecutorForTest() {
+    futureExecutor = null;
   }
 }

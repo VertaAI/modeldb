@@ -86,4 +86,61 @@ public class FutureJdbi {
 
     return InternalFuture.from(promise);
   }
+
+  public <R, T extends Exception> Future<R> handleCompose(HandleCallback<Future<R>, T> callback) {
+    return handle(callback).thenCompose(x -> x);
+  }
+
+  public <R, T extends Exception> Future<R> handle(HandleCallback<R, T> callback) {
+    SupplierWithException<R, T> supplierWithException = () -> jdbi.withHandle(callback);
+    return handleOrTransaction(supplierWithException);
+  }
+
+  public <R, T extends Exception> Future<R> inTransaction(HandleCallback<R, T> callback) {
+    SupplierWithException<R, T> supplierWithException = () -> jdbi.inTransaction(callback);
+    return handleOrTransaction(supplierWithException);
+  }
+
+  private <R, T extends Exception> Future<R> handleOrTransaction(
+      SupplierWithException<R, T> supplier) {
+    CompletableFuture<R> promise = new CompletableFuture<>();
+
+    executor.execute(
+        () -> {
+          try {
+            promise.complete(supplier.get());
+          } catch (Throwable e) {
+            promise.completeExceptionally(e);
+          }
+        });
+
+    return Future.from(promise);
+  }
+
+  public <T extends Exception> Future<Void> handle(HandleConsumer<T> consumer) {
+    RunnableWithException<T> runnableWithException = () -> jdbi.useHandle(consumer);
+    return handleOrTransaction(runnableWithException);
+  }
+
+  public <T extends Exception> Future<Void> transaction(HandleConsumer<T> consumer) {
+    RunnableWithException<T> runnableWithException = () -> jdbi.useTransaction(consumer);
+    return handleOrTransaction(runnableWithException);
+  }
+
+  private <T extends Exception> Future<Void> handleOrTransaction(
+      RunnableWithException<T> runnableWithException) {
+    CompletableFuture<Void> promise = new CompletableFuture<>();
+
+    executor.execute(
+        () -> {
+          try {
+            runnableWithException.run();
+            promise.complete(null);
+          } catch (Throwable e) {
+            promise.completeExceptionally(e);
+          }
+        });
+
+    return Future.from(promise);
+  }
 }
