@@ -1,0 +1,5 @@
+BEGIN /*!90000 PESSIMISTIC */;
+
+DROP TABLE IF EXISTS `test_table_89`;
+
+COMMIT;
