@@ -13,6 +13,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 class MigratorTest {
@@ -24,7 +25,7 @@ class MigratorTest {
         .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
         .RdbDatabaseName("migrationTestDb")
         .RdbUsername("root")
-        .RdbPassword("root")
+        .RdbPassword("MyN3wP4ssw0rd!")
         .sslEnabled(false)
         .build();
   }
@@ -36,13 +37,13 @@ class MigratorTest {
         .RdbDialect("org.hibernate.dialect.SQLServer2008Dialect")
         .RdbDatabaseName("migrationTestDb")
         .RdbUsername("SA")
-        .RdbPassword("admin@123")
+        .RdbPassword("MyN3wP4ssw0rd!")
         .sslEnabled(false)
         .build();
   }
 
   @Test
-  // @Disabled("only run manually to test things against mysql for now")
+  @Disabled("only run manually to test things against mysql for now")
   void release_2022_08_ddl_migration_mysql() throws Exception {
     RdbConfig config = createMysqlConfig();
     CommonDBUtil.createDBIfNotExists(config);
@@ -59,7 +60,7 @@ class MigratorTest {
   }
 
   @Test
-  // @Disabled("only run manually to test things against sqlserver for now")
+  @Disabled("only run manually to test things against sqlserver for now")
   void release_2022_08_ddl_migration_sqlserver() throws Exception {
     RdbConfig config = createSqlServerConfig();
     CommonDBUtil.createDBIfNotExists(config);
