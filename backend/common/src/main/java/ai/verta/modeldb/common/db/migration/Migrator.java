@@ -183,7 +183,6 @@ public class Migrator {
           new PathMatchingResourcePatternResolver().getResources(resourcesDirectory + "/*.sql");
       List<String> fileNames =
           Arrays.stream(resources).map(Resource::getFilename).collect(Collectors.toList());
-      log.info("In '" + resourcesDirectory + "', found migration filenames: " + fileNames);
       return fileNames.stream()
           .map(Migration::new)
           .filter(migrationDirectionFilter)
