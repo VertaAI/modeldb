@@ -2,23 +2,16 @@ package ai.verta.modeldb.common.db.migration;
 
 import ai.verta.modeldb.common.config.RdbConfig;
 import com.google.common.io.Resources;
-import java.io.File;
-import java.io.IOException;
-import java.net.URI;
-import java.net.URISyntaxException;
+import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.sql.*;
-import java.util.Arrays;
-import java.util.NavigableSet;
-import java.util.Optional;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import lombok.Value;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 
 @Log4j2
 public class Migrator {
@@ -185,15 +178,17 @@ public class Migrator {
       Predicate<Migration> migrationDirectionFilter, Predicate<Migration> migrationVersionFilter)
       throws MigrationException {
     try {
-      URI uri = Resources.getResource(resourcesDirectory).toURI();
-      Path directory = Paths.get(uri);
-      return Arrays.stream(directory.toFile().listFiles())
-          .map(File::getName)
+      // todo: let's not use spring code for this, but figure out how to do it ourselves...
+      Resource[] resources =
+          new PathMatchingResourcePatternResolver().getResources(resourcesDirectory + "/*.sql");
+      List<String> fileNames =
+          Arrays.stream(resources).map(Resource::getFilename).collect(Collectors.toList());
+      return fileNames.stream()
           .map(Migration::new)
           .filter(migrationDirectionFilter)
           .filter(migrationVersionFilter)
           .collect(Collectors.toCollection(TreeSet::new));
-    } catch (URISyntaxException e) {
+    } catch (Exception e) {
       throw new MigrationException("Failed to read migration files.", e);
     }
   }
