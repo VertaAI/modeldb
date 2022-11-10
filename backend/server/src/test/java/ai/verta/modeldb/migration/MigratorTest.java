@@ -39,7 +39,7 @@ class MigratorTest {
     Connection connection = buildStandardDbConnection(config);
 
     try {
-      Migrator migrator = new Migrator(connection, "migrations/testing/mysql", config);
+      Migrator migrator = new Migrator(connection, "migration/mysql", config);
       verifyStateTransitions(connection, migrator);
     } finally {
       try (Statement statement = connection.createStatement()) {
@@ -100,8 +100,8 @@ class MigratorTest {
         connection.prepareStatement("select version, dirty from schema_migrations")) {
       ResultSet resultSet = ps.executeQuery();
       assertThat(resultSet.next()).isTrue();
-      assertThat(resultSet.getLong(1)).isEqualTo(expectedVersion);
       assertThat(resultSet.getBoolean(2)).isEqualTo(false);
+      assertThat(resultSet.getLong(1)).isEqualTo(expectedVersion);
     }
   }
 }
