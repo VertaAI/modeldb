@@ -46,9 +46,9 @@ def set_retry_config(
             or status_forcelist != current_retry.status_forcelist
             or backoff_factor != current_retry.backoff_factor):
         new_retry_config = retry_config(
-            max_retries=max_retries if max_retries else DEFAULT_MAX_RETRIES,
-            status_forcelist=status_forcelist if status_forcelist else DEFAULT_STATUS_FORCELIST,
-            backoff_factor=backoff_factor if backoff_factor else DEFAULT_BACKOFF_FACTOR
+            max_retries=max_retries or  DEFAULT_MAX_RETRIES,
+            status_forcelist=status_forcelist or DEFAULT_STATUS_FORCELIST,
+            backoff_factor=backoff_factor or DEFAULT_BACKOFF_FACTOR
             )
         adapter = HTTPAdapter(max_retries=new_retry_config)
         session.mount(prefix='https://', adapter=adapter)
