@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.sql.*;
 import java.util.Arrays;
 import java.util.NavigableSet;
+import java.util.Optional;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.function.Predicate;
@@ -23,21 +24,23 @@ import lombok.extern.log4j.Log4j2;
 public class Migrator {
   private final Connection connection;
   private final String resourcesDirectory;
+  private final RdbConfig rdbConfig;
 
-  public Migrator(Connection connection, String resourcesDirectory) {
+  public Migrator(
+      Connection connection, String resourcesDirectory, RdbConfig databaseConfiguration) {
     this.connection = connection;
     this.resourcesDirectory = resourcesDirectory;
+    this.rdbConfig = databaseConfiguration;
   }
 
   /** Assumes that the underlying database has already been created. */
-  public void performMigration(RdbConfig config) throws SQLException, MigrationException {
+  public void performMigration() throws SQLException, MigrationException {
     log.info("Starting database migration process");
-    performMigration(config, null);
+    performMigration(null);
   }
 
-  public void performMigration(RdbConfig config, Integer desiredVersion)
-      throws SQLException, MigrationException {
-    MigrationDatastore migrationDatastore = setupDatastore(config);
+  public void performMigration(Integer desiredVersion) throws SQLException, MigrationException {
+    MigrationDatastore migrationDatastore = setupDatastore();
     MigrationState currentState = findCurrentState();
     if (currentState == null) {
       throw new IllegalStateException(
@@ -119,8 +122,8 @@ public class Migrator {
         && (migration.getNumber() <= versionToTarget);
   }
 
-  private MigrationDatastore setupDatastore(RdbConfig config) throws SQLException {
-    MigrationDatastore migrationDatastore = MigrationDatastore.create(config, connection);
+  private MigrationDatastore setupDatastore() throws SQLException {
+    MigrationDatastore migrationDatastore = MigrationDatastore.create(rdbConfig, connection);
     migrationDatastore.ensureMigrationTableExists();
     MigrationState currentState = findCurrentState();
     if (currentState == null) {
@@ -215,6 +218,49 @@ public class Migrator {
             StandardCharsets.UTF_8);
     try (Statement statement = connection.createStatement()) {
       statement.executeUpdate(sql);
+    }
+  }
+
+  /**
+   * Pre-initializes the schema migrations table, in cases where the database is being converted
+   * from a legacy migration tool (i.e. liquibase).
+   *
+   * <p>_If and only if_ ALL the following conditions are met, then the <code>schema_migrations
+   * </code> table will be initialized with the value of <code>assumedCurrentVersion</code>:
+   *
+   * <ul>
+   *   <li>there are legacy migrations present
+   *   <li>there is no existing <code>schema_migrations</code> table
+   *   <li>an <code>assumedCurrentVersion</code> value is provided
+   * </ul>
+   *
+   * <p>If legacy migrations are in place, and you do not provide an assumed current version, this
+   * method will throw an {@link IllegalStateException}.
+   *
+   * @param legacyMigrationsInPlace Whether legacy migrations have already been applied to this
+   *     database.
+   * @param assumedCurrentVersion The version that the legacy migrations should correspond to.
+   */
+  public void preInitializeIfRequired(
+      boolean legacyMigrationsInPlace, Optional<Integer> assumedCurrentVersion)
+      throws SQLException {
+    if (!legacyMigrationsInPlace) {
+      return;
+    }
+    if (assumedCurrentVersion.isEmpty()) {
+      throw new IllegalStateException(
+          "If legacy migrations are in place, you *must* provide a version to initialize the schema migrations to.");
+    }
+    try {
+      MigrationState currentState = findCurrentState();
+      log.info(
+          "schema_versions table already exists. Skipping pre-initialization step. current state: "
+              + currentState);
+    } catch (SQLException e) {
+      log.info(
+          "No schema_versions table found. Initializing to version " + assumedCurrentVersion.get());
+      setupDatastore();
+      updateVersion(false, assumedCurrentVersion.get());
     }
   }
 
