@@ -74,6 +74,8 @@ public class MigratorPropertyTest {
 
   @NotNull
   private Set<String> getAllTablesPresent() throws SQLException {
+    // note: this rigamarole is to make debugging issues simpler. It only returns the test tables,
+    // in numeric order.
     Set<String> tablesPresent =
         new TreeSet<>(
             (o1, o2) -> {
