@@ -217,9 +217,8 @@ def test_predict_with_id_response_includes_id(mocked_responses) -> None:
         creds=creds,
         token=TOKEN,
         )
-    with mocked_responses as mr:
-        prediction = dm.predict_with_id(x=['test_prediction'])
-        assert prediction == ('hereISanotherTESTidFROMtheUSER', {'test2': 'test2'})
+    prediction = dm.predict_with_id(x=['test_prediction'])
+    assert prediction == ('hereISanotherTESTidFROMtheUSER', {'test2': 'test2'})
 
 
 def test_predict_with_id_prediction_id_provided(mocked_responses) -> None:
@@ -238,12 +237,11 @@ def test_predict_with_id_prediction_id_provided(mocked_responses) -> None:
         creds=creds,
         token=TOKEN,
         )
-    with mocked_responses as mr:
-        prediction = dm.predict_with_id(
-            x=['test_prediction'],
-            prediction_id='hereISomeTESTidFROMtheUSER'
-            )
-        assert prediction == ('hereISomeTESTidFROMtheUSER', {'test2': 'test2'})
+    prediction = dm.predict_with_id(
+        x=['test_prediction'],
+        prediction_id='hereISomeTESTidFROMtheUSER'
+        )
+    assert prediction == ('hereISomeTESTidFROMtheUSER', {'test2': 'test2'})
 
 
 def test_predict_with_id_http_defaults_200(mocked_responses) -> None:
