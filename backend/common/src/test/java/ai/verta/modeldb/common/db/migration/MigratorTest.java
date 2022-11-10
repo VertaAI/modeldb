@@ -238,17 +238,17 @@ class MigratorTest {
     verifyAllStateTransitions(config, connection, migrator);
   }
 
-  private static Connection buildH2Connection() throws SQLException {
+  static Connection buildH2Connection() throws SQLException {
     return buildStandardDbConnection(createH2Config());
   }
 
-  private static Connection buildStandardDbConnection(RdbConfig rdbConfig) throws SQLException {
+  static Connection buildStandardDbConnection(RdbConfig rdbConfig) throws SQLException {
     String connectionString = RdbConfig.buildDatabaseConnectionString(rdbConfig);
     return DriverManager.getConnection(
         connectionString, rdbConfig.getRdbUsername(), rdbConfig.getRdbPassword());
   }
 
-  private static RdbConfig createH2Config() {
+  static RdbConfig createH2Config() {
     return RdbConfig.builder()
         .DBConnectionURL("jdbc:h2:mem:migratorTestDb")
         .RdbDriver("org.h2.Driver")
