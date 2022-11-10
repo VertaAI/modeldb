@@ -39,20 +39,20 @@ public class MigratorPropertyTest {
             .RdbUsername("sa")
             .build();
     connection = MigratorTest.buildStandardDbConnection(rdbConfig);
-    migrator = new Migrator(connection, INPUT_DIRECTORY);
+    migrator = new Migrator(connection, INPUT_DIRECTORY, rdbConfig);
   }
 
   @Property
   public void application(@From(VersionGenerator.class) IntPair versions) throws Exception {
     Set<String> beforeTablesPresent = getAllTablesPresent();
-    migrator.performMigration(rdbConfig, versions.getStart());
-    migrator.performMigration(rdbConfig, versions.getEnd());
+    migrator.performMigration(versions.getStart());
+    migrator.performMigration(versions.getEnd());
 
     List<Pair<Integer, Boolean>> migrationContents = getSchemaMigrationContents();
     assertThat(migrationContents).containsExactly(new Pair<>(versions.getEnd(), false));
 
     Set<String> tablesPresent = getAllTablesPresent();
-    int highestTable = versions.getEnd();
+    int finalVersion = versions.getEnd();
     String failureMessagePattern =
         "TEST_TABLE_%d : versions failed: "
             + versions
@@ -60,12 +60,12 @@ public class MigratorPropertyTest {
             + tablesPresent
             + " tablesPresentBeforeRun: "
             + beforeTablesPresent;
-    for (int i = 1; i <= highestTable; i++) {
+    for (int i = 1; i <= finalVersion; i++) {
       assertThat(tablesPresent)
           .withFailMessage(String.format(failureMessagePattern, i))
           .contains("TEST_TABLE_" + i);
     }
-    for (int i = 99; i > highestTable; i--) {
+    for (int i = 99; i > finalVersion; i--) {
       assertThat(tablesPresent)
           .withFailMessage(String.format(failureMessagePattern, i))
           .doesNotContain("TEST_TABLE_" + i);
@@ -123,9 +123,6 @@ public class MigratorPropertyTest {
     public IntPair generate(SourceOfRandomness random, GenerationStatus status) {
       int one = random.nextInt(1, 99);
       int two = random.nextInt(1, 99);
-      if (one > two) {
-        return new IntPair(two, one);
-      }
       return new IntPair(one, two);
     }
   }
