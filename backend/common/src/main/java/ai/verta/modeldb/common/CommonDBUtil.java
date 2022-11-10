@@ -2,6 +2,9 @@ package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
+import ai.verta.modeldb.common.db.migration.MigrationException;
+import ai.verta.modeldb.common.db.migration.Migrator;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import java.sql.*;
 import java.util.Calendar;
@@ -281,6 +284,80 @@ public abstract class CommonDBUtil {
       LOGGER.error(e.getMessage(), e);
       throw e;
     }
+  }
+
+  /**
+   * This method will use the {@link Migrator} tool to run migrations against the database. It does
+   * not assume that the database currently exists, and will create it if necessary.
+   *
+   * <p>The currentVersion parameter is used during the transition from liquibase to the new
+   * migrator. The table belows explains when it will be used. That is, it will only be used if the
+   * database already exists, the liquibase changelog table exists, and, the new migration table has
+   * not been initialized. In that specific case, the new migration table will be initialized with
+   * the provided value.
+   *
+   * <pre>
+   *     ________________________________________________________________________________________________________
+   *     | Database exists? | Liquibase changelog table exists? | migration table exists? | currentVersion used |
+   *     |       N          |              N/A                  |         N/A             |         N           |
+   *     |       Y          |               N                   |          Y              |         N           |
+   *     |       Y          |               N                   |          N              |         N           |
+   *     |       Y          |               Y                   |          Y              |         N           |
+   *     |       Y          |               Y                   |          N              |         Y           |
+   *     --------------------------------------------------------------------------------------------------------
+   * </pre>
+   *
+   * @param config The database configuration to use.
+   * @param migrationResourcesRootDirectory The subdirectory under resources to pull migrations
+   *     from.
+   * @param currentVersion The version that the database is assumed to be in, already, if converting
+   *     from liquibase.
+   */
+  public void runMigrations(
+      DatabaseConfig config,
+      String migrationResourcesRootDirectory,
+      Optional<Integer> currentVersion)
+      throws SQLException, MigrationException {
+    RdbConfig rdbConfiguration = config.getRdbConfiguration();
+    createDBIfNotExists(rdbConfiguration);
+    Connection connection = acquireDatabaseConnection(config, rdbConfiguration);
+    Migrator migrator =
+        new Migrator(
+            connection,
+            findResourcesDirectory(migrationResourcesRootDirectory, rdbConfiguration),
+            rdbConfiguration);
+    boolean liquibaseTableExists = tableExists(connection, config, "database_change_log");
+    migrator.preInitializeIfRequired(liquibaseTableExists, currentVersion);
+    migrator.performMigration();
+  }
+
+  private String findResourcesDirectory(String rootDirectory, RdbConfig rdbConfiguration) {
+    if (rdbConfiguration.isMysql()) {
+      return rootDirectory + "/mysql";
+    }
+    if (rdbConfiguration.isMssql()) {
+      return rootDirectory + "/sqlsvr";
+    }
+    if (rdbConfiguration.isH2()) {
+      return rootDirectory + "/h2";
+    }
+    throw new IllegalArgumentException("Unsupported database type for migrations");
+  }
+
+  private static Connection acquireDatabaseConnection(
+      DatabaseConfig config, RdbConfig rdbConfiguration) throws SQLException {
+    // Check DB is up or not
+    boolean dbConnectionStatus =
+        checkDBConnection(config.getRdbConfiguration(), config.getTimeout());
+    if (!dbConnectionStatus) {
+      try {
+        checkDBConnectionInLoop(config, true);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException("Interrupted while getting a database connection.");
+      }
+    }
+    return getDBConnection(rdbConfiguration);
   }
 
   protected void runLiquibaseMigration(
