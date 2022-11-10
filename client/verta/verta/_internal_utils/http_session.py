@@ -56,20 +56,6 @@ def set_retry_config(
     return session
 
 
-def update_session_headers(
-        session: Session,
-        x: Dict,
-        remove: Optional[bool] = False,
-        ) -> Session:
-    """ Update the headers of the provided session object with new values """
-    if remove:
-        for k in x.keys():
-            session.headers.pop(k)
-    else:
-        session.headers.update(x)
-    return session
-
-
 def init_session(retry: Retry) -> Session:
     """ Instantiate a Session object with a custom Retry configuration mounted
         via http adapter """

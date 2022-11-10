@@ -56,50 +56,14 @@ def test_set_retry_config() -> None:
         status_forcelist={789},
         backoff_factor=2.45,
     )
-    retry_object = sesh.get_adapter('https://').max_retries
-    assert retry_object.backoff_factor == 2.45
-    assert retry_object.status_forcelist == {789}
-    assert retry_object.status == 22
-
-
-def test_update_session_headers_add() -> None:
-    """ The update_session_headers method correctly updates the header dictionary
-     for a Session object """
-    expected = {
-        'User-Agent': 'python-requests/2.28.1',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept': '*/*',
-        'Connection': 'keep-alive',
-        'this_should_be': 'in_the_headers_now',
-        'and_so':'should_this'
-    }
-    sesh = requests.Session()
-    http_session.update_session_headers(
-        sesh,
-        {'this_should_be':'in_the_headers_now'},
-    )
-    http_session.update_session_headers(
-        sesh,
-        {'and_so':'should_this'}
-    ) # multiple updates, same Session
-    assert sesh.headers == expected
-
-
-def test_update_session_headers_remove() -> None:
-    """ Verify that the expand_session_headers correctly updates the header
-    dictionary for a Session object """
-    expected = {
-        'User-Agent': 'python-requests/2.28.1',
-        'Accept-Encoding': 'gzip, deflate',
-        'Accept': '*/*',
-    }
-    sesh = requests.Session()
-    http_session.update_session_headers(
-        sesh,
-        {'Connection':''},
-        remove=True,
-    ) # multiple updates, same Session
-    assert sesh.headers == expected
+    https_retry_object = sesh.get_adapter('https://').max_retries
+    assert https_retry_object.backoff_factor == 2.45
+    assert https_retry_object.status_forcelist == {789}
+    assert https_retry_object.status == 22
+    http_retry_object = sesh.get_adapter('http://').max_retries
+    assert http_retry_object.backoff_factor == 2.45
+    assert http_retry_object.status_forcelist == {789}
+    assert http_retry_object.status == 22
 
 
 @patch.object(http_session, 'HTTPAdapter', return_value=MOCK_HTTP_ADAPTER)
@@ -131,3 +95,4 @@ def test_init_session(mock_adapter) -> None:
     created_session = http_session.init_session(MOCK_RETRY_OBJECT)
     assert created_session.__dict__ == expected_session_config
     assert created_session.get_adapter('https://').max_retries == MOCK_RETRY_OBJECT
+    assert created_session.get_adapter('http://').max_retries == MOCK_RETRY_OBJECT
