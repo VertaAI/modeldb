@@ -42,9 +42,9 @@ def set_retry_config(
         allows the DeployedModel.predict method to change the behavior of
         the Session on the fly without dropping open connections. """
     current_retry = session.get_adapter('https://').max_retries
-    if max_retries != current_retry.status or \
-            status_forcelist != current_retry.status_forcelist or \
-            backoff_factor != current_retry.backoff_factor:
+    if (max_retries != current_retry.status
+            or status_forcelist != current_retry.status_forcelist
+            or backoff_factor != current_retry.backoff_factor):
         new_retry_config = retry_config(
             max_retries=max_retries if max_retries else DEFAULT_MAX_RETRIES,
             status_forcelist=status_forcelist if status_forcelist else DEFAULT_STATUS_FORCELIST,
