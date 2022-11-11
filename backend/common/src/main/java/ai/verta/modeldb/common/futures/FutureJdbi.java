@@ -87,11 +87,11 @@ public class FutureJdbi {
     return InternalFuture.from(promise);
   }
 
-  public <R, T extends Exception> Future<R> handleCompose(HandleCallback<Future<R>, T> callback) {
-    return handle(callback).thenCompose(x -> x);
+  public <R, T extends Exception> Future<R> callAndCompose(HandleCallback<Future<R>, T> callback) {
+    return call(callback).thenCompose(x -> x);
   }
 
-  public <R, T extends Exception> Future<R> handle(HandleCallback<R, T> callback) {
+  public <R, T extends Exception> Future<R> call(HandleCallback<R, T> callback) {
     SupplierWithException<R, T> supplierWithException = () -> jdbi.withHandle(callback);
     return handleOrTransaction(supplierWithException);
   }
@@ -117,7 +117,7 @@ public class FutureJdbi {
     return Future.from(promise);
   }
 
-  public <T extends Exception> Future<Void> handle(HandleConsumer<T> consumer) {
+  public <T extends Exception> Future<Void> run(HandleConsumer<T> consumer) {
     RunnableWithException<T> runnableWithException = () -> jdbi.useHandle(consumer);
     return handleOrTransaction(runnableWithException);
   }
