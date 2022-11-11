@@ -105,14 +105,16 @@ public class FutureJdbi {
       SupplierWithException<R, T> supplier) {
     CompletableFuture<R> promise = new CompletableFuture<>();
 
-    executor.execute(
-        () -> {
-          try {
-            promise.complete(supplier.get());
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          }
-        });
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                promise.complete(supplier.get());
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
 
     return Future.from(promise);
   }
@@ -131,15 +133,17 @@ public class FutureJdbi {
       RunnableWithException<T> runnableWithException) {
     CompletableFuture<Void> promise = new CompletableFuture<>();
 
-    executor.execute(
-        () -> {
-          try {
-            runnableWithException.run();
-            promise.complete(null);
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          }
-        });
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                runnableWithException.run();
+                promise.complete(null);
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
 
     return Future.from(promise);
   }
