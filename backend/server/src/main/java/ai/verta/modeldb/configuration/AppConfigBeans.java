@@ -17,6 +17,7 @@ import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
@@ -109,7 +110,11 @@ public class AppConfigBeans {
   @Bean
   FutureExecutor grpcExecutor(Config config) {
     // Initialize executor so we don't lose context using Futures
-    return FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
+    FutureExecutor futureExecutor =
+        FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
+    // assign the executor to all new Future instances.
+    Future.setFutureExecutor(futureExecutor);
+    return futureExecutor;
   }
 
   @Bean
