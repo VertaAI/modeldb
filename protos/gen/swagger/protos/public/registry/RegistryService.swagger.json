@@ -11,6 +11,230 @@
     "application/json"
   ],
   "paths": {
+    "/registry/checklist_item_values": {
+      "post": {
+        "operationId": "RegistryService_CreateChecklistItemValue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/checklist_item_values/find": {
+      "post": {
+        "operationId": "RegistryService_FindChecklistItemValues",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryFindChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryFindChecklistItemValueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/checklist_item_values/{id.checklist_item_value_id}": {
+      "get": {
+        "operationId": "RegistryService_GetChecklistItemValue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "delete": {
+        "operationId": "RegistryService_DeleteChecklistItemValue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryDeleteChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "put": {
+        "operationId": "RegistryService_UpdateChecklistItemValue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/model_versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
@@ -36,6 +260,214 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryFindModelVersionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{id.model_version_id.model_version_id}/checklist_item_values": {
+      "post": {
+        "operationId": "RegistryService_CreateChecklistItemValue2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{id.model_version_id.model_version_id}/checklist_item_values/{id.checklist_item_value_id}": {
+      "get": {
+        "operationId": "RegistryService_GetChecklistItemValue2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "delete": {
+        "operationId": "RegistryService_DeleteChecklistItemValue2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryDeleteChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id.",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "put": {
+        "operationId": "RegistryService_UpdateChecklistItemValue2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequest"
             }
           }
         ],
@@ -143,6 +575,46 @@
             "required": false,
             "type": "string",
             "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/model_versions/{id.model_version_id}/checklist_item_values/find": {
+      "post": {
+        "operationId": "RegistryService_FindChecklistItemValues2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryFindChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryFindChecklistItemValueRequest"
+            }
           }
         ],
         "tags": [
@@ -568,6 +1040,128 @@
         ]
       }
     },
+    "/registry/registered_models/model_versions/external_deployments": {
+      "post": {
+        "operationId": "RegistryService_CreateExternalDeployment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryExternalDeploymentRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryExternalDeployment"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "put": {
+        "operationId": "RegistryService_UpdateExternalDeployment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryExternalDeploymentRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryExternalDeployment"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/registered_models/model_versions/external_deployments/{external_deployment_id}": {
+      "get": {
+        "operationId": "RegistryService_GetExternalDeployment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryExternalDeploymentRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "external_deployment_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "delete": {
+        "operationId": "RegistryService_DeleteExternalDeployment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertaregistryEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "external_deployment_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
     "/registry/registered_models/{id.model_id.registered_model_id}/model_versions": {
       "post": {
         "operationId": "RegistryService_CreateModelVersion2",
@@ -794,6 +1388,230 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/registrySetModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/checklist_item_values": {
+      "post": {
+        "operationId": "RegistryService_CreateChecklistItemValue3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/checklist_item_values/{id.checklist_item_value_id}": {
+      "get": {
+        "operationId": "RegistryService_GetChecklistItemValue3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "delete": {
+        "operationId": "RegistryService_DeleteChecklistItemValue3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryDeleteChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "put": {
+        "operationId": "RegistryService_UpdateChecklistItemValue3",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequest"
             }
           }
         ],
@@ -1351,6 +2169,244 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/registrySetModelVersion"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/checklist_item_values": {
+      "post": {
+        "operationId": "RegistryService_CreateChecklistItemValue4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequest"
+            }
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      }
+    },
+    "/registry/workspaces/{id.model_version_id.model_id.named_id.workspace_name}/registered_models/{id.model_version_id.model_id.registered_model_id}/model_versions/{id.model_version_id.model_version_id}/checklist_item_values/{id.checklist_item_value_id}": {
+      "get": {
+        "operationId": "RegistryService_GetChecklistItemValue4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryGetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "delete": {
+        "operationId": "RegistryService_DeleteChecklistItemValue4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryDeleteChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_id.named_id.name",
+            "description": "Model Name.",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RegistryService"
+        ]
+      },
+      "put": {
+        "operationId": "RegistryService_UpdateChecklistItemValue4",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id.model_version_id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "id.model_version_id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_version_id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.checklist_item_value_id",
+            "description": "ChecklistItemValue referred to by id",
+            "in": "path",
+            "required": true,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySetChecklistItemValueRequest"
             }
           }
         ],
@@ -1993,6 +3049,70 @@
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
+    "registryChecklistItemValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "completed": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "value corresponds to if the item was marked as completed"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the model version this belongs to"
+        },
+        "template_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the template(UAC) this is related to"
+        },
+        "template_item_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the template item (UAC) this is related to"
+        },
+        "created_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that created this entity"
+        },
+        "updated_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that updated this entity"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when this entity was created"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when metadata for this entity was last updated"
+        }
+      }
+    },
+    "registryChecklistItemValueIdentification": {
+      "type": "object",
+      "properties": {
+        "checklist_item_value_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "ChecklistItemValue referred to by id"
+        },
+        "model_version_id": {
+          "$ref": "#/definitions/registryModelVersionIdentification",
+          "title": "RMV referred to by id"
+        }
+      }
+    },
     "registryCommitArtifactPart": {
       "type": "object",
       "properties": {
@@ -2030,6 +3150,9 @@
     "registryCommitMultipartArtifactResponse": {
       "type": "object"
     },
+    "registryDeleteChecklistItemValueRequestResponse": {
+      "type": "object"
+    },
     "registryDeleteModelVersionRequestResponse": {
       "type": "object"
     },
@@ -2048,6 +3171,71 @@
         },
         "health_path": {
           "type": "string"
+        }
+      }
+    },
+    "registryExternalDeployment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the model this belongs to"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "description": "Timestamp recorded when this ``external_deployment`` was created."
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "description": "Timestamp recorded when metadata for this ``external_deployment`` was last updated."
+        },
+        "location_deployed": {
+          "type": "string",
+          "title": "Location where container will be deployed"
+        },
+        "url_path_title": {
+          "type": "string",
+          "title": "Deploy URL, path or title"
+        },
+        "description": {
+          "type": "string",
+          "title": "Brief description"
+        }
+      }
+    },
+    "registryExternalDeploymentRequestResponse": {
+      "type": "object",
+      "properties": {
+        "external_deployment": {
+          "$ref": "#/definitions/registryExternalDeployment"
+        }
+      }
+    },
+    "registryFindChecklistItemValueRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/registryModelVersionIdentification",
+          "title": "identity of parent registered model version"
+        }
+      }
+    },
+    "registryFindChecklistItemValueRequestResponse": {
+      "type": "object",
+      "properties": {
+        "checklist_item_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChecklistItemValue"
+          }
         }
       }
     },
@@ -2133,6 +3321,14 @@
         "total_records": {
           "type": "string",
           "format": "int64"
+        }
+      }
+    },
+    "registryGetChecklistItemValueRequestResponse": {
+      "type": "object",
+      "properties": {
+        "checklist_item_value": {
+          "$ref": "#/definitions/registryChecklistItemValue"
         }
       }
     },
@@ -2423,6 +3619,19 @@
           "type": "boolean",
           "format": "boolean",
           "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "external_deployments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryExternalDeployment"
+          }
+        },
+        "checklist_item_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChecklistItemValue"
+          },
+          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-173"
         }
       }
     },
@@ -2561,6 +3770,28 @@
         "workspace_name": {
           "type": "string",
           "title": "WorkspaceName"
+        }
+      }
+    },
+    "registrySetChecklistItemValueRequest": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "$ref": "#/definitions/registryChecklistItemValueIdentification"
+        },
+        "checklist_item_value": {
+          "$ref": "#/definitions/registryChecklistItemValue"
+        },
+        "update_mask": {
+          "$ref": "#/definitions/protobufFieldMask"
+        }
+      }
+    },
+    "registrySetChecklistItemValueRequestResponse": {
+      "type": "object",
+      "properties": {
+        "checklist_item_value": {
+          "$ref": "#/definitions/registryChecklistItemValue"
         }
       }
     },
@@ -2876,6 +4107,9 @@
         }
       },
       "title": "For pagination"
+    },
+    "vertaregistryEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"
