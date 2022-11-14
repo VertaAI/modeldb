@@ -29,11 +29,15 @@ public class Future<T> {
   private static FutureExecutor futureExecutor;
 
   private static final boolean DEEP_TRACING_ENABLED;
+  private static boolean captureStacksAtCreation;
+
   public static final AttributeKey<String> STACK_ATTRIBUTE_KEY = AttributeKey.stringKey("stack");
 
   static {
     String internalFutureTracingEnabled = System.getenv("IFUTURE_TRACING_ENABLED");
     DEEP_TRACING_ENABLED = Boolean.parseBoolean(internalFutureTracingEnabled);
+    captureStacksAtCreation =
+        Boolean.parseBoolean(System.getProperty(FUTURE_TESTING_STACKS_ENABLED));
   }
 
   private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
@@ -41,8 +45,7 @@ public class Future<T> {
   private final CompletionStage<T> stage;
 
   private Future(CompletionStage<T> stage) {
-    if (DEEP_TRACING_ENABLED
-        || Boolean.parseBoolean(System.getProperty(FUTURE_TESTING_STACKS_ENABLED))) {
+    if (DEEP_TRACING_ENABLED || captureStacksAtCreation) {
       StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
       // get rid of the top of the stack, which is not useful
       stackTrace = Arrays.copyOfRange(stackTrace, 1, stackTrace.length);
@@ -402,10 +405,10 @@ public class Future<T> {
   }
 
   public static void enableCallSiteStackCapture() {
-    System.setProperty(FUTURE_TESTING_STACKS_ENABLED, "true");
+    captureStacksAtCreation = true;
   }
 
   public static void disableCallSiteStackCapture() {
-    System.setProperty(FUTURE_TESTING_STACKS_ENABLED, "false");
+    captureStacksAtCreation = false;
   }
 }
