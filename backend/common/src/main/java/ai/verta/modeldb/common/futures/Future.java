@@ -19,17 +19,25 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class Future<T> {
   /**
+   * Set this system property to "true" to enable capturing call-site stacks for debugging purposes.
+   */
+  public static final String FUTURE_TESTING_STACKS_ENABLED = "FUTURE_TESTING_STACKS_ENABLED";
+  /**
    * This instance is the global executor for all Futures. Everything will fail if it is not set
    * properly.
    */
   private static FutureExecutor futureExecutor;
 
   private static final boolean DEEP_TRACING_ENABLED;
+  private static boolean captureStacksAtCreation;
+
   public static final AttributeKey<String> STACK_ATTRIBUTE_KEY = AttributeKey.stringKey("stack");
 
   static {
     String internalFutureTracingEnabled = System.getenv("IFUTURE_TRACING_ENABLED");
     DEEP_TRACING_ENABLED = Boolean.parseBoolean(internalFutureTracingEnabled);
+    captureStacksAtCreation =
+        Boolean.parseBoolean(System.getProperty(FUTURE_TESTING_STACKS_ENABLED));
   }
 
   private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
@@ -37,17 +45,19 @@ public class Future<T> {
   private final CompletionStage<T> stage;
 
   private Future(CompletionStage<T> stage) {
-    if (!DEEP_TRACING_ENABLED) {
-      formattedStack = null;
-    } else {
+    if (DEEP_TRACING_ENABLED || captureStacksAtCreation) {
       StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
+      // get rid of the top of the stack, which is not useful
+      stackTrace = Arrays.copyOfRange(stackTrace, 1, stackTrace.length);
       if (stackTrace.length > 10) {
         stackTrace = Arrays.copyOf(stackTrace, 10);
       }
       this.formattedStack =
           Arrays.stream(stackTrace)
               .map(StackTraceElement::toString)
-              .collect(Collectors.joining("\nat "));
+              .collect(Collectors.joining("\n\tat "));
+    } else {
+      this.formattedStack = null;
     }
     this.stage = stage;
   }
@@ -121,7 +131,20 @@ public class Future<T> {
         stage.thenComposeAsync(
             traceFunction(
                 traceFunction(
-                    fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose"),
+                    fn.andThen(
+                        internalFuture -> {
+                          if (internalFuture == null) {
+                            if (formattedStack != null) {
+                              log.warn(
+                                  "Null thenCompose internalFuture found. Call site stack:\n "
+                                      + formattedStack);
+                            }
+                            throw new NullPointerException(
+                                "Null internalFuture found during thenCompose call");
+                          }
+                          return internalFuture.stage;
+                        }),
+                    "futureThenCompose"),
                 "futureThenApply"),
             executor));
   }
@@ -379,5 +402,13 @@ public class Future<T> {
   @VisibleForTesting
   static void resetExecutorForTest() {
     futureExecutor = null;
+  }
+
+  public static void enableCallSiteStackCapture() {
+    captureStacksAtCreation = true;
+  }
+
+  public static void disableCallSiteStackCapture() {
+    captureStacksAtCreation = false;
   }
 }
