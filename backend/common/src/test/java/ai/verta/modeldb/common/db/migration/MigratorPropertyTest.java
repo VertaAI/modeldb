@@ -16,7 +16,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import lombok.Value;
-import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
 import org.junit.runner.RunWith;
 
@@ -72,7 +71,6 @@ public class MigratorPropertyTest {
     }
   }
 
-  @NotNull
   private Set<String> getAllTablesPresent() throws SQLException {
     // note: this rigamarole is to make debugging issues simpler. It only returns the test tables,
     // in numeric order.
@@ -94,7 +92,6 @@ public class MigratorPropertyTest {
     return tablesPresent;
   }
 
-  @NotNull
   private List<Pair<Integer, Boolean>> getSchemaMigrationContents() throws SQLException {
     List<Pair<Integer, Boolean>> migrationContents = new ArrayList<>();
     try (PreparedStatement ps =
