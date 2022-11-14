@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import java.sql.*;
 import java.util.Calendar;
 import java.util.Locale;
+import java.util.Optional;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
