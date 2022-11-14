@@ -125,9 +125,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "registered model id: {}".format(msg.registered_model_id),
                 "experiment run id: {}".format(msg.experiment_run_id),
                 # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
-                "artifact keys: {}".format(artifact_keys),
-                "dataset version keys: {}".format([dataset.key for dataset in msg.datasets]),
-                "code version keys: {}".format(list(msg.code_blob_map.keys())),
+                "artifact keys: {}".format(sorted(artifact_keys)),
+                "dataset version keys: {}".format(sorted(dataset.key for dataset in msg.datasets)),
+                "code version keys: {}".format(sorted(msg.code_blob_map.keys())),
             )
         )
 
