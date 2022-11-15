@@ -53,8 +53,7 @@ def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
     """
     Verify that RegisteredModelVersion.__repr__() renders expected fields and correct values.
 
-    This test does not yet cover all available fields, but exists in its
-    current form to cover newly-added model catalog fields.
+    This test does not yet cover all available fields, but exists in its current form to cover newly-added model catalog fields.
 
     """
     model_ver = RegisteredModelVersion(conn=mock_conn, conf=mock_config, msg=model_ver_proto)
