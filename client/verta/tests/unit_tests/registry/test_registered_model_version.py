@@ -14,7 +14,7 @@ from verta._protos.public.registry import RegistryService_pb2
 from verta.registry.entities import RegisteredModelVersion
 
 from ..strategies import (
-    artifact_protos,
+    artifact_proto,
     code_blob_proto,
     int64,
     model_artifact_proto,
@@ -46,8 +46,8 @@ def model_ver_proto(draw) -> RegistryService_pb2.ModelVersion:
         hide_output_label=draw(st.booleans()),
 
         model=draw(st.one_of(st.none(), model_artifact_proto())),
-        artifacts=draw(artifact_protos()),
-        datasets=draw(artifact_protos()),
+        artifacts=draw(st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key)),
+        datasets=draw(st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key)),
         code_blob_map=draw(st.dictionaries(st.text(ascii_letters), code_blob_proto())),
     )
 

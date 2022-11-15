@@ -44,12 +44,6 @@ def artifact_proto(draw) -> CommonService_pb2.Artifact:
 
 
 @st.composite
-def artifact_protos(draw) -> List[CommonService_pb2.Artifact]:
-    """Generate a list of mocked Artifact protobuf objects with unique keys."""
-    return draw(st.lists(artifact_proto(), unique_by=lambda artifact: artifact.key))
-
-
-@st.composite
 def model_artifact_proto(draw) -> CommonService_pb2.Artifact:
     """
     Generate a mocked Artifact protobuf object specifically representing a model artifact.
