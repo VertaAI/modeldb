@@ -62,14 +62,13 @@ def test_repr(mock_conn, mock_config, model_ver_proto, workspace):
     msg: RegistryService_pb2.ModelVersion = model_ver._msg
 
     assert f"version: {msg.version}" in repr_lines
-    expected_url = "{}://{}/{}/registry/{}/versions/{}".format(
+    assert "url: {}://{}/{}/registry/{}/versions/{}".format(
         mock_conn.scheme,
         mock_conn.socket,
         workspace,
         msg.registered_model_id,
         msg.id,
-    )
-    assert f"url: {expected_url}" in repr_lines
+    ) in repr_lines
     assert f"time created: {timestamp_to_str(msg.time_created)}" in repr_lines
     assert f"time updated: {timestamp_to_str(msg.time_updated)}" in repr_lines
     assert f"labels: {msg.labels}" in repr_lines
