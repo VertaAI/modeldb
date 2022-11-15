@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+""" Unit tests for the RegisteredModelVersion class. """
+
 from string import ascii_letters
 from typing import List
 from unittest.mock import patch
