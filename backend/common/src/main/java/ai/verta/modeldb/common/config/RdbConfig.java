@@ -1,10 +1,9 @@
 package ai.verta.modeldb.common.config;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-
-import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;

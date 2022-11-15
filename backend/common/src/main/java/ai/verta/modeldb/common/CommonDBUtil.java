@@ -4,7 +4,6 @@ import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.db.migration.MigrationException;
 import ai.verta.modeldb.common.db.migration.Migrator;
-import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import java.sql.*;
 import java.util.Calendar;

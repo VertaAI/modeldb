@@ -40,11 +40,6 @@
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
         </dependency>
-        <dependency>
-            <groupId>org.projectlombok</groupId>
-            <artifactId>lombok</artifactId>
-        </dependency>
-
         <!-- The main transport implementation based on Netty, for both the client
             and the server (https://grpc.io/grpc-java/javadoc/io/grpc/netty/package-summary.html) -->
         <dependency>
