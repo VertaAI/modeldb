@@ -24,7 +24,12 @@ from ..strategies import (
 
 @st.composite
 def model_ver_proto(draw) -> RegistryService_pb2.ModelVersion:
-    """Generate a mocked ModelVersion protobuf object."""
+    """
+    Generate a mocked ModelVersion protobuf object.
+
+    This strategy does not yet set all available fields, but exists in its current form to cover newly-added model catalog fields.
+
+    """
     return RegistryService_pb2.ModelVersion(
         id=draw(uint64()),
         registered_model_id=draw(uint64()),
