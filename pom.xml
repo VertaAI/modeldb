@@ -116,7 +116,7 @@
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
-                <version>1.32</version>
+                <version>1.33</version>
             </dependency>
             <!-- PRISMA-2022-0239 -->
             <!-- The main transport implementation based on Netty, for both the client
