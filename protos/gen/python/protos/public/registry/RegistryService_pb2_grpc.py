@@ -134,31 +134,6 @@ class RegistryServiceStub(object):
         request_serializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.SerializeToString,
         response_deserializer=registry_dot_RegistryService__pb2.Empty.FromString,
         )
-    self.FindChecklistItemValues = channel.unary_unary(
-        '/ai.verta.registry.RegistryService/FindChecklistItemValues',
-        request_serializer=registry_dot_RegistryService__pb2.FindChecklistItemValueRequest.SerializeToString,
-        response_deserializer=registry_dot_RegistryService__pb2.FindChecklistItemValueRequest.Response.FromString,
-        )
-    self.GetChecklistItemValue = channel.unary_unary(
-        '/ai.verta.registry.RegistryService/GetChecklistItemValue',
-        request_serializer=registry_dot_RegistryService__pb2.GetChecklistItemValueRequest.SerializeToString,
-        response_deserializer=registry_dot_RegistryService__pb2.GetChecklistItemValueRequest.Response.FromString,
-        )
-    self.CreateChecklistItemValue = channel.unary_unary(
-        '/ai.verta.registry.RegistryService/CreateChecklistItemValue',
-        request_serializer=registry_dot_RegistryService__pb2.SetChecklistItemValueRequest.SerializeToString,
-        response_deserializer=registry_dot_RegistryService__pb2.SetChecklistItemValueRequest.Response.FromString,
-        )
-    self.UpdateChecklistItemValue = channel.unary_unary(
-        '/ai.verta.registry.RegistryService/UpdateChecklistItemValue',
-        request_serializer=registry_dot_RegistryService__pb2.SetChecklistItemValueRequest.SerializeToString,
-        response_deserializer=registry_dot_RegistryService__pb2.SetChecklistItemValueRequest.Response.FromString,
-        )
-    self.DeleteChecklistItemValue = channel.unary_unary(
-        '/ai.verta.registry.RegistryService/DeleteChecklistItemValue',
-        request_serializer=registry_dot_RegistryService__pb2.DeleteChecklistItemValueRequest.SerializeToString,
-        response_deserializer=registry_dot_RegistryService__pb2.DeleteChecklistItemValueRequest.Response.FromString,
-        )
 
 
 class RegistryServiceServicer(object):
@@ -333,41 +308,6 @@ class RegistryServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def FindChecklistItemValues(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def GetChecklistItemValue(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def CreateChecklistItemValue(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def UpdateChecklistItemValue(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def DeleteChecklistItemValue(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_RegistryServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -490,31 +430,6 @@ def add_RegistryServiceServicer_to_server(servicer, server):
           servicer.DeleteExternalDeployment,
           request_deserializer=registry_dot_RegistryService__pb2.ExternalDeploymentRequest.FromString,
           response_serializer=registry_dot_RegistryService__pb2.Empty.SerializeToString,
-      ),
-      'FindChecklistItemValues': grpc.unary_unary_rpc_method_handler(
-          servicer.FindChecklistItemValues,
-          request_deserializer=registry_dot_RegistryService__pb2.FindChecklistItemValueRequest.FromString,
-          response_serializer=registry_dot_RegistryService__pb2.FindChecklistItemValueRequest.Response.SerializeToString,
-      ),
-      'GetChecklistItemValue': grpc.unary_unary_rpc_method_handler(
-          servicer.GetChecklistItemValue,
-          request_deserializer=registry_dot_RegistryService__pb2.GetChecklistItemValueRequest.FromString,
-          response_serializer=registry_dot_RegistryService__pb2.GetChecklistItemValueRequest.Response.SerializeToString,
-      ),
-      'CreateChecklistItemValue': grpc.unary_unary_rpc_method_handler(
-          servicer.CreateChecklistItemValue,
-          request_deserializer=registry_dot_RegistryService__pb2.SetChecklistItemValueRequest.FromString,
-          response_serializer=registry_dot_RegistryService__pb2.SetChecklistItemValueRequest.Response.SerializeToString,
-      ),
-      'UpdateChecklistItemValue': grpc.unary_unary_rpc_method_handler(
-          servicer.UpdateChecklistItemValue,
-          request_deserializer=registry_dot_RegistryService__pb2.SetChecklistItemValueRequest.FromString,
-          response_serializer=registry_dot_RegistryService__pb2.SetChecklistItemValueRequest.Response.SerializeToString,
-      ),
-      'DeleteChecklistItemValue': grpc.unary_unary_rpc_method_handler(
-          servicer.DeleteChecklistItemValue,
-          request_deserializer=registry_dot_RegistryService__pb2.DeleteChecklistItemValueRequest.FromString,
-          response_serializer=registry_dot_RegistryService__pb2.DeleteChecklistItemValueRequest.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

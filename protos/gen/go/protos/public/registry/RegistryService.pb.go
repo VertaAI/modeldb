@@ -2435,6 +2435,45 @@ func (x *ExternalDeploymentRequest) GetExternalDeploymentId() uint64 {
 	return 0
 }
 
+type Empty struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *Empty) Reset() {
+	*x = Empty{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_registry_RegistryService_proto_msgTypes[30]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *Empty) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*Empty) ProtoMessage() {}
+
+func (x *Empty) ProtoReflect() protoreflect.Message {
+	mi := &file_registry_RegistryService_proto_msgTypes[30]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
+func (*Empty) Descriptor() ([]byte, []int) {
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{30}
+}
+
+// placed here to avoid circular dependency in ChecklistService.proto
 type ChecklistItemValue struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2463,7 +2502,7 @@ type ChecklistItemValue struct {
 func (x *ChecklistItemValue) Reset() {
 	*x = ChecklistItemValue{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[30]
+		mi := &file_registry_RegistryService_proto_msgTypes[31]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2476,7 +2515,7 @@ func (x *ChecklistItemValue) String() string {
 func (*ChecklistItemValue) ProtoMessage() {}
 
 func (x *ChecklistItemValue) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[30]
+	mi := &file_registry_RegistryService_proto_msgTypes[31]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2489,7 +2528,7 @@ func (x *ChecklistItemValue) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChecklistItemValue.ProtoReflect.Descriptor instead.
 func (*ChecklistItemValue) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{30}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{31}
 }
 
 func (x *ChecklistItemValue) GetId() uint64 {
@@ -2569,7 +2608,7 @@ type ChecklistItemValueIdentification struct {
 func (x *ChecklistItemValueIdentification) Reset() {
 	*x = ChecklistItemValueIdentification{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[31]
+		mi := &file_registry_RegistryService_proto_msgTypes[32]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2582,7 +2621,7 @@ func (x *ChecklistItemValueIdentification) String() string {
 func (*ChecklistItemValueIdentification) ProtoMessage() {}
 
 func (x *ChecklistItemValueIdentification) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[31]
+	mi := &file_registry_RegistryService_proto_msgTypes[32]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2595,7 +2634,7 @@ func (x *ChecklistItemValueIdentification) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use ChecklistItemValueIdentification.ProtoReflect.Descriptor instead.
 func (*ChecklistItemValueIdentification) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{31}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{32}
 }
 
 func (x *ChecklistItemValueIdentification) GetChecklistItemValueId() uint64 {
@@ -2624,7 +2663,7 @@ type FindChecklistItemValueRequest struct {
 func (x *FindChecklistItemValueRequest) Reset() {
 	*x = FindChecklistItemValueRequest{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[32]
+		mi := &file_registry_RegistryService_proto_msgTypes[33]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2637,7 +2676,7 @@ func (x *FindChecklistItemValueRequest) String() string {
 func (*FindChecklistItemValueRequest) ProtoMessage() {}
 
 func (x *FindChecklistItemValueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[32]
+	mi := &file_registry_RegistryService_proto_msgTypes[33]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2650,7 +2689,7 @@ func (x *FindChecklistItemValueRequest) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use FindChecklistItemValueRequest.ProtoReflect.Descriptor instead.
 func (*FindChecklistItemValueRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{32}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{33}
 }
 
 func (x *FindChecklistItemValueRequest) GetId() *ModelVersionIdentification {
@@ -2658,201 +2697,6 @@ func (x *FindChecklistItemValueRequest) GetId() *ModelVersionIdentification {
 		return x.Id
 	}
 	return nil
-}
-
-type GetChecklistItemValueRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id *ChecklistItemValueIdentification `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *GetChecklistItemValueRequest) Reset() {
-	*x = GetChecklistItemValueRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[33]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetChecklistItemValueRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetChecklistItemValueRequest) ProtoMessage() {}
-
-func (x *GetChecklistItemValueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[33]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetChecklistItemValueRequest.ProtoReflect.Descriptor instead.
-func (*GetChecklistItemValueRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{33}
-}
-
-func (x *GetChecklistItemValueRequest) GetId() *ChecklistItemValueIdentification {
-	if x != nil {
-		return x.Id
-	}
-	return nil
-}
-
-type SetChecklistItemValueRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id                 *ChecklistItemValueIdentification `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	ChecklistItemValue *ChecklistItemValue               `protobuf:"bytes,2,opt,name=checklist_item_value,json=checklistItemValue,proto3" json:"checklist_item_value,omitempty"`
-	UpdateMask         *field_mask.FieldMask             `protobuf:"bytes,3,opt,name=update_mask,json=updateMask,proto3" json:"update_mask,omitempty"`
-}
-
-func (x *SetChecklistItemValueRequest) Reset() {
-	*x = SetChecklistItemValueRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[34]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SetChecklistItemValueRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetChecklistItemValueRequest) ProtoMessage() {}
-
-func (x *SetChecklistItemValueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[34]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetChecklistItemValueRequest.ProtoReflect.Descriptor instead.
-func (*SetChecklistItemValueRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{34}
-}
-
-func (x *SetChecklistItemValueRequest) GetId() *ChecklistItemValueIdentification {
-	if x != nil {
-		return x.Id
-	}
-	return nil
-}
-
-func (x *SetChecklistItemValueRequest) GetChecklistItemValue() *ChecklistItemValue {
-	if x != nil {
-		return x.ChecklistItemValue
-	}
-	return nil
-}
-
-func (x *SetChecklistItemValueRequest) GetUpdateMask() *field_mask.FieldMask {
-	if x != nil {
-		return x.UpdateMask
-	}
-	return nil
-}
-
-type DeleteChecklistItemValueRequest struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	Id *ChecklistItemValueIdentification `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-}
-
-func (x *DeleteChecklistItemValueRequest) Reset() {
-	*x = DeleteChecklistItemValueRequest{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[35]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeleteChecklistItemValueRequest) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteChecklistItemValueRequest) ProtoMessage() {}
-
-func (x *DeleteChecklistItemValueRequest) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[35]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteChecklistItemValueRequest.ProtoReflect.Descriptor instead.
-func (*DeleteChecklistItemValueRequest) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{35}
-}
-
-func (x *DeleteChecklistItemValueRequest) GetId() *ChecklistItemValueIdentification {
-	if x != nil {
-		return x.Id
-	}
-	return nil
-}
-
-type Empty struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *Empty) Reset() {
-	*x = Empty{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[36]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *Empty) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*Empty) ProtoMessage() {}
-
-func (x *Empty) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[36]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use Empty.ProtoReflect.Descriptor instead.
-func (*Empty) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{36}
 }
 
 type FindRegisteredModelRequest_Response struct {
@@ -2867,7 +2711,7 @@ type FindRegisteredModelRequest_Response struct {
 func (x *FindRegisteredModelRequest_Response) Reset() {
 	*x = FindRegisteredModelRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[37]
+		mi := &file_registry_RegistryService_proto_msgTypes[34]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2880,7 +2724,7 @@ func (x *FindRegisteredModelRequest_Response) String() string {
 func (*FindRegisteredModelRequest_Response) ProtoMessage() {}
 
 func (x *FindRegisteredModelRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[37]
+	mi := &file_registry_RegistryService_proto_msgTypes[34]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2921,7 +2765,7 @@ type GetRegisteredModelRequest_Response struct {
 func (x *GetRegisteredModelRequest_Response) Reset() {
 	*x = GetRegisteredModelRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[38]
+		mi := &file_registry_RegistryService_proto_msgTypes[35]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2934,7 +2778,7 @@ func (x *GetRegisteredModelRequest_Response) String() string {
 func (*GetRegisteredModelRequest_Response) ProtoMessage() {}
 
 func (x *GetRegisteredModelRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[38]
+	mi := &file_registry_RegistryService_proto_msgTypes[35]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -2968,7 +2812,7 @@ type GetRegisteredModelCountRequest_Response struct {
 func (x *GetRegisteredModelCountRequest_Response) Reset() {
 	*x = GetRegisteredModelCountRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[39]
+		mi := &file_registry_RegistryService_proto_msgTypes[36]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -2981,7 +2825,7 @@ func (x *GetRegisteredModelCountRequest_Response) String() string {
 func (*GetRegisteredModelCountRequest_Response) ProtoMessage() {}
 
 func (x *GetRegisteredModelCountRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[39]
+	mi := &file_registry_RegistryService_proto_msgTypes[36]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3015,7 +2859,7 @@ type SetRegisteredModel_Response struct {
 func (x *SetRegisteredModel_Response) Reset() {
 	*x = SetRegisteredModel_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[40]
+		mi := &file_registry_RegistryService_proto_msgTypes[37]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3028,7 +2872,7 @@ func (x *SetRegisteredModel_Response) String() string {
 func (*SetRegisteredModel_Response) ProtoMessage() {}
 
 func (x *SetRegisteredModel_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[40]
+	mi := &file_registry_RegistryService_proto_msgTypes[37]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3060,7 +2904,7 @@ type DeleteRegisteredModelRequest_Response struct {
 func (x *DeleteRegisteredModelRequest_Response) Reset() {
 	*x = DeleteRegisteredModelRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[41]
+		mi := &file_registry_RegistryService_proto_msgTypes[38]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3073,7 +2917,7 @@ func (x *DeleteRegisteredModelRequest_Response) String() string {
 func (*DeleteRegisteredModelRequest_Response) ProtoMessage() {}
 
 func (x *DeleteRegisteredModelRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[41]
+	mi := &file_registry_RegistryService_proto_msgTypes[38]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3098,7 +2942,7 @@ type SetLockModelVersionRequest_Response struct {
 func (x *SetLockModelVersionRequest_Response) Reset() {
 	*x = SetLockModelVersionRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[43]
+		mi := &file_registry_RegistryService_proto_msgTypes[40]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3111,7 +2955,7 @@ func (x *SetLockModelVersionRequest_Response) String() string {
 func (*SetLockModelVersionRequest_Response) ProtoMessage() {}
 
 func (x *SetLockModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[43]
+	mi := &file_registry_RegistryService_proto_msgTypes[40]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3138,7 +2982,7 @@ type GetModelVersionRequest_Response struct {
 func (x *GetModelVersionRequest_Response) Reset() {
 	*x = GetModelVersionRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[44]
+		mi := &file_registry_RegistryService_proto_msgTypes[41]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3151,7 +2995,7 @@ func (x *GetModelVersionRequest_Response) String() string {
 func (*GetModelVersionRequest_Response) ProtoMessage() {}
 
 func (x *GetModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[44]
+	mi := &file_registry_RegistryService_proto_msgTypes[41]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3186,7 +3030,7 @@ type FindModelVersionRequest_Response struct {
 func (x *FindModelVersionRequest_Response) Reset() {
 	*x = FindModelVersionRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[45]
+		mi := &file_registry_RegistryService_proto_msgTypes[42]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3199,7 +3043,7 @@ func (x *FindModelVersionRequest_Response) String() string {
 func (*FindModelVersionRequest_Response) ProtoMessage() {}
 
 func (x *FindModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[45]
+	mi := &file_registry_RegistryService_proto_msgTypes[42]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3240,7 +3084,7 @@ type SetModelVersion_Response struct {
 func (x *SetModelVersion_Response) Reset() {
 	*x = SetModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[46]
+		mi := &file_registry_RegistryService_proto_msgTypes[43]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3253,7 +3097,7 @@ func (x *SetModelVersion_Response) String() string {
 func (*SetModelVersion_Response) ProtoMessage() {}
 
 func (x *SetModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[46]
+	mi := &file_registry_RegistryService_proto_msgTypes[43]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3285,7 +3129,7 @@ type DeleteModelVersionRequest_Response struct {
 func (x *DeleteModelVersionRequest_Response) Reset() {
 	*x = DeleteModelVersionRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[47]
+		mi := &file_registry_RegistryService_proto_msgTypes[44]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3298,7 +3142,7 @@ func (x *DeleteModelVersionRequest_Response) String() string {
 func (*DeleteModelVersionRequest_Response) ProtoMessage() {}
 
 func (x *DeleteModelVersionRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[47]
+	mi := &file_registry_RegistryService_proto_msgTypes[44]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3328,7 +3172,7 @@ type GetUrlForArtifact_Response struct {
 func (x *GetUrlForArtifact_Response) Reset() {
 	*x = GetUrlForArtifact_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[48]
+		mi := &file_registry_RegistryService_proto_msgTypes[45]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3341,7 +3185,7 @@ func (x *GetUrlForArtifact_Response) String() string {
 func (*GetUrlForArtifact_Response) ProtoMessage() {}
 
 func (x *GetUrlForArtifact_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[48]
+	mi := &file_registry_RegistryService_proto_msgTypes[45]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3387,7 +3231,7 @@ type CommitArtifactPart_Response struct {
 func (x *CommitArtifactPart_Response) Reset() {
 	*x = CommitArtifactPart_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[50]
+		mi := &file_registry_RegistryService_proto_msgTypes[47]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3400,7 +3244,7 @@ func (x *CommitArtifactPart_Response) String() string {
 func (*CommitArtifactPart_Response) ProtoMessage() {}
 
 func (x *CommitArtifactPart_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[50]
+	mi := &file_registry_RegistryService_proto_msgTypes[47]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3427,7 +3271,7 @@ type GetCommittedArtifactParts_Response struct {
 func (x *GetCommittedArtifactParts_Response) Reset() {
 	*x = GetCommittedArtifactParts_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[51]
+		mi := &file_registry_RegistryService_proto_msgTypes[48]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3440,7 +3284,7 @@ func (x *GetCommittedArtifactParts_Response) String() string {
 func (*GetCommittedArtifactParts_Response) ProtoMessage() {}
 
 func (x *GetCommittedArtifactParts_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[51]
+	mi := &file_registry_RegistryService_proto_msgTypes[48]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3472,7 +3316,7 @@ type CommitMultipartArtifact_Response struct {
 func (x *CommitMultipartArtifact_Response) Reset() {
 	*x = CommitMultipartArtifact_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[52]
+		mi := &file_registry_RegistryService_proto_msgTypes[49]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3485,7 +3329,7 @@ func (x *CommitMultipartArtifact_Response) String() string {
 func (*CommitMultipartArtifact_Response) ProtoMessage() {}
 
 func (x *CommitMultipartArtifact_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[52]
+	mi := &file_registry_RegistryService_proto_msgTypes[49]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3510,7 +3354,7 @@ type LogDatasetsInModelVersion_Response struct {
 func (x *LogDatasetsInModelVersion_Response) Reset() {
 	*x = LogDatasetsInModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[53]
+		mi := &file_registry_RegistryService_proto_msgTypes[50]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3523,7 +3367,7 @@ func (x *LogDatasetsInModelVersion_Response) String() string {
 func (*LogDatasetsInModelVersion_Response) ProtoMessage() {}
 
 func (x *LogDatasetsInModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[53]
+	mi := &file_registry_RegistryService_proto_msgTypes[50]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3548,7 +3392,7 @@ type LogCodeBlobInModelVersion_Response struct {
 func (x *LogCodeBlobInModelVersion_Response) Reset() {
 	*x = LogCodeBlobInModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[55]
+		mi := &file_registry_RegistryService_proto_msgTypes[52]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3561,7 +3405,7 @@ func (x *LogCodeBlobInModelVersion_Response) String() string {
 func (*LogCodeBlobInModelVersion_Response) ProtoMessage() {}
 
 func (x *LogCodeBlobInModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[55]
+	mi := &file_registry_RegistryService_proto_msgTypes[52]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3586,7 +3430,7 @@ type LogAttributesInModelVersion_Response struct {
 func (x *LogAttributesInModelVersion_Response) Reset() {
 	*x = LogAttributesInModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[56]
+		mi := &file_registry_RegistryService_proto_msgTypes[53]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3599,7 +3443,7 @@ func (x *LogAttributesInModelVersion_Response) String() string {
 func (*LogAttributesInModelVersion_Response) ProtoMessage() {}
 
 func (x *LogAttributesInModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[56]
+	mi := &file_registry_RegistryService_proto_msgTypes[53]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3624,7 +3468,7 @@ type LogDockerMetadataInModelVersion_Response struct {
 func (x *LogDockerMetadataInModelVersion_Response) Reset() {
 	*x = LogDockerMetadataInModelVersion_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[57]
+		mi := &file_registry_RegistryService_proto_msgTypes[54]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3637,7 +3481,7 @@ func (x *LogDockerMetadataInModelVersion_Response) String() string {
 func (*LogDockerMetadataInModelVersion_Response) ProtoMessage() {}
 
 func (x *LogDockerMetadataInModelVersion_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[57]
+	mi := &file_registry_RegistryService_proto_msgTypes[54]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3664,7 +3508,7 @@ type ExternalDeploymentRequest_Response struct {
 func (x *ExternalDeploymentRequest_Response) Reset() {
 	*x = ExternalDeploymentRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[58]
+		mi := &file_registry_RegistryService_proto_msgTypes[55]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3677,7 +3521,7 @@ func (x *ExternalDeploymentRequest_Response) String() string {
 func (*ExternalDeploymentRequest_Response) ProtoMessage() {}
 
 func (x *ExternalDeploymentRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[58]
+	mi := &file_registry_RegistryService_proto_msgTypes[55]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3711,7 +3555,7 @@ type FindChecklistItemValueRequest_Response struct {
 func (x *FindChecklistItemValueRequest_Response) Reset() {
 	*x = FindChecklistItemValueRequest_Response{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[59]
+		mi := &file_registry_RegistryService_proto_msgTypes[56]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -3724,7 +3568,7 @@ func (x *FindChecklistItemValueRequest_Response) String() string {
 func (*FindChecklistItemValueRequest_Response) ProtoMessage() {}
 
 func (x *FindChecklistItemValueRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[59]
+	mi := &file_registry_RegistryService_proto_msgTypes[56]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -3737,7 +3581,7 @@ func (x *FindChecklistItemValueRequest_Response) ProtoReflect() protoreflect.Mes
 
 // Deprecated: Use FindChecklistItemValueRequest_Response.ProtoReflect.Descriptor instead.
 func (*FindChecklistItemValueRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{32, 0}
+	return file_registry_RegistryService_proto_rawDescGZIP(), []int{33, 0}
 }
 
 func (x *FindChecklistItemValueRequest_Response) GetChecklistItemValues() []*ChecklistItemValue {
@@ -3745,138 +3589,6 @@ func (x *FindChecklistItemValueRequest_Response) GetChecklistItemValues() []*Che
 		return x.ChecklistItemValues
 	}
 	return nil
-}
-
-type GetChecklistItemValueRequest_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	ChecklistItemValue *ChecklistItemValue `protobuf:"bytes,1,opt,name=checklist_item_value,json=checklistItemValue,proto3" json:"checklist_item_value,omitempty"`
-}
-
-func (x *GetChecklistItemValueRequest_Response) Reset() {
-	*x = GetChecklistItemValueRequest_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[60]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *GetChecklistItemValueRequest_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*GetChecklistItemValueRequest_Response) ProtoMessage() {}
-
-func (x *GetChecklistItemValueRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[60]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use GetChecklistItemValueRequest_Response.ProtoReflect.Descriptor instead.
-func (*GetChecklistItemValueRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{33, 0}
-}
-
-func (x *GetChecklistItemValueRequest_Response) GetChecklistItemValue() *ChecklistItemValue {
-	if x != nil {
-		return x.ChecklistItemValue
-	}
-	return nil
-}
-
-type SetChecklistItemValueRequest_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-
-	ChecklistItemValue *ChecklistItemValue `protobuf:"bytes,1,opt,name=checklist_item_value,json=checklistItemValue,proto3" json:"checklist_item_value,omitempty"`
-}
-
-func (x *SetChecklistItemValueRequest_Response) Reset() {
-	*x = SetChecklistItemValueRequest_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[61]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *SetChecklistItemValueRequest_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*SetChecklistItemValueRequest_Response) ProtoMessage() {}
-
-func (x *SetChecklistItemValueRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[61]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use SetChecklistItemValueRequest_Response.ProtoReflect.Descriptor instead.
-func (*SetChecklistItemValueRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{34, 0}
-}
-
-func (x *SetChecklistItemValueRequest_Response) GetChecklistItemValue() *ChecklistItemValue {
-	if x != nil {
-		return x.ChecklistItemValue
-	}
-	return nil
-}
-
-type DeleteChecklistItemValueRequest_Response struct {
-	state         protoimpl.MessageState
-	sizeCache     protoimpl.SizeCache
-	unknownFields protoimpl.UnknownFields
-}
-
-func (x *DeleteChecklistItemValueRequest_Response) Reset() {
-	*x = DeleteChecklistItemValueRequest_Response{}
-	if protoimpl.UnsafeEnabled {
-		mi := &file_registry_RegistryService_proto_msgTypes[62]
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		ms.StoreMessageInfo(mi)
-	}
-}
-
-func (x *DeleteChecklistItemValueRequest_Response) String() string {
-	return protoimpl.X.MessageStringOf(x)
-}
-
-func (*DeleteChecklistItemValueRequest_Response) ProtoMessage() {}
-
-func (x *DeleteChecklistItemValueRequest_Response) ProtoReflect() protoreflect.Message {
-	mi := &file_registry_RegistryService_proto_msgTypes[62]
-	if protoimpl.UnsafeEnabled && x != nil {
-		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
-		if ms.LoadMessageInfo() == nil {
-			ms.StoreMessageInfo(mi)
-		}
-		return ms
-	}
-	return mi.MessageOf(x)
-}
-
-// Deprecated: Use DeleteChecklistItemValueRequest_Response.ProtoReflect.Descriptor instead.
-func (*DeleteChecklistItemValueRequest_Response) Descriptor() ([]byte, []int) {
-	return file_registry_RegistryService_proto_rawDescGZIP(), []int{35, 0}
 }
 
 var File_registry_RegistryService_proto protoreflect.FileDescriptor
@@ -4403,94 +4115,52 @@ var file_registry_RegistryService_proto_rawDesc = []byte{
 	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74,
 	0x72, 0x79, 0x2e, 0x45, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x44, 0x65, 0x70, 0x6c, 0x6f,
 	0x79, 0x6d, 0x65, 0x6e, 0x74, 0x52, 0x12, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x44,
-	0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x22, 0xc5, 0x02, 0x0a, 0x12, 0x43, 0x68,
-	0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65,
-	0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64,
-	0x12, 0x1c, 0x0a, 0x09, 0x63, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x18, 0x02, 0x20,
-	0x01, 0x28, 0x08, 0x52, 0x09, 0x63, 0x6f, 0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x12, 0x28,
-	0x0a, 0x10, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f,
-	0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x74, 0x65, 0x6d, 0x70,
-	0x6c, 0x61, 0x74, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x74,
-	0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x49, 0x64, 0x12, 0x28, 0x0a, 0x10, 0x74, 0x65, 0x6d,
-	0x70, 0x6c, 0x61, 0x74, 0x65, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20,
-	0x01, 0x28, 0x04, 0x52, 0x0e, 0x74, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x49, 0x74, 0x65,
-	0x6d, 0x49, 0x64, 0x12, 0x22, 0x0a, 0x0d, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x62,
-	0x79, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x63, 0x72, 0x65, 0x61,
-	0x74, 0x65, 0x64, 0x42, 0x79, 0x49, 0x64, 0x12, 0x22, 0x0a, 0x0d, 0x75, 0x70, 0x64, 0x61, 0x74,
-	0x65, 0x64, 0x5f, 0x62, 0x79, 0x5f, 0x69, 0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b,
-	0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x42, 0x79, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x74,
-	0x69, 0x6d, 0x65, 0x5f, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28,
-	0x03, 0x52, 0x0b, 0x74, 0x69, 0x6d, 0x65, 0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x12, 0x21,
-	0x0a, 0x0c, 0x74, 0x69, 0x6d, 0x65, 0x5f, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x18, 0x09,
-	0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x74, 0x69, 0x6d, 0x65, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65,
-	0x64, 0x22, 0xb2, 0x01, 0x0a, 0x20, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49,
-	0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12, 0x35, 0x0a, 0x17, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c,
-	0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69,
-	0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x14, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69,
-	0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x49, 0x64, 0x12, 0x57, 0x0a,
-	0x10, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
-	0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
-	0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x4d, 0x6f, 0x64, 0x65,
-	0x6c, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69,
-	0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x0e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x65, 0x72,
-	0x73, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x22, 0xc5, 0x01, 0x0a, 0x1d, 0x46, 0x69, 0x6e, 0x64, 0x43,
+	0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x22, 0x07, 0x0a, 0x05, 0x45, 0x6d, 0x70,
+	0x74, 0x79, 0x22, 0xc5, 0x02, 0x0a, 0x12, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74,
+	0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x0e, 0x0a, 0x02, 0x69, 0x64, 0x18,
+	0x01, 0x20, 0x01, 0x28, 0x04, 0x52, 0x02, 0x69, 0x64, 0x12, 0x1c, 0x0a, 0x09, 0x63, 0x6f, 0x6d,
+	0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x08, 0x52, 0x09, 0x63, 0x6f,
+	0x6d, 0x70, 0x6c, 0x65, 0x74, 0x65, 0x64, 0x12, 0x28, 0x0a, 0x10, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
+	0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x03, 0x20, 0x01, 0x28,
+	0x04, 0x52, 0x0e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49,
+	0x64, 0x12, 0x1f, 0x0a, 0x0b, 0x74, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x5f, 0x69, 0x64,
+	0x18, 0x04, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0a, 0x74, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65,
+	0x49, 0x64, 0x12, 0x28, 0x0a, 0x10, 0x74, 0x65, 0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x5f, 0x69,
+	0x74, 0x65, 0x6d, 0x5f, 0x69, 0x64, 0x18, 0x05, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0e, 0x74, 0x65,
+	0x6d, 0x70, 0x6c, 0x61, 0x74, 0x65, 0x49, 0x74, 0x65, 0x6d, 0x49, 0x64, 0x12, 0x22, 0x0a, 0x0d,
+	0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x62, 0x79, 0x5f, 0x69, 0x64, 0x18, 0x06, 0x20,
+	0x01, 0x28, 0x04, 0x52, 0x0b, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x42, 0x79, 0x49, 0x64,
+	0x12, 0x22, 0x0a, 0x0d, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x5f, 0x62, 0x79, 0x5f, 0x69,
+	0x64, 0x18, 0x07, 0x20, 0x01, 0x28, 0x04, 0x52, 0x0b, 0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64,
+	0x42, 0x79, 0x49, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x69, 0x6d, 0x65, 0x5f, 0x63, 0x72, 0x65,
+	0x61, 0x74, 0x65, 0x64, 0x18, 0x08, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x74, 0x69, 0x6d, 0x65,
+	0x43, 0x72, 0x65, 0x61, 0x74, 0x65, 0x64, 0x12, 0x21, 0x0a, 0x0c, 0x74, 0x69, 0x6d, 0x65, 0x5f,
+	0x75, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x18, 0x09, 0x20, 0x01, 0x28, 0x03, 0x52, 0x0b, 0x74,
+	0x69, 0x6d, 0x65, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x64, 0x22, 0xb2, 0x01, 0x0a, 0x20, 0x43,
 	0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75,
-	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x3d, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01,
-	0x20, 0x01, 0x28, 0x0b, 0x32, 0x2d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
-	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x65,
-	0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74,
-	0x69, 0x6f, 0x6e, 0x52, 0x02, 0x69, 0x64, 0x1a, 0x65, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x12, 0x59, 0x0a, 0x15, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74,
-	0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03,
-	0x28, 0x0b, 0x32, 0x25, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74,
-	0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x13, 0x63, 0x68, 0x65, 0x63, 0x6b,
-	0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x22, 0xc8,
-	0x01, 0x0a, 0x1c, 0x47, 0x65, 0x74, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49,
-	0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12,
-	0x43, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x33, 0x2e, 0x61, 0x69,
+	0x65, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x12,
+	0x35, 0x0a, 0x17, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65,
+	0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x04,
+	0x52, 0x14, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56,
+	0x61, 0x6c, 0x75, 0x65, 0x49, 0x64, 0x12, 0x57, 0x0a, 0x10, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f,
+	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b,
+	0x32, 0x2d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69,
+	0x73, 0x74, 0x72, 0x79, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f,
+	0x6e, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52,
+	0x0e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x22,
+	0xc5, 0x01, 0x0a, 0x1d, 0x46, 0x69, 0x6e, 0x64, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73,
+	0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x12, 0x3d, 0x0a, 0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x2d, 0x2e,
+	0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
+	0x79, 0x2e, 0x4d, 0x6f, 0x64, 0x65, 0x6c, 0x56, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x49, 0x64,
+	0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x02, 0x69, 0x64,
+	0x1a, 0x65, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x59, 0x0a, 0x15,
+	0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76,
+	0x61, 0x6c, 0x75, 0x65, 0x73, 0x18, 0x01, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x25, 0x2e, 0x61, 0x69,
 	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e,
 	0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c,
-	0x75, 0x65, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
-	0x52, 0x02, 0x69, 0x64, 0x1a, 0x63, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x12, 0x57, 0x0a, 0x14, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74,
-	0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25,
-	0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x72, 0x79, 0x2e, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d,
-	0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x12, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74,
-	0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x22, 0xde, 0x02, 0x0a, 0x1c, 0x53, 0x65,
-	0x74, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61,
-	0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x43, 0x0a, 0x02, 0x69, 0x64,
-	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x33, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74,
-	0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x43, 0x68, 0x65, 0x63, 0x6b,
-	0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x49, 0x64, 0x65,
-	0x6e, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x02, 0x69, 0x64, 0x12,
-	0x57, 0x0a, 0x14, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65,
-	0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x02, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x25, 0x2e,
-	0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72,
-	0x79, 0x2e, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56,
-	0x61, 0x6c, 0x75, 0x65, 0x52, 0x12, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49,
-	0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x3b, 0x0a, 0x0b, 0x75, 0x70, 0x64, 0x61,
-	0x74, 0x65, 0x5f, 0x6d, 0x61, 0x73, 0x6b, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x1a, 0x2e,
-	0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e,
-	0x46, 0x69, 0x65, 0x6c, 0x64, 0x4d, 0x61, 0x73, 0x6b, 0x52, 0x0a, 0x75, 0x70, 0x64, 0x61, 0x74,
-	0x65, 0x4d, 0x61, 0x73, 0x6b, 0x1a, 0x63, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73,
-	0x65, 0x12, 0x57, 0x0a, 0x14, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69,
-	0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32,
-	0x25, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x72, 0x79, 0x2e, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65,
-	0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x12, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73,
-	0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x22, 0x72, 0x0a, 0x1f, 0x44, 0x65,
-	0x6c, 0x65, 0x74, 0x65, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65,
-	0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x43, 0x0a,
-	0x02, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x33, 0x2e, 0x61, 0x69, 0x2e, 0x76,
-	0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x43, 0x68,
-	0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65,
-	0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x52, 0x02,
-	0x69, 0x64, 0x1a, 0x0a, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x07,
-	0x0a, 0x05, 0x45, 0x6d, 0x70, 0x74, 0x79, 0x32, 0xb0, 0x51, 0x0a, 0x0f, 0x52, 0x65, 0x67, 0x69,
+	0x75, 0x65, 0x52, 0x13, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65,
+	0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x32, 0xc0, 0x37, 0x0a, 0x0f, 0x52, 0x65, 0x67, 0x69,
 	0x73, 0x74, 0x72, 0x79, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0xf2, 0x01, 0x0a, 0x13,
 	0x46, 0x69, 0x6e, 0x64, 0x52, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x4d, 0x6f,
 	0x64, 0x65, 0x6c, 0x12, 0x2d, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72,
@@ -4934,214 +4604,7 @@ var file_registry_RegistryService_proto_rawDesc = []byte{
 	0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x65, 0x78, 0x74,
 	0x65, 0x72, 0x6e, 0x61, 0x6c, 0x5f, 0x64, 0x65, 0x70, 0x6c, 0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74,
 	0x73, 0x2f, 0x7b, 0x65, 0x78, 0x74, 0x65, 0x72, 0x6e, 0x61, 0x6c, 0x5f, 0x64, 0x65, 0x70, 0x6c,
-	0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x7d, 0x12, 0x8e, 0x02, 0x0a, 0x17, 0x46,
-	0x69, 0x6e, 0x64, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d,
-	0x56, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x12, 0x30, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74,
-	0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x46, 0x69, 0x6e, 0x64, 0x43,
-	0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75,
-	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x39, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65,
-	0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x46, 0x69, 0x6e,
-	0x64, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61,
-	0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f,
-	0x6e, 0x73, 0x65, 0x22, 0x85, 0x01, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x7f, 0x22, 0x27, 0x2f, 0x76,
-	0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b,
-	0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73,
-	0x2f, 0x66, 0x69, 0x6e, 0x64, 0x3a, 0x01, 0x2a, 0x5a, 0x51, 0x22, 0x4c, 0x2f, 0x76, 0x31, 0x2f,
-	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68,
-	0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c,
-	0x75, 0x65, 0x73, 0x2f, 0x66, 0x69, 0x6e, 0x64, 0x3a, 0x01, 0x2a, 0x12, 0x88, 0x06, 0x0a, 0x15,
-	0x47, 0x65, 0x74, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d,
-	0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x2f, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61,
-	0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x68, 0x65,
-	0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52,
-	0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x38, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74,
-	0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x47, 0x65, 0x74, 0x43, 0x68,
-	0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
-	0x22, 0x83, 0x05, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0xfc, 0x04, 0x12, 0x3f, 0x2f, 0x76, 0x31, 0x2f,
-	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69,
-	0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b,
-	0x69, 0x64, 0x2e, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65,
-	0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x5a, 0x77, 0x12, 0x75, 0x2f,
-	0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d,
-	0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64,
-	0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d,
-	0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x63, 0x68, 0x65, 0x63,
-	0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x5f, 0x69, 0x64, 0x7d, 0x5a, 0xbd, 0x01, 0x12, 0xba, 0x01, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65,
-	0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64,
-	0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f,
-	0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65,
-	0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d,
-	0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64,
-	0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d,
-	0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x63, 0x68, 0x65, 0x63,
-	0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x5f, 0x69, 0x64, 0x7d, 0x5a, 0xff, 0x01, 0x12, 0xfc, 0x01, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65,
-	0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e,
-	0x6e, 0x61, 0x6d, 0x65, 0x64, 0x5f, 0x69, 0x64, 0x2e, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x7d, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
-	0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d,
-	0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
-	0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x6d, 0x6f,
-	0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x69, 0x64,
-	0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
-	0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f,
-	0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74,
-	0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x63, 0x68,
-	0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c,
-	0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x12, 0xa3, 0x05, 0x0a, 0x18, 0x43, 0x72, 0x65, 0x61, 0x74,
-	0x65, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61,
-	0x6c, 0x75, 0x65, 0x12, 0x2f, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72,
-	0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x53, 0x65, 0x74, 0x43, 0x68, 0x65, 0x63, 0x6b,
-	0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x38, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e,
-	0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x53, 0x65, 0x74, 0x43, 0x68, 0x65, 0x63,
-	0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x52, 0x65,
-	0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x9b,
-	0x04, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x94, 0x04, 0x22, 0x22, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74,
-	0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x3a, 0x01, 0x2a, 0x5a,
-	0x5d, 0x22, 0x58, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b,
-	0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
-	0x6e, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f,
-	0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x3a, 0x01, 0x2a, 0x5a, 0xa3,
-	0x01, 0x22, 0x9d, 0x01, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
-	0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72,
-	0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64,
-	0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f,
-	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63,
-	0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x73, 0x3a, 0x01, 0x2a, 0x5a, 0xe5, 0x01, 0x22, 0xdf, 0x01, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65,
-	0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65,
-	0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e,
-	0x6e, 0x61, 0x6d, 0x65, 0x64, 0x5f, 0x69, 0x64, 0x2e, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61,
-	0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x7d, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
-	0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d,
-	0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65,
-	0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x6d, 0x6f,
-	0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x69, 0x64,
-	0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
-	0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f,
-	0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74,
-	0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x3a, 0x01, 0x2a, 0x12, 0x97, 0x06, 0x0a,
-	0x18, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74,
-	0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x12, 0x2f, 0x2e, 0x61, 0x69, 0x2e, 0x76,
-	0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x53, 0x65,
-	0x74, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61,
-	0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x38, 0x2e, 0x61, 0x69, 0x2e,
-	0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x53,
-	0x65, 0x74, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56,
-	0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x8f, 0x05, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x88, 0x05, 0x1a, 0x3f,
-	0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x63, 0x68, 0x65,
-	0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75,
-	0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74,
-	0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x3a,
-	0x01, 0x2a, 0x5a, 0x7a, 0x1a, 0x75, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74,
-	0x72, 0x79, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72,
-	0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69,
-	0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b,
-	0x69, 0x64, 0x2e, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65,
-	0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x3a, 0x01, 0x2a, 0x5a, 0xc0,
-	0x01, 0x1a, 0xba, 0x01, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79,
-	0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72,
-	0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64,
-	0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76,
-	0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f,
-	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63,
-	0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65,
-	0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f,
-	0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x3a, 0x01,
-	0x2a, 0x5a, 0x82, 0x02, 0x1a, 0xfc, 0x01, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x72, 0x79, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x73, 0x2f, 0x7b,
-	0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e, 0x6e, 0x61, 0x6d,
-	0x65, 0x64, 0x5f, 0x69, 0x64, 0x2e, 0x77, 0x6f, 0x72, 0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f,
-	0x6e, 0x61, 0x6d, 0x65, 0x7d, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64,
-	0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65,
-	0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64,
-	0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64,
-	0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
-	0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f,
-	0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d,
-	0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x7d,
-	0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f,
-	0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x63, 0x68, 0x65, 0x63, 0x6b,
-	0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f,
-	0x69, 0x64, 0x7d, 0x3a, 0x01, 0x2a, 0x12, 0x91, 0x06, 0x0a, 0x18, 0x44, 0x65, 0x6c, 0x65, 0x74,
-	0x65, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61,
-	0x6c, 0x75, 0x65, 0x12, 0x32, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x72,
-	0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x44, 0x65, 0x6c, 0x65, 0x74, 0x65, 0x43, 0x68,
-	0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56, 0x61, 0x6c, 0x75, 0x65,
-	0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x3b, 0x2e, 0x61, 0x69, 0x2e, 0x76, 0x65, 0x72,
-	0x74, 0x61, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2e, 0x44, 0x65, 0x6c, 0x65,
-	0x74, 0x65, 0x43, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x49, 0x74, 0x65, 0x6d, 0x56,
-	0x61, 0x6c, 0x75, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x2e, 0x52, 0x65, 0x73, 0x70,
-	0x6f, 0x6e, 0x73, 0x65, 0x22, 0x83, 0x05, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0xfc, 0x04, 0x2a, 0x3f,
-	0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x63, 0x68, 0x65,
-	0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75,
-	0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74,
-	0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x5a,
-	0x77, 0x2a, 0x75, 0x2f, 0x76, 0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b,
-	0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
-	0x6e, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f,
-	0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e,
-	0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x5a, 0xbd, 0x01, 0x2a, 0xba, 0x01, 0x2f, 0x76,
-	0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2f, 0x7b, 0x69, 0x64,
-	0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69,
-	0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e, 0x72, 0x65, 0x67, 0x69, 0x73,
-	0x74, 0x65, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x7d, 0x2f,
-	0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73, 0x2f, 0x7b,
-	0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f,
-	0x6e, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f,
-	0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e,
-	0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76,
-	0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x5a, 0xff, 0x01, 0x2a, 0xfc, 0x01, 0x2f, 0x76,
-	0x31, 0x2f, 0x72, 0x65, 0x67, 0x69, 0x73, 0x74, 0x72, 0x79, 0x2f, 0x77, 0x6f, 0x72, 0x6b, 0x73,
-	0x70, 0x61, 0x63, 0x65, 0x73, 0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f,
-	0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c,
-	0x5f, 0x69, 0x64, 0x2e, 0x6e, 0x61, 0x6d, 0x65, 0x64, 0x5f, 0x69, 0x64, 0x2e, 0x77, 0x6f, 0x72,
-	0x6b, 0x73, 0x70, 0x61, 0x63, 0x65, 0x5f, 0x6e, 0x61, 0x6d, 0x65, 0x7d, 0x2f, 0x72, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x73, 0x2f, 0x7b,
-	0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e,
-	0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64, 0x2e, 0x72, 0x65, 0x67,
-	0x69, 0x73, 0x74, 0x65, 0x72, 0x65, 0x64, 0x5f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x69, 0x64,
-	0x7d, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69, 0x6f, 0x6e, 0x73,
-	0x2f, 0x7b, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73, 0x69,
-	0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x2e, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x5f, 0x76, 0x65, 0x72, 0x73,
-	0x69, 0x6f, 0x6e, 0x5f, 0x69, 0x64, 0x7d, 0x2f, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73,
-	0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d, 0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x73, 0x2f, 0x7b, 0x69,
-	0x64, 0x2e, 0x63, 0x68, 0x65, 0x63, 0x6b, 0x6c, 0x69, 0x73, 0x74, 0x5f, 0x69, 0x74, 0x65, 0x6d,
-	0x5f, 0x76, 0x61, 0x6c, 0x75, 0x65, 0x5f, 0x69, 0x64, 0x7d, 0x42, 0x43, 0x50, 0x01, 0x5a, 0x3f,
+	0x6f, 0x79, 0x6d, 0x65, 0x6e, 0x74, 0x5f, 0x69, 0x64, 0x7d, 0x42, 0x43, 0x50, 0x01, 0x5a, 0x3f,
 	0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x56, 0x65, 0x72, 0x74, 0x61,
 	0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
 	0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f,
@@ -5162,7 +4625,7 @@ func file_registry_RegistryService_proto_rawDescGZIP() []byte {
 }
 
 var file_registry_RegistryService_proto_enumTypes = make([]protoimpl.EnumInfo, 4)
-var file_registry_RegistryService_proto_msgTypes = make([]protoimpl.MessageInfo, 63)
+var file_registry_RegistryService_proto_msgTypes = make([]protoimpl.MessageInfo, 57)
 var file_registry_RegistryService_proto_goTypes = []interface{}{
 	(DataTypeEnum_DataType)(0),                           // 0: ai.verta.registry.DataTypeEnum.DataType
 	(ActionTypeEnum_ActionType)(0),                       // 1: ai.verta.registry.ActionTypeEnum.ActionType
@@ -5198,184 +4661,161 @@ var file_registry_RegistryService_proto_goTypes = []interface{}{
 	(*LogDockerMetadataInModelVersion)(nil),              // 31: ai.verta.registry.LogDockerMetadataInModelVersion
 	(*ExternalDeployment)(nil),                           // 32: ai.verta.registry.ExternalDeployment
 	(*ExternalDeploymentRequest)(nil),                    // 33: ai.verta.registry.ExternalDeploymentRequest
-	(*ChecklistItemValue)(nil),                           // 34: ai.verta.registry.ChecklistItemValue
-	(*ChecklistItemValueIdentification)(nil),             // 35: ai.verta.registry.ChecklistItemValueIdentification
-	(*FindChecklistItemValueRequest)(nil),                // 36: ai.verta.registry.FindChecklistItemValueRequest
-	(*GetChecklistItemValueRequest)(nil),                 // 37: ai.verta.registry.GetChecklistItemValueRequest
-	(*SetChecklistItemValueRequest)(nil),                 // 38: ai.verta.registry.SetChecklistItemValueRequest
-	(*DeleteChecklistItemValueRequest)(nil),              // 39: ai.verta.registry.DeleteChecklistItemValueRequest
-	(*Empty)(nil),                                        // 40: ai.verta.registry.Empty
-	(*FindRegisteredModelRequest_Response)(nil),          // 41: ai.verta.registry.FindRegisteredModelRequest.Response
-	(*GetRegisteredModelRequest_Response)(nil),           // 42: ai.verta.registry.GetRegisteredModelRequest.Response
-	(*GetRegisteredModelCountRequest_Response)(nil),      // 43: ai.verta.registry.GetRegisteredModelCountRequest.Response
-	(*SetRegisteredModel_Response)(nil),                  // 44: ai.verta.registry.SetRegisteredModel.Response
-	(*DeleteRegisteredModelRequest_Response)(nil),        // 45: ai.verta.registry.DeleteRegisteredModelRequest.Response
-	nil, // 46: ai.verta.registry.ModelVersion.CodeBlobMapEntry
-	(*SetLockModelVersionRequest_Response)(nil), // 47: ai.verta.registry.SetLockModelVersionRequest.Response
-	(*GetModelVersionRequest_Response)(nil),     // 48: ai.verta.registry.GetModelVersionRequest.Response
-	(*FindModelVersionRequest_Response)(nil),    // 49: ai.verta.registry.FindModelVersionRequest.Response
-	(*SetModelVersion_Response)(nil),            // 50: ai.verta.registry.SetModelVersion.Response
-	(*DeleteModelVersionRequest_Response)(nil),  // 51: ai.verta.registry.DeleteModelVersionRequest.Response
-	(*GetUrlForArtifact_Response)(nil),          // 52: ai.verta.registry.GetUrlForArtifact.Response
-	nil,                                         // 53: ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry
-	(*CommitArtifactPart_Response)(nil),         // 54: ai.verta.registry.CommitArtifactPart.Response
-	(*GetCommittedArtifactParts_Response)(nil),  // 55: ai.verta.registry.GetCommittedArtifactParts.Response
-	(*CommitMultipartArtifact_Response)(nil),    // 56: ai.verta.registry.CommitMultipartArtifact.Response
-	(*LogDatasetsInModelVersion_Response)(nil),  // 57: ai.verta.registry.LogDatasetsInModelVersion.Response
-	nil, // 58: ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry
-	(*LogCodeBlobInModelVersion_Response)(nil),       // 59: ai.verta.registry.LogCodeBlobInModelVersion.Response
-	(*LogAttributesInModelVersion_Response)(nil),     // 60: ai.verta.registry.LogAttributesInModelVersion.Response
-	(*LogDockerMetadataInModelVersion_Response)(nil), // 61: ai.verta.registry.LogDockerMetadataInModelVersion.Response
-	(*ExternalDeploymentRequest_Response)(nil),       // 62: ai.verta.registry.ExternalDeploymentRequest.Response
-	(*FindChecklistItemValueRequest_Response)(nil),   // 63: ai.verta.registry.FindChecklistItemValueRequest.Response
-	(*GetChecklistItemValueRequest_Response)(nil),    // 64: ai.verta.registry.GetChecklistItemValueRequest.Response
-	(*SetChecklistItemValueRequest_Response)(nil),    // 65: ai.verta.registry.SetChecklistItemValueRequest.Response
-	(*DeleteChecklistItemValueRequest_Response)(nil), // 66: ai.verta.registry.DeleteChecklistItemValueRequest.Response
-	(common.VisibilityEnum_Visibility)(0),            // 67: ai.verta.common.VisibilityEnum.Visibility
-	(*common.KeyValue)(nil),                          // 68: ai.verta.common.KeyValue
-	(*uac.CollaboratorPermissions)(nil),              // 69: ai.verta.uac.CollaboratorPermissions
-	(uac.ResourceVisibility)(0),                      // 70: ai.verta.uac.ResourceVisibility
-	(*common.Artifact)(nil),                          // 71: ai.verta.common.Artifact
-	(*common.KeyValueQuery)(nil),                     // 72: ai.verta.common.KeyValueQuery
-	(*common.Pagination)(nil),                        // 73: ai.verta.common.Pagination
-	(*field_mask.FieldMask)(nil),                     // 74: google.protobuf.FieldMask
-	(*versioning.EnvironmentBlob)(nil),               // 75: ai.verta.modeldb.versioning.EnvironmentBlob
-	(common.TernaryEnum_Ternary)(0),                  // 76: ai.verta.common.TernaryEnum.Ternary
-	(StageEnum_Stage)(0),                             // 77: ai.verta.registry.StageEnum.Stage
-	(common.ArtifactTypeEnum_ArtifactType)(0),        // 78: ai.verta.common.ArtifactTypeEnum.ArtifactType
-	(*common.ArtifactPart)(nil),                      // 79: ai.verta.common.ArtifactPart
-	(*versioning.CodeBlob)(nil),                      // 80: ai.verta.modeldb.versioning.CodeBlob
+	(*Empty)(nil),                                        // 34: ai.verta.registry.Empty
+	(*ChecklistItemValue)(nil),                           // 35: ai.verta.registry.ChecklistItemValue
+	(*ChecklistItemValueIdentification)(nil),             // 36: ai.verta.registry.ChecklistItemValueIdentification
+	(*FindChecklistItemValueRequest)(nil),                // 37: ai.verta.registry.FindChecklistItemValueRequest
+	(*FindRegisteredModelRequest_Response)(nil),          // 38: ai.verta.registry.FindRegisteredModelRequest.Response
+	(*GetRegisteredModelRequest_Response)(nil),           // 39: ai.verta.registry.GetRegisteredModelRequest.Response
+	(*GetRegisteredModelCountRequest_Response)(nil),      // 40: ai.verta.registry.GetRegisteredModelCountRequest.Response
+	(*SetRegisteredModel_Response)(nil),                  // 41: ai.verta.registry.SetRegisteredModel.Response
+	(*DeleteRegisteredModelRequest_Response)(nil),        // 42: ai.verta.registry.DeleteRegisteredModelRequest.Response
+	nil, // 43: ai.verta.registry.ModelVersion.CodeBlobMapEntry
+	(*SetLockModelVersionRequest_Response)(nil), // 44: ai.verta.registry.SetLockModelVersionRequest.Response
+	(*GetModelVersionRequest_Response)(nil),     // 45: ai.verta.registry.GetModelVersionRequest.Response
+	(*FindModelVersionRequest_Response)(nil),    // 46: ai.verta.registry.FindModelVersionRequest.Response
+	(*SetModelVersion_Response)(nil),            // 47: ai.verta.registry.SetModelVersion.Response
+	(*DeleteModelVersionRequest_Response)(nil),  // 48: ai.verta.registry.DeleteModelVersionRequest.Response
+	(*GetUrlForArtifact_Response)(nil),          // 49: ai.verta.registry.GetUrlForArtifact.Response
+	nil,                                         // 50: ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry
+	(*CommitArtifactPart_Response)(nil),         // 51: ai.verta.registry.CommitArtifactPart.Response
+	(*GetCommittedArtifactParts_Response)(nil),  // 52: ai.verta.registry.GetCommittedArtifactParts.Response
+	(*CommitMultipartArtifact_Response)(nil),    // 53: ai.verta.registry.CommitMultipartArtifact.Response
+	(*LogDatasetsInModelVersion_Response)(nil),  // 54: ai.verta.registry.LogDatasetsInModelVersion.Response
+	nil, // 55: ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry
+	(*LogCodeBlobInModelVersion_Response)(nil),       // 56: ai.verta.registry.LogCodeBlobInModelVersion.Response
+	(*LogAttributesInModelVersion_Response)(nil),     // 57: ai.verta.registry.LogAttributesInModelVersion.Response
+	(*LogDockerMetadataInModelVersion_Response)(nil), // 58: ai.verta.registry.LogDockerMetadataInModelVersion.Response
+	(*ExternalDeploymentRequest_Response)(nil),       // 59: ai.verta.registry.ExternalDeploymentRequest.Response
+	(*FindChecklistItemValueRequest_Response)(nil),   // 60: ai.verta.registry.FindChecklistItemValueRequest.Response
+	(common.VisibilityEnum_Visibility)(0),            // 61: ai.verta.common.VisibilityEnum.Visibility
+	(*common.KeyValue)(nil),                          // 62: ai.verta.common.KeyValue
+	(*uac.CollaboratorPermissions)(nil),              // 63: ai.verta.uac.CollaboratorPermissions
+	(uac.ResourceVisibility)(0),                      // 64: ai.verta.uac.ResourceVisibility
+	(*common.Artifact)(nil),                          // 65: ai.verta.common.Artifact
+	(*common.KeyValueQuery)(nil),                     // 66: ai.verta.common.KeyValueQuery
+	(*common.Pagination)(nil),                        // 67: ai.verta.common.Pagination
+	(*field_mask.FieldMask)(nil),                     // 68: google.protobuf.FieldMask
+	(*versioning.EnvironmentBlob)(nil),               // 69: ai.verta.modeldb.versioning.EnvironmentBlob
+	(common.TernaryEnum_Ternary)(0),                  // 70: ai.verta.common.TernaryEnum.Ternary
+	(StageEnum_Stage)(0),                             // 71: ai.verta.registry.StageEnum.Stage
+	(common.ArtifactTypeEnum_ArtifactType)(0),        // 72: ai.verta.common.ArtifactTypeEnum.ArtifactType
+	(*common.ArtifactPart)(nil),                      // 73: ai.verta.common.ArtifactPart
+	(*versioning.CodeBlob)(nil),                      // 74: ai.verta.modeldb.versioning.CodeBlob
 }
 var file_registry_RegistryService_proto_depIdxs = []int32{
-	67, // 0: ai.verta.registry.RegisteredModel.visibility:type_name -> ai.verta.common.VisibilityEnum.Visibility
-	68, // 1: ai.verta.registry.RegisteredModel.attributes:type_name -> ai.verta.common.KeyValue
-	69, // 2: ai.verta.registry.RegisteredModel.custom_permission:type_name -> ai.verta.uac.CollaboratorPermissions
-	70, // 3: ai.verta.registry.RegisteredModel.resource_visibility:type_name -> ai.verta.uac.ResourceVisibility
-	71, // 4: ai.verta.registry.RegisteredModel.artifacts:type_name -> ai.verta.common.Artifact
+	61, // 0: ai.verta.registry.RegisteredModel.visibility:type_name -> ai.verta.common.VisibilityEnum.Visibility
+	62, // 1: ai.verta.registry.RegisteredModel.attributes:type_name -> ai.verta.common.KeyValue
+	63, // 2: ai.verta.registry.RegisteredModel.custom_permission:type_name -> ai.verta.uac.CollaboratorPermissions
+	64, // 3: ai.verta.registry.RegisteredModel.resource_visibility:type_name -> ai.verta.uac.ResourceVisibility
+	65, // 4: ai.verta.registry.RegisteredModel.artifacts:type_name -> ai.verta.common.Artifact
 	0,  // 5: ai.verta.registry.RegisteredModel.data_type:type_name -> ai.verta.registry.DataTypeEnum.DataType
 	1,  // 6: ai.verta.registry.RegisteredModel.action_type:type_name -> ai.verta.registry.ActionTypeEnum.ActionType
 	2,  // 7: ai.verta.registry.RegisteredModel.task_type:type_name -> ai.verta.registry.TaskTypeEnum.TaskType
-	72, // 8: ai.verta.registry.FindRegisteredModelRequest.predicates:type_name -> ai.verta.common.KeyValueQuery
-	73, // 9: ai.verta.registry.FindRegisteredModelRequest.pagination:type_name -> ai.verta.common.Pagination
+	66, // 8: ai.verta.registry.FindRegisteredModelRequest.predicates:type_name -> ai.verta.common.KeyValueQuery
+	67, // 9: ai.verta.registry.FindRegisteredModelRequest.pagination:type_name -> ai.verta.common.Pagination
 	12, // 10: ai.verta.registry.GetRegisteredModelRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
 	11, // 11: ai.verta.registry.RegisteredModelIdentification.named_id:type_name -> ai.verta.registry.RegisteredModelNamedIdentification
 	12, // 12: ai.verta.registry.SetRegisteredModel.id:type_name -> ai.verta.registry.RegisteredModelIdentification
 	7,  // 13: ai.verta.registry.SetRegisteredModel.registered_model:type_name -> ai.verta.registry.RegisteredModel
-	74, // 14: ai.verta.registry.SetRegisteredModel.update_mask:type_name -> google.protobuf.FieldMask
+	68, // 14: ai.verta.registry.SetRegisteredModel.update_mask:type_name -> google.protobuf.FieldMask
 	12, // 15: ai.verta.registry.DeleteRegisteredModelRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
-	71, // 16: ai.verta.registry.ModelVersion.model:type_name -> ai.verta.common.Artifact
-	75, // 17: ai.verta.registry.ModelVersion.environment:type_name -> ai.verta.modeldb.versioning.EnvironmentBlob
+	65, // 16: ai.verta.registry.ModelVersion.model:type_name -> ai.verta.common.Artifact
+	69, // 17: ai.verta.registry.ModelVersion.environment:type_name -> ai.verta.modeldb.versioning.EnvironmentBlob
 	17, // 18: ai.verta.registry.ModelVersion.docker_metadata:type_name -> ai.verta.registry.DockerMetadata
-	71, // 19: ai.verta.registry.ModelVersion.artifacts:type_name -> ai.verta.common.Artifact
-	76, // 20: ai.verta.registry.ModelVersion.archived:type_name -> ai.verta.common.TernaryEnum.Ternary
-	68, // 21: ai.verta.registry.ModelVersion.attributes:type_name -> ai.verta.common.KeyValue
-	77, // 22: ai.verta.registry.ModelVersion.stage:type_name -> ai.verta.registry.StageEnum.Stage
+	65, // 19: ai.verta.registry.ModelVersion.artifacts:type_name -> ai.verta.common.Artifact
+	70, // 20: ai.verta.registry.ModelVersion.archived:type_name -> ai.verta.common.TernaryEnum.Ternary
+	62, // 21: ai.verta.registry.ModelVersion.attributes:type_name -> ai.verta.common.KeyValue
+	71, // 22: ai.verta.registry.ModelVersion.stage:type_name -> ai.verta.registry.StageEnum.Stage
 	3,  // 23: ai.verta.registry.ModelVersion.lock_level:type_name -> ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel
-	71, // 24: ai.verta.registry.ModelVersion.datasets:type_name -> ai.verta.common.Artifact
-	46, // 25: ai.verta.registry.ModelVersion.code_blob_map:type_name -> ai.verta.registry.ModelVersion.CodeBlobMapEntry
+	65, // 24: ai.verta.registry.ModelVersion.datasets:type_name -> ai.verta.common.Artifact
+	43, // 25: ai.verta.registry.ModelVersion.code_blob_map:type_name -> ai.verta.registry.ModelVersion.CodeBlobMapEntry
 	32, // 26: ai.verta.registry.ModelVersion.external_deployments:type_name -> ai.verta.registry.ExternalDeployment
-	34, // 27: ai.verta.registry.ModelVersion.checklist_item_values:type_name -> ai.verta.registry.ChecklistItemValue
+	35, // 27: ai.verta.registry.ModelVersion.checklist_item_values:type_name -> ai.verta.registry.ChecklistItemValue
 	19, // 28: ai.verta.registry.SetLockModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
 	3,  // 29: ai.verta.registry.SetLockModelVersionRequest.lock_level:type_name -> ai.verta.registry.ModelVersionLockLevelEnum.ModelVersionLockLevel
 	12, // 30: ai.verta.registry.ModelVersionIdentification.model_id:type_name -> ai.verta.registry.RegisteredModelIdentification
 	19, // 31: ai.verta.registry.GetModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
 	12, // 32: ai.verta.registry.FindModelVersionRequest.id:type_name -> ai.verta.registry.RegisteredModelIdentification
-	72, // 33: ai.verta.registry.FindModelVersionRequest.predicates:type_name -> ai.verta.common.KeyValueQuery
-	73, // 34: ai.verta.registry.FindModelVersionRequest.pagination:type_name -> ai.verta.common.Pagination
+	66, // 33: ai.verta.registry.FindModelVersionRequest.predicates:type_name -> ai.verta.common.KeyValueQuery
+	67, // 34: ai.verta.registry.FindModelVersionRequest.pagination:type_name -> ai.verta.common.Pagination
 	19, // 35: ai.verta.registry.SetModelVersion.id:type_name -> ai.verta.registry.ModelVersionIdentification
 	16, // 36: ai.verta.registry.SetModelVersion.model_version:type_name -> ai.verta.registry.ModelVersion
-	74, // 37: ai.verta.registry.SetModelVersion.update_mask:type_name -> google.protobuf.FieldMask
+	68, // 37: ai.verta.registry.SetModelVersion.update_mask:type_name -> google.protobuf.FieldMask
 	19, // 38: ai.verta.registry.DeleteModelVersionRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
-	78, // 39: ai.verta.registry.GetUrlForArtifact.artifact_type:type_name -> ai.verta.common.ArtifactTypeEnum.ArtifactType
-	79, // 40: ai.verta.registry.CommitArtifactPart.artifact_part:type_name -> ai.verta.common.ArtifactPart
-	71, // 41: ai.verta.registry.LogDatasetsInModelVersion.datasets:type_name -> ai.verta.common.Artifact
-	58, // 42: ai.verta.registry.LogCodeBlobInModelVersion.code_blob_map:type_name -> ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry
-	68, // 43: ai.verta.registry.LogAttributesInModelVersion.attributes:type_name -> ai.verta.common.KeyValue
+	72, // 39: ai.verta.registry.GetUrlForArtifact.artifact_type:type_name -> ai.verta.common.ArtifactTypeEnum.ArtifactType
+	73, // 40: ai.verta.registry.CommitArtifactPart.artifact_part:type_name -> ai.verta.common.ArtifactPart
+	65, // 41: ai.verta.registry.LogDatasetsInModelVersion.datasets:type_name -> ai.verta.common.Artifact
+	55, // 42: ai.verta.registry.LogCodeBlobInModelVersion.code_blob_map:type_name -> ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry
+	62, // 43: ai.verta.registry.LogAttributesInModelVersion.attributes:type_name -> ai.verta.common.KeyValue
 	17, // 44: ai.verta.registry.LogDockerMetadataInModelVersion.docker_metadata:type_name -> ai.verta.registry.DockerMetadata
 	19, // 45: ai.verta.registry.ChecklistItemValueIdentification.model_version_id:type_name -> ai.verta.registry.ModelVersionIdentification
 	19, // 46: ai.verta.registry.FindChecklistItemValueRequest.id:type_name -> ai.verta.registry.ModelVersionIdentification
-	35, // 47: ai.verta.registry.GetChecklistItemValueRequest.id:type_name -> ai.verta.registry.ChecklistItemValueIdentification
-	35, // 48: ai.verta.registry.SetChecklistItemValueRequest.id:type_name -> ai.verta.registry.ChecklistItemValueIdentification
-	34, // 49: ai.verta.registry.SetChecklistItemValueRequest.checklist_item_value:type_name -> ai.verta.registry.ChecklistItemValue
-	74, // 50: ai.verta.registry.SetChecklistItemValueRequest.update_mask:type_name -> google.protobuf.FieldMask
-	35, // 51: ai.verta.registry.DeleteChecklistItemValueRequest.id:type_name -> ai.verta.registry.ChecklistItemValueIdentification
-	7,  // 52: ai.verta.registry.FindRegisteredModelRequest.Response.registered_models:type_name -> ai.verta.registry.RegisteredModel
-	7,  // 53: ai.verta.registry.GetRegisteredModelRequest.Response.registered_model:type_name -> ai.verta.registry.RegisteredModel
-	7,  // 54: ai.verta.registry.SetRegisteredModel.Response.registered_model:type_name -> ai.verta.registry.RegisteredModel
-	80, // 55: ai.verta.registry.ModelVersion.CodeBlobMapEntry.value:type_name -> ai.verta.modeldb.versioning.CodeBlob
-	16, // 56: ai.verta.registry.GetModelVersionRequest.Response.model_version:type_name -> ai.verta.registry.ModelVersion
-	16, // 57: ai.verta.registry.FindModelVersionRequest.Response.model_versions:type_name -> ai.verta.registry.ModelVersion
-	16, // 58: ai.verta.registry.SetModelVersion.Response.model_version:type_name -> ai.verta.registry.ModelVersion
-	53, // 59: ai.verta.registry.GetUrlForArtifact.Response.fields:type_name -> ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry
-	79, // 60: ai.verta.registry.GetCommittedArtifactParts.Response.artifact_parts:type_name -> ai.verta.common.ArtifactPart
-	80, // 61: ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry.value:type_name -> ai.verta.modeldb.versioning.CodeBlob
-	32, // 62: ai.verta.registry.ExternalDeploymentRequest.Response.external_deployment:type_name -> ai.verta.registry.ExternalDeployment
-	34, // 63: ai.verta.registry.FindChecklistItemValueRequest.Response.checklist_item_values:type_name -> ai.verta.registry.ChecklistItemValue
-	34, // 64: ai.verta.registry.GetChecklistItemValueRequest.Response.checklist_item_value:type_name -> ai.verta.registry.ChecklistItemValue
-	34, // 65: ai.verta.registry.SetChecklistItemValueRequest.Response.checklist_item_value:type_name -> ai.verta.registry.ChecklistItemValue
-	8,  // 66: ai.verta.registry.RegistryService.FindRegisteredModel:input_type -> ai.verta.registry.FindRegisteredModelRequest
-	9,  // 67: ai.verta.registry.RegistryService.GetRegisteredModel:input_type -> ai.verta.registry.GetRegisteredModelRequest
-	10, // 68: ai.verta.registry.RegistryService.GetRegisteredModelCount:input_type -> ai.verta.registry.GetRegisteredModelCountRequest
-	13, // 69: ai.verta.registry.RegistryService.CreateRegisteredModel:input_type -> ai.verta.registry.SetRegisteredModel
-	13, // 70: ai.verta.registry.RegistryService.UpdateRegisteredModel:input_type -> ai.verta.registry.SetRegisteredModel
-	14, // 71: ai.verta.registry.RegistryService.DeleteRegisteredModel:input_type -> ai.verta.registry.DeleteRegisteredModelRequest
-	21, // 72: ai.verta.registry.RegistryService.FindModelVersion:input_type -> ai.verta.registry.FindModelVersionRequest
-	20, // 73: ai.verta.registry.RegistryService.GetModelVersion:input_type -> ai.verta.registry.GetModelVersionRequest
-	22, // 74: ai.verta.registry.RegistryService.CreateModelVersion:input_type -> ai.verta.registry.SetModelVersion
-	22, // 75: ai.verta.registry.RegistryService.UpdateModelVersion:input_type -> ai.verta.registry.SetModelVersion
-	18, // 76: ai.verta.registry.RegistryService.SetLockModelVersion:input_type -> ai.verta.registry.SetLockModelVersionRequest
-	23, // 77: ai.verta.registry.RegistryService.DeleteModelVersion:input_type -> ai.verta.registry.DeleteModelVersionRequest
-	24, // 78: ai.verta.registry.RegistryService.getUrlForArtifact:input_type -> ai.verta.registry.GetUrlForArtifact
-	25, // 79: ai.verta.registry.RegistryService.commitArtifactPart:input_type -> ai.verta.registry.CommitArtifactPart
-	26, // 80: ai.verta.registry.RegistryService.getCommittedArtifactParts:input_type -> ai.verta.registry.GetCommittedArtifactParts
-	27, // 81: ai.verta.registry.RegistryService.commitMultipartArtifact:input_type -> ai.verta.registry.CommitMultipartArtifact
-	28, // 82: ai.verta.registry.RegistryService.logDatasetsInModelVersion:input_type -> ai.verta.registry.LogDatasetsInModelVersion
-	29, // 83: ai.verta.registry.RegistryService.logCodeBlobInModelVersion:input_type -> ai.verta.registry.LogCodeBlobInModelVersion
-	30, // 84: ai.verta.registry.RegistryService.logAttributesInModelVersion:input_type -> ai.verta.registry.LogAttributesInModelVersion
-	31, // 85: ai.verta.registry.RegistryService.logDockerMetadataInModelVersion:input_type -> ai.verta.registry.LogDockerMetadataInModelVersion
-	33, // 86: ai.verta.registry.RegistryService.GetExternalDeployment:input_type -> ai.verta.registry.ExternalDeploymentRequest
-	32, // 87: ai.verta.registry.RegistryService.CreateExternalDeployment:input_type -> ai.verta.registry.ExternalDeployment
-	32, // 88: ai.verta.registry.RegistryService.UpdateExternalDeployment:input_type -> ai.verta.registry.ExternalDeployment
-	33, // 89: ai.verta.registry.RegistryService.DeleteExternalDeployment:input_type -> ai.verta.registry.ExternalDeploymentRequest
-	36, // 90: ai.verta.registry.RegistryService.FindChecklistItemValues:input_type -> ai.verta.registry.FindChecklistItemValueRequest
-	37, // 91: ai.verta.registry.RegistryService.GetChecklistItemValue:input_type -> ai.verta.registry.GetChecklistItemValueRequest
-	38, // 92: ai.verta.registry.RegistryService.CreateChecklistItemValue:input_type -> ai.verta.registry.SetChecklistItemValueRequest
-	38, // 93: ai.verta.registry.RegistryService.UpdateChecklistItemValue:input_type -> ai.verta.registry.SetChecklistItemValueRequest
-	39, // 94: ai.verta.registry.RegistryService.DeleteChecklistItemValue:input_type -> ai.verta.registry.DeleteChecklistItemValueRequest
-	41, // 95: ai.verta.registry.RegistryService.FindRegisteredModel:output_type -> ai.verta.registry.FindRegisteredModelRequest.Response
-	42, // 96: ai.verta.registry.RegistryService.GetRegisteredModel:output_type -> ai.verta.registry.GetRegisteredModelRequest.Response
-	43, // 97: ai.verta.registry.RegistryService.GetRegisteredModelCount:output_type -> ai.verta.registry.GetRegisteredModelCountRequest.Response
-	44, // 98: ai.verta.registry.RegistryService.CreateRegisteredModel:output_type -> ai.verta.registry.SetRegisteredModel.Response
-	44, // 99: ai.verta.registry.RegistryService.UpdateRegisteredModel:output_type -> ai.verta.registry.SetRegisteredModel.Response
-	45, // 100: ai.verta.registry.RegistryService.DeleteRegisteredModel:output_type -> ai.verta.registry.DeleteRegisteredModelRequest.Response
-	49, // 101: ai.verta.registry.RegistryService.FindModelVersion:output_type -> ai.verta.registry.FindModelVersionRequest.Response
-	48, // 102: ai.verta.registry.RegistryService.GetModelVersion:output_type -> ai.verta.registry.GetModelVersionRequest.Response
-	50, // 103: ai.verta.registry.RegistryService.CreateModelVersion:output_type -> ai.verta.registry.SetModelVersion.Response
-	50, // 104: ai.verta.registry.RegistryService.UpdateModelVersion:output_type -> ai.verta.registry.SetModelVersion.Response
-	47, // 105: ai.verta.registry.RegistryService.SetLockModelVersion:output_type -> ai.verta.registry.SetLockModelVersionRequest.Response
-	51, // 106: ai.verta.registry.RegistryService.DeleteModelVersion:output_type -> ai.verta.registry.DeleteModelVersionRequest.Response
-	52, // 107: ai.verta.registry.RegistryService.getUrlForArtifact:output_type -> ai.verta.registry.GetUrlForArtifact.Response
-	54, // 108: ai.verta.registry.RegistryService.commitArtifactPart:output_type -> ai.verta.registry.CommitArtifactPart.Response
-	55, // 109: ai.verta.registry.RegistryService.getCommittedArtifactParts:output_type -> ai.verta.registry.GetCommittedArtifactParts.Response
-	56, // 110: ai.verta.registry.RegistryService.commitMultipartArtifact:output_type -> ai.verta.registry.CommitMultipartArtifact.Response
-	57, // 111: ai.verta.registry.RegistryService.logDatasetsInModelVersion:output_type -> ai.verta.registry.LogDatasetsInModelVersion.Response
-	59, // 112: ai.verta.registry.RegistryService.logCodeBlobInModelVersion:output_type -> ai.verta.registry.LogCodeBlobInModelVersion.Response
-	60, // 113: ai.verta.registry.RegistryService.logAttributesInModelVersion:output_type -> ai.verta.registry.LogAttributesInModelVersion.Response
-	61, // 114: ai.verta.registry.RegistryService.logDockerMetadataInModelVersion:output_type -> ai.verta.registry.LogDockerMetadataInModelVersion.Response
-	62, // 115: ai.verta.registry.RegistryService.GetExternalDeployment:output_type -> ai.verta.registry.ExternalDeploymentRequest.Response
-	62, // 116: ai.verta.registry.RegistryService.CreateExternalDeployment:output_type -> ai.verta.registry.ExternalDeploymentRequest.Response
-	62, // 117: ai.verta.registry.RegistryService.UpdateExternalDeployment:output_type -> ai.verta.registry.ExternalDeploymentRequest.Response
-	40, // 118: ai.verta.registry.RegistryService.DeleteExternalDeployment:output_type -> ai.verta.registry.Empty
-	63, // 119: ai.verta.registry.RegistryService.FindChecklistItemValues:output_type -> ai.verta.registry.FindChecklistItemValueRequest.Response
-	64, // 120: ai.verta.registry.RegistryService.GetChecklistItemValue:output_type -> ai.verta.registry.GetChecklistItemValueRequest.Response
-	65, // 121: ai.verta.registry.RegistryService.CreateChecklistItemValue:output_type -> ai.verta.registry.SetChecklistItemValueRequest.Response
-	65, // 122: ai.verta.registry.RegistryService.UpdateChecklistItemValue:output_type -> ai.verta.registry.SetChecklistItemValueRequest.Response
-	66, // 123: ai.verta.registry.RegistryService.DeleteChecklistItemValue:output_type -> ai.verta.registry.DeleteChecklistItemValueRequest.Response
-	95, // [95:124] is the sub-list for method output_type
-	66, // [66:95] is the sub-list for method input_type
-	66, // [66:66] is the sub-list for extension type_name
-	66, // [66:66] is the sub-list for extension extendee
-	0,  // [0:66] is the sub-list for field type_name
+	7,  // 47: ai.verta.registry.FindRegisteredModelRequest.Response.registered_models:type_name -> ai.verta.registry.RegisteredModel
+	7,  // 48: ai.verta.registry.GetRegisteredModelRequest.Response.registered_model:type_name -> ai.verta.registry.RegisteredModel
+	7,  // 49: ai.verta.registry.SetRegisteredModel.Response.registered_model:type_name -> ai.verta.registry.RegisteredModel
+	74, // 50: ai.verta.registry.ModelVersion.CodeBlobMapEntry.value:type_name -> ai.verta.modeldb.versioning.CodeBlob
+	16, // 51: ai.verta.registry.GetModelVersionRequest.Response.model_version:type_name -> ai.verta.registry.ModelVersion
+	16, // 52: ai.verta.registry.FindModelVersionRequest.Response.model_versions:type_name -> ai.verta.registry.ModelVersion
+	16, // 53: ai.verta.registry.SetModelVersion.Response.model_version:type_name -> ai.verta.registry.ModelVersion
+	50, // 54: ai.verta.registry.GetUrlForArtifact.Response.fields:type_name -> ai.verta.registry.GetUrlForArtifact.Response.FieldsEntry
+	73, // 55: ai.verta.registry.GetCommittedArtifactParts.Response.artifact_parts:type_name -> ai.verta.common.ArtifactPart
+	74, // 56: ai.verta.registry.LogCodeBlobInModelVersion.CodeBlobMapEntry.value:type_name -> ai.verta.modeldb.versioning.CodeBlob
+	32, // 57: ai.verta.registry.ExternalDeploymentRequest.Response.external_deployment:type_name -> ai.verta.registry.ExternalDeployment
+	35, // 58: ai.verta.registry.FindChecklistItemValueRequest.Response.checklist_item_values:type_name -> ai.verta.registry.ChecklistItemValue
+	8,  // 59: ai.verta.registry.RegistryService.FindRegisteredModel:input_type -> ai.verta.registry.FindRegisteredModelRequest
+	9,  // 60: ai.verta.registry.RegistryService.GetRegisteredModel:input_type -> ai.verta.registry.GetRegisteredModelRequest
+	10, // 61: ai.verta.registry.RegistryService.GetRegisteredModelCount:input_type -> ai.verta.registry.GetRegisteredModelCountRequest
+	13, // 62: ai.verta.registry.RegistryService.CreateRegisteredModel:input_type -> ai.verta.registry.SetRegisteredModel
+	13, // 63: ai.verta.registry.RegistryService.UpdateRegisteredModel:input_type -> ai.verta.registry.SetRegisteredModel
+	14, // 64: ai.verta.registry.RegistryService.DeleteRegisteredModel:input_type -> ai.verta.registry.DeleteRegisteredModelRequest
+	21, // 65: ai.verta.registry.RegistryService.FindModelVersion:input_type -> ai.verta.registry.FindModelVersionRequest
+	20, // 66: ai.verta.registry.RegistryService.GetModelVersion:input_type -> ai.verta.registry.GetModelVersionRequest
+	22, // 67: ai.verta.registry.RegistryService.CreateModelVersion:input_type -> ai.verta.registry.SetModelVersion
+	22, // 68: ai.verta.registry.RegistryService.UpdateModelVersion:input_type -> ai.verta.registry.SetModelVersion
+	18, // 69: ai.verta.registry.RegistryService.SetLockModelVersion:input_type -> ai.verta.registry.SetLockModelVersionRequest
+	23, // 70: ai.verta.registry.RegistryService.DeleteModelVersion:input_type -> ai.verta.registry.DeleteModelVersionRequest
+	24, // 71: ai.verta.registry.RegistryService.getUrlForArtifact:input_type -> ai.verta.registry.GetUrlForArtifact
+	25, // 72: ai.verta.registry.RegistryService.commitArtifactPart:input_type -> ai.verta.registry.CommitArtifactPart
+	26, // 73: ai.verta.registry.RegistryService.getCommittedArtifactParts:input_type -> ai.verta.registry.GetCommittedArtifactParts
+	27, // 74: ai.verta.registry.RegistryService.commitMultipartArtifact:input_type -> ai.verta.registry.CommitMultipartArtifact
+	28, // 75: ai.verta.registry.RegistryService.logDatasetsInModelVersion:input_type -> ai.verta.registry.LogDatasetsInModelVersion
+	29, // 76: ai.verta.registry.RegistryService.logCodeBlobInModelVersion:input_type -> ai.verta.registry.LogCodeBlobInModelVersion
+	30, // 77: ai.verta.registry.RegistryService.logAttributesInModelVersion:input_type -> ai.verta.registry.LogAttributesInModelVersion
+	31, // 78: ai.verta.registry.RegistryService.logDockerMetadataInModelVersion:input_type -> ai.verta.registry.LogDockerMetadataInModelVersion
+	33, // 79: ai.verta.registry.RegistryService.GetExternalDeployment:input_type -> ai.verta.registry.ExternalDeploymentRequest
+	32, // 80: ai.verta.registry.RegistryService.CreateExternalDeployment:input_type -> ai.verta.registry.ExternalDeployment
+	32, // 81: ai.verta.registry.RegistryService.UpdateExternalDeployment:input_type -> ai.verta.registry.ExternalDeployment
+	33, // 82: ai.verta.registry.RegistryService.DeleteExternalDeployment:input_type -> ai.verta.registry.ExternalDeploymentRequest
+	38, // 83: ai.verta.registry.RegistryService.FindRegisteredModel:output_type -> ai.verta.registry.FindRegisteredModelRequest.Response
+	39, // 84: ai.verta.registry.RegistryService.GetRegisteredModel:output_type -> ai.verta.registry.GetRegisteredModelRequest.Response
+	40, // 85: ai.verta.registry.RegistryService.GetRegisteredModelCount:output_type -> ai.verta.registry.GetRegisteredModelCountRequest.Response
+	41, // 86: ai.verta.registry.RegistryService.CreateRegisteredModel:output_type -> ai.verta.registry.SetRegisteredModel.Response
+	41, // 87: ai.verta.registry.RegistryService.UpdateRegisteredModel:output_type -> ai.verta.registry.SetRegisteredModel.Response
+	42, // 88: ai.verta.registry.RegistryService.DeleteRegisteredModel:output_type -> ai.verta.registry.DeleteRegisteredModelRequest.Response
+	46, // 89: ai.verta.registry.RegistryService.FindModelVersion:output_type -> ai.verta.registry.FindModelVersionRequest.Response
+	45, // 90: ai.verta.registry.RegistryService.GetModelVersion:output_type -> ai.verta.registry.GetModelVersionRequest.Response
+	47, // 91: ai.verta.registry.RegistryService.CreateModelVersion:output_type -> ai.verta.registry.SetModelVersion.Response
+	47, // 92: ai.verta.registry.RegistryService.UpdateModelVersion:output_type -> ai.verta.registry.SetModelVersion.Response
+	44, // 93: ai.verta.registry.RegistryService.SetLockModelVersion:output_type -> ai.verta.registry.SetLockModelVersionRequest.Response
+	48, // 94: ai.verta.registry.RegistryService.DeleteModelVersion:output_type -> ai.verta.registry.DeleteModelVersionRequest.Response
+	49, // 95: ai.verta.registry.RegistryService.getUrlForArtifact:output_type -> ai.verta.registry.GetUrlForArtifact.Response
+	51, // 96: ai.verta.registry.RegistryService.commitArtifactPart:output_type -> ai.verta.registry.CommitArtifactPart.Response
+	52, // 97: ai.verta.registry.RegistryService.getCommittedArtifactParts:output_type -> ai.verta.registry.GetCommittedArtifactParts.Response
+	53, // 98: ai.verta.registry.RegistryService.commitMultipartArtifact:output_type -> ai.verta.registry.CommitMultipartArtifact.Response
+	54, // 99: ai.verta.registry.RegistryService.logDatasetsInModelVersion:output_type -> ai.verta.registry.LogDatasetsInModelVersion.Response
+	56, // 100: ai.verta.registry.RegistryService.logCodeBlobInModelVersion:output_type -> ai.verta.registry.LogCodeBlobInModelVersion.Response
+	57, // 101: ai.verta.registry.RegistryService.logAttributesInModelVersion:output_type -> ai.verta.registry.LogAttributesInModelVersion.Response
+	58, // 102: ai.verta.registry.RegistryService.logDockerMetadataInModelVersion:output_type -> ai.verta.registry.LogDockerMetadataInModelVersion.Response
+	59, // 103: ai.verta.registry.RegistryService.GetExternalDeployment:output_type -> ai.verta.registry.ExternalDeploymentRequest.Response
+	59, // 104: ai.verta.registry.RegistryService.CreateExternalDeployment:output_type -> ai.verta.registry.ExternalDeploymentRequest.Response
+	59, // 105: ai.verta.registry.RegistryService.UpdateExternalDeployment:output_type -> ai.verta.registry.ExternalDeploymentRequest.Response
+	34, // 106: ai.verta.registry.RegistryService.DeleteExternalDeployment:output_type -> ai.verta.registry.Empty
+	83, // [83:107] is the sub-list for method output_type
+	59, // [59:83] is the sub-list for method input_type
+	59, // [59:59] is the sub-list for extension type_name
+	59, // [59:59] is the sub-list for extension extendee
+	0,  // [0:59] is the sub-list for field type_name
 }
 
 func init() { file_registry_RegistryService_proto_init() }
@@ -5746,78 +5186,6 @@ func file_registry_RegistryService_proto_init() {
 			}
 		}
 		file_registry_RegistryService_proto_msgTypes[30].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ChecklistItemValue); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*ChecklistItemValueIdentification); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*FindChecklistItemValueRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetChecklistItemValueRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetChecklistItemValueRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteChecklistItemValueRequest); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*Empty); i {
 			case 0:
 				return &v.state
@@ -5829,7 +5197,43 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[31].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChecklistItemValue); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_registry_RegistryService_proto_msgTypes[32].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*ChecklistItemValueIdentification); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_registry_RegistryService_proto_msgTypes[33].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FindChecklistItemValueRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_registry_RegistryService_proto_msgTypes[34].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindRegisteredModelRequest_Response); i {
 			case 0:
 				return &v.state
@@ -5841,7 +5245,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[35].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetRegisteredModelRequest_Response); i {
 			case 0:
 				return &v.state
@@ -5853,7 +5257,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[39].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[36].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetRegisteredModelCountRequest_Response); i {
 			case 0:
 				return &v.state
@@ -5865,7 +5269,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[37].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SetRegisteredModel_Response); i {
 			case 0:
 				return &v.state
@@ -5877,7 +5281,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[38].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteRegisteredModelRequest_Response); i {
 			case 0:
 				return &v.state
@@ -5889,7 +5293,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[40].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SetLockModelVersionRequest_Response); i {
 			case 0:
 				return &v.state
@@ -5901,7 +5305,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[41].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetModelVersionRequest_Response); i {
 			case 0:
 				return &v.state
@@ -5913,7 +5317,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[42].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindModelVersionRequest_Response); i {
 			case 0:
 				return &v.state
@@ -5925,7 +5329,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[46].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[43].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*SetModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -5937,7 +5341,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[44].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*DeleteModelVersionRequest_Response); i {
 			case 0:
 				return &v.state
@@ -5949,7 +5353,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[45].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetUrlForArtifact_Response); i {
 			case 0:
 				return &v.state
@@ -5961,7 +5365,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[47].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CommitArtifactPart_Response); i {
 			case 0:
 				return &v.state
@@ -5973,7 +5377,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[51].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[48].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*GetCommittedArtifactParts_Response); i {
 			case 0:
 				return &v.state
@@ -5985,7 +5389,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[49].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*CommitMultipartArtifact_Response); i {
 			case 0:
 				return &v.state
@@ -5997,7 +5401,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[50].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogDatasetsInModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -6009,7 +5413,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[52].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogCodeBlobInModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -6021,7 +5425,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[53].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogAttributesInModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -6033,7 +5437,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[57].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[54].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*LogDockerMetadataInModelVersion_Response); i {
 			case 0:
 				return &v.state
@@ -6045,7 +5449,7 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[58].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[55].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ExternalDeploymentRequest_Response); i {
 			case 0:
 				return &v.state
@@ -6057,44 +5461,8 @@ func file_registry_RegistryService_proto_init() {
 				return nil
 			}
 		}
-		file_registry_RegistryService_proto_msgTypes[59].Exporter = func(v interface{}, i int) interface{} {
+		file_registry_RegistryService_proto_msgTypes[56].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*FindChecklistItemValueRequest_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[60].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*GetChecklistItemValueRequest_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[61].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*SetChecklistItemValueRequest_Response); i {
-			case 0:
-				return &v.state
-			case 1:
-				return &v.sizeCache
-			case 2:
-				return &v.unknownFields
-			default:
-				return nil
-			}
-		}
-		file_registry_RegistryService_proto_msgTypes[62].Exporter = func(v interface{}, i int) interface{} {
-			switch v := v.(*DeleteChecklistItemValueRequest_Response); i {
 			case 0:
 				return &v.state
 			case 1:
@@ -6115,7 +5483,7 @@ func file_registry_RegistryService_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_registry_RegistryService_proto_rawDesc,
 			NumEnums:      4,
-			NumMessages:   63,
+			NumMessages:   57,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -6168,11 +5536,6 @@ type RegistryServiceClient interface {
 	CreateExternalDeployment(ctx context.Context, in *ExternalDeployment, opts ...grpc.CallOption) (*ExternalDeploymentRequest_Response, error)
 	UpdateExternalDeployment(ctx context.Context, in *ExternalDeployment, opts ...grpc.CallOption) (*ExternalDeploymentRequest_Response, error)
 	DeleteExternalDeployment(ctx context.Context, in *ExternalDeploymentRequest, opts ...grpc.CallOption) (*Empty, error)
-	FindChecklistItemValues(ctx context.Context, in *FindChecklistItemValueRequest, opts ...grpc.CallOption) (*FindChecklistItemValueRequest_Response, error)
-	GetChecklistItemValue(ctx context.Context, in *GetChecklistItemValueRequest, opts ...grpc.CallOption) (*GetChecklistItemValueRequest_Response, error)
-	CreateChecklistItemValue(ctx context.Context, in *SetChecklistItemValueRequest, opts ...grpc.CallOption) (*SetChecklistItemValueRequest_Response, error)
-	UpdateChecklistItemValue(ctx context.Context, in *SetChecklistItemValueRequest, opts ...grpc.CallOption) (*SetChecklistItemValueRequest_Response, error)
-	DeleteChecklistItemValue(ctx context.Context, in *DeleteChecklistItemValueRequest, opts ...grpc.CallOption) (*DeleteChecklistItemValueRequest_Response, error)
 }
 
 type registryServiceClient struct {
@@ -6399,51 +5762,6 @@ func (c *registryServiceClient) DeleteExternalDeployment(ctx context.Context, in
 	return out, nil
 }
 
-func (c *registryServiceClient) FindChecklistItemValues(ctx context.Context, in *FindChecklistItemValueRequest, opts ...grpc.CallOption) (*FindChecklistItemValueRequest_Response, error) {
-	out := new(FindChecklistItemValueRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.registry.RegistryService/FindChecklistItemValues", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *registryServiceClient) GetChecklistItemValue(ctx context.Context, in *GetChecklistItemValueRequest, opts ...grpc.CallOption) (*GetChecklistItemValueRequest_Response, error) {
-	out := new(GetChecklistItemValueRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.registry.RegistryService/GetChecklistItemValue", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *registryServiceClient) CreateChecklistItemValue(ctx context.Context, in *SetChecklistItemValueRequest, opts ...grpc.CallOption) (*SetChecklistItemValueRequest_Response, error) {
-	out := new(SetChecklistItemValueRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.registry.RegistryService/CreateChecklistItemValue", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *registryServiceClient) UpdateChecklistItemValue(ctx context.Context, in *SetChecklistItemValueRequest, opts ...grpc.CallOption) (*SetChecklistItemValueRequest_Response, error) {
-	out := new(SetChecklistItemValueRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.registry.RegistryService/UpdateChecklistItemValue", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *registryServiceClient) DeleteChecklistItemValue(ctx context.Context, in *DeleteChecklistItemValueRequest, opts ...grpc.CallOption) (*DeleteChecklistItemValueRequest_Response, error) {
-	out := new(DeleteChecklistItemValueRequest_Response)
-	err := c.cc.Invoke(ctx, "/ai.verta.registry.RegistryService/DeleteChecklistItemValue", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 // RegistryServiceServer is the server API for RegistryService service.
 type RegistryServiceServer interface {
 	// CRUD for RegisteredModel
@@ -6472,11 +5790,6 @@ type RegistryServiceServer interface {
 	CreateExternalDeployment(context.Context, *ExternalDeployment) (*ExternalDeploymentRequest_Response, error)
 	UpdateExternalDeployment(context.Context, *ExternalDeployment) (*ExternalDeploymentRequest_Response, error)
 	DeleteExternalDeployment(context.Context, *ExternalDeploymentRequest) (*Empty, error)
-	FindChecklistItemValues(context.Context, *FindChecklistItemValueRequest) (*FindChecklistItemValueRequest_Response, error)
-	GetChecklistItemValue(context.Context, *GetChecklistItemValueRequest) (*GetChecklistItemValueRequest_Response, error)
-	CreateChecklistItemValue(context.Context, *SetChecklistItemValueRequest) (*SetChecklistItemValueRequest_Response, error)
-	UpdateChecklistItemValue(context.Context, *SetChecklistItemValueRequest) (*SetChecklistItemValueRequest_Response, error)
-	DeleteChecklistItemValue(context.Context, *DeleteChecklistItemValueRequest) (*DeleteChecklistItemValueRequest_Response, error)
 }
 
 // UnimplementedRegistryServiceServer can be embedded to have forward compatible implementations.
@@ -6554,21 +5867,6 @@ func (*UnimplementedRegistryServiceServer) UpdateExternalDeployment(context.Cont
 }
 func (*UnimplementedRegistryServiceServer) DeleteExternalDeployment(context.Context, *ExternalDeploymentRequest) (*Empty, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DeleteExternalDeployment not implemented")
-}
-func (*UnimplementedRegistryServiceServer) FindChecklistItemValues(context.Context, *FindChecklistItemValueRequest) (*FindChecklistItemValueRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method FindChecklistItemValues not implemented")
-}
-func (*UnimplementedRegistryServiceServer) GetChecklistItemValue(context.Context, *GetChecklistItemValueRequest) (*GetChecklistItemValueRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetChecklistItemValue not implemented")
-}
-func (*UnimplementedRegistryServiceServer) CreateChecklistItemValue(context.Context, *SetChecklistItemValueRequest) (*SetChecklistItemValueRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method CreateChecklistItemValue not implemented")
-}
-func (*UnimplementedRegistryServiceServer) UpdateChecklistItemValue(context.Context, *SetChecklistItemValueRequest) (*SetChecklistItemValueRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateChecklistItemValue not implemented")
-}
-func (*UnimplementedRegistryServiceServer) DeleteChecklistItemValue(context.Context, *DeleteChecklistItemValueRequest) (*DeleteChecklistItemValueRequest_Response, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method DeleteChecklistItemValue not implemented")
 }
 
 func RegisterRegistryServiceServer(s *grpc.Server, srv RegistryServiceServer) {
@@ -7007,96 +6305,6 @@ func _RegistryService_DeleteExternalDeployment_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _RegistryService_FindChecklistItemValues_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(FindChecklistItemValueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RegistryServiceServer).FindChecklistItemValues(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.registry.RegistryService/FindChecklistItemValues",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistryServiceServer).FindChecklistItemValues(ctx, req.(*FindChecklistItemValueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RegistryService_GetChecklistItemValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetChecklistItemValueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RegistryServiceServer).GetChecklistItemValue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.registry.RegistryService/GetChecklistItemValue",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistryServiceServer).GetChecklistItemValue(ctx, req.(*GetChecklistItemValueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RegistryService_CreateChecklistItemValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetChecklistItemValueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RegistryServiceServer).CreateChecklistItemValue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.registry.RegistryService/CreateChecklistItemValue",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistryServiceServer).CreateChecklistItemValue(ctx, req.(*SetChecklistItemValueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RegistryService_UpdateChecklistItemValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetChecklistItemValueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RegistryServiceServer).UpdateChecklistItemValue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.registry.RegistryService/UpdateChecklistItemValue",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistryServiceServer).UpdateChecklistItemValue(ctx, req.(*SetChecklistItemValueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _RegistryService_DeleteChecklistItemValue_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(DeleteChecklistItemValueRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(RegistryServiceServer).DeleteChecklistItemValue(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/ai.verta.registry.RegistryService/DeleteChecklistItemValue",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(RegistryServiceServer).DeleteChecklistItemValue(ctx, req.(*DeleteChecklistItemValueRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 var _RegistryService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "ai.verta.registry.RegistryService",
 	HandlerType: (*RegistryServiceServer)(nil),
@@ -7196,26 +6404,6 @@ var _RegistryService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DeleteExternalDeployment",
 			Handler:    _RegistryService_DeleteExternalDeployment_Handler,
-		},
-		{
-			MethodName: "FindChecklistItemValues",
-			Handler:    _RegistryService_FindChecklistItemValues_Handler,
-		},
-		{
-			MethodName: "GetChecklistItemValue",
-			Handler:    _RegistryService_GetChecklistItemValue_Handler,
-		},
-		{
-			MethodName: "CreateChecklistItemValue",
-			Handler:    _RegistryService_CreateChecklistItemValue_Handler,
-		},
-		{
-			MethodName: "UpdateChecklistItemValue",
-			Handler:    _RegistryService_UpdateChecklistItemValue_Handler,
-		},
-		{
-			MethodName: "DeleteChecklistItemValue",
-			Handler:    _RegistryService_DeleteChecklistItemValue_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
