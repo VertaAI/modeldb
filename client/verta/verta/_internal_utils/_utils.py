@@ -14,6 +14,7 @@ import string
 import sys
 import threading
 import time
+from typing import Optional
 from urllib.parse import urljoin
 import warnings
 
@@ -27,7 +28,7 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 
 from ..external import six
 
-from verta.credentials import EmailCredentials, JWTCredentials
+from verta.credentials import EmailCredentials
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
@@ -535,7 +536,10 @@ def fabricate_200():
     return response
 
 
-def raise_for_http_error(response):
+def raise_for_http_error(
+        response: requests.Response,
+        component_msg: Optional[str] = None,
+        ):
     """
     Raises a potential HTTP error with a back end message if provided, or a default error message otherwise.
 
@@ -543,6 +547,8 @@ def raise_for_http_error(response):
     ----------
     response : :class:`requests.Response`
         Response object returned from a `requests`-module HTTP request.
+    component_msg: str, optional
+        Custom message to prepend to the error to identify the relevant component.
 
     Raises
     ------
@@ -584,9 +590,8 @@ def raise_for_http_error(response):
                 cause = "Server"
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
-            message = "{} {} Error: {} for url: {}".format(
-                response.status_code, cause, reason, response.url
-            )
+            message = f"{component_msg or ''}{response.status_code} {cause} Error:" \
+                      f" {reason} for url: {response.url}"
             message += time_str  # attach time to error message
             six.raise_from(requests.HTTPError(message, response=response), None)
 
