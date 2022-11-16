@@ -144,14 +144,18 @@ class DeployedModel(object):
                 self._prediction_url,
                 headers=request_headers,
                 data=gzstream.read(),
-            )
-            return response
+                )
         else:
             response = self._session.post(
                 self.prediction_url,
+                headers=request_headers,
                 json=x,
-            )
-            return response
+                )
+        if not response.ok:
+            _utils.raise_for_http_error(
+                response=response,
+                component_msg='Deployed model encountered an error: ')
+        return response
 
 
     def headers(self):

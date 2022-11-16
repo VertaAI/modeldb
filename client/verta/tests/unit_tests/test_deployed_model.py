@@ -4,7 +4,7 @@ import os
 from typing import Any, Dict
 
 import pytest
-from requests import Session
+from requests import Session, HTTPError
 from requests.exceptions import RetryError
 import responses
 from responses import matchers
@@ -338,3 +338,45 @@ def test_default_retry_after_custom_retry(mocked_responses) -> None:
     except(RetryError):
         mocked_responses.assert_call_count(PREDICTION_URL, 16)
         # previous 2 + 1 attempt + default 13 retries = 16
+
+
+def test_predict_400_error_message_extraction(mocked_responses) -> None:
+    """ Getting a 400 will render the attached message form the backend if present """
+    mocked_responses.post(
+        PREDICTION_URL,
+        json={"message": "Here be a message in the response"},
+        status=400
+    )
+    creds = EmailCredentials.load_from_os_env()
+    dm = DeployedModel(
+        prediction_url=PREDICTION_URL,
+        creds=creds,
+        token=TOKEN,
+    )
+    with pytest.raises(HTTPError) as err:
+        dm.predict(x=['test_prediction'])
+    assert str(err.value)[:-30] == (
+        'Deployed model encountered an error: 400 Client Error: Here be a '
+        'message in the response for url: '
+        'https://test.dev.verta.ai/api/v1/predict/test_path at '
+        )
+
+def test_predict_400_error_message_missing(mocked_responses) -> None:
+    """ Getting a 400 will render the attached message form the backend if present """
+    mocked_responses.post(
+        PREDICTION_URL,
+        json={},
+        status=400
+    )
+    creds = EmailCredentials.load_from_os_env()
+    dm = DeployedModel(
+        prediction_url=PREDICTION_URL,
+        creds=creds,
+        token=TOKEN,
+    )
+    with pytest.raises(HTTPError) as err:
+        dm.predict(x=['test_prediction'])
+    assert str(err.value)[:-30] == (
+        'Deployed model encountered an error: 400 Client Error: {} for url: '
+        'https://test.dev.verta.ai/api/v1/predict/test_path at '
+    )
