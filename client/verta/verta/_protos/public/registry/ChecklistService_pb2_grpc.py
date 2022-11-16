@@ -6,7 +6,7 @@ from ..registry import RegistryService_pb2 as registry_dot_RegistryService__pb2
 
 
 class ChecklistServiceStub(object):
-  """Initial functions to list all, create, retreive, update and delete checklist_item_values
+  """Initial functions to list all, create, retrieve, update and delete checklist_item_values
   """
 
   def __init__(self, channel):
@@ -43,7 +43,7 @@ class ChecklistServiceStub(object):
 
 
 class ChecklistServiceServicer(object):
-  """Initial functions to list all, create, retreive, update and delete checklist_item_values
+  """Initial functions to list all, create, retrieve, update and delete checklist_item_values
   """
 
   def FindChecklistItemValues(self, request, context):
