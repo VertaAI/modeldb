@@ -361,6 +361,7 @@ def test_predict_400_error_message_extraction(mocked_responses) -> None:
         'https://test.dev.verta.ai/api/v1/predict/test_path at '
         )
 
+
 def test_predict_400_error_message_missing(mocked_responses) -> None:
     """ Getting a 400 will render the attached message form the backend if present """
     mocked_responses.post(
