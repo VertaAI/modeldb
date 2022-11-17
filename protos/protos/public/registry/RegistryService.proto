@@ -25,7 +25,7 @@ message DataTypeEnum {
   }
 }
 
-message ActionTypeEnum {
+message ActionTypeEnum {  
   option deprecated = true;
   enum ActionType {
     option deprecated = true;
@@ -260,20 +260,12 @@ message ModelVersion {
 
     // Reference: https://vertaai.atlassian.net/browse/CAT-84
     string input_description = 26;
-
     // Reference: https://vertaai.atlassian.net/browse/CAT-84
     bool hide_input_label = 27;
-
     // Reference: https://vertaai.atlassian.net/browse/CAT-84
     string output_description = 28;
-
     // Reference: https://vertaai.atlassian.net/browse/CAT-84
     bool hide_output_label = 29;
-
-    repeated ExternalDeployment external_deployments = 30;
-
-    // Reference: https://vertaai.atlassian.net/browse/CAT-173
-    repeated ChecklistItemValue checklist_item_values = 31;
 }
 
 message DockerMetadata {
@@ -426,86 +418,6 @@ message LogDockerMetadataInModelVersion {
     message Response { }
 }
 
-message ExternalDeployment {
-    // internal id
-    uint64 id = 1;
-
-    // id of the model this belongs to
-    uint64 model_version_id = 2;
-
-    // Timestamp recorded when this ``external_deployment`` was created.
-    int64 time_created = 3;
-
-    // Timestamp recorded when metadata for this ``external_deployment`` was last updated.
-    int64 time_updated = 4;
-
-    // Location where container will be deployed
-    string location_deployed = 5;
-
-    // Deploy URL, path or title
-    string url_path_title = 6;
-
-    // Brief description
-    string description = 7;
-}
-
-message ExternalDeploymentRequest {
-    uint64 external_deployment_id = 1;
-
-    message Response {
-        ExternalDeployment external_deployment = 1;
-    }
-}
-
-message Empty {
-}
-
-// placed here to avoid circular dependency in ChecklistService.proto
-message ChecklistItemValue {
-    // internal id
-    uint64 id = 1;
-
-    // value corresponds to if the item was marked as completed
-    bool completed = 2;
-
-    // id of the model version this belongs to
-    uint64 model_version_id = 3;
-
-    // id of the template(UAC) this is related to
-    uint64 template_id = 4;
-
-    // id of the template item (UAC) this is related to
-    uint64 template_item_id = 5;
-
-    // id of user(UAC) that created this entity
-    uint64 created_by_id = 6;
-
-    // id of user(UAC) that updated this entity
-    uint64 updated_by_id = 7;
-
-    // Timestamp recorded when this entity was created
-    int64 time_created = 8;
-
-    // Timestamp recorded when metadata for this entity was last updated
-    int64 time_updated = 9;
-}
-
-message ChecklistItemValueIdentification {
-    // ChecklistItemValue referred to by id
-    uint64 checklist_item_value_id = 1;
-
-    // RMV referred to by id
-    ModelVersionIdentification model_version_id = 2; //Compulsory
-}
-
-message FindChecklistItemValueRequest{
-    //identity of parent registered model version
-    ModelVersionIdentification id = 1;
-
-    message Response {
-        repeated ChecklistItemValue checklist_item_values = 1;
-    }
-}
 service RegistryService {
    // CRUD for RegisteredModel
     rpc FindRegisteredModel(FindRegisteredModelRequest) returns (FindRegisteredModelRequest.Response) {
@@ -719,31 +631,5 @@ service RegistryService {
             body: "*"
         };
     };
-
-    rpc GetExternalDeployment(ExternalDeploymentRequest) returns (ExternalDeploymentRequest.Response) {
-        option (google.api.http) = {
-            get: "/v1/registry/registered_models/model_versions/external_deployments/{external_deployment_id}"
-        };
-    };
-
-    rpc CreateExternalDeployment(ExternalDeployment) returns (ExternalDeploymentRequest.Response) {
-        option (google.api.http) = {
-            post: "/v1/registry/registered_models/model_versions/external_deployments"
-            body: "*"
-        };
-    }
-
-    rpc UpdateExternalDeployment(ExternalDeployment) returns (ExternalDeploymentRequest.Response) {
-        option (google.api.http) = {
-            put: "/v1/registry/registered_models/model_versions/external_deployments"
-            body: "*"
-        };
-    }
-
-    rpc DeleteExternalDeployment(ExternalDeploymentRequest) returns (Empty) {
-        option (google.api.http) = {
-            delete: "/v1/registry/registered_models/model_versions/external_deployments/{external_deployment_id}"
-        };
-    }
 
 }
