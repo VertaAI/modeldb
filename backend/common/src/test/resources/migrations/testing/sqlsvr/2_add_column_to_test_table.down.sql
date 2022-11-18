@@ -1,0 +1,1 @@
+ALTER TABLE test_table DROP column visibility

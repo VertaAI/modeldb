@@ -1,26 +1,33 @@
 package ai.verta.modeldb.common.config;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import lombok.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@Getter
+@Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S116", "squid:S100"})
 public class RdbConfig {
 
   private static final Logger LOGGER = LogManager.getLogger(RdbConfig.class);
 
-  private String RdbDatabaseName;
-  // TODO: replace driver with "io.opentracing.contrib.jdbc.TracingDriver" if tracing is enabled
-  private String RdbDriver;
-  private String RdbDialect;
-  private String RdbUrl;
-  private String RdbUsername;
-  private String RdbPassword;
-  private String sslMode = "DISABLED";
-  private Boolean sslEnabled = false;
-  private String DBConnectionURL;
+  @JsonProperty private String RdbDatabaseName;
+  @JsonProperty private String RdbDriver;
+  @JsonProperty private String RdbDialect;
+  @JsonProperty private String RdbUrl;
+  @JsonProperty private String RdbUsername;
+  @JsonProperty private String RdbPassword;
+  @Builder.Default @JsonProperty private String sslMode = "DISABLED";
+  @Builder.Default @JsonProperty private Boolean sslEnabled = false;
+  @JsonProperty private String DBConnectionURL;
 
   public void validate(String base) throws InvalidConfigException {
     if (RdbDriver == null || RdbDriver.isEmpty()) {
@@ -80,7 +87,7 @@ public class RdbConfig {
         rdb.RdbUrl
             + "/"
             + rdb.getRdbDatabaseName()
-            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8"
+            + "?createDatabaseIfNotExist=true&useUnicode=yes&characterEncoding=UTF-8&allowMultiQueries=true"
             + "&sslEnabled="
             + rdb.sslEnabled
             + "&sslMode="
@@ -151,37 +158,5 @@ public class RdbConfig {
       throw new ModelDBException("Database name not found in the database connection URL");
     }
     return dbName;
-  }
-
-  public String getRdbDatabaseName() {
-    return RdbDatabaseName;
-  }
-
-  public String getRdbDialect() {
-    return RdbDialect;
-  }
-
-  public String getRdbUrl() {
-    return RdbUrl;
-  }
-
-  public String getRdbUsername() {
-    return RdbUsername;
-  }
-
-  public String getRdbPassword() {
-    return RdbPassword;
-  }
-
-  public String getSslMode() {
-    return sslMode;
-  }
-
-  public String getRdbDriver() {
-    return RdbDriver;
-  }
-
-  public String getDBConnectionURL() {
-    return DBConnectionURL;
   }
 }

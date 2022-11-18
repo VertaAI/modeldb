@@ -1,0 +1,9 @@
+BEGIN TRANSACTION
+IF NOT (EXISTS (SELECT *  FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'test_table'))
+BEGIN
+    CREATE TABLE test_table (
+        i int not null primary key
+    )
+    INSERT INTO test_table(i) VALUES (999)
+END
+COMMIT TRANSACTION
