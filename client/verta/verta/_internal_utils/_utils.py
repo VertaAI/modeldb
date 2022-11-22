@@ -540,7 +540,7 @@ def fabricate_200():
 def raise_for_http_error(
         response: requests.Response,
         component_msg: Optional[str] = None,
-        supress_traceback: Optional[bool] = False,
+        suppress_traceback: Optional[bool] = False,
         ):
     """
     Raises a potential HTTP error with a back end message if provided, or a default error message otherwise.
@@ -551,7 +551,7 @@ def raise_for_http_error(
         Response object returned from a `requests`-module HTTP request.
     component_msg: str, optional
         Custom message to prepend to the error to identify the relevant component.
-    supress_traceback: bool, optional
+    suppress_traceback: bool, optional
         If true, only the last message of the traceback will be printed.
 
     Raises
@@ -560,7 +560,7 @@ def raise_for_http_error(
         If an HTTP error occured.
 
     """
-    traceback_limit: Union[int, None] = 0 if supress_traceback else None
+    traceback_limit: Union[int, None] = 0 if suppress_traceback else None
     try:
         response.raise_for_status()
     except requests.HTTPError as e:

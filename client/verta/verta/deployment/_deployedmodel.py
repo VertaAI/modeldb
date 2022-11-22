@@ -156,7 +156,7 @@ class DeployedModel(object):
             _utils.raise_for_http_error(
                 response=response,
                 component_msg='Deployed model encountered an error: ',
-                supress_traceback=True,
+                suppress_traceback=True,
                 )
         return response
 
