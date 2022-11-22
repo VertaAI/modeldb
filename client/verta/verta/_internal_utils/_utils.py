@@ -14,7 +14,8 @@ import string
 import sys
 import threading
 import time
-from typing import Optional
+import traceback
+from typing import Optional, Union
 from urllib.parse import urljoin
 import warnings
 
@@ -539,6 +540,7 @@ def fabricate_200():
 def raise_for_http_error(
         response: requests.Response,
         component_msg: Optional[str] = None,
+        supress_traceback: Optional[bool] = False,
         ):
     """
     Raises a potential HTTP error with a back end message if provided, or a default error message otherwise.
@@ -549,6 +551,8 @@ def raise_for_http_error(
         Response object returned from a `requests`-module HTTP request.
     component_msg: str, optional
         Custom message to prepend to the error to identify the relevant component.
+    supress_traceback: bool, optional
+        If true, only the last message of the traceback will be printed.
 
     Raises
     ------
@@ -556,12 +560,12 @@ def raise_for_http_error(
         If an HTTP error occured.
 
     """
+    traceback_limit: Union[int, None] = 0 if supress_traceback else None
     try:
         response.raise_for_status()
     except requests.HTTPError as e:
         # get current time in UTC to display alongside exception
-        curr_time = timestamp_to_str(now(), utc=True)
-        time_str = " at {} UTC".format(curr_time)
+        time_str = f" at {timestamp_to_str(now(), utc=True)} UTC"
 
         try:
             reason = body_to_json(response)
@@ -575,13 +579,11 @@ def raise_for_http_error(
                 # fall back to entire text
                 reason = response.text.strip()
 
-        reason = six.ensure_str(reason)
-
         if not reason:
             e.args = (e.args[0] + time_str,) + e.args[
                 1:
             ]  # attach time to error message
-            six.raise_from(e, None)  # use default reason
+            # six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
             if 400 <= response.status_code < 500:
@@ -590,10 +592,14 @@ def raise_for_http_error(
                 cause = "Server"
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
-            message = f"{component_msg or ''}{response.status_code} {cause} Error:" \
-                      f" {reason} for url: {response.url}"
+            message = f"{response.status_code} {cause} Error: {reason} for url: {response.url}"
+            if component_msg:
+                message = component_msg + message
             message += time_str  # attach time to error message
-            six.raise_from(requests.HTTPError(message, response=response), None)
+            # six.raise_from(requests.HTTPError(message, response=response), None)
+            e.args = (message,)
+        traceback.print_exc(file=None, limit=traceback_limit)
+        raise e
 
 
 def body_to_json(response):

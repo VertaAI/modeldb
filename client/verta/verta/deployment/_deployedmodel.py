@@ -2,9 +2,10 @@
 
 import gzip
 import json
+import traceback
 import warnings
 
-from requests import Session
+from requests import Session, HTTPError
 from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib3 import Retry
 from urllib.parse import urlparse
@@ -154,7 +155,9 @@ class DeployedModel(object):
         if not response.ok:
             _utils.raise_for_http_error(
                 response=response,
-                component_msg='Deployed model encountered an error: ')
+                component_msg='Deployed model encountered an error: ',
+                supress_traceback=True,
+                )
         return response
 
 

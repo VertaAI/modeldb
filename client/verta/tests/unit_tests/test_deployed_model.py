@@ -345,7 +345,8 @@ def test_predict_400_error_message_extraction(mocked_responses) -> None:
     mocked_responses.post(
         PREDICTION_URL,
         json={"message": "Here be a message in the response"},
-        status=400
+        status=400,
+        headers={'verta-request-id': 'hereISthisTESTidFROMtheUSER'},
     )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
@@ -367,7 +368,8 @@ def test_predict_400_error_message_missing(mocked_responses) -> None:
     mocked_responses.post(
         PREDICTION_URL,
         json={},
-        status=400
+        status=500,
+        headers={'verta-request-id': 'hereISthisTESTidFROMtheUSER'},
     )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
@@ -378,6 +380,6 @@ def test_predict_400_error_message_missing(mocked_responses) -> None:
     with pytest.raises(HTTPError) as err:
         dm.predict(x=['test_prediction'])
     assert str(err.value)[:-30] == (
-        'Deployed model encountered an error: 400 Client Error: {} for url: '
+        'Deployed model encountered an error: 500 Server Error: {} for url: '
         'https://test.dev.verta.ai/api/v1/predict/test_path at '
     )
