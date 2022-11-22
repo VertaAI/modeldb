@@ -348,4 +348,8 @@ public class InternalFuture<T> {
   public CompletionStage<T> toCompletionStage() {
     return stage;
   }
+
+  public Future<T> toFuture() {
+    return Future.from(stage);
+  }
 }
