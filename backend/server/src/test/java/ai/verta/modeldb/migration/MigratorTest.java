@@ -29,6 +29,42 @@ class MigratorTest {
   }
 
   @Test
+  void isDirty_migration_h2() throws Exception {
+    var config = createH2Config();
+    Connection connection = buildStandardDbConnection(config);
+
+    Migrator migrator = new Migrator(connection, "migration/h2", config);
+
+    migrator.performMigration(0);
+    verifyVersionState(connection, 0);
+
+    migrator.performMigration(1);
+    verifyVersionState(connection, 1);
+
+    migrator.performMigration(2);
+    verifyVersionState(connection, 2);
+
+    migrator.performMigration(3);
+    verifyVersionState(connection, 3);
+
+    /* While downgrading migration to 0 the second version 2_release_2022_10.down.sql is failing
+     *  so migrator tool will mark migration 2 as dirty
+     *  EX: migrator.performMigration(0);
+     *     verifyVersionState(connection, 0);
+     */
+    migrator.executeSingleMigration(new Migration("3_release_2022_10.down.sql"));
+    try (PreparedStatement ps =
+        connection.prepareStatement("UPDATE schema_migrations set version = ?, dirty = ?")) {
+      ps.setInt(1, 2);
+      ps.setBoolean(2, true);
+      ps.executeUpdate();
+    }
+
+    migrator.performMigration();
+    verifyVersionState(connection, 3);
+  }
+
+  @Test
   @Disabled("only run manually to test things against mysql for now")
   void release_2022_08_ddl_migration_mysql() throws Exception {
     RdbConfig config = createMysqlConfig();

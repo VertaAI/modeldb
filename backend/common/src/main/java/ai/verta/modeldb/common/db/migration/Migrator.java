@@ -40,7 +40,7 @@ public class Migrator {
           "The schema_migrations table contains no records. Migration process cannot start.");
     }
     if (currentState.isDirty()) {
-      currentState = cleanUpDirtyDatabase(currentState);
+      currentState = cleanUpDirtyDatabase(migrationDatastore, currentState);
     }
     int versionToTarget = findVersionToTarget(desiredVersion);
     log.info("Starting database migration process to version: " + versionToTarget);
@@ -54,7 +54,8 @@ public class Migrator {
     runMigrations(migrationDatastore, migrationsToPerform);
   }
 
-  private MigrationState cleanUpDirtyDatabase(MigrationState currentState)
+  private MigrationState cleanUpDirtyDatabase(
+      MigrationDatastore migrationDatastore, MigrationState currentState)
       throws MigrationException, SQLException {
     if (currentState.getVersion() <= 1) {
       // todo: are we really comfortable implementing the database drop functionality at this point?
@@ -67,6 +68,11 @@ public class Migrator {
     // revert the number and unset the dirty flag.
     int revertedVersion = currentState.getVersion() - 1;
     updateVersion(false, revertedVersion);
+
+    SortedSet<Migration> migrationsToPerform =
+        gatherMigrationsToPerform(currentState, revertedVersion);
+    runMigrations(migrationDatastore, migrationsToPerform);
+
     return new MigrationState(revertedVersion, false);
   }
 
