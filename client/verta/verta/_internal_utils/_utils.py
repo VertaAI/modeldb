@@ -539,7 +539,6 @@ def fabricate_200():
 
 def raise_for_http_error(
         response: requests.Response,
-        component_msg: Optional[str] = None,
         suppress_traceback: Optional[bool] = False,
         ):
     """
@@ -549,8 +548,6 @@ def raise_for_http_error(
     ----------
     response : :class:`requests.Response`
         Response object returned from a `requests`-module HTTP request.
-    component_msg: str, optional
-        Custom message to prepend to the error to identify the relevant component.
     suppress_traceback: bool, optional
         If true, only the last message of the traceback will be printed.
 
@@ -592,11 +589,8 @@ def raise_for_http_error(
                 cause = "Server"
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
-            message = f"{response.status_code} {cause} Error: {reason} for url: {response.url}"
-            if component_msg:
-                message = component_msg + message
-            message += time_str  # attach time to error message
-            # six.raise_from(requests.HTTPError(message, response=response), None)
+            message = f"{response.status_code} {cause} Error: {reason} " \
+                      f"for url: {response.url}{time_str}"
             e.args = (message,)
         traceback.print_exc(file=None, limit=traceback_limit)
         raise e
