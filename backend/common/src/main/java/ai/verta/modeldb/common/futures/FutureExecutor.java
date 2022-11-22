@@ -10,7 +10,7 @@ import org.springframework.lang.NonNull;
 
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class FutureExecutor implements Executor {
-  private final Executor other;
+  private final Executor delegate;
   @With private final io.opentelemetry.context.Context otelContext;
   @With private final io.grpc.Context grpcContext;
 
@@ -46,6 +46,6 @@ public class FutureExecutor implements Executor {
       r = grpcContext.wrap(r);
     }
 
-    other.execute(r);
+    delegate.execute(r);
   }
 }

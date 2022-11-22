@@ -1,36 +1,18 @@
 # -*- coding: utf-8 -*-
 """ Unit tests for the Endpoint class. """
 
-import os
-import pytest
-
 from copy import deepcopy
 from typing import Dict, Any
 from unittest.mock import patch
 
+import pytest
+
 from verta.endpoint import Endpoint
-from verta._internal_utils._utils import Connection, Configuration
-from verta.credentials import EmailCredentials
 
-
-@pytest.fixture
-@patch.dict(os.environ, {'VERTA_EMAIL': 'test_email@verta.ai', 'VERTA_DEV_KEY':'123test1232dev1232key123'})
-def mock_conn() -> Connection:
-    """ Return a mocked object of the _internal_utils._utils.Connection class for use in tests """
-    return Connection(
-        scheme='https',
-        socket='test_socket',
-        credentials=EmailCredentials.load_from_os_env()
-    )
-
-@pytest.fixture
-def mock_config() -> Configuration:
-    """ Return a mocked object of the _internal_utils._utils.Configuration class for use in tests """
-    return Configuration(use_git=False, debug=False)
 
 @pytest.fixture
 def mock_endpoint(mock_conn, mock_config) -> Endpoint:
-    """ Use the mocked elements above to generate  an object of the Endpoint class for use in tests """
+    """ Return a mocked object of the Endpoint class for use in tests """
     return Endpoint(conn=mock_conn, conf=mock_config, workspace=456, id=123)
 
 VERTA_CLASS: str= 'verta.endpoint.Endpoint.'
