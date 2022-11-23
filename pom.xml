@@ -35,7 +35,7 @@
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <otel.core.version>1.19.0</otel.core.version>
         <otel.instrumentation.version>1.19.1-alpha</otel.instrumentation.version>
-        <springframework.version>5.3.23</springframework.version>
+        <springframework.version>6.0.1</springframework.version>
         <lombok.version>1.18.24</lombok.version>
 
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
