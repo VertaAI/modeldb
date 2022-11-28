@@ -62,7 +62,6 @@ def test_deployed_model_init(mock_session, mock_retry) -> None:
     assert created_dm_details['_prediction_url'] == expected_dm_details['_prediction_url']
     assert created_dm_details['_access_token'] == expected_dm_details['_access_token']
     assert created_dm_details['_credentials'] == expected_dm_details['_credentials']
-    assert created_dm_details['_retry_config'] == expected_dm_details['_retry_config']
     assert created_dm_details['_session'] == expected_dm_details['_session']
 
 

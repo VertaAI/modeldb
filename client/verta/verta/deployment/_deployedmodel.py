@@ -2,10 +2,9 @@
 
 import gzip
 import json
-import traceback
 import warnings
 
-from requests import Session, HTTPError
+from requests import Session
 from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib3 import Retry
 from urllib.parse import urlparse
@@ -79,17 +78,12 @@ class DeployedModel(object):
         self.prediction_url: str = prediction_url
         self._credentials: credentials.Credentials = creds or credentials.load_from_os_env()
         self._access_token: str = token
-        self._retry_config: Retry = http_session.retry_config(
-            max_retries=http_session.DEFAULT_MAX_RETRIES,
-            status_forcelist=http_session.DEFAULT_STATUS_FORCELIST,
-            backoff_factor=http_session.DEFAULT_BACKOFF_FACTOR
-            )
         self._session: Session = None
         self._init_session()
 
     def _init_session(self):
         """ Create a single persistent Session object. """
-        session: Session = http_session.init_session(retry=self._retry_config)
+        session: Session = http_session.init_session(retry=http_session.retry_config())
 
         if self._credentials:
             session.headers.update(
@@ -186,12 +180,12 @@ class DeployedModel(object):
         self,
         x: List[Any],
         compress=False,
-        max_retries: Optional[int] = http_session.DEFAULT_MAX_RETRIES,
+        max_retries: int = http_session.DEFAULT_MAX_RETRIES,
         always_retry_404=False,
         always_retry_429=False,
-        retry_status: Optional[Set[int]] = http_session.DEFAULT_STATUS_FORCELIST,
-        backoff_factor: Optional[float] = http_session.DEFAULT_BACKOFF_FACTOR,
-        prediction_id: Optional[str] = None,
+        retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
+        backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
+        prediction_id: str = None,
         ) -> Dict[str, Any]:
         """
         Makes a prediction using input `x`.
@@ -218,10 +212,10 @@ class DeployedModel(object):
         compress : bool, default False
             Whether to compress the request body.
         max_retries : int, default 13
-            Maximum number of times to retry a request.
-        always_retry_404 : bool, default True
+            Maximum number of retries on status codes listed in ``retry_status``.
+        always_retry_404 : bool, default False
             Deprecated: Whether to retry on 404s indefinitely. This is to accommodate model deployment warm-up.
-        always_retry_429 : bool, default True
+        always_retry_429 : bool, default False
             Deprecated: Whether to retry on 429s indefinitely. This is to accommodate third-party cluster
             autoscalers, which may take minutes to launch new pods for servicing requests.
         retry_status : set, default {404, 429}
@@ -269,10 +263,10 @@ class DeployedModel(object):
             self,
             x: List[Any],
             compress=False,
-            max_retries: Optional[int] = http_session.DEFAULT_MAX_RETRIES,
-            retry_status: Optional[Set[int]] = http_session.DEFAULT_STATUS_FORCELIST,
-            backoff_factor: Optional[float] = http_session.DEFAULT_BACKOFF_FACTOR,
-            prediction_id: Optional[str] = None,
+            max_retries: int = http_session.DEFAULT_MAX_RETRIES,
+            retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
+            backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
+            prediction_id: str = None,
             ) -> Tuple[str, Dict[str, Any]]:
         """
         Makes a prediction using input `x` the same as `predict`, but returns a tuple including the ID of the
@@ -292,7 +286,7 @@ class DeployedModel(object):
         compress : bool, default False
             Whether to compress the request body.
         max_retries : int, default 13
-            Maximum number of times to retry a request.
+            Maximum number of retries on status codes listed in ``retry_status`` parameter only.
         retry_status : set, default {404, 429}
             Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value of
             {404, 429}.  Expand the set to include more: ``retry_status={404, 429, <NEW_STATUS_CODE>}``

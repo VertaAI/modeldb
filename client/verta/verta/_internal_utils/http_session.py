@@ -16,9 +16,9 @@ DEFAULT_STATUS_FORCELIST: Set = {404, 429}
 
 
 def retry_config(
-        max_retries: int,
-        status_forcelist: Set[int],
-        backoff_factor: float,
+        max_retries: int = DEFAULT_MAX_RETRIES,
+        status_forcelist: Set[int] = DEFAULT_STATUS_FORCELIST,
+        backoff_factor: float = DEFAULT_BACKOFF_FACTOR,
         ) -> Retry:
     """ Return a Retry object with the given parameters """
     return Retry(total=None, # Let `status` param control retries on failed status codes
