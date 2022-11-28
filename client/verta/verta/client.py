@@ -8,7 +8,6 @@ from urllib.parse import urlparse
 import warnings
 
 import requests
-from verta.tracking._organization import Organization
 from ._internal_utils._utils import check_unnecessary_params_warning
 
 from ._protos.public.modeldb import CommonService_pb2 as _CommonService
@@ -1736,13 +1735,3 @@ class Client(object):
             datasets = datasets.find(predicates)
 
         return datasets
-
-    def _create_organization(
-        self, name, desc=None, collaborator_type=None, global_can_deploy=None
-    ):
-        return Organization._create(
-            self._conn, name, desc, collaborator_type, global_can_deploy
-        )
-
-    def _get_organization(self, name):
-        return Organization._get_by_name(self._conn, name)

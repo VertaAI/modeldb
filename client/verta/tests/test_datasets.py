@@ -727,9 +727,9 @@ class TestLogDatasetVersion:
 
     @pytest.mark.not_oss
     def test_log_dataset_version_diff_workspaces(
-        self, client, organization, created_entities, experiment_run
+        self, client, workspace, created_entities, experiment_run
     ):
-        dataset = client.set_dataset(type="local", workspace=organization.name)
+        dataset = client.set_dataset(type="local", workspace=workspace.name)
         created_entities.append(dataset)
 
         dataset_version = dataset.create_version(__file__)

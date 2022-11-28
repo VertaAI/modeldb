@@ -12,6 +12,7 @@ Also, set the following environment variables, which are used by the test suite 
 - `VERTA_HOST` e.g. `http://localhost:3000` or `app.verta.ai`
 - `VERTA_EMAIL`
 - `VERTA_DEV_KEY`
+- `VERTA_WORKSPACE` "ORG_ID/WORKSPACE_NAME"
 - `VERTA_S3_TEST_BUCKET` (specified bucket must exist, the tests will not create it)
 - `VERTA_S3_TEST_OBJECT` (specified object must exist, the tests will not create it)
 

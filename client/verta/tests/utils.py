@@ -11,7 +11,6 @@ import tempfile
 import requests
 
 from verta._internal_utils import _utils
-from verta._protos.public.uac import Organization_pb2 as _OrganizationService
 
 from hypothesis import strategies as st
 

@@ -38,9 +38,9 @@ class TestFromRun:
             assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
     def test_from_run_diff_workspaces(
-        self, client, experiment_run, organization, created_entities
+        self, client, experiment_run, workspace, created_entities
     ):
-        registered_model = client.create_registered_model(workspace=organization.name)
+        registered_model = client.create_registered_model(workspace=workspace.name)
         created_entities.append(registered_model)
 
         model_version = registered_model.create_version_from_run(

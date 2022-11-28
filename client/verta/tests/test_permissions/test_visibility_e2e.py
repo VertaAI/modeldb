@@ -24,12 +24,12 @@ class TestAccess:
         ["dataset", "endpoint", "project", "registered_model"],  # , "repository"],
     )
     def test_private(
-        self, client, client_2, organization, created_entities, entity_name
+        self, client, client_2, workspace, created_entities, entity_name
     ):
         """Org member cannot get."""
-        organization.add_member(client_2._conn.email)
-        client.set_workspace(organization.name)
-        client_2.set_workspace(organization.name)
+        workspace.add_member(client_2._conn.email)
+        client.set_workspace(workspace.name)
+        client_2.set_workspace(workspace.name)
         name = _utils.generate_default_name()
         visibility = Private()
 
@@ -45,11 +45,11 @@ class TestAccess:
         "entity_name",
         ["dataset", "endpoint", "project", "registered_model"],  # , "repository"],
     )
-    def test_read(self, client, client_2, organization, created_entities, entity_name):
+    def test_read(self, client, client_2, workspace, created_entities, entity_name):
         """Org member can get, but not delete."""
-        organization.add_member(client_2._conn.email)
-        client.set_workspace(organization.name)
-        client_2.set_workspace(organization.name)
+        workspace.add_member(client_2._conn.email)
+        client.set_workspace(workspace.name)
+        client_2.set_workspace(workspace.name)
         name = _utils.generate_default_name()
         visibility = OrgCustom(write=False)
 
@@ -64,11 +64,11 @@ class TestAccess:
         with pytest.raises(requests.HTTPError, match="^403"):
             retrieved_entity.delete()
 
-    def test_read_registry(self, client, client_2, organization, created_entities):
+    def test_read_registry(self, client, client_2, workspace, created_entities):
         """Registry entities erroneously masked 403s in _update()."""
-        organization.add_member(client_2._conn.email)
-        client.set_workspace(organization.name)
-        client_2.set_workspace(organization.name)
+        workspace.add_member(client_2._conn.email)
+        client.set_workspace(workspace.name)
+        client_2.set_workspace(workspace.name)
         visibility = OrgCustom(write=False)
 
         reg_model = client.create_registered_model(visibility=visibility)
@@ -86,12 +86,12 @@ class TestAccess:
         ["dataset", "endpoint", "project", "registered_model"],  # , "repository"],
     )
     def test_read_write(
-        self, client, client_2, organization, created_entities, entity_name
+        self, client, client_2, workspace, created_entities, entity_name
     ):
         """Org member can get, and delete."""
-        organization.add_member(client_2._conn.email)
-        client.set_workspace(organization.name)
-        client_2.set_workspace(organization.name)
+        workspace.add_member(client_2._conn.email)
+        client.set_workspace(workspace.name)
+        client_2.set_workspace(workspace.name)
         name = _utils.generate_default_name()
         visibility = OrgCustom(write=True)
 
@@ -108,13 +108,13 @@ class TestAccess:
 
 class TestLink:
     def test_run_log_dataset_version(
-        self, client_2, client_3, organization, created_entities
+        self, client_2, client_3, workspace, created_entities
     ):
         """Log someone else's dataset version to my run."""
-        organization.add_member(client_2._conn.email)
-        organization.add_member(client_3._conn.email)
-        client_2.set_workspace(organization.name)
-        client_3.set_workspace(organization.name)
+        workspace.add_member(client_2._conn.email)
+        workspace.add_member(client_3._conn.email)
+        client_2.set_workspace(workspace.name)
+        client_3.set_workspace(workspace.name)
 
         created_entities.append(client_2.create_project())
         run = client_2.create_experiment_run()
@@ -134,13 +134,13 @@ class TestLink:
         assert run.get_dataset_version("train").id == dataver.id
 
     def test_model_version_from_run(
-        self, client_2, client_3, organization, created_entities
+        self, client_2, client_3, workspace, created_entities
     ):
         """Create model version from someone else's run."""
-        organization.add_member(client_2._conn.email)
-        organization.add_member(client_3._conn.email)
-        client_2.set_workspace(organization.name)
-        client_3.set_workspace(organization.name)
+        workspace.add_member(client_2._conn.email)
+        workspace.add_member(client_3._conn.email)
+        client_2.set_workspace(workspace.name)
+        client_3.set_workspace(workspace.name)
 
         reg_model = client_2.create_registered_model()
         created_entities.append(reg_model)
@@ -159,17 +159,17 @@ class TestLink:
 
     @pytest.mark.deployment
     def test_endpoint_update_run(
-        self, client_2, client_3, organization, created_entities
+        self, client_2, client_3, workspace, created_entities
     ):
         """Update endpoint from someone else's run."""
         LogisticRegression = pytest.importorskip(
             "sklearn.linear_model"
         ).LogisticRegression
 
-        organization.add_member(client_2._conn.email)
-        organization.add_member(client_3._conn.email)
-        client_2.set_workspace(organization.name)
-        client_3.set_workspace(organization.name)
+        workspace.add_member(client_2._conn.email)
+        workspace.add_member(client_3._conn.email)
+        client_2.set_workspace(workspace.name)
+        client_3.set_workspace(workspace.name)
 
         endpoint = client_2.create_endpoint(_utils.generate_default_name())
         created_entities.append(endpoint)
@@ -203,17 +203,17 @@ class TestLink:
 
     @pytest.mark.deployment
     def test_endpoint_update_model_version(
-        self, client_2, client_3, organization, created_entities
+        self, client_2, client_3, workspace, created_entities
     ):
         """Update endpoint from someone else's model version."""
         LogisticRegression = pytest.importorskip(
             "sklearn.linear_model"
         ).LogisticRegression
 
-        organization.add_member(client_2._conn.email)
-        organization.add_member(client_3._conn.email)
-        client_2.set_workspace(organization.name)
-        client_3.set_workspace(organization.name)
+        workspace.add_member(client_2._conn.email)
+        workspace.add_member(client_3._conn.email)
+        client_2.set_workspace(workspace.name)
+        client_3.set_workspace(workspace.name)
 
         endpoint = client_2.create_endpoint(_utils.generate_default_name())
         created_entities.append(endpoint)

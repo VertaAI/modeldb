@@ -1,5 +1,6 @@
 import collections
 import os
+from verta._internal_utils import _utils
 
 import pytest
 
@@ -18,6 +19,10 @@ class TestMetadata:  # essentially copied from test_dataset.py
         assert version.get_description() == second_desc
 
         assert dataset.get_version(id=version.id).get_description() == second_desc
+        client.set_workspace("42379216512358509179263")
+        dataset = client.create_dataset("dataset_name3")
+        version = dataset.create_version(Path("conftest.py"), desc=first_desc)
+
 
     def test_tags(self, client, dataset, strs):
         tag1, tag2, tag3, tag4 = strs[:4]

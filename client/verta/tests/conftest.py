@@ -75,50 +75,6 @@ def mark_time():
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
-def create_dummy_workspace(tmp_path_factory, worker_id):
-    """Prevent tests from uncontrollably changing accounts' default workspace.
-
-    When an account creates its first organization, or is added to its first
-    organization, UAC sets that organization as the account's default
-    workspace. This is undesired during test runs, because several tests
-    rely on new arbitrary orgs *not* being the active client's default
-    workspace.
-
-    This fixture creates a dummy "first" organization for each account, so
-    that organizations created for individual tests won't trigger this behavior
-    from UAC.
-
-    """
-    dummy_orgs = []
-
-    def _create_dummy_workspaces():
-        for client in clean_test_accounts.get_clients():
-            current_default_workspace = client._conn.get_default_workspace()
-
-            name = _utils.generate_default_name()
-            dummy_orgs.append(client._create_organization(name))
-
-            client._conn._set_default_workspace(current_default_workspace)
-
-    # adapted from https://pytest-xdist.readthedocs.io/en/latest/how-to.html#making-session-scoped-fixtures-execute-only-once
-    if worker_id == "master":
-        # when not in parallel, simply create dummy workspaces
-        _create_dummy_workspaces()
-    else:
-        # when running in parallel, ensure dummy workspaces are only created once
-        path = tmp_path_factory.getbasetemp().parent / "dummy-workspaces"
-        with filelock.FileLock(str(path) + ".lock", timeout=30):
-            if not path.is_file():
-                _create_dummy_workspaces()
-                path.touch(exist_ok=False)
-
-    yield
-
-    for org in dummy_orgs:
-        org.delete()
-
-
 @pytest.fixture(scope="session")
 def host():
     return constants.HOST
@@ -513,15 +469,6 @@ def created_entities():
 
     yield to_delete
 
-    # move orgs to the end
-    from verta.tracking._organization import Organization
-
-    is_org = lambda entity: entity.__class__ is Organization
-    to_delete = itertools.chain(
-        filterfalse(is_org, to_delete),
-        filter(is_org, to_delete),
-    )
-
     # TODO: avoid duplicates
     for entity in to_delete:
         entity.delete()
@@ -533,15 +480,6 @@ def class_created_entities():
     to_delete = []
 
     yield to_delete
-
-    # move orgs to the end
-    from verta.tracking._organization import Organization
-
-    is_org = lambda entity: entity.__class__ is Organization
-    to_delete = itertools.chain(
-        filterfalse(is_org, to_delete),
-        filter(is_org, to_delete),
-    )
 
     # TODO: avoid duplicates
     for entity in to_delete:
@@ -582,13 +520,13 @@ def class_endpoint_updated(
     return ep
 
 
-@pytest.fixture
-def organization(client, created_entities):
-    workspace_name = _utils.generate_default_name()
-    org = client._create_organization(workspace_name)
-    created_entities.append(org)
+class Workspace:
+    def __init__(self, name):
+        self.name = name
 
-    return org
+@pytest.fixture
+def workspace(client, created_entities):
+    return Workspace(constants.WORKSPACE)
 
 
 @pytest.fixture
