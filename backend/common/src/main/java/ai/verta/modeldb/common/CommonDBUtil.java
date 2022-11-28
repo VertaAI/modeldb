@@ -581,7 +581,7 @@ public abstract class CommonDBUtil {
     return result;
   }
 
-  private boolean tableExists(
+  protected boolean tableExists(
       FutureJdbi jdbi, DatabaseConfig databaseConfig, List<String> tableNames) throws Exception {
     // doing case-insensitive table name queries because H2 (used for testing) converts all table
     // names to uppercase.
