@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "uac/Workspace.proto",
+    "title": "uac/WorkspaceV2.proto",
     "version": "version not set"
   },
   "consumes": [
@@ -11,14 +11,14 @@
     "application/json"
   ],
   "paths": {
-    "/workspace/createOrUpdateContainerRegistryConfiguration": {
-      "post": {
-        "operationId": "WorkspaceService_createOrUpdateContainerRegistryConfiguration",
+    "/v2/organization/{org_id}/workspace/{workspace_id}": {
+      "delete": {
+        "operationId": "WorkspaceServiceV2_deleteWorkspace",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
+              "$ref": "#/definitions/uacDeleteWorkspaceV2Response"
             }
           },
           "default": {
@@ -30,59 +30,32 @@
         },
         "parameters": [
           {
-            "name": "body",
-            "in": "body",
+            "name": "org_id",
+            "in": "path",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
-            }
-          }
-        ],
-        "tags": [
-          "WorkspaceService"
-        ]
-      }
-    },
-    "/workspace/deleteContainerRegistryConfiguration": {
-      "post": {
-        "operationId": "WorkspaceService_deleteContainerRegistryConfiguration",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacEmpty"
-            }
+            "type": "string"
           },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
           {
-            "name": "body",
-            "in": "body",
+            "name": "workspace_id",
+            "in": "path",
             "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
-            }
+            "type": "string",
+            "format": "uint64"
           }
         ],
         "tags": [
-          "WorkspaceService"
+          "WorkspaceServiceV2"
         ]
       }
     },
-    "/workspace/getVisibleWorkspaces": {
+    "/v2/organization/{org_id}/workspaces": {
       "get": {
-        "operationId": "WorkspaceService_getVisibleWorkspaces",
+        "operationId": "WorkspaceServiceV2_searchWorkspaces",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacWorkspaces"
+              "$ref": "#/definitions/uacSearchWorkspacesV2Response"
             }
           },
           "default": {
@@ -93,6 +66,12 @@
           }
         },
         "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
           {
             "name": "pagination.page_number",
             "in": "query",
@@ -109,18 +88,18 @@
           }
         ],
         "tags": [
-          "WorkspaceService"
+          "WorkspaceServiceV2"
         ]
       }
     },
-    "/workspace/getWorkspaceById": {
+    "/v2/organization/{org_id}/workspaces/{workspace_id}": {
       "get": {
-        "operationId": "WorkspaceService_getWorkspaceById",
+        "operationId": "WorkspaceServiceV2_getWorkspace",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacWorkspace"
+              "$ref": "#/definitions/uacGetWorkspaceV2Response"
             }
           },
           "default": {
@@ -132,26 +111,32 @@
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "workspace_id",
+            "in": "path",
+            "required": true,
             "type": "string",
             "format": "uint64"
           }
         ],
         "tags": [
-          "WorkspaceService"
+          "WorkspaceServiceV2"
         ]
       }
     },
-    "/workspace/getWorkspaceByLegacyId": {
-      "get": {
-        "operationId": "WorkspaceService_getWorkspaceByLegacyId",
+    "/v2/organization/{workspace.org_id}/workspaces": {
+      "post": {
+        "operationId": "WorkspaceServiceV2_setWorkspace",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacWorkspace"
+              "$ref": "#/definitions/uacSetWorkspaceV2Response"
             }
           },
           "default": {
@@ -163,70 +148,27 @@
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
+            "name": "workspace.org_id",
+            "in": "path",
+            "required": true,
             "type": "string"
           },
           {
-            "name": "workspace_type",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "UNKNOWN",
-              "ORGANIZATION",
-              "USER"
-            ],
-            "default": "UNKNOWN"
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacSetWorkspaceV2"
+            }
           }
         ],
         "tags": [
-          "WorkspaceService"
-        ]
-      }
-    },
-    "/workspace/getWorkspaceByName": {
-      "get": {
-        "operationId": "WorkspaceService_getWorkspaceByName",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacWorkspace"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "WorkspaceService"
+          "WorkspaceServiceV2"
         ]
       }
     }
   },
   "definitions": {
-    "WorkspaceTypeEnumWorkspaceType": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "ORGANIZATION",
-        "USER"
-      ],
-      "default": "UNKNOWN"
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -263,73 +205,100 @@
         }
       }
     },
-    "uacEmpty": {
+    "uacDeleteWorkspaceV2Response": {
       "type": "object"
     },
-    "uacWorkspace": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "user_id": {
-          "type": "string"
-        },
-        "org_id": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "org_name": {
-          "type": "string"
-        },
-        "container_registries": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacWorkspaceContainerRegistryConfiguration"
-          }
-        },
-        "namespace": {
-          "type": "string"
-        }
-      }
-    },
-    "uacWorkspaceContainerRegistryConfiguration": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "base": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "secret_key": {
-          "type": "string"
-        },
-        "workspace_id": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "uacWorkspaces": {
+    "uacGetWorkspaceV2Response": {
       "type": "object",
       "properties": {
         "workspace": {
+          "$ref": "#/definitions/uacWorkspaceV2"
+        }
+      }
+    },
+    "uacPermission": {
+      "type": "object",
+      "properties": {
+        "group_id": {
+          "type": "string"
+        },
+        "role_id": {
+          "type": "string"
+        }
+      },
+      "title": "a Permission is a group + a role, assigned to a workspace"
+    },
+    "uacSearchWorkspacesV2Response": {
+      "type": "object",
+      "properties": {
+        "workspaces": {
           "type": "array",
           "items": {
-            "$ref": "#/definitions/uacWorkspace"
+            "$ref": "#/definitions/uacWorkspaceV2"
           }
         },
         "total_records": {
           "type": "string",
           "format": "int64"
+        },
+        "pagination": {
+          "$ref": "#/definitions/vertacommonPagination"
+        }
+      }
+    },
+    "uacSetWorkspaceV2": {
+      "type": "object",
+      "properties": {
+        "workspace": {
+          "$ref": "#/definitions/uacWorkspaceV2"
+        }
+      }
+    },
+    "uacSetWorkspaceV2Response": {
+      "type": "object",
+      "properties": {
+        "workspace": {
+          "$ref": "#/definitions/uacWorkspaceV2"
+        }
+      }
+    },
+    "uacWorkspaceV2": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "compatible type with workspace id in resources proto definition"
+        },
+        "name": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "permissions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacPermission"
+          }
+        },
+        "created_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "updated_timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "built_in": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
