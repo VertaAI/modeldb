@@ -49,6 +49,7 @@ THREAD_LOCALS.active_experiment_run = None
 
 class Connection(object):
     _OSS_DEFAULT_WORKSPACE = "personal"
+    _PERMISSION_V2 = True
 
     def __init__(
         self,
@@ -259,7 +260,7 @@ class Connection(object):
         else:
             return None
 
-    def _get_visible_orgs(self):
+    def _get_visible_workspaces(self):
         response = self.make_proto_request(
             "GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces"
         )
@@ -361,7 +362,10 @@ class Connection(object):
         if workspace_id:
             return self.get_workspace_name_from_id(workspace_id)
         else:  # old backend
-            return self.get_personal_workspace()
+            if self._PERMISSION_V2:
+                raise ValueError("default_workspace_id is not set")
+            else:
+                return self.get_personal_workspace()
 
 
 class NoneProtoResponse(object):
