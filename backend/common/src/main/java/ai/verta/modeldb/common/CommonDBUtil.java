@@ -2,10 +2,10 @@ package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
-import ai.verta.modeldb.common.db.migration.MigrationException;
 import ai.verta.modeldb.common.db.migration.Migrator;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.stream.JsonReader;
@@ -16,6 +16,7 @@ import java.sql.*;
 import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
+import java.util.stream.Collectors;
 import liquibase.Contexts;
 import liquibase.LabelExpression;
 import liquibase.Liquibase;
@@ -33,6 +34,7 @@ import liquibase.resource.ResourceAccessor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.result.ResultSetException;
+import org.jdbi.v3.core.statement.Query;
 import org.jdbi.v3.core.statement.UnableToCreateStatementException;
 import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 
@@ -377,14 +379,17 @@ public abstract class CommonDBUtil {
    * @param config The database configuration to use.
    * @param migrationResourcesRootDirectory The subdirectory under resources to pull migrations
    *     from.
-   * @param currentVersion The version that the database is assumed to be in, already, if converting
-   *     from liquibase.
+   * @param liquibaseVersionToMigratorVersion Map for the versions that the database have for
+   *     liquibase vs migrator tool should have.
    */
   public void runMigrations(
       DatabaseConfig config,
+      FutureJdbi futureJdbi,
       String migrationResourcesRootDirectory,
-      Optional<Integer> currentVersion)
-      throws SQLException, MigrationException {
+      Map<String, Integer> liquibaseVersionToMigratorVersion)
+      throws Exception {
+    var currentVersion =
+        findSchemaVersionToTarget(liquibaseVersionToMigratorVersion, config, futureJdbi);
     RdbConfig rdbConfiguration = config.getRdbConfiguration();
     createDBIfNotExists(rdbConfiguration);
     try (Connection connection = acquireDatabaseConnection(config, rdbConfiguration)) {
@@ -536,5 +541,85 @@ public abstract class CommonDBUtil {
     public String getFileName() {
       return fileName;
     }
+  }
+
+  protected Optional<Integer> findSchemaVersionToTarget(
+      Map<String, Integer> liquibaseVersionToMigratorVersion,
+      DatabaseConfig databaseConfig,
+      FutureJdbi futureJdbi)
+      throws Exception {
+    LOGGER.info("Finding schema version to target.");
+    String databaseChangeLogTableName = "database_change_log";
+    if (!tableExists(futureJdbi, databaseConfig, List.of(databaseChangeLogTableName))) {
+      LOGGER.info(
+          "Liquibase change log table does not exist. Assuming we're under Migrator control.");
+      return Optional.empty();
+    }
+
+    Optional<Integer> result =
+        futureJdbi
+            .withHandle(
+                handle -> {
+                  try (Query query =
+                      handle
+                          .createQuery(
+                              "SELECT id FROM "
+                                  + databaseChangeLogTableName
+                                  + " WHERE id IN (<changeSets>)")
+                          .bindList("changeSets", liquibaseVersionToMigratorVersion.keySet())) {
+                    Set<String> changeSetsFound =
+                        query.mapTo(String.class).stream().collect(Collectors.toSet());
+                    LOGGER.info("found reference changesets: " + changeSetsFound);
+                    return liquibaseVersionToMigratorVersion.entrySet().stream()
+                        .filter(kv -> changeSetsFound.contains(kv.getKey()))
+                        .max(Comparator.comparingInt(Map.Entry::getValue))
+                        .map(Map.Entry::getValue);
+                  }
+                })
+            .get();
+    LOGGER.info("Targeting migrator equivalent version for the migrator: " + result);
+    return result;
+  }
+
+  private boolean tableExists(
+      FutureJdbi jdbi, DatabaseConfig databaseConfig, List<String> tableNames) throws Exception {
+    // doing case-insensitive table name queries because H2 (used for testing) converts all table
+    // names to uppercase.
+    List<String> loweredTableNames =
+        tableNames.stream().map(String::toLowerCase).collect(Collectors.toList());
+    // TODO: handle Postgres as well
+    if (databaseConfig.getRdbConfiguration().isMysql()) {
+      final var count =
+          jdbi.withHandle(
+                  handle -> {
+                    try (var query =
+                        handle.createQuery(
+                            "SELECT count(*) FROM information_schema.tables "
+                                + "WHERE lower(table_schema) = lower(DATABASE()) AND "
+                                + "lower(table_name) IN (<tableNames>)")) {
+                      return query.bindList("tableNames", loweredTableNames).mapTo(Long.class)
+                          .stream()
+                          .findFirst();
+                    }
+                  })
+              .get();
+      return count.isPresent() && count.get() > 0;
+    } else if (databaseConfig.getRdbConfiguration().isMssql()) {
+      final var count =
+          jdbi.withHandle(
+                  handle -> {
+                    try (var query =
+                        handle.createQuery(
+                            "SELECT 1 FROM sys.Tables WHERE Name IN (<tableNames>) "
+                                + "AND Type=:type")) {
+                      return query.bindList("tableNames", tableNames).bind("type", "U")
+                          .mapTo(Long.class).stream()
+                          .findFirst();
+                    }
+                  })
+              .get();
+      return count.isPresent() && count.get() > 0;
+    }
+    return false;
   }
 }
