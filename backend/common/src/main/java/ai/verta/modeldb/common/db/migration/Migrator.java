@@ -34,7 +34,7 @@ public class Migrator {
 
   public void performMigration(Integer desiredVersion) throws SQLException, MigrationException {
     MigrationDatastore migrationDatastore = setupDatastore();
-    migrationDatastore.lock();
+    MigrationTools.lockDatabase(migrationDatastore);
     try {
       MigrationState currentState = findCurrentState();
       if (currentState == null) {
