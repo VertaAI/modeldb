@@ -329,24 +329,6 @@ class Connection(object):
         workspace = self.must_proto_response(response, Workspace_pb2.Workspace)
         return workspace.username or workspace.org_name
 
-    def get_personal_workspace(self):
-        email = self.auth.get("Grpc-Metadata-email")
-        if email is not None:
-            msg = UACService_pb2.GetUser(email=email)
-            response = self.make_proto_request(
-                "GET", "/api/v1/uac-proxy/uac/getUser", params=msg
-            )
-
-            if (
-                response.ok and self.is_html_response(response)
-            ) or response.status_code == requests.codes.not_found:  # fetched webapp  # UAC not found
-                pass  # fall through to OSS default workspace
-            else:
-                return self.must_proto_response(
-                    response, UACService_pb2.UserInfo
-                ).verta_info.username
-        return self._OSS_DEFAULT_WORKSPACE
-
     def get_default_workspace(self):
         response = self.make_proto_request(
             "GET", "/api/v1/uac-proxy/uac/getCurrentUser"
@@ -362,10 +344,7 @@ class Connection(object):
         if workspace_id:
             return self.get_workspace_name_from_id(workspace_id)
         else:  # old backend
-            if self._PERMISSION_V2:
-                raise ValueError("default_workspace_id is not set")
-            else:
-                return self.get_personal_workspace()
+            raise ValueError("default_workspace_id is not set")
 
 
 class NoneProtoResponse(object):
