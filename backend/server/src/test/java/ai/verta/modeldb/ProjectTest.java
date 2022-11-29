@@ -1509,7 +1509,7 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     try {
-      when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+      when(collaboratorMock.getResources(any()))
           .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
       GetProjectById getProject = GetProjectById.newBuilder().setId("xyz").build();
       projectServiceStub.getProjectById(getProject);
@@ -1545,7 +1545,7 @@ public class ProjectTest extends ModeldbTestSetup {
                   Workspace.newBuilder()
                       .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                       .build()));
-      when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+      when(collaboratorMock.getResources(any()))
           .thenReturn(
               Futures.immediateFuture(
                   GetResources.Response.newBuilder()
@@ -1596,7 +1596,7 @@ public class ProjectTest extends ModeldbTestSetup {
         if (isRunningIsolated()) {
           when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
           mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
-          when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+          when(collaboratorMock.getResources(any()))
               .thenReturn(
                   Futures.immediateFuture(
                       GetResources.Response.newBuilder()

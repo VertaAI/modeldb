@@ -334,40 +334,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
-      Workspace workspace,
-      Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      var resourceType =
-          ResourceType.newBuilder()
-              .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-              .build();
-      Resources.Builder resources =
-          Resources.newBuilder()
-              .setResourceType(resourceType)
-              .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-      if (resourceIds != null && !resourceIds.isEmpty()) {
-        resources.addAllResourceIds(resourceIds);
-      }
-
-      var builder = GetResources.newBuilder().setResources(resources.build());
-      if (workspace != null) {
-        builder.setWorkspaceId(workspace.getId());
-      }
-      final var response =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .getResourcesSpecialPersonalWorkspace(builder.build());
-      return response.getItemList();
-    } catch (StatusRuntimeException ex) {
-      LOGGER.trace(ex);
-      throw ex;
-    }
-  }
-
-  @Override
   public List<String> getWorkspaceRoleBindings(
       String workspaceId,
       WorkspaceTypeEnum.WorkspaceType workspaceType,

@@ -126,30 +126,6 @@ public class UACApisUtil {
         executor);
   }
 
-  public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
-      String workspaceName,
-      Optional<List<String>> resourceIdsOptional,
-      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
-    var resourceType =
-        ResourceType.newBuilder().setModeldbServiceResourceType(resourceTypes).build();
-    Resources.Builder resources =
-        Resources.newBuilder()
-            .setResourceType(resourceType)
-            .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-    if (!resourceIdsOptional.isEmpty() && resourceIdsOptional.isPresent()) {
-      resources.addAllResourceIds(
-          resourceIdsOptional.get().stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
-
-    var builder = GetResources.newBuilder().setResources(resources.build());
-    builder.setWorkspaceName(workspaceName);
-    return FutureUtil.clientRequest(
-            uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
-            executor)
-        .thenApply(GetResources.Response::getItemList, executor);
-  }
-
   public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
       Optional<String> workspaceName,
       Optional<Collection<String>> resourceIdsOptional,

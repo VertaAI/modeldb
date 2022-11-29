@@ -454,22 +454,19 @@ public class FutureProjectDAO {
             uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
-              InternalFuture<List<GetResourcesResponseItem>> resourcesFuture;
-              if (request.getWorkspaceName().isEmpty()
-                  || request.getWorkspaceName().equals(userInfo.getVertaInfo().getUsername())) {
-                resourcesFuture =
-                    uacApisUtil.getResourceItemsForLoginUserWorkspace(
-                        request.getWorkspaceName(),
-                        Optional.of(request.getProjectIdsList()),
-                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+              String workspaceName;
+              if (request.getWorkspaceName().isEmpty()) {
+                workspaceName = userInfo.getVertaInfo().getUsername();
               } else {
-                resourcesFuture =
-                    uacApisUtil.getResourceItemsForWorkspace(
-                        Optional.of(request.getWorkspaceName()),
-                        Optional.of(request.getProjectIdsList()),
-                        Optional.empty(),
-                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+                workspaceName = request.getWorkspaceName();
               }
+
+              var resourcesFuture =
+                  uacApisUtil.getResourceItemsForWorkspace(
+                      Optional.of(workspaceName),
+                      Optional.of(request.getProjectIdsList()),
+                      Optional.empty(),
+                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
 
               return resourcesFuture.thenCompose(
                   getResourceItems -> {
@@ -1583,9 +1580,10 @@ public class FutureProjectDAO {
       Workspace workspace,
       Project.Builder projectBuilder) {
     return uacApisUtil
-        .getResourceItemsForLoginUserWorkspace(
-            workspaceName,
+        .getResourceItemsForWorkspace(
+            Optional.of(workspaceName),
             Optional.of(Collections.singletonList(createdProject.getId())),
+            Optional.empty(),
             ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
         .thenApply(
             getResourcesResponseItems -> {

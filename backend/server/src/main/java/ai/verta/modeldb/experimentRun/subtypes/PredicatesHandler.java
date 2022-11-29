@@ -638,8 +638,9 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             for (var userInfo : userInfoList) {
               resourceItemsFutures.add(
                   uacApisUtil
-                      .getResourceItemsForLoginUserWorkspace(
-                          userInfo.getVertaInfo().getUsername(),
+                      .getResourceItemsForWorkspace(
+                          Optional.of(userInfo.getVertaInfo().getUsername()),
+                          Optional.empty(),
                           Optional.empty(),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
                       .thenApply(

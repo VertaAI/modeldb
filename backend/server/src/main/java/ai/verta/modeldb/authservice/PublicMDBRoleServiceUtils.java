@@ -248,14 +248,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
-      Workspace workspace,
-      Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return Collections.emptyList();
-  }
-
-  @Override
   public List<String> getWorkspaceRoleBindings(
       String workspace_id,
       WorkspaceType forNumber,

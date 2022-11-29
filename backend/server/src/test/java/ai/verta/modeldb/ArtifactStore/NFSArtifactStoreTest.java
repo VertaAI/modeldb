@@ -142,7 +142,7 @@ public class NFSArtifactStoreTest {
     when(workspaceMock.getWorkspaceByName(GetWorkspaceByName.newBuilder().setName("").build()))
         .thenReturn(Futures.immediateFuture(Workspace.newBuilder().setId(1L).build()));
 
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+    when(collaboratorMock.getResources(any()))
         .thenReturn(
             Futures.immediateFuture(
                 Response.newBuilder()
