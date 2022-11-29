@@ -320,15 +320,17 @@ public abstract class CommonDBUtil {
       throws SQLException, MigrationException {
     RdbConfig rdbConfiguration = config.getRdbConfiguration();
     createDBIfNotExists(rdbConfiguration);
-    Connection connection = acquireDatabaseConnection(config, rdbConfiguration);
-    Migrator migrator =
-        new Migrator(
-            connection,
-            findResourcesDirectory(migrationResourcesRootDirectory, rdbConfiguration),
-            rdbConfiguration);
-    boolean liquibaseTableExists = tableExists(connection, config, "database_change_log");
-    migrator.preInitializeIfRequired(liquibaseTableExists, currentVersion);
-    migrator.performMigration();
+    try (Connection connection = acquireDatabaseConnection(config, rdbConfiguration)) {
+      Migrator migrator =
+          new Migrator(
+              connection,
+              findResourcesDirectory(migrationResourcesRootDirectory, rdbConfiguration),
+              rdbConfiguration);
+      boolean liquibaseTableExists = tableExists(connection, config, "database_change_log");
+      migrator.preInitializeIfRequired(liquibaseTableExists, currentVersion);
+      migrator.performMigration();
+      connection.commit();
+    }
   }
 
   private String findResourcesDirectory(String rootDirectory, RdbConfig rdbConfiguration) {
