@@ -74,7 +74,7 @@ public class Migrator {
     // We assume if a migration failed, that it wasn't applied, so it should be safe to simply
     // revert the number and unset the dirty flag.
     int revertedVersion = currentState.getVersion() - 1;
-    updateVersion(false, revertedVersion, currentState.getVersion());
+    updateVersion(false, revertedVersion, currentState.getVersion(), true);
     return new MigrationState(revertedVersion, false);
   }
 
@@ -163,17 +163,19 @@ public class Migrator {
     int newVersion =
         pendingMigration.isUp() ? pendingMigration.getNumber() : pendingMigration.getNumber() - 1;
 
-    updateVersion(dirty, newVersion, expectedCurrentVersion);
+    updateVersion(dirty, newVersion, expectedCurrentVersion, !dirty);
   }
 
-  private void updateVersion(boolean dirty, int newVersion, int expectedCurrentVersion)
+  private void updateVersion(
+      boolean dirty, int newVersion, int expectedCurrentVersion, boolean expectedCurrentDirtyState)
       throws SQLException {
     try (PreparedStatement ps =
         connection.prepareStatement(
-            "UPDATE schema_migrations set version = ?, dirty = ? WHERE version = ?")) {
+            "UPDATE schema_migrations set version = ?, dirty = ? WHERE version = ? and dirty = ?")) {
       ps.setInt(1, newVersion);
       ps.setBoolean(2, dirty);
       ps.setInt(3, expectedCurrentVersion);
+      ps.setBoolean(4, expectedCurrentDirtyState);
       int rowsUpdated = ps.executeUpdate();
       if (rowsUpdated != 1) {
         throw new IllegalStateException(
@@ -268,7 +270,7 @@ public class Migrator {
       log.info(
           "No schema_versions table found. Initializing to version " + assumedCurrentVersion.get());
       setupDatastore();
-      updateVersion(false, assumedCurrentVersion.get(), 0);
+      updateVersion(false, assumedCurrentVersion.get(), 0, false);
     }
   }
 
