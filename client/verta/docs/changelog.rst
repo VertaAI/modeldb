@@ -37,6 +37,27 @@ Changelog
      (`# <>`__)
 
 
+v0.21.1 (2022-11-29)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add ``ModelVersion.log_dataset_version()``, ``get_dataset_version()``, and ``del_dataset_version()``
+  (`#3335 <https://github.com/VertaAI/modeldb/pull/3335>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- have ``endpoint.get_deployed_model()`` use a backend-provided prediction URL when available
+  (`#3290 <https://github.com/VertaAI/modeldb/pull/3290>`__)
+- alphabetically sort artifact, dataset version, and code version keys in model version repr
+  (`#3340 <https://github.com/VertaAI/modeldb/pull/3340>`__)
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- apply Black formatting to the full codebase
+  (`#3258 <https://github.com/VertaAI/modeldb/pull/3258>`__)
+
+
 v0.21.0 (2022-09-29)
 --------------------
 
