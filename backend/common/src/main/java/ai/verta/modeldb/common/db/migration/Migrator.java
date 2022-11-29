@@ -34,24 +34,32 @@ public class Migrator {
 
   public void performMigration(Integer desiredVersion) throws SQLException, MigrationException {
     MigrationDatastore migrationDatastore = setupDatastore();
-    MigrationState currentState = findCurrentState();
-    if (currentState == null) {
-      throw new IllegalStateException(
-          "The schema_migrations table contains no records. Migration process cannot start.");
-    }
-    if (currentState.isDirty()) {
-      currentState = cleanUpDirtyDatabase(currentState);
-    }
-    int versionToTarget = findVersionToTarget(desiredVersion);
-    log.info("Starting database migration process to version: " + versionToTarget);
+    migrationDatastore.lock();
+    try {
+      MigrationState currentState = findCurrentState();
+      if (currentState == null) {
+        throw new IllegalStateException(
+            "The schema_migrations table contains no records. Migration process cannot start.");
+      }
+      if (currentState.isDirty()) {
+        currentState = cleanUpDirtyDatabase(currentState);
+      }
+      int versionToTarget = findVersionToTarget(desiredVersion);
+      log.info("Starting database migration process to version: " + versionToTarget);
 
-    if (currentState.getVersion() == versionToTarget) {
-      log.info("No migrations to perform. Database is already at version " + versionToTarget);
-      return;
+      if (currentState.getVersion() == versionToTarget) {
+        log.info("No migrations to perform. Database is already at version " + versionToTarget);
+        return;
+      }
+      SortedSet<Migration> migrationsToPerform =
+          gatherMigrationsToPerform(currentState, versionToTarget);
+      runMigrations(migrationsToPerform);
+    } catch (SQLException | MigrationException e) {
+      log.error("Migration process failed", e);
+      throw e;
+    } finally {
+      migrationDatastore.unlock();
     }
-    SortedSet<Migration> migrationsToPerform =
-        gatherMigrationsToPerform(currentState, versionToTarget);
-    runMigrations(migrationDatastore, migrationsToPerform);
   }
 
   private MigrationState cleanUpDirtyDatabase(MigrationState currentState)
@@ -66,7 +74,7 @@ public class Migrator {
     // We assume if a migration failed, that it wasn't applied, so it should be safe to simply
     // revert the number and unset the dirty flag.
     int revertedVersion = currentState.getVersion() - 1;
-    updateVersion(false, revertedVersion);
+    updateVersion(false, revertedVersion, currentState.getVersion());
     return new MigrationState(revertedVersion, false);
   }
 
@@ -136,40 +144,45 @@ public class Migrator {
     return migrationDatastore;
   }
 
-  private void runMigrations(
-      MigrationDatastore migrationDatastore, SortedSet<Migration> migrationsToPerform)
-      throws MigrationException, SQLException {
-    MigrationTools.lockDatabase(migrationDatastore);
-    try {
-      for (Migration migration : migrationsToPerform) {
-        try {
-          updateVersion(migration, true);
-          executeSingleMigration(migration);
-          updateVersion(migration, false);
-        } catch (IOException | SQLException e) {
-          throw new MigrationException("failed migration " + migration + "", e);
-        }
+  private void runMigrations(SortedSet<Migration> migrationsToPerform) throws MigrationException {
+    for (Migration migration : migrationsToPerform) {
+      try {
+        updateVersion(
+            migration, true, migration.isUp() ? migration.getNumber() - 1 : migration.getNumber());
+        executeSingleMigration(migration);
+        updateVersion(
+            migration, false, migration.isUp() ? migration.getNumber() : migration.getNumber() - 1);
+      } catch (IOException | SQLException e) {
+        throw new MigrationException("failed migration " + migration + "", e);
       }
-    } finally {
-      migrationDatastore.unlock();
     }
   }
 
-  private void updateVersion(Migration pendingMigration, boolean dirty) throws SQLException {
+  private void updateVersion(Migration pendingMigration, boolean dirty, int expectedCurrentVersion)
+      throws SQLException {
     int newVersion =
         pendingMigration.isUp() ? pendingMigration.getNumber() : pendingMigration.getNumber() - 1;
-    updateVersion(dirty, newVersion);
+
+    updateVersion(dirty, newVersion, expectedCurrentVersion);
   }
 
-  private void updateVersion(boolean dirty, int newVersion) throws SQLException {
+  private void updateVersion(boolean dirty, int newVersion, int expectedCurrentVersion)
+      throws SQLException {
     try (PreparedStatement ps =
-        connection.prepareStatement("UPDATE schema_migrations set version = ?, dirty = ?")) {
+        connection.prepareStatement(
+            "UPDATE schema_migrations set version = ?, dirty = ? WHERE version = ?")) {
       ps.setInt(1, newVersion);
       ps.setBoolean(2, dirty);
+      ps.setInt(3, expectedCurrentVersion);
       int rowsUpdated = ps.executeUpdate();
       if (rowsUpdated != 1) {
         throw new IllegalStateException(
-            "Failed to update schema_migrations table. rowsUpdated: " + rowsUpdated);
+            "Failed to update schema_migrations table to '"
+                + newVersion
+                + "' from '"
+                + expectedCurrentVersion
+                + "'. rowsUpdated: "
+                + rowsUpdated);
       }
     }
   }
@@ -255,7 +268,7 @@ public class Migrator {
       log.info(
           "No schema_versions table found. Initializing to version " + assumedCurrentVersion.get());
       setupDatastore();
-      updateVersion(false, assumedCurrentVersion.get());
+      updateVersion(false, assumedCurrentVersion.get(), 0);
     }
   }
 
