@@ -50,7 +50,6 @@ message AuthzActionEnum {
         CREATE_SERVICE_ACCOUNT = 9;
         CREATE_CONTAINER_REGISTRY = 10;
         CREATE_WEBHOOK = 11;
-        CREATE_GROUP = 12;
     }
 
 };
@@ -129,9 +128,6 @@ message AuthzResourceEnum {
         WEBHOOK = 9;
         SYSTEM_ADMIN = 10;
         PYPI_CONFIGURATION = 11;
-        KAFKA_CONFIGURATION = 12;
-        SCIM_CONFIGURATION = 13;
-        GROUP = 14;
     }
 };
 
@@ -228,12 +224,10 @@ message GetRoleByName {
 };
 
 message ListRoles {
-    common.Pagination pagination = 1;
     RoleScope scope = 2;
 
     message Response {
         repeated Role roles = 1;
-        int64 total_records = 2;
     };
 };
 
@@ -273,11 +267,9 @@ message GetRoleBindingByName {
 message ListRoleBindings {
     string entity_id = 1;
     RoleScope scope = 2;
-    common.Pagination pagination = 3;
 
     message Response {
         repeated RoleBinding role_bindings = 1;
-        int64 total_records = 2;
     };
 };
 

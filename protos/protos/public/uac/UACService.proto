@@ -5,7 +5,6 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
-import "common/CommonService.proto";
 
 message Empty {
 
@@ -21,18 +20,22 @@ message GetUsers {
     repeated string user_ids = 1;
     repeated string emails = 2;
     repeated string usernames = 3;
-    common.Pagination pagination = 4;
 
     message Response {
         repeated UserInfo user_infos = 1;
-        int64 total_records = 2;
     }
+}
+
+// For pagination
+message Pagination {
+    int32 page_number = 2;
+    int32 page_limit = 3;
 }
 
 message GetUsersFuzzy {
     string email = 2;
     string username = 3;
-    common.Pagination pagination = 4;
+    Pagination pagination = 4;
 
     message Response {
         repeated UserInfo user_infos = 1;
@@ -50,9 +53,6 @@ message IdServiceProviderEnum {
         SAML = 5;
         AD_OAUTH2 = 6;
         LDAP = 7;
-        OKTA_SCIM = 8; // Not currently used as there is no way to tell SCIM sources apart
-        AD_SCIM = 9;   // Not currently used as there is no way to tell SCIM sources apart
-        SCIM = 10;
     }
 }
 
@@ -90,7 +90,6 @@ message UserInfo {
     string dev_key = 9;
     VertaUserInfo verta_info = 10;
     string secondary_dev_key = 11;
-    bool disabled = 12;
 }
 
 message CreateUser {

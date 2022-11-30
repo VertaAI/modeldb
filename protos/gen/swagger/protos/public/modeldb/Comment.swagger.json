@@ -153,10 +153,7 @@
         "VERTA",
         "SAML",
         "AD_OAUTH2",
-        "LDAP",
-        "OKTA_SCIM",
-        "AD_SCIM",
-        "SCIM"
+        "LDAP"
       ],
       "default": "UNKNOWN"
     },
@@ -333,10 +330,6 @@
         },
         "secondary_dev_key": {
           "type": "string"
-        },
-        "disabled": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },

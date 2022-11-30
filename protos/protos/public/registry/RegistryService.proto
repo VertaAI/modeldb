@@ -260,17 +260,12 @@ message ModelVersion {
 
     // Reference: https://vertaai.atlassian.net/browse/CAT-84
     string input_description = 26;
-
     // Reference: https://vertaai.atlassian.net/browse/CAT-84
     bool hide_input_label = 27;
-
     // Reference: https://vertaai.atlassian.net/browse/CAT-84
     string output_description = 28;
-
     // Reference: https://vertaai.atlassian.net/browse/CAT-84
     bool hide_output_label = 29;
-
-    repeated ExternalDeployment external_deployments = 30;
 }
 
 message DockerMetadata {
@@ -421,40 +416,6 @@ message LogDockerMetadataInModelVersion {
     DockerMetadata docker_metadata = 2;
 
     message Response { }
-}
-
-message ExternalDeployment {
-    // internal id
-    uint64 id = 1;
-
-    // id of the model this belongs to
-    uint64 model_version_id = 2;
-
-    // Timestamp recorded when this ``external_deployment`` was created.
-    int64 time_created = 3;
-
-    // Timestamp recorded when metadata for this ``external_deployment`` was last updated.
-    int64 time_updated = 4;
-
-    // Location where container will be deployed
-    string location_deployed = 5;
-
-    // Deploy URL, path or title
-    string url_path_title = 6;
-
-    // Brief description
-    string description = 7;
-}
-
-message ExternalDeploymentRequest {
-    uint64 external_deployment_id = 1;
-
-    message Response {
-        ExternalDeployment external_deployment = 1;
-    }
-}
-
-message Empty {
 }
 
 service RegistryService {
@@ -671,29 +632,4 @@ service RegistryService {
         };
     };
 
-    rpc GetExternalDeployment(ExternalDeploymentRequest) returns (ExternalDeploymentRequest.Response) {
-        option (google.api.http) = {
-            get: "/v1/registry/registered_models/model_versions/external_deployments/{external_deployment_id}"
-        };
-    };
-
-   rpc CreateExternalDeployment(ExternalDeployment) returns (ExternalDeploymentRequest.Response) {
-        option (google.api.http) = {
-            post: "/v1/registry/registered_models/model_versions/external_deployments"
-            body: "*"
-        };
-    }
-
-    rpc UpdateExternalDeployment(ExternalDeployment) returns (ExternalDeploymentRequest.Response) {
-        option (google.api.http) = {
-            put: "/v1/registry/registered_models/model_versions/external_deployments"
-            body: "*"
-        };
-    }
-
-    rpc DeleteExternalDeployment(ExternalDeploymentRequest) returns (Empty) {
-        option (google.api.http) = {
-            delete: "/v1/registry/registered_models/model_versions/external_deployments/{external_deployment_id}"
-        };
-    }
 }

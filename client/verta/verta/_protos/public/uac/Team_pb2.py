@@ -12,8 +12,6 @@ _sym_db = _symbol_database.Default()
 
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
-from ..uac import UACService_pb2 as uac_dot_UACService__pb2
-from ..common import CommonService_pb2 as common_dot_CommonService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +19,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x0euac/Team.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\x1a\x1a\x63ommon/CommonService.proto\"\xf5\x01\n\x04Team\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06org_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x12\n\nshort_name\x18\x08 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x10\n\x08owner_id\x18\x05 \x01(\t\x12R\n\x13id_service_provider\x18\t \x01(\x0e\x32\x35.ai.verta.uac.IdServiceProviderEnum.IdServiceProvider\x12\x19\n\x11\x63reated_timestamp\x18\x06 \x01(\x03\x12\x19\n\x11updated_timestamp\x18\x07 \x01(\x03\"L\n\x0bGetTeamById\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x1a,\n\x08Response\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\"`\n\rGetTeamByName\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x11\n\tteam_name\x18\x02 \x01(\t\x1a,\n\x08Response\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\"f\n\x12GetTeamByShortName\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x12\n\nshort_name\x18\x02 \x01(\t\x1a,\n\x08Response\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\"\x84\x01\n\x0bListMyTeams\x12/\n\npagination\x18\x01 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1a\x44\n\x08Response\x12!\n\x05teams\x18\x01 \x03(\x0b\x32\x12.ai.verta.uac.Team\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"Y\n\x07SetTeam\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\x1a,\n\x08Response\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\"9\n\nDeleteTeam\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"\x85\x01\n\x0cListTeamUser\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1a\x33\n\x08Response\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"N\n\x0b\x41\x64\x64TeamUser\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x03 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"Q\n\x0eRemoveTeamUser\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xf0\x07\n\x0bTeamService\x12j\n\x0bgetTeamById\x12\x19.ai.verta.uac.GetTeamById\x1a\".ai.verta.uac.GetTeamById.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/team/getTeamById\x12r\n\rgetTeamByName\x12\x1b.ai.verta.uac.GetTeamByName\x1a$.ai.verta.uac.GetTeamByName.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/team/getTeamByName\x12\x86\x01\n\x12getTeamByShortName\x12 .ai.verta.uac.GetTeamByShortName\x1a).ai.verta.uac.GetTeamByShortName.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/team/getTeamByShortName\x12j\n\x0blistMyTeams\x12\x19.ai.verta.uac.ListMyTeams\x1a\".ai.verta.uac.ListMyTeams.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/team/listMyTeams\x12]\n\x07setTeam\x12\x15.ai.verta.uac.SetTeam\x1a\x1e.ai.verta.uac.SetTeam.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/team/setTeam:\x01*\x12i\n\ndeleteTeam\x12\x18.ai.verta.uac.DeleteTeam\x1a!.ai.verta.uac.DeleteTeam.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/team/deleteTeam:\x01*\x12h\n\tlistUsers\x12\x1a.ai.verta.uac.ListTeamUser\x1a#.ai.verta.uac.ListTeamUser.Response\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/team/listUsers\x12\x65\n\x07\x61\x64\x64User\x12\x19.ai.verta.uac.AddTeamUser\x1a\".ai.verta.uac.AddTeamUser.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/team/addUser:\x01*\x12q\n\nremoveUser\x12\x1c.ai.verta.uac.RemoveTeamUser\x1a%.ai.verta.uac.RemoveTeamUser.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/team/removeUser:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x0euac/Team.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\"\xa1\x01\n\x04Team\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06org_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x12\n\nshort_name\x18\x08 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x10\n\x08owner_id\x18\x05 \x01(\t\x12\x19\n\x11\x63reated_timestamp\x18\x06 \x01(\x03\x12\x19\n\x11updated_timestamp\x18\x07 \x01(\x03\"L\n\x0bGetTeamById\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x1a,\n\x08Response\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\"`\n\rGetTeamByName\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x11\n\tteam_name\x18\x02 \x01(\t\x1a,\n\x08Response\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\"f\n\x12GetTeamByShortName\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x12\n\nshort_name\x18\x02 \x01(\t\x1a,\n\x08Response\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\"<\n\x0bListMyTeams\x1a-\n\x08Response\x12!\n\x05teams\x18\x01 \x03(\x0b\x32\x12.ai.verta.uac.Team\"Y\n\x07SetTeam\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\x1a,\n\x08Response\x12 \n\x04team\x18\x01 \x01(\x0b\x32\x12.ai.verta.uac.Team\"9\n\nDeleteTeam\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"=\n\x0cListTeamUser\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x1a\x1c\n\x08Response\x12\x10\n\x08user_ids\x18\x01 \x03(\t\"N\n\x0b\x41\x64\x64TeamUser\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x03 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"Q\n\x0eRemoveTeamUser\x12\x0f\n\x07team_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32\xf0\x07\n\x0bTeamService\x12j\n\x0bgetTeamById\x12\x19.ai.verta.uac.GetTeamById\x1a\".ai.verta.uac.GetTeamById.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/team/getTeamById\x12r\n\rgetTeamByName\x12\x1b.ai.verta.uac.GetTeamByName\x1a$.ai.verta.uac.GetTeamByName.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/team/getTeamByName\x12\x86\x01\n\x12getTeamByShortName\x12 .ai.verta.uac.GetTeamByShortName\x1a).ai.verta.uac.GetTeamByShortName.Response\"#\x82\xd3\xe4\x93\x02\x1d\x12\x1b/v1/team/getTeamByShortName\x12j\n\x0blistMyTeams\x12\x19.ai.verta.uac.ListMyTeams\x1a\".ai.verta.uac.ListMyTeams.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\x12\x14/v1/team/listMyTeams\x12]\n\x07setTeam\x12\x15.ai.verta.uac.SetTeam\x1a\x1e.ai.verta.uac.SetTeam.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/team/setTeam:\x01*\x12i\n\ndeleteTeam\x12\x18.ai.verta.uac.DeleteTeam\x1a!.ai.verta.uac.DeleteTeam.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/team/deleteTeam:\x01*\x12h\n\tlistUsers\x12\x1a.ai.verta.uac.ListTeamUser\x1a#.ai.verta.uac.ListTeamUser.Response\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/v1/team/listUsers\x12\x65\n\x07\x61\x64\x64User\x12\x19.ai.verta.uac.AddTeamUser\x1a\".ai.verta.uac.AddTeamUser.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/team/addUser:\x01*\x12q\n\nremoveUser\x12\x1c.ai.verta.uac.RemoveTeamUser\x1a%.ai.verta.uac.RemoveTeamUser.Response\"\x1e\x82\xd3\xe4\x93\x02\x18\"\x13/v1/team/removeUser:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
 
 
@@ -78,21 +76,14 @@ _TEAM = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='id_service_provider', full_name='ai.verta.uac.Team.id_service_provider', index=6,
-      number=9, type=14, cpp_type=8, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='created_timestamp', full_name='ai.verta.uac.Team.created_timestamp', index=7,
+      name='created_timestamp', full_name='ai.verta.uac.Team.created_timestamp', index=6,
       number=6, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='updated_timestamp', full_name='ai.verta.uac.Team.updated_timestamp', index=8,
+      name='updated_timestamp', full_name='ai.verta.uac.Team.updated_timestamp', index=7,
       number=7, type=3, cpp_type=2, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
@@ -110,8 +101,8 @@ _TEAM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=113,
-  serialized_end=358,
+  serialized_start=63,
+  serialized_end=224,
 )
 
 
@@ -141,8 +132,8 @@ _GETTEAMBYID_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=392,
-  serialized_end=436,
+  serialized_start=258,
+  serialized_end=302,
 )
 
 _GETTEAMBYID = _descriptor.Descriptor(
@@ -171,8 +162,8 @@ _GETTEAMBYID = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=360,
-  serialized_end=436,
+  serialized_start=226,
+  serialized_end=302,
 )
 
 
@@ -202,8 +193,8 @@ _GETTEAMBYNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=392,
-  serialized_end=436,
+  serialized_start=258,
+  serialized_end=302,
 )
 
 _GETTEAMBYNAME = _descriptor.Descriptor(
@@ -239,8 +230,8 @@ _GETTEAMBYNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=438,
-  serialized_end=534,
+  serialized_start=304,
+  serialized_end=400,
 )
 
 
@@ -270,8 +261,8 @@ _GETTEAMBYSHORTNAME_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=392,
-  serialized_end=436,
+  serialized_start=258,
+  serialized_end=302,
 )
 
 _GETTEAMBYSHORTNAME = _descriptor.Descriptor(
@@ -307,8 +298,8 @@ _GETTEAMBYSHORTNAME = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=536,
-  serialized_end=638,
+  serialized_start=402,
+  serialized_end=504,
 )
 
 
@@ -326,13 +317,6 @@ _LISTMYTEAMS_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='total_records', full_name='ai.verta.uac.ListMyTeams.Response.total_records', index=1,
-      number=2, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -345,8 +329,8 @@ _LISTMYTEAMS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=705,
-  serialized_end=773,
+  serialized_start=521,
+  serialized_end=566,
 )
 
 _LISTMYTEAMS = _descriptor.Descriptor(
@@ -356,13 +340,6 @@ _LISTMYTEAMS = _descriptor.Descriptor(
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
-    _descriptor.FieldDescriptor(
-      name='pagination', full_name='ai.verta.uac.ListMyTeams.pagination', index=0,
-      number=1, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -375,8 +352,8 @@ _LISTMYTEAMS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=641,
-  serialized_end=773,
+  serialized_start=506,
+  serialized_end=566,
 )
 
 
@@ -406,8 +383,8 @@ _SETTEAM_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=392,
-  serialized_end=436,
+  serialized_start=258,
+  serialized_end=302,
 )
 
 _SETTEAM = _descriptor.Descriptor(
@@ -436,8 +413,8 @@ _SETTEAM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=775,
-  serialized_end=864,
+  serialized_start=568,
+  serialized_end=657,
 )
 
 
@@ -467,8 +444,8 @@ _DELETETEAM_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=897,
-  serialized_end=923,
+  serialized_start=690,
+  serialized_end=716,
 )
 
 _DELETETEAM = _descriptor.Descriptor(
@@ -497,8 +474,8 @@ _DELETETEAM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=866,
-  serialized_end=923,
+  serialized_start=659,
+  serialized_end=716,
 )
 
 
@@ -516,13 +493,6 @@ _LISTTEAMUSER_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='total_records', full_name='ai.verta.uac.ListTeamUser.Response.total_records', index=1,
-      number=2, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -535,8 +505,8 @@ _LISTTEAMUSER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1008,
-  serialized_end=1059,
+  serialized_start=751,
+  serialized_end=779,
 )
 
 _LISTTEAMUSER = _descriptor.Descriptor(
@@ -553,13 +523,6 @@ _LISTTEAMUSER = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='pagination', full_name='ai.verta.uac.ListTeamUser.pagination', index=1,
-      number=2, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -572,8 +535,8 @@ _LISTTEAMUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=926,
-  serialized_end=1059,
+  serialized_start=718,
+  serialized_end=779,
 )
 
 
@@ -603,8 +566,8 @@ _ADDTEAMUSER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=897,
-  serialized_end=923,
+  serialized_start=690,
+  serialized_end=716,
 )
 
 _ADDTEAMUSER = _descriptor.Descriptor(
@@ -640,8 +603,8 @@ _ADDTEAMUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1061,
-  serialized_end=1139,
+  serialized_start=781,
+  serialized_end=859,
 )
 
 
@@ -671,8 +634,8 @@ _REMOVETEAMUSER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=897,
-  serialized_end=923,
+  serialized_start=690,
+  serialized_end=716,
 )
 
 _REMOVETEAMUSER = _descriptor.Descriptor(
@@ -708,11 +671,10 @@ _REMOVETEAMUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1141,
-  serialized_end=1222,
+  serialized_start=861,
+  serialized_end=942,
 )
 
-_TEAM.fields_by_name['id_service_provider'].enum_type = uac_dot_UACService__pb2._IDSERVICEPROVIDERENUM_IDSERVICEPROVIDER
 _GETTEAMBYID_RESPONSE.fields_by_name['team'].message_type = _TEAM
 _GETTEAMBYID_RESPONSE.containing_type = _GETTEAMBYID
 _GETTEAMBYNAME_RESPONSE.fields_by_name['team'].message_type = _TEAM
@@ -721,13 +683,11 @@ _GETTEAMBYSHORTNAME_RESPONSE.fields_by_name['team'].message_type = _TEAM
 _GETTEAMBYSHORTNAME_RESPONSE.containing_type = _GETTEAMBYSHORTNAME
 _LISTMYTEAMS_RESPONSE.fields_by_name['teams'].message_type = _TEAM
 _LISTMYTEAMS_RESPONSE.containing_type = _LISTMYTEAMS
-_LISTMYTEAMS.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _SETTEAM_RESPONSE.fields_by_name['team'].message_type = _TEAM
 _SETTEAM_RESPONSE.containing_type = _SETTEAM
 _SETTEAM.fields_by_name['team'].message_type = _TEAM
 _DELETETEAM_RESPONSE.containing_type = _DELETETEAM
 _LISTTEAMUSER_RESPONSE.containing_type = _LISTTEAMUSER
-_LISTTEAMUSER.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _ADDTEAMUSER_RESPONSE.containing_type = _ADDTEAMUSER
 _REMOVETEAMUSER_RESPONSE.containing_type = _REMOVETEAMUSER
 DESCRIPTOR.message_types_by_name['Team'] = _TEAM
@@ -893,8 +853,8 @@ _TEAMSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1225,
-  serialized_end=2233,
+  serialized_start=945,
+  serialized_end=1953,
   methods=[
   _descriptor.MethodDescriptor(
     name='getTeamById',

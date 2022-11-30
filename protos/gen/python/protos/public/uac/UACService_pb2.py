@@ -13,7 +13,6 @@ _sym_db = _symbol_database.Default()
 
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
-from ..common import CommonService_pb2 as common_dot_CommonService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -21,9 +20,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x14uac/UACService.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"\x07\n\x05\x45mpty\";\n\x07GetUser\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\"\xbf\x01\n\x08GetUsers\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x65mails\x18\x02 \x03(\t\x12\x11\n\tusernames\x18\x03 \x03(\t\x12/\n\npagination\x18\x04 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aM\n\x08Response\x12*\n\nuser_infos\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xb0\x01\n\rGetUsersFuzzy\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\x12/\n\npagination\x18\x04 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aM\n\x08Response\x12*\n\nuser_infos\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\xb5\x01\n\x15IdServiceProviderEnum\"\x9b\x01\n\x11IdServiceProvider\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06GITHUB\x10\x01\x12\r\n\tBITBUCKET\x10\x02\x12\n\n\x06GOOGLE\x10\x03\x12\t\n\x05VERTA\x10\x04\x12\x08\n\x04SAML\x10\x05\x12\r\n\tAD_OAUTH2\x10\x06\x12\x08\n\x04LDAP\x10\x07\x12\r\n\tOKTA_SCIM\x10\x08\x12\x0b\n\x07\x41\x44_SCIM\x10\t\x12\x08\n\x04SCIM\x10\n\"\x82\x02\n\rVertaUserInfo\x12\x17\n\x0findividual_user\x18\x01 \x01(\x08\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x19\n\x11refresh_timestamp\x18\x03 \x01(\x04\x12\x1c\n\x14last_login_timestamp\x18\x04 \x01(\x04\x12\x0f\n\x07user_id\x18\x05 \x01(\t\x12-\n\rpublicProfile\x18\x06 \x01(\x0e\x32\x16.ai.verta.uac.FlagEnum\x12\x14\n\x0cworkspace_id\x18\x07 \x01(\t\x12\x1c\n\x14\x64\x65\x66\x61ult_workspace_id\x18\t \x01(\x04\x12\x13\n\x0b\x64\x65scription\x18\n \x01(\tJ\x04\x08\x08\x10\t\"\xc9\x02\n\x08UserInfo\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x11\n\tfull_name\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12R\n\x13id_service_provider\x18\x06 \x01(\x0e\x32\x35.ai.verta.uac.IdServiceProviderEnum.IdServiceProvider\x12\r\n\x05roles\x18\x07 \x03(\t\x12\x11\n\timage_url\x18\x08 \x01(\t\x12\x0f\n\x07\x64\x65v_key\x18\t \x01(\t\x12/\n\nverta_info\x18\n \x01(\x0b\x32\x1b.ai.verta.uac.VertaUserInfo\x12\x19\n\x11secondary_dev_key\x18\x0b \x01(\t\x12\x10\n\x08\x64isabled\x18\x0c \x01(\x08\"v\n\nCreateUser\x12$\n\x04info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x10\n\x08password\x18\x02 \x01(\t\x1a\x30\n\x08Response\x12$\n\x04info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\"\x94\x01\n\nUpdateUser\x12$\n\x04info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x1c\n\x14\x64\x65\x66\x61ult_workspace_id\x18\x03 \x01(\x04\x1a\x30\n\x08Response\x12$\n\x04info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\"9\n\nDeleteUser\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"&\n\x13\x43hangeDevKeyForUser\x12\x0f\n\x07user_id\x18\x01 \x01(\t*.\n\x08\x46lagEnum\x12\r\n\tUNDEFINED\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\x32\x92\x0b\n\nUACService\x12]\n\x0egetCurrentUser\x12\x13.ai.verta.uac.Empty\x1a\x16.ai.verta.uac.UserInfo\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/uac/getCurrentUser\x12V\n\taddDevKey\x12\x13.ai.verta.uac.Empty\x1a\x16.ai.verta.uac.UserInfo\"\x1c\x82\xd3\xe4\x93\x02\x16\"\x11/v1/uac/addDevKey:\x01*\x12j\n\x13\x64\x65letePrimaryDevKey\x12\x13.ai.verta.uac.Empty\x1a\x16.ai.verta.uac.UserInfo\"&\x82\xd3\xe4\x93\x02 *\x1b/v1/uac/deletePrimaryDevKey:\x01*\x12n\n\x15\x64\x65leteSecondaryDevKey\x12\x13.ai.verta.uac.Empty\x1a\x16.ai.verta.uac.UserInfo\"(\x82\xd3\xe4\x93\x02\"*\x1d/v1/uac/deleteSecondaryDevKey:\x01*\x12r\n\x10\x61\x64\x64\x44\x65vKeyForUser\x12!.ai.verta.uac.ChangeDevKeyForUser\x1a\x16.ai.verta.uac.UserInfo\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/uac/addDevKeyForUser:\x01*\x12\x86\x01\n\x1a\x64\x65letePrimaryDevKeyForUser\x12!.ai.verta.uac.ChangeDevKeyForUser\x1a\x16.ai.verta.uac.UserInfo\"-\x82\xd3\xe4\x93\x02\'*\"/v1/uac/deletePrimaryDevKeyForUser:\x01*\x12\x8a\x01\n\x1c\x64\x65leteSecondaryDevKeyForUser\x12!.ai.verta.uac.ChangeDevKeyForUser\x1a\x16.ai.verta.uac.UserInfo\"/\x82\xd3\xe4\x93\x02)*$/v1/uac/deleteSecondaryDevKeyForUser:\x01*\x12Q\n\x07getUser\x12\x15.ai.verta.uac.GetUser\x1a\x16.ai.verta.uac.UserInfo\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1/uac/getUser\x12`\n\x08getUsers\x12\x16.ai.verta.uac.GetUsers\x1a\x1f.ai.verta.uac.GetUsers.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/uac/getUsers:\x01*\x12t\n\rgetUsersFuzzy\x12\x1b.ai.verta.uac.GetUsersFuzzy\x1a$.ai.verta.uac.GetUsersFuzzy.Response\" \x82\xd3\xe4\x93\x02\x1a\"\x15/v1/uac/getUsersFuzzy:\x01*\x12h\n\ncreateUser\x12\x18.ai.verta.uac.CreateUser\x1a!.ai.verta.uac.CreateUser.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\"\x12/v1/uac/createUser:\x01*\x12h\n\nupdateUser\x12\x18.ai.verta.uac.UpdateUser\x1a!.ai.verta.uac.UpdateUser.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\"\x12/v1/uac/updateUser:\x01*\x12h\n\ndeleteUser\x12\x18.ai.verta.uac.DeleteUser\x1a!.ai.verta.uac.DeleteUser.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\"\x12/v1/uac/deleteUser:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x14uac/UACService.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\"\x07\n\x05\x45mpty\";\n\x07GetUser\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\"w\n\x08GetUsers\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x0e\n\x06\x65mails\x18\x02 \x03(\t\x12\x11\n\tusernames\x18\x03 \x03(\t\x1a\x36\n\x08Response\x12*\n\nuser_infos\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.UserInfo\"5\n\nPagination\x12\x13\n\x0bpage_number\x18\x02 \x01(\x05\x12\x12\n\npage_limit\x18\x03 \x01(\x05\"\xad\x01\n\rGetUsersFuzzy\x12\r\n\x05\x65mail\x18\x02 \x01(\t\x12\x10\n\x08username\x18\x03 \x01(\t\x12,\n\npagination\x18\x04 \x01(\x0b\x32\x18.ai.verta.uac.Pagination\x1aM\n\x08Response\x12*\n\nuser_infos\x18\x01 \x03(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x8e\x01\n\x15IdServiceProviderEnum\"u\n\x11IdServiceProvider\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06GITHUB\x10\x01\x12\r\n\tBITBUCKET\x10\x02\x12\n\n\x06GOOGLE\x10\x03\x12\t\n\x05VERTA\x10\x04\x12\x08\n\x04SAML\x10\x05\x12\r\n\tAD_OAUTH2\x10\x06\x12\x08\n\x04LDAP\x10\x07\"\x82\x02\n\rVertaUserInfo\x12\x17\n\x0findividual_user\x18\x01 \x01(\x08\x12\x10\n\x08username\x18\x02 \x01(\t\x12\x19\n\x11refresh_timestamp\x18\x03 \x01(\x04\x12\x1c\n\x14last_login_timestamp\x18\x04 \x01(\x04\x12\x0f\n\x07user_id\x18\x05 \x01(\t\x12-\n\rpublicProfile\x18\x06 \x01(\x0e\x32\x16.ai.verta.uac.FlagEnum\x12\x14\n\x0cworkspace_id\x18\x07 \x01(\t\x12\x1c\n\x14\x64\x65\x66\x61ult_workspace_id\x18\t \x01(\x04\x12\x13\n\x0b\x64\x65scription\x18\n \x01(\tJ\x04\x08\x08\x10\t\"\xb7\x02\n\x08UserInfo\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x12\x11\n\tfull_name\x18\x02 \x01(\t\x12\x12\n\nfirst_name\x18\x03 \x01(\t\x12\x11\n\tlast_name\x18\x04 \x01(\t\x12\r\n\x05\x65mail\x18\x05 \x01(\t\x12R\n\x13id_service_provider\x18\x06 \x01(\x0e\x32\x35.ai.verta.uac.IdServiceProviderEnum.IdServiceProvider\x12\r\n\x05roles\x18\x07 \x03(\t\x12\x11\n\timage_url\x18\x08 \x01(\t\x12\x0f\n\x07\x64\x65v_key\x18\t \x01(\t\x12/\n\nverta_info\x18\n \x01(\x0b\x32\x1b.ai.verta.uac.VertaUserInfo\x12\x19\n\x11secondary_dev_key\x18\x0b \x01(\t\"v\n\nCreateUser\x12$\n\x04info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x10\n\x08password\x18\x02 \x01(\t\x1a\x30\n\x08Response\x12$\n\x04info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\"\x94\x01\n\nUpdateUser\x12$\n\x04info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\x12\x10\n\x08password\x18\x02 \x01(\t\x12\x1c\n\x14\x64\x65\x66\x61ult_workspace_id\x18\x03 \x01(\x04\x1a\x30\n\x08Response\x12$\n\x04info\x18\x01 \x01(\x0b\x32\x16.ai.verta.uac.UserInfo\"9\n\nDeleteUser\x12\x0f\n\x07user_id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"&\n\x13\x43hangeDevKeyForUser\x12\x0f\n\x07user_id\x18\x01 \x01(\t*.\n\x08\x46lagEnum\x12\r\n\tUNDEFINED\x10\x00\x12\x08\n\x04TRUE\x10\x01\x12\t\n\x05\x46\x41LSE\x10\x02\x32\x92\x0b\n\nUACService\x12]\n\x0egetCurrentUser\x12\x13.ai.verta.uac.Empty\x1a\x16.ai.verta.uac.UserInfo\"\x1e\x82\xd3\xe4\x93\x02\x18\x12\x16/v1/uac/getCurrentUser\x12V\n\taddDevKey\x12\x13.ai.verta.uac.Empty\x1a\x16.ai.verta.uac.UserInfo\"\x1c\x82\xd3\xe4\x93\x02\x16\"\x11/v1/uac/addDevKey:\x01*\x12j\n\x13\x64\x65letePrimaryDevKey\x12\x13.ai.verta.uac.Empty\x1a\x16.ai.verta.uac.UserInfo\"&\x82\xd3\xe4\x93\x02 *\x1b/v1/uac/deletePrimaryDevKey:\x01*\x12n\n\x15\x64\x65leteSecondaryDevKey\x12\x13.ai.verta.uac.Empty\x1a\x16.ai.verta.uac.UserInfo\"(\x82\xd3\xe4\x93\x02\"*\x1d/v1/uac/deleteSecondaryDevKey:\x01*\x12r\n\x10\x61\x64\x64\x44\x65vKeyForUser\x12!.ai.verta.uac.ChangeDevKeyForUser\x1a\x16.ai.verta.uac.UserInfo\"#\x82\xd3\xe4\x93\x02\x1d\"\x18/v1/uac/addDevKeyForUser:\x01*\x12\x86\x01\n\x1a\x64\x65letePrimaryDevKeyForUser\x12!.ai.verta.uac.ChangeDevKeyForUser\x1a\x16.ai.verta.uac.UserInfo\"-\x82\xd3\xe4\x93\x02\'*\"/v1/uac/deletePrimaryDevKeyForUser:\x01*\x12\x8a\x01\n\x1c\x64\x65leteSecondaryDevKeyForUser\x12!.ai.verta.uac.ChangeDevKeyForUser\x1a\x16.ai.verta.uac.UserInfo\"/\x82\xd3\xe4\x93\x02)*$/v1/uac/deleteSecondaryDevKeyForUser:\x01*\x12Q\n\x07getUser\x12\x15.ai.verta.uac.GetUser\x1a\x16.ai.verta.uac.UserInfo\"\x17\x82\xd3\xe4\x93\x02\x11\x12\x0f/v1/uac/getUser\x12`\n\x08getUsers\x12\x16.ai.verta.uac.GetUsers\x1a\x1f.ai.verta.uac.GetUsers.Response\"\x1b\x82\xd3\xe4\x93\x02\x15\"\x10/v1/uac/getUsers:\x01*\x12t\n\rgetUsersFuzzy\x12\x1b.ai.verta.uac.GetUsersFuzzy\x1a$.ai.verta.uac.GetUsersFuzzy.Response\" \x82\xd3\xe4\x93\x02\x1a\"\x15/v1/uac/getUsersFuzzy:\x01*\x12h\n\ncreateUser\x12\x18.ai.verta.uac.CreateUser\x1a!.ai.verta.uac.CreateUser.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\"\x12/v1/uac/createUser:\x01*\x12h\n\nupdateUser\x12\x18.ai.verta.uac.UpdateUser\x1a!.ai.verta.uac.UpdateUser.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\"\x12/v1/uac/updateUser:\x01*\x12h\n\ndeleteUser\x12\x18.ai.verta.uac.DeleteUser\x1a!.ai.verta.uac.DeleteUser.Response\"\x1d\x82\xd3\xe4\x93\x02\x17\"\x12/v1/uac/deleteUser:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
 _FLAGENUM = _descriptor.EnumDescriptor(
   name='FlagEnum',
@@ -46,8 +45,8 @@ _FLAGENUM = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1686,
-  serialized_end=1732,
+  serialized_start=1580,
+  serialized_end=1626,
 )
 _sym_db.RegisterEnumDescriptor(_FLAGENUM)
 
@@ -95,23 +94,11 @@ _IDSERVICEPROVIDERENUM_IDSERVICEPROVIDER = _descriptor.EnumDescriptor(
       name='LDAP', index=7, number=7,
       serialized_options=None,
       type=None),
-    _descriptor.EnumValueDescriptor(
-      name='OKTA_SCIM', index=8, number=8,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='AD_SCIM', index=9, number=9,
-      serialized_options=None,
-      type=None),
-    _descriptor.EnumValueDescriptor(
-      name='SCIM', index=10, number=10,
-      serialized_options=None,
-      type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=566,
-  serialized_end=721,
+  serialized_start=516,
+  serialized_end=633,
 )
 _sym_db.RegisterEnumDescriptor(_IDSERVICEPROVIDERENUM_IDSERVICEPROVIDER)
 
@@ -135,8 +122,8 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=96,
-  serialized_end=103,
+  serialized_start=68,
+  serialized_end=75,
 )
 
 
@@ -180,8 +167,8 @@ _GETUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=105,
-  serialized_end=164,
+  serialized_start=77,
+  serialized_end=136,
 )
 
 
@@ -199,13 +186,6 @@ _GETUSERS_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='total_records', full_name='ai.verta.uac.GetUsers.Response.total_records', index=1,
-      number=2, type=3, cpp_type=2, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -218,8 +198,8 @@ _GETUSERS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=281,
-  serialized_end=358,
+  serialized_start=203,
+  serialized_end=257,
 )
 
 _GETUSERS = _descriptor.Descriptor(
@@ -250,13 +230,6 @@ _GETUSERS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='pagination', full_name='ai.verta.uac.GetUsers.pagination', index=3,
-      number=4, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -269,8 +242,46 @@ _GETUSERS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=167,
-  serialized_end=358,
+  serialized_start=138,
+  serialized_end=257,
+)
+
+
+_PAGINATION = _descriptor.Descriptor(
+  name='Pagination',
+  full_name='ai.verta.uac.Pagination',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='page_number', full_name='ai.verta.uac.Pagination.page_number', index=0,
+      number=2, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='page_limit', full_name='ai.verta.uac.Pagination.page_limit', index=1,
+      number=3, type=5, cpp_type=1, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=259,
+  serialized_end=312,
 )
 
 
@@ -307,8 +318,8 @@ _GETUSERSFUZZY_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=281,
-  serialized_end=358,
+  serialized_start=411,
+  serialized_end=488,
 )
 
 _GETUSERSFUZZY = _descriptor.Descriptor(
@@ -351,8 +362,8 @@ _GETUSERSFUZZY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=361,
-  serialized_end=537,
+  serialized_start=315,
+  serialized_end=488,
 )
 
 
@@ -376,8 +387,8 @@ _IDSERVICEPROVIDERENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=540,
-  serialized_end=721,
+  serialized_start=491,
+  serialized_end=633,
 )
 
 
@@ -463,8 +474,8 @@ _VERTAUSERINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=724,
-  serialized_end=982,
+  serialized_start=636,
+  serialized_end=894,
 )
 
 
@@ -552,13 +563,6 @@ _USERINFO = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='disabled', full_name='ai.verta.uac.UserInfo.disabled', index=11,
-      number=12, type=8, cpp_type=7, label=1,
-      has_default_value=False, default_value=False,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -571,8 +575,8 @@ _USERINFO = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=985,
-  serialized_end=1314,
+  serialized_start=897,
+  serialized_end=1208,
 )
 
 
@@ -602,8 +606,8 @@ _CREATEUSER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1386,
-  serialized_end=1434,
+  serialized_start=1280,
+  serialized_end=1328,
 )
 
 _CREATEUSER = _descriptor.Descriptor(
@@ -639,8 +643,8 @@ _CREATEUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1316,
-  serialized_end=1434,
+  serialized_start=1210,
+  serialized_end=1328,
 )
 
 
@@ -670,8 +674,8 @@ _UPDATEUSER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1386,
-  serialized_end=1434,
+  serialized_start=1280,
+  serialized_end=1328,
 )
 
 _UPDATEUSER = _descriptor.Descriptor(
@@ -714,8 +718,8 @@ _UPDATEUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1437,
-  serialized_end=1585,
+  serialized_start=1331,
+  serialized_end=1479,
 )
 
 
@@ -745,8 +749,8 @@ _DELETEUSER_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1618,
-  serialized_end=1644,
+  serialized_start=1512,
+  serialized_end=1538,
 )
 
 _DELETEUSER = _descriptor.Descriptor(
@@ -775,8 +779,8 @@ _DELETEUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1587,
-  serialized_end=1644,
+  serialized_start=1481,
+  serialized_end=1538,
 )
 
 
@@ -806,16 +810,15 @@ _CHANGEDEVKEYFORUSER = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1646,
-  serialized_end=1684,
+  serialized_start=1540,
+  serialized_end=1578,
 )
 
 _GETUSERS_RESPONSE.fields_by_name['user_infos'].message_type = _USERINFO
 _GETUSERS_RESPONSE.containing_type = _GETUSERS
-_GETUSERS.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _GETUSERSFUZZY_RESPONSE.fields_by_name['user_infos'].message_type = _USERINFO
 _GETUSERSFUZZY_RESPONSE.containing_type = _GETUSERSFUZZY
-_GETUSERSFUZZY.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
+_GETUSERSFUZZY.fields_by_name['pagination'].message_type = _PAGINATION
 _IDSERVICEPROVIDERENUM_IDSERVICEPROVIDER.containing_type = _IDSERVICEPROVIDERENUM
 _VERTAUSERINFO.fields_by_name['publicProfile'].enum_type = _FLAGENUM
 _USERINFO.fields_by_name['id_service_provider'].enum_type = _IDSERVICEPROVIDERENUM_IDSERVICEPROVIDER
@@ -830,6 +833,7 @@ _DELETEUSER_RESPONSE.containing_type = _DELETEUSER
 DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
 DESCRIPTOR.message_types_by_name['GetUser'] = _GETUSER
 DESCRIPTOR.message_types_by_name['GetUsers'] = _GETUSERS
+DESCRIPTOR.message_types_by_name['Pagination'] = _PAGINATION
 DESCRIPTOR.message_types_by_name['GetUsersFuzzy'] = _GETUSERSFUZZY
 DESCRIPTOR.message_types_by_name['IdServiceProviderEnum'] = _IDSERVICEPROVIDERENUM
 DESCRIPTOR.message_types_by_name['VertaUserInfo'] = _VERTAUSERINFO
@@ -869,6 +873,13 @@ GetUsers = _reflection.GeneratedProtocolMessageType('GetUsers', (_message.Messag
   })
 _sym_db.RegisterMessage(GetUsers)
 _sym_db.RegisterMessage(GetUsers.Response)
+
+Pagination = _reflection.GeneratedProtocolMessageType('Pagination', (_message.Message,), {
+  'DESCRIPTOR' : _PAGINATION,
+  '__module__' : 'uac.UACService_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.uac.Pagination)
+  })
+_sym_db.RegisterMessage(Pagination)
 
 GetUsersFuzzy = _reflection.GeneratedProtocolMessageType('GetUsersFuzzy', (_message.Message,), {
 
@@ -967,8 +978,8 @@ _UACSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1735,
-  serialized_end=3161,
+  serialized_start=1629,
+  serialized_end=3055,
   methods=[
   _descriptor.MethodDescriptor(
     name='getCurrentUser',

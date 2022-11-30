@@ -315,8 +315,7 @@
         "READ_SECRETS",
         "CREATE_SERVICE_ACCOUNT",
         "CREATE_CONTAINER_REGISTRY",
-        "CREATE_WEBHOOK",
-        "CREATE_GROUP"
+        "CREATE_WEBHOOK"
       ],
       "default": "UNKNOWN"
     },
@@ -334,10 +333,7 @@
         "EVENT",
         "WEBHOOK",
         "SYSTEM_ADMIN",
-        "PYPI_CONFIGURATION",
-        "KAFKA_CONFIGURATION",
-        "SCIM_CONFIGURATION",
-        "GROUP"
+        "PYPI_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },
@@ -460,20 +456,6 @@
       ],
       "default": "UNKNOWN"
     },
-    "commonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -580,9 +562,6 @@
           "items": {
             "$ref": "#/definitions/uacResources"
           }
-        },
-        "pagination": {
-          "$ref": "#/definitions/commonPagination"
         }
       },
       "title": "Same as above, but lists all entities that are allowed to perform a certain action on certain resources"
@@ -595,10 +574,6 @@
           "items": {
             "$ref": "#/definitions/uacEntities"
           }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -666,7 +641,7 @@
           "$ref": "#/definitions/ServiceEnumService"
         },
         "pagination": {
-          "$ref": "#/definitions/commonPagination"
+          "$ref": "#/definitions/vertacommonPagination"
         }
       },
       "title": "Same as above, but lists the resources on which actions can be performed by entities\nIf all possible resources combinations are allowed returns:\nResources({Resource(service: service, resource_ids:{}, resource_type:resource_type)})"
@@ -719,9 +694,6 @@
         },
         "service": {
           "$ref": "#/definitions/ServiceEnumService"
-        },
-        "pagination": {
-          "$ref": "#/definitions/commonPagination"
         }
       },
       "title": "Same as GetAllowedResources, but infers entities from the current logged user"
@@ -734,10 +706,6 @@
           "items": {
             "$ref": "#/definitions/uacResources"
           }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -841,6 +809,20 @@
         }
       },
       "title": "A resource describes a specific object in a service that can receive an action"
+    },
+    "vertacommonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     }
   },
   "basePath": "/v1"

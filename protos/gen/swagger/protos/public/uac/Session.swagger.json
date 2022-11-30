@@ -50,7 +50,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
+              "$ref": "#/definitions/uacEmpty"
             }
           },
           "default": {
@@ -109,20 +109,6 @@
     }
   },
   "definitions": {
-    "commonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
-    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -188,6 +174,9 @@
         }
       }
     },
+    "uacEmpty": {
+      "type": "object"
+    },
     "uacFindSessionRequest": {
       "type": "object",
       "properties": {
@@ -209,9 +198,6 @@
           "items": {
             "type": "string"
           }
-        },
-        "pagination": {
-          "$ref": "#/definitions/commonPagination"
         }
       }
     },
@@ -223,10 +209,6 @@
           "items": {
             "$ref": "#/definitions/uacSession"
           }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -253,9 +235,6 @@
           "title": "Equivalent of a developer key"
         }
       }
-    },
-    "vertauacEmpty": {
-      "type": "object"
     }
   },
   "basePath": "/v1"

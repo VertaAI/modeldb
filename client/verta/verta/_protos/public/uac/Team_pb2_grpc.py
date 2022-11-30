@@ -87,7 +87,7 @@ class TeamServiceServicer(object):
     raise NotImplementedError('Method not implemented!')
 
   def listMyTeams(self, request, context):
-    """Lists the teams that the current user is a member of
+    """Lists the teams that the current user can see
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')

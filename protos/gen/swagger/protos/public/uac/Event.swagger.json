@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
+              "$ref": "#/definitions/uacEmpty"
             }
           },
           "default": {
@@ -82,7 +82,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
+              "$ref": "#/definitions/uacEmpty"
             }
           },
           "default": {
@@ -341,6 +341,9 @@
         }
       }
     },
+    "uacEmpty": {
+      "type": "object"
+    },
     "uacFindWebhookCallRequest": {
       "type": "object",
       "properties": {
@@ -511,9 +514,6 @@
         }
       },
       "title": "Single call of a webhook to deliver a given event"
-    },
-    "vertauacEmpty": {
-      "type": "object"
     }
   },
   "basePath": "/v1"
