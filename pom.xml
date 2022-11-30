@@ -70,7 +70,7 @@
             <dependency>
                 <groupId>io.opentelemetry</groupId>
                 <artifactId>opentelemetry-bom-alpha</artifactId>
-                <version>${otel.core.version}</version>
+                <version>${otel.core.version}-alpha</version>
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
