@@ -10,17 +10,6 @@ pytestmark = pytest.mark.not_oss
 
 
 class TestProject:
-    def test_share_project_personal_workspace(self, client, client_2, email_2):
-        """
-        User 1 share a project in personal workspace to user 2.
-        """
-        project_name = _utils.generate_default_name()
-        project = client.create_project(project_name)
-        project._add_collaborator(email=email_2)
-
-        assert client_2.get_project(id=project.id)
-        assert client_2.get_project(name=project.name)
-
     def test_org_public_project(self, client, workspace, client_2, email_2):
         """
         User 2 tries to access a org-public project created by a user in the same workspace.
@@ -51,22 +40,6 @@ class TestProject:
         # Shouldn't be able to access:
         with pytest.raises(ValueError, match="not found"):
             client_2.get_project(id=project.id)
-
-    def test_share_org_project(self, client, workspace, client_2, email_2):
-        """
-        User 2 tries to access a non-org-public project created by another user, but has been shared to user 2.
-        """
-        project_name = _utils.generate_default_name()
-        project = client.create_project(
-            project_name, workspace=workspace.name, public_within_org=False
-        )
-
-        workspace.add_member(email_2)
-        project._add_collaborator(email=email_2)
-
-        assert client_2.get_project(id=project.id)
-        assert client_2.get_project(name=project.name, workspace=workspace.name)
-
 
 class TestDataset:
     def test_org_public_dataset(
