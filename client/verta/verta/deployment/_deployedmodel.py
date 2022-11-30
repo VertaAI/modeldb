@@ -319,7 +319,7 @@ class DeployedModel(object):
             )
 
         response = self._predict(x, compress, prediction_id)
-        id = response.headers.get('verta-request-id')
+        id = response.headers.get('verta-request-id', '')
         return (id, _utils.body_to_json(response))
 
 
