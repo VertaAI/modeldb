@@ -11,8 +11,10 @@ class Resources(object):
     """
     Computational resources allowed for an endpoint's model, to be passed to
     :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
+    
+    
 
-    Verta uses the same representation for memory `as Kubernetes
+    For `memory`, Verta uses the same representation `as Kubernetes
     <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory>`__:
 
         You can express memory as a plain integer or as a fixed-point integer
@@ -33,7 +35,7 @@ class Resources(object):
     cpu : float > 0
         CPU cores allowed for an endpoint's model.
     memory : str
-        Memory allows for an endpoint's model.
+        Memory allowed for an endpoint's model.
 
     Examples
     --------
