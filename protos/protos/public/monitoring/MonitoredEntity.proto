@@ -97,6 +97,7 @@ message FindMonitoredEntityRequest {
   // Add names to find with a fuzzy (non-exact) search
   repeated string fuzzy_names = 7;
   repeated uint64 endpoint_ids = 8;
+  repeated string model_version_ids = 9;
 
   oneof workspace_identifier {
     uint64 workspace_id = 3;
