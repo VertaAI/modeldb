@@ -13,9 +13,6 @@ class Resources(object):
     <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes>`__
     allowed for an endpoint's model, to be passed to :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
 
-    For more information about how resources are used for endpoints, see
-    https://docs.verta.ai/verta/deployment/guides/endpoint-resources.
-
     The JSON equivalent for this is:
 
     .. code-block:: json
