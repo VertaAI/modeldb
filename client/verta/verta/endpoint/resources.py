@@ -12,7 +12,8 @@ class Resources(object):
     Computational resources allowed for an endpoint's model, to be passed to
     :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
     
-    
+    For more information about how resources are used for endpoints, see
+    https://docs.verta.ai/verta/deployment/guides/endpoint-resources.
 
     For `memory`, Verta uses the same representation `as Kubernetes
     <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory>`__:
