@@ -245,11 +245,11 @@
       "type": "string",
       "enum": [
         "RESOURCE_TYPE_UNKNOWN",
-        "DATA",
-        "EXPERIMENT",
-        "MODELS_AND_VERSIONS",
-        "ENDPOINTS",
-        "MONITOR"
+        "DATASET",
+        "PROJECT",
+        "REGISTERED_MODEL",
+        "ENDPOINT",
+        "MONITORED_ENTITY"
       ],
       "default": "RESOURCE_TYPE_UNKNOWN"
     },
