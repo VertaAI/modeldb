@@ -324,8 +324,8 @@ public class ModelDBUtils {
                   Value.newBuilder()
                       .setNumberValue(
                           workspaceDTO.getOrgId().isEmpty()
-                              ? WorkspaceType.ORGANIZATION_VALUE
-                              : WorkspaceType.USER_VALUE)
+                              ? WorkspaceType.USER_VALUE
+                              : WorkspaceType.ORGANIZATION_VALUE)
                       .build())
               .setOperator(OperatorEnum.Operator.EQ)
               .setValueType(ValueTypeEnum.ValueType.NUMBER)
