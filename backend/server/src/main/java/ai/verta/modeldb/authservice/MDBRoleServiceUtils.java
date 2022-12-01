@@ -316,29 +316,6 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
     }
   }
 
-  private Optional<Workspace> getWorkspaceByLegacyId(
-      final String legacyWorkspaceId, final WorkspaceType workspaceType) {
-    if (legacyWorkspaceId == null || legacyWorkspaceId.isEmpty()) {
-      return Optional.empty();
-    }
-    try (final var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace("Fetching workspace " + legacyWorkspaceId);
-      final var workspace =
-          authServiceChannel
-              .getWorkspaceServiceBlockingStub()
-              .getWorkspaceByLegacyId(
-                  GetWorkspaceByLegacyId.newBuilder()
-                      .setId(legacyWorkspaceId)
-                      .setWorkspaceType(workspaceType)
-                      .build());
-      LOGGER.trace("Got workspace " + workspace);
-      return Optional.of(workspace);
-    } catch (StatusRuntimeException ex) {
-      ModelDBUtils.retryOrThrowException(ex, false, (RetryCallInterface<Void>) (retry1) -> null);
-    }
-    return Optional.empty();
-  }
-
   @Override
   public Workspace getWorkspaceByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
