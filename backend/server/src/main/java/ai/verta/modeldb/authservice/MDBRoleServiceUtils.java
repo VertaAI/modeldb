@@ -340,55 +340,6 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
   }
 
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceName(
-      UserInfo currentLoginUserInfo, String workspaceName) {
-    var workspaceDTO = new WorkspaceDTO();
-    workspaceDTO.setWorkspaceName(workspaceName);
-
-    /*from the name for workspace, get the workspace id and type.
-    if no workspace is present assume user's personal workspace*/
-    if (workspaceName == null
-        || workspaceName.isEmpty()
-        || workspaceName.equalsIgnoreCase(
-            authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-      String vertaId = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
-      workspaceDTO.setWorkspaceId(vertaId);
-      workspaceDTO.setWorkspaceType(WorkspaceType.USER);
-      workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
-      Optional<Workspace> workspace = getWorkspaceByLegacyId(vertaId, WorkspaceType.USER);
-      if (workspace.isPresent()) {
-        workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
-      }
-    } else {
-      try {
-        final String legacyWorkspaceId = new CollaboratorOrg(getOrgByName(workspaceName)).getId();
-        workspaceDTO.setWorkspaceId(legacyWorkspaceId);
-        workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
-        workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace =
-            getWorkspaceByLegacyId(legacyWorkspaceId, WorkspaceType.ORGANIZATION);
-        if (workspace.isPresent()) {
-          workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
-        }
-      } catch (StatusRuntimeException e) {
-        var collaboratorUser =
-            new CollaboratorUser(
-                authService,
-                authService.getUserInfo(workspaceName, CommonConstants.UserIdentifier.USER_NAME));
-        workspaceDTO.setWorkspaceId(collaboratorUser.getId());
-        workspaceDTO.setWorkspaceType(WorkspaceType.USER);
-        workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace =
-            getWorkspaceByLegacyId(collaboratorUser.getId(), WorkspaceType.USER);
-        if (workspace.isPresent()) {
-          workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
-        }
-      }
-    }
-    return workspaceDTO;
-  }
-
-  @Override
   public Workspace getWorkspaceByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
     /*from the name for workspace, get the workspace id and type.
