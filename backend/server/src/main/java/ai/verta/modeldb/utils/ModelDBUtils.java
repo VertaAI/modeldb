@@ -26,7 +26,6 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.*;
@@ -312,7 +311,8 @@ public class ModelDBUtils {
       KeyValueQuery workspacePredicates =
           KeyValueQuery.newBuilder()
               .setKey(ModelDBConstants.WORKSPACE)
-              .setValue(Value.newBuilder().setStringValue(String.valueOf(workspaceDTO.getId())).build())
+              .setValue(
+                  Value.newBuilder().setStringValue(String.valueOf(workspaceDTO.getId())).build())
               .setOperator(OperatorEnum.Operator.EQ)
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
@@ -322,7 +322,10 @@ public class ModelDBUtils {
               .setKey(ModelDBConstants.WORKSPACE_TYPE)
               .setValue(
                   Value.newBuilder()
-                      .setNumberValue(workspaceDTO.getOrgId().isEmpty() ? WorkspaceType.ORGANIZATION_VALUE : WorkspaceType.USER_VALUE)
+                      .setNumberValue(
+                          workspaceDTO.getOrgId().isEmpty()
+                              ? WorkspaceType.ORGANIZATION_VALUE
+                              : WorkspaceType.USER_VALUE)
                       .build())
               .setOperator(OperatorEnum.Operator.EQ)
               .setValueType(ValueTypeEnum.ValueType.NUMBER)
