@@ -58,7 +58,10 @@ class VertaCallback(keras.callbacks.Callback):
         try:
             self.run.log_hyperparameter("optimizer", model.optimizer._name)
         except:
-            pass  # don't halt execution
+            try:  # TensorFlow 2.11.0 makes the optimizer name public
+                self.run.log_hyperparameter("optimizer", model.optimizer.name)
+            except:
+                pass  # don't halt execution
 
         try:
             if isinstance(model.loss, six.string_types):
