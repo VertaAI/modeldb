@@ -25,7 +25,7 @@ message DataTypeEnum {
   }
 }
 
-message ActionTypeEnum {  
+message ActionTypeEnum {
   option deprecated = true;
   enum ActionType {
     option deprecated = true;
