@@ -319,7 +319,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
   public Workspace getWorkspaceByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
     if (workspaceName.isEmpty()) {
-      return null;
+      return Workspace.newBuilder().build();
     }
     return authService.workspaceIdByName(true, workspaceName);
   }
