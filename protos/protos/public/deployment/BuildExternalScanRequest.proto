@@ -1,9 +1,0 @@
-syntax = "proto3";
-
-package ai.verta.deployment;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/deployment";
-
-message BuildExternalScanRequest {
-  int64 buildId = 1;
-  string imageUrl = 2;
-}

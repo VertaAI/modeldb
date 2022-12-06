@@ -33,8 +33,6 @@ message Workspace {
     }
 
     repeated WorkspaceContainerRegistryConfiguration container_registries = 6;
-
-    string namespace = 7;
 }
 
 message WorkspaceContainerRegistryConfiguration {
@@ -46,12 +44,10 @@ message WorkspaceContainerRegistryConfiguration {
 }
 
 message GetVisibleWorkspaces {
-    common.Pagination pagination = 1;
 }
 
 message Workspaces {
     repeated Workspace workspace = 1;
-    int64 total_records = 2;
 }
 
 service WorkspaceService {

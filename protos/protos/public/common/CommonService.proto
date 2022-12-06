@@ -155,7 +155,6 @@ message OperatorEnum {
         CONTAIN = 6;
         NOT_CONTAIN = 7;
         IN = 8; // This is not fully supported by backend.
-        NOT_IN = 9;
     }
 }
 
@@ -186,8 +185,4 @@ message GitSnapshot {
     string repo = 2; // URL to remote repository
     string hash = 3; // commit hash
     common.TernaryEnum.Ternary is_dirty = 4;
-}
-
-message Empty {
-
 }

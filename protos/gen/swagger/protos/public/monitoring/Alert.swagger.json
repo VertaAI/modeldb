@@ -393,8 +393,7 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN",
-        "NOT_IN"
+        "IN"
       ],
       "default": "EQ"
     },
@@ -625,10 +624,6 @@
             "$ref": "#/definitions/AlertStatusEnumAlertStatus"
           },
           "title": "Allow filtering to see only failing alerts"
-        },
-        "includeIfNoData": {
-          "type": "boolean",
-          "format": "boolean"
         },
         "page_number": {
           "type": "integer",

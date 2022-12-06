@@ -70,10 +70,7 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION",
-              "KAFKA_CONFIGURATION",
-              "SCIM_CONFIGURATION",
-              "GROUP"
+              "PYPI_CONFIGURATION"
             ],
             "default": "UNKNOWN"
           },
@@ -403,20 +400,6 @@
             "in": "query",
             "required": false,
             "type": "string"
-          },
-          {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
           }
         ],
         "tags": [
@@ -442,20 +425,6 @@
           }
         },
         "parameters": [
-          {
-            "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
-          {
-            "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
-          },
           {
             "name": "scope.org_id",
             "in": "query",
@@ -554,8 +523,7 @@
         "READ_SECRETS",
         "CREATE_SERVICE_ACCOUNT",
         "CREATE_CONTAINER_REGISTRY",
-        "CREATE_WEBHOOK",
-        "CREATE_GROUP"
+        "CREATE_WEBHOOK"
       ],
       "default": "UNKNOWN"
     },
@@ -573,10 +541,7 @@
         "EVENT",
         "WEBHOOK",
         "SYSTEM_ADMIN",
-        "PYPI_CONFIGURATION",
-        "KAFKA_CONFIGURATION",
-        "SCIM_CONFIGURATION",
-        "GROUP"
+        "PYPI_CONFIGURATION"
       ],
       "default": "UNKNOWN"
     },
@@ -698,20 +663,6 @@
         "MONITORING_SERVICE"
       ],
       "default": "UNKNOWN"
-    },
-    "commonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -888,10 +839,6 @@
           "items": {
             "$ref": "#/definitions/uacRoleBinding"
           }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
@@ -903,10 +850,6 @@
           "items": {
             "$ref": "#/definitions/uacRole"
           }
-        },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
         }
       }
     },
