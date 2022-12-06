@@ -103,7 +103,11 @@ public class Future<T> {
     return Future.from(promise);
   }
 
-  static <R> Future<R> from(CompletionStage<R> other) {
+  /**
+   * Create a {@link Future} from an existing {@link CompletionStage}. Useful for interop with other
+   * libraries.
+   */
+  public static <R> Future<R> from(CompletionStage<R> other) {
     Preconditions.checkNotNull(
         futureExecutor, "A FutureExecutor is required to create a new Future.");
     return new Future<>(other);
