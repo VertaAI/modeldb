@@ -25,7 +25,7 @@ message DataTypeEnum {
   }
 }
 
-message ActionTypeEnum {  
+message ActionTypeEnum {
   option deprecated = true;
   enum ActionType {
     option deprecated = true;
@@ -677,7 +677,7 @@ service RegistryService {
         };
     };
 
-   rpc CreateExternalDeployment(ExternalDeployment) returns (ExternalDeploymentRequest.Response) {
+    rpc CreateExternalDeployment(ExternalDeployment) returns (ExternalDeploymentRequest.Response) {
         option (google.api.http) = {
             post: "/v1/registry/registered_models/model_versions/external_deployments"
             body: "*"
