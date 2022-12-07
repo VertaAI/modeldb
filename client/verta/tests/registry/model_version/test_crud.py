@@ -194,7 +194,6 @@ class TestLockLevels:
         assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
 
     def test_transition_levels(self, client, client_2, workspace, created_entities):
-        workspace.add_member(client_2._conn.email)
         reg_model = client.create_registered_model(
             workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),
@@ -225,7 +224,6 @@ class TestLockLevels:
         description = "My model version"
         label = "mine"
 
-        workspace.add_member(client_2._conn.email)
         reg_model = client.create_registered_model(
             workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),
@@ -252,7 +250,6 @@ class TestLockLevels:
         description = "My model version"
         label = "mine"
 
-        workspace.add_member(client_2._conn.email)
         reg_model = client.create_registered_model(
             workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),

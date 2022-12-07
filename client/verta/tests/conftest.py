@@ -526,7 +526,7 @@ class Workspace:
 
 @pytest.fixture
 def workspace(client, created_entities):
-    return Workspace(constants.WORKSPACE)
+    return Workspace(client._conn.get_default_workspace())
 
 
 @pytest.fixture

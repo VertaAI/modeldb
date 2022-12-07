@@ -89,7 +89,7 @@ class Dataset(_entity._ModelDBEntity):
         self._refresh_cache()
 
         if self._msg.workspace_id:
-            return self._conn.get_workspace_name_from_legacy_id(self._msg.workspace_id)
+            return self._conn.get_workspace_name_from_id(self._msg.workspace_service_id)
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
