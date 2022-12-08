@@ -3,6 +3,8 @@ package ai.verta.modeldb.common.futures;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
@@ -113,7 +115,9 @@ public class Future<T> {
     return new Future<>(other);
   }
 
-  /** @deprecated Use {@link #of(Object)} instead. */
+  /**
+   * @deprecated Use {@link #of(Object)} instead.
+   */
   @Deprecated
   public static <R> Future<R> completedInternalFuture(R value) {
     Preconditions.checkNotNull(
@@ -125,6 +129,18 @@ public class Future<T> {
     Preconditions.checkNotNull(
         futureExecutor, "A FutureExecutor is required to create a new Future.");
     return new Future<>(CompletableFuture.completedFuture(value));
+  }
+
+  /**
+   * Converts a {@link ListenableFuture}, returned by a non-blocking call via grpc, to a {@link
+   * Future}.
+   */
+  public static <T> Future<T> fromListenableFuture(ListenableFuture<T> listenableFuture) {
+    Preconditions.checkNotNull(
+        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    CompletableFuture<T> promise = new CompletableFuture<>();
+    Futures.addCallback(listenableFuture, new FutureUtil.Callback<T>(promise), futureExecutor);
+    return from(promise);
   }
 
   public <U> Future<U> thenCompose(Function<? super T, Future<U>> fn) {
@@ -397,7 +413,9 @@ public class Future<T> {
     }
   }
 
-  /** @deprecated Only use this as a part of the conversion process between versions of Futures. */
+  /**
+   * @deprecated Only use this as a part of the conversion process between versions of Futures.
+   */
   @Deprecated
   public InternalFuture<T> toInternalFuture() {
     return InternalFuture.from(stage);
