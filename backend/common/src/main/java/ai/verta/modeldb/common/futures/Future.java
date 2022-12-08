@@ -115,9 +115,7 @@ public class Future<T> {
     return new Future<>(other);
   }
 
-  /**
-   * @deprecated Use {@link #of(Object)} instead.
-   */
+  /** @deprecated Use {@link #of(Object)} instead. */
   @Deprecated
   public static <R> Future<R> completedInternalFuture(R value) {
     Preconditions.checkNotNull(
@@ -413,9 +411,7 @@ public class Future<T> {
     }
   }
 
-  /**
-   * @deprecated Only use this as a part of the conversion process between versions of Futures.
-   */
+  /** @deprecated Only use this as a part of the conversion process between versions of Futures. */
   @Deprecated
   public InternalFuture<T> toInternalFuture() {
     return InternalFuture.from(stage);
