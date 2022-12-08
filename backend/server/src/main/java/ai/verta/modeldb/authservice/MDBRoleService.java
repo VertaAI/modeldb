@@ -49,16 +49,6 @@ public interface MDBRoleService extends RoleService {
    *
    * @param currentLoginUserInfo : current login userInfo
    * @param workspaceName : orgName or username
-   * @return {@link WorkspaceDTO} : workspace dto
-   */
-  WorkspaceDTO getWorkspaceDTOByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
-
-  /**
-   * from the name for workspace, get the workspace id and type. if no workspace is present assume
-   * user's personal workspace
-   *
-   * @param currentLoginUserInfo : current login userInfo
-   * @param workspaceName : orgName or username
    * @return {@link Workspace} : workspace
    */
   Workspace getWorkspaceByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);

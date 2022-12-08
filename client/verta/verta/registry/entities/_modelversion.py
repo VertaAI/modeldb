@@ -1524,6 +1524,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         Logs a Verta DatasetVersion to this Model Version with the given key.
 
+        .. versionadded:: 0.21.1
+
         Parameters
         ----------
         key : str
@@ -1559,6 +1561,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         Gets the DatasetVersion with name `key` from this Model Version.
 
+        .. versionadded:: 0.21.1
+
         Parameters
         ----------
         key : str
@@ -1587,6 +1591,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     def del_dataset_version(self, key):
         """
         Deletes the DatasetVersion with name `key` from this Model Version.
+
+        .. versionadded:: 0.21.1
 
         Parameters
         ----------
