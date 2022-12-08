@@ -1,0 +1,184 @@
+syntax = "proto3";
+
+package ai.verta.events;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/events";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "uac/UACService.proto";
+import "google/protobuf/any.proto";
+import "uac/RoleService.proto";
+import "registry/RegistryService.proto";
+import "common/CommonService.proto";
+import "deployment/BuildExternalScanRequest.proto";
+
+message CreateEventRequest {
+    string event_uuid = 1; // uuid for this event to handle deduplication
+    EventType event_type = 2;
+    uint64 workspace_id = 3;
+    uint64 timestamp = 4;
+    verta.uac.ResourceType resource_type = 5;
+    EventEntity original_entity = 6;
+    EventEntity new_entity = 7;
+
+    enum EventType {
+        CREATE = 0;
+        READ = 1;
+        UPDATE = 2;
+        DELETE = 3;
+        PROMOTE = 4;
+        REQUEST_SCAN = 5;
+    }
+}
+
+// Lists all of the entity types that we support events for.
+message EventEntity {
+    oneof entity {
+        verta.registry.RegisteredModel registered_model = 1;
+        verta.registry.ModelVersion model_version = 2;
+        verta.deployment.BuildExternalScanRequest scan_request = 4;
+    }
+    uint64 entity_workspace_id = 3;
+}
+
+message Webhook {
+    uint64 id = 1;
+    string name = 2; // Names must be unique within a workspace
+    uint64 workspace_id = 3; // Optional
+
+    string location = 4;
+    string mutual_secret = 5; // A shared secret between the two sides for validation
+    repeated string event_types = 6;
+    repeated verta.uac.ResourceType resource_types = 7;
+}
+
+message FindWebhookRequest {
+    repeated uint64 ids = 1;
+    repeated string names = 2;
+    repeated uint64 workspace_id = 3;
+    repeated verta.uac.ResourceType resource_types = 4;
+
+    message Response {
+        repeated Webhook webhooks = 1;
+    }
+}
+
+message CreateWebhookRequest {
+    string name = 1; // Names must be unique within a workspace
+    uint64 workspace_id = 2; // Optional
+
+    string location = 3;
+    string mutual_secret = 4; // A shared secret between the two sides for validation. Check how this is passed by github (e.g. which header)
+    repeated string event_types = 5;
+    bool all_events = 6; // If true, we don't filter events that trigger the webhook by the event_type field. If false, we filter events using only the values in the event_types field.
+    repeated verta.uac.ResourceType resource_types = 7;
+}
+
+message UpdateWebhookRequest {
+    uint64 id = 1;
+
+    string new_location = 2; // Optional. If empty, keep the current setting
+    string mutual_secret = 3; // Optional. If empty, keep the current setting
+    repeated string add_event_types = 4;
+    repeated string delete_event_types = 5;
+    bool set_all_events = 6;
+    bool clear_all_events = 7;
+    repeated verta.uac.ResourceType add_resource_types = 8;
+    repeated verta.uac.ResourceType delete_resource_types = 9;
+}
+
+message DeleteWebhookRequest {
+    repeated uint64 ids = 1;
+}
+
+// Single call of a webhook to deliver a given event
+message WebhookCall {
+    uint64 id = 1;
+    uint64 webhook_id = 2;
+    string event_uuid = 3;
+    Status status = 4;
+    google.protobuf.Any response = 5;
+
+    enum Status {
+        UNKNOWN = 0;
+        SUCCESS = 1;
+        FAILURE = 2;
+        IN_PROGRESS = 3;
+    }
+}
+message TestWebhookRequest {
+    uint64 webhook_id = 1;
+
+    message Response {
+        uint64 status_code = 1;
+    }
+}
+
+message FindWebhookCallRequest {
+    repeated uint64 ids = 1;
+    repeated uint64 webhook_ids = 2;
+    repeated string event_uuids = 3;
+    repeated WebhookCall.Status status = 4;
+
+    message Response {
+        repeated WebhookCall calls = 1;
+    }
+}
+
+// The call returned for this has a completely new ID
+message RetriggerWebhookCallRequest {
+    uint64 call_id = 1;
+}
+
+service EventService {
+    rpc createEvent(CreateEventRequest) returns (verta.common.Empty) {
+        option (google.api.http) = {
+            post: "/v1/events/createEvent"
+            body: "*"
+        };
+    };
+
+    rpc createWebhook (CreateWebhookRequest) returns (Webhook) {
+        option (google.api.http) = {
+            post : "/v1/events/createWebhook"
+            body : "*"
+        };
+    };
+    rpc updateWebhook (UpdateWebhookRequest) returns (Webhook) {
+        option (google.api.http) = {
+            post : "/v1/events/updateWebhook"
+            body : "*"
+        };
+    };
+    rpc findWebhook (FindWebhookRequest) returns (FindWebhookRequest.Response) {
+        option (google.api.http) = {
+            post : "/v1/events/findWebhook"
+            body : "*"
+        };
+    };
+    rpc deleteWebhook (DeleteWebhookRequest) returns (verta.common.Empty) {
+        option (google.api.http) = {
+            delete : "/v1/events/deleteWebhook"
+            body : "*"
+        };
+    };
+
+    rpc findWebhookCall (FindWebhookCallRequest) returns (FindWebhookCallRequest.Response) {
+        option (google.api.http) = {
+            post : "/v1/events/findWebhookCall"
+            body : "*"
+        };
+    };
+    rpc retriggerWebhookCall (RetriggerWebhookCallRequest) returns (WebhookCall) {
+        option (google.api.http) = {
+            post : "/v1/events/retriggerWebhookCall"
+            body : "*"
+        };
+    };
+    rpc triggerTest(TestWebhookRequest) returns (TestWebhookRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/events/triggerTest"
+            body: "*"
+        };
+    };
+}

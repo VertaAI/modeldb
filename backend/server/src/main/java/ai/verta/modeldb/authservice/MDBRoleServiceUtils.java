@@ -8,7 +8,6 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.authservice.RoleServiceUtils;
@@ -314,78 +313,6 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
     } else {
       return CommonConstants.EMPTY_STRING;
     }
-  }
-
-  private Optional<Workspace> getWorkspaceByLegacyId(
-      final String legacyWorkspaceId, final WorkspaceType workspaceType) {
-    if (legacyWorkspaceId == null || legacyWorkspaceId.isEmpty()) {
-      return Optional.empty();
-    }
-    try (final var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace("Fetching workspace " + legacyWorkspaceId);
-      final var workspace =
-          authServiceChannel
-              .getWorkspaceServiceBlockingStub()
-              .getWorkspaceByLegacyId(
-                  GetWorkspaceByLegacyId.newBuilder()
-                      .setId(legacyWorkspaceId)
-                      .setWorkspaceType(workspaceType)
-                      .build());
-      LOGGER.trace("Got workspace " + workspace);
-      return Optional.of(workspace);
-    } catch (StatusRuntimeException ex) {
-      ModelDBUtils.retryOrThrowException(ex, false, (RetryCallInterface<Void>) (retry1) -> null);
-    }
-    return Optional.empty();
-  }
-
-  @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceName(
-      UserInfo currentLoginUserInfo, String workspaceName) {
-    var workspaceDTO = new WorkspaceDTO();
-    workspaceDTO.setWorkspaceName(workspaceName);
-
-    /*from the name for workspace, get the workspace id and type.
-    if no workspace is present assume user's personal workspace*/
-    if (workspaceName == null
-        || workspaceName.isEmpty()
-        || workspaceName.equalsIgnoreCase(
-            authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
-      String vertaId = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
-      workspaceDTO.setWorkspaceId(vertaId);
-      workspaceDTO.setWorkspaceType(WorkspaceType.USER);
-      workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
-      Optional<Workspace> workspace = getWorkspaceByLegacyId(vertaId, WorkspaceType.USER);
-      if (workspace.isPresent()) {
-        workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
-      }
-    } else {
-      try {
-        final String legacyWorkspaceId = new CollaboratorOrg(getOrgByName(workspaceName)).getId();
-        workspaceDTO.setWorkspaceId(legacyWorkspaceId);
-        workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
-        workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace =
-            getWorkspaceByLegacyId(legacyWorkspaceId, WorkspaceType.ORGANIZATION);
-        if (workspace.isPresent()) {
-          workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
-        }
-      } catch (StatusRuntimeException e) {
-        var collaboratorUser =
-            new CollaboratorUser(
-                authService,
-                authService.getUserInfo(workspaceName, CommonConstants.UserIdentifier.USER_NAME));
-        workspaceDTO.setWorkspaceId(collaboratorUser.getId());
-        workspaceDTO.setWorkspaceType(WorkspaceType.USER);
-        workspaceDTO.setWorkspaceName(workspaceName);
-        Optional<Workspace> workspace =
-            getWorkspaceByLegacyId(collaboratorUser.getId(), WorkspaceType.USER);
-        if (workspace.isPresent()) {
-          workspaceDTO.setWorkspaceServiceId(workspace.get().getId());
-        }
-      }
-    }
-    return workspaceDTO;
   }
 
   @Override
