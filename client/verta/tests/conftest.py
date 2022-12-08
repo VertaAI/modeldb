@@ -36,6 +36,7 @@ from .env_fixtures import (
     mock_env_jwt_auth,
     mock_env_authn_missing,
 )
+from verta._internal_utils._utils import generate_default_name
 
 
 RANDOM_SEED = 0
@@ -520,13 +521,11 @@ def class_endpoint_updated(
     return ep
 
 
-class Workspace:
-    def __init__(self, name):
-        self.name = name
-
 @pytest.fixture
 def workspace(client, created_entities):
-    return Workspace(client._conn.get_custom_workspace(constants.ORG_ID))
+    workspace = client._conn.get_custom_workspace(constants.ORG_ID, generate_default_name())
+    created_entities.append(workspace)
+    return workspace
 
 
 @pytest.fixture

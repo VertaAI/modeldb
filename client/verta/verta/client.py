@@ -24,6 +24,7 @@ from verta import credentials
 from verta.credentials import EmailCredentials, JWTCredentials
 
 from .tracking import _Context
+from .tracking._workspace import Workspace
 from .tracking.entities import (
     Project,
     Projects,

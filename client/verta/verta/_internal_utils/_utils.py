@@ -31,9 +31,11 @@ from verta.credentials import EmailCredentials, JWTCredentials
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
+from .._protos.public.uac import GroupV2_pb2 as _Group
+from .._protos.public.uac import RoleV2_pb2 as _Role
 
 from . import importer
-
+from ..tracking._workspace import Workspace
 
 logger = logging.getLogger(__name__)
 
@@ -342,22 +344,20 @@ class Connection(object):
         else:  # old backend
             return self.get_personal_workspace()
 
-    def get_custom_workspace(self, org_id):
-        response = self.make_proto_request(
-            "POST", "/api/v2/organization/{}/workspaces".format()
+    def get_custom_workspace(self, org_id, workspace_name):
+        response_groups = self.make_proto_request(
+            "GET", "/api/v2/uac-proxy/organization/{}/groups".format(org_id)
         )
-
-        if (
-                response.ok and self.is_html_response(response)
-        ) or response.status_code == 404:  # fetched webapp  # UAC not found
-            return self._OSS_DEFAULT_WORKSPACE
-
-        user_info = self.must_proto_response(response, UACService_pb2.UserInfo)
-        workspace_id = user_info.verta_info.default_workspace_id
-        if workspace_id:
-            return self.get_workspace_name_from_id(workspace_id)
-        else:  # old backend
-            return self.get_personal_workspace()
+        response_roles = self.make_proto_request(
+            "GET", "/api/v2/uac-proxy/organization/{}/roles".format(org_id)
+        )
+        groups = self.maybe_proto_response(response_groups, _Group.SearchGroups.Response).groups
+        group_id = set(group.id for group in groups if group.name == "All Users")[0]
+        roles = self.maybe_proto_response(response_roles, _Role.SearchRolesV2.Response).roles
+        role_id = set(role.id for role in roles if role.name == "All Users")[0]
+        return Workspace._create(
+            self, workspace_name, org_id, group_id, role_id
+        )
 
 
 class NoneProtoResponse(object):

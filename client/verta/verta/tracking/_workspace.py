@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .._protos.public.uac import Workspace_pb2 as _Organization
+from .._protos.public.uac import WorkspaceV2_pb2 as _Workspace
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 
@@ -13,90 +13,38 @@ class Workspace(object):
         self.conn = conn
         self.msg = msg
         self.id = msg.id
+        self.org_id = msg.org_id
         self.name = msg.name
 
     @classmethod
     def _create(
-        cls, conn, name
+        cls, conn, name, org_id, group_id, role_id
     ):
-        Message = _Workspace.SetWorkspace
-        msg = cls._create_msg(name, desc, collaborator_type, global_can_deploy)
+        Message = _Workspace.SetWorkspaceV2
+        msg = cls._create_msg(name, org_id, group_id, role_id)
 
         response = conn.make_proto_request(
             "POST",
-            "/api/v1/uac-proxy/organization/setOrganization",
-            body=Message(organization=msg),
+            "/api/v2/uac-proxy/organization/{}/workspaces".format(org_id),
+            body=Message(workspace=msg),
         )
-        org = conn.must_proto_response(response, Message.Response).workspace
+        workspace = conn.must_proto_response(response, Message.Response).workspace
 
-        print("created new Organization: {}".format(org.name))
-        return cls(conn, org)
+        print("created new Workspace : {}".format(workspace.name))
+        return cls(conn, workspace)
 
     @classmethod
-    def _create_msg(cls, name, desc, collaborator_type, global_can_deploy):
-        Message = _Organization.Organization
-        if not collaborator_type:
-            collaborator_type = CollaboratorType()
-        if global_can_deploy:
-            can_deploy_value = _CommonCommonService.TernaryEnum.Ternary.TRUE
-        else:
-            can_deploy_value = _CommonCommonService.TernaryEnum.Ternary.FALSE
-        msg = Message(name=name, description=desc, global_can_deploy=can_deploy_value)
-        for key in collaborator_type.__dict__:
-            try:
-                attr = getattr(collaborator_type, key)
-                if not attr:
-                    value = (
-                        _CommonCommonService.CollaboratorTypeEnum.CollaboratorType.READ_ONLY
-                    )
-                else:
-                    value = _CommonCommonService.CollaboratorTypeEnum.CollaboratorType.Value(
-                        attr
-                    )
-                setattr(msg, key, value)
-            except ValueError:
-                unknown_value_error = "Unknown value specified for {}. Possible values are READ_ONLY, READ_WRITE."
-                raise ValueError(unknown_value_error.format(key))
+    def _create_msg(cls, name, org_id, group_id, role_id):
+        Message = _Workspace.WorkspaceV2
+        msg = Message(name=name, org_id=org_id, permisssions = [_Workspace.Permission(group_id, role_id)])
         return msg
-
-    @classmethod
-    def _get_by_name(cls, conn, name):
-        Message = _Organization.GetOrganizationByName
-        msg = Message(org_name=name)
-
-        response = conn.make_proto_request(
-            "GET", "/api/v1/uac-proxy/organization/getOrganizationByName", params=msg
-        )
-        org = conn.must_proto_response(response, Message.Response).workspace
-        return cls(conn, org)
-
-    """
-    Adds member to an organization
-
-    Parameters
-    ----------
-    share_with : str
-        Represents email or username.
-
-    """
-
-    def add_member(self, share_with):
-        Message = _Organization.AddUser
-
-        response = self.conn.make_proto_request(
-            "POST",
-            "/api/v1/uac-proxy/organization/addUser",
-            body=Message(org_id=self.id, share_with=share_with),
-        )
-        status = self.conn.must_proto_response(response, Message.Response).status
 
     def delete(self):
         """
-        Deletes this organization.
+        Deletes this workspace.
 
         """
-        Message = _Organization.DeleteOrganization
-        endpoint = "/api/v1/uac-proxy/organization/deleteOrganization"
-        msg = Message(org_id=self.id)
-        response = self.conn.make_proto_request("POST", endpoint, body=msg)
+        Message = _Workspace.DeleteWorkspaceV2
+        endpoint = "/api/v2/uac-proxy/organization/{}/workspace/{}".format(self.org_id, self.id)
+        response = self.conn.make_proto_request("DELETE", endpoint)
         self.conn.must_proto_response(response, Message.Response)
