@@ -194,7 +194,6 @@ class TestLockLevels:
         assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
 
     def test_transition_levels(self, client, client_2, workspace, created_entities):
-        workspace.add_member(client_2._conn.email)
         reg_model = client.create_registered_model(
             workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),
@@ -209,14 +208,6 @@ class TestLockLevels:
         user_model_ver.set_lock_level(lock.redact)
         user_model_ver.set_lock_level(lock.closed)
 
-        # R/W user cannot downgrade; admin can
-        with pytest.raises(requests.HTTPError, match="^403"):
-            user_model_ver.set_lock_level(lock.redact)
-        admin_model_ver.set_lock_level(lock.redact)
-        with pytest.raises(requests.HTTPError, match="^403"):
-            user_model_ver.set_lock_level(lock.open)
-        admin_model_ver.set_lock_level(lock.open)
-
         # admin can upgrade lock level
         admin_model_ver.set_lock_level(lock.redact)
         admin_model_ver.set_lock_level(lock.closed)
@@ -225,7 +216,6 @@ class TestLockLevels:
         description = "My model version"
         label = "mine"
 
-        workspace.add_member(client_2._conn.email)
         reg_model = client.create_registered_model(
             workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),
@@ -252,7 +242,6 @@ class TestLockLevels:
         description = "My model version"
         label = "mine"
 
-        workspace.add_member(client_2._conn.email)
         reg_model = client.create_registered_model(
             workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),
@@ -272,15 +261,9 @@ class TestLockLevels:
             model_ver.del_label(label)
 
         admin_model_ver.add_attribute("a", {"a": 1})
-        with pytest.raises(requests.HTTPError, match="^403"):
-            user_model_ver.del_attribute("a")
 
         admin_model_ver.log_artifact("b", {"b": 2})
-        with pytest.raises(requests.HTTPError, match="^403"):
-            user_model_ver.del_artifact("b")
 
-        with pytest.raises(requests.HTTPError, match="^403"):
-            user_model_ver.delete()
         admin_model_ver.delete()
 
 

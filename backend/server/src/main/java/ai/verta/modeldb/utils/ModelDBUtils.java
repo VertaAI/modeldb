@@ -26,7 +26,6 @@ import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.*;
@@ -302,17 +301,18 @@ public class ModelDBUtils {
 
   public static List<KeyValueQuery> getKeyValueQueriesByWorkspace(
       MDBRoleService mdbRoleService, UserInfo userInfo, String workspaceName) {
-    var workspaceDTO = mdbRoleService.getWorkspaceDTOByWorkspaceName(userInfo, workspaceName);
+    var workspaceDTO = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
     return getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
   }
 
-  public static List<KeyValueQuery> getKeyValueQueriesByWorkspaceDTO(WorkspaceDTO workspaceDTO) {
+  public static List<KeyValueQuery> getKeyValueQueriesByWorkspaceDTO(Workspace workspaceDTO) {
     List<KeyValueQuery> workspaceQueries = new ArrayList<>();
-    if (workspaceDTO != null && workspaceDTO.getWorkspaceId() != null) {
+    if (workspaceDTO != null && workspaceDTO.getId() != 0) {
       KeyValueQuery workspacePredicates =
           KeyValueQuery.newBuilder()
               .setKey(ModelDBConstants.WORKSPACE)
-              .setValue(Value.newBuilder().setStringValue(workspaceDTO.getWorkspaceId()).build())
+              .setValue(
+                  Value.newBuilder().setStringValue(String.valueOf(workspaceDTO.getId())).build())
               .setOperator(OperatorEnum.Operator.EQ)
               .setValueType(ValueTypeEnum.ValueType.STRING)
               .build();
@@ -322,7 +322,10 @@ public class ModelDBUtils {
               .setKey(ModelDBConstants.WORKSPACE_TYPE)
               .setValue(
                   Value.newBuilder()
-                      .setNumberValue(workspaceDTO.getWorkspaceType().getNumber())
+                      .setNumberValue(
+                          workspaceDTO.getOrgId().isEmpty()
+                              ? WorkspaceType.USER_VALUE
+                              : WorkspaceType.ORGANIZATION_VALUE)
                       .build())
               .setOperator(OperatorEnum.Operator.EQ)
               .setValueType(ValueTypeEnum.ValueType.NUMBER)

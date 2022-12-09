@@ -207,6 +207,12 @@
             "format": "uint64"
           }
         },
+        "model_version_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "workspace_id": {
           "type": "string",
           "format": "uint64"
