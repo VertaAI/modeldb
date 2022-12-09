@@ -408,7 +408,7 @@ public class LineageTest extends TestsInit {
       Experiment experiment,
       String name) {
     CreateExperimentRun createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project.getId(),
             experiment.getId(),
             "ExperimentRun-" + new Date().getTime() + "-" + name);

@@ -518,7 +518,7 @@ public class FutureExperimentRunDAO {
                     .createQuery(
                         "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=:deleted")
                     .bindList("ids", finalRunIds)
-                    .bind("deleted", false)
+                    .bind("deleted", 0)
                     .mapTo(String.class)
                     .list());
 
@@ -747,7 +747,7 @@ public class FutureExperimentRunDAO {
               localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
               localQueryContext.getConditions().add("p.deleted = :deleted");
               localQueryContext.getConditions().add("e.deleted = :deleted");
-              localQueryContext.getBinds().add(q -> q.bind("deleted", false));
+              localQueryContext.getBinds().add(q -> q.bind("deleted", 0));
 
               if (!request.getProjectId().isEmpty()) {
                 localQueryContext

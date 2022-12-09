@@ -3,15 +3,21 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.*;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.GetExperimentRunById.Response;
 import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -31,10 +37,24 @@ import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
+import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorPermissions;
+import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.Resources;
+import ai.verta.uac.ServiceEnum;
+import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import com.google.protobuf.Value.KindCase;
@@ -54,16 +74,17 @@ import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ExperimentRunTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class ExperimentRunTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunTest.class);
 
@@ -84,6 +105,12 @@ public class ExperimentRunTest extends TestsInit {
 
   @Before
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
@@ -122,12 +149,10 @@ public class ExperimentRunTest extends TestsInit {
     experimentRunMap = new HashMap<>();
   }
 
-  private static void createProjectEntities() {
-    ProjectTest projectTest = new ProjectTest();
-
+  private void createProjectEntities() {
     // Create two project of above project
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project = createProjectResponse.getProject();
@@ -139,7 +164,7 @@ public class ExperimentRunTest extends TestsInit {
         project.getName());
 
     // Create project2
-    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project2 = createProjectResponse.getProject();
     projectMap.put(project2.getId(), project2);
@@ -150,7 +175,7 @@ public class ExperimentRunTest extends TestsInit {
         project2.getName());
 
     // Create project3
-    createProjectRequest = projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project3 = createProjectResponse.getProject();
     projectMap.put(project3.getId(), project3);
@@ -159,9 +184,26 @@ public class ExperimentRunTest extends TestsInit {
         "Project name not match with expected project name",
         createProjectRequest.getName(),
         project3.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllEntities(projectMap, testUser1);
+      when(authzMock.getSelfAllowedResources(
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+    }
   }
 
-  private static void createExperimentEntities() {
+  private void createExperimentEntities() {
 
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
@@ -207,8 +249,7 @@ public class ExperimentRunTest extends TestsInit {
         experiment2.getName());
   }
 
-  private static void createExperimentRunEntities() {
-
+  private void createExperimentRunEntities() {
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(
             project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
@@ -306,7 +347,22 @@ public class ExperimentRunTest extends TestsInit {
         .build();
   }
 
-  public static CreateExperimentRun getCreateExperimentRunRequest(
+  public static CreateExperimentRun getCreateExperimentRunRequestForOtherTests(
+      String projectId, String experimentId, String experimentRunName) {
+    return CreateExperimentRun.newBuilder()
+        .setProjectId(projectId)
+        .setExperimentId(experimentId)
+        .setName(experimentRunName)
+        .setDescription("this is a ExperimentRun description")
+        .setDateCreated(Calendar.getInstance().getTimeInMillis())
+        .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+        .setStartTime(Calendar.getInstance().getTime().getTime())
+        .setEndTime(Calendar.getInstance().getTime().getTime())
+        .setCodeVersion("1.0")
+        .build();
+  }
+
+  private CreateExperimentRun getCreateExperimentRunRequest(
       String projectId, String experimentId, String experimentRunName) {
 
     List<String> tags = new ArrayList<>();
@@ -510,6 +566,12 @@ public class ExperimentRunTest extends TestsInit {
     }
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       createExperimentRunRequest =
           createExperimentRunRequest.toBuilder().setProjectId("xyz").build();
       experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -519,6 +581,12 @@ public class ExperimentRunTest extends TestsInit {
     }
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+      }
       createExperimentRunRequest =
           createExperimentRunRequest
               .toBuilder()
@@ -2873,7 +2941,7 @@ public class ExperimentRunTest extends TestsInit {
     LOGGER.info("Log Artifact in ExperimentRun tags test stop................................");
   }
 
-  private static void checkValidArtifactPath(
+  private void checkValidArtifactPath(
       String entityId, String entityName, List<Artifact> artifacts) {
     for (var responseArtifact : artifacts) {
       var validPrefix =
@@ -5291,14 +5359,18 @@ public class ExperimentRunTest extends TestsInit {
         "Delete ExperimentRun by parent entities owner test start.........................");
 
     if (testConfig.hasAuth()) {
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project, CollaboratorType.READ_ONLY, authClientInterceptor);
+      if (isRunningIsolated()) {
 
-      AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
-      assertTrue(addCollaboratorResponse.getStatus());
+      } else {
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project, CollaboratorType.READ_ONLY, authClientInterceptor);
+
+        AddCollaboratorRequest.Response addCollaboratorResponse =
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
+        assertTrue(addCollaboratorResponse.getStatus());
+      }
     }
 
     // Create two experiment of above project
@@ -5330,20 +5402,36 @@ public class ExperimentRunTest extends TestsInit {
             .build();
 
     if (testConfig.hasAuth()) {
+      if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+        // mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser2);
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       try {
         experimentRunServiceStubClient2.deleteExperimentRuns(deleteExperimentRuns);
+        fail();
       } catch (StatusRuntimeException e) {
         checkEqualsAssert(e);
       }
 
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project, CollaboratorType.READ_WRITE, authClientInterceptor);
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+      } else {
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project, CollaboratorType.READ_WRITE, authClientInterceptor);
 
-      AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
-      assertTrue(addCollaboratorResponse.getStatus());
+        AddCollaboratorRequest.Response addCollaboratorResponse =
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
+        assertTrue(addCollaboratorResponse.getStatus());
+      }
 
       DeleteExperimentRuns.Response deleteExperimentRunsResponse =
           experimentRunServiceStubClient2.deleteExperimentRuns(deleteExperimentRuns);
@@ -5362,6 +5450,14 @@ public class ExperimentRunTest extends TestsInit {
       DeleteExperimentRuns.Response deleteExperimentRunResponse =
           experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRuns);
       assertTrue(deleteExperimentRunResponse.getStatus());
+    }
+
+    if (isRunningIsolated()) {
+      when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+      when(authzMock.isSelfAllowed(any()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
     }
 
     FindExperimentRuns getExperimentRunsInExperiment =
@@ -5663,6 +5759,13 @@ public class ExperimentRunTest extends TestsInit {
           getVersionedInputResponse.getVersionedInputs());
 
       if (testConfig.hasAuth()) {
+        if (isRunningIsolated()) {
+          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+          when(authzMock.isSelfAllowed(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+        }
         getVersionedInput = GetVersionedInput.newBuilder().setId(experimentRun.getId()).build();
         getVersionedInputResponse =
             experimentRunServiceStubClient2.getVersionedInputs(getVersionedInput);
@@ -5677,6 +5780,13 @@ public class ExperimentRunTest extends TestsInit {
         }
       }
     } finally {
+      if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+      }
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
@@ -6511,22 +6621,59 @@ public class ExperimentRunTest extends TestsInit {
         }
       }
 
+      AddCollaboratorRequest addCollaboratorRequest = null;
+      AddCollaboratorRequest.Response addCollaboratorResponse = null;
       if (testConfig.hasAuth()) {
-        AddCollaboratorRequest addCollaboratorRequest =
-            AddCollaboratorRequest.newBuilder()
-                .setShareWith(authClientInterceptor.getClient2Email())
-                .setPermission(
-                    CollaboratorPermissions.newBuilder()
-                        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
-                        .build())
-                .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-                .addEntityIds(project.getId())
-                .build();
-        AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-        LOGGER.info(
-            "Project Collaborator added in server : " + addCollaboratorResponse.getStatus());
-        assertTrue(addCollaboratorResponse.getStatus());
+        if (isRunningIsolated()) {
+          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+          mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser2);
+          when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      GetResources.Response.newBuilder()
+                          .addItem(
+                              GetResourcesResponseItem.newBuilder()
+                                  .setVisibility(ResourceVisibility.PRIVATE)
+                                  .setResourceType(
+                                      ResourceType.newBuilder()
+                                          .setModeldbServiceResourceType(
+                                              ModelDBServiceResourceTypes.PROJECT)
+                                          .build())
+                                  .setOwnerId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                                  .setWorkspaceId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                                  .build())
+                          .build()));
+          when(authzMock.getSelfAllowedResources(
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
+              .thenReturn(
+                  Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+        } else {
+          addCollaboratorRequest =
+              AddCollaboratorRequest.newBuilder()
+                  .setShareWith(authClientInterceptor.getClient2Email())
+                  .setPermission(
+                      CollaboratorPermissions.newBuilder()
+                          .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                          .build())
+                  .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
+                  .addEntityIds(project.getId())
+                  .build();
+          addCollaboratorResponse =
+              collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          LOGGER.info(
+              "Project Collaborator added in server : " + addCollaboratorResponse.getStatus());
+          assertTrue(addCollaboratorResponse.getStatus());
+        }
 
         findExperimentRuns =
             FindExperimentRuns.newBuilder()
@@ -6557,21 +6704,50 @@ public class ExperimentRunTest extends TestsInit {
               response.getExperimentRuns(0).getHyperparametersCount());
         }
 
-        addCollaboratorRequest =
-            AddCollaboratorRequest.newBuilder()
-                .setShareWith(authClientInterceptor.getClient2Email())
-                .setPermission(
-                    CollaboratorPermissions.newBuilder()
-                        .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
-                        .build())
-                .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-                .addEntityIds(String.valueOf(repoId))
-                .build();
-        addCollaboratorResponse =
-            collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(
-                addCollaboratorRequest);
-        LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
-        assertTrue(addCollaboratorResponse.getStatus());
+        if (isRunningIsolated()) {
+          when(authzMock.getSelfAllowedResources(
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      GetSelfAllowedResources.Response.newBuilder()
+                          .addResources(
+                              Resources.newBuilder()
+                                  .addResourceIds(String.valueOf(repoId))
+                                  .setResourceType(
+                                      ResourceType.newBuilder()
+                                          .setModeldbServiceResourceType(
+                                              ModelDBServiceResourceTypes.REPOSITORY)
+                                          .build())
+                                  .setService(Service.MODELDB_SERVICE)
+                                  .build())
+                          .build()));
+        } else {
+          addCollaboratorRequest =
+              AddCollaboratorRequest.newBuilder()
+                  .setShareWith(authClientInterceptor.getClient2Email())
+                  .setPermission(
+                      CollaboratorPermissions.newBuilder()
+                          .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_ONLY)
+                          .build())
+                  .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
+                  .addEntityIds(String.valueOf(repoId))
+                  .build();
+          addCollaboratorResponse =
+              collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(
+                  addCollaboratorRequest);
+          LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
+          assertTrue(addCollaboratorResponse.getStatus());
+        }
 
         findExperimentRuns =
             FindExperimentRuns.newBuilder()
@@ -6907,7 +7083,6 @@ public class ExperimentRunTest extends TestsInit {
                 .setIdsOnly(false)
                 .setSortKey("hyperparameters.C")
                 .build();
-
         response = experimentRunServiceStub.findExperimentRuns(findExperimentRuns);
 
         assertEquals(
@@ -7185,6 +7360,34 @@ public class ExperimentRunTest extends TestsInit {
       experimentRunIds.add(createExperimentRunResponse.getExperimentRun().getId());
       LOGGER.info("ExperimentRun created successfully");
 
+      if (isRunningIsolated()) {
+        when(authzMock.getSelfAllowedResources(
+                GetSelfAllowedResources.newBuilder()
+                    .addActions(
+                        Action.newBuilder()
+                            .setModeldbServiceAction(ModelDBServiceActions.READ)
+                            .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                    .build()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    GetSelfAllowedResources.Response.newBuilder()
+                        .addResources(
+                            Resources.newBuilder()
+                                .addResourceIds(String.valueOf(repoId))
+                                .setResourceType(
+                                    ResourceType.newBuilder()
+                                        .setModeldbServiceResourceType(
+                                            ModelDBServiceResourceTypes.REPOSITORY)
+                                        .build())
+                                .setService(Service.MODELDB_SERVICE)
+                                .build())
+                        .build()));
+      }
+
       FindExperimentRuns findExperimentRuns =
           FindExperimentRuns.newBuilder()
               .setProjectId(project.getId())
@@ -7260,6 +7463,13 @@ public class ExperimentRunTest extends TestsInit {
                 .isEmpty());
       }
     } finally {
+      if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+      }
 
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -7792,14 +8002,22 @@ public class ExperimentRunTest extends TestsInit {
           response.getExperimentRuns(0));
 
       if (testConfig.hasAuth()) {
-        AddCollaboratorRequest addCollaboratorRequest =
-            addCollaboratorRequestProjectInterceptor(
-                project, CollaboratorType.READ_ONLY, authClientInterceptor);
+        if (isRunningIsolated()) {
+          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+          when(authzMock.isSelfAllowed(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+        } else {
+          AddCollaboratorRequest addCollaboratorRequest =
+              addCollaboratorRequestProjectInterceptor(
+                  project, CollaboratorType.READ_ONLY, authClientInterceptor);
 
-        AddCollaboratorRequest.Response addCollaboratorResponse =
-            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-        LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
-        assertTrue(addCollaboratorResponse.getStatus());
+          AddCollaboratorRequest.Response addCollaboratorResponse =
+              collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          LOGGER.info("Collaborator updated in server : " + addCollaboratorResponse.getStatus());
+          assertTrue(addCollaboratorResponse.getStatus());
+        }
 
         response =
             experimentRunServiceStubClient2.getExperimentRunsByDatasetVersionId(
@@ -7836,12 +8054,39 @@ public class ExperimentRunTest extends TestsInit {
       }
 
       for (Dataset dataset : datasetList) {
+        if (isRunningIsolated()) {
+          var authChannelMock = mock(AuthServiceChannel.class);
+          when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
+          var collaboratorBlockingMock = mock(CollaboratorServiceBlockingStub.class);
+          when(authChannelMock.getCollaboratorServiceBlockingStub())
+              .thenReturn(collaboratorBlockingMock);
+          var resourcesResponse =
+              GetResources.Response.newBuilder()
+                  .addItem(
+                      GetResourcesResponseItem.newBuilder()
+                          .setResourceId(dataset.getId())
+                          .setWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
+                          .build())
+                  .build();
+          when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+          var authzServiceBlockingStub = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
+          when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzServiceBlockingStub);
+          when(authzServiceBlockingStub.isSelfAllowed(any()))
+              .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+        }
         DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
         DeleteDataset.Response deleteDatasetResponse =
             datasetServiceStub.deleteDataset(deleteDataset);
         LOGGER.info("Dataset deleted successfully");
         LOGGER.info(deleteDatasetResponse.toString());
         assertTrue(deleteDatasetResponse.getStatus());
+      }
+
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
       }
       for (String runId : experimentRunMap.keySet()) {
         DeleteExperimentRun deleteExperimentRun =
@@ -8111,6 +8356,24 @@ public class ExperimentRunTest extends TestsInit {
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     LOGGER.info("Project2 created successfully");
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllEntities(
+          Map.of(project1.getId(), project1, project2.getId(), project2), testUser1);
+      when(authzMock.getSelfAllowedResources(
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+    }
 
     try {
       // Create two experiment of above project
