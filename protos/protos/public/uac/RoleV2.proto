@@ -11,11 +11,11 @@ import "uac/UACService.proto";
 
 enum ResourceTypeV2 {
     RESOURCE_TYPE_UNKNOWN = 0;
-    DATA = 1;
-    EXPERIMENT = 2;
-    MODELS_AND_VERSIONS = 3;
-    ENDPOINTS = 4;
-    MONITOR = 5;
+    DATASET = 1;
+    PROJECT = 2;
+    REGISTERED_MODEL = 3;
+    ENDPOINT = 4;
+    MONITORED_ENTITY = 5;
 }
 
 enum ActionTypeV2 {
