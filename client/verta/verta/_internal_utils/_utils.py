@@ -265,9 +265,19 @@ class Connection(object):
         )
         response = self.must_proto_response(response, Workspace_pb2.Workspaces)
 
-        org_names = map(lambda workspace: workspace.org_name, response.workspace)
-        org_names = filter(None, org_names)
-        return list(org_names)
+        workspace_names = map(lambda workspace: "{}:{}".format(workspace.org_id, workspace.org_name), response.workspace)
+        workspace_names = filter(None, workspace_names)
+        return list(workspace_names)
+
+    def _get_visible_org(self):
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces"
+        )
+        response = self.must_proto_response(response, Workspace_pb2.Workspaces)
+
+        workspace_names = map(lambda workspace: workspace.org_id, response.workspace)
+        workspace_names = filter(None, workspace_names)
+        return list(workspace_names)[0]
 
     def _set_default_workspace(self, name):
         msg = Workspace_pb2.GetWorkspaceByName(name=name)
