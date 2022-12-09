@@ -105,7 +105,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
   @Before
   public void createEntities() {
-    initializedChannelBuilderAndExternalServiceStubs();
+    initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
       setupMockUacEndpoints(uac);
@@ -186,7 +186,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         project3.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntity(projectMap, testUser1);
+      mockGetResourcesForAllEntities(projectMap, testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
                   .addActions(
@@ -6626,7 +6626,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
           when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
-          mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser2);
+          mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser2);
           when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
               .thenReturn(
                   Futures.immediateFuture(
@@ -8358,7 +8358,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     LOGGER.info("Project2 created successfully");
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntity(
+      mockGetResourcesForAllEntities(
           Map.of(project1.getId(), project1, project2.getId(), project2), testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
