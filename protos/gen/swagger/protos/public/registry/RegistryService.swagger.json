@@ -1901,6 +1901,24 @@
       ],
       "default": "IMAGE"
     },
+    "CloudProviderTypeEnumCloudProviderType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OTHER",
+        "AMAZON_WEB_SERVICES",
+        "MICROSOFT_AZURE",
+        "GOOGLE_CLOUD_PLATFORM",
+        "ALIBABA_CLOUD",
+        "ORACLE_CLOUD",
+        "IBM_CLOUD",
+        "TENCENT_CLOUD",
+        "OVHCLOUD",
+        "DIGITALOCEAN",
+        "SALESFORCE"
+      ],
+      "default": "UNKNOWN"
+    },
     "CollaboratorTypeEnumCollaboratorType": {
       "type": "string",
       "enum": [
@@ -1919,6 +1937,16 @@
         "TABULAR",
         "TEXT",
         "VIDEO"
+      ],
+      "default": "UNKNOWN"
+    },
+    "LocationTypeEnumLocationType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "CLOUD_PROVIDER",
+        "INTERNAL_PRIVATE_NETWORK",
+        "DEVICE"
       ],
       "default": "UNKNOWN"
     },
@@ -2222,6 +2250,14 @@
         "description": {
           "type": "string",
           "title": "Brief description"
+        },
+        "location_type": {
+          "$ref": "#/definitions/LocationTypeEnumLocationType",
+          "title": "Location Type"
+        },
+        "cloud_provider_type": {
+          "$ref": "#/definitions/CloudProviderTypeEnumCloudProviderType",
+          "title": "Cloud Provider Type"
         }
       }
     },

@@ -25,7 +25,7 @@ message DataTypeEnum {
   }
 }
 
-message ActionTypeEnum {  
+message ActionTypeEnum {
   option deprecated = true;
   enum ActionType {
     option deprecated = true;
@@ -423,6 +423,32 @@ message LogDockerMetadataInModelVersion {
     message Response { }
 }
 
+message LocationTypeEnum {
+  enum LocationType {
+    UNKNOWN = 0;
+    CLOUD_PROVIDER = 1;
+    INTERNAL_PRIVATE_NETWORK = 2;
+    DEVICE = 3;
+  }
+}
+
+message CloudProviderTypeEnum {
+  enum CloudProviderType {
+    UNKNOWN = 0;
+    OTHER = 1;
+    AMAZON_WEB_SERVICES = 2;
+    MICROSOFT_AZURE = 3;
+    GOOGLE_CLOUD_PLATFORM = 4;
+    ALIBABA_CLOUD = 5;
+    ORACLE_CLOUD = 6;
+    IBM_CLOUD = 7;
+    TENCENT_CLOUD = 8;
+    OVHCLOUD = 9;
+    DIGITALOCEAN = 10;
+    SALESFORCE = 11;
+  }
+}
+
 message ExternalDeployment {
     // internal id
     uint64 id = 1;
@@ -444,6 +470,12 @@ message ExternalDeployment {
 
     // Brief description
     string description = 7;
+
+    // Location Type
+    LocationTypeEnum.LocationType location_type = 8;
+
+    // Cloud Provider Type
+    CloudProviderTypeEnum.CloudProviderType cloud_provider_type = 9;
 }
 
 message ExternalDeploymentRequest {
@@ -677,7 +709,7 @@ service RegistryService {
         };
     };
 
-   rpc CreateExternalDeployment(ExternalDeployment) returns (ExternalDeploymentRequest.Response) {
+    rpc CreateExternalDeployment(ExternalDeployment) returns (ExternalDeploymentRequest.Response) {
         option (google.api.http) = {
             post: "/v1/registry/registered_models/model_versions/external_deployments"
             body: "*"

@@ -1,0 +1,198 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "registry/ChecklistService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/registry/checklist_item_values/search": {
+      "post": {
+        "summary": "Initial functions to list all, create, update\nchecklist_item_values",
+        "operationId": "ChecklistService_searchChecklistItemValues",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistItemValuesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistItemValues"
+            }
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    },
+    "/registry/model_versions/{model_version_id}/checklist_item_values/search": {
+      "post": {
+        "summary": "Initial functions to list all, create, update\nchecklist_item_values",
+        "operationId": "ChecklistService_searchChecklistItemValues2",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistItemValuesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "model_version_id",
+            "description": "identity of parent registered model version",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registrySearchChecklistItemValues"
+            }
+          }
+        ],
+        "tags": [
+          "ChecklistService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "registryChecklistItemValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "completed": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "value corresponds to if the item was marked as completed"
+        },
+        "evidence": {
+          "type": "string",
+          "title": "value corresponds to user given evidence"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the model version this belongs to"
+        },
+        "checklist_template_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the template(UAC) this is related to"
+        },
+        "checklist_template_item_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the template item (UAC) this is related to"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when this entity was created"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "title": "Timestamp recorded when metadata for this entity was last updated"
+        },
+        "created_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that created this entity"
+        },
+        "updated_by_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of user(UAC) that updated this entity"
+        }
+      }
+    },
+    "registrySearchChecklistItemValues": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "title": "identity of parent registered model version"
+        }
+      }
+    },
+    "registrySearchChecklistItemValuesResponse": {
+      "type": "object",
+      "properties": {
+        "checklist_item_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryChecklistItemValue"
+          }
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

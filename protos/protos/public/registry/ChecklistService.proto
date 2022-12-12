@@ -1,0 +1,65 @@
+syntax = "proto3";
+
+package ai.verta.registry;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/field_mask.proto";
+
+message ChecklistItemValue {
+  // internal id
+  uint64 id = 1;
+
+  // value corresponds to if the item was marked as completed
+  bool completed = 2;
+
+  // value corresponds to user given evidence
+  string evidence = 3;
+
+  // id of the model version this belongs to
+  uint64 model_version_id = 4;
+
+  // id of the template(UAC) this is related to
+  uint64 checklist_template_id = 5;
+
+  // id of the template item (UAC) this is related to
+  uint64 checklist_template_item_id = 6;
+
+  // Timestamp recorded when this entity was created
+  int64 time_created = 7;
+
+  // Timestamp recorded when metadata for this entity was last updated
+  int64 time_updated = 8;
+
+  // id of user(UAC) that created this entity
+  uint64 created_by_id = 9;
+
+  // id of user(UAC) that updated this entity
+  uint64 updated_by_id = 10;
+}
+
+message SearchChecklistItemValues {
+  // identity of parent registered model version
+  string model_version_id = 1;
+
+  message Response { repeated ChecklistItemValue checklist_item_values = 1; }
+}
+
+service ChecklistService {
+  // Initial functions to list all, create, update
+  // checklist_item_values
+  rpc searchChecklistItemValues(SearchChecklistItemValues)
+      returns (SearchChecklistItemValues.Response) {
+    option (google.api.http) = {
+      post : "/v1/registry/checklist_item_values/search"
+      body : "*"
+      additional_bindings {
+        post : "/v1/registry/model_versions/{model_version_id}/"
+               "checklist_item_values/search"
+        body : "*"
+      }
+    };
+  };
+}
