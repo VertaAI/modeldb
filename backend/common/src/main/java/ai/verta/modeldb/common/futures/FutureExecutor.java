@@ -1,13 +1,12 @@
 package ai.verta.modeldb.common.futures;
 
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ForkJoinPool;
-
 import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.metrics.LongHistogram;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ForkJoinPool;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.With;
