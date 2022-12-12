@@ -261,7 +261,7 @@ class Connection(object):
         else:
             return None
 
-    def _get_visible_orgs(self):
+    def _get_visible_workspaces(self):
         response = self.make_proto_request(
             "GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces"
         )
@@ -271,7 +271,7 @@ class Connection(object):
         workspace_names = filter(None, workspace_names)
         return list(workspace_names)
 
-    def _get_visible_org(self):
+    def _get_organization_id(self):
         response = self.make_proto_request(
             "GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces"
         )

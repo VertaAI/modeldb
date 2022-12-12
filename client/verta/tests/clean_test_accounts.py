@@ -105,7 +105,7 @@ def delete_builds(clients):
     """
     logger.info("deleting builds")
     for client in clients:
-        workspaces = client._conn._get_visible_orgs() + [
+        workspaces = client._conn._get_visible_workspaces() + [
             client._conn.get_personal_workspace()
         ]
         for workspace in workspaces:
@@ -147,7 +147,7 @@ def delete_endpoints(clients):
     """
     logger.info("deleting endpoints")
     for client in clients:
-        workspaces = client._conn._get_visible_orgs() + [
+        workspaces = client._conn._get_visible_workspaces() + [
             client._conn.get_personal_workspace()
         ]
         for workspace in workspaces:
