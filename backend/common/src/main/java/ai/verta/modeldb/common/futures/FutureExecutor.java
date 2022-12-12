@@ -21,6 +21,7 @@ public class FutureExecutor implements Executor {
   @With private final io.grpc.Context grpcContext;
 
   public FutureExecutor captureContext() {
+    //set the current nano time into the context, so we can measure how long it takes to actually execute the future.
     io.opentelemetry.context.Context otelContext = Context.current();
     otelContext = otelContext.with(EXECUTION_TIMER_KEY, System.nanoTime());
     return withOtelContext(otelContext).withGrpcContext(io.grpc.Context.current());
@@ -60,6 +61,7 @@ public class FutureExecutor implements Executor {
 
   private Runnable wrapWithTimer(Runnable r) {
     return () -> {
+      //pull the start time out of the context, and record how much time has elapsed.
       Long startTime = io.opentelemetry.context.Context.current().get(EXECUTION_TIMER_KEY);
       if (startTime != null) {
         long endTime = System.nanoTime();
