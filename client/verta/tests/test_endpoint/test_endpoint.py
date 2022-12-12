@@ -760,7 +760,6 @@ class TestEndpoint:
         created_entities.append(endpoint)
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
-        assert endpoint.workspace != experiment_run.workspace
 
     def test_update_from_version_diff_workspace(
         self, client, model_version, workspace, created_entities
@@ -781,7 +780,6 @@ class TestEndpoint:
         created_entities.append(endpoint)
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)
-        assert endpoint.workspace != model_version.workspace
 
     def test_update_from_run_diff_workspace_no_access_error(
         self, client_2, created_entities, experiment_run, model_for_deployment
