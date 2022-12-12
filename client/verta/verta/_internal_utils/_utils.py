@@ -356,15 +356,15 @@ class Connection(object):
 
     def get_custom_workspace(self, org_id, workspace_name):
         response_groups = self.make_proto_request(
-            "GET", "/api/v2/uac-proxy/organization/{}/groups".format(org_id)
+            "GET", "/api/v1/uac-proxy/organization/{}/groups".format(org_id)
         )
         response_roles = self.make_proto_request(
             "GET", "/api/v2/uac-proxy/organization/{}/roles".format(org_id)
         )
         groups = self.maybe_proto_response(response_groups, _Group.SearchGroups.Response).groups
-        group_id = set(group.id for group in groups if group.name == "All Users")[0]
+        group_id = next(iter(set(group.id for group in groups if group.name == "All Users")))
         roles = self.maybe_proto_response(response_roles, _Role.SearchRolesV2.Response).roles
-        role_id = set(role.id for role in roles if role.name == "All Users")[0]
+        role_id = next(iter(set(role.id for role in roles if role.name == "User")))
         return Workspace._create(
             self, workspace_name, org_id, group_id, role_id
         )

@@ -14,7 +14,7 @@ class Workspace(object):
         self.msg = msg
         self.id = msg.id
         self.org_id = msg.org_id
-        self.name = msg.name
+        self.name = "{}:{}".format(msg.org_id, msg.name)
 
     @classmethod
     def _create(
@@ -36,7 +36,8 @@ class Workspace(object):
     @classmethod
     def _create_msg(cls, name, org_id, group_id, role_id):
         Message = _Workspace.WorkspaceV2
-        msg = Message(name=name, org_id=org_id, permisssions = [_Workspace.Permission(group_id, role_id)])
+        msg = Message(name=name, org_id=org_id,
+                      permissions = [_Workspace.Permission(group_id = group_id, role_id = role_id)])
         return msg
 
     def delete(self):

@@ -523,7 +523,7 @@ def class_endpoint_updated(
 
 @pytest.fixture
 def workspace(client, created_entities):
-    workspace = client._conn.get_custom_workspace(client._conn._get_visible_org(), generate_default_name())
+    workspace = client._conn.get_custom_workspace(client._conn._get_organization_id(), generate_default_name())
     created_entities.append(workspace)
     return workspace
 
