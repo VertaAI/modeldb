@@ -3,6 +3,11 @@ package ai.verta.modeldb.common.futures;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ForkJoinPool;
+
+import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.context.Context;
+import io.opentelemetry.context.ContextKey;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.With;
@@ -10,13 +15,30 @@ import org.springframework.lang.NonNull;
 
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class FutureExecutor implements Executor {
+  private static final ContextKey<Long> EXECUTION_TIMER_KEY = ContextKey.named("execution timer");
+  private static volatile LongHistogram schedulingDelayHistogram;
   private final Executor delegate;
   @With private final io.opentelemetry.context.Context otelContext;
   @With private final io.grpc.Context grpcContext;
 
   public FutureExecutor captureContext() {
-    return withOtelContext(io.opentelemetry.context.Context.current())
-        .withGrpcContext(io.grpc.Context.current());
+    Context otelContext = Context.current();
+    otelContext = otelContext.with(EXECUTION_TIMER_KEY, System.nanoTime());
+    return withOtelContext(otelContext).withGrpcContext(io.grpc.Context.current());
+  }
+
+  private static LongHistogram getSchedulingDelayHistogram() {
+    if (schedulingDelayHistogram != null) {
+      return schedulingDelayHistogram;
+    }
+    schedulingDelayHistogram =
+        GlobalOpenTelemetry.get()
+            .getMeter("verta.future")
+            .histogramBuilder("future_exec_delay")
+            .setDescription("The number of microseconds between creating and executing a Future")
+            .ofLongs()
+            .build();
+    return schedulingDelayHistogram;
   }
 
   // Wraps an Executor and make it compatible with grpc's context
@@ -37,8 +59,24 @@ public class FutureExecutor implements Executor {
     return makeCompatibleExecutor(Executors.newSingleThreadExecutor());
   }
 
+  private Runnable wrapWithTimer(Runnable r) {
+    return () -> {
+      Long startTime = Context.current().get(EXECUTION_TIMER_KEY);
+      if (startTime == null) {
+        r.run();
+        return;
+      }
+      long endTime = System.nanoTime();
+      long millisDelay = (endTime - startTime) / 1_000L;
+      getSchedulingDelayHistogram().record(millisDelay);
+      r.run();
+    };
+  }
+
   @Override
   public void execute(@NonNull Runnable r) {
+    r = wrapWithTimer(r);
+
     if (otelContext != null) {
       r = otelContext.wrap(r);
     }
