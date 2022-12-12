@@ -747,7 +747,7 @@ class TestEndpoint:
     def test_update_from_run_diff_workspace(
         self,
         client,
-            workspace,
+        workspace,
         created_entities,
         experiment_run,
         model_for_deployment,
