@@ -61,13 +61,11 @@ public class FutureExecutor implements Executor {
   private Runnable wrapWithTimer(Runnable r) {
     return () -> {
       Long startTime = io.opentelemetry.context.Context.current().get(EXECUTION_TIMER_KEY);
-      if (startTime == null) {
-        r.run();
-        return;
+      if (startTime != null) {
+        long endTime = System.nanoTime();
+        long microsDelay = (endTime - startTime) / 1_000L;
+        getSchedulingDelayHistogram().record(microsDelay);
       }
-      long endTime = System.nanoTime();
-      long millisDelay = (endTime - startTime) / 1_000L;
-      getSchedulingDelayHistogram().record(millisDelay);
       r.run();
     };
   }
