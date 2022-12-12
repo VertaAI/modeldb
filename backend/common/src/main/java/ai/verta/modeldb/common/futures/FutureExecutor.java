@@ -22,7 +22,7 @@ public class FutureExecutor implements Executor {
   @With private final io.grpc.Context grpcContext;
 
   public FutureExecutor captureContext() {
-    Context otelContext = Context.current();
+    io.opentelemetry.context.Context otelContext = Context.current();
     otelContext = otelContext.with(EXECUTION_TIMER_KEY, System.nanoTime());
     return withOtelContext(otelContext).withGrpcContext(io.grpc.Context.current());
   }
@@ -61,7 +61,7 @@ public class FutureExecutor implements Executor {
 
   private Runnable wrapWithTimer(Runnable r) {
     return () -> {
-      Long startTime = Context.current().get(EXECUTION_TIMER_KEY);
+      Long startTime = io.opentelemetry.context.Context.current().get(EXECUTION_TIMER_KEY);
       if (startTime == null) {
         r.run();
         return;
