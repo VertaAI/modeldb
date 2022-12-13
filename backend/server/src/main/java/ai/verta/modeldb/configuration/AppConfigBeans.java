@@ -104,7 +104,8 @@ public class AppConfigBeans {
   }
 
   @Bean
-  FutureExecutor grpcExecutor(Config config) {
+  FutureExecutor grpcExecutor(Config config, OpenTelemetry openTelemetry) {
+    FutureExecutor.setOpenTelemetry(openTelemetry);
     // Initialize executor so we don't lose context using Futures
     FutureExecutor futureExecutor =
         FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
