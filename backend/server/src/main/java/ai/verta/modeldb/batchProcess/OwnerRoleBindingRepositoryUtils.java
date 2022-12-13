@@ -35,7 +35,7 @@ public class OwnerRoleBindingRepositoryUtils {
   public static void execute() {
     var config = App.getInstance().mdbConfig;
     if (config.hasAuth()) {
-      uac = UAC.FromConfig(config);
+      uac = UAC.fromConfig(config);
       authService = MDBAuthServiceUtils.FromConfig(config, uac);
       mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
     } else {

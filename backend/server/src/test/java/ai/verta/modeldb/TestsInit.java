@@ -111,7 +111,7 @@ public class TestsInit {
     ArtifactStoreService artifactStoreService =
         new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, artifactStoreService, UAC.FromConfig(testConfig));
+    services = ServiceSet.fromConfig(testConfig, artifactStoreService, UAC.fromConfig(testConfig));
     authService = services.getAuthService();
     // Initialize data access
     daos =

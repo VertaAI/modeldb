@@ -31,7 +31,7 @@ public class ModeldbTestConfigurationBeans {
 
   @Bean
   UAC uac(Config config, boolean runningIsolated) {
-    return runningIsolated ? mock(UAC.class, RETURNS_DEEP_STUBS) : UAC.FromConfig(config);
+    return runningIsolated ? mock(UAC.class, RETURNS_DEEP_STUBS) : UAC.fromConfig(config);
   }
 
   private static TestConfig initializeTestConfig() {

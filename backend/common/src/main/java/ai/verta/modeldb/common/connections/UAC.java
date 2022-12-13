@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.*;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -35,19 +36,32 @@ public class UAC extends Connection {
     return fromConfig(config);
   }
 
-  public static UAC fromConfig(Config config) {
+  public static UAC fromConfig(
+      Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
     if (!config.hasAuth()) {
       return null;
     }
-    return new UAC(config);
+    return new UAC(config, tracingClientInterceptor);
   }
 
-  private UAC(Config config) {
-    this(config.getAuthService().getHost(), config.getAuthService().getPort(), config);
+  public static UAC fromConfig(Config config) {
+    return fromConfig(config, config.getTracingClientInterceptor());
   }
 
-  public UAC(String host, Integer port, Config config) {
-    super(config);
+  private UAC(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
+    this(
+        config.getAuthService().getHost(),
+        config.getAuthService().getPort(),
+        config,
+        tracingClientInterceptor);
+  }
+
+  private UAC(
+      String host,
+      Integer port,
+      Config config,
+      Optional<ClientInterceptor> tracingClientInterceptor) {
+    super(tracingClientInterceptor);
     this.config = config;
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
     if (host != null && port != null) { // AuthService not available.
@@ -81,7 +95,7 @@ public class UAC extends Connection {
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
-    return new AuthServiceChannel(config);
+    return new AuthServiceChannel(config, super.getTracingClientInterceptor());
   }
 
   private Metadata getServiceUserMetadata(Config config) {

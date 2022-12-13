@@ -10,6 +10,7 @@ import ai.verta.uac.*;
 import io.grpc.*;
 import io.grpc.stub.AbstractStub;
 import io.grpc.stub.MetadataUtils;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -35,8 +36,8 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   private final String serviceUserDevKey;
   private final Config config;
 
-  public AuthServiceChannel(Config config) {
-    super(config);
+  public AuthServiceChannel(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
+    super(tracingClientInterceptor);
     String host = config.getAuthService().getHost();
     int port = config.getAuthService().getPort();
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);

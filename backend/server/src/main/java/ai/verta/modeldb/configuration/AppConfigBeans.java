@@ -34,6 +34,7 @@ import ai.verta.modeldb.project.FutureProjectServiceImpl;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
+import io.grpc.ClientInterceptor;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
 import io.grpc.ServerInterceptor;
@@ -115,8 +116,8 @@ public class AppConfigBeans {
   }
 
   @Bean
-  UAC uac(Config config) {
-    return UAC.FromConfig(config);
+  UAC uac(Config config, ClientInterceptor tracingClientInterceptor) {
+    return UAC.fromConfig(config, Optional.of(tracingClientInterceptor));
   }
 
   @Bean
