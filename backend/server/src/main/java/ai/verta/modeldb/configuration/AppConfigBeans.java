@@ -112,6 +112,8 @@ public class AppConfigBeans {
         FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
     // assign the executor to all new Future instances.
     Future.setFutureExecutor(futureExecutor);
+    // set the OpenTelemetry instance, in case deep future tracing is enabled.
+    Future.setOpenTelemetry(openTelemetry);
     return futureExecutor;
   }
 
