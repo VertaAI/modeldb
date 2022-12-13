@@ -73,7 +73,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
   private <T extends AbstractStub<T>> T attachInterceptorsWithRequestHeaders(
       io.grpc.stub.AbstractStub<T> stub, Metadata requestHeaders) {
     var clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    stub = config.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
+    stub = super.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
     stub = stub.withInterceptors(clientInterceptor);
     return (T) stub;
   }
@@ -83,7 +83,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
     var clientInterceptor =
         MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadataHeaders());
-    stub = config.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
+    stub = super.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
     stub = stub.withInterceptors(clientInterceptor);
     return (T) stub;
   }

@@ -9,6 +9,7 @@ import ai.verta.modeldb.common.config.ServiceConfig;
 import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.TestConfig;
+import java.util.Optional;
 import java.util.Random;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -31,7 +32,9 @@ public class ModeldbTestConfigurationBeans {
 
   @Bean
   UAC uac(Config config, boolean runningIsolated) {
-    return runningIsolated ? mock(UAC.class, RETURNS_DEEP_STUBS) : UAC.fromConfig(config);
+    return runningIsolated
+        ? mock(UAC.class, RETURNS_DEEP_STUBS)
+        : UAC.fromConfig(config, Optional.empty());
   }
 
   private static TestConfig initializeTestConfig() {

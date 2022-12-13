@@ -36,16 +36,18 @@ public class UAC extends Connection {
     return fromConfig(config);
   }
 
+  /** @deprecated Use fromConfig(config, tracingClientInterceptor) instead. */
+  @Deprecated
+  public static UAC fromConfig(Config config) {
+    return fromConfig(config, config.getTracingClientInterceptor());
+  }
+
   public static UAC fromConfig(
       Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
     if (!config.hasAuth()) {
       return null;
     }
     return new UAC(config, tracingClientInterceptor);
-  }
-
-  public static UAC fromConfig(Config config) {
-    return fromConfig(config, config.getTracingClientInterceptor());
   }
 
   private UAC(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
