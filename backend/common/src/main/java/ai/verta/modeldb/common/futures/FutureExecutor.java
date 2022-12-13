@@ -30,7 +30,8 @@ public class FutureExecutor implements Executor {
    * possible after creation, in order not to miss any metrics that might be recorded.
    */
   public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
-    // it's ok to do this more than once, since creation of meters/instruments is idempotent in the OTel SDK.
+    // it's ok to do this more than once, since creation of meters/instruments is idempotent in the
+    // OTel SDK.
     schedulingDelayHistogram =
         openTelemetry
             .getMeter("verta.future")
