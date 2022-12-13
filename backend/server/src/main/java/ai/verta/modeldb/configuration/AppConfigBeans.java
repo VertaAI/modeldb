@@ -36,6 +36,7 @@ import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptor;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.spring.webmvc.v5_3.SpringWebMvcTelemetry;
@@ -75,11 +76,6 @@ public class AppConfigBeans {
   @Bean
   public Filter webMvcTracingFilter(OpenTelemetry openTelemetry) {
     return SpringWebMvcTelemetry.builder(openTelemetry).build().createServletFilter();
-  }
-
-  @Bean
-  public OpenTelemetry openTelemetry(Config config) {
-    return config.getOpenTelemetry();
   }
 
   @Bean
@@ -147,7 +143,10 @@ public class AppConfigBeans {
 
   @Bean
   public ServerBuilder<?> serverBuilder(
-      MDBConfig config, Executor grpcExecutor, HealthStatusManager healthStatusManager) {
+      MDBConfig config,
+      Executor grpcExecutor,
+      HealthStatusManager healthStatusManager,
+      ServerInterceptor serverInterceptor) {
     // Initialize grpc server
     ServerBuilder<?> serverBuilder =
         ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(grpcExecutor);
@@ -158,9 +157,7 @@ public class AppConfigBeans {
     serverBuilder.addService(healthStatusManager.getHealthService());
 
     // Add middleware/interceptors
-    LOGGER.info(
-        "Tracing is " + (config.getTracingServerInterceptor().isEmpty() ? "disabled" : "enabled"));
-    config.getTracingServerInterceptor().ifPresent(serverBuilder::intercept);
+    serverBuilder.intercept(serverInterceptor);
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
