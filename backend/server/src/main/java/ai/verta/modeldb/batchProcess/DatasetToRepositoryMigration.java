@@ -71,7 +71,7 @@ public class DatasetToRepositoryMigration {
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
     config = App.getInstance().mdbConfig;
-    uac = UAC.fromConfig(config);
+    uac = UAC.fromConfig(config, Optional.empty());
     authService = MDBAuthServiceUtils.FromConfig(config, uac);
     mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
 
