@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.connections;
 
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import io.grpc.ClientInterceptor;
@@ -13,8 +12,8 @@ import java.util.function.Supplier;
 public abstract class Connection {
   private final Optional<ClientInterceptor> tracingClientInterceptor;
 
-  protected Connection(Config config) {
-    tracingClientInterceptor = config.getTracingClientInterceptor();
+  protected Connection(Optional<ClientInterceptor> tracingClientInterceptor) {
+    this.tracingClientInterceptor = tracingClientInterceptor;
   }
 
   // Place the interceptors in the reverse order of their stacking (the ones attached later will be
@@ -66,5 +65,9 @@ public abstract class Connection {
 
     // Force using the ROOT context so that we must lose any context of the current execution
     return Context.ROOT.withValue(MetadataForwarder.METADATA_INFO, authHeaders).attach();
+  }
+
+  protected Optional<ClientInterceptor> getTracingClientInterceptor() {
+    return tracingClientInterceptor;
   }
 }
