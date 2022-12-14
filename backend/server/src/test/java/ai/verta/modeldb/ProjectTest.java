@@ -132,12 +132,15 @@ public class ProjectTest extends ModeldbTestSetup {
     assertTrue(deleteDatasetResponse.getStatus());
 
     projectMap.clear();
+
+    cleanUpResources();
   }
 
   private void createProjectEntities() {
 
     // Create two project of above project
-    CreateProject createProjectRequest = getCreateProjectRequest();
+    CreateProject createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project = createProjectResponse.getProject();
@@ -149,7 +152,8 @@ public class ProjectTest extends ModeldbTestSetup {
         project.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest();
+    createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project2 = createProjectResponse.getProject();
     projectMap.put(project2.getId(), project2);
@@ -160,7 +164,8 @@ public class ProjectTest extends ModeldbTestSetup {
         project2.getName());
 
     // Create project3
-    createProjectRequest = getCreateProjectRequest();
+    createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     project3 = createProjectResponse.getProject();
     projectMap.put(project3.getId(), project3);
@@ -315,7 +320,7 @@ public class ProjectTest extends ModeldbTestSetup {
         .build();
   }
 
-  private CreateProject getCreateProjectRequest() {
+  private CreateProject getCreateProjectWithArtifactsAndAttributesRequest(String workspaceName) {
     List<KeyValue> metadataList = new ArrayList<>();
     Value stringValue =
         Value.newBuilder()
@@ -376,6 +381,7 @@ public class ProjectTest extends ModeldbTestSetup {
             .build());
 
     return CreateProject.newBuilder()
+        .setWorkspaceName(workspaceName)
         .setName("project-" + new Date().getTime())
         .setDescription("This is a project description.")
         .addTags("tag_x")
@@ -1566,7 +1572,8 @@ public class ProjectTest extends ModeldbTestSetup {
     Project project = null;
     try {
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest();
+      CreateProject createProjectRequest =
+          getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser2());
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1612,17 +1619,6 @@ public class ProjectTest extends ModeldbTestSetup {
                                   .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                                   .build())
                           .build()));
-        } else {
-          AddCollaboratorRequest addCollaboratorRequest =
-              CollaboratorUtils.addCollaboratorRequestProject(
-                  project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
-
-          var addOrUpdateProjectCollaboratorResponse =
-              collaboratorBlockingMock.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-          LOGGER.info(
-              "Collaborator added in server : "
-                  + addOrUpdateProjectCollaboratorResponse.getStatus());
-          assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
         }
 
         GetProjectByName.Response getProjectByNameResponse =
@@ -1643,7 +1639,7 @@ public class ProjectTest extends ModeldbTestSetup {
         Project selfProject = null;
         try {
           // Create project
-          createProjectRequest = getCreateProjectRequest();
+          createProjectRequest = getCreateProjectRequest("project-" + new Date().getTime());
           createProjectResponse = projectServiceStub.createProject(createProjectRequest);
           selfProject = createProjectResponse.getProject();
           LOGGER.info("Project created successfully");
@@ -1707,11 +1703,11 @@ public class ProjectTest extends ModeldbTestSetup {
       return;
     }
 
-    Project selfProject = null;
     Project project = null;
     try {
 
       if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
         when(workspaceMock.getWorkspaceByName(
                 GetWorkspaceByName.newBuilder()
                     .setName(testUser2.getVertaInfo().getUsername())
@@ -1723,12 +1719,10 @@ public class ProjectTest extends ModeldbTestSetup {
                         .build()));
       }
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest();
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       createProjectRequest =
-          createProjectRequest
-              .toBuilder()
-              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
-              .build();
+          createProjectRequest.toBuilder().setWorkspaceName(getWorkspaceNameUser2()).build();
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1740,39 +1734,39 @@ public class ProjectTest extends ModeldbTestSetup {
 
       var projectMap = new HashMap<String, Project>();
       if (isRunningIsolated()) {
-        projectMap.put(project.getId(), project);
-        mockGetResourcesForAllEntities(projectMap, testUser1);
-      } else {
-        AddCollaboratorRequest addCollaboratorRequest =
-            CollaboratorUtils.addCollaboratorRequestProject(
-                project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
-
-        AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-            collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-        LOGGER.info(
-            "Collaborator added in server : " + addOrUpdateProjectCollaboratorResponse.getStatus());
-        assertTrue(addOrUpdateProjectCollaboratorResponse.getStatus());
+        when(collaboratorMock.setResource(any()))
+            .thenThrow(new AlreadyExistsException("Already exists"));
       }
 
       // Create project
       createProjectRequest = getCreateProjectRequest(project.getName());
-      createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-      selfProject = createProjectResponse.getProject();
-      LOGGER.info("Project created successfully");
-      assertEquals(
-          "Project name not match with expected project name",
-          createProjectRequest.getName(),
-          selfProject.getName());
+      try {
+        projectServiceStub.createProject(createProjectRequest);
+        fail();
+      } catch (StatusRuntimeException e) {
+        Status status = Status.fromThrowable(e);
+        LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
+        assertEquals(Status.ALREADY_EXISTS.getCode(), status.getCode());
+      }
 
       if (isRunningIsolated()) {
-        projectMap.put(selfProject.getId(), selfProject);
-        mockGetResourcesForAllEntities(projectMap, testUser1);
+        projectMap.put(project.getId(), project);
+        mockGetResourcesForAllEntities(projectMap, testUser2);
+        when(workspaceMock.getWorkspaceByName(
+                GetWorkspaceByName.newBuilder()
+                    .setName(testUser2.getVertaInfo().getUsername())
+                    .build()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    Workspace.newBuilder()
+                        .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                        .build()));
       }
 
       GetProjectByName getProject =
           GetProjectByName.newBuilder()
-              .setName(selfProject.getName())
-              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
+              .setName(project.getName())
+              .setWorkspaceName(getWorkspaceNameUser2())
               .build();
       GetProjectByName.Response getProjectByNameResponse =
           projectServiceStub.getProjectByName(getProject);
@@ -1789,15 +1783,6 @@ public class ProjectTest extends ModeldbTestSetup {
         assertEquals("Shared project name not match", project.getName(), sharedProject.getName());
       }
     } finally {
-      if (selfProject != null) {
-        DeleteProject deleteProject = DeleteProject.newBuilder().setId(selfProject.getId()).build();
-        DeleteProject.Response deleteProjectResponse =
-            projectServiceStub.deleteProject(deleteProject);
-        LOGGER.info("Project deleted successfully");
-        LOGGER.info(deleteProjectResponse.toString());
-        assertTrue(deleteProjectResponse.getStatus());
-      }
-
       if (project != null) {
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =
@@ -1860,7 +1845,8 @@ public class ProjectTest extends ModeldbTestSetup {
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest();
+    CreateProject createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -1872,7 +1858,8 @@ public class ProjectTest extends ModeldbTestSetup {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest();
+    createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -1919,7 +1906,8 @@ public class ProjectTest extends ModeldbTestSetup {
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest();
+    CreateProject createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -1931,7 +1919,8 @@ public class ProjectTest extends ModeldbTestSetup {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest();
+    createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -2453,7 +2442,8 @@ public class ProjectTest extends ModeldbTestSetup {
     ExperimentRun experimentRun3;
     try {
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest();
+      CreateProject createProjectRequest =
+          getCreateProjectRequest("project-" + new Date().getTime());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -2621,7 +2611,8 @@ public class ProjectTest extends ModeldbTestSetup {
     try {
       for (int count = 0; count < 5; count++) {
         // Create project
-        CreateProject createProjectRequest = getCreateProjectRequest();
+        CreateProject createProjectRequest =
+            getCreateProjectRequest("project-" + new Date().getTime());
         CreateProject.Response createProjectResponse =
             projectServiceStub.createProject(createProjectRequest);
         projectIds.add(createProjectResponse.getProject().getId());
@@ -2805,7 +2796,8 @@ public class ProjectTest extends ModeldbTestSetup {
 
     Map<String, Project> projectsMap = new HashMap<>();
     // Create project1
-    CreateProject createProjectRequest = getCreateProjectRequest();
+    CreateProject createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project1 = createProjectResponse.getProject();
@@ -2817,7 +2809,8 @@ public class ProjectTest extends ModeldbTestSetup {
         project1.getName());
 
     // Create project2
-    createProjectRequest = getCreateProjectRequest();
+    createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project2 = createProjectResponse.getProject();
     projectsMap.put(project2.getId(), project2);
@@ -2828,7 +2821,8 @@ public class ProjectTest extends ModeldbTestSetup {
         project2.getName());
 
     // Create project3
-    createProjectRequest = getCreateProjectRequest();
+    createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
     Project project3 = createProjectResponse.getProject();
     projectsMap.put(project3.getId(), project3);
@@ -2943,7 +2937,8 @@ public class ProjectTest extends ModeldbTestSetup {
     Project project = null;
     try {
       // Create project
-      CreateProject createProjectRequest = getCreateProjectRequest();
+      CreateProject createProjectRequest =
+          getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
       CreateProject.Response createProjectResponse =
           projectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -3261,7 +3256,8 @@ public class ProjectTest extends ModeldbTestSetup {
 
   @Test
   public void createProjectWithDeletedProjectName() {
-    CreateProject createProjectRequest = getCreateProjectRequest();
+    CreateProject createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project testProj = createProjectResponse.getProject();
@@ -3305,7 +3301,8 @@ public class ProjectTest extends ModeldbTestSetup {
   @Test
   public void createAndDeleteProjectUsingServiceAccount() {
     // Create two project of above project
-    CreateProject createProjectRequest = getCreateProjectRequest();
+    CreateProject createProjectRequest =
+        getCreateProjectWithArtifactsAndAttributesRequest(getWorkspaceNameUser1());
     CreateProject.Response createProjectResponse =
         serviceUserProjectServiceStub.createProject(createProjectRequest);
     DeleteProjects deleteProjects =

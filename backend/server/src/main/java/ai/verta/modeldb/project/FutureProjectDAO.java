@@ -454,16 +454,9 @@ public class FutureProjectDAO {
             uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
-              String workspaceName;
-              if (request.getWorkspaceName().isEmpty()) {
-                workspaceName = userInfo.getVertaInfo().getUsername();
-              } else {
-                workspaceName = request.getWorkspaceName();
-              }
-
               var resourcesFuture =
                   uacApisUtil.getResourceItemsForWorkspace(
-                      Optional.of(workspaceName),
+                      Optional.of(request.getWorkspaceName()),
                       Optional.of(request.getProjectIdsList()),
                       Optional.empty(),
                       ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
@@ -1009,18 +1002,13 @@ public class FutureProjectDAO {
                           throw new NotFoundException("Project not found");
                         }
 
-                        String workspaceName =
-                            request.getWorkspaceName().isEmpty()
-                                ? userInfo.getVertaInfo().getUsername()
-                                : request.getWorkspaceName();
-
                         FindProjects.Builder findProjects =
                             FindProjects.newBuilder()
                                 .addAllProjectIds(
                                     responseItem.stream()
                                         .map(GetResourcesResponseItem::getResourceId)
                                         .collect(Collectors.toList()))
-                                .setWorkspaceName(workspaceName);
+                                .setWorkspaceName(request.getWorkspaceName());
                         return findProjects(findProjects.build())
                             .thenApply(
                                 response -> {
@@ -1537,51 +1525,47 @@ public class FutureProjectDAO {
                         executor)
                     .thenCompose(
                         loginUser -> {
-                          String workspaceName;
+                          InternalFuture<ResourceVisibility> resourceVisibilityFuture;
                           if (!request.getWorkspaceName().isEmpty()) {
-                            workspaceName = request.getWorkspaceName();
+                            resourceVisibilityFuture =
+                                getWorkspaceByWorkspaceName(request.getWorkspaceName())
+                                    .thenApply(
+                                        workspace ->
+                                            getResourceVisibility(createdProject, workspace),
+                                        executor);
                           } else {
-                            workspaceName = loginUser.getVertaInfo().getUsername();
+                            resourceVisibilityFuture =
+                                InternalFuture.completedInternalFuture(ResourceVisibility.PRIVATE);
                           }
-                          return getWorkspaceByWorkspaceName(workspaceName)
-                              .thenCompose(
-                                  workspace -> {
-                                    ResourceVisibility resourceVisibility =
-                                        getResourceVisibility(createdProject, workspace);
-                                    var projectBuilder = createdProject.toBuilder();
-                                    return createResources(
-                                            Optional.of(workspaceName),
-                                            createdProject.getId(),
-                                            createdProject.getName(),
-                                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
-                                            createdProject.getCustomPermission(),
-                                            resourceVisibility)
-                                        .thenCompose(
-                                            unused2 -> updateProjectAsCreated(createdProject),
-                                            executor)
-                                        .thenCompose(
-                                            unused ->
-                                                populateProjectFieldFromResourceItem(
-                                                    createdProject,
-                                                    workspaceName,
-                                                    workspace,
-                                                    projectBuilder),
-                                            executor);
-                                  },
-                                  executor);
+                          return resourceVisibilityFuture.thenCompose(
+                              resourceVisibility -> {
+                                var projectBuilder = createdProject.toBuilder();
+                                return createResources(
+                                        Optional.empty(),
+                                        createdProject.getId(),
+                                        createdProject.getName(),
+                                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                                        createdProject.getCustomPermission(),
+                                        resourceVisibility)
+                                    .thenCompose(
+                                        unused2 -> updateProjectAsCreated(createdProject), executor)
+                                    .thenCompose(
+                                        unused ->
+                                            populateProjectFieldFromResourceItem(
+                                                createdProject, projectBuilder),
+                                        executor);
+                              },
+                              executor);
                         },
                         executor),
             executor);
   }
 
   private InternalFuture<Project> populateProjectFieldFromResourceItem(
-      Project createdProject,
-      String workspaceName,
-      Workspace workspace,
-      Project.Builder projectBuilder) {
+      Project createdProject, Project.Builder projectBuilder) {
     return uacApisUtil
         .getResourceItemsForWorkspace(
-            Optional.of(workspaceName),
+            Optional.empty(),
             Optional.of(Collections.singletonList(createdProject.getId())),
             Optional.empty(),
             ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
@@ -1602,19 +1586,26 @@ public class FutureProjectDAO {
               projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
               projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
-              switch (workspace.getInternalIdCase()) {
-                case ORG_ID:
-                  projectBuilder.setWorkspaceId(workspace.getOrgId());
-                  projectBuilder.setWorkspaceTypeValue(
-                      WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
-                  break;
-                case USER_ID:
-                  projectBuilder.setWorkspaceId(workspace.getUserId());
-                  projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
-                  break;
-                default:
-                  // Do nothing
-                  break;
+              try {
+                Workspace workspace =
+                    uacApisUtil.getWorkspaceById(projectResource.getWorkspaceId()).get();
+                switch (workspace.getInternalIdCase()) {
+                  case ORG_ID:
+                    projectBuilder.setWorkspaceId(workspace.getOrgId());
+                    projectBuilder.setWorkspaceTypeValue(
+                        WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+                    break;
+                  case USER_ID:
+                    projectBuilder.setWorkspaceId(workspace.getUserId());
+                    projectBuilder.setWorkspaceTypeValue(
+                        WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+                    break;
+                  default:
+                    // Do nothing
+                    break;
+                }
+              } catch (Exception exception) {
+                throw new ModelDBException(exception.getMessage());
               }
 
               ProjectVisibility visibility =
@@ -1716,12 +1707,7 @@ public class FutureProjectDAO {
       setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
     }
 
-    if (workspaceName.isPresent()) {
-      setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
-    } else {
-      throw new IllegalArgumentException(
-          "workspaceId and workspaceName are both empty.  One must be provided.");
-    }
+    workspaceName.ifPresent(setResourcesBuilder::setWorkspaceName);
 
     return FutureUtil.clientRequest(
             uac.getCollaboratorService().setResource(setResourcesBuilder.build()), executor)

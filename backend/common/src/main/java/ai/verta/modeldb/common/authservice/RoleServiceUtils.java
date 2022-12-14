@@ -85,14 +85,9 @@ public class RoleServiceUtils implements RoleService {
       if (ownerId.isPresent()) {
         setResourcesBuilder.setOwnerId(ownerId.get());
       }
-      if (workspaceId.isPresent()) {
-        setResourcesBuilder.setWorkspaceId(workspaceId.get());
-      } else if (workspaceName.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
-      } else {
-        throw new IllegalArgumentException(
-            "workspaceId and workspaceName are both empty.  One must be provided.");
-      }
+
+      workspaceId.ifPresent(setResourcesBuilder::setWorkspaceId);
+      workspaceName.ifPresent(setResourcesBuilder::setWorkspaceName);
 
       var blockingStub =
           isServiceUser

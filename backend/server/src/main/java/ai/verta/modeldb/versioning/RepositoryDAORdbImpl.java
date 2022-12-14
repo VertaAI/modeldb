@@ -302,7 +302,10 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
     RepositoryEntity repositoryEntity;
     var nameChanged = false;
-    var workspace = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    Workspace workspace = null;
+    if (workspaceName != null && !workspaceName.isEmpty()) {
+      workspace = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    }
     if (create) {
       String name = repository.getName();
       if (name.isEmpty()) {
@@ -368,12 +371,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         if (repository.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
           resourceVisibility =
               ModelDBUtils.getResourceVisibility(
-                  Optional.of(workspace), repository.getRepositoryVisibility());
+                  workspace == null ? Optional.empty() : Optional.of(workspace),
+                  repository.getRepositoryVisibility());
         }
         var modelDBServiceResourceTypes =
             ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
         mdbRoleService.createWorkspacePermissions(
-            Optional.of(workspace.getId()),
+            workspace == null ? Optional.empty() : Optional.of(workspace.getId()),
             Optional.empty(),
             String.valueOf(repositoryEntity.getId()),
             repositoryEntity.getName(),
