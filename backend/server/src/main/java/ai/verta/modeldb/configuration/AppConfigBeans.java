@@ -19,6 +19,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -112,6 +113,9 @@ public class AppConfigBeans {
         FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
     // assign the executor to all new Future instances.
     Future.setFutureExecutor(futureExecutor);
+    // set the OpenTelemetry instance, in case deep future tracing is enabled.
+    Future.setOpenTelemetry(openTelemetry);
+    InternalFuture.setOpenTelemetry(openTelemetry);
     return futureExecutor;
   }
 

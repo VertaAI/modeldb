@@ -5,7 +5,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -30,6 +30,8 @@ public class Future<T> {
    */
   private static FutureExecutor futureExecutor;
 
+  private static Tracer futureTracer;
+
   private static final boolean DEEP_TRACING_ENABLED;
   private static boolean captureStacksAtCreation;
 
@@ -42,7 +44,6 @@ public class Future<T> {
         Boolean.parseBoolean(System.getProperty(FUTURE_TESTING_STACKS_ENABLED));
   }
 
-  private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
   private final String formattedStack;
   private final CompletionStage<T> stage;
 
@@ -183,6 +184,9 @@ public class Future<T> {
   }
 
   private Span startSpan(String futureThenApply) {
+    if (futureTracer == null) {
+      return Span.getInvalid();
+    }
     return futureTracer
         .spanBuilder(futureThenApply)
         .setAttribute(STACK_ATTRIBUTE_KEY, formattedStack)
@@ -409,6 +413,15 @@ public class Future<T> {
           "A FutureExecutor has already been set. Ignoring this call.",
           new RuntimeException("call-site capturer"));
     }
+  }
+
+  public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
+    if (futureTracer != null) {
+      log.warn(
+          "OpenTelemetry has already been set. Ignoring this call.",
+          new RuntimeException("call-site capturer"));
+    }
+    futureTracer = openTelemetry.getTracer("futureTracer");
   }
 
   /** @deprecated Only use this as a part of the conversion process between versions of Futures. */
