@@ -27,17 +27,12 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 
 from ..external import six
 
-from verta.credentials import EmailCredentials, JWTCredentials
+from verta.credentials import EmailCredentials
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
-from .._protos.public.uac import GroupV2_pb2 as _Group
-from .._protos.public.uac import RoleV2_pb2 as _Role
-from .._protos.public.uac import WorkspaceV2_pb2 as _Workspace
+from .._protos.public.uac import UACService_pb2, Workspace_pb2
 
 from . import importer
-from ..tracking._role import Role
-from ..tracking._workspace import Workspace
 
 logger = logging.getLogger(__name__)
 
@@ -355,27 +350,6 @@ class Connection(object):
             return self.get_workspace_name_from_id(workspace_id)
         else:  # old backend
             return self.get_personal_workspace()
-
-    def get_custom_workspace(self, org_id, workspace_name):
-        response_groups = self.make_proto_request(
-            "GET", "/api/v1/uac-proxy/organization/{}/groups".format(org_id)
-        )
-        response_roles = self.make_proto_request(
-            "GET", "/api/v2/uac-proxy/organization/{}/roles".format(org_id)
-        )
-        groups = self.maybe_proto_response(response_groups, _Group.SearchGroups.Response).groups
-        all_users_group_id = next(iter(set(group.id for group in groups if group.name == "All Users")))
-        admins_group_id = next(iter(set(group.id for group in groups if group.name == "Admins")))
-        roles = self.maybe_proto_response(response_roles, _Role.SearchRolesV2.Response).roles
-        super_user_role_id = next(iter(set(role.id for role in roles if role.name == "Super User")))
-        custom_role_id = Role._create(self, workspace_name + "role", org_id, [
-            _Role.RoleResourceActions(resource_type = _Role.ResourceTypeV2.ENDPOINT, allowed_actions = [_Role.ActionTypeV2.READ]),
-            _Role.RoleResourceActions(resource_type = _Role.ResourceTypeV2.REGISTERED_MODEL, allowed_actions = [_Role.ActionTypeV2.READ, _Role.ActionTypeV2.UPDATE]),
-        ]).id
-        return Workspace._create(
-            self, workspace_name, org_id, [_Workspace.Permission(group_id = admins_group_id, role_id = super_user_role_id),
-                                           _Workspace.Permission(group_id = all_users_group_id, role_id = custom_role_id)])
-
 
 class NoneProtoResponse(object):
     def __init__(self):

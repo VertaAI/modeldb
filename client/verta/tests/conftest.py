@@ -37,6 +37,7 @@ from .env_fixtures import (
     mock_env_authn_missing,
 )
 from verta._internal_utils._utils import generate_default_name
+from verta._protos.public.uac import RoleV2_pb2 as _Role
 
 
 RANDOM_SEED = 0
@@ -532,7 +533,12 @@ def class_endpoint_updated(
 
 @pytest.fixture
 def workspace(client, created_entities):
-    workspace = client._conn.get_custom_workspace(client._conn._get_organization_id(), generate_default_name())
+    workspace = client._create_workspace(client._conn._get_organization_id(), generate_default_name(), [
+        _Role.RoleResourceActions(resource_type=_Role.ResourceTypeV2.ENDPOINT,
+                                  allowed_actions=[_Role.ActionTypeV2.READ]),
+        _Role.RoleResourceActions(resource_type=_Role.ResourceTypeV2.REGISTERED_MODEL,
+                                  allowed_actions=[_Role.ActionTypeV2.READ, _Role.ActionTypeV2.UPDATE]),
+    ])
     created_entities.append(workspace)
     return workspace
 

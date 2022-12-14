@@ -10,8 +10,6 @@ import warnings
 import requests
 from ._internal_utils._utils import check_unnecessary_params_warning
 
-from ._protos.public.modeldb import CommonService_pb2 as _CommonService
-
 from .external import six
 
 from ._internal_utils import (
@@ -24,7 +22,6 @@ from verta import credentials
 from verta.credentials import EmailCredentials, JWTCredentials
 
 from .tracking import _Context
-from .tracking._workspace import Workspace
 from .tracking.entities import (
     Project,
     Projects,
@@ -49,6 +46,11 @@ from .endpoint import Endpoint
 from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
+from ._protos.public.uac import GroupV2_pb2 as _Group
+from ._protos.public.uac import RoleV2_pb2 as _Role
+from ._protos.public.uac import WorkspaceV2_pb2 as _Workspace
+from .tracking._role import Role
+from .tracking._workspace import Workspace
 
 
 VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR = "VERTA_DISABLE_CLIENT_CONFIG"
@@ -1736,3 +1738,23 @@ class Client(object):
             datasets = datasets.find(predicates)
 
         return datasets
+
+    def _create_workspace(self, org_id, workspace_name, resource_action_groups):
+        response_groups = self._conn.make_proto_request(
+            "GET", "/api/v1/uac-proxy/organization/{}/groups".format(org_id)
+        )
+        response_roles = self._conn.make_proto_request(
+            "GET", "/api/v2/uac-proxy/organization/{}/roles".format(org_id)
+        )
+        groups = self._conn.maybe_proto_response(response_groups, _Group.SearchGroups.Response).groups
+        all_users_group_id = next(iter(set(group.id for group in groups if group.name == "All Users")))
+        admins_group_id = next(iter(set(group.id for group in groups if group.name == "Admins")))
+        roles = self._conn.maybe_proto_response(response_roles, _Role.SearchRolesV2.Response).roles
+        super_user_role_id = next(iter(set(role.id for role in roles if role.name == "Super User")))
+        custom_role_id = Role._create(self._conn, workspace_name + "role", org_id, resource_action_groups).id
+        return Workspace._create(
+            self._conn, workspace_name, org_id, [_Workspace.Permission(group_id = admins_group_id,
+                                                                       role_id = super_user_role_id),
+                                                 _Workspace.Permission(group_id = all_users_group_id,
+                                                                       role_id = custom_role_id)])
+
