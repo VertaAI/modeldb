@@ -21,6 +21,7 @@ import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
+import ai.verta.modeldb.common.metrics.ThreadSchedulingMonitor;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionServiceImpl;
@@ -117,6 +118,11 @@ public class AppConfigBeans {
     Future.setOpenTelemetry(openTelemetry);
     InternalFuture.setOpenTelemetry(openTelemetry);
     return futureExecutor;
+  }
+
+  @Bean
+  ThreadSchedulingMonitor threadSchedulingMonitor(OpenTelemetry openTelemetry) {
+    return new ThreadSchedulingMonitor(openTelemetry);
   }
 
   @Bean
