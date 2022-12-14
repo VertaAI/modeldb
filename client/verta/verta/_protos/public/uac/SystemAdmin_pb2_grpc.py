@@ -44,15 +44,30 @@ class SystemAdminServiceStub(object):
         request_serializer=uac_dot_SystemAdmin__pb2.ListPypiConfiguration.SerializeToString,
         response_deserializer=uac_dot_SystemAdmin__pb2.ListPypiConfiguration.Response.FromString,
         )
-    self.reorderPypiConfiguration = channel.unary_unary(
-        '/ai.verta.uac.SystemAdminService/reorderPypiConfiguration',
-        request_serializer=uac_dot_SystemAdmin__pb2.ReorderPypiConfiguration.SerializeToString,
-        response_deserializer=uac_dot_SystemAdmin__pb2.ReorderPypiConfiguration.Response.FromString,
-        )
     self.enablePypiConfiguration = channel.unary_unary(
         '/ai.verta.uac.SystemAdminService/enablePypiConfiguration',
         request_serializer=uac_dot_SystemAdmin__pb2.EnablePypiConfiguration.SerializeToString,
         response_deserializer=uac_dot_SystemAdmin__pb2.EnablePypiConfiguration.Response.FromString,
+        )
+    self.createOrUpdateKafkaConfiguration = channel.unary_unary(
+        '/ai.verta.uac.SystemAdminService/createOrUpdateKafkaConfiguration',
+        request_serializer=uac_dot_SystemAdmin__pb2.KafkaConfiguration.SerializeToString,
+        response_deserializer=uac_dot_SystemAdmin__pb2.KafkaConfiguration.FromString,
+        )
+    self.deleteKafkaConfiguration = channel.unary_unary(
+        '/ai.verta.uac.SystemAdminService/deleteKafkaConfiguration',
+        request_serializer=uac_dot_SystemAdmin__pb2.DeleteKafkaConfiguration.SerializeToString,
+        response_deserializer=uac_dot_SystemAdmin__pb2.DeleteKafkaConfiguration.Response.FromString,
+        )
+    self.listKafkaConfiguration = channel.unary_unary(
+        '/ai.verta.uac.SystemAdminService/listKafkaConfiguration',
+        request_serializer=uac_dot_SystemAdmin__pb2.ListKafkaConfiguration.SerializeToString,
+        response_deserializer=uac_dot_SystemAdmin__pb2.ListKafkaConfiguration.Response.FromString,
+        )
+    self.enableKafkaConfiguration = channel.unary_unary(
+        '/ai.verta.uac.SystemAdminService/enableKafkaConfiguration',
+        request_serializer=uac_dot_SystemAdmin__pb2.EnableKafkaConfiguration.SerializeToString,
+        response_deserializer=uac_dot_SystemAdmin__pb2.EnableKafkaConfiguration.Response.FromString,
         )
 
 
@@ -106,14 +121,35 @@ class SystemAdminServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def reorderPypiConfiguration(self, request, context):
+  def enablePypiConfiguration(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def enablePypiConfiguration(self, request, context):
+  def createOrUpdateKafkaConfiguration(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def deleteKafkaConfiguration(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def listKafkaConfiguration(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def enableKafkaConfiguration(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -153,15 +189,30 @@ def add_SystemAdminServiceServicer_to_server(servicer, server):
           request_deserializer=uac_dot_SystemAdmin__pb2.ListPypiConfiguration.FromString,
           response_serializer=uac_dot_SystemAdmin__pb2.ListPypiConfiguration.Response.SerializeToString,
       ),
-      'reorderPypiConfiguration': grpc.unary_unary_rpc_method_handler(
-          servicer.reorderPypiConfiguration,
-          request_deserializer=uac_dot_SystemAdmin__pb2.ReorderPypiConfiguration.FromString,
-          response_serializer=uac_dot_SystemAdmin__pb2.ReorderPypiConfiguration.Response.SerializeToString,
-      ),
       'enablePypiConfiguration': grpc.unary_unary_rpc_method_handler(
           servicer.enablePypiConfiguration,
           request_deserializer=uac_dot_SystemAdmin__pb2.EnablePypiConfiguration.FromString,
           response_serializer=uac_dot_SystemAdmin__pb2.EnablePypiConfiguration.Response.SerializeToString,
+      ),
+      'createOrUpdateKafkaConfiguration': grpc.unary_unary_rpc_method_handler(
+          servicer.createOrUpdateKafkaConfiguration,
+          request_deserializer=uac_dot_SystemAdmin__pb2.KafkaConfiguration.FromString,
+          response_serializer=uac_dot_SystemAdmin__pb2.KafkaConfiguration.SerializeToString,
+      ),
+      'deleteKafkaConfiguration': grpc.unary_unary_rpc_method_handler(
+          servicer.deleteKafkaConfiguration,
+          request_deserializer=uac_dot_SystemAdmin__pb2.DeleteKafkaConfiguration.FromString,
+          response_serializer=uac_dot_SystemAdmin__pb2.DeleteKafkaConfiguration.Response.SerializeToString,
+      ),
+      'listKafkaConfiguration': grpc.unary_unary_rpc_method_handler(
+          servicer.listKafkaConfiguration,
+          request_deserializer=uac_dot_SystemAdmin__pb2.ListKafkaConfiguration.FromString,
+          response_serializer=uac_dot_SystemAdmin__pb2.ListKafkaConfiguration.Response.SerializeToString,
+      ),
+      'enableKafkaConfiguration': grpc.unary_unary_rpc_method_handler(
+          servicer.enableKafkaConfiguration,
+          request_deserializer=uac_dot_SystemAdmin__pb2.EnableKafkaConfiguration.FromString,
+          response_serializer=uac_dot_SystemAdmin__pb2.EnableKafkaConfiguration.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
