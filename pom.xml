@@ -31,7 +31,6 @@
         <protobuf.version>3.21.5</protobuf.version>
         <aws.version>1.12.302</aws.version>
         <jackson.version>2.14.0</jackson.version>
-        <jaegertracing.version>1.8.1</jaegertracing.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <otel.core.version>1.21.0</otel.core.version>
         <otel.instrumentation.version>1.21.0-alpha</otel.instrumentation.version>
@@ -294,26 +293,6 @@
                 <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-grpc-1.6</artifactId>
                 <version>${otel.instrumentation.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-core</artifactId>
-                <version>${jaegertracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-thrift</artifactId>
-                <version>${jaegertracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-client</artifactId>
-                <version>${jaegertracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-grpc</artifactId>
-                <version>0.2.3</version>
             </dependency>
             <dependency>
                 <groupId>io.opentracing.contrib</groupId>

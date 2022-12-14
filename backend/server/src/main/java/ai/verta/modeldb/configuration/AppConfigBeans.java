@@ -10,15 +10,18 @@ import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService
 import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
 import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.EnabledMigration;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.db.JdbiUtils;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.common.metrics.ThreadSchedulingMonitor;
@@ -50,6 +53,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import javax.annotation.PreDestroy;
 import javax.servlet.Filter;
+import javax.sql.DataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.boot.CommandLineRunner;
@@ -142,9 +146,24 @@ public class AppConfigBeans {
       MDBConfig config,
       ServiceSet services,
       FutureExecutor grpcExecutor,
-      ReconcilerInitializer reconcilerInitializer) {
-    return DAOSet.fromServices(
-        services, config.getJdbi(), grpcExecutor, config, reconcilerInitializer);
+      ReconcilerInitializer reconcilerInitializer,
+      FutureJdbi jdbi) {
+    return DAOSet.fromServices(services, jdbi, grpcExecutor, config, reconcilerInitializer);
+  }
+
+  @Bean
+  public DatabaseConfig databaseConfig(MDBConfig config) {
+    return config.getDatabase();
+  }
+
+  @Bean
+  public DataSource dataSource(DatabaseConfig databaseConfig) {
+    return JdbiUtils.initializeDataSource(databaseConfig, "modeldb");
+  }
+
+  @Bean
+  public FutureJdbi futureJdbi(DataSource dataSource, DatabaseConfig databaseConfig) {
+    return JdbiUtils.initializeFutureJdbi(databaseConfig, dataSource);
   }
 
   @Bean
@@ -180,8 +199,8 @@ public class AppConfigBeans {
 
   @Bean
   @Conditional(EnabledMigration.class)
-  public Migration migration(MDBConfig mdbConfig) throws Exception {
-    var migration = new Migration(mdbConfig);
+  public Migration migration(MDBConfig mdbConfig, FutureJdbi futureJdbi) throws Exception {
+    var migration = new Migration(mdbConfig, futureJdbi);
     LOGGER.info("Migrations have completed");
     return migration;
   }

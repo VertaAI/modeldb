@@ -1,7 +1,8 @@
-package ai.verta.modeldb.common.config;
+package ai.verta.modeldb.common.configuration;
 
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
+import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.metrics.otelprom.PrometheusCollector;
 import io.grpc.ClientInterceptor;
 import io.grpc.ServerInterceptor;
@@ -26,6 +27,7 @@ import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
+import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jdbc.TracingDriver;
 import io.opentracing.util.GlobalTracer;
@@ -77,7 +79,7 @@ public class OpenTelemetryConfig {
                 ContextPropagators.create(
                     TextMapPropagator.composite(
                         W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
-            .buildAndRegisterGlobal();
+            .build();
     initializeOpenTracingShim(openTelemetry);
     return openTelemetry;
   }
@@ -106,8 +108,8 @@ public class OpenTelemetryConfig {
         .merge(
             Resource.create(
                 Attributes.of(
-                    stringKey("service.name"),
-                    System.getenv("JAEGER_SERVICE_NAME"),
+                    ResourceAttributes.SERVICE_NAME,
+                    System.getenv("OTEL_SERVICE_NAME"),
                     stringKey("kubernetes.namespace"),
                     System.getenv("POD_NAMESPACE"))))
         .merge(HostResource.get())

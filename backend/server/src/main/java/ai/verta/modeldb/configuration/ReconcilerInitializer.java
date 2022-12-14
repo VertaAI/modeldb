@@ -4,6 +4,7 @@ import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
 import ai.verta.modeldb.config.MDBConfig;
@@ -42,10 +43,13 @@ public class ReconcilerInitializer {
   @Bean
   @Conditional({RunLiquibaseWithMainService.class})
   public ReconcilerInitializer initialize(
-      MDBConfig config, ServiceSet services, DAOSet daos, FutureExecutor executor) {
+      MDBConfig config,
+      ServiceSet services,
+      DAOSet daos,
+      FutureExecutor executor,
+      FutureJdbi futureJdbi) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
 
-    var futureJdbi = config.getJdbi();
     ReconcilerConfig reconcilerConfig = new ReconcilerConfig(config instanceof TestConfig);
 
     softDeleteProjects =

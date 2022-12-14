@@ -141,6 +141,11 @@
             <artifactId>opentelemetry-resources</artifactId>
             <version>${otel.instrumentation.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.instrumentation</groupId>
+            <artifactId>opentelemetry-jdbc</artifactId>
+            <version>${otel.instrumentation.version}</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
         <dependency>
