@@ -17,7 +17,6 @@ public class UAC extends Connection {
   private static final Logger LOGGER = LogManager.getLogger(UAC.class);
 
   private final Config config;
-  private final ManagedChannel authServiceChannel;
 
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub
@@ -30,18 +29,6 @@ public class UAC extends Connection {
   private final OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub;
   private final EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub;
 
-  /** @deprecated Please use {@link #fromConfig(Config)}. */
-  @Deprecated
-  public static UAC FromConfig(Config config) {
-    return fromConfig(config);
-  }
-
-  /** @deprecated Use fromConfig(config, tracingClientInterceptor) instead. */
-  @Deprecated
-  public static UAC fromConfig(Config config) {
-    return fromConfig(config, config.getTracingClientInterceptor());
-  }
-
   public static UAC fromConfig(
       Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
     if (!config.hasAuth()) {
@@ -51,22 +38,13 @@ public class UAC extends Connection {
   }
 
   private UAC(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
-    this(
-        config.getAuthService().getHost(),
-        config.getAuthService().getPort(),
-        config,
-        tracingClientInterceptor);
-  }
-
-  private UAC(
-      String host,
-      Integer port,
-      Config config,
-      Optional<ClientInterceptor> tracingClientInterceptor) {
     super(tracingClientInterceptor);
+    String host = config.getAuthService().getHost();
+    int port = config.getAuthService().getPort();
     this.config = config;
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
-    if (host != null && port != null) { // AuthService not available.
+    ManagedChannel authServiceChannel;
+    if (host != null) {
       authServiceChannel =
           ManagedChannelBuilder.forTarget(host + CommonConstants.STRING_COLON + port)
               .usePlaintext()

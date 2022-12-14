@@ -1,7 +1,5 @@
 package ai.verta.modeldb.common.config;
 
-import static io.opentelemetry.api.common.AttributeKey.stringKey;
-
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -15,29 +13,10 @@ import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
 import io.grpc.ClientInterceptor;
 import io.grpc.ServerInterceptor;
 import io.opentelemetry.api.OpenTelemetry;
-import io.opentelemetry.api.common.Attributes;
-import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
-import io.opentelemetry.context.propagation.ContextPropagators;
-import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
-import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
-import io.opentelemetry.instrumentation.grpc.v1_6.GrpcTelemetry;
-import io.opentelemetry.instrumentation.resources.ContainerResource;
-import io.opentelemetry.instrumentation.resources.HostResource;
-import io.opentelemetry.opentracingshim.OpenTracingShim;
-import io.opentelemetry.sdk.OpenTelemetrySdk;
-import io.opentelemetry.sdk.resources.Resource;
-import io.opentelemetry.sdk.trace.SdkTracerProvider;
-import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
-import io.opentelemetry.sdk.trace.samplers.Sampler;
-import io.opentracing.Tracer;
-import io.opentracing.contrib.jdbc.TracingDriver;
-import io.opentracing.util.GlobalTracer;
 import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import lombok.*;
 import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
@@ -121,84 +100,6 @@ public abstract class Config {
 
   public abstract boolean hasServiceAccount();
 
-  // todo: move all tracing related things to a class that exposes spring @Beans, rather than doing
-  // all of this here.
-  private void initializeTracingInterceptors() {
-    if (!enableTrace) {
-      return;
-    }
-
-    OpenTelemetry openTelemetry = getOpenTelemetry();
-    GrpcTelemetry grpcTelemetry = GrpcTelemetry.create(openTelemetry);
-    if (tracingServerInterceptor == null) {
-      tracingServerInterceptor = grpcTelemetry.newServerInterceptor();
-    }
-    if (tracingClientInterceptor == null) {
-      tracingClientInterceptor = grpcTelemetry.newClientInterceptor();
-    }
-  }
-
-  private void initializeOpenTracingShim(OpenTelemetry openTelemetry) {
-    Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
-    GlobalTracer.registerIfAbsent(tracerShim);
-    TracingDriver.load();
-    TracingDriver.setInterceptorMode(true);
-    TracingDriver.setInterceptorProperty(true);
-  }
-
-  private OpenTelemetry initializeOpenTelemetry() {
-    if (!enableTrace) {
-      return OpenTelemetry.noop();
-    }
-    JaegerThriftSpanExporter spanExporter =
-        JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
-    SdkTracerProvider tracerProvider =
-        SdkTracerProvider.builder()
-            .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
-            .setSampler(createOpenTelemetrySampler())
-            .setResource(
-                Resource.getDefault()
-                    .merge(
-                        Resource.create(
-                            Attributes.of(
-                                stringKey("service.name"),
-                                System.getenv("JAEGER_SERVICE_NAME"),
-                                stringKey("kubernetes.namespace"),
-                                System.getenv("POD_NAMESPACE"))))
-                    .merge(HostResource.get())
-                    .merge(ContainerResource.get()))
-            .build();
-    OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setTracerProvider(tracerProvider)
-            .setPropagators(
-                ContextPropagators.create(
-                    TextMapPropagator.composite(
-                        W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
-            .buildAndRegisterGlobal();
-    initializeOpenTracingShim(openTelemetry);
-    return openTelemetry;
-  }
-
-  /**
-   * Override this method to provide a custom sampler implementation for spans.
-   *
-   * <p>todo: figure out how to do this without requiring a subclass.
-   */
-  protected Sampler createOpenTelemetrySampler() {
-    return Sampler.alwaysOn();
-  }
-
-  public Optional<ServerInterceptor> getTracingServerInterceptor() {
-    initializeTracingInterceptors();
-    return Optional.ofNullable(tracingServerInterceptor);
-  }
-
-  public Optional<ClientInterceptor> getTracingClientInterceptor() {
-    initializeTracingInterceptors();
-    return Optional.ofNullable(tracingClientInterceptor);
-  }
-
   public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
     final var jdbi = initializeJdbi(databaseConfig, poolName);
     final var dbExecutor = FutureExecutor.initializeExecutor(databaseConfig.getThreadCount());
@@ -220,13 +121,6 @@ public abstract class Config {
     hikariDataSource.setLeakDetectionThreshold(databaseConfig.getLeakDetectionThresholdMs());
 
     return new InternalJdbi(Jdbi.create(hikariDataSource));
-  }
-
-  public OpenTelemetry getOpenTelemetry() {
-    if (openTelemetry == null) {
-      openTelemetry = initializeOpenTelemetry();
-    }
-    return openTelemetry;
   }
 
   public void setArtifactStoreConfig(ArtifactStoreConfig artifactStoreConfig) {
