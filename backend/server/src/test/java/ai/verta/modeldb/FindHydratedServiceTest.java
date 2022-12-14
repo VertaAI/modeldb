@@ -109,14 +109,14 @@ public class FindHydratedServiceTest extends TestsInit {
 
   private static void createExperimentRun() {
     CreateExperimentRun createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment1.getId(), "ExperiemntRun-1-" + new Date().getTime());
     CreateExperimentRun.Response createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     experimentRun1 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun1 created successfully");
     createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment1.getId(), "ExperiemntRun-2-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -125,14 +125,14 @@ public class FindHydratedServiceTest extends TestsInit {
 
     // For ExperiemntRun of Experiment2
     createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment2.getId(), "ExperiemntRun-3-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
     experimentRun3 = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun3 created successfully");
     createExperimentRunRequest =
-        ExperimentRunTest.getCreateExperimentRunRequest(
+        ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment2.getId(), "ExperimentRun-4-" + new Date().getTime());
     createExperimentRunResponse =
         experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);

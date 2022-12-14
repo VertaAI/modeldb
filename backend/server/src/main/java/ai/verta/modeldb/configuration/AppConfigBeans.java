@@ -19,6 +19,7 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dataset.DatasetServiceImpl;
@@ -34,8 +35,10 @@ import ai.verta.modeldb.project.FutureProjectServiceImpl;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.FileHasher;
 import ai.verta.modeldb.versioning.VersioningServiceImpl;
+import io.grpc.ClientInterceptor;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import io.grpc.ServerInterceptor;
 import io.grpc.health.v1.HealthCheckResponse;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.instrumentation.spring.webmvc.v5_3.SpringWebMvcTelemetry;
@@ -78,11 +81,6 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public OpenTelemetry openTelemetry(Config config) {
-    return config.getOpenTelemetry();
-  }
-
-  @Bean
   public MDBConfig config() {
     var config = MDBConfig.getInstance();
     App.getInstance().mdbConfig = config;
@@ -108,18 +106,22 @@ public class AppConfigBeans {
   }
 
   @Bean
-  FutureExecutor grpcExecutor(Config config) {
+  FutureExecutor grpcExecutor(Config config, OpenTelemetry openTelemetry) {
+    FutureExecutor.setOpenTelemetry(openTelemetry);
     // Initialize executor so we don't lose context using Futures
     FutureExecutor futureExecutor =
         FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
     // assign the executor to all new Future instances.
     Future.setFutureExecutor(futureExecutor);
+    // set the OpenTelemetry instance, in case deep future tracing is enabled.
+    Future.setOpenTelemetry(openTelemetry);
+    InternalFuture.setOpenTelemetry(openTelemetry);
     return futureExecutor;
   }
 
   @Bean
-  UAC uac(Config config) {
-    return UAC.FromConfig(config);
+  UAC uac(Config config, ClientInterceptor tracingClientInterceptor) {
+    return UAC.fromConfig(config, Optional.of(tracingClientInterceptor));
   }
 
   @Bean
@@ -147,7 +149,10 @@ public class AppConfigBeans {
 
   @Bean
   public ServerBuilder<?> serverBuilder(
-      MDBConfig config, Executor grpcExecutor, HealthStatusManager healthStatusManager) {
+      MDBConfig config,
+      Executor grpcExecutor,
+      HealthStatusManager healthStatusManager,
+      ServerInterceptor serverInterceptor) {
     // Initialize grpc server
     ServerBuilder<?> serverBuilder =
         ServerBuilder.forPort(config.getGrpcServer().getPort()).executor(grpcExecutor);
@@ -158,9 +163,7 @@ public class AppConfigBeans {
     serverBuilder.addService(healthStatusManager.getHealthService());
 
     // Add middleware/interceptors
-    LOGGER.info(
-        "Tracing is " + (config.getTracingServerInterceptor().isEmpty() ? "disabled" : "enabled"));
-    config.getTracingServerInterceptor().ifPresent(serverBuilder::intercept);
+    serverBuilder.intercept(serverInterceptor);
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());

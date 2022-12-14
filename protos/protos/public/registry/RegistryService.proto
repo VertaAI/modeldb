@@ -122,6 +122,7 @@ message FindRegisteredModelRequest{
     common.Pagination pagination = 3;
     bool ascending = 4;
     string sort_key = 5;
+    repeated uint64 ids = 6;
 
     message Response {
         repeated RegisteredModel registered_models = 1;
@@ -321,6 +322,7 @@ message FindModelVersionRequest{
     common.Pagination pagination = 3;
     bool ascending = 4;
     string sort_key = 5;
+    repeated uint64 ids = 6;
 
     message Response {
         repeated ModelVersion model_versions = 1;

@@ -31,6 +31,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -111,7 +112,9 @@ public class TestsInit {
     ArtifactStoreService artifactStoreService =
         new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, artifactStoreService, UAC.FromConfig(testConfig));
+    services =
+        ServiceSet.fromConfig(
+            testConfig, artifactStoreService, UAC.fromConfig(testConfig, Optional.empty()));
     authService = services.getAuthService();
     // Initialize data access
     daos =

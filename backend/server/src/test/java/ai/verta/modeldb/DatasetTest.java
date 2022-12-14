@@ -1336,7 +1336,7 @@ public class DatasetTest extends TestsInit {
           experiment2.getName());
 
       CreateExperimentRun createExperimentRunRequest =
-          ExperimentRunTest.getCreateExperimentRunRequest(
+          ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
               project.getId(), experiment1.getId(), "ExperimentRun-" + new Date().getTime());
       CreateExperimentRun.Response createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -1348,7 +1348,7 @@ public class DatasetTest extends TestsInit {
           experimentRun.getName());
 
       createExperimentRunRequest =
-          ExperimentRunTest.getCreateExperimentRunRequest(
+          ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
               project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
       createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -1561,7 +1561,7 @@ public class DatasetTest extends TestsInit {
           experiment2.getName());
 
       CreateExperimentRun createExperimentRunRequest =
-          ExperimentRunTest.getCreateExperimentRunRequest(
+          ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
               project.getId(), experiment1.getId(), "ExperimentRun-" + new Date().getTime());
       CreateExperimentRun.Response createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -1573,7 +1573,7 @@ public class DatasetTest extends TestsInit {
           experimentRun.getName());
 
       createExperimentRunRequest =
-          ExperimentRunTest.getCreateExperimentRunRequest(
+          ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
               project.getId(), experiment2.getId(), "ExperimentRun-" + new Date().getTime());
       createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);

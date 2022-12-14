@@ -17,7 +17,8 @@ import org.springframework.context.annotation.ComponentScan;
   "ai.verta.modeldb.config",
   "ai.verta.modeldb.health",
   "ai.verta.modeldb.configuration",
-  "ai.verta.modeldb.common.configuration"
+  "ai.verta.modeldb.common.configuration",
+  "ai.verta.modeldb.common.config"
 })
 public class App {
 
