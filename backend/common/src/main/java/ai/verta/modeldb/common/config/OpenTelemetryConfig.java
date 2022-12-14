@@ -10,7 +10,7 @@ import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
-import io.opentelemetry.exporter.jaeger.thrift.JaegerThriftSpanExporter;
+import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.instrumentation.grpc.v1_6.GrpcTelemetry;
 import io.opentelemetry.instrumentation.resources.ContainerResource;
@@ -24,6 +24,7 @@ import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.resources.Resource;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
+import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentracing.Tracer;
 import io.opentracing.contrib.jdbc.TracingDriver;
@@ -55,8 +56,10 @@ public class OpenTelemetryConfig {
     if (!tracingEnabled) {
       tracerProvider = SdkTracerProvider.builder().build();
     } else {
-      JaegerThriftSpanExporter spanExporter =
-          JaegerThriftSpanExporter.builder().setEndpoint(System.getenv("JAEGER_ENDPOINT")).build();
+      SpanExporter spanExporter =
+          JaegerGrpcSpanExporter.builder()
+              .setEndpoint(System.getenv("OTEL_EXPORTER_JAEGER_ENDPOINT"))
+              .build();
       tracerProvider =
           SdkTracerProvider.builder()
               .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
