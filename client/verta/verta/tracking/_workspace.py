@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 from .._protos.public.uac import WorkspaceV2_pb2 as _Workspace
-from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 
 
 class Workspace(object):
@@ -18,10 +17,10 @@ class Workspace(object):
 
     @classmethod
     def _create(
-        cls, conn, name, org_id, group_id, role_id
+        cls, conn, name, org_id, permissions
     ):
         Message = _Workspace.SetWorkspaceV2
-        msg = cls._create_msg(name, org_id, group_id, role_id)
+        msg = cls._create_msg(name, org_id, permissions)
 
         response = conn.make_proto_request(
             "POST",
@@ -34,10 +33,10 @@ class Workspace(object):
         return cls(conn, workspace)
 
     @classmethod
-    def _create_msg(cls, name, org_id, group_id, role_id):
+    def _create_msg(cls, name, org_id, permissions):
         Message = _Workspace.WorkspaceV2
         msg = Message(name=name, org_id=org_id,
-                      permissions = [_Workspace.Permission(group_id = group_id, role_id = role_id)])
+                      permissions = permissions)
         return msg
 
     def delete(self):
