@@ -123,7 +123,7 @@ public class ObservationHandler {
 
     // Validate input
     for (final var observation : observations) {
-      if (observation.hasAttribute() && observation.getAttribute().getKey().isEmpty()) {
+      if (observation.getAttribute().getKey().isEmpty()) {
         throw new InvalidArgumentException("Empty observation key");
       }
     }
