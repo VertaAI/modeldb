@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.event;
 
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.gson.JsonObject;
@@ -9,19 +10,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class FutureEventDAO {
   private static final Logger LOGGER = LogManager.getLogger(FutureEventDAO.class);
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final Config config;
   private final String serviceType;
 
-  public FutureEventDAO(Executor executor, FutureJdbi jdbi, Config config, String serviceType) {
+  public FutureEventDAO(
+      FutureExecutor executor, FutureJdbi jdbi, Config config, String serviceType) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.config = config;
@@ -30,7 +31,11 @@ public class FutureEventDAO {
 
   public void addLocalEventWithBlocking(
       String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
-    addLocalEvent(resourceType, eventType, workspaceId, eventMetadata).get();
+    try {
+      addLocalEvent(resourceType, eventType, workspaceId, eventMetadata).get();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
   }
 
   public InternalFuture<Void> addLocalEventWithAsync(
@@ -68,7 +73,11 @@ public class FutureEventDAO {
   }
 
   public Void deleteLocalEventWithBlocking(List<String> eventUUIDs) {
-    return deleteLocalEvent(eventUUIDs).get();
+    try {
+      return deleteLocalEvent(eventUUIDs).get();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
   }
 
   public InternalFuture<Void> deleteLocalEventWithAsync(List<String> eventUUIDs) {
