@@ -470,6 +470,15 @@ def created_entities():
 
     yield to_delete
 
+    # move workspaces to the end
+    from verta.tracking._workspace import Workspace
+
+    is_workspace = lambda entity: entity.__class__ is Workspace
+    to_delete = itertools.chain(
+        filterfalse(is_workspace, to_delete),
+        filter(is_workspace, to_delete),
+    )
+
     # TODO: avoid duplicates
     for entity in to_delete:
         entity.delete()
