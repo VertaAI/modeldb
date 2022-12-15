@@ -9,6 +9,7 @@ import io.grpc.ServerInterceptor;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
+import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
@@ -16,20 +17,20 @@ import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.instrumentation.grpc.v1_6.GrpcTelemetry;
 import io.opentelemetry.instrumentation.resources.ContainerResource;
 import io.opentelemetry.instrumentation.resources.HostResource;
-import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
 import io.opentelemetry.sdk.metrics.SdkMeterProvider;
 import io.opentelemetry.sdk.metrics.View;
 import io.opentelemetry.sdk.resources.Resource;
+import io.opentelemetry.sdk.trace.ReadWriteSpan;
+import io.opentelemetry.sdk.trace.ReadableSpan;
 import io.opentelemetry.sdk.trace.SdkTracerProvider;
+import io.opentelemetry.sdk.trace.SpanProcessor;
 import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
-import io.opentracing.Tracer;
-import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -63,6 +64,31 @@ public class OpenTelemetryConfig {
               .build();
       tracerProvider =
           SdkTracerProvider.builder()
+              .addSpanProcessor(
+                  new SpanProcessor() {
+                    @Override
+                    public void onStart(Context parentContext, ReadWriteSpan span) {
+                      String netPeerName = span.getAttribute(stringKey("net.peer.name"));
+                      if (netPeerName != null) {
+                        span.setAttribute(stringKey("peer.service"), netPeerName);
+                      }
+                    }
+
+                    @Override
+                    public boolean isStartRequired() {
+                      return true;
+                    }
+
+                    @Override
+                    public void onEnd(ReadableSpan span) {
+                      // nothing needed here
+                    }
+
+                    @Override
+                    public boolean isEndRequired() {
+                      return false;
+                    }
+                  })
               .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
               .setSampler(sampler)
               .setResource(resource)
@@ -79,16 +105,7 @@ public class OpenTelemetryConfig {
                     TextMapPropagator.composite(
                         W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
             .buildAndRegisterGlobal();
-    initializeOpenTracingShim(openTelemetry);
     return openTelemetry;
-  }
-
-  private void initializeOpenTracingShim(OpenTelemetry openTelemetry) {
-    Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
-    GlobalTracer.registerIfAbsent(tracerShim);
-    //    TracingDriver.load();
-    //    TracingDriver.setInterceptorMode(true);
-    //    TracingDriver.setInterceptorProperty(true);
   }
 
   private static SdkMeterProvider initializeMetricSdk() {
