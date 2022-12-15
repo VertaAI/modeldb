@@ -202,10 +202,6 @@
           <artifactId>mariadb-java-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>opentracing-jdbc</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.oblac</groupId>
             <artifactId>nomen-est-omen</artifactId>
         </dependency>
@@ -240,10 +236,6 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-jaeger-thrift</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-opentracing-shim</artifactId>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>
