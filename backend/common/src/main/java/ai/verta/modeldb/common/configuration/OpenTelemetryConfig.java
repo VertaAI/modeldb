@@ -145,9 +145,12 @@ public class OpenTelemetryConfig {
   private static class JaegerCompatibilitySpanProcessor implements SpanProcessor {
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-      String netPeerName = span.getAttribute(stringKey("net.peer.name"));
-      if (netPeerName != null) {
-        span.setAttribute(stringKey("peer.service"), netPeerName);
+      String dbName = span.getAttribute(stringKey("db.name"));
+      if (dbName != null) {
+        String netPeerName = span.getAttribute(stringKey("net.peer.name"));
+        if (netPeerName != null) {
+          span.setAttribute(stringKey("peer.service"), dbName + "[" + netPeerName + "]");
+        }
       }
     }
 
