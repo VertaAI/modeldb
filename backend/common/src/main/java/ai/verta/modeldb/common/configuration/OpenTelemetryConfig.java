@@ -64,31 +64,7 @@ public class OpenTelemetryConfig {
               .build();
       tracerProvider =
           SdkTracerProvider.builder()
-              .addSpanProcessor(
-                  new SpanProcessor() {
-                    @Override
-                    public void onStart(Context parentContext, ReadWriteSpan span) {
-                      String netPeerName = span.getAttribute(stringKey("net.peer.name"));
-                      if (netPeerName != null) {
-                        span.setAttribute(stringKey("peer.service"), netPeerName);
-                      }
-                    }
-
-                    @Override
-                    public boolean isStartRequired() {
-                      return true;
-                    }
-
-                    @Override
-                    public void onEnd(ReadableSpan span) {
-                      // nothing needed here
-                    }
-
-                    @Override
-                    public boolean isEndRequired() {
-                      return false;
-                    }
-                  })
+              .addSpanProcessor(new JaegerCompatibilitySpanProcessor())
               .addSpanProcessor(BatchSpanProcessor.builder(spanExporter).build())
               .setSampler(sampler)
               .setResource(resource)
@@ -164,5 +140,30 @@ public class OpenTelemetryConfig {
   @Bean
   public ClientInterceptor grpcClientInterceptor(GrpcTelemetry grpcTelemetry) {
     return grpcTelemetry.newClientInterceptor();
+  }
+
+  private static class JaegerCompatibilitySpanProcessor implements SpanProcessor {
+    @Override
+    public void onStart(Context parentContext, ReadWriteSpan span) {
+      String netPeerName = span.getAttribute(stringKey("net.peer.name"));
+      if (netPeerName != null) {
+        span.setAttribute(stringKey("peer.service"), netPeerName);
+      }
+    }
+
+    @Override
+    public boolean isStartRequired() {
+      return true;
+    }
+
+    @Override
+    public void onEnd(ReadableSpan span) {
+      // nothing needed here
+    }
+
+    @Override
+    public boolean isEndRequired() {
+      return false;
+    }
   }
 }
