@@ -43,7 +43,7 @@ public class FutureExecutor implements Executor {
 
   // Wraps an Executor and make it compatible with grpc's context
   public static FutureExecutor makeCompatibleExecutor(Executor ex) {
-    return new FutureExecutor(ex, null, null);
+    return new FutureExecutor(Context.taskWrapping(ex), null, null);
   }
 
   public static FutureExecutor initializeExecutor(Integer threadCount) {
