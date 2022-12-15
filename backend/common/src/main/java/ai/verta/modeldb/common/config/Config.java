@@ -4,12 +4,7 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalJdbi;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.zaxxer.hikari.HikariDataSource;
-import com.zaxxer.hikari.metrics.prometheus.PrometheusMetricsTrackerFactory;
 import io.grpc.ClientInterceptor;
 import io.grpc.ServerInterceptor;
 import io.opentelemetry.api.OpenTelemetry;
@@ -18,7 +13,6 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.*;
-import org.jdbi.v3.core.Jdbi;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
@@ -99,29 +93,6 @@ public abstract class Config {
   }
 
   public abstract boolean hasServiceAccount();
-
-  public FutureJdbi initializeFutureJdbi(DatabaseConfig databaseConfig, String poolName) {
-    final var jdbi = initializeJdbi(databaseConfig, poolName);
-    final var dbExecutor = FutureExecutor.initializeExecutor(databaseConfig.getThreadCount());
-    return new FutureJdbi(jdbi, dbExecutor);
-  }
-
-  public InternalJdbi initializeJdbi(DatabaseConfig databaseConfig, String poolName) {
-    final var hikariDataSource = new HikariDataSource();
-    final var dbUrl = RdbConfig.buildDatabaseConnectionString(databaseConfig.getRdbConfiguration());
-    hikariDataSource.setJdbcUrl(dbUrl);
-    hikariDataSource.setUsername(databaseConfig.getRdbConfiguration().getRdbUsername());
-    hikariDataSource.setPassword(databaseConfig.getRdbConfiguration().getRdbPassword());
-    hikariDataSource.setMinimumIdle(Integer.parseInt(databaseConfig.getMinConnectionPoolSize()));
-    hikariDataSource.setMaximumPoolSize(
-        Integer.parseInt(databaseConfig.getMaxConnectionPoolSize()));
-    hikariDataSource.setRegisterMbeans(true);
-    hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
-    hikariDataSource.setPoolName(poolName);
-    hikariDataSource.setLeakDetectionThreshold(databaseConfig.getLeakDetectionThresholdMs());
-
-    return new InternalJdbi(Jdbi.create(hikariDataSource));
-  }
 
   public void setArtifactStoreConfig(ArtifactStoreConfig artifactStoreConfig) {
     this.artifactStoreConfig = artifactStoreConfig;

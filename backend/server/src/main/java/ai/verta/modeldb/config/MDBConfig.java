@@ -58,13 +58,4 @@ public class MDBConfig extends Config {
   public boolean hasServiceAccount() {
     return getService_user() != null;
   }
-
-  public FutureJdbi getJdbi() {
-    if (this.jdbi == null) {
-      // Initialize HikariCP and jdbi
-      final var databaseConfig = mdbConfig.getDatabase();
-      this.jdbi = initializeFutureJdbi(databaseConfig, "modeldb");
-    }
-    return this.jdbi;
-  }
 }
