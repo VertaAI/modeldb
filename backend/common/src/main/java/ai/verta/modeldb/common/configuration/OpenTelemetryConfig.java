@@ -16,6 +16,7 @@ import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.instrumentation.grpc.v1_6.GrpcTelemetry;
 import io.opentelemetry.instrumentation.resources.ContainerResource;
 import io.opentelemetry.instrumentation.resources.HostResource;
+import io.opentelemetry.opentracingshim.OpenTracingShim;
 import io.opentelemetry.sdk.OpenTelemetrySdk;
 import io.opentelemetry.sdk.metrics.Aggregation;
 import io.opentelemetry.sdk.metrics.InstrumentSelector;
@@ -27,6 +28,8 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentracing.Tracer;
+import io.opentracing.util.GlobalTracer;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -76,7 +79,16 @@ public class OpenTelemetryConfig {
                     TextMapPropagator.composite(
                         W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
             .buildAndRegisterGlobal();
+    initializeOpenTracingShim(openTelemetry);
     return openTelemetry;
+  }
+
+  private void initializeOpenTracingShim(OpenTelemetry openTelemetry) {
+    Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
+    GlobalTracer.registerIfAbsent(tracerShim);
+    //    TracingDriver.load();
+    //    TracingDriver.setInterceptorMode(true);
+    //    TracingDriver.setInterceptorProperty(true);
   }
 
   private static SdkMeterProvider initializeMetricSdk() {
