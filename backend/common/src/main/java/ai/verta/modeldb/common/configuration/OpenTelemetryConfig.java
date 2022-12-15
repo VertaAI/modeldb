@@ -79,7 +79,7 @@ public class OpenTelemetryConfig {
                 ContextPropagators.create(
                     TextMapPropagator.composite(
                         W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
-            .build();
+            .buildAndRegisterGlobal();
     initializeOpenTracingShim(openTelemetry);
     return openTelemetry;
   }
