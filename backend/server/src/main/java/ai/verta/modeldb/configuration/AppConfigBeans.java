@@ -158,7 +158,8 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public DataSource dataSource(DatabaseConfig databaseConfig, @SuppressWarnings("unused") OpenTelemetry openTelemetry) {
+  public DataSource dataSource(
+      DatabaseConfig databaseConfig, @SuppressWarnings("unused") OpenTelemetry openTelemetry) {
     // note: the OTel DataSource currently relies on the GlobalOpenTelemetry instance being set, so
     // we inject it here to make sure it's been initialized.
     return new OpenTelemetryDataSource(JdbiUtils.initializeDataSource(databaseConfig, "modeldb"));
