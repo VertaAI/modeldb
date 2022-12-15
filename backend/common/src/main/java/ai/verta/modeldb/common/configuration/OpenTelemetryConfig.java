@@ -80,7 +80,6 @@ public class OpenTelemetryConfig {
                     TextMapPropagator.composite(
                         W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
             .buildAndRegisterGlobal();
-    initializeOpenTracingShim(openTelemetry);
     return openTelemetry;
   }
 
@@ -125,14 +124,6 @@ public class OpenTelemetryConfig {
     return Stream.generate(() -> Math.pow(2, a.getAndIncrement()))
         .limit(15)
         .collect(Collectors.toList());
-  }
-
-  private void initializeOpenTracingShim(OpenTelemetry openTelemetry) {
-    Tracer tracerShim = OpenTracingShim.createTracerShim(openTelemetry);
-    GlobalTracer.registerIfAbsent(tracerShim);
-    TracingDriver.load();
-    TracingDriver.setInterceptorMode(true);
-    TracingDriver.setInterceptorProperty(true);
   }
 
   @Bean
