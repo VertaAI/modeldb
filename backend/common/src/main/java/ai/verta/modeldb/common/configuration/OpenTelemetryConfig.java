@@ -142,6 +142,7 @@ public class OpenTelemetryConfig {
     return grpcTelemetry.newClientInterceptor();
   }
 
+  /** Jaeger works better if a peer.service is set on db spans, so add it using a span processor. */
   private static class JaegerCompatibilitySpanProcessor implements SpanProcessor {
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
