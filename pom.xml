@@ -295,11 +295,6 @@
                 <version>${otel.instrumentation.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-jdbc</artifactId>
-                <version>0.2.15</version>
-            </dependency>
-            <dependency>
                 <groupId>com.oblac</groupId>
                 <artifactId>nomen-est-omen</artifactId>
                 <version>2.1.0</version>
