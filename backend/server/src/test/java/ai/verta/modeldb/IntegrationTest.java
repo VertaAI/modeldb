@@ -201,16 +201,6 @@ public class IntegrationTest extends ModeldbTestSetup {
             .build());
 
     List<Observation> observations = new ArrayList<>();
-    /*observations.add(
-    Observation.newBuilder()
-        .setArtifact(
-            Artifact.newBuilder()
-                .setKey("Google developer Observation artifact")
-                .setPath("This is data artifact type in Google developer Observation artifact")
-                .setArtifactType(ArtifactType.DATA)
-                .build())
-        .setTimestamp(Calendar.getInstance().getTimeInMillis())
-        .build());*/
     stringValue =
         Value.newBuilder()
             .setStringValue("observation_value_" + Calendar.getInstance().getTimeInMillis())
