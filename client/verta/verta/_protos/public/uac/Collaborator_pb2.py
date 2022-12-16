@@ -25,7 +25,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x16uac/Collaborator.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\x1a\x16uac/Organization.proto\x1a\x0euac/Team.proto\x1a\x15uac/RoleService.proto\x1a\x1a\x63ommon/CommonService.proto\"\xe1\x01\n\x17\x43ollaboratorPermissions\x12Q\n\x11\x63ollaborator_type\x18\x01 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x38\n\ncan_deploy\x18\x02 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x39\n\x0b\x63\x61n_predict\x18\x03 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\"\xd5\x05\n\x16\x41\x64\x64\x43ollaboratorRequest\x12\x12\n\nentity_ids\x18\x01 \x03(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x12Q\n\x11\x63ollaborator_type\x18\x03 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x0f\n\x07message\x18\x04 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x05 \x01(\x04\x12\x14\n\x0c\x64\x61te_updated\x18\x06 \x01(\x04\x12\x38\n\ncan_deploy\x18\x07 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x39\n\x0b\x63\x61n_predict\x18\n \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x46\n\x11\x61uthz_entity_type\x18\x08 \x01(\x0e\x32+.ai.verta.common.EntitiesEnum.EntitiesTypes\x12\x39\n\npermission\x18\t \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x1a\x8a\x02\n\x08Response\x12\x32\n\x14self_allowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x38\n\x16\x63ollaborator_user_info\x18\x02 \x01(\x0b\x32\x16.ai.verta.uac.UserInfoH\x00\x12?\n\x19\x63ollaborator_organization\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.OrganizationH\x00\x12/\n\x11\x63ollaborator_team\x18\x04 \x01(\x0b\x32\x12.ai.verta.uac.TeamH\x00\x42\x0e\n\x0c\x63ollaborator\"\xe9\x01\n\x12RemoveCollaborator\x12\x11\n\tentity_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61te_deleted\x18\x03 \x01(\x04\x12\x46\n\x11\x61uthz_entity_type\x18\x04 \x01(\x0e\x32+.ai.verta.common.EntitiesEnum.EntitiesTypes\x1aN\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x32\n\x14self_allowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\xc3\x03\n\x1bGetCollaboratorResponseItem\x12\x13\n\x07user_id\x18\x01 \x01(\tB\x02\x18\x01\x12Q\n\x11\x63ollaborator_type\x18\x02 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x32\n\x0eshare_via_type\x18\x03 \x01(\x0e\x32\x1a.ai.verta.uac.ShareViaEnum\x12\x10\n\x08verta_id\x18\x04 \x01(\t\x12\x38\n\ncan_deploy\x18\x05 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x39\n\x0b\x63\x61n_predict\x18\x08 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x46\n\x11\x61uthz_entity_type\x18\x06 \x01(\x0e\x32+.ai.verta.common.EntitiesEnum.EntitiesTypes\x12\x39\n\npermission\x18\x07 \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\"q\n\x0fGetCollaborator\x12\x11\n\tentity_id\x18\x01 \x01(\t\x1aK\n\x08Response\x12?\n\x0cshared_users\x18\x01 \x03(\x0b\x32).ai.verta.uac.GetCollaboratorResponseItem\"\xd2\x01\n\x0cGetResources\x12*\n\tresources\x18\x01 \x01(\x0b\x32\x17.ai.verta.uac.Resources\x12\x16\n\x0cworkspace_id\x18\x02 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x03 \x01(\tH\x00\x12\x15\n\rresource_name\x18\x04 \x01(\t\x1a@\n\x08Response\x12\x34\n\x04item\x18\x01 \x03(\x0b\x32&.ai.verta.uac.GetResourcesResponseItemB\x0b\n\tworkspace\"\xcd\x02\n\x18GetResourcesResponseItem\x12\x32\n\x07service\x18\n \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x13\n\x0bresource_id\x18\x0b \x01(\t\x12\x15\n\rresource_name\x18\r \x01(\t\x12\x31\n\rresource_type\x18\x0c \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12\x14\n\x0cworkspace_id\x18\x02 \x01(\x04\x12\x10\n\x08owner_id\x18\x03 \x01(\x04\x12\x34\n\nvisibility\x18\x04 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\t \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\"\xfb\x03\n\x0bSetResource\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x13\n\x0bresource_id\x18\x08 \x01(\t\x12\x15\n\rresource_name\x18\t \x01(\t\x12\x31\n\rresource_type\x18\n \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12\x16\n\x0cworkspace_id\x18\x02 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x03 \x01(\tH\x00\x12\x10\n\x08owner_id\x18\x04 \x01(\x04\x12\x34\n\nvisibility\x18\x05 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12Q\n\x11\x63ollaborator_type\x18\x06 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x38\n\ncan_deploy\x18\x07 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x39\n\x0b\x63\x61n_predict\x18\x0b \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x1a\n\n\x08ResponseB\x0b\n\tworkspace\"I\n\x0f\x44\x65leteResources\x12*\n\tresources\x18\x01 \x01(\x0b\x32\x17.ai.verta.uac.Resources\x1a\n\n\x08Response\"4\n\x0eResourceAdmins\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x10\n\x08team_ids\x18\x02 \x03(\t\"\x8f\x01\n\x11GetResourceAdmins\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x13\n\x0bresource_id\x18\x02 \x01(\t\x12\x31\n\rresource_type\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\"\xb6\x01\n\x14ModifyResourceAdmins\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x13\n\x0bresource_id\x18\x02 \x01(\t\x12\x31\n\rresource_type\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12\x10\n\x08user_ids\x18\x04 \x03(\t\x12\x10\n\x08team_ids\x18\x05 \x03(\t*7\n\x0cShareViaEnum\x12\x0b\n\x07USER_ID\x10\x00\x12\x0c\n\x08\x45MAIL_ID\x10\x01\x12\x0c\n\x08USERNAME\x10\x02*f\n\x12ResourceVisibility\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0f\n\x0bORG_DEFAULT\x10\x01\x12\x0e\n\nORG_CUSTOM\x10\x02\x12\x0b\n\x07PRIVATE\x10\x03\x12\x15\n\x11WORKSPACE_DEFAULT\x10\x04\x32\xae#\n\x13\x43ollaboratorService\x12v\n\x0cgetResources\x12\x1a.ai.verta.uac.GetResources\x1a#.ai.verta.uac.GetResources.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/collaborator/getResources\x12\xa6\x01\n$getResourcesSpecialPersonalWorkspace\x12\x1a.ai.verta.uac.GetResources\x1a#.ai.verta.uac.GetResources.Response\"=\x82\xd3\xe4\x93\x02\x37\x12\x35/v1/collaborator/getResourcesSpecialPersonalWorkspace\x12u\n\x0bsetResource\x12\x19.ai.verta.uac.SetResource\x1a\".ai.verta.uac.SetResource.Response\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/collaborator/setResource:\x01*\x12Z\n\x0f\x64\x65leteResources\x12\x1d.ai.verta.uac.DeleteResources\x1a&.ai.verta.uac.DeleteResources.Response\"\x00\x12~\n\x11getResourceAdmins\x12\x1f.ai.verta.uac.GetResourceAdmins\x1a\x1c.ai.verta.uac.ResourceAdmins\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/collaborator/getResourceAdmins\x12{\n\x11\x61\x64\x64ResourceAdmins\x12\".ai.verta.uac.ModifyResourceAdmins\x1a\x13.ai.verta.uac.Empty\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/collaborator/addResourceAdmins:\x01*\x12\x81\x01\n\x14removeResourceAdmins\x12\".ai.verta.uac.ModifyResourceAdmins\x1a\x13.ai.verta.uac.Empty\"0\x82\xd3\xe4\x93\x02*\"%/v1/collaborator/removeResourceAdmins:\x01*\x12\xb1\x01\n\x1e\x61\x64\x64OrUpdateProjectCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\":\x82\xd3\xe4\x93\x02\x34\"//v1/collaborator/addOrUpdateProjectCollaborator:\x01*\x12\x9c\x01\n\x19removeProjectCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"2\x82\xd3\xe4\x93\x02,**/v1/collaborator/removeProjectCollaborator\x12\x92\x01\n\x17getProjectCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"0\x82\xd3\xe4\x93\x02*\x12(/v1/collaborator/getProjectCollaborators\x12\xb1\x01\n\x1e\x61\x64\x64OrUpdateDatasetCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\":\x82\xd3\xe4\x93\x02\x34\"//v1/collaborator/addOrUpdateDatasetCollaborator:\x01*\x12\x9c\x01\n\x19removeDatasetCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"2\x82\xd3\xe4\x93\x02,**/v1/collaborator/removeDatasetCollaborator\x12\x92\x01\n\x17getDatasetCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"0\x82\xd3\xe4\x93\x02*\x12(/v1/collaborator/getDatasetCollaborators\x12\xb7\x01\n!addOrUpdateRepositoryCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\"2/v1/collaborator/addOrUpdateRepositoryCollaborator:\x01*\x12\xa2\x01\n\x1cremoveRepositoryCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"5\x82\xd3\xe4\x93\x02/*-/v1/collaborator/removeRepositoryCollaborator\x12\x98\x01\n\x1agetRepositoryCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"3\x82\xd3\xe4\x93\x02-\x12+/v1/collaborator/getRepositoryCollaborators\x12\xb3\x01\n\x1f\x61\x64\x64OrUpdateEndpointCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\";\x82\xd3\xe4\x93\x02\x35\"0/v1/collaborator/addOrUpdateEndpointCollaborator:\x01*\x12\x9e\x01\n\x1aremoveEndpointCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"3\x82\xd3\xe4\x93\x02-*+/v1/collaborator/removeEndpointCollaborator\x12\x94\x01\n\x18getEndpointCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"1\x82\xd3\xe4\x93\x02+\x12)/v1/collaborator/getEndpointCollaborators\x12\xcd\x01\n,addOrUpdateEndpointCollaboratorCommonService\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\"H\x82\xd3\xe4\x93\x02\x42\"=/v1/collaborator/addOrUpdateEndpointCollaboratorCommonService:\x01*\x12\xb8\x01\n\'removeEndpointCollaboratorCommonService\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"@\x82\xd3\xe4\x93\x02:*8/v1/collaborator/removeEndpointCollaboratorCommonService\x12\xae\x01\n%getEndpointCollaboratorsCommonService\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\">\x82\xd3\xe4\x93\x02\x38\x12\x36/v1/collaborator/getEndpointCollaboratorsCommonService\x12\xc1\x01\n&addOrUpdateRegisteredModelCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\"B\x82\xd3\xe4\x93\x02<\"7/v1/collaborator/addOrUpdateRegisteredModelCollaborator:\x01*\x12\xac\x01\n!removeRegisteredModelCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\":\x82\xd3\xe4\x93\x02\x34*2/v1/collaborator/removeRegisteredModelCollaborator\x12\xa2\x01\n\x1fgetRegisteredModelCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"8\x82\xd3\xe4\x93\x02\x32\x12\x30/v1/collaborator/getRegisteredModelCollaborators\x12\xc1\x01\n&addOrUpdateMonitoredEntityCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\"B\x82\xd3\xe4\x93\x02<\"7/v1/collaborator/addOrUpdateMonitoredEntityCollaborator:\x01*\x12\xac\x01\n!removeMonitoredEntityCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\":\x82\xd3\xe4\x93\x02\x34*2/v1/collaborator/removeMonitoredEntityCollaborator\x12\xa2\x01\n\x1fgetMonitoredEntityCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"8\x82\xd3\xe4\x93\x02\x32\x12\x30/v1/collaborator/getMonitoredEntityCollaboratorsB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x16uac/Collaborator.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\x1a\x16uac/Organization.proto\x1a\x0euac/Team.proto\x1a\x15uac/RoleService.proto\x1a\x1a\x63ommon/CommonService.proto\"\xe1\x01\n\x17\x43ollaboratorPermissions\x12Q\n\x11\x63ollaborator_type\x18\x01 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x38\n\ncan_deploy\x18\x02 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x39\n\x0b\x63\x61n_predict\x18\x03 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\"\xd5\x05\n\x16\x41\x64\x64\x43ollaboratorRequest\x12\x12\n\nentity_ids\x18\x01 \x03(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x12Q\n\x11\x63ollaborator_type\x18\x03 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x0f\n\x07message\x18\x04 \x01(\t\x12\x14\n\x0c\x64\x61te_created\x18\x05 \x01(\x04\x12\x14\n\x0c\x64\x61te_updated\x18\x06 \x01(\x04\x12\x38\n\ncan_deploy\x18\x07 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x39\n\x0b\x63\x61n_predict\x18\n \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x46\n\x11\x61uthz_entity_type\x18\x08 \x01(\x0e\x32+.ai.verta.common.EntitiesEnum.EntitiesTypes\x12\x39\n\npermission\x18\t \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x1a\x8a\x02\n\x08Response\x12\x32\n\x14self_allowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x38\n\x16\x63ollaborator_user_info\x18\x02 \x01(\x0b\x32\x16.ai.verta.uac.UserInfoH\x00\x12?\n\x19\x63ollaborator_organization\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.OrganizationH\x00\x12/\n\x11\x63ollaborator_team\x18\x04 \x01(\x0b\x32\x12.ai.verta.uac.TeamH\x00\x42\x0e\n\x0c\x63ollaborator\"\xe9\x01\n\x12RemoveCollaborator\x12\x11\n\tentity_id\x18\x01 \x01(\t\x12\x12\n\nshare_with\x18\x02 \x01(\t\x12\x14\n\x0c\x64\x61te_deleted\x18\x03 \x01(\x04\x12\x46\n\x11\x61uthz_entity_type\x18\x04 \x01(\x0e\x32+.ai.verta.common.EntitiesEnum.EntitiesTypes\x1aN\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\x32\n\x14self_allowed_actions\x18\x05 \x03(\x0b\x32\x14.ai.verta.uac.Action\"\xc3\x03\n\x1bGetCollaboratorResponseItem\x12\x13\n\x07user_id\x18\x01 \x01(\tB\x02\x18\x01\x12Q\n\x11\x63ollaborator_type\x18\x02 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x32\n\x0eshare_via_type\x18\x03 \x01(\x0e\x32\x1a.ai.verta.uac.ShareViaEnum\x12\x10\n\x08verta_id\x18\x04 \x01(\t\x12\x38\n\ncan_deploy\x18\x05 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x39\n\x0b\x63\x61n_predict\x18\x08 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x46\n\x11\x61uthz_entity_type\x18\x06 \x01(\x0e\x32+.ai.verta.common.EntitiesEnum.EntitiesTypes\x12\x39\n\npermission\x18\x07 \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\"\xb9\x01\n\x0fGetCollaborator\x12\x11\n\tentity_id\x18\x01 \x01(\t\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1a\x62\n\x08Response\x12?\n\x0cshared_users\x18\x01 \x03(\x0b\x32).ai.verta.uac.GetCollaboratorResponseItem\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"\x9a\x02\n\x0cGetResources\x12*\n\tresources\x18\x01 \x01(\x0b\x32\x17.ai.verta.uac.Resources\x12\x16\n\x0cworkspace_id\x18\x02 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x03 \x01(\tH\x00\x12\x15\n\rresource_name\x18\x04 \x01(\t\x12/\n\npagination\x18\x05 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aW\n\x08Response\x12\x34\n\x04item\x18\x01 \x03(\x0b\x32&.ai.verta.uac.GetResourcesResponseItem\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x42\x0b\n\tworkspace\"\xcd\x02\n\x18GetResourcesResponseItem\x12\x32\n\x07service\x18\n \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x13\n\x0bresource_id\x18\x0b \x01(\t\x12\x15\n\rresource_name\x18\r \x01(\t\x12\x31\n\rresource_type\x18\x0c \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12\x14\n\x0cworkspace_id\x18\x02 \x01(\x04\x12\x10\n\x08owner_id\x18\x03 \x01(\x04\x12\x34\n\nvisibility\x18\x04 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\t \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\"\xfb\x03\n\x0bSetResource\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x13\n\x0bresource_id\x18\x08 \x01(\t\x12\x15\n\rresource_name\x18\t \x01(\t\x12\x31\n\rresource_type\x18\n \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12\x16\n\x0cworkspace_id\x18\x02 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x03 \x01(\tH\x00\x12\x10\n\x08owner_id\x18\x04 \x01(\x04\x12\x34\n\nvisibility\x18\x05 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12Q\n\x11\x63ollaborator_type\x18\x06 \x01(\x0e\x32\x36.ai.verta.common.CollaboratorTypeEnum.CollaboratorType\x12\x38\n\ncan_deploy\x18\x07 \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x12\x39\n\x0b\x63\x61n_predict\x18\x0b \x01(\x0e\x32$.ai.verta.common.TernaryEnum.Ternary\x1a\n\n\x08ResponseB\x0b\n\tworkspace\"I\n\x0f\x44\x65leteResources\x12*\n\tresources\x18\x01 \x01(\x0b\x32\x17.ai.verta.uac.Resources\x1a\n\n\x08Response\"K\n\x0eResourceAdmins\x12\x10\n\x08user_ids\x18\x01 \x03(\t\x12\x10\n\x08team_ids\x18\x02 \x03(\t\x12\x15\n\rtotal_records\x18\x03 \x01(\x03\"\xc0\x01\n\x11GetResourceAdmins\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x13\n\x0bresource_id\x18\x02 \x01(\t\x12\x31\n\rresource_type\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12/\n\npagination\x18\x04 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\"\xb6\x01\n\x14ModifyResourceAdmins\x12\x32\n\x07service\x18\x01 \x01(\x0e\x32!.ai.verta.uac.ServiceEnum.Service\x12\x13\n\x0bresource_id\x18\x02 \x01(\t\x12\x31\n\rresource_type\x18\x03 \x01(\x0b\x32\x1a.ai.verta.uac.ResourceType\x12\x10\n\x08user_ids\x18\x04 \x03(\t\x12\x10\n\x08team_ids\x18\x05 \x03(\t*7\n\x0cShareViaEnum\x12\x0b\n\x07USER_ID\x10\x00\x12\x0c\n\x08\x45MAIL_ID\x10\x01\x12\x0c\n\x08USERNAME\x10\x02*f\n\x12ResourceVisibility\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x0f\n\x0bORG_DEFAULT\x10\x01\x12\x0e\n\nORG_CUSTOM\x10\x02\x12\x0b\n\x07PRIVATE\x10\x03\x12\x15\n\x11WORKSPACE_DEFAULT\x10\x04\x32\xae#\n\x13\x43ollaboratorService\x12v\n\x0cgetResources\x12\x1a.ai.verta.uac.GetResources\x1a#.ai.verta.uac.GetResources.Response\"%\x82\xd3\xe4\x93\x02\x1f\x12\x1d/v1/collaborator/getResources\x12\xa6\x01\n$getResourcesSpecialPersonalWorkspace\x12\x1a.ai.verta.uac.GetResources\x1a#.ai.verta.uac.GetResources.Response\"=\x82\xd3\xe4\x93\x02\x37\x12\x35/v1/collaborator/getResourcesSpecialPersonalWorkspace\x12u\n\x0bsetResource\x12\x19.ai.verta.uac.SetResource\x1a\".ai.verta.uac.SetResource.Response\"\'\x82\xd3\xe4\x93\x02!\"\x1c/v1/collaborator/setResource:\x01*\x12Z\n\x0f\x64\x65leteResources\x12\x1d.ai.verta.uac.DeleteResources\x1a&.ai.verta.uac.DeleteResources.Response\"\x00\x12~\n\x11getResourceAdmins\x12\x1f.ai.verta.uac.GetResourceAdmins\x1a\x1c.ai.verta.uac.ResourceAdmins\"*\x82\xd3\xe4\x93\x02$\x12\"/v1/collaborator/getResourceAdmins\x12{\n\x11\x61\x64\x64ResourceAdmins\x12\".ai.verta.uac.ModifyResourceAdmins\x1a\x13.ai.verta.uac.Empty\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/collaborator/addResourceAdmins:\x01*\x12\x81\x01\n\x14removeResourceAdmins\x12\".ai.verta.uac.ModifyResourceAdmins\x1a\x13.ai.verta.uac.Empty\"0\x82\xd3\xe4\x93\x02*\"%/v1/collaborator/removeResourceAdmins:\x01*\x12\xb1\x01\n\x1e\x61\x64\x64OrUpdateProjectCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\":\x82\xd3\xe4\x93\x02\x34\"//v1/collaborator/addOrUpdateProjectCollaborator:\x01*\x12\x9c\x01\n\x19removeProjectCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"2\x82\xd3\xe4\x93\x02,**/v1/collaborator/removeProjectCollaborator\x12\x92\x01\n\x17getProjectCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"0\x82\xd3\xe4\x93\x02*\x12(/v1/collaborator/getProjectCollaborators\x12\xb1\x01\n\x1e\x61\x64\x64OrUpdateDatasetCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\":\x82\xd3\xe4\x93\x02\x34\"//v1/collaborator/addOrUpdateDatasetCollaborator:\x01*\x12\x9c\x01\n\x19removeDatasetCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"2\x82\xd3\xe4\x93\x02,**/v1/collaborator/removeDatasetCollaborator\x12\x92\x01\n\x17getDatasetCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"0\x82\xd3\xe4\x93\x02*\x12(/v1/collaborator/getDatasetCollaborators\x12\xb7\x01\n!addOrUpdateRepositoryCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\"=\x82\xd3\xe4\x93\x02\x37\"2/v1/collaborator/addOrUpdateRepositoryCollaborator:\x01*\x12\xa2\x01\n\x1cremoveRepositoryCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"5\x82\xd3\xe4\x93\x02/*-/v1/collaborator/removeRepositoryCollaborator\x12\x98\x01\n\x1agetRepositoryCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"3\x82\xd3\xe4\x93\x02-\x12+/v1/collaborator/getRepositoryCollaborators\x12\xb3\x01\n\x1f\x61\x64\x64OrUpdateEndpointCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\";\x82\xd3\xe4\x93\x02\x35\"0/v1/collaborator/addOrUpdateEndpointCollaborator:\x01*\x12\x9e\x01\n\x1aremoveEndpointCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"3\x82\xd3\xe4\x93\x02-*+/v1/collaborator/removeEndpointCollaborator\x12\x94\x01\n\x18getEndpointCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"1\x82\xd3\xe4\x93\x02+\x12)/v1/collaborator/getEndpointCollaborators\x12\xcd\x01\n,addOrUpdateEndpointCollaboratorCommonService\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\"H\x82\xd3\xe4\x93\x02\x42\"=/v1/collaborator/addOrUpdateEndpointCollaboratorCommonService:\x01*\x12\xb8\x01\n\'removeEndpointCollaboratorCommonService\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\"@\x82\xd3\xe4\x93\x02:*8/v1/collaborator/removeEndpointCollaboratorCommonService\x12\xae\x01\n%getEndpointCollaboratorsCommonService\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\">\x82\xd3\xe4\x93\x02\x38\x12\x36/v1/collaborator/getEndpointCollaboratorsCommonService\x12\xc1\x01\n&addOrUpdateRegisteredModelCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\"B\x82\xd3\xe4\x93\x02<\"7/v1/collaborator/addOrUpdateRegisteredModelCollaborator:\x01*\x12\xac\x01\n!removeRegisteredModelCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\":\x82\xd3\xe4\x93\x02\x34*2/v1/collaborator/removeRegisteredModelCollaborator\x12\xa2\x01\n\x1fgetRegisteredModelCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"8\x82\xd3\xe4\x93\x02\x32\x12\x30/v1/collaborator/getRegisteredModelCollaborators\x12\xc1\x01\n&addOrUpdateMonitoredEntityCollaborator\x12$.ai.verta.uac.AddCollaboratorRequest\x1a-.ai.verta.uac.AddCollaboratorRequest.Response\"B\x82\xd3\xe4\x93\x02<\"7/v1/collaborator/addOrUpdateMonitoredEntityCollaborator:\x01*\x12\xac\x01\n!removeMonitoredEntityCollaborator\x12 .ai.verta.uac.RemoveCollaborator\x1a).ai.verta.uac.RemoveCollaborator.Response\":\x82\xd3\xe4\x93\x02\x34*2/v1/collaborator/removeMonitoredEntityCollaborator\x12\xa2\x01\n\x1fgetMonitoredEntityCollaborators\x12\x1d.ai.verta.uac.GetCollaborator\x1a&.ai.verta.uac.GetCollaborator.Response\"8\x82\xd3\xe4\x93\x02\x32\x12\x30/v1/collaborator/getMonitoredEntityCollaboratorsB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,uac_dot_Organization__pb2.DESCRIPTOR,uac_dot_Team__pb2.DESCRIPTOR,uac_dot_RoleService__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
@@ -50,8 +50,8 @@ _SHAREVIAENUM = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3463,
-  serialized_end=3518,
+  serialized_start=3680,
+  serialized_end=3735,
 )
 _sym_db.RegisterEnumDescriptor(_SHAREVIAENUM)
 
@@ -85,8 +85,8 @@ _RESOURCEVISIBILITY = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=3520,
-  serialized_end=3622,
+  serialized_start=3737,
+  serialized_end=3839,
 )
 _sym_db.RegisterEnumDescriptor(_RESOURCEVISIBILITY)
 
@@ -485,6 +485,13 @@ _GETCOLLABORATOR_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.GetCollaborator.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -497,8 +504,8 @@ _GETCOLLABORATOR_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1867,
-  serialized_end=1942,
+  serialized_start=1917,
+  serialized_end=2015,
 )
 
 _GETCOLLABORATOR = _descriptor.Descriptor(
@@ -515,6 +522,13 @@ _GETCOLLABORATOR = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.GetCollaborator.pagination', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -527,8 +541,8 @@ _GETCOLLABORATOR = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1829,
-  serialized_end=1942,
+  serialized_start=1830,
+  serialized_end=2015,
 )
 
 
@@ -546,6 +560,13 @@ _GETRESOURCES_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.GetResources.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -558,8 +579,8 @@ _GETRESOURCES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2078,
-  serialized_end=2142,
+  serialized_start=2200,
+  serialized_end=2287,
 )
 
 _GETRESOURCES = _descriptor.Descriptor(
@@ -597,6 +618,13 @@ _GETRESOURCES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.GetResources.pagination', index=4,
+      number=5, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -612,8 +640,8 @@ _GETRESOURCES = _descriptor.Descriptor(
       name='workspace', full_name='ai.verta.uac.GetResources.workspace',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1945,
-  serialized_end=2155,
+  serialized_start=2018,
+  serialized_end=2300,
 )
 
 
@@ -692,8 +720,8 @@ _GETRESOURCESRESPONSEITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2158,
-  serialized_end=2491,
+  serialized_start=2303,
+  serialized_end=2636,
 )
 
 
@@ -819,8 +847,8 @@ _SETRESOURCE = _descriptor.Descriptor(
       name='workspace', full_name='ai.verta.uac.SetResource.workspace',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=2494,
-  serialized_end=3001,
+  serialized_start=2639,
+  serialized_end=3146,
 )
 
 
@@ -873,8 +901,8 @@ _DELETERESOURCES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3003,
-  serialized_end=3076,
+  serialized_start=3148,
+  serialized_end=3221,
 )
 
 
@@ -899,6 +927,13 @@ _RESOURCEADMINS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.ResourceAdmins.total_records', index=2,
+      number=3, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -911,8 +946,8 @@ _RESOURCEADMINS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3078,
-  serialized_end=3130,
+  serialized_start=3223,
+  serialized_end=3298,
 )
 
 
@@ -944,6 +979,13 @@ _GETRESOURCEADMINS = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.GetResourceAdmins.pagination', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -956,8 +998,8 @@ _GETRESOURCEADMINS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3133,
-  serialized_end=3276,
+  serialized_start=3301,
+  serialized_end=3493,
 )
 
 
@@ -1015,8 +1057,8 @@ _MODIFYRESOURCEADMINS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=3279,
-  serialized_end=3461,
+  serialized_start=3496,
+  serialized_end=3678,
 )
 
 _COLLABORATORPERMISSIONS.fields_by_name['collaborator_type'].enum_type = common_dot_CommonService__pb2._COLLABORATORTYPEENUM_COLLABORATORTYPE
@@ -1052,9 +1094,11 @@ _GETCOLLABORATORRESPONSEITEM.fields_by_name['authz_entity_type'].enum_type = com
 _GETCOLLABORATORRESPONSEITEM.fields_by_name['permission'].message_type = _COLLABORATORPERMISSIONS
 _GETCOLLABORATOR_RESPONSE.fields_by_name['shared_users'].message_type = _GETCOLLABORATORRESPONSEITEM
 _GETCOLLABORATOR_RESPONSE.containing_type = _GETCOLLABORATOR
+_GETCOLLABORATOR.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _GETRESOURCES_RESPONSE.fields_by_name['item'].message_type = _GETRESOURCESRESPONSEITEM
 _GETRESOURCES_RESPONSE.containing_type = _GETRESOURCES
 _GETRESOURCES.fields_by_name['resources'].message_type = uac_dot_RoleService__pb2._RESOURCES
+_GETRESOURCES.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _GETRESOURCES.oneofs_by_name['workspace'].fields.append(
   _GETRESOURCES.fields_by_name['workspace_id'])
 _GETRESOURCES.fields_by_name['workspace_id'].containing_oneof = _GETRESOURCES.oneofs_by_name['workspace']
@@ -1082,6 +1126,7 @@ _DELETERESOURCES_RESPONSE.containing_type = _DELETERESOURCES
 _DELETERESOURCES.fields_by_name['resources'].message_type = uac_dot_RoleService__pb2._RESOURCES
 _GETRESOURCEADMINS.fields_by_name['service'].enum_type = uac_dot_RoleService__pb2._SERVICEENUM_SERVICE
 _GETRESOURCEADMINS.fields_by_name['resource_type'].message_type = uac_dot_RoleService__pb2._RESOURCETYPE
+_GETRESOURCEADMINS.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _MODIFYRESOURCEADMINS.fields_by_name['service'].enum_type = uac_dot_RoleService__pb2._SERVICEENUM_SERVICE
 _MODIFYRESOURCEADMINS.fields_by_name['resource_type'].message_type = uac_dot_RoleService__pb2._RESOURCETYPE
 DESCRIPTOR.message_types_by_name['CollaboratorPermissions'] = _COLLABORATORPERMISSIONS
@@ -1242,8 +1287,8 @@ _COLLABORATORSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=3625,
-  serialized_end=8151,
+  serialized_start=3842,
+  serialized_end=8368,
   methods=[
   _descriptor.MethodDescriptor(
     name='getResources',
