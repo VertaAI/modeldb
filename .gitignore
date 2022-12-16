@@ -1,4 +1,28 @@
-__pycache__/
+# MacOS
 .DS_Store
-.ipynb
+
+# Editor files
 .vscode
+.classpath
+.settings/*
+.project
+.factorypath
+.idea/
+*.iml
+
+# Maven
+target/
+
+# ignore dirs created and used by docker-compose modeldb-backend
+data
+local.env
+.coveragerc
+
+# Python
+.ipynb
+__pycache__/
+
+# ignore Python dev tool files and dirs
+**/.python-version
+**/.ropeproject
+.pre-commit-config.yaml

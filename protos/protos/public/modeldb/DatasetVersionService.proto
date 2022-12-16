@@ -29,6 +29,8 @@ message DatasetVersion {
     }
     uint64 time_updated = 15;
     versioning.DatasetBlob dataset_blob = 16;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 17;
 }
 
 message QueryDatasetVersionInfo {

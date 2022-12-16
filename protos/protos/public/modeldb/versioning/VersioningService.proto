@@ -31,6 +31,8 @@ message Commit {
     string commit_sha = 5;
     // Updated Date while create tags & attribute for the commit.
     uint64 date_updated = 6;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 7;
 }
 
 // Data structure used to compute the SHA of a folder
@@ -117,6 +119,8 @@ message Repository {
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 13;
     uac.ResourceVisibility visibility = 14;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 15;
 }
 
 

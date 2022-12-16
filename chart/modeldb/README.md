@@ -10,8 +10,11 @@ ModelDB is an end-to-end system for managing machine learning models. It ingests
 
 ### Deploying ModelDB on Kubernetes
 
-In this directory run:
-
+In this directory using Helm v3, run:
+```
+helm install --namespace <k8s namespace> <release-name> .
+```
+Alternatively, using Helm v2:
 ```
 helm install . --name <release-name> --namespace <k8s namespace>
 ```
@@ -20,7 +23,7 @@ By default, the "default" namespace on your Kubernetes cluster is used.
 ### What next?
 
 Now that you have modelDB up and running on your K8s cluster, please visit
-[our user guide and documentation](https://docs.verta.ai/en/master/index.html) to get started.
+[our user guide and documentation](https://docs.verta.ai/) to get started.
 
 ### Using Custom Images
 

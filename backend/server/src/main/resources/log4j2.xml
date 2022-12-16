@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="ConsoleJSONAppender" target="SYSTEM_OUT">
+            <JsonTemplateLayout eventTemplateUri="classpath:log-template.json" locationInfoEnabled="true">
+                <EventTemplateAdditionalField key="hostName" value="${env:hostName:-}"/>
+            </JsonTemplateLayout>
+        </Console>
+    </Appenders>
+    <Loggers>
+        <Logger name="io.grpc.netty" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="io.netty" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="org.hibernate" level="WARN" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="com.mchange" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="ai.verta.modeldb.utils.MongoToPostgresMigrationUtils" level="TRACE" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="TRACE" />
+        </Logger>
+        <Logger name="liquibase" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="org.mongodb.driver" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="org.springframework" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="org.apache.http" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="org.apache.http.headers" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="com.amazonaws" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="org.apache.http.impl" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Logger name="io.jaegertracing" level="WARN" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="WARN" />
+        </Logger>
+        <Logger name="com.zaxxer.hikari" level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
+        </Logger>
+        <Root level="INFO" additivity="false">
+            <AppenderRef ref="ConsoleJSONAppender" />
+        </Root>
+    </Loggers>
+</Configuration>

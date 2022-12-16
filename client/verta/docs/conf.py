@@ -44,6 +44,7 @@ release = ''
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
+    'sphinx.ext.intersphinx',
     'sphinx.ext.napoleon',
     'sphinx_copybutton',
     'sphinx_click',
@@ -54,7 +55,6 @@ autodoc_mock_imports = [
     'cloudpickle',
     'google',
     'joblib',
-    'pathlib2',
     'sklearn',
     'tensorflow',
     'torch',
@@ -62,6 +62,10 @@ autodoc_mock_imports = [
     'xgboost',
     'yaml',
 ]
+
+autosummary_generate = True
+
+intersphinx_mapping = {'python': ('https://docs.python.org/3', None)}
 
 napoleon_use_rtype = False
 napoleon_use_ivar = True
@@ -83,7 +87,7 @@ master_doc = 'index'
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -95,22 +99,9 @@ pygments_style = None
 
 # reStructuredText to be included at the beginning of every source file.
 rst_prolog = '\n'.join([
-".. |tags description| replace:: Tags are short textual labels used to help"
-    " identify a run, such as its purpose or its environment.",
-".. |attributes description| replace:: Attributes are descriptive metadata,"
-    " such as the team responsible for this model or the expected training"
-    " time.",
-".. |hyperparameters description| replace:: Hyperparameters are model"
-    " configuration metadata, such as the loss function or the regularization"
-    " penalty.",
-".. |metrics description| replace:: Metrics are unique performance metadata,"
-    " such as accuracy or loss on the full training set.",
-".. |observations description| replace:: Observations are recurring metadata"
-    " that are repeatedly measured over time, such as batch losses over an"
-    " epoch or memory usage.",
-".. |dataset versioning overhaul| replace:: In ``verta==0.16.0``, the dataset"
-    " versioning interface was overhauled to be more flexible, robust, and"
-    " consistent with other ModelDB entities.",
+".. |experimental| replace:: This feature may require an upgrade to the"
+    " platform; please reach out to the Verta team at support@verta.ai to"
+    " verify its availability in your version of the system.",
 ])
 
 
@@ -229,5 +220,5 @@ epub_exclude_files = ['search.html']
 
 # -- Extension configuration -------------------------------------------------
 def setup(app):
-    app.add_javascript('custom.js')
-    app.add_stylesheet('custom.css')
+    app.add_js_file('custom.js')
+    app.add_css_file('custom.css')

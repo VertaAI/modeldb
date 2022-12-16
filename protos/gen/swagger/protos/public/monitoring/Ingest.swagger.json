@@ -1,0 +1,312 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "monitoring/Ingest.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/monitoring/ingest/batchIngest": {
+      "post": {
+        "operationId": "IngestService_batchIngest",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringBatchIngestRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringBatchIngestRequest"
+            }
+          }
+        ],
+        "tags": [
+          "IngestService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "BatchIngestRequestColumnSpec": {
+      "type": "object",
+      "properties": {
+        "monitoring_name": {
+          "type": "string",
+          "description": "Name of the column that is associated with the monitoring system. Used to enable datasets to have different column names.\nEquivalent to x-verta-monitoring-name in the model API.\nOptional (will default to the original column name)."
+        },
+        "io_type": {
+          "$ref": "#/definitions/IOTypeEnumIOType",
+          "description": "Type of the IO entry so that it can be mapped correctly."
+        },
+        "confidence_for": {
+          "type": "string",
+          "description": "Name of the \"monitoring_name\" entry that this column corresponds to a confidence for.\nEquivalent to x-verta-monitoring-confidence-for in the model API.\nOptional."
+        },
+        "ground_truth_for": {
+          "type": "string",
+          "description": "Name of the \"monitoring_name\" entry that this column corresponds to the ground truth for.\nOptional."
+        }
+      }
+    },
+    "CompressionTypeEnumCompressionType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "RAW",
+        "GZIP"
+      ],
+      "default": "UNKNOWN"
+    },
+    "EncodingTypeEnumEncodingType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "CSV",
+        "JSON",
+        "PARQUET"
+      ],
+      "default": "UNKNOWN"
+    },
+    "IOTypeEnumIOType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "INPUT",
+        "OUTPUT",
+        "GROUND_TRUTH"
+      ],
+      "default": "UNKNOWN"
+    },
+    "SourceTypeEnumSourceType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "REFERENCE",
+        "GROUND_TRUTH",
+        "PREDICTION"
+      ],
+      "default": "UNKNOWN"
+    },
+    "monitoringBatchIngestRequest": {
+      "type": "object",
+      "properties": {
+        "source_type": {
+          "$ref": "#/definitions/SourceTypeEnumSourceType"
+        },
+        "id_column_name": {
+          "type": "string",
+          "description": "Name of the column in the data that can be used as the prediction id.\nRequired for ground truth and predictions."
+        },
+        "column_name": {
+          "type": "string",
+          "description": "Name of the column in the data that can be used as the timestamp for each row."
+        },
+        "rfc3339_nano": {
+          "type": "string",
+          "description": "String representation of the timestamp in RFC3339 format."
+        },
+        "unix_utc_nano": {
+          "type": "string",
+          "format": "uint64",
+          "description": "UTC unix time in nanoseconds."
+        },
+        "dataset_version_id": {
+          "type": "string",
+          "description": "ID of the dataset version inside Verta to be used for ingestion."
+        },
+        "config": {
+          "$ref": "#/definitions/versioningDatasetBlob",
+          "description": "DatasetBlob that is equivalent to a dataset version, but not registered in the system."
+        },
+        "ingest_columns": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/BatchIngestRequestColumnSpec"
+          },
+          "description": "Map from name of the column in the original data to a specification of how to ingest it."
+        },
+        "batch_id": {
+          "type": "string",
+          "description": "Unique ID associated with this batch of data.\nOptional."
+        },
+        "encoding_type": {
+          "$ref": "#/definitions/EncodingTypeEnumEncodingType"
+        },
+        "compression_type": {
+          "$ref": "#/definitions/CompressionTypeEnumCompressionType"
+        },
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64",
+          "description": "MonitoredEntity to attach this batch to."
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "ModelVersion to which this batch is associated.\nTOOD: make this optional? We don't need a specific model to monitor data"
+        }
+      }
+    },
+    "monitoringBatchIngestRequestResponse": {
+      "type": "object"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "versioningDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "s3": {
+          "$ref": "#/definitions/versioningS3DatasetBlob"
+        },
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetBlob"
+        },
+        "query": {
+          "$ref": "#/definitions/versioningQueryDatasetBlob"
+        }
+      }
+    },
+    "versioningPathDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "size": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "last_modified_at_source": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "sha256": {
+          "type": "string"
+        },
+        "md5": {
+          "type": "string"
+        },
+        "internal_versioned_path": {
+          "type": "string"
+        },
+        "base_path": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningQueryDatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningQueryDatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningQueryDatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "query": {
+          "type": "string"
+        },
+        "data_source_uri": {
+          "type": "string",
+          "title": "string query_template = 2;\nrepeated QueryParameter query_parameters = 3;"
+        },
+        "execution_timestamp": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "num_records": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "versioningS3DatasetBlob": {
+      "type": "object",
+      "properties": {
+        "components": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/versioningS3DatasetComponentBlob"
+          }
+        }
+      }
+    },
+    "versioningS3DatasetComponentBlob": {
+      "type": "object",
+      "properties": {
+        "path": {
+          "$ref": "#/definitions/versioningPathDatasetComponentBlob"
+        },
+        "s3_version_id": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

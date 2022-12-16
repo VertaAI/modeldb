@@ -1,0 +1,136 @@
+#ModelDB Properties
+grpcServer:
+  port: 8085
+  requestTimeout: 30 #time in second
+  maxInboundMessageSize: 4000000
+  metrics_port:
+
+springServer:
+  port: 8086
+  shutdownTimeout: 30 #time in second
+
+service_user:
+  email:
+  devKey:
+
+artifactStoreConfig:
+  artifactStoreType: NFS #S3, GCP, NFS
+  pickArtifactStoreHostFromConfig: false
+  enabled: true
+  host: localhost:8086
+  protocol: http
+  artifactEndpoint:
+    getArtifact: "/v1/artifact/getArtifact"
+    storeArtifact: "/v1/artifact/storeArtifact"
+  S3:
+    cloudAccessKey: #for s3 aws account access-key
+    cloudSecretKey: #for s3 aws account secret-key
+    cloudBucketName: # if nfs then root dir. Note: bucket needs to exist already
+    cloudBucketPrefix: # optional
+    aws_region: us-east-1
+    s3presignedURLEnabled: false
+    minioEndpoint:
+  NFS:
+    nfsServerHost: localhost #IF 'artifactStoreServerHost' found then this value will be ignore
+    nfsUrlProtocol: https #IF 'artifactStoreUrlProtocol' found then this value will be ignore
+    nfsRootPath:
+    nfsPathPrefix: # optional
+    artifactEndpoint: #IF 'artifactEndpoint' found with parallel to 'artifactStoreType' then this value will be ignore
+      getArtifact: "/v1/artifact1/getArtifact"
+      storeArtifact: "/v1/artifact/storeArtifact"
+
+# Database settings (type mongodb, couchbasedb, relational etc..)
+database:
+  DBType: relational
+  timeout: 4
+  liquibaseLockThreshold: 60 #time in second
+  changeSetToRevertUntilTag: #ex: version_1.0
+  minConnectionPoolSize: 5
+  maxConnectionPoolSize: 20
+  connectionTimeout: 300
+  idleTimeout: "60000"
+  maxLifetime: "300000"
+  RdbConfiguration:
+    RdbDatabaseName:
+    RdbDriver: "org.postgresql.Driver"
+    RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+    RdbUrl: "jdbc:postgresql://localhost:5432"
+    RdbUsername:
+    RdbPassword:
+    sslMode: DISABLED
+    sslEnabled: false
+
+# Test Database settings (type mongodb, couchbasedb, relational etc..)
+test:
+  test-database:
+    DBType: relational
+    timeout: 4
+    liquibaseLockThreshold: 60 #time in second
+    changeSetToRevertUntilTag: #ex: version_1.0
+    minConnectionPoolSize: 5
+    maxConnectionPoolSize: 20
+    connectionTimeout: 300
+    RdbConfiguration:
+      RdbDatabaseName: test
+      RdbDriver: "org.postgresql.Driver"
+      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
+      RdbUrl: "jdbc:postgresql://localhost:5432"
+      RdbUsername:
+      RdbPassword:
+      sslMode: DISABLED
+  testUsers:
+    primaryUser:
+      email:
+      devKey:
+    secondaryUser:
+      email:
+      devKey:
+
+#AuthService Properties
+authService:
+  host: uacservice # Docker container name OR docker IP
+  port: 50051
+
+starterProject:
+
+migrations:
+  - name: DATASET_VERSIONING_MIGRATION
+    enabled: false
+    record_update_limit: 100
+  - name: SUB_ENTITIES_OWNERS_RBAC_MIGRATION
+    enabled: false
+  - name: POPULATE_VERSION_MIGRATION
+    enabled: false
+    record_update_limit: 100
+  - name: COLLABORATOR_RESOURCE_MIGRATION
+    enabled: false
+    record_update_limit: 100
+  - name: BASE_PATH_DATASET_VERSION_MIGRATION
+    enabled: false
+
+telemetry:
+  opt_out: false
+  frequency: 10 #frequency to share data in hours, default 1
+  consumer: https://xyz.com/api/v1/xyz
+
+cron_job:
+  delete_entities:
+    initial_delay: 300 #delay timestamp in second, default 300second = 5min
+    frequency: 60 #frequency to delete entities in second, default 60
+    record_update_limit: 50
+  update_run_environments:
+    initial_delay: 300 #delay timestamp in second, default 300second = 5min
+    frequency: 60 #frequency to delete entities in second, default 60
+    record_update_limit: 100
+  delete_audit_logs:
+    initial_delay: 300 #delay timestamp in second, default 300second = 5min
+    frequency: 60 #frequency to delete entities in second, default 60
+    record_update_limit: 100
+  clean_up_entities:
+    initial_delay: 300 #delay timestamp in second, default 300second = 5min
+    frequency: 60 #frequency to delete entities in second, default 60
+    record_update_limit: 100
+
+populateConnectionsBasedOnPrivileges: false
+disabled_audits: true
+jdbi_retry_time: 100 # Time in ms

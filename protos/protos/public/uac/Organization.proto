@@ -6,6 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "common/CommonService.proto";
+import "uac/UACService.proto";
 
 message Organization {
     string id = 1;
@@ -13,6 +14,7 @@ message Organization {
     string short_name = 7;
     string description = 3;
     string owner_id = 4;
+    IdServiceProviderEnum idp = 21;
 
     int64 created_timestamp = 5;
     int64 updated_timestamp = 6;
@@ -21,10 +23,43 @@ message Organization {
     common.TernaryEnum.Ternary global_can_deploy = 9;
     common.CollaboratorTypeEnum.CollaboratorType default_repo_collaborator_type = 10;
     common.CollaboratorTypeEnum.CollaboratorType default_endpoint_collaborator_type = 11;
+    common.TernaryEnum.Ternary endpoint_can_predict = 18;
     common.CollaboratorTypeEnum.CollaboratorType default_dataset_collaborator_type = 12;
     common.CollaboratorTypeEnum.CollaboratorType default_registered_model_collaborator_type = 13;
     string workspace_id = 14;
     common.TernaryEnum.Ternary registered_model_can_deploy = 15;
+    common.CollaboratorTypeEnumWithDefaultEnum.CollaboratorTypeEnumWithDefault default_monitored_entity_collaborator_type = 16;
+    common.CollaboratorTypeEnumWithDefaultEnum.CollaboratorTypeEnumWithDefault default_notification_channel_collaborator_type = 17;
+
+    OrganizationAdmins admins = 19;
+    OrganizationBaselinePermissions baseline_permissions = 20;
+    string namespace = 22;
+}
+
+message OrganizationBaselinePermissions {
+    enum BaselinePermissions {
+        UNKNOWN = 0;
+        PRIVATE = 1; // No baseline permissions (everything is private by default)
+        READ = 2; // Same as read collaborator
+        WRITE = 3; // Same as read/write collaborator
+        ADMIN = 4; // Same as resource admin role
+    }
+
+    BaselinePermissions minimum_resources_permission = 1;
+    common.TernaryEnum.Ternary project_can_deploy = 2;
+    common.TernaryEnum.Ternary registry_can_deploy = 3;
+    common.TernaryEnum.Ternary endpoint_can_predict = 4;
+}
+
+message OrganizationAdmins {
+    repeated string user_ids = 1;
+    repeated string team_ids = 2;
+}
+
+message ModifyOrganizationAdmins {
+    string org_id = 1;
+    repeated string user_ids = 2;
+    repeated string team_ids = 3;
 }
 
 message GetOrganizationById {
@@ -51,9 +86,20 @@ message GetOrganizationByShortName {
     }
 }
 
-message ListMyOrganizations {
+message ListOrganizations {
+    bool externalOnly = 1;
+    common.Pagination pagination = 2;
     message Response {
         repeated Organization organizations = 1;
+        int64 total_records = 2;
+    }
+}
+
+message ListMyOrganizations {
+    common.Pagination pagination = 2;
+    message Response {
+        repeated Organization organizations = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -75,17 +121,22 @@ message DeleteOrganization {
 
 message ListUsers {
     string org_id = 1;
+    common.Pagination pagination = 2;
 
     message Response {
         repeated string user_ids = 1;
+        int64 total_records = 2;
     }
 }
 
 message ListTeams {
     string org_id = 1;
+    bool external_only = 2;
+    common.Pagination pagination = 3;
 
     message Response {
         repeated string team_ids = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -129,7 +180,14 @@ service OrganizationService {
         };
     };
 
-    // Lists the organizations that the current user can see
+    // Lists the organizations that the current user can access
+    rpc listOrganizations (ListOrganizations) returns (ListOrganizations.Response){
+        option (google.api.http) = {
+            get: "/v1/organization/listOrganizations"
+        };
+    };
+
+    // Lists the organizations that the current user is a member of
     rpc listMyOrganizations (ListMyOrganizations) returns (ListMyOrganizations.Response){
         option (google.api.http) = {
             get: "/v1/organization/listMyOrganizations"
@@ -185,6 +243,20 @@ service OrganizationService {
     rpc removeUser (RemoveUser) returns (RemoveUser.Response){
         option (google.api.http) = {
             post: "/v1/organization/removeUser"
+            body: "*"
+        };
+    };
+
+    rpc addAdmins (ModifyOrganizationAdmins) returns (Empty){
+        option (google.api.http) = {
+            post: "/v1/organization/addAdmins"
+            body: "*"
+        };
+    };
+
+    rpc removeAdmins (ModifyOrganizationAdmins) returns (Empty){
+        option (google.api.http) = {
+            post: "/v1/organization/removeAdmins"
             body: "*"
         };
     };

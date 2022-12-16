@@ -151,7 +151,12 @@
         "BITBUCKET",
         "GOOGLE",
         "VERTA",
-        "SAML"
+        "SAML",
+        "AD_OAUTH2",
+        "LDAP",
+        "OKTA_SCIM",
+        "AD_SCIM",
+        "SCIM"
       ],
       "default": "UNKNOWN"
     },
@@ -290,15 +295,6 @@
       ],
       "default": "UNDEFINED"
     },
-    "uacTrialUserInfo": {
-      "type": "object",
-      "properties": {
-        "days_remaining": {
-          "type": "integer",
-          "format": "int32"
-        }
-      }
-    },
     "uacUserInfo": {
       "type": "object",
       "properties": {
@@ -337,6 +333,10 @@
         },
         "secondary_dev_key": {
           "type": "string"
+        },
+        "disabled": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -367,8 +367,13 @@
         "workspace_id": {
           "type": "string"
         },
-        "trial_info": {
-          "$ref": "#/definitions/uacTrialUserInfo"
+        "default_workspace_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+        },
+        "description": {
+          "type": "string"
         }
       }
     }

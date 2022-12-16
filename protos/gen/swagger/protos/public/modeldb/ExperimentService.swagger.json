@@ -899,7 +899,8 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
     },
@@ -943,6 +944,52 @@
         },
         "filename_extension": {
           "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
+          "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -1061,22 +1108,6 @@
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
-    },
-    "modeldbCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/modeldbGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
     },
     "modeldbCreateExperiment": {
       "type": "object",
@@ -1274,13 +1305,18 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/commonArtifact"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -1384,7 +1420,7 @@
       "type": "object",
       "properties": {
         "code_version": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         }
       }
     },
@@ -1453,26 +1489,6 @@
         }
       }
     },
-    "modeldbGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
     "modeldbLogExperimentArtifacts": {
       "type": "object",
       "properties": {
@@ -1503,7 +1519,7 @@
           "type": "string"
         },
         "code_version": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         }
       },
       "title": "code version"

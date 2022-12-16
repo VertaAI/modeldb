@@ -633,7 +633,8 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
     },
@@ -686,6 +687,52 @@
         },
         "filename_extension": {
           "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
+          "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -764,22 +811,6 @@
           "$ref": "#/definitions/modeldbDataset"
         }
       }
-    },
-    "modeldbCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/modeldbGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
     },
     "modeldbCreateDataset": {
       "type": "object",
@@ -889,6 +920,11 @@
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -1020,13 +1056,18 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/commonArtifact"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -1068,7 +1109,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "parent_id": {
           "type": "string"
@@ -1137,8 +1178,13 @@
         "code_version_from_blob": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/modeldbCodeVersion"
+            "$ref": "#/definitions/commonCodeVersion"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       },
       "title": "ExperimentRun Entity"
@@ -1270,26 +1316,6 @@
           "items": {
             "type": "string"
           }
-        }
-      }
-    },
-    "modeldbGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -1444,6 +1470,9 @@
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -1457,6 +1486,17 @@
         "WORKSPACE_DEFAULT"
       ],
       "default": "UNKNOWN"
+    },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "versioningDockerEnvironmentBlob": {
       "type": "object",
@@ -1492,6 +1532,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },
@@ -1523,6 +1566,13 @@
           "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
+        },
+        "raw_requirements": {
+          "type": "string",
+          "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
+        },
+        "raw_constraints": {
+          "type": "string"
         }
       }
     },

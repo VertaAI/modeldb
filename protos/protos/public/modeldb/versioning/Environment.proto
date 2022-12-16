@@ -14,6 +14,8 @@ message EnvironmentBlob {
     }
     repeated EnvironmentVariablesBlob environment_variables = 3;
     repeated string command_line = 4;
+    AptEnvironmentBlob apt = 5;
+
 }
 
 message EnvironmentVariablesBlob {
@@ -38,12 +40,19 @@ message PythonEnvironmentBlob {
     VersionEnvironmentBlob version = 1;
     repeated PythonRequirementEnvironmentBlob requirements = 2;
     repeated PythonRequirementEnvironmentBlob constraints = 3;
+    // These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example.
+    string raw_requirements = 4;
+    string raw_constraints = 5;
 }
 
 message DockerEnvironmentBlob {
     string repository = 1;
     string tag = 2;
     string sha = 3;
+}
+
+message AptEnvironmentBlob {
+    repeated string packages = 1;
 }
 
 message EnvironmentDiff {

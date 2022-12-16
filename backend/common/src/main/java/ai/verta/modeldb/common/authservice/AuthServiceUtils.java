@@ -4,38 +4,22 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
-import ai.verta.modeldb.exceptions.NotFoundException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.uac.*;
-import io.grpc.Context;
-import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
+import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.*;
-
 public class AuthServiceUtils implements AuthService {
-  private final String host;
-  private final Integer port;
-  private final String serviceUserEmail;
-  private final String serviceUserDevKey;
-  private final Context.Key<Metadata> metadataInfo;
-  private Integer timeout;
+  private final UAC uac;
+  private final Integer timeout;
 
-  public AuthServiceUtils(
-      String host,
-      Integer port,
-      String serviceUserEmail,
-      String serviceUserDevKey,
-      Integer timeout,
-      Context.Key<Metadata> metadataInfo) {
-    this.host = host;
-    this.port = port;
-    this.serviceUserEmail = serviceUserEmail;
-    this.serviceUserDevKey = serviceUserDevKey;
+  public AuthServiceUtils(UAC uac, Integer timeout) {
+    this.uac = uac;
     this.timeout = timeout;
-    this.metadataInfo = metadataInfo;
   }
 
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceUtils.class);
@@ -46,12 +30,11 @@ public class AuthServiceUtils implements AuthService {
   }
 
   private UserInfo getCurrentLoginUserInfo(boolean retry) {
-    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
-        getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
-      UserInfo userInfo =
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
+      var userInfo =
           authServiceChannel.getUacServiceBlockingStub().getCurrentUser(Empty.newBuilder().build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
         throw new NotFoundException("Current user could not be resolved.");
@@ -60,8 +43,7 @@ public class AuthServiceUtils implements AuthService {
       }
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
-          CommonUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<UserInfo>) this::getCurrentLoginUserInfo, timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::getCurrentLoginUserInfo, timeout);
     }
   }
 
@@ -71,14 +53,12 @@ public class AuthServiceUtils implements AuthService {
   }
 
   private UserInfo getUnsignedUser(boolean retry) {
-    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
-        getAuthServiceChannel()) {
-      LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
-      GetUser getUserRequest =
-          GetUser.newBuilder().setUsername(CommonConstants.UNSIGNED_USER).build();
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
+      var getUserRequest = GetUser.newBuilder().setUsername(CommonConstants.UNSIGNED_USER).build();
       // Get the user info by vertaId form the AuthService
-      UserInfo userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      var userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
         throw new NotFoundException("Unsigned user not found with the provided metadata");
@@ -87,8 +67,7 @@ public class AuthServiceUtils implements AuthService {
       }
     } catch (StatusRuntimeException ex) {
       return (UserInfo)
-          CommonUtils.retryOrThrowException(
-              ex, retry, (RetryCallInterface<UserInfo>) this::getUnsignedUser, timeout);
+          CommonUtils.retryOrThrowException(ex, retry, this::getUnsignedUser, timeout);
     }
   }
 
@@ -99,8 +78,7 @@ public class AuthServiceUtils implements AuthService {
 
   private UserInfo getUserInfo(
       boolean retry, String vertaId, CommonConstants.UserIdentifier vertaIdentifier) {
-    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
-        getAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetUser getUserRequest;
       if (vertaIdentifier == CommonConstants.UserIdentifier.EMAIL_ID) {
         getUserRequest = GetUser.newBuilder().setEmail(vertaId).build();
@@ -110,10 +88,10 @@ public class AuthServiceUtils implements AuthService {
         getUserRequest = GetUser.newBuilder().setUserId(vertaId).build();
       }
 
-      LOGGER.info(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
       // Get the user info by vertaId form the AuthService
-      UserInfo userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      var userInfo = authServiceChannel.getUacServiceBlockingStub().getUser(getUserRequest);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
       if (userInfo == null || userInfo.getVertaInfo() == null) {
         throw new NotFoundException("User not found with the provided metadata");
@@ -126,7 +104,7 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (RetryCallInterface<UserInfo>)
-                  (retry1) -> getUserInfo(retry1, vertaId, vertaIdentifier),
+                  retry1 -> getUserInfo(retry1, vertaId, vertaIdentifier),
               timeout);
     }
   }
@@ -139,15 +117,21 @@ public class AuthServiceUtils implements AuthService {
    */
   @Override
   public Map<String, UserInfo> getUserInfoFromAuthServer(
-      Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
-    return getUserInfoFromAuthServer(true, vertaIdList, emailIdList, usernameList);
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser) {
+    return getUserInfoFromAuthServer(true, vertaIdList, emailIdList, usernameList, isServiceUser);
   }
 
   private Map<String, UserInfo> getUserInfoFromAuthServer(
-      boolean retry, Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
-    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
-        getAuthServiceChannel()) {
-      GetUsers.Builder getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
+      boolean retry,
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      var getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
       if (emailIdList != null && !emailIdList.isEmpty()) {
         getUserRequestBuilder.addAllEmails(emailIdList);
       }
@@ -158,9 +142,12 @@ public class AuthServiceUtils implements AuthService {
       LOGGER.trace("email Id List : {}", emailIdList);
       LOGGER.trace("username Id List : {}", usernameList);
       // Get the user info from the Context
-      GetUsers.Response response =
-          authServiceChannel.getUacServiceBlockingStub().getUsers(getUserRequestBuilder.build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      var blockingStub =
+          isServiceUser
+              ? authServiceChannel.getUacServiceBlockingStubForServiceUser()
+              : authServiceChannel.getUacServiceBlockingStub();
+      var response = blockingStub.getUsers(getUserRequestBuilder.build());
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       List<UserInfo> userInfoList = response.getUserInfosList();
 
       Map<String, UserInfo> useInfoMap = new HashMap<>();
@@ -174,8 +161,9 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (RetryCallInterface<Map<String, UserInfo>>)
-                  (retry1) ->
-                      getUserInfoFromAuthServer(retry1, vertaIdList, emailIdList, usernameList),
+                  retry1 ->
+                      getUserInfoFromAuthServer(
+                          retry1, vertaIdList, emailIdList, usernameList, isServiceUser),
               timeout);
     }
   }
@@ -220,25 +208,23 @@ public class AuthServiceUtils implements AuthService {
 
   private UserInfoPaginationDTO getFuzzyUserInfoList(boolean retry, String usernameChar) {
     if (usernameChar.isEmpty()) {
-      UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+      var paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(Collections.emptyList());
       paginationDTO.setTotalRecords(0L);
       return paginationDTO;
     }
-    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
-        getAuthServiceChannel()) {
-      GetUsersFuzzy.Builder getUserRequestBuilder =
-          GetUsersFuzzy.newBuilder().setUsername(usernameChar);
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
+      var getUserRequestBuilder = GetUsersFuzzy.newBuilder().setUsername(usernameChar);
 
       LOGGER.trace("usernameChar : {}", usernameChar);
       // Get the user info from the Context
-      GetUsersFuzzy.Response response =
+      var response =
           authServiceChannel
               .getUacServiceBlockingStub()
               .getUsersFuzzy(getUserRequestBuilder.build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
 
-      UserInfoPaginationDTO paginationDTO = new UserInfoPaginationDTO();
+      var paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(response.getUserInfosList());
       paginationDTO.setTotalRecords(response.getTotalRecords());
       return paginationDTO;
@@ -248,49 +234,47 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<UserInfoPaginationDTO>)
-                  (retry1) -> getFuzzyUserInfoList(retry1, usernameChar),
+                  retry1 -> getFuzzyUserInfoList(retry1, usernameChar),
               timeout);
     }
   }
 
   @Override
   public Workspace workspaceIdByName(boolean retry, String workspaceName) {
-    try (ai.verta.modeldb.common.authservice.AuthServiceChannel authServiceChannel =
-        getAuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetWorkspaceByName.Builder getWorkspaceByName =
           GetWorkspaceByName.newBuilder().setName(workspaceName);
 
       LOGGER.trace("workspace : {}", workspaceName);
       // Get the user info from the Context
-      Workspace workspace =
+      var workspace =
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceByName(getWorkspaceByName.build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       return workspace;
     } catch (StatusRuntimeException ex) {
       return (Workspace)
           CommonUtils.retryOrThrowException(
               ex,
               retry,
-              (RetryCallInterface<Workspace>) (retry1) -> workspaceIdByName(retry1, workspaceName),
+              (RetryCallInterface<Workspace>) retry1 -> workspaceIdByName(retry1, workspaceName),
               timeout);
     }
   }
 
   @Override
   public Workspace workspaceById(boolean retry, Long workspaceId) {
-    try (AuthServiceChannel authServiceChannel =
-        new ai.verta.modeldb.authservice.AuthServiceChannel()) {
+    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       GetWorkspaceById.Builder getWorkspaceById = GetWorkspaceById.newBuilder().setId(workspaceId);
 
       LOGGER.trace("get workspaceById: ID : {}", workspaceId);
       // Get the user info from the Context
-      Workspace workspace =
+      var workspace =
           authServiceChannel
               .getWorkspaceServiceBlockingStub()
               .getWorkspaceById(getWorkspaceById.build());
-      LOGGER.info(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
+      LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
       return workspace;
     } catch (StatusRuntimeException ex) {
       return (Workspace)
@@ -298,12 +282,8 @@ public class AuthServiceUtils implements AuthService {
               ex,
               retry,
               (CommonUtils.RetryCallInterface<Workspace>)
-                  (retry1) -> workspaceById(retry1, workspaceId),
+                  retry1 -> workspaceById(retry1, workspaceId),
               timeout);
     }
-  }
-
-  private AuthServiceChannel getAuthServiceChannel() {
-    return new AuthServiceChannel(host, port, serviceUserEmail, serviceUserDevKey, metadataInfo);
   }
 }

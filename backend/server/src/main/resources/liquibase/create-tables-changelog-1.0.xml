@@ -1,0 +1,1258 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+        logicalFilePath="liquibase/create-tables-changelog-1.0.xml">
+
+    <changeSet author="anandJ" id="createTable-1" failOnError="false">
+        <validCheckSum>8:b64eccfe76381356d89452ebadacfdf7</validCheckSum>
+        <createTable tableName="artifact_store">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="client_key" type="text"/>
+            <column name="cloud_storage_file_path" type="text"/>
+            <column name="cloud_storage_key" type="text"/>
+            <column name="entity_id" type="varchar(50)"/>
+            <column name="entity_name" type="varchar(50)"/>
+        </createTable>
+
+        <createTable tableName="comment">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_id" type="varchar(255)"/>
+            <column name="entity_name" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="dataset">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dataset_type" type="int4"/>
+            <column name="dataset_visibility" type="int4"/>
+            <column name="description" type="text"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="time_created" type="int8"/>
+            <column name="time_updated" type="int8"/>
+        </createTable>
+
+        <createTable tableName="git_snapshot">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="hash" type="varchar(255)"/>
+            <column name="is_dirty" type="int4"/>
+            <column name="repo" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="job">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="description" type="text"/>
+            <column name="end_time" type="varchar(255)"/>
+            <column name="job_status" type="int4"/>
+            <column name="job_type" type="int4"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="start_time" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="path_dataset_version_info">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="base_path" type="varchar(255)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="location_type" type="int4"/>
+            <column name="size" type="int8"/>
+        </createTable>
+
+        <createTable tableName="query_dataset_version_info">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="data_source_uri" type="varchar(255)"/>
+            <column name="execution_timestamp" type="int8"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="num_records" type="int8"/>
+            <column name="query" type="text"/>
+            <column name="query_template" type="text"/>
+        </createTable>
+
+        <createTable tableName="raw_dataset_version_info">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="checksum" type="varchar(255)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="num_records" type="int8"/>
+            <column name="object_path" type="varchar(255)"/>
+            <column name="size" type="int8"/>
+        </createTable>
+
+        <createTable tableName="dataset_part_info">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="checksum" type="varchar(255)"/>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="last_modified_at_source" type="int8"/>
+            <column name="path" type="varchar(255)"/>
+            <column name="size" type="int8"/>
+            <column name="path_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="createTable-9_fk_path_dataset_version_info_id"
+                             referencedTableName="path_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="dataset_version">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dataset_id" type="varchar(255)"/>
+            <column name="dataset_type" type="int4"/>
+            <column name="dataset_version_visibility" type="int4"/>
+            <column name="description" type="text"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="parent_id" type="varchar(255)"/>
+            <column name="time_logged" type="int8"/>
+            <column name="time_updated" type="int8"/>
+            <column name="version" type="int8"/>
+            <column name="path_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="datasetversion_fk_path_dataset_version_info_id"
+                             referencedTableName="path_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+            <column name="query_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="datasetversion_fk_query_dataset_version_info_id"
+                             referencedTableName="query_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+            <column name="raw_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="datasetversion_fk_raw_dataset_version_info_id"
+                             referencedTableName="raw_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="git_snapshot_file_paths">
+            <column name="git_snapshot_id" type="int8">
+                <constraints foreignKeyName="fk_gitsnapshotentity_id" referencedTableName="git_snapshot"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="file_paths" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="query_parameter">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="parameter_name" type="text"/>
+            <column name="parameter_type" type="int4"/>
+            <column name="parameter_value" type="text"/>
+            <column name="query_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="query_parameter_fk_query_dataset_version_info_id"
+                             referencedTableName="query_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="user_comment">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_time" type="int8"/>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="message" type="varchar(255)"/>
+            <column name="user_id" type="varchar(255)"/>
+            <column name="comment_id" type="varchar(255)">
+                <constraints foreignKeyName="fk_comment_id" referencedTableName="comment" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="artifact">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="artifact_type" type="int4"/>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="filename_extension" type="varchar(50)"/>
+            <column name="ar_key" type="text"/>
+            <column name="linked_artifact_id" type="varchar(255)"/>
+            <column name="ar_path" type="text"/>
+            <column name="path_only" type="boolean"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="code_version">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_logged" type="int8"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="code_archive_id" type="int8">
+                <constraints foreignKeyName="fk_code_archive_id" referencedTableName="artifact"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="git_snapshot_id" type="int8">
+                <constraints foreignKeyName="fk_git_snapshot_id" referencedTableName="git_snapshot"
+                             referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="experiment">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="int8"/>
+            <column name="date_updated" type="int8"/>
+            <column name="description" type="text"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+            <column name="code_version_snapshot_id" type="int8">
+                <constraints foreignKeyName="experiment_fk_code_version_snapshot_id" referencedTableName="code_version"
+                             referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="experiment_run">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code_version" type="varchar(255)"/>
+            <column name="date_created" type="int8"/>
+            <column name="date_updated" type="int8"/>
+            <column name="description" type="text"/>
+            <column name="end_time" type="int8"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="job_id" type="varchar(255)"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="parent_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+            <column name="start_time" type="int8"/>
+            <column name="code_version_snapshot_id" type="int8">
+                <constraints foreignKeyName="experimentrun_fk_code_version_snapshot_id"
+                             referencedTableName="code_version" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="feature">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="feature" type="text"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+            <column name="raw_dataset_version_info_id" type="int8"/>
+        </createTable>
+
+        <createTable tableName="keyvalue">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="kv_key" type="text"/>
+            <column name="kv_value" type="text"/>
+            <column name="value_type" type="int4"/>
+            <column name="dataset_id" type="varchar(255)"/>
+            <column name="dataset_version_id" type="varchar(255)"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="job_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="observation">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="timestamp" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="artifact_id" type="int8"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="keyvaluemapping_id" type="int8"/>
+            <column name="project_id" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="project">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="int8"/>
+            <column name="date_updated" type="int8"/>
+            <column name="description" type="text"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="project_visibility" type="int4"/>
+            <column name="readme_text" type="text"/>
+            <column name="short_name" type="varchar(255)"/>
+            <column name="code_version_snapshot_id" type="int8">
+                <constraints foreignKeyName="project_fk_code_version_snapshot_id" referencedTableName="code_version"
+                             referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="tag_mapping">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="tags" type="text"/>
+            <column name="dataset_id" type="varchar(255)">
+                <constraints foreignKeyName="tagmapping_fk_dataset_id" referencedTableName="dataset"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="dataset_version_id" type="varchar(255)">
+                <constraints foreignKeyName="tagmapping_fk_dataset_version_id" referencedTableName="dataset_version"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="experiment_id" type="varchar(255)">
+                <constraints foreignKeyName="tagmapping_fk_experiment_id" referencedTableName="experiment"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="experiment_run_id" type="varchar(255)">
+                <constraints foreignKeyName="tagmapping_fk_experiment_run_id" referencedTableName="experiment_run"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="project_id" type="varchar(255)">
+                <constraints foreignKeyName="fk_project_id" referencedTableName="project" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+
+        <createTable tableName="attribute">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="kv_key" type="text"/>
+            <column name="kv_value" type="text"/>
+            <column name="value_type" type="int4"/>
+            <column name="dataset_id" type="varchar(255)"/>
+            <column name="dataset_version_id" type="varchar(255)"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="job_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+        </createTable>
+
+        <createTable tableName="lineage">
+            <column name="input_external_id" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="input_type" type="int4">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="output_external_id" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="output_type" type="int4">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+
+        <!--Artifact table foreign key constraints-->
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="artifact"
+                                 constraintName="artifact_fk_project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+        <addForeignKeyConstraint baseColumnNames="experiment_id"
+                                 baseTableName="artifact"
+                                 constraintName="artifact_fk_experiment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment"/>
+        <addForeignKeyConstraint baseColumnNames="experiment_run_id"
+                                 baseTableName="artifact"
+                                 constraintName="artifact_fk_experiment_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment_run"/>
+
+        <!--Feature table foreign key constraints-->
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="feature"
+                                 constraintName="feature_fk_project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+        <addForeignKeyConstraint baseColumnNames="experiment_id"
+                                 baseTableName="feature"
+                                 constraintName="feature_fk_experiment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment"/>
+        <addForeignKeyConstraint baseColumnNames="experiment_run_id"
+                                 baseTableName="feature"
+                                 constraintName="feature_fk_experiment_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment_run"/>
+        <addForeignKeyConstraint baseColumnNames="raw_dataset_version_info_id"
+                                 baseTableName="feature"
+                                 constraintName="feature_fk_raw_dataset_version_info_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="raw_dataset_version_info"/>
+
+        <!--KeyValue table foreign key constraints-->
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+        <addForeignKeyConstraint baseColumnNames="experiment_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_experiment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment"/>
+        <addForeignKeyConstraint baseColumnNames="experiment_run_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_experiment_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment_run"/>
+        <addForeignKeyConstraint baseColumnNames="dataset_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_dataset_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dataset"/>
+        <addForeignKeyConstraint baseColumnNames="dataset_version_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_dataset_version_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dataset_version"/>
+        <addForeignKeyConstraint baseColumnNames="job_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_job_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="job"/>
+
+        <!--Observation table foreign key constraints-->
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+        <addForeignKeyConstraint baseColumnNames="experiment_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_experiment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment"/>
+        <addForeignKeyConstraint baseColumnNames="experiment_run_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_experiment_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment_run"/>
+        <addForeignKeyConstraint baseColumnNames="artifact_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_artifact_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="artifact"/>
+        <addForeignKeyConstraint baseColumnNames="keyvaluemapping_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_keyvaluemapping_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="keyvalue"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_artifact_store">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artifact_store"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artifact_store">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="client_key" type="text"/>
+            <column name="cloud_storage_file_path" type="text"/>
+            <column name="cloud_storage_key" type="text"/>
+            <column name="entity_id" type="varchar(50)"/>
+            <column name="entity_name" type="varchar(50)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_comment">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="comment"/>
+            </not>
+        </preConditions>
+        <createTable tableName="comment">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_id" type="varchar(255)"/>
+            <column name="entity_name" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_dataset">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataset"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dataset">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dataset_type" type="int4"/>
+            <column name="dataset_visibility" type="int4"/>
+            <column name="description" type="text"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="time_created" type="int8"/>
+            <column name="time_updated" type="int8"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_git_snapshot">
+        <validCheckSum>8:c553ddbf35bbea1dfd52726ae2e9a9e0</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="git_snapshot"/>
+            </not>
+        </preConditions>
+        <createTable tableName="git_snapshot">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="hash" type="varchar(255)"/>
+            <column name="is_dirty" type="int4"/>
+            <column name="repo" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_job">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="job"/>
+            </not>
+        </preConditions>
+        <createTable tableName="job">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="description" type="text"/>
+            <column name="end_time" type="varchar(255)"/>
+            <column name="job_status" type="int4"/>
+            <column name="job_type" type="int4"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="start_time" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_path_dataset_version_info">
+        <validCheckSum>8:4d95895fd5fbc5c3dc0d19e63f639c34</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="path_dataset_version_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="path_dataset_version_info">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="base_path" type="varchar(255)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="location_type" type="int4"/>
+            <column name="size" type="int8"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_query_dataset_version_info">
+        <validCheckSum>8:f18ae74cda86f68dc04bfc1266b65369</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="query_dataset_version_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="query_dataset_version_info">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="data_source_uri" type="varchar(255)"/>
+            <column name="execution_timestamp" type="int8"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="num_records" type="int8"/>
+            <column name="query" type="text"/>
+            <column name="query_template" type="text"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_raw_dataset_version_info">
+        <validCheckSum>8:634544eb9814379ff243e9a9d19ca512</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="raw_dataset_version_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="raw_dataset_version_info">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="checksum" type="varchar(255)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="num_records" type="int8"/>
+            <column name="object_path" type="varchar(255)"/>
+            <column name="size" type="int8"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_dataset_part_info">
+        <validCheckSum>8:59e6b2348f27d696edb5cb76f30816ba</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataset_part_info"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dataset_part_info">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="checksum" type="varchar(255)"/>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="last_modified_at_source" type="int8"/>
+            <column name="path" type="varchar(255)"/>
+            <column name="size" type="int8"/>
+            <column name="path_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="createTable-9_fk_path_dataset_version_info_id"
+                             referencedTableName="path_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_dataset_version">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="dataset_version"/>
+            </not>
+        </preConditions>
+        <createTable tableName="dataset_version">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="dataset_id" type="varchar(255)"/>
+            <column name="dataset_type" type="int4"/>
+            <column name="dataset_version_visibility" type="int4"/>
+            <column name="description" type="text"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="parent_id" type="varchar(255)"/>
+            <column name="time_logged" type="int8"/>
+            <column name="time_updated" type="int8"/>
+            <column name="version" type="int8"/>
+            <column name="path_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="datasetversion_fk_path_dataset_version_info_id"
+                             referencedTableName="path_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+            <column name="query_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="datasetversion_fk_query_dataset_version_info_id"
+                             referencedTableName="query_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+            <column name="raw_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="datasetversion_fk_raw_dataset_version_info_id"
+                             referencedTableName="raw_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_git_snapshot_file_paths">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="git_snapshot_file_paths"/>
+            </not>
+        </preConditions>
+        <createTable tableName="git_snapshot_file_paths">
+            <column name="git_snapshot_id" type="int8">
+                <constraints foreignKeyName="fk_gitsnapshotentity_id" referencedTableName="git_snapshot"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="file_paths" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_query_parameter">
+        <validCheckSum>8:12a6a9721710f0e9285e8d330c315c9f</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="query_parameter"/>
+            </not>
+        </preConditions>
+        <createTable tableName="query_parameter">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="parameter_name" type="text"/>
+            <column name="parameter_type" type="int4"/>
+            <column name="parameter_value" type="text"/>
+            <column name="query_dataset_version_info_id" type="int8">
+                <constraints foreignKeyName="query_parameter_fk_query_dataset_version_info_id"
+                             referencedTableName="query_dataset_version_info" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_user_comment">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="user_comment"/>
+            </not>
+        </preConditions>
+        <createTable tableName="user_comment">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_time" type="int8"/>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="message" type="varchar(255)"/>
+            <column name="user_id" type="varchar(255)"/>
+            <column name="comment_id" type="varchar(255)">
+                <constraints foreignKeyName="fk_comment_id" referencedTableName="comment" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_artifact">
+        <validCheckSum>8:556b20b5e842ad0bddd170a348ef4d57</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="artifact"/>
+            </not>
+        </preConditions>
+        <createTable tableName="artifact">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="artifact_type" type="int4"/>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="filename_extension" type="varchar(50)"/>
+            <column name="ar_key" type="text"/>
+            <column name="linked_artifact_id" type="varchar(255)"/>
+            <column name="ar_path" type="text"/>
+            <column name="path_only" type="boolean"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_code_version">
+        <validCheckSum>8:b7ddcfa3873794e152bd02fe14d24ce6</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="code_version"/>
+            </not>
+        </preConditions>
+        <createTable tableName="code_version">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_logged" type="int8"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="code_archive_id" type="int8">
+                <constraints foreignKeyName="fk_code_archive_id" referencedTableName="artifact"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="git_snapshot_id" type="int8">
+                <constraints foreignKeyName="fk_git_snapshot_id" referencedTableName="git_snapshot"
+                             referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_experiment">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="experiment"/>
+            </not>
+        </preConditions>
+        <createTable tableName="experiment">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="int8"/>
+            <column name="date_updated" type="int8"/>
+            <column name="description" type="text"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+            <column name="code_version_snapshot_id" type="int8">
+                <constraints foreignKeyName="experiment_fk_code_version_snapshot_id" referencedTableName="code_version"
+                             referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_experiment_run">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="experiment_run"/>
+            </not>
+        </preConditions>
+        <createTable tableName="experiment_run">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="code_version" type="varchar(255)"/>
+            <column name="date_created" type="int8"/>
+            <column name="date_updated" type="int8"/>
+            <column name="description" type="text"/>
+            <column name="end_time" type="int8"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="job_id" type="varchar(255)"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="parent_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+            <column name="start_time" type="int8"/>
+            <column name="code_version_snapshot_id" type="int8">
+                <constraints foreignKeyName="experimentrun_fk_code_version_snapshot_id"
+                             referencedTableName="code_version" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_feature">
+        <validCheckSum>8:f6c220a4a06c5d647273e32b94d7ea7c</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="feature"/>
+            </not>
+        </preConditions>
+        <createTable tableName="feature">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="feature" type="text"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+            <column name="raw_dataset_version_info_id" type="int8"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_keyvalue">
+        <validCheckSum>8:564824a17b4cb0f34f7c0342490aaa67</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="keyvalue"/>
+            </not>
+        </preConditions>
+        <createTable tableName="keyvalue">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="kv_key" type="text"/>
+            <column name="kv_value" type="text"/>
+            <column name="value_type" type="int4"/>
+            <column name="dataset_id" type="varchar(255)"/>
+            <column name="dataset_version_id" type="varchar(255)"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="job_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_observation">
+        <validCheckSum>8:b49e31c5614f3ef1e22f03b80521d71d</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="observation"/>
+            </not>
+        </preConditions>
+        <createTable tableName="observation">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="timestamp" type="int8">
+                <constraints nullable="false"/>
+            </column>
+            <column name="artifact_id" type="int8"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="keyvaluemapping_id" type="int8"/>
+            <column name="project_id" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_project">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="project"/>
+            </not>
+        </preConditions>
+        <createTable tableName="project">
+            <column name="id" type="varchar(255)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="date_created" type="int8"/>
+            <column name="date_updated" type="int8"/>
+            <column name="description" type="text"/>
+            <column name="name" type="varchar(255)"/>
+            <column name="owner" type="varchar(255)"/>
+            <column name="project_visibility" type="int4"/>
+            <column name="readme_text" type="text"/>
+            <column name="short_name" type="varchar(255)"/>
+            <column name="code_version_snapshot_id" type="int8">
+                <constraints foreignKeyName="project_fk_code_version_snapshot_id" referencedTableName="code_version"
+                             referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_tag_mapping">
+        <validCheckSum>8:36f49c5bf1a42797f729bd496d63a7e4</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tag_mapping"/>
+            </not>
+        </preConditions>
+        <createTable tableName="tag_mapping">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="tags" type="text"/>
+            <column name="dataset_id" type="varchar(255)">
+                <constraints foreignKeyName="tagmapping_fk_dataset_id" referencedTableName="dataset"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="dataset_version_id" type="varchar(255)">
+                <constraints foreignKeyName="tagmapping_fk_dataset_version_id" referencedTableName="dataset_version"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="experiment_id" type="varchar(255)">
+                <constraints foreignKeyName="tagmapping_fk_experiment_id" referencedTableName="experiment"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="experiment_run_id" type="varchar(255)">
+                <constraints foreignKeyName="tagmapping_fk_experiment_run_id" referencedTableName="experiment_run"
+                             referencedColumnNames="id"/>
+            </column>
+            <column name="project_id" type="varchar(255)">
+                <constraints foreignKeyName="fk_project_id" referencedTableName="project" referencedColumnNames="id"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_attribute">
+        <validCheckSum>8:5cc420512a01479694ec3e205654163a</validCheckSum>
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="attribute"/>
+            </not>
+        </preConditions>
+        <createTable tableName="attribute">
+            <column name="id" type="int8" autoIncrement="true">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="entity_name" type="varchar(50)"/>
+            <column name="field_type" type="varchar(50)"/>
+            <column name="kv_key" type="text"/>
+            <column name="kv_value" type="text"/>
+            <column name="value_type" type="int4"/>
+            <column name="dataset_id" type="varchar(255)"/>
+            <column name="dataset_version_id" type="varchar(255)"/>
+            <column name="experiment_id" type="varchar(255)"/>
+            <column name="experiment_run_id" type="varchar(255)"/>
+            <column name="job_id" type="varchar(255)"/>
+            <column name="project_id" type="varchar(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_lineage">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="lineage"/>
+            </not>
+        </preConditions>
+        <createTable tableName="lineage">
+            <column name="input_external_id" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="input_type" type="int4">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="output_external_id" type="varchar(256)">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="output_type" type="int4">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_artifact_fk_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="artifact" foreignKeyName="artifact_fk_project_id"/>
+            </not>
+        </preConditions>
+        <!--Artifact table foreign key constraints-->
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="artifact"
+                                 constraintName="artifact_fk_project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_artifact_fk_experiment_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="artifact" foreignKeyName="artifact_fk_experiment_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="experiment_id"
+                                 baseTableName="artifact"
+                                 constraintName="artifact_fk_experiment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_artifact_fk_experiment_run_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="artifact"
+                                            foreignKeyName="artifact_fk_experiment_run_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="experiment_run_id"
+                                 baseTableName="artifact"
+                                 constraintName="artifact_fk_experiment_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment_run"/>
+    </changeSet>
+
+    <!--Feature table foreign key constraints-->
+    <changeSet author="anandJ" id="fk_feature_fk_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="feature" foreignKeyName="feature_fk_project_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="feature"
+                                 constraintName="feature_fk_project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_feature_fk_experiment_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="feature" foreignKeyName="feature_fk_experiment_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="experiment_id"
+                                 baseTableName="feature"
+                                 constraintName="feature_fk_experiment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_feature_fk_experiment_run_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="feature"
+                                            foreignKeyName="feature_fk_experiment_run_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="experiment_run_id"
+                                 baseTableName="feature"
+                                 constraintName="feature_fk_experiment_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment_run"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_feature_fk_raw_dataset_version_info_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="feature"
+                                            foreignKeyName="feature_fk_raw_dataset_version_info_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="raw_dataset_version_info_id"
+                                 baseTableName="feature"
+                                 constraintName="feature_fk_raw_dataset_version_info_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="raw_dataset_version_info"/>
+    </changeSet>
+
+    <!--KeyValue table foreign key constraints-->
+    <changeSet author="anandJ" id="fk_keyvalue_fk_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="keyvalue" foreignKeyName="keyvalue_fk_project_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_keyvalue_fk_experiment_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="keyvalue" foreignKeyName="keyvalue_fk_experiment_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="experiment_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_experiment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_keyvalue_fk_experiment_run_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="keyvalue"
+                                            foreignKeyName="keyvalue_fk_experiment_run_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="experiment_run_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_experiment_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment_run"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_keyvalue_fk_dataset_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="keyvalue" foreignKeyName="keyvalue_fk_dataset_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="dataset_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_dataset_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dataset"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_keyvalue_fk_dataset_version_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="keyvalue"
+                                            foreignKeyName="keyvalue_fk_dataset_version_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="dataset_version_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_dataset_version_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="dataset_version"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_keyvalue_fk_job_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="keyvalue" foreignKeyName="keyvalue_fk_job_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="job_id"
+                                 baseTableName="keyvalue"
+                                 constraintName="keyvalue_fk_job_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="job"/>
+    </changeSet>
+
+    <!--Observation table foreign key constraints-->
+    <changeSet author="anandJ" id="fk_observation_fk_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="observation"
+                                            foreignKeyName="observation_fk_project_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="project_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_project_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="project"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_observation_fk_experiment_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="observation"
+                                            foreignKeyName="observation_fk_experiment_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="experiment_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_experiment_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_observation_fk_experiment_run_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="observation"
+                                            foreignKeyName="observation_fk_experiment_run_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="experiment_run_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_experiment_run_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="experiment_run"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_observation_fk_artifact_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="observation"
+                                            foreignKeyName="observation_fk_artifact_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="artifact_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_artifact_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="artifact"/>
+    </changeSet>
+
+    <changeSet author="anandJ" id="fk_observation_fk_keyvaluemapping_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyTableName="observation"
+                                            foreignKeyName="observation_fk_keyvaluemapping_id"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="keyvaluemapping_id"
+                                 baseTableName="observation"
+                                 constraintName="observation_fk_keyvaluemapping_id"
+                                 referencedColumnNames="id"
+                                 referencedTableName="keyvalue"/>
+    </changeSet>
+
+    <!-- WARNING: Do not add new change sets to these files -->
+
+</databaseChangeLog>

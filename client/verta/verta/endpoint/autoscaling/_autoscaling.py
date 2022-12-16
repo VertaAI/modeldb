@@ -5,7 +5,7 @@ from .metrics import _AutoscalingMetric
 class Autoscaling(object):
     """
     Represents autoscaling configuration for Endpoint, to be passed to
-    :meth:`Endpoint.update() <verta.endpoint._endpoint.Endpoint.update>`.
+    :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
 
     The JSON equivalent for this is:
 
@@ -37,7 +37,10 @@ class Autoscaling(object):
         autoscaling = Autoscaling(min_replicas=1, max_replicas=10, min_scale=0.5, max_scale=2.0)
 
     """
-    def __init__(self, min_replicas=None, max_replicas=None, min_scale=None, max_scale=None):
+
+    def __init__(
+        self, min_replicas=None, max_replicas=None, min_scale=None, max_scale=None
+    ):
         self._min_replicas = min_replicas
         self._max_replicas = max_replicas
         self._min_scale = min_scale
@@ -50,9 +53,9 @@ class Autoscaling(object):
                 "min_replicas": self._min_replicas,
                 "max_replicas": self._max_replicas,
                 "min_scale": self._min_scale,
-                "max_scale": self._max_scale
+                "max_scale": self._max_scale,
             },
-            "metrics": list(map(lambda metric: metric._as_dict(), self._metrics))
+            "metrics": list(map(lambda metric: metric._as_dict(), self._metrics)),
         }
 
     @classmethod
@@ -70,11 +73,13 @@ class Autoscaling(object):
 
         Parameters
         ----------
-        metric : :ref:`autoscaling metric <autoscaling-metrics>`
+        metric : :mod:`~verta.endpoint.autoscaling.metrics`
             Metric to add.
 
         """
         if not isinstance(metric, _AutoscalingMetric):
-            raise TypeError("`metric` must be an object from verta.endpoint.autoscaling.metrics")
+            raise TypeError(
+                "`metric` must be an object from verta.endpoint.autoscaling.metrics"
+            )
 
         self._metrics.append(metric)

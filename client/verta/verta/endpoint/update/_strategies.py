@@ -23,7 +23,7 @@ class _UpdateStrategy(object):
 
 
 class DirectUpdateStrategy(_UpdateStrategy):
-    """
+    """A direct endpoint update strategy.
 
     The JSON equivalent for this is:
 
@@ -43,21 +43,22 @@ class DirectUpdateStrategy(_UpdateStrategy):
         strategy = DirectUpdateStrategy()
 
     """
+
     _STRATEGY = "rollout"
 
     def _as_build_update_req_body(self):
         return {
-            'strategy': self._STRATEGY,
+            "strategy": self._STRATEGY,
         }
 
 
 class CanaryUpdateStrategy(_UpdateStrategy):
-    """
+    """A rule-based canary endpoint update strategy.
 
     The JSON equivalent for this is:
 
     .. code-block:: json
-    
+
         {
             "strategy": "canary",
             "canary_strategy": {
@@ -84,6 +85,7 @@ class CanaryUpdateStrategy(_UpdateStrategy):
         strategy = CanaryUpdateStrategy(interval=10, step=.1)
 
     """
+
     _STRATEGY = "canary"
 
     def __init__(self, interval, step):
@@ -108,16 +110,18 @@ class CanaryUpdateStrategy(_UpdateStrategy):
             raise RuntimeError("canary update strategy must have at least one rule")
 
         return {
-            'strategy': self._STRATEGY,
-            'canary_strategy': {
-                'progress_interval_seconds': self._progress_interval_seconds,
-                'progress_step': self._progress_step,
-                'rules': list(map(lambda rule: rule._as_dict(), self._rules)),
+            "strategy": self._STRATEGY,
+            "canary_strategy": {
+                "progress_interval_seconds": self._progress_interval_seconds,
+                "progress_step": self._progress_step,
+                "rules": list(map(lambda rule: rule._as_dict(), self._rules)),
             },
         }
 
     def add_rule(self, rule):
         if not isinstance(rule, _UpdateRule):
-            raise TypeError("strategy must be an object from verta.endpoint.update_rules")
+            raise TypeError(
+                "strategy must be an object from verta.endpoint.update_rules"
+            )
 
         self._rules.append(rule)

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""Rules to guide canary endpoint updates."""
 
 import abc
 import json
@@ -17,35 +18,32 @@ class _UpdateRule(object):
 
     def _as_dict(self):
         return {
-            'rule_id': self._RULE_ID,
-            'rule_parameters': [
+            "rule_id": self._RULE_ID,
+            "rule_parameters": [
                 {
-                    'name': self._NAME,
-                    'value': self._value,
+                    "name": self._NAME,
+                    "value": self._value,
                 },
             ],
         }
 
-    @staticmethod
-    def _from_dict(rule_dict):
-        parent_name = rule_dict['rule']
-        rule_name = rule_dict['rule_parameters'][0]['name']
-        rule_value = float(rule_dict['rule_parameters'][0]['value'])
+    @classmethod
+    def _from_dict(cls, rule_dict):
+        parent_name = rule_dict["rule"]
+        rule_name = rule_dict["rule_parameters"][0]["name"]
+        rule_value = float(rule_dict["rule_parameters"][0]["value"])
 
-        RULE_SUBCLASSES = [
-            MaximumAverageLatencyThresholdRule,
-            MaximumP90LatencyThresholdRule,
-            MaximumRequestErrorPercentageThresholdRule,
-            MaximumServerErrorPercentageThresholdRule
-        ]
-
-        for Subclass in RULE_SUBCLASSES:
-            if parent_name == Subclass._PARENT_NAME and rule_name == Subclass._NAME:
-                rule = Subclass(rule_value)
+        for subcls in cls.__subclasses__():
+            if parent_name == subcls._PARENT_NAME and rule_name == subcls._NAME:
+                rule = subcls(rule_value)
                 break
         else:
             # does not match any rule
-            raise ValueError("no rule with name {} and parameter name {} exists".format(parent_name, rule_name))
+            raise ValueError(
+                "no rule with name {} and parameter name {} exists".format(
+                    parent_name, rule_name
+                )
+            )
 
         return rule
 
@@ -68,6 +66,7 @@ class MaximumAverageLatencyThresholdRule(_UpdateRule):
         rule = MaximumAverageLatencyThresholdRule(100)
 
     """
+
     _RULE_ID = 1005
     _PARENT_NAME = "latency_avg_max"
     _NAME = "threshold"
@@ -91,6 +90,7 @@ class MaximumP90LatencyThresholdRule(_UpdateRule):
         rule = MaximumP90LatencyThresholdRule(100)
 
     """
+
     _RULE_ID = 1006
     _PARENT_NAME = "latency_p90_max"
     _NAME = "threshold"
@@ -114,6 +114,7 @@ class MaximumRequestErrorPercentageThresholdRule(_UpdateRule):
         rule = MaximumRequestErrorPercentageThresholdRule(0.5)
 
     """
+
     _RULE_ID = 1007
     _PARENT_NAME = "error_4xx_rate"
     _NAME = "threshold"
@@ -137,6 +138,7 @@ class MaximumServerErrorPercentageThresholdRule(_UpdateRule):
         rule = MaximumServerErrorPercentageThresholdRule(0.5)
 
     """
+
     _RULE_ID = 1008
     _PARENT_NAME = "error_5xx_rate"
     _NAME = "threshold"

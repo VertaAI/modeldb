@@ -17,12 +17,12 @@ def log_observation(client, i):
 def upload_artifact(client, i):
     run = client.set_experiment_run()
 
-    PART_SIZE = int(5.4 * (10 ** 6))  # 5.4 MB; S3 parts must be > 5 MB
-    os.environ['VERTA_ARTIFACT_PART_SIZE'] = str(PART_SIZE)
+    PART_SIZE = int(5.4 * (10**6))  # 5.4 MB; S3 parts must be > 5 MB
+    os.environ["VERTA_ARTIFACT_PART_SIZE"] = str(PART_SIZE)
 
     filename = "file_{}.bin".format(i)
     FILE_CONTENTS = os.urandom(PART_SIZE * 2)
-    with open(filename, 'wb') as f:
+    with open(filename, "wb") as f:
         f.write(FILE_CONTENTS)
 
     run.log_artifact("artifact", filename)

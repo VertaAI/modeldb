@@ -1,0 +1,92 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "common/CommonService.proto";
+
+//a Permission is a group + a role, assigned to a workspace
+message Permission {
+  string group_id = 2;
+  string role_id = 3;
+}
+
+message WorkspaceV2 {
+  string org_id = 1;
+  // compatible type with workspace id in resources proto definition
+  uint64 id = 2;
+  string name = 3;
+  string description = 4;
+  repeated Permission permissions = 5;
+
+  int64 created_timestamp = 7;
+  int64 updated_timestamp = 8;
+
+  string namespace = 9;
+  bool built_in = 10;
+}
+
+message SetWorkspaceV2 {
+  WorkspaceV2 workspace = 2;
+
+  message Response {
+    WorkspaceV2 workspace = 1;
+  }
+}
+
+message GetWorkspaceV2 {
+  string org_id = 1;
+  uint64 workspace_id = 2;
+
+  message Response {
+    WorkspaceV2 workspace = 1;
+  }
+}
+
+message SearchWorkspacesV2 {
+  string org_id = 1;
+  common.Pagination pagination = 2;
+
+  message Response {
+    repeated WorkspaceV2 workspaces = 1;
+    int64 total_records = 2;
+    common.Pagination pagination = 3;
+  }
+}
+
+message DeleteWorkspaceV2 {
+  string org_id = 1;
+  uint64 workspace_id = 2;
+
+  message Response {
+  }
+}
+
+service WorkspaceServiceV2 {
+  rpc setWorkspace (SetWorkspaceV2) returns (SetWorkspaceV2.Response) {
+    option (google.api.http) = {
+      post: "/v2/organization/{workspace.org_id}/workspaces"
+      body: "*"
+    };
+  }
+
+  rpc getWorkspace (GetWorkspaceV2) returns (GetWorkspaceV2.Response) {
+    option (google.api.http) = {
+      get: "/v2/organization/{org_id}/workspaces/{workspace_id}"
+    };
+  }
+
+  rpc deleteWorkspace (DeleteWorkspaceV2) returns (DeleteWorkspaceV2.Response) {
+    option (google.api.http) = {
+      delete: "/v2/organization/{org_id}/workspace/{workspace_id}"
+    };
+  }
+
+  rpc searchWorkspaces (SearchWorkspacesV2) returns (SearchWorkspacesV2.Response) {
+    option (google.api.http) = {
+      get: "/v2/organization/{org_id}/workspaces"
+    };
+  }
+}

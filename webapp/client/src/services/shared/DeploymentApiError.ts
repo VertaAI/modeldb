@@ -4,6 +4,7 @@ import {
   GetErrorMessage,
   IHttpMethodRequestConfig,
 } from 'services/BaseDataService';
+import { ResponseType } from 'axios'
 
 // todo find the better name
 export type DeploymentRequestErrorType = 'expectedDeployApiError';
@@ -28,7 +29,7 @@ export const getErrorMessage: GetErrorMessage = error => {
     : undefined;
 };
 
-export const config = { responseType: 'text' };
+export const config: { responseType: ResponseType } = { responseType: 'text' };
 
 export const addHandlingDeploymentErrorToRequestConfig = (
   requestConfig: IHttpMethodRequestConfig<any>

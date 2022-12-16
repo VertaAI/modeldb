@@ -24,8 +24,10 @@ message Experiment {
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
     string owner = 22;
-    CodeVersion code_version_snapshot = 23;
+    common.CodeVersion code_version_snapshot = 23;
     repeated common.Artifact artifacts = 24;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 25;
 }
 
 message GetExperimentsInProject {
@@ -168,7 +170,7 @@ message DeleteExperimentAttributes {
 // code version
 message LogExperimentCodeVersion {
     string id = 1;
-    CodeVersion code_version = 2;
+    common.CodeVersion code_version = 2;
 
     message Response {
         Experiment experiment = 1;
@@ -179,7 +181,7 @@ message GetExperimentCodeVersion {
     string id = 1;
 
     message Response {
-        CodeVersion code_version = 1;
+        common.CodeVersion code_version = 1;
     }
 }
 

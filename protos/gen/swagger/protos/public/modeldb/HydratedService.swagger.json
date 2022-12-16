@@ -818,7 +818,12 @@
         "CREATE",
         "READ",
         "UPDATE",
-        "DELETE"
+        "DELETE",
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY",
+        "CREATE_WEBHOOK",
+        "CREATE_GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -829,6 +834,15 @@
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
+    },
+    "CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "READ_WRITE",
+        "READ_ONLY"
+      ],
+      "default": "UNKNOWN"
     },
     "DatasetTypeEnumDatasetType": {
       "type": "string",
@@ -857,7 +871,9 @@
         "READ",
         "UPDATE",
         "DELETE",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "PREDICT",
+        "CONTROL"
       ],
       "default": "UNKNOWN"
     },
@@ -879,7 +895,12 @@
         "BITBUCKET",
         "GOOGLE",
         "VERTA",
-        "SAML"
+        "SAML",
+        "AD_OAUTH2",
+        "LDAP",
+        "OKTA_SCIM",
+        "AD_SCIM",
+        "SCIM"
       ],
       "default": "UNKNOWN"
     },
@@ -894,7 +915,19 @@
         "DELETE",
         "DEPLOY",
         "PUBLIC_READ",
-        "UPDATE_PERMISSIONS"
+        "UPDATE_PERMISSIONS",
+        "LOCK",
+        "UNLOCK",
+        "UPDATE_REDACT",
+        "ALERTER",
+        "PREDICT",
+        "CONTROL",
+        "IS_ALLOWED",
+        "GET",
+        "READ_SECRETS",
+        "CREATE_SERVICE_ACCOUNT",
+        "CREATE_CONTAINER_REGISTRY",
+        "PROMOTE"
       ],
       "default": "UNKNOWN"
     },
@@ -909,9 +942,21 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
+    },
+    "OrganizationBaselinePermissionsBaselinePermissions": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "PRIVATE",
+        "READ",
+        "WRITE",
+        "ADMIN"
+      ],
+      "default": "UNKNOWN"
     },
     "PathLocationTypeEnumPathLocationType": {
       "type": "string",
@@ -945,7 +990,9 @@
         "ROLE_SERVICE",
         "AUTHZ_SERVICE",
         "MODELDB_SERVICE",
-        "DEPLOYMENT_SERVICE"
+        "DEPLOYMENT_SERVICE",
+        "REGISTRY_SERVICE",
+        "MONITORING_SERVICE"
       ],
       "default": "UNKNOWN"
     },
@@ -998,6 +1045,52 @@
         },
         "filename_extension": {
           "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
+          "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -1108,22 +1201,6 @@
         }
       }
     },
-    "modeldbCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/modeldbGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
-    },
     "modeldbCollaboratorUserInfo": {
       "type": "object",
       "properties": {
@@ -1228,6 +1305,11 @@
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -1306,6 +1388,11 @@
         },
         "dataset_blob": {
           "$ref": "#/definitions/versioningDatasetBlob"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -1348,13 +1435,18 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/commonArtifact"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -1396,7 +1488,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "parent_id": {
           "type": "string"
@@ -1465,8 +1557,13 @@
         "code_version_from_blob": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/modeldbCodeVersion"
+            "$ref": "#/definitions/commonCodeVersion"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       },
       "title": "ExperimentRun Entity"
@@ -1860,26 +1957,6 @@
         }
       }
     },
-    "modeldbGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
-        }
-      }
-    },
     "modeldbHydratedDataset": {
       "type": "object",
       "properties": {
@@ -2088,13 +2165,18 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
           "type": "array",
           "items": {
             "$ref": "#/definitions/commonArtifact"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -2262,6 +2344,9 @@
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2273,6 +2358,9 @@
         "FALSE"
       ],
       "default": "UNDEFINED"
+    },
+    "uacIdServiceProviderEnum": {
+      "type": "object"
     },
     "uacOrganization": {
       "type": "object",
@@ -2291,6 +2379,9 @@
         },
         "owner_id": {
           "type": "string"
+        },
+        "idp": {
+          "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
           "type": "string",
@@ -2312,6 +2403,9 @@
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
+        "endpoint_can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
         "default_dataset_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
@@ -2322,6 +2416,55 @@
           "type": "string"
         },
         "registered_model_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "default_monitored_entity_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "default_notification_channel_collaborator_type": {
+          "$ref": "#/definitions/CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault"
+        },
+        "admins": {
+          "$ref": "#/definitions/uacOrganizationAdmins"
+        },
+        "baseline_permissions": {
+          "$ref": "#/definitions/uacOrganizationBaselinePermissions"
+        },
+        "namespace": {
+          "type": "string"
+        }
+      }
+    },
+    "uacOrganizationAdmins": {
+      "type": "object",
+      "properties": {
+        "user_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "uacOrganizationBaselinePermissions": {
+      "type": "object",
+      "properties": {
+        "minimum_resources_permission": {
+          "$ref": "#/definitions/OrganizationBaselinePermissionsBaselinePermissions"
+        },
+        "project_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "registry_can_deploy": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "endpoint_can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
@@ -2358,6 +2501,9 @@
         "owner_id": {
           "type": "string"
         },
+        "id_service_provider": {
+          "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
+        },
         "created_timestamp": {
           "type": "string",
           "format": "int64"
@@ -2365,15 +2511,6 @@
         "updated_timestamp": {
           "type": "string",
           "format": "int64"
-        }
-      }
-    },
-    "uacTrialUserInfo": {
-      "type": "object",
-      "properties": {
-        "days_remaining": {
-          "type": "integer",
-          "format": "int32"
         }
       }
     },
@@ -2415,6 +2552,10 @@
         },
         "secondary_dev_key": {
           "type": "string"
+        },
+        "disabled": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -2445,8 +2586,24 @@
         "workspace_id": {
           "type": "string"
         },
-        "trial_info": {
-          "$ref": "#/definitions/uacTrialUserInfo"
+        "default_workspace_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+        },
+        "description": {
+          "type": "string"
+        }
+      }
+    },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -2498,6 +2655,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },
@@ -2568,6 +2728,13 @@
           "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
+        },
+        "raw_requirements": {
+          "type": "string",
+          "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
+        },
+        "raw_constraints": {
+          "type": "string"
         }
       }
     },

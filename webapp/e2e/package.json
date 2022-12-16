@@ -9,10 +9,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@types/ramda": "^0.26.21",
+    "@types/ramda": "^0.27.49",
     "authenticator": "^1.1.5",
-    "axios": "^0.19.0",
-    "chai": "^4.2.0",
+    "axios": "^0.21.1",
+    "chai": "^4.3.4",
     "chai-as-promised": "^7.1.1",
     "chromedriver": "^87.0.0",
     "dotenv": "^8.1.0",

@@ -2,84 +2,94 @@ package ai.verta.modeldb.common.authservice;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
-import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.exceptions.InternalErrorException;
-import ai.verta.modeldb.exceptions.UnavailableException;
+import ai.verta.modeldb.common.config.Config;
+import ai.verta.modeldb.common.connections.Connection;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.*;
-import ai.verta.uac.versioning.AuditLogServiceGrpc;
 import io.grpc.*;
+import io.grpc.stub.AbstractStub;
 import io.grpc.stub.MetadataUtils;
+import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.concurrent.TimeUnit;
-
-public class AuthServiceChannel implements AutoCloseable {
+public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceChannel.class);
-  private ManagedChannel authServiceChannel;
+  private final ManagedChannel authChannel;
   private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub;
-  private RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub;
+  private RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStubForServiceUser;
   private AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub;
   private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub;
+  private UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStubForServiceUser;
   private TeamServiceGrpc.TeamServiceBlockingStub teamServiceBlockingStub;
   private OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
-  private AuditLogServiceGrpc.AuditLogServiceBlockingStub auditLogServiceBlockingStub;
+  private OrganizationServiceGrpc.OrganizationServiceBlockingStub
+      organizationServiceBlockingStubForServiceUser;
   private WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub;
   private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceBlockingStub;
-  private String serviceUserEmail;
-  private String serviceUserDevKey;
-  public final Context.Key<Metadata> metadataInfo;
+  private CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+      collaboratorServiceBlockingStubForServiceUser;
+  private final String serviceUserEmail;
+  private final String serviceUserDevKey;
+  private final Config config;
 
-  public AuthServiceChannel(
-      String host,
-      Integer port,
-      String serviceUserEmail,
-      String serviceUserDevKey,
-      Context.Key<Metadata> metadataInfo) {
+  public AuthServiceChannel(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
+    super(tracingClientInterceptor);
+    String host = config.getAuthService().getHost();
+    int port = config.getAuthService().getPort();
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
-    if (host != null && port != null) { // AuthService not available.
-      authServiceChannel =
+    if (host != null && port != 0) { // AuthService not available.
+      authChannel =
           ManagedChannelBuilder.forTarget(host + CommonConstants.STRING_COLON + port)
               .usePlaintext()
               .build();
 
-      this.serviceUserEmail = serviceUserEmail;
-      this.serviceUserDevKey = serviceUserDevKey;
+      this.serviceUserEmail = config.getService_user().getEmail();
+      this.serviceUserDevKey = config.getService_user().getDevKey();
     } else {
       throw new UnavailableException(
           "Host OR Port not found for contacting authentication service");
     }
-    this.metadataInfo = metadataInfo;
+    this.config = config;
   }
 
-  private Metadata getMetadataHeaders() {
-    int backgroundUtilsCount = CommonUtils.getRegisteredBackgroundUtilsCount();
-    LOGGER.trace("Header attaching with stub : backgroundUtilsCount : {}", backgroundUtilsCount);
-    Metadata requestHeaders;
-    if (backgroundUtilsCount > 0 && metadataInfo.get() == null) {
-      requestHeaders = new Metadata();
-      Metadata.Key<String> email_key = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> dev_key =
-          Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-      Metadata.Key<String> source_key = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+  private Metadata getServiceUserMetadataHeaders() {
+    var requestHeaders = new Metadata();
+    var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+    var devKey = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+    var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+    var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-      requestHeaders.put(email_key, this.serviceUserEmail);
-      requestHeaders.put(dev_key, this.serviceUserDevKey);
-      requestHeaders.put(source_key, "PythonClient");
-    } else {
-      requestHeaders = metadataInfo.get();
-    }
+    requestHeaders.put(emailKey, this.serviceUserEmail);
+    requestHeaders.put(devKey, this.serviceUserDevKey);
+    requestHeaders.put(devKeyHyphen, this.serviceUserDevKey);
+    requestHeaders.put(sourceKey, "PythonClient");
     return requestHeaders;
   }
 
+  private <T extends AbstractStub<T>> T attachInterceptorsWithRequestHeaders(
+      io.grpc.stub.AbstractStub<T> stub, Metadata requestHeaders) {
+    var clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
+    stub = super.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
+    stub = stub.withInterceptors(clientInterceptor);
+    return (T) stub;
+  }
+
+  private <T extends AbstractStub<T>> T attachInterceptorsForServiceUser(
+      io.grpc.stub.AbstractStub<T> stub) {
+
+    var clientInterceptor =
+        MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadataHeaders());
+    stub = super.getTracingClientInterceptor().map(stub::withInterceptors).orElse((T) stub);
+    stub = stub.withInterceptors(clientInterceptor);
+    return (T) stub;
+  }
+
   private void initUACServiceStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    uacServiceBlockingStub =
-        UACServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+    uacServiceBlockingStub = attachInterceptors(UACServiceGrpc.newBlockingStub(authChannel));
   }
 
   public UACServiceGrpc.UACServiceBlockingStub getUacServiceBlockingStub() {
@@ -89,13 +99,20 @@ public class AuthServiceChannel implements AutoCloseable {
     return uacServiceBlockingStub;
   }
 
+  private void initUACServiceStubChannelForServiceUser() {
+    uacServiceBlockingStubForServiceUser =
+        attachInterceptorsForServiceUser(UACServiceGrpc.newBlockingStub(authChannel));
+  }
+
+  public UACServiceGrpc.UACServiceBlockingStub getUacServiceBlockingStubForServiceUser() {
+    if (uacServiceBlockingStubForServiceUser == null) {
+      initUACServiceStubChannelForServiceUser();
+    }
+    return uacServiceBlockingStubForServiceUser;
+  }
+
   private void initRoleServiceStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    roleServiceBlockingStub =
-        RoleServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+    roleServiceBlockingStub = attachInterceptors(RoleServiceGrpc.newBlockingStub(authChannel));
   }
 
   public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStub() {
@@ -105,29 +122,22 @@ public class AuthServiceChannel implements AutoCloseable {
     return roleServiceBlockingStub;
   }
 
-  private void initRoleServiceFutureStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    roleServiceFutureStub =
-        RoleServiceGrpc.newFutureStub(authServiceChannel).withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+  private void initRoleServiceStubChannelForServiceUser() {
+    roleServiceBlockingStubForServiceUser =
+        attachInterceptorsForServiceUser(RoleServiceGrpc.newBlockingStub(authChannel));
   }
 
-  public RoleServiceGrpc.RoleServiceFutureStub getRoleServiceFutureStub() {
-    if (roleServiceFutureStub == null) {
-      initRoleServiceFutureStubChannel();
+  public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStubForServiceUser() {
+    if (roleServiceBlockingStubForServiceUser == null) {
+      initRoleServiceStubChannelForServiceUser();
     }
-    return roleServiceFutureStub;
+    return roleServiceBlockingStubForServiceUser;
   }
 
   private void initAuthzServiceStubChannel(Metadata requestHeaders) {
-    if (requestHeaders == null) requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     authzServiceBlockingStub =
-        AuthzServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+        attachInterceptorsWithRequestHeaders(
+            AuthzServiceGrpc.newBlockingStub(authChannel), requestHeaders);
   }
 
   public AuthzServiceGrpc.AuthzServiceBlockingStub getAuthzServiceBlockingStub(
@@ -138,13 +148,19 @@ public class AuthServiceChannel implements AutoCloseable {
     return authzServiceBlockingStub;
   }
 
+  private void initAuthzServiceStubChannel() {
+    authzServiceBlockingStub = attachInterceptors(AuthzServiceGrpc.newBlockingStub(authChannel));
+  }
+
+  public AuthzServiceGrpc.AuthzServiceBlockingStub getAuthzServiceBlockingStub() {
+    if (authzServiceBlockingStub == null) {
+      initAuthzServiceStubChannel();
+    }
+    return authzServiceBlockingStub;
+  }
+
   private void initTeamServiceStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    teamServiceBlockingStub =
-        TeamServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+    teamServiceBlockingStub = attachInterceptors(TeamServiceGrpc.newBlockingStub(authChannel));
   }
 
   public TeamServiceGrpc.TeamServiceBlockingStub getTeamServiceBlockingStub() {
@@ -155,13 +171,8 @@ public class AuthServiceChannel implements AutoCloseable {
   }
 
   private void initOrganizationServiceStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     organizationServiceBlockingStub =
-        OrganizationServiceGrpc.newBlockingStub(authServiceChannel)
-            .withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+        attachInterceptors(OrganizationServiceGrpc.newBlockingStub(authChannel));
   }
 
   public OrganizationServiceGrpc.OrganizationServiceBlockingStub
@@ -172,30 +183,22 @@ public class AuthServiceChannel implements AutoCloseable {
     return organizationServiceBlockingStub;
   }
 
-  private void initAuditLogServiceStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
-    auditLogServiceBlockingStub =
-        AuditLogServiceGrpc.newBlockingStub(authServiceChannel).withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+  private void initOrganizationServiceStubChannelForServiceUser() {
+    organizationServiceBlockingStubForServiceUser =
+        attachInterceptorsForServiceUser(OrganizationServiceGrpc.newBlockingStub(authChannel));
   }
 
-  public AuditLogServiceGrpc.AuditLogServiceBlockingStub getAuditLogServiceBlockingStub() {
-    if (auditLogServiceBlockingStub == null) {
-      initAuditLogServiceStubChannel();
+  public OrganizationServiceGrpc.OrganizationServiceBlockingStub
+      getOrganizationServiceBlockingStubForServiceUser() {
+    if (organizationServiceBlockingStubForServiceUser == null) {
+      initOrganizationServiceStubChannelForServiceUser();
     }
-    return auditLogServiceBlockingStub;
+    return organizationServiceBlockingStubForServiceUser;
   }
 
   private void initWorkspaceServiceStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     workspaceServiceBlockingStub =
-        WorkspaceServiceGrpc.newBlockingStub(authServiceChannel)
-            .withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+        attachInterceptors(WorkspaceServiceGrpc.newBlockingStub(authChannel));
   }
 
   public WorkspaceServiceGrpc.WorkspaceServiceBlockingStub getWorkspaceServiceBlockingStub() {
@@ -206,13 +209,13 @@ public class AuthServiceChannel implements AutoCloseable {
   }
 
   private void initCollaboratorServiceStubChannel() {
-    Metadata requestHeaders = getMetadataHeaders();
-    LOGGER.trace("Header attaching with stub : {}", requestHeaders);
-    ClientInterceptor clientInterceptor = MetadataUtils.newAttachHeadersInterceptor(requestHeaders);
     collaboratorServiceBlockingStub =
-        CollaboratorServiceGrpc.newBlockingStub(authServiceChannel)
-            .withInterceptors(clientInterceptor);
-    LOGGER.trace("Header attached with stub");
+        attachInterceptors(CollaboratorServiceGrpc.newBlockingStub(authChannel));
+  }
+
+  private void initCollaboratorServiceStubChannelForServiceUser() {
+    collaboratorServiceBlockingStubForServiceUser =
+        attachInterceptorsForServiceUser(CollaboratorServiceGrpc.newBlockingStub(authChannel));
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
@@ -223,21 +226,32 @@ public class AuthServiceChannel implements AutoCloseable {
     return collaboratorServiceBlockingStub;
   }
 
+  public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+      getCollaboratorServiceBlockingStubForServiceUser() {
+    if (collaboratorServiceBlockingStubForServiceUser == null) {
+      initCollaboratorServiceStubChannelForServiceUser();
+    }
+    return collaboratorServiceBlockingStubForServiceUser;
+  }
+
+  @SuppressWarnings({"squid:S1163", "squid:S1143"})
   @Override
   public void close() throws StatusRuntimeException {
     try {
-      if (authServiceChannel != null) {
-        authServiceChannel.shutdown();
+      if (authChannel != null) {
+        authChannel.shutdown();
       }
     } catch (Exception ex) {
       throw new InternalErrorException(
           CommonMessages.AUTH_SERVICE_CHANNEL_CLOSE_ERROR + ex.getMessage());
     } finally {
-      if (authServiceChannel != null && !authServiceChannel.isShutdown()) {
+      if (authChannel != null && !authChannel.isShutdown()) {
         try {
-          authServiceChannel.awaitTermination(30, TimeUnit.SECONDS);
+          authChannel.awaitTermination(30, TimeUnit.SECONDS);
         } catch (InterruptedException ex) {
           LOGGER.warn(ex.getMessage(), ex);
+          // Restore interrupted state...
+          Thread.currentThread().interrupt();
           throw new InternalErrorException(
               "AuthService channel termination error: " + ex.getMessage());
         }

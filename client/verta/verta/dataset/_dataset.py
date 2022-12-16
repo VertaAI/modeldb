@@ -4,8 +4,13 @@ from __future__ import print_function
 
 import abc
 import copy
+import functools
+import hashlib
 import os
-import pathlib2
+import pathlib
+
+from verta.external import six
+from verta import _blob
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService
 
@@ -15,20 +20,19 @@ from .._internal_utils import (
     _utils,
 )
 
-from .._repository import blob
-
 
 DEFAULT_DOWNLOAD_DIR = "mdb-data-download"  # to be in cwd
 
 
-class _Dataset(blob.Blob):
+class _Dataset(_blob.Blob):
     """
     Base class for dataset versioning. Not for human consumption.
 
     """
+
     _CANNOT_DOWNLOAD_ERROR = RuntimeError(
         "this dataset cannot be used for downloads;"
-        " consider using `commit.get()` or `dataset_version.get_content()"
+        " consider using `dataset_version.get_content()"
         " to obtain a download-capable dataset"
         " if ModelDB-managed versioning was enabled"
     )
@@ -41,9 +45,6 @@ class _Dataset(blob.Blob):
         self._mdb_versioned = enable_mdb_versioning
 
         # to enable download() with ModelDB-managed versioning
-        # using commit.get()
-        self._commit = None
-        self._blob_path = None
         # using dataset_version.get_content()
         self._dataset_version = None
 
@@ -75,10 +76,21 @@ class _Dataset(blob.Blob):
             raise ValueError("dataset already contains paths: {}".format(intersection))
 
         if self._mdb_versioned != other._mdb_versioned:
-            raise ValueError("datasets must have same value for `enable_mdb_versioning`")
+            raise ValueError(
+                "datasets must have same value for `enable_mdb_versioning`"
+            )
 
-        self._components_map.update(other._components_map)
+        self._add_components(other._components_map.values())
         return self
+
+    @classmethod
+    def _create_empty(cls):
+        return cls([])
+
+    def _add_components(self, components):
+        self._components_map.update(
+            {component.path: component for component in components}
+        )
 
     @abc.abstractmethod
     def _prepare_components_to_upload(self):
@@ -88,44 +100,25 @@ class _Dataset(blob.Blob):
     def _clean_up_uploaded_components(self):
         pass
 
-    def _set_commit_and_blob_path(self, commit, blob_path):
-        """
-        Associate this blob with a commit and path to enable downloads.
-
-        Parameters
-        ----------
-        commit : :class:`verta._repository.commit.Commit`
-            Commit this blob was gotten from.
-        blob_path : str
-            Location of this blob within its Repository.
-
-        """
-        # TODO: raise error if _dataset_version already set
-        self._commit = commit
-        self._blob_path = blob_path
-
     def _set_dataset_version(self, dataset_version):
         """
         Associate this blob with a dataset version to enable downloads.
 
         Parameters
         ----------
-        dataset_version : :class:`~verta._dataset_versioning.dataset_version.DatasetVersion`
+        dataset_version : :class:`~verta.dataset.entities.DatasetVersion`
             Dataset version this blob was gotten from.
 
         """
-        # TODO: raise error if _commit already set
         self._dataset_version = dataset_version
 
     @property
     def _is_downloadable(self):
         """
-        Whether this has a linked commit or dataset version to download from.
+        Whether this has a linked dataset version to download from.
 
         """
-        if self._commit and self._blob_path:
-            return True
-        elif self._dataset_version:
+        if self._dataset_version:
             return True
         else:
             return False
@@ -133,20 +126,16 @@ class _Dataset(blob.Blob):
     @property
     def _conn(self):
         """
-        Co-opts the ``_conn`` from associated commit or dataset version.
+        Co-opts the ``_conn`` from associated dataset version.
 
         """
-        if self._commit:
-            return self._commit._conn
-        elif self._dataset_version:
+        if self._dataset_version:
             return self._dataset_version._conn
         else:
             raise self._CANNOT_DOWNLOAD_ERROR
 
     def _get_url_for_artifact(self, path, method):
-        if self._commit and self._blob_path:
-            return self._commit._get_url_for_artifact(self._blob_path, path, method)
-        elif self._dataset_version:
+        if self._dataset_version:
             return self._dataset_version._get_url_for_artifact(path, method)
         else:
             raise self._CANNOT_DOWNLOAD_ERROR
@@ -200,7 +189,9 @@ class _Dataset(blob.Blob):
                 downloaded_to_path = _file_utils.without_collision(downloaded_to_path)
             else:  # need to automatically determine directory
                 # NOTE: if `component_path` == "s3://" with any trailing slashes, it becomes "s3:"
-                downloaded_to_path = pathlib2.Path(component_path).name  # final path component
+                downloaded_to_path = pathlib.Path(
+                    component_path
+                ).name  # final path component
 
                 if downloaded_to_path in {".", "..", "/", "s3:"}:
                     # rather than dump everything into cwd, use new child dir
@@ -225,7 +216,9 @@ class _Dataset(blob.Blob):
                 components_to_download[path] = local_path
         else:
             # look for files contained in `component_path` as a directory
-            component_path_as_dir = component_path if component_path.endswith('/') else component_path+'/'
+            component_path_as_dir = (
+                component_path if component_path.endswith("/") else component_path + "/"
+            )
             for path in self.list_paths():
                 if path.startswith(component_path_as_dir):
                     # rebase from `component_path` onto `downloaded_to_path`
@@ -250,6 +243,51 @@ class _Dataset(blob.Blob):
             raise KeyError("no components found for path {}".format(component_path))
 
         return (components_to_download, os.path.abspath(downloaded_to_path))
+
+    @staticmethod
+    def _is_hidden_to_spark(path):
+        # PySpark ignores certain files and raises a "does not exist" error
+        # https://stackoverflow.com/a/38479545
+        return os.path.basename(path).startswith(("_", "."))
+
+    @classmethod
+    def with_spark(cls, sc, paths):
+        """
+        Creates a dataset blob with a SparkContext instance.
+
+        Parameters
+        ----------
+        sc : pyspark.SparkContext
+            SparkContext instance.
+        paths : list of strs
+            List of paths to binary input data file(s).
+
+        Returns
+        -------
+        dataset : :mod:`~verta.dataset`
+            Dataset blob capturing the metadata of the binary files.
+
+        """
+        if isinstance(paths, six.string_types):
+            paths = [paths]
+
+        rdds = list(map(sc.binaryFiles, paths))
+        rdd = functools.reduce(lambda a, b: a.union(b), rdds)
+
+        def get_component(entry):
+            filepath, content = entry
+            return Component(
+                path=filepath,
+                size=len(content),
+                # last_modified=metadata['modificationTime'], # handle timezone?
+                md5=hashlib.md5(content).hexdigest(),
+            )
+
+        result = rdd.map(get_component)
+        result = result.collect()
+        obj = cls._create_empty()
+        obj._add_components(result)
+        return obj
 
     @abc.abstractmethod
     def add(self, paths):
@@ -285,10 +323,12 @@ class _Dataset(blob.Blob):
             download_to_path,
         )
         for path in components_to_download:  # component paths
-            local_path = components_to_download[path]  # dict will be updated near end of iteration
+            local_path = components_to_download[
+                path
+            ]  # dict will be updated near end of iteration
 
             # create parent dirs
-            pathlib2.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
+            pathlib.Path(local_path).parent.mkdir(parents=True, exist_ok=True)
             # TODO: clean up empty parent dirs if something later fails
 
             url = self._get_url_for_artifact(path, "GET").url
@@ -298,15 +338,20 @@ class _Dataset(blob.Blob):
                 _utils.raise_for_http_error(response)
 
                 print("downloading {} from ModelDB".format(path))
-                if (implicit_download_to_path
-                        and len(components_to_download) == 1):  # single file download
+                if (
+                    implicit_download_to_path and len(components_to_download) == 1
+                ):  # single file download
                     # update `downloaded_to_path` in case changed to avoid overwrite
-                    downloaded_to_path = _request_utils.download(response, local_path, overwrite_ok=False)
+                    downloaded_to_path = _request_utils.download_file(
+                        response, local_path, overwrite_ok=False
+                    )
                 else:
                     # don't update `downloaded_to_path` here because we are either downloading:
                     #     - single file with an explicit destination, so `local_path` won't change
                     #     - directory, so individual path's `local_path` isn't important
-                    _request_utils.download(response, local_path, overwrite_ok=True)
+                    _request_utils.download_file(
+                        response, local_path, overwrite_ok=True
+                    )
 
         return os.path.abspath(downloaded_to_path)
 
@@ -320,11 +365,9 @@ class _Dataset(blob.Blob):
             Paths of all components.
 
         """
-        return list(sorted(
-            component.path
-            for component
-            in self._components_map.values()
-        ))
+        return list(
+            sorted(component.path for component in self._components_map.values())
+        )
 
     def list_components(self):
         """
@@ -332,7 +375,7 @@ class _Dataset(blob.Blob):
 
         Returns
         -------
-        components : list of :class:`~verta.dataset._dataset.Component`
+        components : list of :class:`~verta.dataset.Component`
             Components.
 
         """
@@ -360,12 +403,18 @@ class Component(object):
         MD5 checksum.
 
     """
+
     def __init__(
-            self,
-            path, size=None, last_modified=None,
-            sha256=None, md5=None,
-            base_path=None,
-            internal_versioned_path=None, local_path=None):
+        self,
+        path,
+        size=None,
+        last_modified=None,
+        sha256=None,
+        md5=None,
+        base_path=None,
+        internal_versioned_path=None,
+        local_path=None,
+    ):
         # metadata
         self.path = path
         self.size = size
@@ -390,7 +439,9 @@ class Component(object):
         if self.size:
             lines.append("{} bytes".format(self.size))
         if self.last_modified:
-            lines.append("last modified: {}".format(_utils.timestamp_to_str(self.last_modified)))
+            lines.append(
+                "last modified: {}".format(_utils.timestamp_to_str(self.last_modified))
+            )
         if self.sha256:
             lines.append("SHA-256 checksum: {}".format(self.sha256))
         if self.md5:
@@ -443,7 +494,6 @@ class S3Component(Component):
             lines.append("S3 version ID: {}".format(self.s3_version_id))
 
         return "\n    ".join(lines)
-
 
     @classmethod
     def _from_proto(cls, s3_component_msg):
