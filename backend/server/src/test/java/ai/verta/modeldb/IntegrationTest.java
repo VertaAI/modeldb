@@ -1,12 +1,21 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.authservice.*;
+import ai.verta.uac.Action;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ServiceEnum;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -14,17 +23,19 @@ import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class IntegrationTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class IntegrationTest extends ModeldbTestSetup {
 
   public static final Logger LOGGER = LogManager.getLogger(IntegrationTest.class);
 
@@ -50,8 +61,8 @@ public class IntegrationTest extends TestsInit {
     return CreateProject.newBuilder()
         .setName(projectName)
         .setDescription("This is a project description.")
-        .addTags("tag_" + Calendar.getInstance().getTimeInMillis())
-        .addTags("tag_" + +Calendar.getInstance().getTimeInMillis())
+        .addTags("tag_1_" + Calendar.getInstance().getTimeInMillis())
+        .addTags("tag_2_" + +Calendar.getInstance().getTimeInMillis())
         .addAllAttributes(metadataList)
         .build();
   }
@@ -64,7 +75,7 @@ public class IntegrationTest extends TestsInit {
             .build();
     attributeList.add(
         KeyValue.newBuilder()
-            .setKey("attribute_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("attribute_1_" + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build());
@@ -74,7 +85,7 @@ public class IntegrationTest extends TestsInit {
             .build();
     attributeList.add(
         KeyValue.newBuilder()
-            .setKey("attribute_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("attribute_2_" + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build());
@@ -83,8 +94,8 @@ public class IntegrationTest extends TestsInit {
         .setProjectId(projectId)
         .setName("experiment_" + Calendar.getInstance().getTimeInMillis())
         .setDescription("This is a experiment description.")
-        .addTags("tag_" + Calendar.getInstance().getTimeInMillis())
-        .addTags("tag_" + +Calendar.getInstance().getTimeInMillis())
+        .addTags("tag_1" + Calendar.getInstance().getTimeInMillis())
+        .addTags("tag_2" + +Calendar.getInstance().getTimeInMillis())
         .addAllAttributes(attributeList)
         .build();
   }
@@ -100,7 +111,7 @@ public class IntegrationTest extends TestsInit {
         Value.newBuilder().setNumberValue(Calendar.getInstance().getTimeInMillis()).build();
     attributeList.add(
         KeyValue.newBuilder()
-            .setKey("attribute_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("attribute_1_" + Calendar.getInstance().getTimeInMillis())
             .setValue(intValue)
             .setValueType(ValueType.NUMBER)
             .build());
@@ -110,7 +121,7 @@ public class IntegrationTest extends TestsInit {
             .build();
     attributeList.add(
         KeyValue.newBuilder()
-            .setKey("attribute_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("attribute_2_" + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build());
@@ -120,7 +131,7 @@ public class IntegrationTest extends TestsInit {
         Value.newBuilder().setNumberValue(1 + Calendar.getInstance().getTimeInMillis()).build();
     hyperparameters.add(
         KeyValue.newBuilder()
-            .setKey("hyperparameters_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("hyperparameters_1_" + Calendar.getInstance().getTimeInMillis())
             .setValue(intValue)
             .setValueType(ValueType.NUMBER)
             .build());
@@ -130,7 +141,7 @@ public class IntegrationTest extends TestsInit {
             .build();
     hyperparameters.add(
         KeyValue.newBuilder()
-            .setKey("hyperparameters_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("hyperparameters_2_" + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build());
@@ -142,6 +153,7 @@ public class IntegrationTest extends TestsInit {
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Flh3.googleusercontent.com%2FFyZA5SbKPJA7Y3XCeb9-uGwow8pugxj77Z1xvs8vFS6EI3FABZDCDtA9ScqzHKjhU8av_Ck95ET-P_rPJCbC2v_OswCN8A%3Ds688&imgrefurl=https%3A%2F%2Fdevelopers.google.com%2F&docid=1MVaWrOPIjYeJM&tbnid=I7xZkRN5m6_z-M%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw..i&w=688&h=387&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhyKAMwAw&iact=mrc&uact=8")
             .setArtifactType(ArtifactType.BLOB)
+            .setUploadCompleted(true)
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -149,6 +161,7 @@ public class IntegrationTest extends TestsInit {
             .setPath(
                 "https://www.google.co.in/imgres?imgurl=https%3A%2F%2Fpay.google.com%2Fabout%2Fstatic%2Fimages%2Fsocial%2Fknowledge_graph_logo.png&imgrefurl=https%3A%2F%2Fpay.google.com%2Fabout%2F&docid=zmoE9BrSKYr4xM&tbnid=eCL1Y6f9xrPtDM%3A&vet=10ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg..i&w=1200&h=630&bih=657&biw=1366&q=google&ved=0ahUKEwjr1OiS0ufeAhWNbX0KHXpFAmQQMwhwKAIwAg&iact=mrc&uact=8")
             .setArtifactType(ArtifactType.IMAGE)
+            .setUploadCompleted(true)
             .build());
 
     List<Artifact> datasets = new ArrayList<>();
@@ -157,12 +170,14 @@ public class IntegrationTest extends TestsInit {
             .setKey("Google developer datasets")
             .setPath("This is data artifact type in Google developer datasets")
             .setArtifactType(ArtifactType.MODEL)
+            .setUploadCompleted(true)
             .build());
     datasets.add(
         Artifact.newBuilder()
             .setKey("Google Pay datasets")
             .setPath("This is data artifact type in Google Pay datasets")
             .setArtifactType(ArtifactType.DATA)
+            .setUploadCompleted(true)
             .build());
 
     List<KeyValue> metrics = new ArrayList<>();
@@ -170,7 +185,7 @@ public class IntegrationTest extends TestsInit {
         Value.newBuilder().setListValue(ListValue.newBuilder().addValues(intValue)).build();
     metrics.add(
         KeyValue.newBuilder()
-            .setKey("metrics_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("metrics_1_" + Calendar.getInstance().getTimeInMillis())
             .setValue(listValue)
             .setValueType(ValueType.LIST)
             .build());
@@ -180,22 +195,12 @@ public class IntegrationTest extends TestsInit {
             .build();
     metrics.add(
         KeyValue.newBuilder()
-            .setKey("metrics_" + Calendar.getInstance().getTimeInMillis())
+            .setKey("metrics_2_" + Calendar.getInstance().getTimeInMillis())
             .setValue(stringValue)
             .setValueType(ValueType.STRING)
             .build());
 
     List<Observation> observations = new ArrayList<>();
-    observations.add(
-        Observation.newBuilder()
-            .setArtifact(
-                Artifact.newBuilder()
-                    .setKey("Google developer Observation artifact")
-                    .setPath("This is data artifact type in Google developer Observation artifact")
-                    .setArtifactType(ArtifactType.DATA)
-                    .build())
-            .setTimestamp(Calendar.getInstance().getTimeInMillis())
-            .build());
     stringValue =
         Value.newBuilder()
             .setStringValue("observation_value_" + Calendar.getInstance().getTimeInMillis())
@@ -208,6 +213,7 @@ public class IntegrationTest extends TestsInit {
                     .setValue(stringValue)
                     .setValueType(ValueType.STRING))
             .setTimestamp(Calendar.getInstance().getTimeInMillis())
+            .setEpochNumber(Value.newBuilder().setNumberValue(0.0).build())
             .build());
 
     List<Feature> features = new ArrayList<>();
@@ -239,6 +245,12 @@ public class IntegrationTest extends TestsInit {
   public void a_AllEntityCRUDTest() {
     LOGGER.info("All Entity CRUD Test start................................");
     try {
+      initializeChannelBuilderAndExternalServiceStubs();
+
+      if (isRunningIsolated()) {
+        setupMockUacEndpoints(uac);
+      }
+
       LOGGER.info("Create Project test start................................");
       CreateProject createProjectRequest = createProjectRequest();
       CreateProject.Response createProjectRequestResponse =
@@ -250,6 +262,23 @@ public class IntegrationTest extends TestsInit {
           project.getName());
       LOGGER.info("Create Project test successfully executed");
       LOGGER.info("Create Project test stop................................");
+
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+        when(authzMock.getSelfAllowedResources(
+                GetSelfAllowedResources.newBuilder()
+                    .addActions(
+                        Action.newBuilder()
+                            .setModeldbServiceAction(ModelDBServiceActions.READ)
+                            .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                    .build()))
+            .thenReturn(
+                Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+      }
 
       LOGGER.info("Create Experiment test start................................");
       CreateExperiment createExperimentRequest = createExperimentRequest(project.getId());

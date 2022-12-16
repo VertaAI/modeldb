@@ -17,7 +17,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.FindProjectEntitiesTest",
   "ai.verta.modeldb.GlobalSharingTest",
   "ai.verta.modeldb.HydratedServiceTest",
-  "ai.verta.modeldb.IntegrationTest",
   "ai.verta.modeldb.LineageTest",
   "ai.verta.modeldb.MergeTest",
   "ai.verta.modeldb.RepositoryTest",
