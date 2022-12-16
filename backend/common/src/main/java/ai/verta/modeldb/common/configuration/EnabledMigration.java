@@ -19,7 +19,7 @@ public class EnabledMigration implements Condition {
             Optional.ofNullable(System.getenv(CommonConstants.ENABLE_LIQUIBASE_MIGRATION_ENV_VAR))
                 .orElse("false"));
     LOGGER.info("ENABLE_LIQUIBASE_MIGRATION_ENV_VAR: {}", enableLiquibaseMigrationEnvVar);
-    return true;
+    return enableLiquibaseMigrationEnvVar;
   }
 
   @Override

@@ -1,8 +1,0 @@
-{
-  "LIQUIBASE_MIGRATION": "true",
-  "LOG4J_CONFIGURATION_FILE": "itconfig/log4j2.yaml",
-  "LOG4J_FORMAT_MSG_NO_LOOKUPS": "true",
-  "RUN_LIQUIBASE_SEPARATE": "false",
-  "VERTA_MODELDB_CONFIG": "itconfig/config-test-h2.yaml",
-  "VERTA_MODELDB_TEST_CONFIG": "itconfig/config-test-h2.yaml"
-}
