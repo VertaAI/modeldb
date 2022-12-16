@@ -1011,8 +1011,7 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               true,
               request.getSortKey(),
               request.getAscending());
-      LOGGER.debug(
-          "CommitPaginationDTO record count : " + commitPaginationDTO.getTotalRecords());
+      LOGGER.debug("CommitPaginationDTO record count : " + commitPaginationDTO.getTotalRecords());
 
       RepositoryEntity repositoryEntity = null;
       if (!request.getDatasetId().isEmpty()) {
