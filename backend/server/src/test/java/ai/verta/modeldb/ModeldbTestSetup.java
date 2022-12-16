@@ -12,6 +12,7 @@ import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
+import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
@@ -70,14 +71,19 @@ public abstract class ModeldbTestSetup extends TestCase {
   protected static ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
   protected static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub
       experimentRunServiceStub;
+  protected static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub
+      experimentRunServiceStubClient2;
   protected static CommentServiceGrpc.CommentServiceBlockingStub commentServiceBlockingStub;
   protected static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStub;
   protected static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStubClient2;
   protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStub;
-  protected static DatasetServiceBlockingStub datasetServiceStubServiceAccount;
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
       versioningServiceBlockingStub;
+  protected static VersioningServiceGrpc.VersioningServiceBlockingStub
+      versioningServiceBlockingStubClient2;
+  protected static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
+  protected static DatasetServiceBlockingStub datasetServiceStubServiceAccount;
   protected static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
   protected static CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
       collaboratorServiceStubClient1;
@@ -155,6 +161,10 @@ public abstract class ModeldbTestSetup extends TestCase {
     serviceUserProjectServiceStub = ProjectServiceGrpc.newBlockingStub(channelServiceUser);
     experimentServiceStub = ExperimentServiceGrpc.newBlockingStub(channel);
     experimentRunServiceStub = ExperimentRunServiceGrpc.newBlockingStub(channel);
+    experimentRunServiceStubClient2 = ExperimentRunServiceGrpc.newBlockingStub(channelUser2);
+    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
+    versioningServiceBlockingStubClient2 = VersioningServiceGrpc.newBlockingStub(channelUser2);
+    metadataServiceBlockingStub = MetadataServiceGrpc.newBlockingStub(channel);
     commentServiceBlockingStub = CommentServiceGrpc.newBlockingStub(channel);
     datasetServiceStub = DatasetServiceGrpc.newBlockingStub(channel);
     datasetServiceStubClient2 = DatasetServiceGrpc.newBlockingStub(channelUser2);

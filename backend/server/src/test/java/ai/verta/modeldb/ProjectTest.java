@@ -2487,6 +2487,18 @@ public class ProjectTest extends ModeldbTestSetup {
     ExperimentRun experimentRun1;
     ExperimentRun experimentRun3;
     try {
+      if (isRunningIsolated()) {
+        var resourcesResponse =
+            GetResources.Response.newBuilder()
+                .addItem(
+                    GetResourcesResponseItem.newBuilder()
+                        .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .build())
+                .build();
+        when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      }
+
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest();
       CreateProject.Response createProjectResponse =

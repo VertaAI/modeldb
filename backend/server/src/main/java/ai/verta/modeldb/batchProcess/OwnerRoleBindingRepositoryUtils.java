@@ -12,10 +12,7 @@ import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.UserInfo;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -35,7 +32,7 @@ public class OwnerRoleBindingRepositoryUtils {
   public static void execute() {
     var config = App.getInstance().mdbConfig;
     if (config.hasAuth()) {
-      uac = UAC.FromConfig(config);
+      uac = UAC.fromConfig(config, Optional.empty());
       authService = MDBAuthServiceUtils.FromConfig(config, uac);
       mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
     } else {

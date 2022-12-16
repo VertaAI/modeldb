@@ -1,13 +1,23 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.uac.DeleteRoleBindings;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -18,19 +28,21 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class ExperimentTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class ExperimentTest extends ModeldbTestSetup {
 
   public static final Logger LOGGER = LogManager.getLogger(ExperimentTest.class);
 
@@ -42,6 +54,11 @@ public class ExperimentTest extends TestsInit {
 
   @Before
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
@@ -49,6 +66,13 @@ public class ExperimentTest extends TestsInit {
 
   @After
   public void removeEntities() {
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -61,12 +85,22 @@ public class ExperimentTest extends TestsInit {
     experiment = null;
   }
 
-  private static void createProjectEntities() {
-    ProjectTest projectTest = new ProjectTest();
+  private void createProjectEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
 
     // Create two project of above project
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project = createProjectResponse.getProject();
@@ -75,9 +109,13 @@ public class ExperimentTest extends TestsInit {
         "Project name not match with expected Project name",
         createProjectRequest.getName(),
         project.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
+    }
   }
 
-  private static void createExperimentEntities() {
+  private void createExperimentEntities() {
     CreateExperiment createExperimentRequest =
         getCreateExperimentRequest(project.getId(), "Experiment-" + new Date().getTime());
     CreateExperiment.Response createExperimentResponse =
@@ -116,8 +154,7 @@ public class ExperimentTest extends TestsInit {
         .build();
   }
 
-  public static CreateExperiment getCreateExperimentRequest(
-      String projectId, String experimentName) {
+  private CreateExperiment getCreateExperimentRequest(String projectId, String experimentName) {
     List<KeyValue> attributeList = new ArrayList<>();
     Value stringValue =
         Value.newBuilder()
@@ -190,6 +227,21 @@ public class ExperimentTest extends TestsInit {
         .build();
   }
 
+  private CreateExperimentRun getCreateExperimentRunRequest(
+      String projectId, String experimentId, String experimentRunName) {
+    return CreateExperimentRun.newBuilder()
+        .setProjectId(projectId)
+        .setExperimentId(experimentId)
+        .setName(experimentRunName)
+        .setDescription("this is a ExperimentRun description")
+        .setDateCreated(Calendar.getInstance().getTimeInMillis())
+        .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+        .setStartTime(Calendar.getInstance().getTime().getTime())
+        .setEndTime(Calendar.getInstance().getTime().getTime())
+        .setCodeVersion("1.0")
+        .build();
+  }
+
   @Test
   public void a_experimentCreateTest() {
     LOGGER.info("Create Experiment test start................................");
@@ -207,6 +259,12 @@ public class ExperimentTest extends TestsInit {
     }
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       createExperimentRequest = createExperimentRequest.toBuilder().setProjectId("xyz").build();
       experimentServiceStub.createExperiment(createExperimentRequest);
       fail();
@@ -498,6 +556,10 @@ public class ExperimentTest extends TestsInit {
 
     getExperiment = GetExperimentsInProject.newBuilder().setProjectId("hjhfdkshjfhdsk").build();
     try {
+      if (isRunningIsolated()) {
+        when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+            .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+      }
       experimentServiceStub.getExperimentsInProject(getExperiment);
       fail();
     } catch (StatusRuntimeException ex) {
@@ -1099,6 +1161,12 @@ public class ExperimentTest extends TestsInit {
         AddAttributes.newBuilder().setId("dhfjkdshfd").setAttribute(keyValue).build();
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       experimentServiceStub.addAttribute(addAttributesRequest);
       fail();
     } catch (StatusRuntimeException e) {
@@ -1262,6 +1330,12 @@ public class ExperimentTest extends TestsInit {
     getAttributesRequest = GetAttributes.newBuilder().setId("dsfdsfdsfds").setGetAll(true).build();
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       experimentServiceStub.getExperimentAttributes(getAttributesRequest);
       fail();
     } catch (StatusRuntimeException e) {
@@ -1619,6 +1693,12 @@ public class ExperimentTest extends TestsInit {
     logArtifactRequest =
         LogExperimentArtifacts.newBuilder().setId("asda").addAllArtifacts(artifacts).build();
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       experimentServiceStub.logArtifacts(logArtifactRequest);
       fail();
     } catch (StatusRuntimeException ex) {
@@ -1633,6 +1713,12 @@ public class ExperimentTest extends TestsInit {
             .addAllArtifacts(experiment.getArtifactsList())
             .build();
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+      }
       experimentServiceStub.logArtifacts(logArtifactRequest);
       fail();
     } catch (StatusRuntimeException ex) {
@@ -1681,6 +1767,12 @@ public class ExperimentTest extends TestsInit {
     getArtifactsRequest = GetArtifacts.newBuilder().setId("dssaa").build();
 
     try {
+      if (isRunningIsolated()) {
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+      }
       experimentServiceStub.getArtifacts(getArtifactsRequest);
       fail();
     } catch (StatusRuntimeException ex) {
@@ -1737,12 +1829,9 @@ public class ExperimentTest extends TestsInit {
   @Test
   public void deleteExperiments() throws InterruptedException {
     LOGGER.info("Batch Delete Experiment test start................................");
-
-    ExperimentRunTest experimentRunTest = new ExperimentRunTest();
     // Create project
-    ProjectTest projectTest = new ProjectTest();
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("project-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -1770,7 +1859,7 @@ public class ExperimentTest extends TestsInit {
           createExperimentResponse.getExperiment().getName());
 
       CreateExperimentRun createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
+          getCreateExperimentRunRequest(
               project.getId(),
               experiment.getId(),
               "ExperimentRun-" + new Date().getTime() + "-" + count);
@@ -1785,7 +1874,7 @@ public class ExperimentTest extends TestsInit {
           experimentRun1.getName());
 
       createExperimentRunRequest =
-          experimentRunTest.getCreateExperimentRunRequest(
+          getCreateExperimentRunRequest(
               project.getId(), experiment.getId(), "ExperimentRun_sprt_2_" + count);
       createExperimentRunResponse =
           experimentRunServiceStub.createExperimentRun(createExperimentRunRequest);
@@ -1824,6 +1913,11 @@ public class ExperimentTest extends TestsInit {
         experimentServiceStub.deleteExperiments(deleteExperimentsRequest);
     LOGGER.info("DeleteExperiment Response : " + response.getStatus());
     assertTrue(response.getStatus());
+
+    if (isRunningIsolated()) {
+      when(roleServiceBlockingMock.deleteRoleBindings(any()))
+          .thenReturn(DeleteRoleBindings.Response.newBuilder().setStatus(true).build());
+    }
 
     // Delete entities by cron job
     cleanUpResources();
@@ -1877,6 +1971,13 @@ public class ExperimentTest extends TestsInit {
     }
 
     // Delete Project
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");

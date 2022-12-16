@@ -30,6 +30,11 @@ class OrganizationServiceStub(object):
         request_serializer=uac_dot_Organization__pb2.GetOrganizationByShortName.SerializeToString,
         response_deserializer=uac_dot_Organization__pb2.GetOrganizationByShortName.Response.FromString,
         )
+    self.listOrganizations = channel.unary_unary(
+        '/ai.verta.uac.OrganizationService/listOrganizations',
+        request_serializer=uac_dot_Organization__pb2.ListOrganizations.SerializeToString,
+        response_deserializer=uac_dot_Organization__pb2.ListOrganizations.Response.FromString,
+        )
     self.listMyOrganizations = channel.unary_unary(
         '/ai.verta.uac.OrganizationService/listMyOrganizations',
         request_serializer=uac_dot_Organization__pb2.ListMyOrganizations.SerializeToString,
@@ -102,8 +107,15 @@ class OrganizationServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def listOrganizations(self, request, context):
+    """Lists the organizations that the current user can access
+    """
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def listMyOrganizations(self, request, context):
-    """Lists the organizations that the current user can see
+    """Lists the organizations that the current user is a member of
     """
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
@@ -189,6 +201,11 @@ def add_OrganizationServiceServicer_to_server(servicer, server):
           servicer.getOrganizationByShortName,
           request_deserializer=uac_dot_Organization__pb2.GetOrganizationByShortName.FromString,
           response_serializer=uac_dot_Organization__pb2.GetOrganizationByShortName.Response.SerializeToString,
+      ),
+      'listOrganizations': grpc.unary_unary_rpc_method_handler(
+          servicer.listOrganizations,
+          request_deserializer=uac_dot_Organization__pb2.ListOrganizations.FromString,
+          response_serializer=uac_dot_Organization__pb2.ListOrganizations.Response.SerializeToString,
       ),
       'listMyOrganizations': grpc.unary_unary_rpc_method_handler(
           servicer.listMyOrganizations,

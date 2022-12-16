@@ -175,14 +175,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceName(
-      UserInfo currentLoginUserInfo, String workspaceName) {
-    var workspaceDTO = new WorkspaceDTO();
-    workspaceDTO.setWorkspaceName(workspaceName);
-    return workspaceDTO;
-  }
-
-  @Override
   public Workspace getWorkspaceByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
     return Workspace.newBuilder().build();

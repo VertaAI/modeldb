@@ -97,7 +97,7 @@ public class SortingHandler {
   private QueryFilterContext processKeyValueSort(String key, boolean ascending, String fieldType) {
     var sql =
         String.format(
-            "select %s as entityId, kv_value as value from keyvalue where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key",
+            "select %s as entityId, kv_value as kvValue from keyvalue where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key",
             getEntityColumn());
     var queryContext =
         new QueryFilterContext()
@@ -106,14 +106,14 @@ public class SortingHandler {
             .addBind(q -> q.bind("sort_key", key));
     queryContext.addOrderItem(
         new OrderTable(
-            sql, ascending, Collections.singletonList(new OrderColumn("value", ascending))));
+            sql, ascending, Collections.singletonList(new OrderColumn("kvValue", ascending))));
     return queryContext;
   }
 
   private QueryFilterContext processAttributeSort(String key, boolean ascending, String fieldType) {
     var sql =
         String.format(
-            "select %s as entityId, kv_value as value from attribute where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key",
+            "select %s as entityId, kv_value as kvValue from attribute where entity_name=:entityName and field_type=:sort_field_type and kv_key=:sort_key",
             getEntityColumn());
     var queryContext =
         new QueryFilterContext()
@@ -122,7 +122,7 @@ public class SortingHandler {
             .addBind(q -> q.bind("sort_key", key));
     queryContext.addOrderItem(
         new OrderTable(
-            sql, ascending, Collections.singletonList(new OrderColumn("value", ascending))));
+            sql, ascending, Collections.singletonList(new OrderColumn("kvValue", ascending))));
     return queryContext;
   }
 

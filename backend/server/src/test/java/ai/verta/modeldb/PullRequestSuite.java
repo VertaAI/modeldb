@@ -8,12 +8,9 @@ import org.junit.platform.suite.api.Suite;
 @ExcludeClassNamePatterns({
   "ai.verta.modeldb.metadata.MetadataTest",
   "ai.verta.modeldb.BranchTest",
-  "ai.verta.modeldb.CommentTest",
   "ai.verta.modeldb.CommitTest",
   "ai.verta.modeldb.DatasetVersionTest",
   "ai.verta.modeldb.DiffTest",
-  "ai.verta.modeldb.ExperimentRunTest",
-  "ai.verta.modeldb.ExperimentTest",
   "ai.verta.modeldb.FindDatasetEntitiesTest",
   "ai.verta.modeldb.FindHydratedServiceTest",
   "ai.verta.modeldb.FindProjectEntitiesTest",
