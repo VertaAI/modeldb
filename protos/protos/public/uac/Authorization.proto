@@ -24,9 +24,11 @@ message IsAllowed {
 message GetAllowedEntities {
     repeated Action actions = 1;
     repeated Resources resources = 2;
+    common.Pagination pagination = 3;
 
     message Response {
         repeated Entities entities = 1;
+        int64 total_records = 2;
     };
 };
 
@@ -75,9 +77,11 @@ message GetSelfAllowedResources {
     repeated Action actions = 2;
     ResourceType resource_type = 3;
     ServiceEnum.Service service = 4;
+    common.Pagination pagination = 5;
 
     message Response {
         repeated Resources resources = 1;
+        int64 total_records = 2;
     };
 };
 

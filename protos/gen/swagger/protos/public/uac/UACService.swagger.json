@@ -35,7 +35,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           }
         ],
@@ -134,7 +134,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           }
         ],
@@ -200,7 +200,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           }
         ],
@@ -450,9 +450,26 @@
         "VERTA",
         "SAML",
         "AD_OAUTH2",
-        "LDAP"
+        "LDAP",
+        "OKTA_SCIM",
+        "AD_SCIM",
+        "SCIM"
       ],
       "default": "UNKNOWN"
+    },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -534,9 +551,6 @@
         }
       }
     },
-    "uacEmpty": {
-      "type": "object"
-    },
     "uacFlagEnum": {
       "type": "string",
       "enum": [
@@ -566,6 +580,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "pagination": {
+          "$ref": "#/definitions/commonPagination"
         }
       }
     },
@@ -579,7 +596,7 @@
           "type": "string"
         },
         "pagination": {
-          "$ref": "#/definitions/vertauacPagination"
+          "$ref": "#/definitions/commonPagination"
         }
       }
     },
@@ -606,6 +623,10 @@
           "items": {
             "$ref": "#/definitions/uacUserInfo"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -670,6 +691,10 @@
         },
         "secondary_dev_key": {
           "type": "string"
+        },
+        "disabled": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -710,19 +735,8 @@
         }
       }
     },
-    "vertauacPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
+    "vertauacEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"
