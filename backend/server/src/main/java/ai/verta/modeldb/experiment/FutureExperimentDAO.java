@@ -103,7 +103,6 @@ public class FutureExperimentDAO {
             codeVersionHandler,
             datasetHandler,
             daoSet.getArtifactStoreDAO(),
-            daoSet.getDatasetVersionDAO(),
             mdbConfig);
     predicatesHandler = new PredicatesHandler(executor, "experiment", "experiment", uacApisUtil);
     sortingHandler = new SortingHandler("experiment");

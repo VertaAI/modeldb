@@ -43,7 +43,12 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.common.exceptions.*;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.FutureUtil;
@@ -51,7 +56,6 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
@@ -122,7 +126,6 @@ public class FutureProjectDAO {
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO,
       MDBConfig mdbConfig,
       FutureExperimentRunDAO futureExperimentRunDAO,
       UACApisUtil uacApisUtil,
@@ -147,7 +150,6 @@ public class FutureProjectDAO {
             codeVersionHandler,
             datasetHandler,
             artifactStoreDAO,
-            datasetVersionDAO,
             mdbConfig);
     predicatesHandler = new PredicatesHandler(executor, "project", "p", uacApisUtil);
     sortingHandler = new SortingHandler("project");
