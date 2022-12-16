@@ -2,10 +2,18 @@ package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;
+import ai.verta.modeldb.common.db.migration.MigrationException;
+import ai.verta.modeldb.common.db.migration.Migrator;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
+import com.google.common.io.Resources;
+import com.google.gson.Gson;
+import com.google.gson.stream.JsonReader;
+import java.io.StringReader;
+import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.sql.*;
-import java.util.Calendar;
-import java.util.Locale;
+import java.util.*;
 import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import liquibase.Contexts;
@@ -173,7 +181,8 @@ public abstract class CommonDBUtil {
       DatabaseConfig config,
       String changeSetToRevertUntilTag,
       String liquibaseRootPath,
-      ResourceAccessor resourceAccessor)
+      ResourceAccessor resourceAccessor,
+      Optional<String> changeSetRemappingFile)
       throws LiquibaseException, SQLException, InterruptedException {
     var rdb = config.getRdbConfiguration();
 
@@ -188,13 +197,17 @@ public abstract class CommonDBUtil {
           System.getProperties().getProperty("liquibase.databaseChangeLogTableName");
 
       if (tableExists(con, config, changeLogTableName)) {
+        changeSetRemappingFile.ifPresent(
+            filename -> resetChangeSetLogData(jdbcCon, changeLogTableName, filename));
+
         String trimOperation;
         if (config.getRdbConfiguration().isMssql()) {
           LOGGER.info("MSSQL detected. Using custom update to liquibase filename records.");
           // looks like sql server doesn't support the "length" function, so hardcode it here.
-          trimOperation = "substring(FILENAME, 1, 19)";
+          trimOperation = "REPLACE(FILENAME, 'src/main/resources/', '')";
         } else {
-          trimOperation = "substring(FILENAME, length('/src/main/resources/'))";
+          // note: we add 1 to the length because substring is 1-based instead of 0-based
+          trimOperation = "substring(FILENAME, length('src/main/resources/')+1)";
         }
         var updateQuery = "update %s set FILENAME=" + trimOperation + " WHERE FILENAME LIKE ?";
         try (var statement =
@@ -241,6 +254,39 @@ public abstract class CommonDBUtil {
           releaseLiquibaseLock(config);
         }
       }
+    }
+  }
+
+  private static void resetChangeSetLogData(
+      JdbcConnection jdbcCon, String changeLogTableName, String filename) {
+    try {
+      LOGGER.info("Resetting changeset data using file {}", filename);
+      URL url = Resources.getResource(filename);
+      List<String> lines = Resources.readLines(url, StandardCharsets.UTF_8);
+      String json = String.join("", lines);
+      Gson gson = new Gson();
+      JsonReader reader = new JsonReader(new StringReader(json));
+      ChangeSetId[] changeSetIdArray = gson.fromJson(reader, ChangeSetId[].class);
+      var updateQuery = "update %s set FILENAME=? WHERE ID=?";
+      int totalUpdated = 0;
+      try (var statement =
+          jdbcCon.prepareStatement(String.format(updateQuery, changeLogTableName))) {
+        for (var changeSetId : changeSetIdArray) {
+          statement.setString(1, changeSetId.getFileName());
+          statement.setString(2, changeSetId.getId());
+          int numberUpdated = statement.executeUpdate();
+          if (numberUpdated > 0) {
+            LOGGER.info(
+                "Updated changelog for: filename '{}', ID '{}'",
+                changeSetId.fileName,
+                changeSetId.id);
+          }
+          totalUpdated += numberUpdated;
+        }
+        LOGGER.info("Reset database_change_log file path entries: {}", totalUpdated);
+      }
+    } catch (Exception ex) {
+      throw new ModelDBException(ex);
     }
   }
 
@@ -307,12 +353,105 @@ public abstract class CommonDBUtil {
     }
   }
 
+  /**
+   * This method will use the {@link Migrator} tool to run migrations against the database. It does
+   * not assume that the database currently exists, and will create it if necessary.
+   *
+   * <p>The currentVersion parameter is used during the transition from liquibase to the new
+   * migrator. The table belows explains when it will be used. That is, it will only be used if the
+   * database already exists, the liquibase changelog table exists, and, the new migration table has
+   * not been initialized. In that specific case, the new migration table will be initialized with
+   * the provided value.
+   *
+   * <pre>
+   *     ________________________________________________________________________________________________________
+   *     | Database exists? | Liquibase changelog table exists? | migration table exists? | currentVersion used |
+   *     |       N          |              N/A                  |         N/A             |         N           |
+   *     |       Y          |               N                   |          Y              |         N           |
+   *     |       Y          |               N                   |          N              |         N           |
+   *     |       Y          |               Y                   |          Y              |         N           |
+   *     |       Y          |               Y                   |          N              |         Y           |
+   *     --------------------------------------------------------------------------------------------------------
+   * </pre>
+   *
+   * @param config The database configuration to use.
+   * @param migrationResourcesRootDirectory The subdirectory under resources to pull migrations
+   *     from.
+   * @param currentVersion The version that the database is assumed to be in, already, if converting
+   *     from liquibase.
+   */
+  public void runMigrations(
+      DatabaseConfig config,
+      String migrationResourcesRootDirectory,
+      Optional<Integer> currentVersion)
+      throws SQLException, MigrationException {
+    RdbConfig rdbConfiguration = config.getRdbConfiguration();
+    createDBIfNotExists(rdbConfiguration);
+    try (Connection connection = acquireDatabaseConnection(config, rdbConfiguration)) {
+      Migrator migrator =
+          new Migrator(
+              connection,
+              findResourcesDirectory(migrationResourcesRootDirectory, rdbConfiguration),
+              rdbConfiguration);
+      boolean liquibaseTableExists = tableExists(connection, config, "database_change_log");
+      migrator.preInitializeIfRequired(liquibaseTableExists, currentVersion);
+      migrator.performMigration();
+      connection.commit();
+    }
+  }
+
+  private String findResourcesDirectory(String rootDirectory, RdbConfig rdbConfiguration) {
+    if (rdbConfiguration.isMysql()) {
+      return rootDirectory + "/mysql";
+    }
+    if (rdbConfiguration.isMssql()) {
+      return rootDirectory + "/sqlsvr";
+    }
+    if (rdbConfiguration.isH2()) {
+      return rootDirectory + "/h2";
+    }
+    throw new IllegalArgumentException("Unsupported database type for migrations");
+  }
+
+  private static Connection acquireDatabaseConnection(
+      DatabaseConfig config, RdbConfig rdbConfiguration) throws SQLException {
+    // Check DB is up or not
+    boolean dbConnectionStatus =
+        checkDBConnection(config.getRdbConfiguration(), config.getTimeout());
+    if (!dbConnectionStatus) {
+      try {
+        checkDBConnectionInLoop(config, true);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException("Interrupted while getting a database connection.");
+      }
+    }
+    return getDBConnection(rdbConfiguration);
+  }
+
   protected void runLiquibaseMigration(
       DatabaseConfig config, String liquibaseRootPath, ResourceAccessor resourceAccessor)
+      throws InterruptedException, LiquibaseException, SQLException {
+    runLiquibaseMigration(config, liquibaseRootPath, resourceAccessor, Optional.empty());
+  }
+
+  protected void runLiquibaseMigration(
+      DatabaseConfig config,
+      String liquibaseRootPath,
+      ResourceAccessor resourceAccessor,
+      Optional<String> changeSetRemappingFile)
       throws InterruptedException, LiquibaseException, SQLException {
     // Change liquibase default table names
     String changeLogTableName = "database_change_log";
     String changeLogLockTableName = "database_change_log_lock";
+
+    if (config.getRdbConfiguration().isH2()) {
+      // H2 upper cases all table names, and liquibase has issues if you don't make this also upper
+      // case.
+      changeLogTableName = changeLogTableName.toUpperCase();
+      changeLogLockTableName = changeLogLockTableName.toUpperCase();
+    }
+
     System.getProperties().put("liquibase.databaseChangeLogTableName", changeLogTableName);
     System.getProperties().put("liquibase.databaseChangeLogLockTableName", changeLogLockTableName);
 
@@ -332,10 +471,14 @@ public abstract class CommonDBUtil {
 
     // Run tables liquibase migration
     createTablesLiquibaseMigration(
-        config, config.getChangeSetToRevertUntilTag(), liquibaseRootPath, resourceAccessor);
+        config,
+        config.getChangeSetToRevertUntilTag(),
+        liquibaseRootPath,
+        resourceAccessor,
+        changeSetRemappingFile);
   }
 
-  protected static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
+  public static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
     final var databaseName = RdbConfig.buildDatabaseName(rdbConfiguration);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
     LOGGER.debug("Connecting to DB URL " + dbUrl);
@@ -380,5 +523,18 @@ public abstract class CommonDBUtil {
       return cause.getMessage().toLowerCase(Locale.ROOT).contains("unable to advance");
     }
     return false;
+  }
+
+  protected static class ChangeSetId {
+    private String id;
+    private String fileName;
+
+    public String getId() {
+      return id;
+    }
+
+    public String getFileName() {
+      return fileName;
+    }
   }
 }
