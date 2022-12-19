@@ -25,6 +25,7 @@ import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
@@ -45,6 +46,7 @@ import ai.verta.uac.Workspace;
 import ai.verta.uac.WorkspaceServiceGrpc;
 import com.google.common.util.concurrent.Futures;
 import io.grpc.ManagedChannelBuilder;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Executor;
@@ -82,6 +84,9 @@ public abstract class ModeldbTestSetup extends TestCase {
       versioningServiceBlockingStub;
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
       versioningServiceBlockingStubClient2;
+  protected static HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub;
+  protected static HydratedServiceGrpc.HydratedServiceBlockingStub
+      hydratedServiceBlockingStubClient2;
   protected static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
   protected static DatasetServiceBlockingStub datasetServiceStubServiceAccount;
   protected static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
@@ -170,6 +175,8 @@ public abstract class ModeldbTestSetup extends TestCase {
     datasetServiceStubClient2 = DatasetServiceGrpc.newBlockingStub(channelUser2);
     datasetServiceStubServiceAccount = DatasetServiceGrpc.newBlockingStub(channelServiceUser);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
+    hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
+    hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(channelUser2);
     versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
 
     if (!runningIsolated) {
@@ -250,6 +257,12 @@ public abstract class ModeldbTestSetup extends TestCase {
 
     when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
     when(uacMock.getUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+    when(uacMock.getUsersFuzzy(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                GetUsersFuzzy.Response.newBuilder()
+                    .addAllUserInfos(List.of(testUser1, testUser2))
+                    .build()));
     when(authzMock.isSelfAllowed(any()))
         .thenReturn(
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
