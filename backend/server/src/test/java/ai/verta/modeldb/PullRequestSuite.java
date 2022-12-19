@@ -9,7 +9,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.metadata.MetadataTest",
   "ai.verta.modeldb.BranchTest",
   "ai.verta.modeldb.CommitTest",
-  "ai.verta.modeldb.DatasetTest",
   "ai.verta.modeldb.DatasetVersionTest",
   "ai.verta.modeldb.DiffTest",
   "ai.verta.modeldb.FindDatasetEntitiesTest",

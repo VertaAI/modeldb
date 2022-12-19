@@ -15,11 +15,9 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
@@ -33,6 +31,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -92,7 +91,9 @@ public class ProjectTest extends ModeldbTestSetup {
   public void removeEntities() {
     if (!projectMap.isEmpty()) {
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntities(projectMap, testUser1);
+        mockGetResourcesForAllProjects(projectMap, testUser1);
+        mockGetSelfAllowedResources(
+            projectMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
       }
 
       DeleteProjects deleteProjects =
@@ -105,24 +106,7 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     if (isRunningIsolated()) {
-      var authChannelMock = mock(AuthServiceChannel.class);
-      when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
-      var collaboratorBlockingMock = mock(CollaboratorServiceBlockingStub.class);
-      when(authChannelMock.getCollaboratorServiceBlockingStub())
-          .thenReturn(collaboratorBlockingMock);
-      var resourcesResponse =
-          GetResources.Response.newBuilder()
-              .addItem(
-                  GetResourcesResponseItem.newBuilder()
-                      .setResourceId(dataset.getId())
-                      .setWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
-                      .build())
-              .build();
-      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
-      var authzServiceBlockingStub = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
-      when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzServiceBlockingStub);
-      when(authzServiceBlockingStub.isSelfAllowed(any()))
-          .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
     }
 
     DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
@@ -171,7 +155,7 @@ public class ProjectTest extends ModeldbTestSetup {
         project3.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(projectMap, testUser1);
+      mockGetResourcesForAllProjects(projectMap, testUser1);
     }
   }
 
@@ -213,6 +197,11 @@ public class ProjectTest extends ModeldbTestSetup {
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     dataset = createDatasetResponse.getDataset();
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+    }
+
     CreateDatasetVersion createDatasetVersionRequest =
         DatasetVersionTest.getDatasetVersionRequest(dataset.getId());
     CreateDatasetVersion.Response createDatasetVersionResponse =
@@ -279,6 +268,10 @@ public class ProjectTest extends ModeldbTestSetup {
         "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
         experimentRun.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllProjects(projectMap, testUser1);
+    }
   }
 
   private void checkEqualsAssert(StatusRuntimeException e) {
@@ -707,10 +700,12 @@ public class ProjectTest extends ModeldbTestSetup {
       projects.add(response.getProject());
 
     } finally {
-      DeleteProjects deleteProjects =
-          DeleteProjects.newBuilder()
-              .addAllIds(projects.stream().map(Project::getId).collect(Collectors.toList()))
-              .build();
+      var projectIds = projects.stream().map(Project::getId).collect(Collectors.toSet());
+      if (isRunningIsolated()) {
+        mockGetSelfAllowedResources(
+            projectIds, ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+      }
+      DeleteProjects deleteProjects = DeleteProjects.newBuilder().addAllIds(projectIds).build();
       DeleteProjects.Response deleteProjectsResponse =
           projectServiceStub.deleteProjects(deleteProjects);
       LOGGER.info("Projects deleted successfully");
@@ -1263,6 +1258,10 @@ public class ProjectTest extends ModeldbTestSetup {
     deleteProjectTagsRequest =
         DeleteProjectTags.newBuilder().setId(project.getId()).setDeleteAll(true).build();
 
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
+    }
+
     DeleteProjectTags.Response response =
         projectServiceStub.deleteProjectTags(deleteProjectTagsRequest);
     LOGGER.info("Tags deleted in server : " + response.getProject().getTagsList());
@@ -1483,7 +1482,7 @@ public class ProjectTest extends ModeldbTestSetup {
     LOGGER.info("Get Project by ID test start................................");
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
     }
     GetProjectById getProject = GetProjectById.newBuilder().setId(project.getId()).build();
     GetProjectById.Response response = projectServiceStub.getProjectById(getProject);
@@ -1577,7 +1576,7 @@ public class ProjectTest extends ModeldbTestSetup {
           project.getName());
 
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser2);
+        mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser2);
       }
 
       GetProjectByName getProject =
@@ -1595,7 +1594,7 @@ public class ProjectTest extends ModeldbTestSetup {
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
           when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
-          mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+          mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
           when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
               .thenReturn(
                   Futures.immediateFuture(
@@ -1617,8 +1616,9 @@ public class ProjectTest extends ModeldbTestSetup {
               CollaboratorUtils.addCollaboratorRequestProject(
                   project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
-          var addOrUpdateProjectCollaboratorResponse =
-              collaboratorBlockingMock.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+          var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+          AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
+              collaboratorMock.addOrUpdateProjectCollaborator(addCollaboratorRequest).get();
           LOGGER.info(
               "Collaborator added in server : "
                   + addOrUpdateProjectCollaboratorResponse.getStatus());
@@ -1653,7 +1653,7 @@ public class ProjectTest extends ModeldbTestSetup {
               selfProject.getName());
 
           if (isRunningIsolated()) {
-            mockGetResourcesForAllEntities(Map.of(selfProject.getId(), selfProject), testUser1);
+            mockGetResourcesForAllProjects(Map.of(selfProject.getId(), selfProject), testUser1);
           }
 
           getProject = GetProjectByName.newBuilder().setName(selfProject.getName()).build();
@@ -1674,6 +1674,12 @@ public class ProjectTest extends ModeldbTestSetup {
 
         } finally {
           if (selfProject != null) {
+            if (isRunningIsolated()) {
+              mockGetSelfAllowedResources(
+                  Collections.singleton(selfProject.getId()),
+                  ModelDBServiceResourceTypes.PROJECT,
+                  ModelDBServiceActions.DELETE);
+            }
             DeleteProject deleteProject =
                 DeleteProject.newBuilder().setId(selfProject.getId()).build();
             DeleteProject.Response deleteProjectResponse =
@@ -1687,6 +1693,12 @@ public class ProjectTest extends ModeldbTestSetup {
 
     } finally {
       if (project != null) {
+        if (isRunningIsolated()) {
+          mockGetSelfAllowedResources(
+              Collections.singleton(project.getId()),
+              ModelDBServiceResourceTypes.PROJECT,
+              ModelDBServiceActions.DELETE);
+        }
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =
             client2ProjectServiceStub.deleteProject(deleteProject);
@@ -1712,6 +1724,7 @@ public class ProjectTest extends ModeldbTestSetup {
     try {
 
       if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
         when(workspaceMock.getWorkspaceByName(
                 GetWorkspaceByName.newBuilder()
                     .setName(testUser2.getVertaInfo().getUsername())
@@ -1741,7 +1754,7 @@ public class ProjectTest extends ModeldbTestSetup {
       var projectMap = new HashMap<String, Project>();
       if (isRunningIsolated()) {
         projectMap.put(project.getId(), project);
-        mockGetResourcesForAllEntities(projectMap, testUser1);
+        mockGetResourcesForAllProjects(projectMap, testUser1);
       } else {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProject(
@@ -1766,7 +1779,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
       if (isRunningIsolated()) {
         projectMap.put(selfProject.getId(), selfProject);
-        mockGetResourcesForAllEntities(projectMap, testUser1);
+        mockGetResourcesForAllProjects(Map.of(selfProject.getId(), selfProject), testUser1);
       }
 
       GetProjectByName getProject =
@@ -1790,6 +1803,12 @@ public class ProjectTest extends ModeldbTestSetup {
       }
     } finally {
       if (selfProject != null) {
+        if (isRunningIsolated()) {
+          mockGetSelfAllowedResources(
+              Collections.singleton(selfProject.getId()),
+              ModelDBServiceResourceTypes.PROJECT,
+              ModelDBServiceActions.DELETE);
+        }
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(selfProject.getId()).build();
         DeleteProject.Response deleteProjectResponse =
             projectServiceStub.deleteProject(deleteProject);
@@ -1884,7 +1903,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       projectsMap.putAll(projectMap);
-      mockGetResourcesForAllEntities(projectsMap, testUser1);
+      mockGetResourcesForAllProjects(projectsMap, testUser1);
     }
 
     getProjects = GetProjects.newBuilder().build();
@@ -1902,6 +1921,12 @@ public class ProjectTest extends ModeldbTestSetup {
         responseList.size());
 
     for (String projectId : projectsMap.keySet()) {
+      if (isRunningIsolated()) {
+        mockGetSelfAllowedResources(
+            Collections.singleton(projectId),
+            ModelDBServiceResourceTypes.PROJECT,
+            ModelDBServiceActions.DELETE);
+      }
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
           projectServiceStub.deleteProject(deleteProject);
@@ -1942,7 +1967,7 @@ public class ProjectTest extends ModeldbTestSetup {
         project2.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(projectsMap, testUser1);
+      mockGetResourcesForAllProjects(projectsMap, testUser1);
     }
 
     GetProjects getProjects = GetProjects.newBuilder().build();
@@ -1966,6 +1991,10 @@ public class ProjectTest extends ModeldbTestSetup {
     assertEquals(
         "Projects order not match with expected projects order", project1, responseList.get(1));
 
+    if (isRunningIsolated()) {
+      mockGetSelfAllowedResources(
+          projectsMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+    }
     for (String projectId : projectsMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
@@ -1982,7 +2011,7 @@ public class ProjectTest extends ModeldbTestSetup {
     LOGGER.info("Get Project summary test start................................");
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
                   .addActions(
@@ -2395,6 +2424,12 @@ public class ProjectTest extends ModeldbTestSetup {
       LOGGER.error("Error Code : " + status.getCode() + " Error : " + status.getDescription());
     } finally {
       if (project != null) {
+        if (isRunningIsolated()) {
+          mockGetSelfAllowedResources(
+              Collections.singleton(project.getId()),
+              ModelDBServiceResourceTypes.PROJECT,
+              ModelDBServiceActions.DELETE);
+        }
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =
             projectServiceStub.deleteProject(deleteProject);
@@ -2452,6 +2487,18 @@ public class ProjectTest extends ModeldbTestSetup {
     ExperimentRun experimentRun1;
     ExperimentRun experimentRun3;
     try {
+      if (isRunningIsolated()) {
+        var resourcesResponse =
+            GetResources.Response.newBuilder()
+                .addItem(
+                    GetResourcesResponseItem.newBuilder()
+                        .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .build())
+                .build();
+        when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      }
+
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest();
       CreateProject.Response createProjectResponse =
@@ -2530,6 +2577,12 @@ public class ProjectTest extends ModeldbTestSetup {
       }
     } finally {
       if (project != null) {
+        if (isRunningIsolated()) {
+          mockGetSelfAllowedResources(
+              Collections.singleton(project.getId()),
+              ModelDBServiceResourceTypes.PROJECT,
+              ModelDBServiceActions.DELETE);
+        }
         // Delete all data related to project
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =
@@ -2840,7 +2893,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       projectsMap.putAll(projectMap);
-      mockGetResourcesForAllEntities(projectsMap, testUser1);
+      mockGetResourcesForAllProjects(projectsMap, testUser1);
     }
 
     getProjects = GetProjects.newBuilder().build();
@@ -2924,6 +2977,11 @@ public class ProjectTest extends ModeldbTestSetup {
       }
     }
 
+    if (isRunningIsolated()) {
+      mockGetSelfAllowedResources(
+          projectsMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+    }
+
     for (String projectId : projectsMap.keySet()) {
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
       DeleteProject.Response deleteProjectResponse =
@@ -2954,7 +3012,7 @@ public class ProjectTest extends ModeldbTestSetup {
           project.getName());
 
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+        mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
       }
 
       LogProjectCodeVersion logProjectCodeVersionRequest =
@@ -3010,6 +3068,12 @@ public class ProjectTest extends ModeldbTestSetup {
       }
     } finally {
       if (project != null) {
+        if (isRunningIsolated()) {
+          mockGetSelfAllowedResources(
+              Collections.singleton(project.getId()),
+              ModelDBServiceResourceTypes.PROJECT,
+              ModelDBServiceActions.DELETE);
+        }
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =
             projectServiceStub.deleteProject(deleteProject);
@@ -3271,6 +3335,13 @@ public class ProjectTest extends ModeldbTestSetup {
         createProjectRequest.getName(),
         testProj.getName());
 
+    if (isRunningIsolated()) {
+      mockGetSelfAllowedResources(
+          Collections.singleton(testProj.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
+
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(testProj.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project delete successfully. Status : {}", deleteProjectResponse.toString());
@@ -3284,6 +3355,13 @@ public class ProjectTest extends ModeldbTestSetup {
         "Project name not match with expected Project name",
         createProjectRequest.getName(),
         testProj.getName());
+
+    if (isRunningIsolated()) {
+      mockGetSelfAllowedResources(
+          Collections.singleton(testProj.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
 
     deleteProject = DeleteProject.newBuilder().setId(testProj.getId()).build();
     deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
@@ -3308,8 +3386,16 @@ public class ProjectTest extends ModeldbTestSetup {
     CreateProject createProjectRequest = getCreateProjectRequest();
     CreateProject.Response createProjectResponse =
         serviceUserProjectServiceStub.createProject(createProjectRequest);
-    DeleteProjects deleteProjects =
-        DeleteProjects.newBuilder().addIds(createProjectResponse.getProject().getId()).build();
+    var project = createProjectResponse.getProject();
+
+    if (isRunningIsolated()) {
+      mockGetSelfAllowedResources(
+          Collections.singleton(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
+
+    DeleteProjects deleteProjects = DeleteProjects.newBuilder().addIds(project.getId()).build();
     DeleteProjects.Response deleteProjectsResponse =
         serviceUserProjectServiceStub.deleteProjects(deleteProjects);
     assertTrue(deleteProjectsResponse.getStatus());

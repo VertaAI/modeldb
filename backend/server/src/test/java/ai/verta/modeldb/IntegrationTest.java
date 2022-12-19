@@ -1,6 +1,7 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
@@ -24,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Test;
@@ -264,7 +266,7 @@ public class IntegrationTest extends ModeldbTestSetup {
       LOGGER.info("Create Project test stop................................");
 
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+        mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
         when(authzMock.getSelfAllowedResources(
                 GetSelfAllowedResources.newBuilder()
                     .addActions(
@@ -388,6 +390,14 @@ public class IntegrationTest extends ModeldbTestSetup {
       assertTrue(deleteExperimentResponse.getStatus());
       LOGGER.info("Delete Experiment test successfully executed");
       LOGGER.info("Delete Experiment test stop................................");
+
+      if (isRunningIsolated()) {
+        when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+        mockGetSelfAllowedResources(
+            Set.of(project.getId()),
+            ModelDBServiceResourceTypes.PROJECT,
+            ModelDBServiceActions.DELETE);
+      }
 
       LOGGER.info("Project delete test start................................");
       DeleteProject deleteProjectRequest =

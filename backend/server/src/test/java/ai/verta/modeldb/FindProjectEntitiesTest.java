@@ -82,6 +82,12 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
 
   @After
   public void removeEntities() {
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          projectMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+    }
+
     DeleteProjects deleteProjects =
         DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
     DeleteProjects.Response deleteProjectsResponse =
@@ -226,7 +232,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
     projectMap.put(project4.getId(), project4);
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(projectMap, testUser1);
+      mockGetResourcesForAllProjects(projectMap, testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
                   .addActions(
