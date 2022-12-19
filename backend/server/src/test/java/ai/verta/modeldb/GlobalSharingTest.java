@@ -367,7 +367,7 @@ public class GlobalSharingTest extends TestsInit {
       CollaboratorPermissions.Builder customPermission) {
     // Create dataset
     CreateDataset createDatasetRequest =
-        DatasetTest.getDatasetRequest("dataset-" + new Date().getTime());
+        DatasetTest.getDatasetRequestForOtherTests("dataset-" + new Date().getTime());
     createDatasetRequest =
         createDatasetRequest
             .toBuilder()

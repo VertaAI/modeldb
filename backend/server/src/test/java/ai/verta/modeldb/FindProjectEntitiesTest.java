@@ -1,14 +1,23 @@
 package ai.verta.modeldb;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.OperatorEnum.Operator;
-import ai.verta.uac.GetUser;
+import ai.verta.uac.Action;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.GetUsersFuzzy;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.UserInfo;
+import ai.verta.uac.ServiceEnum;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -22,16 +31,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FindProjectEntitiesTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class FindProjectEntitiesTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(FindProjectEntitiesTest.class);
 
@@ -58,6 +68,12 @@ public class FindProjectEntitiesTest extends TestsInit {
 
   @Before
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
@@ -66,6 +82,12 @@ public class FindProjectEntitiesTest extends TestsInit {
 
   @After
   public void removeEntities() {
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          projectMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+    }
+
     DeleteProjects deleteProjects =
         DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
     DeleteProjects.Response deleteProjectsResponse =
@@ -79,12 +101,10 @@ public class FindProjectEntitiesTest extends TestsInit {
     experimentRunMap = new HashMap<>();
   }
 
-  private static void createProjectEntities() {
-    ProjectTest projectTest = new ProjectTest();
-
+  private void createProjectEntities() {
     // Create two project of above project
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -113,7 +133,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         project1.getName());
 
     // project2 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project-2-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("Project-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -142,7 +162,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         project2.getName());
 
     // project3 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project-3-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("Project-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -171,7 +191,7 @@ public class FindProjectEntitiesTest extends TestsInit {
         project3.getName());
 
     // project4 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project-4-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("Project-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -210,9 +230,26 @@ public class FindProjectEntitiesTest extends TestsInit {
     projectMap.put(project2.getId(), project2);
     projectMap.put(project3.getId(), project3);
     projectMap.put(project4.getId(), project4);
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllProjects(projectMap, testUser1);
+      when(authzMock.getSelfAllowedResources(
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+    }
   }
 
-  private static void createExperimentEntities() {
+  private void createExperimentEntities() {
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
         ExperimentTest.getCreateExperimentRequestForOtherTests(
@@ -343,7 +380,7 @@ public class FindProjectEntitiesTest extends TestsInit {
     experimentMap.put(experiment4.getId(), experiment4);
   }
 
-  private static void createExperimentRunEntities() {
+  private void createExperimentRunEntities() {
     CreateExperimentRun createExperimentRunRequest =
         ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment1.getId(), "ExperimentRun-1-" + new Date().getTime());
@@ -490,19 +527,6 @@ public class FindProjectEntitiesTest extends TestsInit {
     experimentRunMap.put(experimentRun12.getId(), experimentRun12);
     experimentRunMap.put(experimentRun21.getId(), experimentRun21);
     experimentRunMap.put(experimentRun22.getId(), experimentRun22);
-  }
-
-  private void checkEqualsAssert(StatusRuntimeException e) {
-    Status status = Status.fromThrowable(e);
-    LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-    if (testConfig.hasAuth()) {
-      assertTrue(
-          Status.PERMISSION_DENIED.getCode() == status.getCode()
-              || Status.NOT_FOUND.getCode()
-                  == status.getCode()); // because of shadow delete the response could be 403 or 404
-    } else {
-      assertEquals(Status.NOT_FOUND.getCode(), status.getCode());
-    }
   }
 
   /** Validation check for the predicate value with empty string which is not valid */
@@ -2756,13 +2780,8 @@ public class FindProjectEntitiesTest extends TestsInit {
       assertTrue(true);
       return;
     }
-    GetUser getUserRequest =
-        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-    // Get the user info by vertaId form the AuthService
-    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
     String testUser1UserName = testUser1.getVertaInfo().getUsername();
 
-    // get project with value of attributes.attribute_1 <= 0.6543210
     Value stringValue =
         Value.newBuilder().setStringValue(testUser1UserName.substring(0, 2)).build();
     KeyValueQuery keyValueQuery =
@@ -2802,6 +2821,10 @@ public class FindProjectEntitiesTest extends TestsInit {
     assertEquals(
         "Total records count not matched with expected records count", 0, projectList.size());
 
+    if (isRunningIsolated()) {
+      when(uacMock.getUsersFuzzy(any()))
+          .thenReturn(Futures.immediateFuture(GetUsersFuzzy.Response.newBuilder().build()));
+    }
     stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
     keyValueQuery =
         KeyValueQuery.newBuilder()

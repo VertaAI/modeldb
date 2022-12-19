@@ -9,11 +9,14 @@ import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.uac.DeleteRoleBindings;
 import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -25,6 +28,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -62,6 +66,13 @@ public class ExperimentTest extends ModeldbTestSetup {
 
   @After
   public void removeEntities() {
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -75,6 +86,18 @@ public class ExperimentTest extends ModeldbTestSetup {
   }
 
   private void createProjectEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
+
     // Create two project of above project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
@@ -88,7 +111,7 @@ public class ExperimentTest extends ModeldbTestSetup {
         project.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
     }
   }
 
@@ -1948,6 +1971,13 @@ public class ExperimentTest extends ModeldbTestSetup {
     }
 
     // Delete Project
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");

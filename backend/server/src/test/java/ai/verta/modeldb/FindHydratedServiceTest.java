@@ -3,6 +3,7 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProject;
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
@@ -71,6 +72,12 @@ public class FindHydratedServiceTest extends ModeldbTestSetup {
 
   @After
   public void removeEntities() {
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          projectMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+    }
+
     // Delete all data related to project
     DeleteProjects deleteProjects =
         DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
@@ -103,7 +110,7 @@ public class FindHydratedServiceTest extends ModeldbTestSetup {
     projectMap.put(project2.getId(), project2);
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(projectMap, testUser1);
+      mockGetResourcesForAllProjects(projectMap, testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
                   .addActions(
@@ -289,7 +296,7 @@ public class FindHydratedServiceTest extends ModeldbTestSetup {
       List<String> collaboratorUsers = new ArrayList<>();
       collaboratorUsers.add(testUser2.getVertaInfo().getUserId());
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntities(Map.of(project1.getId(), project1), testUser1);
+        mockGetResourcesForAllProjects(Map.of(project1.getId(), project1), testUser1);
       } else {
         // For Collaborator1
         AddCollaboratorRequest addCollaboratorRequest =
