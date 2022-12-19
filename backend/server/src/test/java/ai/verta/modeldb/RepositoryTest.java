@@ -523,7 +523,7 @@ public class RepositoryTest extends TestsInit {
     LOGGER.info("List repository test start................................");
 
     CreateDataset createDatasetRequest =
-        DatasetTest.getDatasetRequest("Dataset-" + new Date().getTime());
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
@@ -1212,7 +1212,8 @@ public class RepositoryTest extends TestsInit {
 
     Repository repository = createRepository("Test-" + Calendar.getInstance().getTimeInMillis());
 
-    CreateDataset createDatasetRequest = DatasetTest.getDatasetRequest(repository.getName());
+    CreateDataset createDatasetRequest =
+        DatasetTest.getDatasetRequestForOtherTests(repository.getName());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset = createDatasetResponse.getDataset();

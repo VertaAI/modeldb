@@ -87,7 +87,7 @@ public class DatasetVersionTest extends TestsInit {
 
     // Create two dataset of above dataset
     CreateDataset createDatasetRequest =
-        DatasetTest.getDatasetRequest("Dataset-" + new Date().getTime());
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     dataset = createDatasetResponse.getDataset();

@@ -382,7 +382,7 @@ public class LineageTest extends TestsInit {
       DatasetServiceBlockingStub datasetServiceStub,
       String name) {
     CreateDataset createDatasetRequest =
-        DatasetTest.getDatasetRequest("Dataset-" + new Date().getTime() + "-" + name);
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-" + new Date().getTime() + "-" + name);
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());

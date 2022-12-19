@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,6 +82,12 @@ public class HydratedServiceTest extends ModeldbTestSetup {
 
   @After
   public void removeEntities() {
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          projectsMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+    }
+
     DeleteProjects deleteProjects =
         DeleteProjects.newBuilder().addAllIds(projectsMap.keySet()).build();
     DeleteProjects.Response deleteProjectsResponse =
@@ -218,7 +225,7 @@ public class HydratedServiceTest extends ModeldbTestSetup {
         project4.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(projectsMap, testUser1);
+      mockGetResourcesForAllProjects(projectsMap, testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
                   .addActions(
@@ -609,7 +616,7 @@ public class HydratedServiceTest extends ModeldbTestSetup {
       List<String> collaboratorUsers = new ArrayList<>();
       collaboratorUsers.add(testUser2.getVertaInfo().getUserId());
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntities(Map.of(project1.getId(), project1), testUser1);
+        mockGetResourcesForAllProjects(Map.of(project1.getId(), project1), testUser1);
       } else {
         // Create two collaborator for above project
         // For Collaborator1
@@ -3052,6 +3059,13 @@ public class HydratedServiceTest extends ModeldbTestSetup {
       assertEquals(
           "Total records count not matched with expected records count", 0, projectList.size());
     } finally {
+      if (isRunningIsolated()) {
+        when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+        mockGetSelfAllowedResources(
+            firstProjectMap.keySet(),
+            ModelDBServiceResourceTypes.PROJECT,
+            ModelDBServiceActions.DELETE);
+      }
       for (String projectId : firstProjectMap.keySet()) {
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
         DeleteProject.Response deleteProjectResponse =
@@ -3082,9 +3096,8 @@ public class HydratedServiceTest extends ModeldbTestSetup {
     }
 
     // Create project
-    ProjectTest projectTest = new ProjectTest();
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3096,7 +3109,7 @@ public class HydratedServiceTest extends ModeldbTestSetup {
           project.getName());
 
       if (isRunningIsolated()) {
-        mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+        mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
         when(authzMock.getSelfAllowedResources(
                 GetSelfAllowedResources.newBuilder()
                     .addActions(
@@ -3265,6 +3278,13 @@ public class HydratedServiceTest extends ModeldbTestSetup {
         }
       }
     } finally {
+      if (isRunningIsolated()) {
+        when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+        mockGetSelfAllowedResources(
+            Set.of(project.getId()),
+            ModelDBServiceResourceTypes.PROJECT,
+            ModelDBServiceActions.DELETE);
+      }
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
       DeleteProject.Response deleteProjectResponse =
           projectServiceStub.deleteProject(deleteProject);

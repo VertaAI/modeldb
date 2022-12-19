@@ -94,7 +94,7 @@ public class FindDatasetEntitiesTest extends TestsInit {
   private static void createDatasetEntities() {
     // Create two dataset of above dataset
     CreateDataset createDatasetRequest =
-        DatasetTest.getDatasetRequest("Dataset-1-" + new Date().getTime());
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -123,7 +123,8 @@ public class FindDatasetEntitiesTest extends TestsInit {
         dataset1.getName());
 
     // dataset2 of above dataset
-    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-2-" + new Date().getTime());
+    createDatasetRequest =
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -152,7 +153,8 @@ public class FindDatasetEntitiesTest extends TestsInit {
         dataset2.getName());
 
     // dataset3 of above dataset
-    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-3-" + new Date().getTime());
+    createDatasetRequest =
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -178,7 +180,8 @@ public class FindDatasetEntitiesTest extends TestsInit {
         dataset3.getName());
 
     // dataset4 of above dataset
-    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-4-" + new Date().getTime());
+    createDatasetRequest =
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")

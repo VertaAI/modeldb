@@ -1,11 +1,14 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.uac.Action;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceType;
@@ -18,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
@@ -75,6 +79,14 @@ public class CommentTest extends ModeldbTestSetup {
     assertTrue(deleteExperimentResponse.getStatus());
     experiment = null;
 
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
+
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -85,6 +97,18 @@ public class CommentTest extends ModeldbTestSetup {
   }
 
   private void createProjectEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
+
     // Create two project of above project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
@@ -98,7 +122,7 @@ public class CommentTest extends ModeldbTestSetup {
         project.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
                   .addActions(
