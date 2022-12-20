@@ -16,8 +16,6 @@ import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.datasetVersion.DatasetVersionDAORdbImpl;
 import ai.verta.modeldb.experiment.FutureExperimentDAO;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.lineage.LineageDAO;
 import ai.verta.modeldb.lineage.LineageDAORdbImpl;
@@ -48,7 +46,6 @@ public class DAOSet {
   @JsonProperty private DatasetDAO datasetDAO;
   @JsonProperty private DatasetVersionDAO datasetVersionDAO;
   @JsonProperty private FutureExperimentDAO futureExperimentDAO;
-  @JsonProperty private ExperimentRunDAO experimentRunDAO;
   @JsonProperty private FutureExperimentRunDAO futureExperimentRunDAO;
   @JsonProperty private FutureProjectDAO futureProjectDAO;
   @JsonProperty private LineageDAO lineageDAO;
@@ -76,15 +73,6 @@ public class DAOSet {
             set.metadataDAO);
     set.blobDAO = new BlobDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
 
-    set.experimentRunDAO =
-        new ExperimentRunDAORdbImpl(
-            mdbConfig,
-            services.getAuthService(),
-            services.getMdbRoleService(),
-            set.repositoryDAO,
-            set.commitDAO,
-            set.blobDAO,
-            set.metadataDAO);
     if (services.getArtifactStoreService() == null
         || services.getArtifactStoreService() instanceof NoopArtifactStoreService) {
       set.artifactStoreDAO = new ArtifactStoreDAODisabled();

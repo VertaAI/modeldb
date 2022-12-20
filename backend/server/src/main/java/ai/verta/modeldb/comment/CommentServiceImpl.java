@@ -15,7 +15,7 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import io.grpc.stub.StreamObserver;
@@ -31,7 +31,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final CommentDAO commentDAO;
-  private final ExperimentRunDAO experimentRunDAO;
+  private final FutureExperimentRunDAO futureExperimentRunDAO;
 
   String experimentRunEntity = ExperimentRunEntity.class.getSimpleName();
 
@@ -39,7 +39,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
     this.authService = serviceSet.getAuthService();
     this.mdbRoleService = serviceSet.getMdbRoleService();
     this.commentDAO = daoSet.getCommentDAO();
-    this.experimentRunDAO = daoSet.getExperimentRunDAO();
+    this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
   }
 
   /**
@@ -145,7 +145,8 @@ public class CommentServiceImpl extends CommentServiceImplBase {
         var errorMessage = "Entity ID not found in GetComments request";
         throw new InvalidArgumentException(errorMessage);
       }
-      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId());
+      String projectId =
+          futureExperimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId()).get();
       // Validate if current user has access to the entity or not
       mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);

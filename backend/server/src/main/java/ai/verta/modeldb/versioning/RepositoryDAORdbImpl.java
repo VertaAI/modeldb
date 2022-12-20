@@ -14,7 +14,7 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
@@ -416,7 +416,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request,
       CommitDAO commitDAO,
-      ExperimentRunDAO experimentRunDAO,
+      FutureExperimentRunDAO futureExperimentRunDAO,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException {
@@ -438,12 +438,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             Code.PERMISSION_DENIED);
       }
 
-      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
+      deleteRepositories(session, futureExperimentRunDAO, allowedRepositoryIds);
       return DeleteRepositoryRequest.Response.newBuilder().setStatus(true).build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return deleteRepository(
-            request, commitDAO, experimentRunDAO, canNotOperateOnProtected, repositoryType);
+            request, commitDAO, futureExperimentRunDAO, canNotOperateOnProtected, repositoryType);
       } else {
         throw ex;
       }
@@ -452,7 +452,9 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
   @Override
   public void deleteRepositories(
-      Session session, ExperimentRunDAO experimentRunDAO, Collection<String> allowedRepositoryIds) {
+      Session session,
+      FutureExperimentRunDAO futureExperimentRunDAO,
+      Collection<String> allowedRepositoryIds) {
     var deletedRepositoriesQuery =
         session
             .createQuery(DELETED_STATUS_REPOSITORY_QUERY_STRING)
@@ -466,12 +468,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
     LOGGER.debug(
         "Mark Repositories as deleted : {}, count : {}", allowedRepositoryIds, updatedCount);
     // Delete all VersionedInputs for repository ID
-    experimentRunDAO.deleteLogVersionedInputs(session, repositoriesIdsLong);
+    futureExperimentRunDAO.deleteLogVersionedInputs(session, repositoriesIdsLong);
     transaction.commit();
   }
 
   @Override
-  public Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
+  public Boolean deleteRepositories(
+      List<String> repositoryIds, FutureExperimentRunDAO futureExperimentRunDAO)
       throws ModelDBException {
     Collection<String> allowedRepositoryIds =
         mdbRoleService.getAccessibleResourceIdsByActions(
@@ -484,7 +487,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           Code.PERMISSION_DENIED);
     }
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      deleteRepositories(session, experimentRunDAO, allowedRepositoryIds);
+      deleteRepositories(session, futureExperimentRunDAO, allowedRepositoryIds);
     }
     return true;
   }
