@@ -18,13 +18,18 @@ import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.Action;
+import ai.verta.uac.Actions;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.DeleteResources;
+import ai.verta.uac.Entities;
+import ai.verta.uac.GetAllowedEntities;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedActionsBatch.Response;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.GetWorkspaceByName;
@@ -268,7 +273,23 @@ public abstract class ModeldbTestSetup extends TestCase {
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
     when(authzBlockingMock.isSelfAllowed(any()))
         .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+    when(authzBlockingMock.getSelfAllowedActionsBatch(any()))
+        .thenReturn(
+            Response.newBuilder()
+                .putActions(
+                    "READ",
+                    Actions.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(ModelDBServiceActions.READ)
+                                .setService(Service.MODELDB_SERVICE)
+                                .build())
+                        .build())
+                .build());
     when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+    when(uacBlockingMock.getUsers(any()))
+        .thenReturn(
+            GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build());
     when(workspaceBlockingMock.getWorkspaceByName(any()))
         .thenReturn(
             Workspace.newBuilder()
@@ -434,6 +455,19 @@ public abstract class ModeldbTestSetup extends TestCase {
         .thenReturn(Futures.immediateFuture(response.build()));
     when(authzBlockingMock.getSelfAllowedResources(getSelfAllowedResourcesRequest))
         .thenReturn(response.build());
+    var authzBlockingMock = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
+    when(authChannelMock.getAuthzServiceBlockingStub(any())).thenReturn(authzBlockingMock);
+    when(authzBlockingMock.getAllowedEntities(any()))
+        .thenReturn(
+            GetAllowedEntities.Response.newBuilder()
+                .addEntities(
+                    Entities.newBuilder()
+                        .addAllUserIds(
+                            List.of(
+                                testUser1.getVertaInfo().getUserId(),
+                                testUser2.getVertaInfo().getUserId()))
+                        .build())
+                .build());
   }
 
   protected void mockGetResources(Set<String> resourceIds, UserInfo userInfo) {

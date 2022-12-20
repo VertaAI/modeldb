@@ -3,10 +3,17 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProject;
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.*;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.uac.*;
+import ai.verta.uac.GetSelfAllowedActionsBatch.Response;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -18,21 +25,23 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class HydratedServiceTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class HydratedServiceTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(HydratedServiceTest.class.getName());
 
@@ -59,6 +68,12 @@ public class HydratedServiceTest extends TestsInit {
 
   @Before
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createProjectEntities();
     createExperimentEntities();
@@ -67,6 +82,12 @@ public class HydratedServiceTest extends TestsInit {
 
   @After
   public void removeEntities() {
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          projectsMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+    }
+
     DeleteProjects deleteProjects =
         DeleteProjects.newBuilder().addAllIds(projectsMap.keySet()).build();
     DeleteProjects.Response deleteProjectsResponse =
@@ -80,11 +101,10 @@ public class HydratedServiceTest extends TestsInit {
     experimentRunMap = new HashMap<>();
   }
 
-  private static void createProjectEntities() {
-    ProjectTest projectTest = new ProjectTest();
+  private void createProjectEntities() {
     // Create two project of above project
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -114,7 +134,7 @@ public class HydratedServiceTest extends TestsInit {
         project1.getName());
 
     // project2 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project-2-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("Project-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -144,7 +164,7 @@ public class HydratedServiceTest extends TestsInit {
         project2.getName());
 
     // project3 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project-3-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("Project-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -174,7 +194,7 @@ public class HydratedServiceTest extends TestsInit {
         project3.getName());
 
     // project4 of above project
-    createProjectRequest = projectTest.getCreateProjectRequest("Project-4-" + new Date().getTime());
+    createProjectRequest = ProjectTest.getCreateProjectRequest("Project-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -203,9 +223,26 @@ public class HydratedServiceTest extends TestsInit {
         "Project name not match with expected Project name",
         createProjectRequest.getName(),
         project4.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllProjects(projectsMap, testUser1);
+      when(authzMock.getSelfAllowedResources(
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+    }
   }
 
-  private static void createExperimentEntities() {
+  private void createExperimentEntities() {
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
         ExperimentTest.getCreateExperimentRequestForOtherTests(
@@ -335,7 +372,7 @@ public class HydratedServiceTest extends TestsInit {
         experiment4.getName());
   }
 
-  private static void createExperimentRunEntities() {
+  private void createExperimentRunEntities() {
     CreateExperimentRun createExperimentRunRequest =
         ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
             project1.getId(), experiment1.getId(), "ExperimentRun-1-" + new Date().getTime());
@@ -508,12 +545,14 @@ public class HydratedServiceTest extends TestsInit {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (testConfig.hasAuth()) {
-      // For Collaborator1
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
-      collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator1 added successfully");
+      if (!isRunningIsolated()) {
+        // For Collaborator1
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator1 added successfully");
+      }
     }
 
     GetHydratedProjects.Response getHydratedProjectsResponse =
@@ -539,8 +578,11 @@ public class HydratedServiceTest extends TestsInit {
       assertEquals(
           "Expected project owner does not match with the hydratedProject owner",
           existingProject.getOwner(),
-          authService.getVertaIdFromUserInfo(
-              hydratedProjectMap.get(existingProject.getId()).getOwnerUserInfo()));
+          hydratedProjectMap
+              .get(existingProject.getId())
+              .getOwnerUserInfo()
+              .getVertaInfo()
+              .getUserId());
     }
 
     LOGGER.info("Get hydrated projects data test stop................................");
@@ -571,22 +613,19 @@ public class HydratedServiceTest extends TestsInit {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (testConfig.hasAuth()) {
-      GetUser getUserRequest =
-          GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
-      // Get the user info by vertaId form the AuthService
-      UserInfo shareWithUserInfo = uacServiceStub.getUser(getUserRequest);
-
-      // Create two collaborator for above project
       List<String> collaboratorUsers = new ArrayList<>();
-      // For Collaborator1
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProject(
-              project1,
-              shareWithUserInfo.getEmail(),
-              CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
-      collaboratorUsers.add(authService.getVertaIdFromUserInfo(shareWithUserInfo));
-      collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator1 added successfully");
+      collaboratorUsers.add(testUser2.getVertaInfo().getUserId());
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllProjects(Map.of(project1.getId(), project1), testUser1);
+      } else {
+        // Create two collaborator for above project
+        // For Collaborator1
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProject(
+                project1, testUser2.getEmail(), CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator1 added successfully");
+      }
 
       GetHydratedProjectById.Response getHydratedProjectResponse =
           hydratedServiceBlockingStub.getHydratedProjectById(
@@ -600,8 +639,11 @@ public class HydratedServiceTest extends TestsInit {
       assertEquals(
           "Expected project owner does not match with the hydratedProject owner",
           project1.getOwner(),
-          authService.getVertaIdFromUserInfo(
-              getHydratedProjectResponse.getHydratedProject().getOwnerUserInfo()));
+          getHydratedProjectResponse
+              .getHydratedProject()
+              .getOwnerUserInfo()
+              .getVertaInfo()
+              .getUserId());
 
       assertEquals(
           "Expected shared project user count does not match with the hydratedProject shared project user count",
@@ -618,8 +660,7 @@ public class HydratedServiceTest extends TestsInit {
             LOGGER.info("existing project collborator : " + existingUserId);
             LOGGER.info(
                 "Hydrated project collborator : "
-                    + authService.getVertaIdFromUserInfo(
-                        collaboratorUserInfo.getCollaboratorUserInfo()));
+                    + collaboratorUserInfo.getCollaboratorUserInfo().getVertaInfo().getUserId());
             match = true;
             break;
           }
@@ -661,13 +702,28 @@ public class HydratedServiceTest extends TestsInit {
     LOGGER.info("Comment added successfully for ExperimentRun3");
 
     if (testConfig.hasAuth()) {
-      // Create two collaborator for above project
-      // For Collaborator1
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
-      collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator1 added successfully");
+      if (isRunningIsolated()) {
+        when(authzBlockingMock.getSelfAllowedResources(
+                GetSelfAllowedResources.newBuilder()
+                    .addActions(
+                        Action.newBuilder()
+                            .setModeldbServiceAction(ModelDBServiceActions.READ)
+                            .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                    .build()))
+            .thenReturn(GetSelfAllowedResources.Response.newBuilder().build());
+      } else {
+        // Create two collaborator for above project
+        // For Collaborator1
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator1 added successfully");
+      }
     }
 
     int pageLimit = 2;
@@ -702,7 +758,7 @@ public class HydratedServiceTest extends TestsInit {
             assertEquals(
                 "Expected experimentRun owner does not match with the hydratedExperimentRun owner",
                 experimentRunMap.get(hydratedExperimentRun.getExperimentRun().getId()).getOwner(),
-                authService.getVertaIdFromUserInfo(hydratedExperimentRun.getOwnerUserInfo()));
+                hydratedExperimentRun.getOwnerUserInfo().getVertaInfo().getUserId());
 
             if (hydratedExperimentRun.getExperimentRun().getName().equals("ExperiemntRun1")) {
               assertEquals(
@@ -781,11 +837,13 @@ public class HydratedServiceTest extends TestsInit {
     // Create two collaborator for above project
     // For Collaborator1
     if (testConfig.hasAuth()) {
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
-      collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator1 added successfully");
+      if (!isRunningIsolated()) {
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project1, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+        collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator1 added successfully");
+      }
     }
 
     GetHydratedExperimentRunById.Response getHydratedExperimentRunsResponse =
@@ -850,8 +908,11 @@ public class HydratedServiceTest extends TestsInit {
       assertEquals(
           "Expected experimentRun owner not match with the hydratedExperimentRun owner",
           experiment.getOwner(),
-          authService.getVertaIdFromUserInfo(
-              hydratedExperimentMap.get(experiment.getId()).getOwnerUserInfo()));
+          hydratedExperimentMap
+              .get(experiment.getId())
+              .getOwnerUserInfo()
+              .getVertaInfo()
+              .getUserId());
     }
 
     LOGGER.info("Get hydrated ExperimentRuns data test stop................................");
@@ -1082,8 +1143,12 @@ public class HydratedServiceTest extends TestsInit {
     assertEquals(
         "Expected experimentRun owner not match with the hydratedExperimentRun owner",
         experimentRun4.getOwner(),
-        authService.getVertaIdFromUserInfo(
-            response.getHydratedExperimentRunsList().get(0).getOwnerUserInfo()));
+        response
+            .getHydratedExperimentRunsList()
+            .get(0)
+            .getOwnerUserInfo()
+            .getVertaInfo()
+            .getUserId());
 
     // get experimentRun with value of endTime == 1550837
     Value stringValue =
@@ -1122,8 +1187,12 @@ public class HydratedServiceTest extends TestsInit {
     assertEquals(
         "Expected experimentRun owner not match with the hydratedExperimentRun owner",
         experimentRun4.getOwner(),
-        authService.getVertaIdFromUserInfo(
-            response.getHydratedExperimentRunsList().get(0).getOwnerUserInfo()));
+        response
+            .getHydratedExperimentRunsList()
+            .get(0)
+            .getOwnerUserInfo()
+            .getVertaInfo()
+            .getUserId());
 
     numValue = Value.newBuilder().setNumberValue(0.6543210).build();
     keyValueQuery2 =
@@ -1249,8 +1318,12 @@ public class HydratedServiceTest extends TestsInit {
               experimentRun);
 
           String responseUsername =
-              authService.getVertaIdFromUserInfo(
-                  response.getHydratedExperimentRunsList().get(index).getOwnerUserInfo());
+              response
+                  .getHydratedExperimentRunsList()
+                  .get(index)
+                  .getOwnerUserInfo()
+                  .getVertaInfo()
+                  .getUserId();
           if (count == 0) {
             assertEquals(
                 "ExperimentRun hyperparameter not match with expected experimentRun hyperparameter",
@@ -1354,8 +1427,12 @@ public class HydratedServiceTest extends TestsInit {
     assertEquals(
         "Expected experimentRun owner not match with the hydratedExperimentRun owner",
         experimentRun4.getOwner(),
-        authService.getVertaIdFromUserInfo(
-            response.getHydratedExperimentRunsList().get(0).getOwnerUserInfo()));
+        response
+            .getHydratedExperimentRunsList()
+            .get(0)
+            .getOwnerUserInfo()
+            .getVertaInfo()
+            .getUserId());
 
     Value numValueLoss = Value.newBuilder().setNumberValue(0.6543210).build();
     KeyValueQuery keyValueQueryLoss =
@@ -2957,11 +3034,6 @@ public class HydratedServiceTest extends TestsInit {
           createProjectRequest.getName(),
           project4.getName());
 
-      GetUser getUserRequest =
-          GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
-      // Get the user info by vertaId form the AuthService
-      UserInfo secondUserInfo = uacServiceStub.getUser(getUserRequest);
-
       FindProjects findProjects =
           FindProjects.newBuilder()
               .addPredicates(
@@ -2970,7 +3042,7 @@ public class HydratedServiceTest extends TestsInit {
                       .setValue(Value.newBuilder().setStringValue(project1.getName()).build())
                       .setOperator(OperatorEnum.Operator.EQ)
                       .build())
-              .setWorkspaceName(secondUserInfo.getVertaInfo().getUsername())
+              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
               .build();
 
       AdvancedQueryProjectsResponse response =
@@ -2987,6 +3059,13 @@ public class HydratedServiceTest extends TestsInit {
       assertEquals(
           "Total records count not matched with expected records count", 0, projectList.size());
     } finally {
+      if (isRunningIsolated()) {
+        when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+        mockGetSelfAllowedResources(
+            firstProjectMap.keySet(),
+            ModelDBServiceResourceTypes.PROJECT,
+            ModelDBServiceActions.DELETE);
+      }
       for (String projectId : firstProjectMap.keySet()) {
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(projectId).build();
         DeleteProject.Response deleteProjectResponse =
@@ -3017,9 +3096,8 @@ public class HydratedServiceTest extends TestsInit {
     }
 
     // Create project
-    ProjectTest projectTest = new ProjectTest();
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3030,13 +3108,30 @@ public class HydratedServiceTest extends TestsInit {
           createProjectRequest.getName(),
           project.getName());
 
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
-      AddCollaboratorRequest.Response projectCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator updated in server : " + projectCollaboratorResponse.getStatus());
-      assertTrue(projectCollaboratorResponse.getStatus());
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
+        when(authzMock.getSelfAllowedResources(
+                GetSelfAllowedResources.newBuilder()
+                    .addActions(
+                        Action.newBuilder()
+                            .setModeldbServiceAction(ModelDBServiceActions.READ)
+                            .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                    .build()))
+            .thenReturn(
+                Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+      } else {
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+        AddCollaboratorRequest.Response projectCollaboratorResponse =
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator updated in server : " + projectCollaboratorResponse.getStatus());
+        assertTrue(projectCollaboratorResponse.getStatus());
+      }
 
       CreateExperiment createExperimentRequest =
           ExperimentTest.getCreateExperimentRequestForOtherTests(
@@ -3085,6 +3180,10 @@ public class HydratedServiceTest extends TestsInit {
           createExperimentRunRequest.getName(),
           experimentRun12.getName());
 
+      if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+      }
+
       createExperimentRunRequest =
           ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
               project.getId(), experiment2.getId(), "ExperimentRun-3-" + new Date().getTime());
@@ -3109,13 +3208,28 @@ public class HydratedServiceTest extends TestsInit {
           createExperimentRunRequest.getName(),
           experimentRun22.getName());
 
-      addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project, CollaboratorTypeEnum.CollaboratorType.READ_ONLY, authClientInterceptor);
-      projectCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator added in server : " + projectCollaboratorResponse.getStatus());
-      assertTrue(projectCollaboratorResponse.getStatus());
+      Action deleteAction =
+          Action.newBuilder()
+              .setModeldbServiceAction(ModelDBActionEnum.ModelDBServiceActions.DELETE)
+              .setService(ServiceEnum.Service.MODELDB_SERVICE)
+              .build();
+      if (isRunningIsolated()) {
+        when(authzBlockingMock.getSelfAllowedActionsBatch(any()))
+            .thenReturn(
+                Response.newBuilder()
+                    .putActions("DELETE", Actions.newBuilder().addActions(deleteAction).build())
+                    .build());
+        when(uacBlockingMock.getUsers(any()))
+            .thenReturn(GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser2)).build());
+      } else {
+        var addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project, CollaboratorTypeEnum.CollaboratorType.READ_ONLY, authClientInterceptor);
+        var projectCollaboratorResponse =
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator added in server : " + projectCollaboratorResponse.getStatus());
+        assertTrue(projectCollaboratorResponse.getStatus());
+      }
 
       FindExperimentRuns findExperimentRuns =
           FindExperimentRuns.newBuilder().setProjectId(project.getId()).build();
@@ -3123,15 +3237,10 @@ public class HydratedServiceTest extends TestsInit {
       AdvancedQueryExperimentRunsResponse advancedQueryExperimentRunsResponse =
           hydratedServiceBlockingStubClient2.findHydratedExperimentRuns(findExperimentRuns);
 
-      Action deleteAction =
-          Action.newBuilder()
-              .setModeldbServiceAction(ModelDBActionEnum.ModelDBServiceActions.DELETE)
-              .setService(ServiceEnum.Service.MODELDB_SERVICE)
-              .build();
       for (HydratedExperimentRun hydratedExperimentRun :
           advancedQueryExperimentRunsResponse.getHydratedExperimentRunsList()) {
         if (hydratedExperimentRun.getExperimentRun().equals(experimentRun21)
-            && hydratedExperimentRun.getExperimentRun().equals(experimentRun22)) {
+            || hydratedExperimentRun.getExperimentRun().equals(experimentRun22)) {
           assertTrue(
               "Experiment actions not match with expected action list",
               hydratedExperimentRun.getAllowedActionsList().contains(deleteAction));
@@ -3142,13 +3251,15 @@ public class HydratedServiceTest extends TestsInit {
         }
       }
 
-      addCollaboratorRequest =
-          addCollaboratorRequestProjectInterceptor(
-              project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
-      projectCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator updated in server : " + projectCollaboratorResponse.getStatus());
-      assertTrue(projectCollaboratorResponse.getStatus());
+      if (!isRunningIsolated()) {
+        var addCollaboratorRequest =
+            addCollaboratorRequestProjectInterceptor(
+                project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);
+        var projectCollaboratorResponse =
+            collaboratorServiceStubClient1.addOrUpdateProjectCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator updated in server : " + projectCollaboratorResponse.getStatus());
+        assertTrue(projectCollaboratorResponse.getStatus());
+      }
 
       advancedQueryExperimentRunsResponse =
           hydratedServiceBlockingStubClient2.findHydratedExperimentRuns(findExperimentRuns);
@@ -3167,6 +3278,13 @@ public class HydratedServiceTest extends TestsInit {
         }
       }
     } finally {
+      if (isRunningIsolated()) {
+        when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+        mockGetSelfAllowedResources(
+            Set.of(project.getId()),
+            ModelDBServiceResourceTypes.PROJECT,
+            ModelDBServiceActions.DELETE);
+      }
       DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
       DeleteProject.Response deleteProjectResponse =
           projectServiceStub.deleteProject(deleteProject);
