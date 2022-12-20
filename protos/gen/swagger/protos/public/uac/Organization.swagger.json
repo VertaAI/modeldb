@@ -18,7 +18,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
@@ -204,7 +204,7 @@
     },
     "/organization/listMyOrganizations": {
       "get": {
-        "summary": "Lists the organizations that the current user can see",
+        "summary": "Lists the organizations that the current user is a member of",
         "operationId": "OrganizationService_listMyOrganizations",
         "responses": {
           "200": {
@@ -220,6 +220,68 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "OrganizationService"
+        ]
+      }
+    },
+    "/organization/listOrganizations": {
+      "get": {
+        "summary": "Lists the organizations that the current user can access",
+        "operationId": "OrganizationService_listOrganizations",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacListOrganizationsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "externalOnly",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
         "tags": [
           "OrganizationService"
         ]
@@ -249,6 +311,27 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "external_only",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -280,6 +363,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -294,7 +391,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
@@ -424,6 +521,20 @@
       ],
       "default": "UNKNOWN"
     },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -497,9 +608,6 @@
         }
       }
     },
-    "uacEmpty": {
-      "type": "object"
-    },
     "uacGetOrganizationByIdResponse": {
       "type": "object",
       "properties": {
@@ -524,6 +632,9 @@
         }
       }
     },
+    "uacIdServiceProviderEnum": {
+      "type": "object"
+    },
     "uacListMyOrganizationsResponse": {
       "type": "object",
       "properties": {
@@ -532,6 +643,25 @@
           "items": {
             "$ref": "#/definitions/uacOrganization"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "uacListOrganizationsResponse": {
+      "type": "object",
+      "properties": {
+        "organizations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacOrganization"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -543,6 +673,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -554,6 +688,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -594,6 +732,9 @@
         },
         "owner_id": {
           "type": "string"
+        },
+        "idp": {
+          "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
           "type": "string",
@@ -641,6 +782,9 @@
         },
         "baseline_permissions": {
           "$ref": "#/definitions/uacOrganizationBaselinePermissions"
+        },
+        "namespace": {
+          "type": "string"
         }
       }
     },
@@ -713,6 +857,9 @@
           "$ref": "#/definitions/uacOrganization"
         }
       }
+    },
+    "vertauacEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"

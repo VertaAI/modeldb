@@ -1,20 +1,20 @@
 package ai.verta.modeldb.common.futures;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
-import io.opentelemetry.context.Context;
 import io.opentelemetry.context.Scope;
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executor;
 import java.util.function.*;
 import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class InternalFuture<T> {
   private static final boolean DEEP_TRACING_ENABLED;
   public static final AttributeKey<String> STACK_ATTRIBUTE_KEY = AttributeKey.stringKey("stack");
@@ -24,13 +24,9 @@ public class InternalFuture<T> {
     DEEP_TRACING_ENABLED = Boolean.parseBoolean(internalFutureTracingEnabled);
   }
 
-  private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
+  private static Tracer futureTracer;
   private final String formattedStack;
   private CompletionStage<T> stage;
-
-  // keep the calling OpenTelemetry context, so we can use it to wrap the actual invocation of the
-  // future's implementation
-  private final Context callingContext = Context.current();
 
   private InternalFuture() {
     if (!DEEP_TRACING_ENABLED) {
@@ -50,7 +46,8 @@ public class InternalFuture<T> {
   // Convert a list of futures to a future of a list
   @SuppressWarnings("unchecked")
   public static <T> InternalFuture<List<T>> sequence(
-      final List<InternalFuture<T>> futures, Executor executor) {
+      final List<InternalFuture<T>> futures, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     if (futures.isEmpty()) {
       return InternalFuture.completedInternalFuture(new LinkedList<>());
     }
@@ -102,21 +99,20 @@ public class InternalFuture<T> {
   }
 
   public <U> InternalFuture<U> thenCompose(
-      Function<? super T, InternalFuture<U>> fn, Executor executor) {
+      Function<? super T, InternalFuture<U>> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(
         stage.thenComposeAsync(
             traceFunction(
-                callingContext.wrapFunction(
-                    traceFunction(
-                        fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose")),
+                traceFunction(
+                    fn.andThen(internalFuture -> internalFuture.stage), "futureThenCompose"),
                 "futureThenApply"),
             executor));
   }
 
-  public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, Executor executor) {
-    return from(
-        stage.thenApplyAsync(
-            traceFunction(callingContext.wrapFunction(fn), "futureThenApply"), executor));
+  public <U> InternalFuture<U> thenApply(Function<? super T, ? extends U> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return from(stage.thenApplyAsync(traceFunction(fn, "futureThenApply"), executor));
   }
 
   private <U> Function<? super T, ? extends U> traceFunction(
@@ -135,6 +131,9 @@ public class InternalFuture<T> {
   }
 
   private Span startSpan(String futureThenApply) {
+    if (futureTracer == null) {
+      return Span.getInvalid();
+    }
     return futureTracer
         .spanBuilder(futureThenApply)
         .setAttribute(STACK_ATTRIBUTE_KEY, formattedStack)
@@ -142,9 +141,9 @@ public class InternalFuture<T> {
   }
 
   public <U> InternalFuture<U> handle(
-      BiFunction<? super T, Throwable, ? extends U> fn, Executor executor) {
-    return from(
-        stage.handleAsync(traceBiFunctionThrowable(callingContext.wrapFunction(fn)), executor));
+      BiFunction<? super T, Throwable, ? extends U> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return from(stage.handleAsync(traceBiFunctionThrowable(fn), executor));
   }
 
   private <U> BiFunction<? super T, Throwable, ? extends U> traceBiFunctionThrowable(
@@ -165,10 +164,10 @@ public class InternalFuture<T> {
   public <U, V> InternalFuture<V> thenCombine(
       InternalFuture<? extends U> other,
       BiFunction<? super T, ? super U, ? extends V> fn,
-      Executor executor) {
-    return from(
-        stage.thenCombineAsync(
-            other.stage, callingContext.wrapFunction(traceBiFunction(fn)), executor));
+      FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    BiFunction<? super T, ? super U, ? extends V> tracedBiFunction = traceBiFunction(fn);
+    return from(stage.thenCombineAsync(other.stage, tracedBiFunction, executor));
   }
 
   private <U, V> BiFunction<? super T, ? super U, ? extends V> traceBiFunction(
@@ -186,9 +185,9 @@ public class InternalFuture<T> {
     };
   }
 
-  public InternalFuture<Void> thenAccept(Consumer<? super T> action, Executor executor) {
-    return from(
-        stage.thenAcceptAsync(callingContext.wrapConsumer(traceConsumer(action)), executor));
+  public InternalFuture<Void> thenAccept(Consumer<? super T> action, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return from(stage.thenAcceptAsync(traceConsumer(action), executor));
   }
 
   private Consumer<? super T> traceConsumer(Consumer<? super T> action) {
@@ -205,8 +204,9 @@ public class InternalFuture<T> {
     };
   }
 
-  public <U> InternalFuture<Void> thenRun(Runnable runnable, Executor executor) {
-    return from(stage.thenRunAsync(callingContext.wrap(traceRunnable(runnable)), executor));
+  public <U> InternalFuture<Void> thenRun(Runnable runnable, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return from(stage.thenRunAsync(traceRunnable(runnable), executor));
   }
 
   private Runnable traceRunnable(Runnable r) {
@@ -224,9 +224,21 @@ public class InternalFuture<T> {
   }
 
   public InternalFuture<T> whenComplete(
-      BiConsumer<? super T, ? super Throwable> action, Executor executor) {
-    return from(
-        stage.whenCompleteAsync(callingContext.wrapConsumer(traceBiConsumer(action)), executor));
+      BiConsumer<? super T, ? super Throwable> action, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return from(stage.whenCompleteAsync(traceBiConsumer(action), executor));
+  }
+
+  public InternalFuture<T> recover(Function<Throwable, ? extends T> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return handle(
+        (v, t) -> {
+          if (t != null) {
+            return fn.apply(t);
+          }
+          return v;
+        },
+        executor);
   }
 
   private BiConsumer<? super T, ? super Throwable> traceBiConsumer(
@@ -246,18 +258,21 @@ public class InternalFuture<T> {
   }
 
   /**
-   * Syntactic sugar for {@link #thenCompose(Function, Executor)} with the function ignoring the
-   * input.
+   * Syntactic sugar for {@link #thenCompose(Function, FutureExecutor)} with the function ignoring
+   * the input.
    */
-  public <U> InternalFuture<U> thenSupply(Supplier<InternalFuture<U>> supplier, Executor executor) {
+  public <U> InternalFuture<U> thenSupply(Supplier<InternalFuture<U>> supplier, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return thenCompose(ignored -> supplier.get(), executor);
   }
 
-  public static <U> InternalFuture<Void> runAsync(Runnable runnable, Executor executor) {
+  public static InternalFuture<Void> runAsync(Runnable runnable, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(CompletableFuture.runAsync(runnable, executor));
   }
 
-  public static <U> InternalFuture<U> supplyAsync(Supplier<U> supplier, Executor executor) {
+  public static <U> InternalFuture<U> supplyAsync(Supplier<U> supplier, FutureExecutor ex) {
+    final var executor = ex.captureContext();
     return from(CompletableFuture.supplyAsync(supplier, executor));
   }
 
@@ -268,7 +283,8 @@ public class InternalFuture<T> {
   public static <U> InternalFuture<U> retriableStage(
       Supplier<InternalFuture<U>> supplier,
       Function<Throwable, Boolean> retryChecker,
-      Executor executor) {
+      FutureExecutor ex) {
+    final var executor = ex.captureContext();
     final var promise = new CompletableFuture<U>();
 
     supplier
@@ -311,10 +327,21 @@ public class InternalFuture<T> {
     return InternalFuture.from(promise);
   }
 
-  public T get() {
+  public static <U> InternalFuture<Optional<U>> flipOptional(
+      Optional<InternalFuture<U>> val, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return val.map(future -> future.thenApply(Optional::of, executor))
+        .orElse(InternalFuture.completedInternalFuture(Optional.empty()));
+  }
+
+  public T get() throws Exception {
     try {
       return stage.toCompletableFuture().get();
     } catch (ExecutionException ex) {
+      Throwable cause = ex.getCause();
+      if (cause instanceof Exception) {
+        throw (Exception) cause;
+      }
       throw new ModelDBException(ex);
     } catch (InterruptedException ex) {
       // Restore interrupted state...
@@ -325,5 +352,18 @@ public class InternalFuture<T> {
 
   public CompletionStage<T> toCompletionStage() {
     return stage;
+  }
+
+  public Future<T> toFuture() {
+    return Future.from(stage);
+  }
+
+  public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
+    if (futureTracer != null) {
+      log.warn(
+          "OpenTelemetry has already been set. Ignoring this call.",
+          new RuntimeException("call-site capturer"));
+    }
+    futureTracer = openTelemetry.getTracer("futureTracer");
   }
 }

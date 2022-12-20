@@ -2679,7 +2679,8 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
     },
@@ -2763,6 +2764,20 @@
           "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
+    },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -4231,20 +4246,6 @@
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }
-    },
-    "vertacommonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     }
   },
   "basePath": "/v1"

@@ -1,14 +1,13 @@
 package ai.verta.modeldb.common.futures;
 
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Executor;
 import org.jdbi.v3.core.statement.StatementExceptions;
 
 public class FutureJdbi {
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final InternalJdbi jdbi;
 
-  public FutureJdbi(InternalJdbi jdbi, Executor executor) {
+  public FutureJdbi(InternalJdbi jdbi, FutureExecutor executor) {
     this.executor = executor;
     this.jdbi = jdbi;
     // Ensure that we do not log any sensitive/private data when exceptions are logged
@@ -40,15 +39,16 @@ public class FutureJdbi {
   private <R, T extends Exception> InternalFuture<R> withHandleOrTransaction(
       SupplierWithException<R, T> supplier) {
     CompletableFuture<R> promise = new CompletableFuture<>();
-
-    executor.execute(
-        () -> {
-          try {
-            promise.complete(supplier.get());
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          }
-        });
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                promise.complete(supplier.get());
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
 
     return InternalFuture.from(promise);
   }
@@ -72,17 +72,79 @@ public class FutureJdbi {
   private <T extends Exception> InternalFuture<Void> useHandleOrTransaction(
       final RunnableWithException<T> runnableWithException) {
     CompletableFuture<Void> promise = new CompletableFuture<>();
-
-    executor.execute(
-        () -> {
-          try {
-            runnableWithException.run();
-            promise.complete(null);
-          } catch (Throwable e) {
-            promise.completeExceptionally(e);
-          }
-        });
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                runnableWithException.run();
+                promise.complete(null);
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
 
     return InternalFuture.from(promise);
+  }
+
+  public <R, T extends Exception> Future<R> callAndCompose(HandleCallback<Future<R>, T> callback) {
+    return call(callback).thenCompose(x -> x);
+  }
+
+  public <R, T extends Exception> Future<R> call(HandleCallback<R, T> callback) {
+    SupplierWithException<R, T> supplierWithException = () -> jdbi.withHandle(callback);
+    return handleOrTransaction(supplierWithException);
+  }
+
+  public <R, T extends Exception> Future<R> inTransaction(HandleCallback<R, T> callback) {
+    SupplierWithException<R, T> supplierWithException = () -> jdbi.inTransaction(callback);
+    return handleOrTransaction(supplierWithException);
+  }
+
+  private <R, T extends Exception> Future<R> handleOrTransaction(
+      SupplierWithException<R, T> supplier) {
+    CompletableFuture<R> promise = new CompletableFuture<>();
+
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                promise.complete(supplier.get());
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
+
+    return Future.from(promise);
+  }
+
+  public <T extends Exception> Future<Void> run(HandleConsumer<T> consumer) {
+    RunnableWithException<T> runnableWithException = () -> jdbi.useHandle(consumer);
+    return handleOrTransaction(runnableWithException);
+  }
+
+  public <T extends Exception> Future<Void> transaction(HandleConsumer<T> consumer) {
+    RunnableWithException<T> runnableWithException = () -> jdbi.useTransaction(consumer);
+    return handleOrTransaction(runnableWithException);
+  }
+
+  private <T extends Exception> Future<Void> handleOrTransaction(
+      RunnableWithException<T> runnableWithException) {
+    CompletableFuture<Void> promise = new CompletableFuture<>();
+
+    executor
+        .captureContext()
+        .execute(
+            () -> {
+              try {
+                runnableWithException.run();
+                promise.complete(null);
+              } catch (Throwable e) {
+                promise.completeExceptionally(e);
+              }
+            });
+
+    return Future.from(promise);
   }
 }
