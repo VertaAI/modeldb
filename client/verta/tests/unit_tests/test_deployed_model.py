@@ -348,11 +348,10 @@ def test_predict_400_error_message_extraction(mocked_responses) -> None:
         creds=creds,
         token=TOKEN,
     )
-    with pytest.raises(HTTPError) as err:
+    with pytest.raises(RuntimeError) as err:
         dm.predict(x=['test_prediction'])
-    assert str(err.value)[:-30] == (
-        '400 Client Error: Here be a message in the response for url: '
-        'https://test.dev.verta.ai/api/v1/predict/test_path at '
+    assert str(err.value) == (
+        'Deployed model encountered an error: Here be a message in the response'
         )
 
 
