@@ -68,6 +68,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -125,6 +126,12 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         experimentRunServiceStub.deleteExperimentRuns(deleteExperimentRun);
     assertTrue(deleteExperimentRunResponse.getStatus());
 
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          projectMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.DELETE);
+    }
+
     DeleteProjects deleteProjects =
         DeleteProjects.newBuilder().addAllIds(projectMap.keySet()).build();
     DeleteProjects.Response deleteProjectsResponse =
@@ -150,6 +157,18 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   private void createProjectEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
+
     // Create two project of above project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
@@ -186,7 +205,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         project3.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(projectMap, testUser1);
+      mockGetResourcesForAllProjects(projectMap, testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
                   .addActions(
@@ -6626,7 +6645,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
           when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
-          mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser2);
+          mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser2);
           when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
               .thenReturn(
                   Futures.immediateFuture(
@@ -7784,8 +7803,6 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   public void findExperimentRunsByDatasetVersionId() {
     LOGGER.info("FindExperimentRuns test start................................");
 
-    DatasetTest datasetTest = new DatasetTest();
-    DatasetVersionTest datasetVersionTest = new DatasetVersionTest();
     Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
     CreateExperimentRun createExperimentRunRequest =
@@ -7847,7 +7864,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     List<Dataset> datasetList = new ArrayList<>();
     CreateDataset createDatasetRequest =
-        datasetTest.getDatasetRequest("Dataset-" + new Date().getTime());
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset1 = createDatasetResponse.getDataset();
@@ -7858,7 +7875,8 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         createDatasetRequest.getName(),
         dataset1.getName());
 
-    createDatasetRequest = datasetTest.getDatasetRequest("rental_TEXT_train_data_1.csv");
+    createDatasetRequest =
+        DatasetTest.getDatasetRequestForOtherTests("rental_TEXT_train_data_1.csv");
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset2 = createDatasetResponse.getDataset();
     datasetList.add(dataset2);
@@ -7868,10 +7886,15 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         createDatasetRequest.getName(),
         dataset2.getName());
 
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllDatasets(
+          Map.of(dataset1.getId(), dataset1, dataset2.getId(), dataset2), testUser1);
+    }
+
     List<String> datasetVersionIds = new ArrayList<>();
     // Create two datasetVersion of above datasetVersion
     CreateDatasetVersion createDatasetVersionRequest =
-        datasetVersionTest.getDatasetVersionRequest(dataset1.getId());
+        DatasetVersionTest.getDatasetVersionRequest(dataset1.getId());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -7897,7 +7920,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     LOGGER.info("DatasetVersion created successfully");
 
     // datasetVersion2 of above datasetVersion
-    createDatasetVersionRequest = datasetVersionTest.getDatasetVersionRequest(dataset2.getId());
+    createDatasetVersionRequest = DatasetVersionTest.getDatasetVersionRequest(dataset2.getId());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -8358,7 +8381,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     LOGGER.info("Project2 created successfully");
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(
+      mockGetResourcesForAllProjects(
           Map.of(project1.getId(), project1, project2.getId(), project2), testUser1);
       when(authzMock.getSelfAllowedResources(
               GetSelfAllowedResources.newBuilder()
@@ -8489,6 +8512,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           versioningServiceBlockingStub.deleteRepository(deleteRepository);
       Assert.assertTrue(deleteResult.getStatus());
 
+      if (isRunningIsolated()) {
+        when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+        mockGetSelfAllowedResources(
+            Set.of(project1.getId(), project2.getId()),
+            ModelDBServiceResourceTypes.PROJECT,
+            ModelDBServiceActions.DELETE);
+      }
       for (Project project : new Project[] {project1, project2}) {
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =

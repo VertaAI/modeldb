@@ -57,7 +57,7 @@ public class PredicateHandlerUtils {
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.CONTAIN_VALUE:
       case OperatorEnum.Operator.NOT_CONTAIN_VALUE:
-        return String.format("%%%s%%", value);
+        return String.format("%%%s%%", String.valueOf(value).toLowerCase());
       default:
         return value;
     }

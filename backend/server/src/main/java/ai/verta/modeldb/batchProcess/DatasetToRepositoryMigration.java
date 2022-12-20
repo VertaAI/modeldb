@@ -18,16 +18,17 @@ import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAORdbImpl;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.Role;
@@ -57,11 +58,10 @@ public class DatasetToRepositoryMigration {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static AuthService authService;
-  private static UAC uac;
   private static MDBRoleService mdbRoleService;
   private static CommitDAO commitDAO;
   private static RepositoryDAO repositoryDAO;
-  private static ExperimentRunDAO experimentRunDAO;
+  private static FutureExperimentRunDAO futureExperimentRunDAO;
   private static MetadataDAO metadataDAO;
   private static BlobDAO blobDAO;
   private static int recordUpdateLimit = 100;
@@ -71,7 +71,7 @@ public class DatasetToRepositoryMigration {
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
     config = App.getInstance().mdbConfig;
-    uac = UAC.fromConfig(config, Optional.empty());
+    var uac = UAC.fromConfig(config, Optional.empty());
     authService = MDBAuthServiceUtils.FromConfig(config, uac);
     mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
 
@@ -79,9 +79,20 @@ public class DatasetToRepositoryMigration {
     repositoryDAO = new RepositoryDAORdbImpl(authService, mdbRoleService, commitDAO, metadataDAO);
     blobDAO = new BlobDAORdbImpl(authService, mdbRoleService);
     metadataDAO = new MetadataDAORdbImpl();
-    experimentRunDAO =
-        new ExperimentRunDAORdbImpl(
-            config, authService, mdbRoleService, repositoryDAO, commitDAO, blobDAO, metadataDAO);
+
+    var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
+    futureExperimentRunDAO =
+        new FutureExperimentRunDAO(
+            executor,
+            config.getJdbi(),
+            config,
+            uac,
+            null,
+            null,
+            repositoryDAO,
+            commitDAO,
+            blobDAO,
+            new UACApisUtil(executor, uac));
     migrateDatasetsToRepositories();
   }
 
@@ -215,7 +226,7 @@ public class DatasetToRepositoryMigration {
       Long repoId =
           getRepoIdFromDatasetMigrationStatus(innerSession, datasetEntity.getId(), STARTED);
       repositoryDAO.deleteRepositories(
-          innerSession, experimentRunDAO, Collections.singletonList(String.valueOf(repoId)));
+          innerSession, futureExperimentRunDAO, Collections.singletonList(String.valueOf(repoId)));
       updateDatasetMigrationStatus(datasetEntity.getId(), repoId, "deleted");
       LOGGER.debug("Dataset {} deleted", datasetEntity.getId());
       LOGGER.debug("Restart Dataset {} migration", datasetEntity.getId());

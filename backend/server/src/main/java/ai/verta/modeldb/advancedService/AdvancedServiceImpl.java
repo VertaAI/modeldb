@@ -26,7 +26,6 @@ import ai.verta.modeldb.dto.*;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.experiment.FutureExperimentDAO;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -55,7 +54,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
   private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final FutureProjectDAO futureProjectDAO;
-  private final ExperimentRunDAO experimentRunDAO;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final CommentDAO commentDAO;
   private final FutureExperimentDAO futureExperimentDAO;
@@ -69,7 +67,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
     this.authService = serviceSet.getAuthService();
     this.mdbRoleService = serviceSet.getMdbRoleService();
     this.futureProjectDAO = daoSet.getFutureProjectDAO();
-    this.experimentRunDAO = daoSet.getExperimentRunDAO();
     this.commentDAO = daoSet.getCommentDAO();
     this.futureExperimentDAO = daoSet.getFutureExperimentDAO();
     this.repositoryDAO = daoSet.getRepositoryDAO();
@@ -307,17 +304,20 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
       var experimentRunPaginationDTO =
-          experimentRunDAO.getExperimentRunsFromEntity(
-              ModelDBConstants.PROJECT_ID,
-              request.getProjectId(),
-              request.getPageNumber(),
-              request.getPageLimit(),
-              request.getAscending(),
-              request.getSortKey());
+          futureExperimentRunDAO
+              .findExperimentRuns(
+                  FindExperimentRuns.newBuilder()
+                      .setProjectId(request.getProjectId())
+                      .setPageNumber(request.getPageNumber())
+                      .setPageLimit(request.getPageLimit())
+                      .setAscending(request.getAscending())
+                      .setSortKey(request.getSortKey())
+                      .build())
+              .get();
 
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
-      List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
+      List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRunsList();
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
       if (!experimentRuns.isEmpty()) {
         hydratedExperimentRuns = getHydratedExperimentRuns(experimentRuns);
@@ -458,7 +458,8 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         var errorMessage = "ExperimentRun ID not found in GetHydratedExperimentRunById request";
         throw new InvalidArgumentException(errorMessage);
       }
-      String projectId = experimentRunDAO.getProjectIdByExperimentRunId(request.getId());
+      String projectId =
+          futureExperimentRunDAO.getProjectIdByExperimentRunId(request.getId()).get();
 
       // Validate if current user has access to the entity or not
       mdbRoleService.validateEntityUserWithUserInfo(
@@ -474,9 +475,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
               .build();
       final var experimentRunPaginationDTO =
           futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).get();
-      //      ExperimentRunPaginationDTO experimentRunPaginationDTO =
-      //          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo,
-      // findExperimentRuns);
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
@@ -531,8 +529,6 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
 
       final var experimentRunPaginationDTOFuture =
           futureExperimentRunDAO.findExperimentRuns(request);
-      //      ExperimentRunPaginationDTO experimentRunPaginationDTO =
-      //          experimentRunDAO.findExperimentRuns(projectDAO, currentLoginUserInfo, request);
       var futureResponse =
           experimentRunPaginationDTOFuture.thenCompose(
               experimentRunPaginationDTO -> {
@@ -585,14 +581,23 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
 
-      var experimentRunPaginationDTO = experimentRunDAO.sortExperimentRuns(request);
+      var experimentRunPaginationDTO =
+          futureExperimentRunDAO
+              .findExperimentRuns(
+                  FindExperimentRuns.newBuilder()
+                      .addAllExperimentRunIds(request.getExperimentRunIdsList())
+                      .setSortKey(request.getSortKey())
+                      .setAscending(request.getAscending())
+                      .setIdsOnly(request.getIdsOnly())
+                      .build())
+              .get();
       LOGGER.debug(
           ModelDBMessages.EXP_RUN_RECORD_COUNT_MSG, experimentRunPaginationDTO.getTotalRecords());
 
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
-      if (!experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
+      if (!experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
         hydratedExperimentRuns =
-            getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRuns());
+            getHydratedExperimentRuns(experimentRunPaginationDTO.getExperimentRunsList());
       }
 
       responseObserver.onNext(
@@ -628,7 +633,21 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
             ModelDBServiceActions.READ);
       }
 
-      List<ExperimentRun> experimentRuns = experimentRunDAO.getTopExperimentRuns(request);
+      List<ExperimentRun> experimentRuns =
+          futureExperimentRunDAO
+              .findExperimentRuns(
+                  FindExperimentRuns.newBuilder()
+                      .setProjectId(request.getProjectId())
+                      .setExperimentId(request.getExperimentId())
+                      .addAllExperimentRunIds(request.getExperimentRunIdsList())
+                      .setSortKey(request.getSortKey())
+                      .setAscending(request.getAscending())
+                      .setPageLimit(request.getTopK())
+                      .setPageNumber(1)
+                      .setIdsOnly(request.getIdsOnly())
+                      .build())
+              .get()
+              .getExperimentRunsList();
       List<HydratedExperimentRun> hydratedExperimentRuns = new ArrayList<>();
       if (!experimentRuns.isEmpty()) {
         hydratedExperimentRuns = getHydratedExperimentRuns(experimentRuns);
@@ -1304,8 +1323,11 @@ public class AdvancedServiceImpl extends HydratedServiceImplBase {
           ModelDBServiceResourceTypes.PROJECT, request.getProjectId(), ModelDBServiceActions.READ);
 
       List<ExperimentRun> experimentRuns =
-          experimentRunDAO.getExperimentRuns(
-              ModelDBConstants.PROJECT_ID, request.getProjectId(), null);
+          futureExperimentRunDAO
+              .findExperimentRuns(
+                  FindExperimentRuns.newBuilder().setProjectId(request.getProjectId()).build())
+              .get()
+              .getExperimentRunsList();
 
       LOGGER.debug("ExperimentRun list record count : {}", experimentRuns.size());
       List<HydratedDataset> hydratedDatasets = new ArrayList<>();

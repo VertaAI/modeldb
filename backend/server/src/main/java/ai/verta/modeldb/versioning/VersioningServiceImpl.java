@@ -10,7 +10,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.ListRepositoriesRequest.Response;
@@ -43,7 +43,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final BlobDAO blobDAO;
-  private final ExperimentRunDAO experimentRunDAO;
+  private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final FileHasher fileHasher;
   private final Validator validator = new Validator();
   private final ArtifactStoreDAO artifactStoreDAO;
@@ -56,7 +56,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     this.repositoryDAO = daoSet.getRepositoryDAO();
     this.commitDAO = daoSet.getCommitDAO();
     this.blobDAO = daoSet.getBlobDAO();
-    this.experimentRunDAO = daoSet.getExperimentRunDAO();
+    this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
     this.artifactStoreDAO = daoSet.getArtifactStoreDAO();
     this.fileHasher = fileHasher;
     this.futureEventDAO = daoSet.getFutureEventDAO();
@@ -229,7 +229,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
           repositoryDAO.deleteRepository(
               request,
               commitDAO,
-              experimentRunDAO,
+              futureExperimentRunDAO,
               true,
               RepositoryEnums.RepositoryTypeEnum.REGULAR);
 
