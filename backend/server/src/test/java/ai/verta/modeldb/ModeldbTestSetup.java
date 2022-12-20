@@ -26,7 +26,7 @@ import ai.verta.uac.Entities;
 import ai.verta.uac.GetAllowedEntities;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetSelfAllowedActionsBatch.Response;
+import ai.verta.uac.GetSelfAllowedActionsBatch;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetUser;
 import ai.verta.uac.GetUsers;
@@ -275,7 +275,7 @@ public abstract class ModeldbTestSetup extends TestCase {
         .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
     when(authzBlockingMock.getSelfAllowedActionsBatch(any()))
         .thenReturn(
-            Response.newBuilder()
+            GetSelfAllowedActionsBatch.Response.newBuilder()
                 .putActions(
                     "READ",
                     Actions.newBuilder()

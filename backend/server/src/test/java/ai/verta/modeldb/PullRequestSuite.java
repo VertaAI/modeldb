@@ -12,7 +12,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.DatasetVersionTest",
   "ai.verta.modeldb.DiffTest",
   "ai.verta.modeldb.FindDatasetEntitiesTest",
-  "ai.verta.modeldb.FindHydratedServiceTest",
   "ai.verta.modeldb.GlobalSharingTest",
   "ai.verta.modeldb.LineageTest",
   "ai.verta.modeldb.MergeTest",
