@@ -9,16 +9,9 @@ from ..external import six
 
 class Resources(object):
     """
-    Computational resources allowed for an endpoint's model, to be passed to
-    :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
-
-    Verta uses the same representation for memory `as Kubernetes
-    <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#meaning-of-memory>`__:
-
-        You can express memory as a plain integer or as a fixed-point integer
-        using one of these suffixes: **E, P, T, G, M, K**. You can also use the
-        power-of-two equivalents: **Ei, Pi, Ti, Gi, Mi, Ki**. For example, the
-        following represent roughly the same value: 128974848, 129e6, 129M, 123Mi.
+    `Kubernetes computational resources
+    <https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-units-in-kubernetes>`__
+    allowed for an endpoint's model, to be passed to :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
 
     The JSON equivalent for this is:
 
@@ -33,7 +26,12 @@ class Resources(object):
     cpu : float > 0
         CPU cores allowed for an endpoint's model.
     memory : str
-        Memory allows for an endpoint's model.
+        Memory allowed for an endpoint's model. Expects the same representation as Kubernetes:
+        
+            You can express memory as a plain integer or as a fixed-point integer
+            using one of these suffixes: **E, P, T, G, M, K**. You can also use the
+            power-of-two equivalents: **Ei, Pi, Ti, Gi, Mi, Ki**. For example, the
+            following represent roughly the same value: 128974848, 129e6, 129M, 123Mi.
 
     Examples
     --------

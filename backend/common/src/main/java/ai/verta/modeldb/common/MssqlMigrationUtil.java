@@ -1,7 +1,9 @@
 package ai.verta.modeldb.common;
 
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -19,8 +21,8 @@ public class MssqlMigrationUtil {
   private MssqlMigrationUtil() {}
 
   public static void migrateToUTF16ForMssql(FutureJdbi futureJdbi) {
-    futureJdbi
-        .useTransaction(
+    InternalFuture<Void> result =
+        futureJdbi.useTransaction(
             handle -> {
               LOGGER.debug("Fetching column to change column type");
               List<Map<String, Object>> returnResults = fetchChangeColumnsListForMSSQL(handle);
@@ -89,8 +91,12 @@ public class MssqlMigrationUtil {
               LOGGER.debug("recreating all tables indexes");
               recreateAllTableIndexes(handle, tableWiseIndexesMap);
               LOGGER.debug("all tables indexes recreated successfully");
-            })
-        .get();
+            });
+    try {
+      result.get();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
   }
 
   private static void recreatePrimaryAndUniqueConstraints(
