@@ -7,10 +7,13 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.dataset.DatasetDAO;
-import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
 import ai.verta.modeldb.dto.WorkspaceDTO;
+import ai.verta.modeldb.metadata.MetadataDAO;
+import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
+import ai.verta.modeldb.versioning.CommitDAORdbImpl;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.protobuf.GeneratedMessageV3;
@@ -20,10 +23,13 @@ import java.util.*;
 public class PublicMDBRoleServiceUtils implements MDBRoleService {
 
   private FutureProjectDAO futureProjectDAO;
-  private DatasetDAO datasetDAO;
+  private RepositoryDAO repositoryDAO;
+  private MetadataDAO metadataDAO;
 
   public PublicMDBRoleServiceUtils(AuthService authService) {
-    this.datasetDAO = new DatasetDAORdbImpl(authService, this);
+    this.metadataDAO = new MetadataDAORdbImpl();
+    var commitDAO = new CommitDAORdbImpl(authService, this);
+    this.repositoryDAO = new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO);
   }
 
   @Override
@@ -102,7 +108,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
           throw new ModelDBException(e);
         }
       } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
-        datasetDAO.getDatasetById(resourceId);
+        repositoryDAO.getDatasetById(metadataDAO, resourceId);
       }
     }
   }

@@ -11,10 +11,6 @@ import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
-import ai.verta.modeldb.dataset.DatasetDAO;
-import ai.verta.modeldb.dataset.DatasetDAORdbImpl;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAORdbImpl;
 import ai.verta.modeldb.experiment.FutureExperimentDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.lineage.LineageDAO;
@@ -23,7 +19,12 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.UACApisUtil;
-import ai.verta.modeldb.versioning.*;
+import ai.verta.modeldb.versioning.BlobDAO;
+import ai.verta.modeldb.versioning.BlobDAORdbImpl;
+import ai.verta.modeldb.versioning.CommitDAO;
+import ai.verta.modeldb.versioning.CommitDAORdbImpl;
+import ai.verta.modeldb.versioning.RepositoryDAO;
+import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.ServiceEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
@@ -43,8 +44,6 @@ public class DAOSet {
   @JsonProperty private BlobDAO blobDAO;
   @JsonProperty private CommentDAO commentDAO;
   @JsonProperty private CommitDAO commitDAO;
-  @JsonProperty private DatasetDAO datasetDAO;
-  @JsonProperty private DatasetVersionDAO datasetVersionDAO;
   @JsonProperty private FutureExperimentDAO futureExperimentDAO;
   @JsonProperty private FutureExperimentRunDAO futureExperimentRunDAO;
   @JsonProperty private FutureProjectDAO futureProjectDAO;
@@ -83,10 +82,7 @@ public class DAOSet {
     }
 
     set.commentDAO = new CommentDAORdbImpl(services.getAuthService());
-    set.datasetDAO = new DatasetDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
     set.lineageDAO = new LineageDAORdbImpl();
-    set.datasetVersionDAO =
-        new DatasetVersionDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,
@@ -94,7 +90,6 @@ public class DAOSet {
             mdbConfig,
             services.getUac(),
             set.artifactStoreDAO,
-            set.datasetVersionDAO,
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO,
@@ -105,7 +100,6 @@ public class DAOSet {
             jdbi,
             services.getUac(),
             set.artifactStoreDAO,
-            set.datasetVersionDAO,
             mdbConfig,
             set.futureExperimentRunDAO,
             set.uacApisUtil,

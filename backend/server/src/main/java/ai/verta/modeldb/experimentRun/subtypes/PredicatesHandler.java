@@ -570,10 +570,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                   q -> q.bind(valueBindingName, wrapValue(operator, finalValueStr)));
           break;
         case LIST_VALUE:
-          List<Object> valueList = new LinkedList<>();
+          var valueList = new LinkedList<>();
           for (final var value1 : value.getListValue().getValuesList()) {
             if (value1.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
               var valueStr1 = CommonUtils.getStringFromProtoObject(value1);
+              valueStr1 = valueStr1.replaceAll("^\"|\"$", "");
               if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
                 valueStr1 = value.getStringValue();
               }

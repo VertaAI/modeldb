@@ -88,7 +88,6 @@ public class DatasetToRepositoryMigration {
             config,
             uac,
             null,
-            null,
             repositoryDAO,
             commitDAO,
             blobDAO,
