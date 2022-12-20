@@ -146,11 +146,21 @@ class DeployedModel(object):
                 headers=request_headers,
                 json=x,
                 )
-        if not response.ok:
-            _utils.raise_for_http_error(
-                response=response,
-                suppress_traceback=True,
-                )
+        if response.status_code in (
+            400,
+            502,
+            ):  # possibly error from the model back end
+            try:
+                data = _utils.body_to_json(response)
+            except ValueError:  # not JSON response; 502 not from model back end
+                pass
+            else:  # from model back end; contains message (maybe)
+                # try to directly print message, otherwise line breaks appear as '\n'
+                msg = data.get("message") or json.dumps(data)
+                raise RuntimeError(f"deployed model encountered an error: {msg}")
+
+        elif not response.ok:
+            _utils.raise_for_http_error(response=response)
         return response
 
 

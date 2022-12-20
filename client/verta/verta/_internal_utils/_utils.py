@@ -537,10 +537,7 @@ def fabricate_200():
     return response
 
 
-def raise_for_http_error(
-        response: requests.Response,
-        suppress_traceback: Optional[bool] = False,
-        ):
+def raise_for_http_error(response: requests.Response):
     """
     Raises a potential HTTP error with a back end message if provided, or a default error message otherwise.
 
@@ -548,8 +545,6 @@ def raise_for_http_error(
     ----------
     response : :class:`requests.Response`
         Response object returned from a `requests`-module HTTP request.
-    suppress_traceback: bool, optional
-        If true, only the last message of the traceback will be printed.
 
     Raises
     ------
@@ -557,7 +552,6 @@ def raise_for_http_error(
         If an HTTP error occured.
 
     """
-    traceback_limit: Union[int, None] = 0 if suppress_traceback else None
     try:
         response.raise_for_status()
     except requests.HTTPError as e:
@@ -577,10 +571,8 @@ def raise_for_http_error(
                 reason = response.text.strip()
 
         if not reason:
-            e.args = (e.args[0] + time_str,) + e.args[
-                1:
-            ]  # attach time to error message
-            # six.raise_from(e, None)  # use default reason
+            e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
+            six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
             if 400 <= response.status_code < 500:
@@ -591,10 +583,7 @@ def raise_for_http_error(
                 cause = "Unexpected"
             message = f"{response.status_code} {cause} Error: {reason} " \
                       f"for url: {response.url}{time_str}"
-            e.args = (message,)
-        traceback.print_exc(file=None, limit=traceback_limit)
-        raise e
-
+            six.raise_from(requests.HTTPError(message, response=response), None)
 
 def body_to_json(response):
     """
