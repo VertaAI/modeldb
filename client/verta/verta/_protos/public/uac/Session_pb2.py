@@ -13,6 +13,7 @@ _sym_db = _symbol_database.Default()
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ..uac import UACService_pb2 as uac_dot_UACService__pb2
+from ..common import CommonService_pb2 as common_dot_CommonService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -20,9 +21,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x11uac/Session.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\"i\n\x07Session\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x15\n\rverta_user_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x11\n\tttl_epoch\x18\x04 \x01(\x04\x12\x1a\n\x12session_secret_key\x18\x05 \x01(\t\"X\n\x14\x43reateSessionRequest\x12\x15\n\rverta_user_id\x18\x01 \x01(\t\x12\x14\n\x0csession_name\x18\x02 \x01(\t\x12\x13\n\x0bttl_seconds\x18\x03 \x01(\x04\"{\n\x12\x46indSessionRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\x15\n\rverta_user_id\x18\x02 \x03(\t\x12\x0c\n\x04name\x18\x03 \x03(\t\x1a\x33\n\x08Response\x12\'\n\x08sessions\x18\x01 \x03(\x0b\x32\x15.ai.verta.uac.Session\"#\n\x14\x44\x65leteSessionRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x32\xf2\x02\n\x0eSessionService\x12p\n\rcreateSession\x12\".ai.verta.uac.CreateSessionRequest\x1a\x15.ai.verta.uac.Session\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/session/createSession:\x01*\x12~\n\x0b\x66indSession\x12 .ai.verta.uac.FindSessionRequest\x1a).ai.verta.uac.FindSessionRequest.Response\"\"\x82\xd3\xe4\x93\x02\x1c\"\x17/v1/session/findSession:\x01*\x12n\n\rdeleteSession\x12\".ai.verta.uac.DeleteSessionRequest\x1a\x13.ai.verta.uac.Empty\"$\x82\xd3\xe4\x93\x02\x1e*\x19/v1/session/deleteSession:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x11uac/Session.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\x1a\x1a\x63ommon/CommonService.proto\"i\n\x07Session\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x15\n\rverta_user_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x11\n\tttl_epoch\x18\x04 \x01(\x04\x12\x1a\n\x12session_secret_key\x18\x05 \x01(\t\"X\n\x14\x43reateSessionRequest\x12\x15\n\rverta_user_id\x18\x01 \x01(\t\x12\x14\n\x0csession_name\x18\x02 \x01(\t\x12\x13\n\x0bttl_seconds\x18\x03 \x01(\x04\"\xc3\x01\n\x12\x46indSessionRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\x15\n\rverta_user_id\x18\x02 \x03(\t\x12\x0c\n\x04name\x18\x03 \x03(\t\x12/\n\npagination\x18\x04 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aJ\n\x08Response\x12\'\n\x08sessions\x18\x01 \x03(\x0b\x32\x15.ai.verta.uac.Session\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\"#\n\x14\x44\x65leteSessionRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x32\xf2\x02\n\x0eSessionService\x12p\n\rcreateSession\x12\".ai.verta.uac.CreateSessionRequest\x1a\x15.ai.verta.uac.Session\"$\x82\xd3\xe4\x93\x02\x1e\"\x19/v1/session/createSession:\x01*\x12~\n\x0b\x66indSession\x12 .ai.verta.uac.FindSessionRequest\x1a).ai.verta.uac.FindSessionRequest.Response\"\"\x82\xd3\xe4\x93\x02\x1c\"\x17/v1/session/findSession:\x01*\x12n\n\rdeleteSession\x12\".ai.verta.uac.DeleteSessionRequest\x1a\x13.ai.verta.uac.Empty\"$\x82\xd3\xe4\x93\x02\x1e*\x19/v1/session/deleteSession:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
 
 
@@ -81,8 +82,8 @@ _SESSION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=87,
-  serialized_end=192,
+  serialized_start=115,
+  serialized_end=220,
 )
 
 
@@ -126,8 +127,8 @@ _CREATESESSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=194,
-  serialized_end=282,
+  serialized_start=222,
+  serialized_end=310,
 )
 
 
@@ -145,6 +146,13 @@ _FINDSESSIONREQUEST_RESPONSE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='total_records', full_name='ai.verta.uac.FindSessionRequest.Response.total_records', index=1,
+      number=2, type=3, cpp_type=2, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -157,8 +165,8 @@ _FINDSESSIONREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=356,
-  serialized_end=407,
+  serialized_start=434,
+  serialized_end=508,
 )
 
 _FINDSESSIONREQUEST = _descriptor.Descriptor(
@@ -189,6 +197,13 @@ _FINDSESSIONREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='pagination', full_name='ai.verta.uac.FindSessionRequest.pagination', index=3,
+      number=4, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -201,8 +216,8 @@ _FINDSESSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=284,
-  serialized_end=407,
+  serialized_start=313,
+  serialized_end=508,
 )
 
 
@@ -232,12 +247,13 @@ _DELETESESSIONREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=409,
-  serialized_end=444,
+  serialized_start=510,
+  serialized_end=545,
 )
 
 _FINDSESSIONREQUEST_RESPONSE.fields_by_name['sessions'].message_type = _SESSION
 _FINDSESSIONREQUEST_RESPONSE.containing_type = _FINDSESSIONREQUEST
+_FINDSESSIONREQUEST.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 DESCRIPTOR.message_types_by_name['Session'] = _SESSION
 DESCRIPTOR.message_types_by_name['CreateSessionRequest'] = _CREATESESSIONREQUEST
 DESCRIPTOR.message_types_by_name['FindSessionRequest'] = _FINDSESSIONREQUEST
@@ -289,8 +305,8 @@ _SESSIONSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=447,
-  serialized_end=817,
+  serialized_start=548,
+  serialized_end=918,
   methods=[
   _descriptor.MethodDescriptor(
     name='createSession',

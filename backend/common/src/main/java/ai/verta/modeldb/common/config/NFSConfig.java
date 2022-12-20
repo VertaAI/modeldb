@@ -34,7 +34,7 @@ public class NFSConfig {
     return String.format("nfs://%s/", nfsRootPath);
   }
 
-  public String getNfsPathPrefix() {
-    return nfsPathPrefix == null ? "" : nfsPathPrefix + "/";
+  public void setNfsRootPath(String nfsRootPath) {
+    this.nfsRootPath = nfsRootPath;
   }
 }
