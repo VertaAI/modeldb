@@ -7,7 +7,6 @@ import pytest
 from requests import Session, HTTPError
 from requests.exceptions import RetryError
 import responses
-from responses import matchers
 from unittest.mock import patch
 from urllib3 import Retry
 
@@ -149,9 +148,8 @@ def test_predict_http_default_max_retry_observed(mocked_responses) -> None:
         creds=creds,
         token=TOKEN,
         )
-    try:
+    with pytest.raises(RetryError):
         dm.predict(x=['test_prediction'])
-    except(RetryError):
         mocked_responses.assert_call_count(PREDICTION_URL, http_session.DEFAULT_MAX_RETRIES + 1)
         # max_retries + 1 original attempt = total call count
 
@@ -169,14 +167,13 @@ def test_predict_with_altered_retry_config(mocked_responses) -> None:
         creds=creds,
         token=TOKEN,
         )
-    try:
+    with pytest.raises(RetryError):
         dm.predict(
             x=['test_prediction'],
             max_retries=9,
             retry_status={888},
             backoff_factor=0.1
             )
-    except(RetryError):
         mocked_responses.assert_call_count(PREDICTION_URL, 10)
 
 
@@ -291,14 +288,13 @@ def test_predict_with_id_altered_retry_config(mocked_responses) -> None:
         creds=creds,
         token=TOKEN,
         )
-    try:
+    with pytest.raises(RetryError):
         dm.predict_with_id(
             x=['test_prediction'],
             max_retries=9,
             retry_status={888},
             backoff_factor=0.1
             )
-    except(RetryError):
         mocked_responses.assert_call_count(PREDICTION_URL, 10)
 
 
@@ -317,24 +313,23 @@ def test_default_retry_after_custom_retry(mocked_responses) -> None:
         creds=creds,
         token=TOKEN,
         )
-    try:
+    with pytest.raises(RetryError):
         dm.predict(
             x=['test_prediction'],
             max_retries=1,
             retry_status={777},
             backoff_factor=0.1,
             )
-    except(RetryError):
         mocked_responses.assert_call_count(PREDICTION_URL, 2)
         # 1 attempt + 1 retry = 2
+
     mocked_responses.post(
         PREDICTION_URL,
         json={},
         status=429,
         )
-    try:
+    with pytest.raises(RetryError):
         dm.predict(x=['test_prediction'])  # use defaults
-    except(RetryError):
         mocked_responses.assert_call_count(PREDICTION_URL, 16)
         # previous 2 + 1 attempt + default 13 retries = 16
 
