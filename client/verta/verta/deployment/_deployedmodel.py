@@ -276,7 +276,7 @@ class DeployedModel(object):
             retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
             backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
             prediction_id: str = None,
-            ) -> Tuple[str, Dict[str, Any]]:
+            ) -> Tuple[str, List[Any]]:
         """
         Makes a prediction using input `x` the same as `predict`, but returns a tuple including the ID of the
         prediction request along with the prediction results.
