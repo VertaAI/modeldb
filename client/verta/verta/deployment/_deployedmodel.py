@@ -6,7 +6,6 @@ import warnings
 
 from requests import Session
 from typing import Any, Dict, List, Optional, Set, Tuple
-from urllib3 import Retry
 from urllib.parse import urlparse
 from verta import credentials
 

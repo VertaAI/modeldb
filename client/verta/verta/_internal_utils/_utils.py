@@ -14,7 +14,6 @@ import string
 import sys
 import threading
 import time
-import traceback
 from typing import Optional, Union
 from urllib.parse import urljoin
 import warnings
