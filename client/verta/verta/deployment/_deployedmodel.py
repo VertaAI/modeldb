@@ -303,13 +303,14 @@ class DeployedModel(object):
             A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
             120 seconds.
-        prediction_id: str, default None
+        prediction_id: str, optional
             A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
         Returns
         -------
-        id, prediction: Tuple(str, list)
-            The first element of the tuple is the prediction ID.
-            The second element of the tuple is the output returned by the deployed model for `x`.
+        id : str
+            The prediction ID.
+        prediction: List[Any]
+            The output returned by the deployed model for `x`.
 
         Raises
         ------
