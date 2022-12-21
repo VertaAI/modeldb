@@ -1732,21 +1732,26 @@ public class ProjectTest extends ModeldbTestSetup {
     Project selfProject = null;
     Project project = null;
     try {
+      var workspaceName = testUser2.getVertaInfo().getUsername();
+      if (testConfig.isEnabledPermissionV2()) {
+        workspaceName = getWorkspaceNameUser2();
+      }
 
       if (isRunningIsolated()) {
         when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
         when(workspaceMock.getWorkspaceByName(
-                GetWorkspaceByName.newBuilder().setName(getWorkspaceNameUser2()).build()))
+                GetWorkspaceByName.newBuilder().setName(workspaceName).build()))
             .thenReturn(
                 Futures.immediateFuture(
                     Workspace.newBuilder()
                         .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                         .build()));
       }
+
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest();
       createProjectRequest =
-          createProjectRequest.toBuilder().setWorkspaceName(getWorkspaceNameUser2()).build();
+          createProjectRequest.toBuilder().setWorkspaceName(workspaceName).build();
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1797,7 +1802,7 @@ public class ProjectTest extends ModeldbTestSetup {
       GetProjectByName getProject =
           GetProjectByName.newBuilder()
               .setName(selfProject.getName())
-              .setWorkspaceName(getWorkspaceNameUser2())
+              .setWorkspaceName(workspaceName)
               .build();
       GetProjectByName.Response getProjectByNameResponse =
           projectServiceStub.getProjectByName(getProject);

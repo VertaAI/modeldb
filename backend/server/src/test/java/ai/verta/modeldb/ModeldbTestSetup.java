@@ -235,17 +235,6 @@ public abstract class ModeldbTestSetup extends TestCase {
               .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
               .intercept(authClientInterceptor.getClient2AuthInterceptor())
               .build();
-      var authServiceChannelServiceUser =
-          ManagedChannelBuilder.forTarget(
-                  testConfig.getAuthService().getHost()
-                      + ":"
-                      + testConfig.getAuthService().getPort())
-              .usePlaintext()
-              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
-              .intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor())
-              .usePlaintext()
-              .executor(executor)
-              .build();
       uacServiceStub = UACServiceGrpc.newBlockingStub(authServiceChannel);
       collaboratorServiceStubClient1 = CollaboratorServiceGrpc.newBlockingStub(authServiceChannel);
       collaboratorServiceStubClient2 =
@@ -260,31 +249,44 @@ public abstract class ModeldbTestSetup extends TestCase {
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       testUser2 = uacServiceStub.getUser(getUserRequest);
 
-      organizationServiceV2BlockingStub =
-          OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
-      var organizationName = "modeldb-test-org";
-      organizationId = createAndGetOrganization(organizationName);
+      if (testConfig.isEnabledPermissionV2()) {
+        var authServiceChannelServiceUser =
+            ManagedChannelBuilder.forTarget(
+                    testConfig.getAuthService().getHost()
+                        + ":"
+                        + testConfig.getAuthService().getPort())
+                .usePlaintext()
+                .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
+                .intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor())
+                .usePlaintext()
+                .executor(executor)
+                .build();
+        organizationServiceV2BlockingStub =
+            OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+        var organizationName = "modeldb-test-org";
+        organizationId = createAndGetOrganization(organizationName);
 
-      addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
+        addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
 
-      String groupId = createAndGetGroup(authServiceChannelServiceUser, organizationId);
+        String groupId = createAndGetGroup(authServiceChannelServiceUser, organizationId);
 
-      var roleResponse = createAndGetRole(authServiceChannelServiceUser, organizationId);
+        var roleResponse = createAndGetRole(authServiceChannelServiceUser, organizationId);
 
-      testUser1Workspace =
-          createWorkspaceAndRoleForUser(
-              authServiceChannelServiceUser,
-              organizationId,
-              groupId,
-              roleResponse.getRole().getId(),
-              testUser1.getVertaInfo().getUsername());
-      testUser2Workspace =
-          createWorkspaceAndRoleForUser(
-              authServiceChannelServiceUser,
-              organizationId,
-              groupId,
-              roleResponse.getRole().getId(),
-              testUser2.getVertaInfo().getUsername());
+        testUser1Workspace =
+            createWorkspaceAndRoleForUser(
+                authServiceChannelServiceUser,
+                organizationId,
+                groupId,
+                roleResponse.getRole().getId(),
+                testUser1.getVertaInfo().getUsername());
+        testUser2Workspace =
+            createWorkspaceAndRoleForUser(
+                authServiceChannelServiceUser,
+                organizationId,
+                groupId,
+                roleResponse.getRole().getId(),
+                testUser2.getVertaInfo().getUsername());
+      }
     } else {
       testUser1 =
           UserInfo.newBuilder()
@@ -567,7 +569,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     reconcilerInitializer.getSoftDeleteDatasets().resync();
     reconcilerInitializer.getSoftDeleteRepositories().resync();
 
-    if (!runningIsolated) {
+    if (!runningIsolated && testConfig.isEnabledPermissionV2()) {
       removeOrganizationFromUAC();
     }
   }
