@@ -72,6 +72,7 @@ import ai.verta.uac.Action;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
@@ -109,6 +110,7 @@ public class FutureProjectDAO {
   private final FutureExecutor executor;
   private final UAC uac;
   private final boolean isMssql;
+  private final boolean isPermissionV2;
 
   private final AttributeHandler attributeHandler;
   private final TagsHandler tagsHandler;
@@ -132,6 +134,7 @@ public class FutureProjectDAO {
       ReconcilerInitializer reconcilerInitializer) {
     this.jdbi = jdbi;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
+    this.isPermissionV2 = mdbConfig.isEnabledPermissionV2();
     this.executor = executor;
     this.uac = uac;
     this.futureExperimentRunDAO = futureExperimentRunDAO;
@@ -151,7 +154,9 @@ public class FutureProjectDAO {
             datasetHandler,
             artifactStoreDAO,
             mdbConfig);
-    predicatesHandler = new PredicatesHandler(executor, "project", "p", uacApisUtil);
+    predicatesHandler =
+        new PredicatesHandler(
+            executor, "project", "p", uacApisUtil, mdbConfig.isEnabledPermissionV2());
     sortingHandler = new SortingHandler("project");
     createProjectHandler =
         new CreateProjectHandler(
@@ -457,20 +462,30 @@ public class FutureProjectDAO {
         .thenCompose(
             userInfo -> {
               InternalFuture<List<GetResourcesResponseItem>> resourcesFuture;
-              if (request.getWorkspaceName().isEmpty()
-                  || request.getWorkspaceName().equals(userInfo.getVertaInfo().getUsername())) {
-                resourcesFuture =
-                    uacApisUtil.getResourceItemsForLoginUserWorkspace(
-                        request.getWorkspaceName(),
-                        Optional.of(request.getProjectIdsList()),
-                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-              } else {
+              if (isPermissionV2) {
                 resourcesFuture =
                     uacApisUtil.getResourceItemsForWorkspace(
                         Optional.of(request.getWorkspaceName()),
                         Optional.of(request.getProjectIdsList()),
                         Optional.empty(),
                         ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+              } else {
+                if (request.getWorkspaceName().isEmpty()
+                    || request.getWorkspaceName().equals(userInfo.getVertaInfo().getUsername())) {
+                  resourcesFuture =
+                      uacApisUtil.getResourceItemsForLoginUserWorkspace(
+                          Optional.of(request.getWorkspaceName()),
+                          userInfo.getVertaInfo().getDefaultWorkspaceId(),
+                          Optional.of(request.getProjectIdsList()),
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+                } else {
+                  resourcesFuture =
+                      uacApisUtil.getResourceItemsForWorkspace(
+                          Optional.of(request.getWorkspaceName()),
+                          Optional.of(request.getProjectIdsList()),
+                          Optional.empty(),
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+                }
               }
 
               return resourcesFuture.thenCompose(
@@ -779,6 +794,13 @@ public class FutureProjectDAO {
         executor);
   }
 
+  private InternalFuture<Workspace> getWorkspaceByWorkspaceId(Long workspaceId) {
+    return FutureUtil.clientRequest(
+        uac.getWorkspaceService()
+            .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
+        executor);
+  }
+
   private List<Project> sortProjectFields(List<Project> projects) {
     List<Project> sortedProjects = new LinkedList<>();
     for (Project project : projects) {
@@ -1014,18 +1036,23 @@ public class FutureProjectDAO {
                           throw new NotFoundException("Project not found");
                         }
 
-                        String workspaceName =
-                            request.getWorkspaceName().isEmpty()
-                                ? userInfo.getVertaInfo().getUsername()
-                                : request.getWorkspaceName();
-
                         FindProjects.Builder findProjects =
                             FindProjects.newBuilder()
                                 .addAllProjectIds(
                                     responseItem.stream()
                                         .map(GetResourcesResponseItem::getResourceId)
-                                        .collect(Collectors.toList()))
-                                .setWorkspaceName(workspaceName);
+                                        .collect(Collectors.toList()));
+
+                        if (isPermissionV2) {
+                          findProjects.setWorkspaceName(request.getWorkspaceName());
+                        } else {
+                          String workspaceName =
+                              request.getWorkspaceName().isEmpty()
+                                  ? userInfo.getVertaInfo().getUsername()
+                                  : request.getWorkspaceName();
+                          findProjects.setWorkspaceName(workspaceName);
+                        }
+
                         return findProjects(findProjects.build())
                             .thenApply(
                                 response -> {
@@ -1542,38 +1569,49 @@ public class FutureProjectDAO {
                         executor)
                     .thenCompose(
                         loginUser -> {
-                          String workspaceName;
+                          Optional<String> workspaceName = Optional.empty();
+                          InternalFuture<Workspace> workspaceFuture;
                           if (!request.getWorkspaceName().isEmpty()) {
-                            workspaceName = request.getWorkspaceName();
+                            workspaceName = Optional.of(request.getWorkspaceName());
+                            workspaceFuture =
+                                getWorkspaceByWorkspaceName(request.getWorkspaceName());
+                          } else if (isPermissionV2) {
+                            workspaceFuture =
+                                getWorkspaceByWorkspaceId(
+                                    loginUser.getVertaInfo().getDefaultWorkspaceId());
                           } else {
-                            workspaceName = loginUser.getVertaInfo().getUsername();
+                            workspaceName = Optional.of(loginUser.getVertaInfo().getUsername());
+                            workspaceFuture =
+                                getWorkspaceByWorkspaceName(loginUser.getVertaInfo().getUsername());
                           }
-                          return getWorkspaceByWorkspaceName(workspaceName)
-                              .thenCompose(
-                                  workspace -> {
-                                    ResourceVisibility resourceVisibility =
-                                        getResourceVisibility(createdProject, workspace);
-                                    var projectBuilder = createdProject.toBuilder();
-                                    return createResources(
-                                            Optional.of(workspaceName),
-                                            createdProject.getId(),
-                                            createdProject.getName(),
-                                            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
-                                            createdProject.getCustomPermission(),
-                                            resourceVisibility)
-                                        .thenCompose(
-                                            unused2 -> updateProjectAsCreated(createdProject),
-                                            executor)
-                                        .thenCompose(
-                                            unused ->
-                                                populateProjectFieldFromResourceItem(
-                                                    createdProject,
-                                                    workspaceName,
-                                                    workspace,
-                                                    projectBuilder),
-                                            executor);
-                                  },
-                                  executor);
+
+                          Optional<String> finalWorkspaceName = workspaceName;
+                          return workspaceFuture.thenCompose(
+                              workspace -> {
+                                ResourceVisibility resourceVisibility =
+                                    getResourceVisibility(createdProject, workspace);
+                                var projectBuilder = createdProject.toBuilder();
+                                return createResources(
+                                        finalWorkspaceName,
+                                        createdProject.getId(),
+                                        createdProject.getName(),
+                                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                                        createdProject.getCustomPermission(),
+                                        resourceVisibility)
+                                    .thenCompose(
+                                        unused2 -> updateProjectAsCreated(createdProject), executor)
+                                    .thenCompose(
+                                        unused ->
+                                            populateProjectFieldFromResourceItem(
+                                                createdProject,
+                                                isPermissionV2
+                                                    ? Optional.empty()
+                                                    : finalWorkspaceName,
+                                                workspace,
+                                                projectBuilder),
+                                        executor);
+                              },
+                              executor);
                         },
                         executor),
             executor);
@@ -1581,12 +1619,13 @@ public class FutureProjectDAO {
 
   private InternalFuture<Project> populateProjectFieldFromResourceItem(
       Project createdProject,
-      String workspaceName,
+      Optional<String> workspaceName,
       Workspace workspace,
       Project.Builder projectBuilder) {
     return uacApisUtil
         .getResourceItemsForLoginUserWorkspace(
             workspaceName,
+            workspace.getId(),
             Optional.of(Collections.singletonList(createdProject.getId())),
             ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
         .thenApply(
@@ -1720,12 +1759,7 @@ public class FutureProjectDAO {
       setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
     }
 
-    if (workspaceName.isPresent()) {
-      setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
-    } else {
-      throw new IllegalArgumentException(
-          "workspaceId and workspaceName are both empty.  One must be provided.");
-    }
+    workspaceName.ifPresent(setResourcesBuilder::setWorkspaceName);
 
     return FutureUtil.clientRequest(
             uac.getCollaboratorService().setResource(setResourcesBuilder.build()), executor)

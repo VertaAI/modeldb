@@ -116,6 +116,8 @@ public class ProjectTest extends ModeldbTestSetup {
     assertTrue(deleteDatasetResponse.getStatus());
 
     projectMap.clear();
+
+    cleanUpResources();
   }
 
   private void createProjectEntities() {
@@ -1611,14 +1613,22 @@ public class ProjectTest extends ModeldbTestSetup {
                                   .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                                   .build())
                           .build()));
-        } else {
+        } else if (testConfig.isEnabledPermissionV2()) {
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorUtils.addCollaboratorRequestProject(
                   project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
-          var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
-          AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-              collaboratorMock.addOrUpdateProjectCollaborator(addCollaboratorRequest).get();
+          AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse;
+          if (isRunningIsolated()) {
+            var collaboratorMock =
+                mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+            addOrUpdateProjectCollaboratorResponse =
+                collaboratorMock.addOrUpdateProjectCollaborator(addCollaboratorRequest).get();
+          } else {
+            addOrUpdateProjectCollaboratorResponse =
+                collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(
+                    addCollaboratorRequest);
+          }
           LOGGER.info(
               "Collaborator added in server : "
                   + addOrUpdateProjectCollaboratorResponse.getStatus());
@@ -1726,9 +1736,7 @@ public class ProjectTest extends ModeldbTestSetup {
       if (isRunningIsolated()) {
         when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
         when(workspaceMock.getWorkspaceByName(
-                GetWorkspaceByName.newBuilder()
-                    .setName(testUser2.getVertaInfo().getUsername())
-                    .build()))
+                GetWorkspaceByName.newBuilder().setName(getWorkspaceNameUser2()).build()))
             .thenReturn(
                 Futures.immediateFuture(
                     Workspace.newBuilder()
@@ -1738,10 +1746,7 @@ public class ProjectTest extends ModeldbTestSetup {
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest();
       createProjectRequest =
-          createProjectRequest
-              .toBuilder()
-              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
-              .build();
+          createProjectRequest.toBuilder().setWorkspaceName(getWorkspaceNameUser2()).build();
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1755,7 +1760,14 @@ public class ProjectTest extends ModeldbTestSetup {
       if (isRunningIsolated()) {
         projectMap.put(project.getId(), project);
         mockGetResourcesForAllProjects(projectMap, testUser1);
-      } else {
+        when(workspaceMock.getWorkspaceByName(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    Workspace.newBuilder()
+                        .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .setUsername(testUser1.getVertaInfo().getUsername())
+                        .build()));
+      } else if (!testConfig.isEnabledPermissionV2()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1785,7 +1797,7 @@ public class ProjectTest extends ModeldbTestSetup {
       GetProjectByName getProject =
           GetProjectByName.newBuilder()
               .setName(selfProject.getName())
-              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
+              .setWorkspaceName(getWorkspaceNameUser2())
               .build();
       GetProjectByName.Response getProjectByNameResponse =
           projectServiceStub.getProjectByName(getProject);
@@ -1818,6 +1830,12 @@ public class ProjectTest extends ModeldbTestSetup {
       }
 
       if (project != null) {
+        if (isRunningIsolated()) {
+          mockGetSelfAllowedResources(
+              Collections.singleton(project.getId()),
+              ModelDBServiceResourceTypes.PROJECT,
+              ModelDBServiceActions.DELETE);
+        }
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =
             client2ProjectServiceStub.deleteProject(deleteProject);
