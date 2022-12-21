@@ -183,6 +183,7 @@ def test_predict_with_prediction_id_provided(mocked_responses) -> None:
         PREDICTION_URL,
         json={'test1': 'test1'},
         status=200,
+        match=[responses.matchers.header_matcher({'verta-request-id': 'hereISaTESTidFROMtheUSER'})],
         headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
         )
     creds = EmailCredentials.load_from_os_env()
