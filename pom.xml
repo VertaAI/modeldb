@@ -2,34 +2,39 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
-        <version>2.7.3</version>
-        <relativePath/> <!-- lookup parent from repository -->
+        <version>2.7.5</version>
+        <relativePath/> <!-- lookup parent from maven repository -->
     </parent>
+
     <groupId>ai.verta.modeldb</groupId>
-    <artifactId>modeldb-parent</artifactId>
+    <artifactId>modeldb-root</artifactId>
     <packaging>pom</packaging>
     <version>1.0-SNAPSHOT</version>
-    <name>modeldb-parent</name>
+    <name>modeldb-root</name>
     <url>http://maven.apache.org</url>
+
+    <modules>
+        <module>backend</module>
+    </modules>
 
     <properties>
         <hibernate.version>5.6.11.Final</hibernate.version>
-        <log4j.version>2.18.0</log4j.version>
+        <log4j.version>2.19.0</log4j.version>
         <grpc.version>1.49.0</grpc.version>
         <postgres.version>42.5.0</postgres.version>
         <liquibase.version>4.9.1</liquibase.version>
         <prometheus.version>0.16.0</prometheus.version>
         <protobuf.version>3.21.5</protobuf.version>
         <aws.version>1.12.302</aws.version>
-        <jackson.version>2.13.4.20221013</jackson.version>
-        <jaegertracing.version>1.8.1</jaegertracing.version>
-        <os-maven-plugin.version>1.7.0</os-maven-plugin.version>
-        <otel.core.version>1.19.0</otel.core.version>
-        <otel.instrumentation.version>1.19.1-alpha</otel.instrumentation.version>
-        <springframework.version>5.3.22</springframework.version>
+        <jackson.version>2.14.0</jackson.version>
+        <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
+        <otel.core.version>1.21.0</otel.core.version>
+        <otel.instrumentation.version>1.21.0-alpha</otel.instrumentation.version>
+        <springframework.version>5.3.23</springframework.version>
         <lombok.version>1.18.24</lombok.version>
 
         <junit-jupiter.version>5.9.1</junit-jupiter.version>
@@ -39,12 +44,6 @@
         <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/coverage-reports/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
         <sonar.language>java</sonar.language>
     </properties>
-
-    <modules>
-        <module>backend/common</module>
-        <module>backend</module>
-    </modules>
-
 
     <dependencyManagement>
         <dependencies>
@@ -116,7 +115,7 @@
             <dependency>
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
-                <version>1.32</version>
+                <version>1.33</version>
             </dependency>
             <!-- PRISMA-2022-0239 -->
             <!-- The main transport implementation based on Netty, for both the client
@@ -296,31 +295,6 @@
                 <version>${otel.instrumentation.version}</version>
             </dependency>
             <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-core</artifactId>
-                <version>${jaegertracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-thrift</artifactId>
-                <version>${jaegertracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.jaegertracing</groupId>
-                <artifactId>jaeger-client</artifactId>
-                <version>${jaegertracing.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-grpc</artifactId>
-                <version>0.2.3</version>
-            </dependency>
-            <dependency>
-                <groupId>io.opentracing.contrib</groupId>
-                <artifactId>opentracing-jdbc</artifactId>
-                <version>0.2.15</version>
-            </dependency>
-            <dependency>
                 <groupId>com.oblac</groupId>
                 <artifactId>nomen-est-omen</artifactId>
                 <version>2.1.0</version>
@@ -393,7 +367,7 @@
                 <plugin>
                     <groupId>com.diffplug.spotless</groupId>
                     <artifactId>spotless-maven-plugin</artifactId>
-                    <version>2.27.1</version>
+                    <version>2.27.2</version>
                     <configuration>
                         <java>
                             <googleJavaFormat>
@@ -443,7 +417,7 @@
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.2.2</version>
+                    <version>3.3.0</version>
                 </plugin>
                 <plugin>
                     <!-- Use for generating code coverage report using jacoco plugin -->
@@ -454,7 +428,7 @@
                 <plugin>
                     <groupId>org.codehaus.mojo</groupId>
                     <artifactId>versions-maven-plugin</artifactId>
-                    <version>2.12.0</version>
+                    <version>2.14.0</version>
                 </plugin>
             </plugins>
         </pluginManagement>

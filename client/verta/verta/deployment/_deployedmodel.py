@@ -46,7 +46,7 @@ class DeployedModel(object):
         Full prediction endpoint URL. Can be copy and pasted directly from the Verta Web App.
     access_token : str, optional
         Prediction token. Can be copy and pasted directly from the Verta Web App.
-    credentials : class:`~verta.credentials.Credentials`, optional
+    credentials : :class:`~verta.credentials.Credentials`, optional
         Authentication credentials to attach to each prediction request.
 
     Examples
