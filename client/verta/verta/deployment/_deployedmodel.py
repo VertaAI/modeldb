@@ -229,7 +229,8 @@ class DeployedModel(object):
             autoscalers, which may take minutes to launch new pods for servicing requests.
         retry_status : set, default {404, 429, 500, 503, 504}
             Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value.
-            Expand the set to include more: ```retry_status={404, 429, 500, 503, 504, <NEW_STATUS_CODE>}```
+            Expand the set to include more. For example, to add status code 409 to the existing set, use:
+            ```retry_status={404, 429, 500, 503, 504, 409}```
         backoff_factor : float, default 0.3
             A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
@@ -298,7 +299,8 @@ class DeployedModel(object):
             Maximum number of retries on status codes listed in ``retry_status`` parameter only.
         retry_status : set, default {404, 429, 500, 503, 504}
             Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value.
-            Expand the set to include more: ```retry_status={404, 429, 500, 503, 504, <NEW_STATUS_CODE>}```
+            Expand the set to include more. For example, to add status code 409 to the existing set, use:
+            ```retry_status={404, 429, 500, 503, 504, 409}```
         backoff_factor : float, default 0.3
             A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
