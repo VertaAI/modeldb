@@ -351,7 +351,7 @@ def test_predict_400_error_message_extraction(mocked_responses) -> None:
     with pytest.raises(RuntimeError) as err:
         dm.predict(x=['test_prediction'])
     assert str(err.value) == (
-        'Deployed model encountered an error: Here be a message in the response'
+        'deployed model encountered an error: Here be a message in the response'
         )
 
 

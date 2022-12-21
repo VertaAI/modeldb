@@ -156,7 +156,7 @@ class DeployedModel(object):
             else:  # from model back end; contains message (maybe)
                 # try to directly print message, otherwise line breaks appear as '\n'
                 msg = data.get("message") or json.dumps(data)
-                raise RuntimeError(f"Deployed model encountered an error: {msg}")
+                raise RuntimeError(f"deployed model encountered an error: {msg}")
 
         elif not response.ok:
             _utils.raise_for_http_error(response=response)

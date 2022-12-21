@@ -584,6 +584,7 @@ def raise_for_http_error(response: requests.Response):
                       f"for url: {response.url}{time_str}"
             six.raise_from(requests.HTTPError(message, response=response), None)
 
+
 def body_to_json(response):
     """
     Returns the JSON-encoded contents of `response`, raising a detailed error on failure.
