@@ -158,7 +158,7 @@ class DeployedModel(object):
                 msg = data.get("message") or json.dumps(data)
                 raise RuntimeError(f"deployed model encountered an error: {msg}")
 
-        elif not response.ok:
+        if not response.ok:
             _utils.raise_for_http_error(response=response)
         return response
 
