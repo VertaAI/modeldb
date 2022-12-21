@@ -357,7 +357,9 @@ def test_predict_400_error_message_extraction(mocked_responses) -> None:
 
 
 def test_predict_400_error_message_missing(mocked_responses) -> None:
-    """ Getting a 400 will render the attached message form the backend if present """
+    """ Getting a 400 error, with no message provided by the back-end will fall back
+        to raise_for_http_error style error formatting.
+     """
     mocked_responses.post(
         PREDICTION_URL,
         json={},
