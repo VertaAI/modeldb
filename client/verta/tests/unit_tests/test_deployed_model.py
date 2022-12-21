@@ -358,8 +358,8 @@ def test_predict_400_error_message_extraction(mocked_responses) -> None:
         )
 
 
-def test_predict_400_error_message_missing(mocked_responses) -> None:
-    """ Getting a 400 error, with no message provided by the back-end will fall back
+def test_predict_401_error_message_missing(mocked_responses) -> None:
+    """ Getting a 401 error, with no message provided by the back-end will fall back
         to raise_for_http_error style error formatting.
      """
     mocked_responses.post(
