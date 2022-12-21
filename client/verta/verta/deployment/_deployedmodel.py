@@ -227,9 +227,9 @@ class DeployedModel(object):
         always_retry_429 : bool, default False
             Deprecated: Whether to retry on 429s indefinitely. This is to accommodate third-party cluster
             autoscalers, which may take minutes to launch new pods for servicing requests.
-        retry_status : set, default {404, 429}
-            Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value of
-            {404, 429}.  Expand the set to include more: ```retry_status={404, 429, <NEW_STATUS_CODE>}```
+        retry_status : set, default {404, 429, 500, 503, 504}
+            Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value.
+            Expand the set to include more: ```retry_status={404, 429, 500, 503, 504, <NEW_STATUS_CODE>}```
         backoff_factor : float, default 0.3
             A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
@@ -296,9 +296,9 @@ class DeployedModel(object):
             Whether to compress the request body.
         max_retries : int, default 13
             Maximum number of retries on status codes listed in ``retry_status`` parameter only.
-        retry_status : set, default {404, 429}
-            Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value of
-            {404, 429}.  Expand the set to include more: ``retry_status={404, 429, <NEW_STATUS_CODE>}``
+        retry_status : set, default {404, 429, 500, 503, 504}
+            Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value.
+            Expand the set to include more: ```retry_status={404, 429, 500, 503, 504, <NEW_STATUS_CODE>}```
         backoff_factor : float, default 0.3
             A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of

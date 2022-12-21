@@ -12,7 +12,7 @@ from urllib3.util import Retry
 
 DEFAULT_MAX_RETRIES: int = 13
 DEFAULT_BACKOFF_FACTOR: float = 0.3
-DEFAULT_STATUS_FORCELIST: Set = {404, 429}
+DEFAULT_STATUS_FORCELIST: Set = {404, 429, 500, 503, 504}
 
 
 def retry_config(
