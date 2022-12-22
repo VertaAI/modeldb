@@ -1622,54 +1622,64 @@ public class FutureProjectDAO {
       Optional<String> workspaceName,
       Workspace workspace,
       Project.Builder projectBuilder) {
-    return uacApisUtil
-        .getResourceItemsForLoginUserWorkspace(
-            workspaceName,
-            workspace.getId(),
-            Optional.of(Collections.singletonList(createdProject.getId())),
-            ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-        .thenApply(
-            getResourcesResponseItems -> {
-              Optional<GetResourcesResponseItem> responseItem =
-                  getResourcesResponseItems.stream().findFirst();
-              if (!responseItem.isPresent()) {
-                throw new NotFoundException(
-                    String.format(
-                        "Failed to locate Project resources in UAC for ID : %s",
-                        createdProject.getId()));
-              }
-              GetResourcesResponseItem projectResource = responseItem.get();
+    InternalFuture<List<GetResourcesResponseItem>> getResourcesFuture;
+    if (isPermissionV2) {
+      getResourcesFuture =
+          uacApisUtil.getResourceItemsForWorkspace(
+              workspaceName,
+              Optional.of(Collections.singletonList(createdProject.getId())),
+              Optional.empty(),
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+    } else {
+      getResourcesFuture =
+          uacApisUtil.getResourceItemsForLoginUserWorkspace(
+              workspaceName,
+              workspace.getId(),
+              Optional.of(Collections.singletonList(createdProject.getId())),
+              ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+    }
+    return getResourcesFuture.thenApply(
+        getResourcesResponseItems -> {
+          Optional<GetResourcesResponseItem> responseItem =
+              getResourcesResponseItems.stream().findFirst();
+          if (!responseItem.isPresent()) {
+            throw new NotFoundException(
+                String.format(
+                    "Failed to locate Project resources in UAC for ID : %s",
+                    createdProject.getId()));
+          }
+          GetResourcesResponseItem projectResource = responseItem.get();
 
-              projectBuilder.setVisibility(projectResource.getVisibility());
-              projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-              projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
-              projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+          projectBuilder.setVisibility(projectResource.getVisibility());
+          projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+          projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+          projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
-              switch (workspace.getInternalIdCase()) {
-                case ORG_ID:
-                  projectBuilder.setWorkspaceId(workspace.getOrgId());
-                  projectBuilder.setWorkspaceTypeValue(
-                      WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
-                  break;
-                case USER_ID:
-                  projectBuilder.setWorkspaceId(workspace.getUserId());
-                  projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
-                  break;
-                default:
-                  // Do nothing
-                  break;
-              }
+          switch (workspace.getInternalIdCase()) {
+            case ORG_ID:
+              projectBuilder.setWorkspaceId(workspace.getOrgId());
+              projectBuilder.setWorkspaceTypeValue(
+                  WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+              break;
+            case USER_ID:
+              projectBuilder.setWorkspaceId(workspace.getUserId());
+              projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+              break;
+            default:
+              // Do nothing
+              break;
+          }
 
-              ProjectVisibility visibility =
-                  (ProjectVisibility)
-                      ModelDBUtils.getOldVisibility(
-                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
-                          projectResource.getVisibility());
-              projectBuilder.setProjectVisibility(visibility);
+          ProjectVisibility visibility =
+              (ProjectVisibility)
+                  ModelDBUtils.getOldVisibility(
+                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                      projectResource.getVisibility());
+          projectBuilder.setProjectVisibility(visibility);
 
-              return projectBuilder.build();
-            },
-            executor);
+          return projectBuilder.build();
+        },
+        executor);
   }
 
   private InternalFuture<Void> updateProjectAsCreated(Project createdProject) {

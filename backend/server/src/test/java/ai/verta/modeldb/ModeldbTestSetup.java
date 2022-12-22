@@ -528,22 +528,22 @@ public abstract class ModeldbTestSetup extends TestCase {
                 Workspace.newBuilder()
                     .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                     .build()));
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                GetResources.Response.newBuilder()
-                    .addItem(
-                        GetResourcesResponseItem.newBuilder()
-                            .setVisibility(ResourceVisibility.PRIVATE)
-                            .setResourceType(
-                                ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(
-                                        ModelDBServiceResourceTypes.PROJECT)
-                                    .build())
-                            .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                            .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+    var getResources =
+        GetResources.Response.newBuilder()
+            .addItem(
+                GetResourcesResponseItem.newBuilder()
+                    .setVisibility(ResourceVisibility.PRIVATE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
                             .build())
-                    .build()));
+                    .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .build())
+            .build();
+    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+        .thenReturn(Futures.immediateFuture(getResources));
+    when(collaboratorMock.getResources(any())).thenReturn(Futures.immediateFuture(getResources));
     when(roleServiceMock.setRoleBinding(any()))
         .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
     when(organizationBlockingMock.listMyOrganizations(any()))
@@ -684,6 +684,7 @@ public abstract class ModeldbTestSetup extends TestCase {
                                 .setResourceId(resourceId)
                                 .setWorkspaceId(userInfo.getVertaInfo().getDefaultWorkspaceId())
                                 .setOwnerId(userInfo.getVertaInfo().getDefaultWorkspaceId())
+                                .setVisibility(ResourceVisibility.PRIVATE)
                                 .build())
                     .collect(Collectors.toList()))
             .build();

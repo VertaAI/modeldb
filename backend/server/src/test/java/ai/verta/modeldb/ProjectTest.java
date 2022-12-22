@@ -1510,7 +1510,7 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     try {
-      when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+      when(collaboratorMock.getResources(any()))
           .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
       GetProjectById getProject = GetProjectById.newBuilder().setId("xyz").build();
       projectServiceStub.getProjectById(getProject);
@@ -1546,22 +1546,27 @@ public class ProjectTest extends ModeldbTestSetup {
                   Workspace.newBuilder()
                       .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                       .build()));
-      when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-          .thenReturn(
-              Futures.immediateFuture(
-                  GetResources.Response.newBuilder()
-                      .addItem(
-                          GetResourcesResponseItem.newBuilder()
-                              .setVisibility(ResourceVisibility.PRIVATE)
-                              .setResourceType(
-                                  ResourceType.newBuilder()
-                                      .setModeldbServiceResourceType(
-                                          ModelDBServiceResourceTypes.PROJECT)
-                                      .build())
-                              .setOwnerId(testUser2.getVertaInfo().getDefaultWorkspaceId())
-                              .setWorkspaceId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+
+      var getResources =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setVisibility(ResourceVisibility.PRIVATE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
                               .build())
-                      .build()));
+                      .setOwnerId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .setWorkspaceId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      if (testConfig.isPermissionV2Enabled()) {
+        when(collaboratorMock.getResources(any()))
+            .thenReturn(Futures.immediateFuture(getResources));
+      } else {
+        when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+            .thenReturn(Futures.immediateFuture(getResources));
+      }
     }
 
     Project project = null;
@@ -1597,23 +1602,28 @@ public class ProjectTest extends ModeldbTestSetup {
         if (isRunningIsolated()) {
           when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
           mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
-          when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-              .thenReturn(
-                  Futures.immediateFuture(
-                      GetResources.Response.newBuilder()
-                          .addItem(
-                              GetResourcesResponseItem.newBuilder()
-                                  .setVisibility(ResourceVisibility.PRIVATE)
-                                  .setResourceType(
-                                      ResourceType.newBuilder()
-                                          .setModeldbServiceResourceType(
-                                              ModelDBServiceResourceTypes.PROJECT)
-                                          .build())
-                                  .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                                  .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+          var getResources =
+              GetResources.Response.newBuilder()
+                  .addItem(
+                      GetResourcesResponseItem.newBuilder()
+                          .setVisibility(ResourceVisibility.PRIVATE)
+                          .setResourceType(
+                              ResourceType.newBuilder()
+                                  .setModeldbServiceResourceType(
+                                      ModelDBServiceResourceTypes.PROJECT)
                                   .build())
-                          .build()));
-        } else if (testConfig.isPermissionV2Enabled()) {
+                          .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                          .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                          .build())
+                  .build();
+          if (testConfig.isPermissionV2Enabled()) {
+            when(collaboratorMock.getResources(any()))
+                .thenReturn(Futures.immediateFuture(getResources));
+          } else {
+            when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+                .thenReturn(Futures.immediateFuture(getResources));
+          }
+        } else if (!testConfig.isPermissionV2Enabled()) {
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorUtils.addCollaboratorRequestProject(
                   project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1765,14 +1775,26 @@ public class ProjectTest extends ModeldbTestSetup {
       if (isRunningIsolated()) {
         projectMap.put(project.getId(), project);
         mockGetResourcesForAllProjects(projectMap, testUser1);
-        when(workspaceMock.getWorkspaceByName(any()))
-            .thenReturn(
-                Futures.immediateFuture(
-                    Workspace.newBuilder()
-                        .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                        .setUsername(testUser1.getVertaInfo().getUsername())
-                        .build()));
-      } else if (!testConfig.isPermissionV2Enabled()) {
+        if (testConfig.isPermissionV2Enabled()) {
+          when(workspaceMock.getWorkspaceById(
+                  GetWorkspaceById.newBuilder()
+                      .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .build()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      Workspace.newBuilder()
+                          .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                          .build()));
+        } else {
+          when(workspaceMock.getWorkspaceByName(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      Workspace.newBuilder()
+                          .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                          .setUsername(testUser1.getVertaInfo().getUsername())
+                          .build()));
+        }
+      } else if (testConfig.isPermissionV2Enabled()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
