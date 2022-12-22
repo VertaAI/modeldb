@@ -249,7 +249,7 @@ public abstract class ModeldbTestSetup extends TestCase {
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       testUser2 = uacServiceStub.getUser(getUserRequest);
 
-      if (testConfig.isEnabledPermissionV2()) {
+      if (testConfig.isPermissionV2Enabled()) {
         var authServiceChannelServiceUser =
             ManagedChannelBuilder.forTarget(
                     testConfig.getAuthService().getHost()
@@ -569,7 +569,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     reconcilerInitializer.getSoftDeleteDatasets().resync();
     reconcilerInitializer.getSoftDeleteRepositories().resync();
 
-    if (!runningIsolated && testConfig.isEnabledPermissionV2()) {
+    if (!runningIsolated && testConfig.isPermissionV2Enabled()) {
       removeOrganizationFromUAC();
     }
   }

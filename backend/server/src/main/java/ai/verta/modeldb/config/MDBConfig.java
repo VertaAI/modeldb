@@ -27,7 +27,7 @@ public class MDBConfig extends Config {
   @JsonProperty private TelemetryConfig telemetry;
   @JsonProperty private List<MigrationConfig> migrations;
   @JsonProperty protected FutureJdbi jdbi;
-  @JsonProperty private boolean enabledPermissionV2 = false;
+  @JsonProperty private boolean permissionV2Enabled = false;
 
   public static MDBConfig getInstance() throws InternalErrorException {
     if (mdbConfig == null) {

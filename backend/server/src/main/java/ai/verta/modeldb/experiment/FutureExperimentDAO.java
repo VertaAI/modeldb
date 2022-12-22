@@ -106,7 +106,7 @@ public class FutureExperimentDAO {
             mdbConfig);
     predicatesHandler =
         new PredicatesHandler(
-            executor, "experiment", "experiment", uacApisUtil, mdbConfig.isEnabledPermissionV2());
+            executor, "experiment", "experiment", uacApisUtil, mdbConfig.isPermissionV2Enabled());
     sortingHandler = new SortingHandler("experiment");
 
     createExperimentHandler =

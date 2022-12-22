@@ -134,7 +134,7 @@ public class FutureProjectDAO {
       ReconcilerInitializer reconcilerInitializer) {
     this.jdbi = jdbi;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
-    this.isPermissionV2 = mdbConfig.isEnabledPermissionV2();
+    this.isPermissionV2 = mdbConfig.isPermissionV2Enabled();
     this.executor = executor;
     this.uac = uac;
     this.futureExperimentRunDAO = futureExperimentRunDAO;
@@ -156,7 +156,7 @@ public class FutureProjectDAO {
             mdbConfig);
     predicatesHandler =
         new PredicatesHandler(
-            executor, "project", "p", uacApisUtil, mdbConfig.isEnabledPermissionV2());
+            executor, "project", "p", uacApisUtil, mdbConfig.isPermissionV2Enabled());
     sortingHandler = new SortingHandler("project");
     createProjectHandler =
         new CreateProjectHandler(

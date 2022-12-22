@@ -1613,7 +1613,7 @@ public class ProjectTest extends ModeldbTestSetup {
                                   .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                                   .build())
                           .build()));
-        } else if (testConfig.isEnabledPermissionV2()) {
+        } else if (testConfig.isPermissionV2Enabled()) {
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorUtils.addCollaboratorRequestProject(
                   project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1733,7 +1733,7 @@ public class ProjectTest extends ModeldbTestSetup {
     Project project = null;
     try {
       var workspaceName = testUser2.getVertaInfo().getUsername();
-      if (testConfig.isEnabledPermissionV2()) {
+      if (testConfig.isPermissionV2Enabled()) {
         workspaceName = getWorkspaceNameUser2();
       }
 
@@ -1772,7 +1772,7 @@ public class ProjectTest extends ModeldbTestSetup {
                         .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                         .setUsername(testUser1.getVertaInfo().getUsername())
                         .build()));
-      } else if (!testConfig.isEnabledPermissionV2()) {
+      } else if (!testConfig.isPermissionV2Enabled()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);

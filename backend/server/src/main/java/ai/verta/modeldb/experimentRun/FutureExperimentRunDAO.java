@@ -190,7 +190,7 @@ public class FutureExperimentRunDAO {
             "experiment_run",
             "experiment_run",
             uacApisUtil,
-            config.isEnabledPermissionV2());
+            config.isPermissionV2Enabled());
     sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
