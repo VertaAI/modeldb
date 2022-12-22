@@ -71,7 +71,6 @@ public class DatasetToRepositoryMigration {
   public static void execute(int recordUpdateLimit) {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
     config = App.getInstance().mdbConfig;
-    var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
     var uac = UAC.fromConfig(config, Optional.empty());
     authService = MDBAuthServiceUtils.FromConfig(config, uac);
     mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
@@ -81,6 +80,7 @@ public class DatasetToRepositoryMigration {
     blobDAO = new BlobDAORdbImpl(authService, mdbRoleService);
     metadataDAO = new MetadataDAORdbImpl();
 
+    var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
     futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,
