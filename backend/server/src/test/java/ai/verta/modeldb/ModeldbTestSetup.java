@@ -75,6 +75,7 @@ import io.grpc.ManagedChannelBuilder;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
@@ -95,9 +96,10 @@ public abstract class ModeldbTestSetup extends TestCase {
   protected static UserInfo testUser2;
 
   protected static WorkspaceV2 testUser1Workspace;
-  protected static WorkspaceV2 testUser2Workspace;
 
-  private static String organizationId;
+  protected static String organizationId;
+  protected static String groupIdUser1;
+  protected static String roleIdUser1;
 
   protected static ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
   protected static ProjectServiceGrpc.ProjectServiceBlockingStub client2ProjectServiceStub;
@@ -136,6 +138,7 @@ public abstract class ModeldbTestSetup extends TestCase {
   protected static AuthClientInterceptor authClientInterceptor;
   protected final String random = String.valueOf((long) (Math.random() * 1_000_000));
   private static boolean runningIsolated;
+  protected static ManagedChannel authServiceChannelServiceUser;
 
   protected CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorMock =
       mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
@@ -250,7 +253,7 @@ public abstract class ModeldbTestSetup extends TestCase {
       testUser2 = uacServiceStub.getUser(getUserRequest);
 
       if (testConfig.isPermissionV2Enabled()) {
-        var authServiceChannelServiceUser =
+        authServiceChannelServiceUser =
             ManagedChannelBuilder.forTarget(
                     testConfig.getAuthService().getHost()
                         + ":"
@@ -263,29 +266,28 @@ public abstract class ModeldbTestSetup extends TestCase {
                 .build();
         organizationServiceV2BlockingStub =
             OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
-        var organizationName = "modeldb-test-org";
-        organizationId = createAndGetOrganization(organizationName);
+        organizationId = createAndGetOrganization();
 
         addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
 
-        String groupId = createAndGetGroup(authServiceChannelServiceUser, organizationId);
+        groupIdUser1 = createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
 
-        var roleResponse = createAndGetRole(authServiceChannelServiceUser, organizationId);
+        roleIdUser1 =
+            createAndGetRole(
+                    authServiceChannelServiceUser,
+                    organizationId,
+                    Optional.empty(),
+                    Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET))
+                .getRole()
+                .getId();
 
         testUser1Workspace =
             createWorkspaceAndRoleForUser(
                 authServiceChannelServiceUser,
                 organizationId,
-                groupId,
-                roleResponse.getRole().getId(),
+                groupIdUser1,
+                roleIdUser1,
                 testUser1.getVertaInfo().getUsername());
-        testUser2Workspace =
-            createWorkspaceAndRoleForUser(
-                authServiceChannelServiceUser,
-                organizationId,
-                groupId,
-                roleResponse.getRole().getId(),
-                testUser2.getVertaInfo().getUsername());
       }
     } else {
       testUser1 =
@@ -319,26 +321,18 @@ public abstract class ModeldbTestSetup extends TestCase {
               .setNamespace("namespace")
               .addPermissions(Permission.newBuilder().setGroupId("-1").setRoleId("-1").build())
               .build();
-      testUser2Workspace =
-          WorkspaceV2.newBuilder()
-              .setId(Long.parseLong(testUser2.getVertaInfo().getWorkspaceId()))
-              .setName(testUser2.getVertaInfo().getUsername())
-              .setOrgId("-1")
-              .setNamespace("namespace")
-              .addPermissions(Permission.newBuilder().setGroupId("-1").setRoleId("-1").build())
-              .build();
     }
 
     LOGGER.info("Test service infrastructure config complete.");
   }
 
-  private static String createAndGetOrganization(String organizationName) {
+  protected static String createAndGetOrganization() {
     var organizationResponse =
         organizationServiceV2BlockingStub.setOrganization(
             SetOrganizationV2.newBuilder()
                 .setOrganization(
                     OrganizationV2.newBuilder()
-                        .setName(organizationName)
+                        .setName("modeldb-test-org" + new Date().getTime())
                         .addAdmins(
                             OrgAdminV2.newBuilder()
                                 .setEmail(authClientInterceptor.getClient1Email())
@@ -353,7 +347,7 @@ public abstract class ModeldbTestSetup extends TestCase {
         DeleteOrganizationV2.newBuilder().setOrgId(organizationId).build());
   }
 
-  private static void addTestUsersInOrganization(
+  protected static void addTestUsersInOrganization(
       ManagedChannel authServiceChannelServiceUser, String organizationId) {
     var userStub = UserServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
     userStub.addUser(
@@ -368,8 +362,8 @@ public abstract class ModeldbTestSetup extends TestCase {
             .build());
   }
 
-  private static String createAndGetGroup(
-      ManagedChannel authServiceChannelServiceUser, String organizationId) {
+  protected static String createAndGetGroup(
+      ManagedChannel authServiceChannelServiceUser, String organizationId, UserInfo userInfo) {
     var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
     return groupStub
         .setGroup(
@@ -378,43 +372,38 @@ public abstract class ModeldbTestSetup extends TestCase {
                     GroupV2.newBuilder()
                         .setName("Test-Group-" + new Date().getTime())
                         .setOrgId(organizationId)
-                        .addMemberIds(testUser1.getVertaInfo().getUserId())
-                        .addMemberIds(testUser2.getVertaInfo().getUserId()))
+                        .addMemberIds(userInfo.getVertaInfo().getUserId()))
                 .build())
         .getGroup()
         .getId();
   }
 
-  private static SetRoleV2.Response createAndGetRole(
-      ManagedChannel authServiceChannelServiceUser, String organizationId) {
+  protected static SetRoleV2.Response createAndGetRole(
+      ManagedChannel authServiceChannelServiceUser,
+      String organizationId,
+      Optional<String> roleId,
+      Set<ResourceTypeV2> resourceTypeV2s) {
+
+    var roleBuilder =
+        RoleV2.newBuilder().setName("Test-Role-" + new Date().getTime()).setOrgId(organizationId);
+
+    roleId.ifPresent(roleBuilder::setId);
+    resourceTypeV2s.forEach(
+        resourceTypeV2 ->
+            roleBuilder.addResourceActions(
+                RoleResourceActions.newBuilder()
+                    .setResourceType(resourceTypeV2)
+                    .addAllowedActions(ActionTypeV2.UPDATE)
+                    .addAllowedActions(ActionTypeV2.READ)
+                    .addAllowedActions(ActionTypeV2.CREATE)
+                    .addAllowedActions(ActionTypeV2.DELETE)
+                    .build()));
+
     var roleStub = RoleServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
-    return roleStub.setRole(
-        SetRoleV2.newBuilder()
-            .setRole(
-                RoleV2.newBuilder()
-                    .setName("Test-Role-" + new Date().getTime())
-                    .setOrgId(organizationId)
-                    .addResourceActions(
-                        RoleResourceActions.newBuilder()
-                            .setResourceType(ResourceTypeV2.PROJECT)
-                            .addAllowedActions(ActionTypeV2.UPDATE)
-                            .addAllowedActions(ActionTypeV2.READ)
-                            .addAllowedActions(ActionTypeV2.CREATE)
-                            .addAllowedActions(ActionTypeV2.DELETE)
-                            .build())
-                    .addResourceActions(
-                        RoleResourceActions.newBuilder()
-                            .setResourceType(ResourceTypeV2.DATASET)
-                            .addAllowedActions(ActionTypeV2.UPDATE)
-                            .addAllowedActions(ActionTypeV2.READ)
-                            .addAllowedActions(ActionTypeV2.CREATE)
-                            .addAllowedActions(ActionTypeV2.DELETE)
-                            .build())
-                    .build())
-            .build());
+    return roleStub.setRole(SetRoleV2.newBuilder().setRole(roleBuilder.build()).build());
   }
 
-  private WorkspaceV2 createWorkspaceAndRoleForUser(
+  protected WorkspaceV2 createWorkspaceAndRoleForUser(
       ManagedChannel authServiceChannelServiceUser,
       String organizationId,
       String groupId,
@@ -438,10 +427,6 @@ public abstract class ModeldbTestSetup extends TestCase {
 
   public String getWorkspaceNameUser1() {
     return testUser1Workspace.getOrgId() + "/" + testUser1Workspace.getName();
-  }
-
-  public String getWorkspaceNameUser2() {
-    return testUser2Workspace.getOrgId() + "/" + testUser2Workspace.getName();
   }
 
   protected void setupMockUacEndpoints(UAC uac) {

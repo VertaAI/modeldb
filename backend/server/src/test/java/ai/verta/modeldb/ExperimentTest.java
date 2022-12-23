@@ -83,6 +83,8 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     // Experiment Entities
     experiment = null;
+
+    cleanUpResources();
   }
 
   private void createProjectEntities() {
@@ -557,13 +559,25 @@ public class ExperimentTest extends ModeldbTestSetup {
     getExperiment = GetExperimentsInProject.newBuilder().setProjectId("hjhfdkshjfhdsk").build();
     try {
       if (isRunningIsolated()) {
-        when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+        when(collaboratorMock.getResources(any()))
             .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
       }
       experimentServiceStub.getExperimentsInProject(getExperiment);
       fail();
     } catch (StatusRuntimeException ex) {
       checkEqualsAssert(ex);
+    } finally {
+      if (isRunningIsolated()) {
+        when(collaboratorMock.getResources(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    GetResources.Response.newBuilder()
+                        .addItem(
+                            GetResourcesResponseItem.newBuilder()
+                                .setResourceId(project.getId())
+                                .build())
+                        .build()));
+      }
     }
 
     LOGGER.info("Get Experiment of project Negative test stop................................");

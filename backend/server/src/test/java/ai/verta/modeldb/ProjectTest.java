@@ -37,6 +37,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -1742,15 +1743,12 @@ public class ProjectTest extends ModeldbTestSetup {
     Project selfProject = null;
     Project project = null;
     try {
-      var workspaceName = testUser2.getVertaInfo().getUsername();
-      if (testConfig.isPermissionV2Enabled()) {
-        workspaceName = getWorkspaceNameUser2();
-      }
-
       if (isRunningIsolated()) {
         when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
         when(workspaceMock.getWorkspaceByName(
-                GetWorkspaceByName.newBuilder().setName(workspaceName).build()))
+                GetWorkspaceByName.newBuilder()
+                    .setName(testUser2.getVertaInfo().getUsername())
+                    .build()))
             .thenReturn(
                 Futures.immediateFuture(
                     Workspace.newBuilder()
@@ -1758,10 +1756,28 @@ public class ProjectTest extends ModeldbTestSetup {
                         .build()));
       }
 
+      if (isRunningIsolated()) {
+        when(workspaceMock.getWorkspaceById(
+                GetWorkspaceById.newBuilder()
+                    .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                    .build()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    Workspace.newBuilder()
+                        .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                        .build()));
+      } else if (testConfig.isPermissionV2Enabled()) {
+        var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+        groupStub.addUsers(
+            AddGroupUsers.newBuilder()
+                .addUserId(testUser2.getVertaInfo().getUserId())
+                .setGroupId(groupIdUser1)
+                .setOrgId(organizationId)
+                .build());
+      }
+
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest();
-      createProjectRequest =
-          createProjectRequest.toBuilder().setWorkspaceName(workspaceName).build();
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1794,7 +1810,7 @@ public class ProjectTest extends ModeldbTestSetup {
                           .setUsername(testUser1.getVertaInfo().getUsername())
                           .build()));
         }
-      } else if (testConfig.isPermissionV2Enabled()) {
+      } else if (!testConfig.isPermissionV2Enabled()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1808,6 +1824,32 @@ public class ProjectTest extends ModeldbTestSetup {
 
       // Create project
       createProjectRequest = getCreateProjectRequest(project.getName());
+      if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
+        var groupIdUser =
+            createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
+
+        var roleIdUser =
+            createAndGetRole(
+                    authServiceChannelServiceUser,
+                    organizationId,
+                    Optional.empty(),
+                    Set.of(ResourceTypeV2.PROJECT))
+                .getRole()
+                .getId();
+
+        var testUserWorkspace =
+            createWorkspaceAndRoleForUser(
+                authServiceChannelServiceUser,
+                organizationId,
+                groupIdUser,
+                roleIdUser,
+                testUser2.getVertaInfo().getUsername());
+        createProjectRequest =
+            createProjectRequest
+                .toBuilder()
+                .setWorkspaceName(organizationId + "/" + testUserWorkspace.getName())
+                .build();
+      }
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       selfProject = createProjectResponse.getProject();
       LOGGER.info("Project created successfully");
@@ -1822,10 +1864,11 @@ public class ProjectTest extends ModeldbTestSetup {
       }
 
       GetProjectByName getProject =
-          GetProjectByName.newBuilder()
-              .setName(selfProject.getName())
-              .setWorkspaceName(workspaceName)
-              .build();
+          GetProjectByName.newBuilder().setName(selfProject.getName()).build();
+
+      if (testConfig.isPermissionV2Enabled()) {
+        getProject = getProject.toBuilder().setWorkspaceName(getWorkspaceNameUser1()).build();
+      }
       GetProjectByName.Response getProjectByNameResponse =
           projectServiceStub.getProjectByName(getProject);
       LOGGER.info(
