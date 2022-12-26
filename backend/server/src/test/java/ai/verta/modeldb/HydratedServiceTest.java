@@ -25,6 +25,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
@@ -99,6 +100,8 @@ public class HydratedServiceTest extends ModeldbTestSetup {
     projectsMap = new HashMap<>();
     experimentMap = new HashMap<>();
     experimentRunMap = new HashMap<>();
+
+    cleanUpResources();
   }
 
   private void createProjectEntities() {
@@ -3087,7 +3090,7 @@ public class HydratedServiceTest extends ModeldbTestSetup {
   }
 
   @Test
-  public void checkCollaboratorDeleteActionTest() throws InterruptedException {
+  public void checkCollaboratorDeleteActionTest() {
     LOGGER.info("Check collaborator has delete action test start.........");
 
     if (!testConfig.hasAuth()) {
@@ -3098,6 +3101,10 @@ public class HydratedServiceTest extends ModeldbTestSetup {
     // Create project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("Project-1-" + new Date().getTime());
+    if (testConfig.isPermissionV2Enabled()) {
+      createProjectRequest =
+          createProjectRequest.toBuilder().setWorkspaceName(getWorkspaceNameUser1()).build();
+    }
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -3123,6 +3130,14 @@ public class HydratedServiceTest extends ModeldbTestSetup {
                     .build()))
             .thenReturn(
                 Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+      } else if (testConfig.isPermissionV2Enabled()) {
+        var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+        groupStub.addUsers(
+            AddGroupUsers.newBuilder()
+                .addUserId(testUser2.getVertaInfo().getUserId())
+                .setGroupId(groupIdUser1)
+                .setOrgId(organizationId)
+                .build());
       } else {
         AddCollaboratorRequest addCollaboratorRequest =
             addCollaboratorRequestProjectInterceptor(
@@ -3208,6 +3223,9 @@ public class HydratedServiceTest extends ModeldbTestSetup {
           createExperimentRunRequest.getName(),
           experimentRun22.getName());
 
+      FindExperimentRuns.Builder findExperimentRunsBuilder =
+          FindExperimentRuns.newBuilder().setProjectId(project.getId());
+
       Action deleteAction =
           Action.newBuilder()
               .setModeldbServiceAction(ModelDBActionEnum.ModelDBServiceActions.DELETE)
@@ -3221,6 +3239,54 @@ public class HydratedServiceTest extends ModeldbTestSetup {
                     .build());
         when(uacBlockingMock.getUsers(any()))
             .thenReturn(GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser2)).build());
+      } else if (testConfig.isPermissionV2Enabled()) {
+        var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+        groupStub.removeUsers(
+            RemoveGroupUsers.newBuilder()
+                .setOrgId(organizationId)
+                .setGroupId(groupIdUser1)
+                .addUserId(testUser2.getVertaInfo().getUserId())
+                .build());
+        var groupId =
+            groupStub
+                .setGroup(
+                    SetGroup.newBuilder()
+                        .setGroup(
+                            GroupV2.newBuilder()
+                                .setName("Test-Group-" + new Date().getTime())
+                                .setOrgId(organizationId)
+                                .addMemberIds(testUser2.getVertaInfo().getUserId()))
+                        .build())
+                .getGroup()
+                .getId();
+
+        var roleBuilder =
+            RoleV2.newBuilder()
+                .setName("Test-Role-" + new Date().getTime())
+                .setOrgId(organizationId);
+
+        roleBuilder.addResourceActions(
+            RoleResourceActions.newBuilder()
+                .setResourceType(ResourceTypeV2.PROJECT)
+                .addAllowedActions(ActionTypeV2.READ)
+                .build());
+
+        var roleStub = RoleServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+        var roleId =
+            roleStub
+                .setRole(SetRoleV2.newBuilder().setRole(roleBuilder.build()).build())
+                .getRole()
+                .getId();
+
+        var workspace =
+            createWorkspaceAndRoleForUser(
+                authServiceChannelServiceUser,
+                organizationId,
+                groupId,
+                roleId,
+                testUser2.getVertaInfo().getUsername(),
+                Optional.empty());
+        findExperimentRunsBuilder.setWorkspaceName(organizationId + "/" + workspace.getName());
       } else {
         var addCollaboratorRequest =
             addCollaboratorRequestProjectInterceptor(
@@ -3231,9 +3297,7 @@ public class HydratedServiceTest extends ModeldbTestSetup {
         assertTrue(projectCollaboratorResponse.getStatus());
       }
 
-      FindExperimentRuns findExperimentRuns =
-          FindExperimentRuns.newBuilder().setProjectId(project.getId()).build();
-
+      var findExperimentRuns = findExperimentRunsBuilder.build();
       AdvancedQueryExperimentRunsResponse advancedQueryExperimentRunsResponse =
           hydratedServiceBlockingStubClient2.findHydratedExperimentRuns(findExperimentRuns);
 
@@ -3251,7 +3315,7 @@ public class HydratedServiceTest extends ModeldbTestSetup {
         }
       }
 
-      if (!isRunningIsolated()) {
+      if (!isRunningIsolated() && !testConfig.isPermissionV2Enabled()) {
         var addCollaboratorRequest =
             addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorTypeEnum.CollaboratorType.READ_WRITE, authClientInterceptor);

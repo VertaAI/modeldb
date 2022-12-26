@@ -113,6 +113,8 @@ class DiffTest extends ModeldbTestSetup {
     }
 
     repository = null;
+
+    cleanUpResources();
   }
 
   private void createRepositoryEntities() {

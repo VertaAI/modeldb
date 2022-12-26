@@ -94,6 +94,8 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     datasetVersion2 = null;
     datasetVersion3 = null;
     datasetVersionMap = new HashMap<>();
+
+    cleanUpResources();
   }
 
   private void createDatasetEntities() {

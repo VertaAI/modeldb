@@ -89,6 +89,8 @@ public class FindHydratedServiceTest extends ModeldbTestSetup {
 
     projectMap = new HashMap<>();
     experimentRunMap = new HashMap<>();
+
+    cleanUpResources();
   }
 
   private void createProjectEntities() {

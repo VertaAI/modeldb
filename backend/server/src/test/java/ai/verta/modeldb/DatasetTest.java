@@ -94,6 +94,8 @@ public class DatasetTest extends ModeldbTestSetup {
     dataset3 = null;
     dataset4 = null;
     datasetMap = new HashMap<>();
+
+    cleanUpResources();
   }
 
   private void createDatasetEntities() {

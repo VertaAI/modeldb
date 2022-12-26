@@ -28,6 +28,8 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -243,16 +245,24 @@ public class IntegrationTest extends ModeldbTestSetup {
         .build();
   }
 
+  @Before
+  public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+  }
+
+  @After
+  public void removeEntities() {
+    cleanUpResources();
+  }
+
   @Test
   public void a_AllEntityCRUDTest() {
     LOGGER.info("All Entity CRUD Test start................................");
     try {
-      initializeChannelBuilderAndExternalServiceStubs();
-
-      if (isRunningIsolated()) {
-        setupMockUacEndpoints(uac);
-      }
-
       LOGGER.info("Create Project test start................................");
       CreateProject createProjectRequest = createProjectRequest();
       CreateProject.Response createProjectRequestResponse =
