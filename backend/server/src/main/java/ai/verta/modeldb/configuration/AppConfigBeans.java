@@ -3,7 +3,6 @@ package ai.verta.modeldb.configuration;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
-import ai.verta.modeldb.advancedService.AdvancedServiceImpl;
 import ai.verta.modeldb.comment.CommentServiceImpl;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
@@ -285,8 +284,6 @@ public class AppConfigBeans {
     LOGGER.trace("Dataset serviceImpl initialized");
     serverBuilder.addService(new DatasetVersionServiceImpl(services, daos));
     LOGGER.trace("Dataset Version serviceImpl initialized");
-    serverBuilder.addService(new AdvancedServiceImpl(services, daos, grpcExecutor));
-    LOGGER.trace("Hydrated serviceImpl initialized");
     serverBuilder.addService(new LineageServiceImpl(daos));
     LOGGER.trace("Lineage serviceImpl initialized");
 
