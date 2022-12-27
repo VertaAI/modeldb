@@ -83,9 +83,6 @@ public class TestsInit {
   protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStubClient2;
   protected static LineageServiceGrpc.LineageServiceBlockingStub lineageServiceStub;
-  protected static HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub;
-  protected static HydratedServiceGrpc.HydratedServiceBlockingStub
-      hydratedServiceBlockingStubClient2;
   protected static ArtifactStoreGrpc.ArtifactStoreBlockingStub artifactStoreBlockingStub;
   private static final AtomicBoolean setServerAndServiceRan = new AtomicBoolean(false);
   private static ReconcilerInitializer reconcilerInitializer;
@@ -199,8 +196,6 @@ public class TestsInit {
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
     artifactStoreBlockingStub = ArtifactStoreGrpc.newBlockingStub(channel);
-    hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
-    hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(client2Channel);
 
     serverBuilder.build().start();
     setServerAndServiceRan.set(true);
