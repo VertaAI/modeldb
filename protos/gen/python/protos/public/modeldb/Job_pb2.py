@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.modeldb',
   syntax='proto3',
   serialized_options=b'P\001Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldb',
-  serialized_pb=b'\n\x11modeldb/Job.proto\x12\x10\x61i.verta.modeldb\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\"M\n\rJobStatusEnum\"<\n\tJobStatus\x12\x0f\n\x0bNOT_STARTED\x10\x00\x12\x0f\n\x0bIN_PROGRESS\x10\x01\x12\r\n\tCOMPLETED\x10\x02\",\n\x0bJobTypeEnum\"\x1d\n\x07JobType\x12\x12\n\x0eKUBERNETES_JOB\x10\x00\"\x80\x02\n\x03Job\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x12\n\nstart_time\x18\x03 \x01(\t\x12\x10\n\x08\x65nd_time\x18\x04 \x01(\t\x12+\n\x08metadata\x18\x05 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12=\n\njob_status\x18\x06 \x01(\x0e\x32).ai.verta.modeldb.JobStatusEnum.JobStatus\x12\x37\n\x08job_type\x18\x07 \x01(\x0e\x32%.ai.verta.modeldb.JobTypeEnum.JobType\x12\r\n\x05owner\x18\x08 \x01(\t\"\x9b\x02\n\tCreateJob\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x12\n\nstart_time\x18\x02 \x01(\t\x12\x10\n\x08\x65nd_time\x18\x03 \x01(\t\x12+\n\x08metadata\x18\x04 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12=\n\njob_status\x18\x05 \x01(\x0e\x32).ai.verta.modeldb.JobStatusEnum.JobStatus\x12\x37\n\x08job_type\x18\x06 \x01(\x0e\x32%.ai.verta.modeldb.JobTypeEnum.JobType\x1a.\n\x08Response\x12\"\n\x03job\x18\x01 \x01(\x0b\x32\x15.ai.verta.modeldb.Job\"\x98\x01\n\tUpdateJob\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08\x65nd_time\x18\x03 \x01(\t\x12=\n\njob_status\x18\x02 \x01(\x0e\x32).ai.verta.modeldb.JobStatusEnum.JobStatus\x1a.\n\x08Response\x12\"\n\x03job\x18\x01 \x01(\x0b\x32\x15.ai.verta.modeldb.Job\"3\n\tDeleteJob\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"D\n\x06GetJob\x12\n\n\x02id\x18\x01 \x01(\t\x1a.\n\x08Response\x12\"\n\x03job\x18\x01 \x01(\x0b\x32\x15.ai.verta.modeldb.Job2\xaf\x03\n\nJobService\x12l\n\tcreateJob\x12\x1b.ai.verta.modeldb.CreateJob\x1a$.ai.verta.modeldb.CreateJob.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\"\x11/v1/job/createJob:\x01*\x12]\n\x06getJob\x12\x18.ai.verta.modeldb.GetJob\x1a!.ai.verta.modeldb.GetJob.Response\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/job/getJob\x12i\n\tupdateJob\x12\x1b.ai.verta.modeldb.UpdateJob\x1a$.ai.verta.modeldb.UpdateJob.Response\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/v1/job/updateJob\x12i\n\tdeleteJob\x12\x1b.ai.verta.modeldb.DeleteJob\x1a$.ai.verta.modeldb.DeleteJob.Response\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/v1/job/deleteJobBBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
+  serialized_pb=b'\n\x11modeldb/Job.proto\x12\x10\x61i.verta.modeldb\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\"M\n\rJobStatusEnum\"<\n\tJobStatus\x12\x0f\n\x0bNOT_STARTED\x10\x00\x12\x0f\n\x0bIN_PROGRESS\x10\x01\x12\r\n\tCOMPLETED\x10\x02\",\n\x0bJobTypeEnum\"\x1d\n\x07JobType\x12\x12\n\x0eKUBERNETES_JOB\x10\x00\"\xda\x02\n\x03Job\x12\n\n\x02id\x18\x01 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x02 \x01(\t\x12\x12\n\nstart_time\x18\x03 \x01(\t\x12\x10\n\x08\x65nd_time\x18\x04 \x01(\t\x12+\n\x08metadata\x18\x05 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12=\n\njob_status\x18\x06 \x01(\x0e\x32).ai.verta.modeldb.JobStatusEnum.JobStatus\x12\x37\n\x08job_type\x18\x07 \x01(\x0e\x32%.ai.verta.modeldb.JobTypeEnum.JobType\x12\r\n\x05owner\x18\x08 \x01(\t\x12\x12\n\x08owner_id\x18# \x01(\x04H\x00\x12\x32\n\x0egroup_owner_id\x18$ \x01(\x0b\x32\x18.ai.verta.common.GroupIdH\x00\x42\x10\n\x0eowner_tracking\"\x9b\x02\n\tCreateJob\x12\x13\n\x0b\x64\x65scription\x18\x01 \x01(\t\x12\x12\n\nstart_time\x18\x02 \x01(\t\x12\x10\n\x08\x65nd_time\x18\x03 \x01(\t\x12+\n\x08metadata\x18\x04 \x03(\x0b\x32\x19.ai.verta.common.KeyValue\x12=\n\njob_status\x18\x05 \x01(\x0e\x32).ai.verta.modeldb.JobStatusEnum.JobStatus\x12\x37\n\x08job_type\x18\x06 \x01(\x0e\x32%.ai.verta.modeldb.JobTypeEnum.JobType\x1a.\n\x08Response\x12\"\n\x03job\x18\x01 \x01(\x0b\x32\x15.ai.verta.modeldb.Job\"\x98\x01\n\tUpdateJob\x12\n\n\x02id\x18\x01 \x01(\t\x12\x10\n\x08\x65nd_time\x18\x03 \x01(\t\x12=\n\njob_status\x18\x02 \x01(\x0e\x32).ai.verta.modeldb.JobStatusEnum.JobStatus\x1a.\n\x08Response\x12\"\n\x03job\x18\x01 \x01(\x0b\x32\x15.ai.verta.modeldb.Job\"3\n\tDeleteJob\x12\n\n\x02id\x18\x01 \x01(\t\x1a\x1a\n\x08Response\x12\x0e\n\x06status\x18\x01 \x01(\x08\"D\n\x06GetJob\x12\n\n\x02id\x18\x01 \x01(\t\x1a.\n\x08Response\x12\"\n\x03job\x18\x01 \x01(\x0b\x32\x15.ai.verta.modeldb.Job2\xaf\x03\n\nJobService\x12l\n\tcreateJob\x12\x1b.ai.verta.modeldb.CreateJob\x1a$.ai.verta.modeldb.CreateJob.Response\"\x1c\x82\xd3\xe4\x93\x02\x16\"\x11/v1/job/createJob:\x01*\x12]\n\x06getJob\x12\x18.ai.verta.modeldb.GetJob\x1a!.ai.verta.modeldb.GetJob.Response\"\x16\x82\xd3\xe4\x93\x02\x10\x12\x0e/v1/job/getJob\x12i\n\tupdateJob\x12\x1b.ai.verta.modeldb.UpdateJob\x1a$.ai.verta.modeldb.UpdateJob.Response\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/v1/job/updateJob\x12i\n\tdeleteJob\x12\x1b.ai.verta.modeldb.DeleteJob\x1a$.ai.verta.modeldb.DeleteJob.Response\"\x19\x82\xd3\xe4\x93\x02\x13\x12\x11/v1/job/deleteJobBBP\x01Z>github.com/VertaAI/modeldb/protos/gen/go/protos/public/modeldbb\x06proto3'
   ,
   dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,])
 
@@ -184,6 +184,20 @@ _JOB = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='owner_id', full_name='ai.verta.modeldb.Job.owner_id', index=8,
+      number=35, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='group_owner_id', full_name='ai.verta.modeldb.Job.group_owner_id', index=9,
+      number=36, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -195,9 +209,12 @@ _JOB = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
+    _descriptor.OneofDescriptor(
+      name='owner_tracking', full_name='ai.verta.modeldb.Job.owner_tracking',
+      index=0, containing_type=None, fields=[]),
   ],
   serialized_start=223,
-  serialized_end=479,
+  serialized_end=569,
 )
 
 
@@ -227,8 +244,8 @@ _CREATEJOB_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=719,
-  serialized_end=765,
+  serialized_start=809,
+  serialized_end=855,
 )
 
 _CREATEJOB = _descriptor.Descriptor(
@@ -292,8 +309,8 @@ _CREATEJOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=482,
-  serialized_end=765,
+  serialized_start=572,
+  serialized_end=855,
 )
 
 
@@ -323,8 +340,8 @@ _UPDATEJOB_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=719,
-  serialized_end=765,
+  serialized_start=809,
+  serialized_end=855,
 )
 
 _UPDATEJOB = _descriptor.Descriptor(
@@ -367,8 +384,8 @@ _UPDATEJOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=768,
-  serialized_end=920,
+  serialized_start=858,
+  serialized_end=1010,
 )
 
 
@@ -398,8 +415,8 @@ _DELETEJOB_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=947,
-  serialized_end=973,
+  serialized_start=1037,
+  serialized_end=1063,
 )
 
 _DELETEJOB = _descriptor.Descriptor(
@@ -428,8 +445,8 @@ _DELETEJOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=922,
-  serialized_end=973,
+  serialized_start=1012,
+  serialized_end=1063,
 )
 
 
@@ -459,8 +476,8 @@ _GETJOB_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=719,
-  serialized_end=765,
+  serialized_start=809,
+  serialized_end=855,
 )
 
 _GETJOB = _descriptor.Descriptor(
@@ -489,8 +506,8 @@ _GETJOB = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=975,
-  serialized_end=1043,
+  serialized_start=1065,
+  serialized_end=1133,
 )
 
 _JOBSTATUSENUM_JOBSTATUS.containing_type = _JOBSTATUSENUM
@@ -498,6 +515,13 @@ _JOBTYPEENUM_JOBTYPE.containing_type = _JOBTYPEENUM
 _JOB.fields_by_name['metadata'].message_type = common_dot_CommonService__pb2._KEYVALUE
 _JOB.fields_by_name['job_status'].enum_type = _JOBSTATUSENUM_JOBSTATUS
 _JOB.fields_by_name['job_type'].enum_type = _JOBTYPEENUM_JOBTYPE
+_JOB.fields_by_name['group_owner_id'].message_type = common_dot_CommonService__pb2._GROUPID
+_JOB.oneofs_by_name['owner_tracking'].fields.append(
+  _JOB.fields_by_name['owner_id'])
+_JOB.fields_by_name['owner_id'].containing_oneof = _JOB.oneofs_by_name['owner_tracking']
+_JOB.oneofs_by_name['owner_tracking'].fields.append(
+  _JOB.fields_by_name['group_owner_id'])
+_JOB.fields_by_name['group_owner_id'].containing_oneof = _JOB.oneofs_by_name['owner_tracking']
 _CREATEJOB_RESPONSE.fields_by_name['job'].message_type = _JOB
 _CREATEJOB_RESPONSE.containing_type = _CREATEJOB
 _CREATEJOB.fields_by_name['metadata'].message_type = common_dot_CommonService__pb2._KEYVALUE
@@ -608,8 +632,8 @@ _JOBSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1046,
-  serialized_end=1477,
+  serialized_start=1136,
+  serialized_end=1567,
   methods=[
   _descriptor.MethodDescriptor(
     name='createJob',
