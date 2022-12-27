@@ -24,6 +24,10 @@ message Experiment {
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
     string owner = 22;
+    oneof owner_tracking {
+        uint64 owner_id = 35;
+        common.GroupId group_owner_id = 36;
+    }
     common.CodeVersion code_version_snapshot = 23;
     repeated common.Artifact artifacts = 24;
     // Doc for version_number https://github.com/VertaAI/docs/pull/53
