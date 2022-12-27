@@ -14,6 +14,7 @@ import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryVisibilityEnum.RepositoryVisibility;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetResourcesResponseItem.OwnerTrackingCase;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
 import com.google.api.client.util.Objects;
@@ -236,7 +237,12 @@ public class RepositoryEntity implements Serializable {
     }
     builder.setVisibility(responseItem.getVisibility());
     builder.setWorkspaceServiceId(responseItem.getWorkspaceId());
-    builder.setOwner(String.valueOf(responseItem.getOwnerId()));
+    if (responseItem.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+      builder.setGroupOwnerId(responseItem.getGroupOwnerId());
+    } else {
+      builder.setOwnerId(responseItem.getOwnerId());
+      builder.setOwner(String.valueOf(responseItem.getOwnerId()));
+    }
     builder.setCustomPermission(responseItem.getCustomPermission());
 
     RepositoryVisibility visibility;

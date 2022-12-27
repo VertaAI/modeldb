@@ -10,6 +10,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetResourcesResponseItem.OwnerTrackingCase;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
 import java.io.Serializable;
@@ -381,7 +382,12 @@ public class ProjectEntity implements Serializable {
     }
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+      projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
+    } else {
+      projectBuilder.setOwnerId(projectResource.getOwnerId());
+      projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    }
     projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
     Workspace workspace;
