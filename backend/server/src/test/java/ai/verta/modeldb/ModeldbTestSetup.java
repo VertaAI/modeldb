@@ -2,6 +2,7 @@ package ai.verta.modeldb;
 
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -444,28 +445,22 @@ public abstract class ModeldbTestSetup extends TestCase {
   }
 
   protected void setupMockUacEndpoints(UAC uac) {
-    when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
-    when(uac.getAuthzService()).thenReturn(authzMock);
-    when(uac.getUACService()).thenReturn(uacMock);
-    when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
-    when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzBlockingMock);
-    when(authChannelMock.getUacServiceBlockingStub()).thenReturn(uacBlockingMock);
-    when(authChannelMock.getWorkspaceServiceBlockingStub()).thenReturn(workspaceBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
-    when(uac.getWorkspaceService()).thenReturn(workspaceMock);
-    when(uac.getServiceAccountRoleServiceFutureStub()).thenReturn(roleServiceMock);
-    when(authChannelMock.getRoleServiceBlockingStubForServiceUser())
-        .thenReturn(roleServiceBlockingMock);
-    when(authChannelMock.getOrganizationServiceBlockingStub()).thenReturn(organizationBlockingMock);
+    doReturn(collaboratorMock).when(uac).getCollaboratorService();
+    doReturn(authzMock).when(uac).getAuthzService();
+    doReturn(uacMock).when(uac).getUACService();
+    doReturn(authChannelMock).when(uac).getBlockingAuthServiceChannel();
+    doReturn(authzBlockingMock).when(authChannelMock).getAuthzServiceBlockingStub();
+    doReturn(uacBlockingMock).when(authChannelMock).getUacServiceBlockingStub();
+    doReturn(workspaceBlockingMock).when(authChannelMock).getWorkspaceServiceBlockingStub();
+    doReturn(collaboratorBlockingMock).when(authChannelMock).getCollaboratorServiceBlockingStub();
+    doReturn(workspaceMock).when(uac).getWorkspaceService();
+    doReturn(roleServiceMock).when(uac).getServiceAccountRoleServiceFutureStub();
+    doReturn(roleServiceBlockingMock).when(authChannelMock).getRoleServiceBlockingStubForServiceUser();
+    doReturn(organizationBlockingMock).when(authChannelMock).getOrganizationServiceBlockingStub();
 
-    when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
-    when(uacMock.getUser(any())).thenReturn(Futures.immediateFuture(testUser1));
-    when(uacMock.getUsersFuzzy(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                GetUsersFuzzy.Response.newBuilder()
-                    .addAllUserInfos(List.of(testUser1, testUser2))
-                    .build()));
+    doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getCurrentUser(any());
+    doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getUser(any());
+    doReturn(Futures.immediateFuture(GetUsersFuzzy.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build())).when(uacMock).getUsersFuzzy(any());
     when(authzMock.isSelfAllowed(any()))
         .thenReturn(
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -502,8 +497,7 @@ public abstract class ModeldbTestSetup extends TestCase {
                 .build());
     when(collaboratorBlockingMock.setResource(any()))
         .thenReturn(SetResource.Response.newBuilder().build());
-    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
-        .thenReturn(collaboratorBlockingMock);
+    doReturn(collaboratorBlockingMock).when(authChannelMock).getCollaboratorServiceBlockingStubForServiceUser();
     when(collaboratorBlockingMock.deleteResources(any()))
         .thenReturn(DeleteResources.Response.newBuilder().build());
     // allow any SetResource call
