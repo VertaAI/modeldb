@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.collaborator;
 
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
-import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.common.authservice.RoleService;
 import ai.verta.uac.AddCollaboratorRequest.Response.Builder;
 import ai.verta.uac.Entities;
@@ -49,12 +48,6 @@ public class CollaboratorOrg extends CollaboratorBase {
   @Override
   public void addToResponse(Builder response) {
     response.setCollaboratorOrganization(getCollaborator());
-  }
-
-  @Override
-  public void addToResponse(CollaboratorUserInfo.Builder builder) {
-    builder.setCollaboratorOrganization(getCollaborator());
-    super.addToResponse(builder);
   }
 
   private Organization getCollaborator() {

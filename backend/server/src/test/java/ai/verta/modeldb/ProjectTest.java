@@ -1511,8 +1511,15 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     try {
-      when(collaboratorMock.getResources(any()))
-          .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+      if (isRunningIsolated()){
+        if (testConfig.isPermissionV2Enabled()){
+          when(collaboratorMock.getResources(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        } else {
+          when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        }
+      }
       GetProjectById getProject = GetProjectById.newBuilder().setId("xyz").build();
       projectServiceStub.getProjectById(getProject);
       fail();
@@ -1900,12 +1907,6 @@ public class ProjectTest extends ModeldbTestSetup {
       }
 
       if (project != null) {
-        if (isRunningIsolated()) {
-          mockGetSelfAllowedResources(
-              Collections.singleton(project.getId()),
-              ModelDBServiceResourceTypes.PROJECT,
-              ModelDBServiceActions.DELETE);
-        }
         DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
         DeleteProject.Response deleteProjectResponse =
             client2ProjectServiceStub.deleteProject(deleteProject);
