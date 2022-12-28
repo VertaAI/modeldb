@@ -469,13 +469,13 @@ public abstract class ModeldbTestSetup extends TestCase {
                     .build()))
         .when(uacMock)
         .getUsersFuzzy(any());
-    when(authzMock.isSelfAllowed(any()))
-        .thenReturn(
-            Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
-    when(authzBlockingMock.isSelfAllowed(any()))
-        .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
-    when(authzBlockingMock.getSelfAllowedActionsBatch(any()))
-        .thenReturn(
+    doReturn(Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()))
+        .when(authzMock)
+        .isSelfAllowed(any());
+    doReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build())
+        .when(authzBlockingMock)
+        .isSelfAllowed(any());
+    doReturn(
             GetSelfAllowedActionsBatch.Response.newBuilder()
                 .putActions(
                     "READ",
@@ -486,51 +486,60 @@ public abstract class ModeldbTestSetup extends TestCase {
                                 .setService(Service.MODELDB_SERVICE)
                                 .build())
                         .build())
-                .build());
-    when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
-    when(uacBlockingMock.getUsers(any()))
-        .thenReturn(
-            GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build());
-    when(workspaceBlockingMock.getWorkspaceByName(any()))
-        .thenReturn(
+                .build())
+        .when(authzBlockingMock)
+        .getSelfAllowedActionsBatch(any());
+    doReturn(testUser1).when(uacBlockingMock).getCurrentUser(any());
+    doReturn(GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build())
+        .when(uacBlockingMock)
+        .getUsers(any());
+    doReturn(
             Workspace.newBuilder()
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                 .setUsername(testUser1.getVertaInfo().getUsername())
-                .build());
-    when(workspaceBlockingMock.getWorkspaceById(any()))
-        .thenReturn(
+                .build())
+        .when(workspaceBlockingMock)
+        .getWorkspaceByName(any());
+    doReturn(
             Workspace.newBuilder()
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                 .setUsername(testUser1.getVertaInfo().getUsername())
-                .build());
-    when(collaboratorBlockingMock.setResource(any()))
-        .thenReturn(SetResource.Response.newBuilder().build());
+                .build())
+        .when(workspaceBlockingMock)
+        .getWorkspaceById(any());
+    doReturn(SetResource.Response.newBuilder().build())
+        .when(collaboratorBlockingMock)
+        .setResource(any());
     doReturn(collaboratorBlockingMock)
         .when(authChannelMock)
         .getCollaboratorServiceBlockingStubForServiceUser();
-    when(collaboratorBlockingMock.deleteResources(any()))
-        .thenReturn(DeleteResources.Response.newBuilder().build());
+    doReturn(DeleteResources.Response.newBuilder().build())
+        .when(collaboratorBlockingMock)
+        .deleteResources(any());
     // allow any SetResource call
-    when(collaboratorMock.setResource(any()))
-        .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
-    when(workspaceMock.getWorkspaceById(
+    doReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()))
+        .when(collaboratorMock)
+        .setResource(any());
+    doReturn(
+            Futures.immediateFuture(
+                Workspace.newBuilder()
+                    .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .build()))
+        .when(workspaceMock)
+        .getWorkspaceById(
             GetWorkspaceById.newBuilder()
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                .build()))
-        .thenReturn(
+                .build());
+    doReturn(
             Futures.immediateFuture(
                 Workspace.newBuilder()
                     .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                    .build()));
-    when(workspaceMock.getWorkspaceByName(
+                    .build()))
+        .when(workspaceMock)
+        .getWorkspaceByName(
             GetWorkspaceByName.newBuilder()
                 .setName(testUser1.getVertaInfo().getUsername())
-                .build()))
-        .thenReturn(
-            Futures.immediateFuture(
-                Workspace.newBuilder()
-                    .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                    .build()));
+                .build());
     var getResources =
         GetResources.Response.newBuilder()
             .addItem(
@@ -544,13 +553,16 @@ public abstract class ModeldbTestSetup extends TestCase {
                     .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                     .build())
             .build();
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(Futures.immediateFuture(getResources));
-    when(collaboratorMock.getResources(any())).thenReturn(Futures.immediateFuture(getResources));
-    when(roleServiceMock.setRoleBinding(any()))
-        .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
-    when(organizationBlockingMock.listMyOrganizations(any()))
-        .thenReturn(ListMyOrganizations.Response.newBuilder().build());
+    doReturn(Futures.immediateFuture(getResources))
+        .when(collaboratorMock)
+        .getResourcesSpecialPersonalWorkspace(any());
+    doReturn(Futures.immediateFuture(getResources)).when(collaboratorMock).getResources(any());
+    doReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()))
+        .when(roleServiceMock)
+        .setRoleBinding(any());
+    doReturn(ListMyOrganizations.Response.newBuilder().build())
+        .when(organizationBlockingMock)
+        .listMyOrganizations(any());
   }
 
   protected void cleanUpResources() {
