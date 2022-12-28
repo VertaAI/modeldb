@@ -1850,7 +1850,8 @@ public class ProjectTest extends ModeldbTestSetup {
                 organizationId,
                 groupIdUser,
                 roleIdUser,
-                testUser2.getVertaInfo().getUsername());
+                testUser2.getVertaInfo().getUsername(),
+                Optional.empty());
         createProjectRequest =
             createProjectRequest
                 .toBuilder()
