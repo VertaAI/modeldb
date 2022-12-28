@@ -559,9 +559,9 @@ public class ExperimentTest extends ModeldbTestSetup {
     getExperiment = GetExperimentsInProject.newBuilder().setProjectId("hjhfdkshjfhdsk").build();
     try {
       if (isRunningIsolated()) {
-        if (testConfig.isPermissionV2Enabled()){
-        when(collaboratorMock.getResources(any()))
-            .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        if (testConfig.isPermissionV2Enabled()) {
+          when(collaboratorMock.getResources(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
         } else {
           when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
               .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
