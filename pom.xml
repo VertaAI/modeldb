@@ -88,7 +88,7 @@
             <dependency>
                 <groupId>org.jetbrains.kotlin</groupId>
                 <artifactId>kotlin-stdlib</artifactId>
-                <version>1.7.10</version>
+                <version>1.8.0</version>
             </dependency>
             <dependency>
                 <groupId>org.apache.logging.log4j</groupId>
