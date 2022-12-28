@@ -1511,8 +1511,8 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     try {
-      if (isRunningIsolated()){
-        if (testConfig.isPermissionV2Enabled()){
+      if (isRunningIsolated()) {
+        if (testConfig.isPermissionV2Enabled()) {
           when(collaboratorMock.getResources(any()))
               .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
         } else {
