@@ -145,6 +145,41 @@ class FutureTest {
   }
 
   @Test
+  void retry_strategy_failure() {
+    AtomicInteger sequencer = new AtomicInteger();
+
+    assertThatThrownBy(
+            () ->
+                Future.retrying(
+                        () -> {
+                          if (sequencer.getAndIncrement() < 10) {
+                            return Future.failedStage(new NullPointerException());
+                          }
+                          return Future.of("success!");
+                        },
+                        RetryStrategy.backoff(throwable -> true, 5))
+                    .get())
+        .isInstanceOf(NullPointerException.class);
+    assertThat(sequencer).hasValue(6);
+  }
+
+  @Test
+  void retry_strategy() throws Exception {
+    AtomicInteger sequencer = new AtomicInteger();
+
+    Future.retrying(
+            () -> {
+              if (sequencer.getAndIncrement() < 5) {
+                return Future.failedStage(new NullPointerException());
+              }
+              return Future.of("success!");
+            },
+            RetryStrategy.backoff(throwable -> true, 10))
+        .get();
+    assertThat(sequencer).hasValue(6);
+  }
+
+  @Test
   @Timeout(2)
   void sequence_exceptionHandling() {
     assertThatThrownBy(
