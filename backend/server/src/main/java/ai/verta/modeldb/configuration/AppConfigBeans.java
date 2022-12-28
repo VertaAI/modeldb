@@ -119,7 +119,6 @@ public class AppConfigBeans {
     Future.setFutureExecutor(futureExecutor);
     // set the OpenTelemetry instance, in case deep future tracing is enabled.
     Future.setOpenTelemetry(openTelemetry);
-    Future.setOpenTelemetry(openTelemetry);
     return futureExecutor;
   }
 
