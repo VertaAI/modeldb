@@ -1,11 +1,10 @@
 package ai.verta.modeldb.common.futures;
 
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
-
-import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
 
 public interface RetryStrategy {
   Retry shouldRetry(Throwable throwable);
@@ -26,5 +25,4 @@ public interface RetryStrategy {
       return should;
     }
   }
-
 }

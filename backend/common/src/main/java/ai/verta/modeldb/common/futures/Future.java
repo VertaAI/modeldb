@@ -115,9 +115,7 @@ public class Future<T> {
     return new Future<>(other);
   }
 
-  /**
-   * @deprecated Use {@link #of(Object)} instead.
-   */
+  /** @deprecated Use {@link #of(Object)} instead. */
   @Deprecated
   public static <R> Future<R> completedInternalFuture(R value) {
     Preconditions.checkNotNull(
@@ -346,8 +344,7 @@ public class Future<T> {
     return from(CompletableFuture.failedFuture(ex));
   }
 
-  public static <U> Future<U> retrying(
-      Supplier<Future<U>> supplier, RetryStrategy retryStrategy) {
+  public static <U> Future<U> retrying(Supplier<Future<U>> supplier, RetryStrategy retryStrategy) {
     final var promise = new CompletableFuture<U>();
 
     supplier
@@ -406,10 +403,12 @@ public class Future<T> {
 
   public static <U> Future<U> retriableStage(
       Supplier<Future<U>> supplier, Function<Throwable, Boolean> retryChecker) {
-    return retrying(supplier, throwable -> {
-      Boolean result = retryChecker.apply(throwable);
-      return new RetryStrategy.Retry(result, 0, TimeUnit.SECONDS);
-    });
+    return retrying(
+        supplier,
+        throwable -> {
+          Boolean result = retryChecker.apply(throwable);
+          return new RetryStrategy.Retry(result, 0, TimeUnit.SECONDS);
+        });
   }
 
   public static <U> Future<Optional<U>> flipOptional(Optional<Future<U>> val) {
@@ -456,9 +455,7 @@ public class Future<T> {
     futureTracer = openTelemetry.getTracer("futureTracer");
   }
 
-  /**
-   * @deprecated Only use this as a part of the conversion process between versions of Futures.
-   */
+  /** @deprecated Only use this as a part of the conversion process between versions of Futures. */
   @Deprecated
   public InternalFuture<T> toInternalFuture() {
     return InternalFuture.from(stage);
