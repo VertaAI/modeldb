@@ -2,9 +2,9 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.VersioningEntry;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.interfaces.CheckEntityPermissionBasedOnResourceTypesFunction;
 import ai.verta.uac.ModelDBActionEnum;
 import java.util.ArrayList;
@@ -28,13 +28,13 @@ public class FilterPrivilegedVersionedInputsHandler {
     this.jdbi = jdbi;
   }
 
-  public InternalFuture<Map<String, VersioningEntry>> filterVersionedInputsBasedOnPrivileges(
+  public Future<Map<String, VersioningEntry>> filterVersionedInputsBasedOnPrivileges(
       Set<String> runIds,
-      InternalFuture<Map<String, VersioningEntry>> futureVersionedInputs,
+      Future<Map<String, VersioningEntry>> futureVersionedInputs,
       CheckEntityPermissionBasedOnResourceTypesFunction permissionCheck) {
     return futureVersionedInputs.thenCompose(
         versionedInputsMap -> {
-          List<InternalFuture<Map<String, VersioningEntry>>> internalFutureList = new ArrayList<>();
+          List<Future<Map<String, VersioningEntry>>> internalFutureList = new ArrayList<>();
           for (String runId : runIds) {
             // Get VersionEntry from fetched map
             var versioningEntry = versionedInputsMap.get(runId);
@@ -55,23 +55,19 @@ public class FilterPrivilegedVersionedInputsHandler {
                           // Set null into map if repository is not accessible to the
                           // current user
                           if (isSelfAllowed) {
-                            return InternalFuture.completedInternalFuture(
-                                Collections.singletonMap(runId, versioningEntry));
+                            return Future.of(Collections.singletonMap(runId, versioningEntry));
                           } else {
-                            return InternalFuture.completedInternalFuture(Collections.emptyMap());
+                            return Future.of(Collections.emptyMap());
                           }
-                        },
-                        executor));
+                        }));
           }
-          return InternalFuture.sequence(internalFutureList, executor)
+          return Future.sequence(internalFutureList)
               .thenCompose(
                   maps -> {
                     Map<String, VersioningEntry> finalVersionedInputsMap = new HashMap<>();
                     maps.forEach(finalVersionedInputsMap::putAll);
-                    return InternalFuture.completedInternalFuture(finalVersionedInputsMap);
-                  },
-                  executor);
-        },
-        executor);
+                    return Future.of(finalVersionedInputsMap);
+                  });
+        });
   }
 }

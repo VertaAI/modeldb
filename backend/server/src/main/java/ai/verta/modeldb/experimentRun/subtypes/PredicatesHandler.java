@@ -7,12 +7,10 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
-import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnimplementedException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -37,12 +35,9 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private HyperparameterPredicatesHandler hyperparameterPredicatesHandler;
   private final String tableName;
   private final String alias;
-  private final FutureExecutor executor;
   private final UACApisUtil uacApisUtil;
 
-  public PredicatesHandler(
-      FutureExecutor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
-    this.executor = executor;
+  public PredicatesHandler(String tableName, String alias, UACApisUtil uacApisUtil) {
     this.tableName = tableName;
     this.alias = alias;
     this.uacApisUtil = uacApisUtil;
@@ -84,18 +79,17 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     return entityColumn;
   }
 
-  public InternalFuture<QueryFilterContext> processPredicates(
-      List<KeyValueQuery> predicates, FutureExecutor executor) {
-    final var futureFilters = new LinkedList<InternalFuture<QueryFilterContext>>();
+  public Future<QueryFilterContext> processPredicates(List<KeyValueQuery> predicates) {
+    final var futureFilters = new LinkedList<Future<QueryFilterContext>>();
     for (final var item : new EnumerateList<>(predicates).getList()) {
       futureFilters.add(processPredicate(item.getIndex(), item.getValue()));
     }
 
-    return InternalFuture.sequence(futureFilters, executor)
-        .thenApply(QueryFilterContext::combine, executor);
+    return Future.sequence(futureFilters)
+        .thenCompose(a -> Future.of(QueryFilterContext.combine(a)));
   }
 
-  private InternalFuture<QueryFilterContext> processPredicate(long index, KeyValueQuery predicate) {
+  private Future<QueryFilterContext> processPredicate(long index, KeyValueQuery predicate) {
     final var key = predicate.getKey();
     final var value = predicate.getValue();
 
@@ -120,15 +114,15 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         return setOwnerPredicate(index, predicate);
         // case visibility:
       case "":
-        return InternalFuture.failedStage(new InvalidArgumentException("Key is empty"));
+        return Future.failedStage(new InvalidArgumentException("Key is empty"));
       case "end_time":
-        return InternalFuture.completedInternalFuture(
+        return Future.of(
             new QueryFilterContext()
                 .addCondition(String.format("%s.end_time = :%s", alias, bindingName))
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       default:
-        InternalFuture<QueryFilterContext> filterContext =
-            processEntityNameBasedPredicates(index, bindingName, predicate);
+        Future<QueryFilterContext> filterContext =
+            processEntityNameBasedPredicates(bindingName, predicate);
         if (filterContext != null) {
           return filterContext;
         }
@@ -168,10 +162,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
     // TODO: handle arbitrary key
 
-    return InternalFuture.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
+    return Future.failedStage(new InvalidArgumentException("Predicate cannot be handled"));
   }
 
-  private <T> InternalFuture<QueryFilterContext> getContextFilterForSingleStringFields(
+  private <T> Future<QueryFilterContext> getContextFilterForSingleStringFields(
       KeyValueQuery predicate, String key, T value, String bindingName) {
     var sql = String.format("select distinct id from %s where ", tableName);
     sql += applyOperator(predicate.getOperator(), key, ":" + bindingName);
@@ -186,30 +180,30 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       queryContext =
           queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
     }
-    return InternalFuture.completedInternalFuture(queryContext);
+    return Future.of(queryContext);
   }
 
-  private InternalFuture<QueryFilterContext> processEntityNameBasedPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
+  private Future<QueryFilterContext> processEntityNameBasedPredicates(
+      String bindingName, KeyValueQuery predicate) {
     switch (tableName) {
       case "project":
-        return processProjectPredicates(index, bindingName, predicate);
+        return processProjectPredicates();
       case "experiment":
-        return processExperimentPredicates(index, bindingName, predicate);
+        return processExperimentPredicates();
       case "experiment_run":
-        return processExperimentRunPredicates(index, bindingName, predicate);
+        return processExperimentRunPredicates(bindingName, predicate);
       default:
         // return null for further process
         return null;
     }
   }
 
-  private InternalFuture<QueryFilterContext> processExperimentRunPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
+  private Future<QueryFilterContext> processExperimentRunPredicates(
+      String bindingName, KeyValueQuery predicate) {
 
     if (!predicate.getKey().contains(ModelDBConstants.LINKED_ARTIFACT_ID)
         && predicate.getOperator().equals(OperatorEnum.Operator.IN)) {
-      return InternalFuture.failedStage(
+      return Future.failedStage(
           new InvalidArgumentException(
               "Operator `IN` supported only with the linked_artifact_id as a key"));
     }
@@ -217,13 +211,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     var value = predicate.getValue();
     switch (predicate.getKey()) {
       case "project_id":
-        return InternalFuture.completedInternalFuture(
+        return Future.of(
             new QueryFilterContext()
                 .addCondition(String.format("%s.project_id = :%s", alias, bindingName))
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       case "experiment_id":
         String operator = predicate.getOperator().equals(OperatorEnum.Operator.NE) ? "<>" : "=";
-        return InternalFuture.completedInternalFuture(
+        return Future.of(
             new QueryFilterContext()
                 .addCondition("experiment_run.experiment_id " + operator + " :" + bindingName)
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
@@ -249,35 +243,24 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                   String.format("%s.experiment_id IN (%s)", alias, expSql));
         }
 
-        return InternalFuture.completedInternalFuture(expQueryContext);
+        return Future.of(expQueryContext);
       default:
         // return null for further process
         return null;
     }
   }
 
-  private InternalFuture<QueryFilterContext> processExperimentPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
-    var value = predicate.getValue();
-    switch (predicate.getKey()) {
-      default:
-        // return null for further process
-        return null;
-    }
+  private Future<QueryFilterContext> processExperimentPredicates() {
+    // return null for further process
+    return null;
   }
 
-  private InternalFuture<QueryFilterContext> processProjectPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
-    var value = predicate.getValue();
-    switch (predicate.getKey()) {
-      default:
-        // return null for further process
-        return null;
-    }
+  private Future<QueryFilterContext> processProjectPredicates() {
+    // return null for further process
+    return null;
   }
 
-  private InternalFuture<QueryFilterContext> processTagsPredicate(
-      long index, KeyValueQuery predicate) {
+  private Future<QueryFilterContext> processTagsPredicate(long index, KeyValueQuery predicate) {
     try {
       final var value = predicate.getValue();
       var operator = predicate.getOperator();
@@ -318,7 +301,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           queryContext = queryContext.addBind(q -> q.bindList(valueBindingName, valueList));
           break;
         default:
-          return InternalFuture.failedStage(
+          return Future.failedStage(
               new UnimplementedException("Unknown 'Value' type: " + value.getKindCase().name()));
       }
 
@@ -331,19 +314,19 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
       }
 
-      return InternalFuture.completedInternalFuture(queryContext);
+      return Future.of(queryContext);
     } catch (Exception ex) {
-      return InternalFuture.failedStage(ex);
+      return Future.failedStage(ex);
     }
   }
 
-  private InternalFuture<QueryFilterContext> processObservationPredicate(
+  private Future<QueryFilterContext> processObservationPredicate(
       long index, KeyValueQuery predicate, String[] names) {
 
     final var errorMessage =
         "Invalid predicate for observations, Valid format is like `observations.attribute.att_key`";
     if (names.length != 2) {
-      return InternalFuture.failedStage(new InvalidArgumentException(errorMessage));
+      return Future.failedStage(new InvalidArgumentException(errorMessage));
     }
 
     switch (names[0]) {
@@ -352,11 +335,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       case "artifact":
         // TODO: Implement here after adding support on insertion ER
       default:
-        return InternalFuture.failedStage(new InvalidArgumentException(errorMessage));
+        return Future.failedStage(new InvalidArgumentException(errorMessage));
     }
   }
 
-  private InternalFuture<QueryFilterContext> processKeyValuePredicate(
+  private Future<QueryFilterContext> processKeyValuePredicate(
       long index, KeyValueQuery predicate, String name, String fieldType) {
     final var value = predicate.getValue();
     final var operator = predicate.getOperator();
@@ -421,7 +404,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         queryContext = queryContext.addBind(q -> q.bindList(valueBindingName, valueList));
         break;
       default:
-        return InternalFuture.failedStage(
+        return Future.failedStage(
             new UnimplementedException(ModelDBMessages.UNKNOWN_VALUE_TYPE_RECOGNIZED_ERROR));
     }
 
@@ -434,10 +417,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
     }
 
-    return InternalFuture.completedInternalFuture(queryContext);
+    return Future.of(queryContext);
   }
 
-  private InternalFuture<QueryFilterContext> processAttributePredicate(
+  private Future<QueryFilterContext> processAttributePredicate(
       long index, KeyValueQuery predicate, String name, String fieldType) {
     try {
       final var value = predicate.getValue();
@@ -499,7 +482,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           }
           break;
         default:
-          return InternalFuture.failedStage(
+          return Future.failedStage(
               new UnimplementedException(ModelDBMessages.UNKNOWN_VALUE_TYPE_RECOGNIZED_ERROR));
       }
 
@@ -512,13 +495,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
       }
 
-      return InternalFuture.completedInternalFuture(queryContext);
+      return Future.of(queryContext);
     } catch (Exception ex) {
-      return InternalFuture.failedStage(ex);
+      return Future.failedStage(ex);
     }
   }
 
-  private InternalFuture<QueryFilterContext> processArtifactPredicate(
+  private Future<QueryFilterContext> processArtifactPredicate(
       long index, KeyValueQuery predicate, String name, String fieldType) {
     try {
       final var value = predicate.getValue();
@@ -588,7 +571,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           }
           break;
         default:
-          return InternalFuture.failedStage(
+          return Future.failedStage(
               new UnimplementedException(ModelDBMessages.UNKNOWN_VALUE_TYPE_RECOGNIZED_ERROR));
       }
 
@@ -601,22 +584,22 @@ public class PredicatesHandler extends PredicateHandlerUtils {
             queryContext.addCondition(String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
       }
 
-      return InternalFuture.completedInternalFuture(queryContext);
+      return Future.of(queryContext);
     } catch (Exception ex) {
-      return InternalFuture.failedStage(ex);
+      return Future.failedStage(ex);
     }
   }
 
-  private InternalFuture<QueryFilterContext> setOwnerPredicate(long index, KeyValueQuery predicate)
+  private Future<QueryFilterContext> setOwnerPredicate(long index, KeyValueQuery predicate)
       throws ModelDBException {
     var operator = predicate.getOperator();
-    InternalFuture<List<UserInfo>> userInfoListFuture;
+    Future<List<UserInfo>> userInfoListFuture;
     if (operator.equals(OperatorEnum.Operator.CONTAIN)
         || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
       userInfoListFuture =
           uacApisUtil
               .getFuzzyUserInfoList(predicate.getValue().getStringValue())
-              .thenApply(UserInfoPaginationDTO::getUserInfoList, executor);
+              .thenCompose(a -> Future.of(a.getUserInfoList()));
     } else {
       var ownerIdsArrString = predicate.getValue().getStringValue();
       List<String> ownerIds = new ArrayList<>();
@@ -629,13 +612,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           uacApisUtil
               .getUserInfoFromAuthServer(
                   new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList())
-              .thenApply(userInfoMap -> new ArrayList<>(userInfoMap.values()), executor);
+              .thenCompose(userInfoMap -> Future.of(new ArrayList<>(userInfoMap.values())));
     }
 
     return userInfoListFuture.thenCompose(
         userInfoList -> {
           if (userInfoList != null && !userInfoList.isEmpty()) {
-            var resourceItemsFutures = new ArrayList<InternalFuture<Set<String>>>();
+            var resourceItemsFutures = new ArrayList<Future<Set<String>>>();
             for (var userInfo : userInfoList) {
               resourceItemsFutures.add(
                   uacApisUtil
@@ -643,14 +626,14 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                           userInfo.getVertaInfo().getUsername(),
                           Optional.empty(),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-                      .thenApply(
+                      .thenCompose(
                           accessibleAllWorkspaceItems ->
-                              accessibleAllWorkspaceItems.stream()
-                                  .map(GetResourcesResponseItem::getResourceId)
-                                  .collect(Collectors.toSet()),
-                          executor));
+                              Future.of(
+                                  accessibleAllWorkspaceItems.stream()
+                                      .map(GetResourcesResponseItem::getResourceId)
+                                      .collect(Collectors.toSet()))));
             }
-            return InternalFuture.sequence(resourceItemsFutures, executor)
+            return Future.sequence(resourceItemsFutures)
                 .thenCompose(
                     resourceIdsList -> {
                       var resourceIds = new HashSet<String>();
@@ -674,14 +657,12 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                             queryContext.addCondition(
                                 String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
                       }
-                      return InternalFuture.completedInternalFuture(queryContext);
-                    },
-                    executor);
+                      return Future.of(queryContext);
+                    });
           } else {
-            return InternalFuture.completedInternalFuture(
+            return Future.of(
                 new QueryFilterContext().addCondition(String.format("%s.id = '-1'", alias)));
           }
-        },
-        executor);
+        });
   }
 }

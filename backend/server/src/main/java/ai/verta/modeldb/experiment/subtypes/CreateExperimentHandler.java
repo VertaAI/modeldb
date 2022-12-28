@@ -29,6 +29,7 @@ import ai.verta.uac.RoleScope;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.UserInfo;
+import com.google.common.util.concurrent.ListenableFuture;
 import java.time.Instant;
 import java.util.Calendar;
 import java.util.Comparator;
@@ -73,9 +74,10 @@ public class CreateExperimentHandler extends HandlerUtil {
     this.codeVersionHandler = new CodeVersionHandler(executor, jdbi, "experiment");
   }
 
-  public InternalFuture<Experiment> convertCreateRequest(
+  public Future<Experiment> convertCreateRequest(
       final CreateExperiment request, UserInfo userInfo) {
-    return InternalFuture.completedInternalFuture(getExperimentFromRequest(request, userInfo));
+    Experiment thing = getExperimentFromRequest(request, userInfo);
+    return Future.of(thing);
   }
 
   /**
@@ -133,7 +135,7 @@ public class CreateExperimentHandler extends HandlerUtil {
     return experimentBuilder.build();
   }
 
-  public InternalFuture<Experiment> insertExperiment(Experiment newExperiment) {
+  public Future<Experiment> insertExperiment(Experiment newExperiment) {
     final var now = Calendar.getInstance().getTimeInMillis();
     Map<String, Object> valueMap = new LinkedHashMap<>();
     valueMap.put("id", newExperiment.getId());
@@ -148,9 +150,9 @@ public class CreateExperimentHandler extends HandlerUtil {
     valueMap.put("deleted", false);
     valueMap.put("created", false);
 
-    Supplier<InternalFuture<Experiment>> insertFutureSupplier =
+    Supplier<Future<Experiment>> insertFutureSupplier =
         () ->
-            jdbi.withTransaction(
+            jdbi.inTransaction(
                 handle -> {
                   final var builder = newExperiment.toBuilder();
                   Boolean exists = checkInsertedEntityAlreadyExists(handle, newExperiment);
@@ -192,23 +194,23 @@ public class CreateExperimentHandler extends HandlerUtil {
                   }
                   return builder.build();
                 });
-    return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
+    return Future.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry)
         .thenCompose(
-            createdExperiment ->
-                createRoleBindingsForExperiment(createdExperiment)
-                    .thenApply(unused -> createdExperiment, executor),
-            executor)
+            createdExperiment -> {
+              return createRoleBindingsForExperiment(createdExperiment)
+                  .thenCompose(unused -> Future.of(createdExperiment));
+            })
         .thenCompose(
-            createdExperiment ->
-                jdbi.useHandle(
-                        handle ->
-                            handle
-                                .createUpdate("UPDATE experiment SET created=:created WHERE id=:id")
-                                .bind("created", true)
-                                .bind("id", createdExperiment.getId())
-                                .execute())
-                    .thenApply(unused -> createdExperiment, executor),
-            executor);
+            createdExperiment -> {
+              return jdbi.run(
+                      handle ->
+                          handle
+                              .createUpdate("UPDATE experiment SET created=:created WHERE id=:id")
+                              .bind("created", true)
+                              .bind("id", createdExperiment.getId())
+                              .execute())
+                  .thenCompose(unused -> Future.of(createdExperiment));
+            });
   }
 
   private Boolean checkInsertedEntityAlreadyExists(Handle handle, Experiment experiment) {
@@ -233,40 +235,38 @@ public class CreateExperimentHandler extends HandlerUtil {
     return roleName + "_" + resourceTypeName + "_" + resourceId + "_" + "User_" + vertaId;
   }
 
-  private InternalFuture<Void> createRoleBindingsForExperiment(final Experiment experimentRun) {
+  private Future<Void> createRoleBindingsForExperiment(final Experiment experimentRun) {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_OWNER;
-    return FutureUtil.clientRequest(
-            uac.getServiceAccountRoleServiceFutureStub()
-                .setRoleBinding(
-                    SetRoleBinding.newBuilder()
-                        .setRoleBinding(
-                            RoleBinding.newBuilder()
-                                .setName(
-                                    buildRoleBindingName(
-                                        roleName,
-                                        experimentRun.getId(),
-                                        experimentRun.getOwner(),
-                                        modelDBServiceResourceType.name()))
-                                .setScope(RoleScope.newBuilder().build())
-                                .setRoleName(roleName)
-                                .addEntities(
-                                    Entities.newBuilder()
-                                        .addUserIds(experimentRun.getOwner())
-                                        .build())
-                                .addResources(
-                                    Resources.newBuilder()
-                                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                                        .setResourceType(
-                                            ResourceType.newBuilder()
-                                                .setModeldbServiceResourceType(
-                                                    modelDBServiceResourceType))
-                                        .addResourceIds(experimentRun.getId())
-                                        .build())
-                                .build())
-                        .build()),
-            executor)
+    ListenableFuture<SetRoleBinding.Response> listenableFuture =
+        uac.getServiceAccountRoleServiceFutureStub()
+            .setRoleBinding(
+                SetRoleBinding.newBuilder()
+                    .setRoleBinding(
+                        RoleBinding.newBuilder()
+                            .setName(
+                                buildRoleBindingName(
+                                    roleName,
+                                    experimentRun.getId(),
+                                    experimentRun.getOwner(),
+                                    modelDBServiceResourceType.name()))
+                            .setScope(RoleScope.newBuilder().build())
+                            .setRoleName(roleName)
+                            .addEntities(
+                                Entities.newBuilder().addUserIds(experimentRun.getOwner()).build())
+                            .addResources(
+                                Resources.newBuilder()
+                                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                                    .setResourceType(
+                                        ResourceType.newBuilder()
+                                            .setModeldbServiceResourceType(
+                                                modelDBServiceResourceType))
+                                    .addResourceIds(experimentRun.getId())
+                                    .build())
+                            .build())
+                    .build());
+    return Future.fromListenableFuture(listenableFuture)
         .thenAccept(
             response -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);

@@ -12,10 +12,10 @@ import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDAO;
@@ -250,8 +250,8 @@ public class VersionInputHandler {
     try {
       existingVersioningEntry =
           getVersionedInputs(Collections.singleton(entityId))
-              .thenApply(
-                  existingVersioningEntryMap -> existingVersioningEntryMap.get(entityId), executor)
+              .thenCompose(
+                  existingVersioningEntryMap -> Future.of(existingVersioningEntryMap.get(entityId)))
               .get();
     } catch (Exception e) {
       throw new ModelDBException(e);
@@ -338,11 +338,11 @@ public class VersionInputHandler {
    * @return returns a map from location to an Entry of BlobExpanded and sha
    * @throws ModelDBException ModelDBException
    */
-  public InternalFuture<Map<String, Map.Entry<BlobExpanded, String>>> validateVersioningEntity(
+  public Future<Map<String, Map.Entry<BlobExpanded, String>>> validateVersioningEntity(
       VersioningEntry versioningEntry) {
 
     final var futureTask =
-        InternalFuture.runAsync(
+        Future.runAsync(
             () -> {
               String errorMessage = null;
               if (versioningEntry.getRepositoryId() == 0L) {
@@ -354,8 +354,7 @@ public class VersionInputHandler {
               if (errorMessage != null) {
                 throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
               }
-            },
-            executor);
+            });
 
     return futureTask.thenCompose(
         unused -> {
@@ -390,7 +389,7 @@ public class VersionInputHandler {
                 // If requested locations and commit blob locations are not matched then we will
                 // throw error for logging invalid versioned input
                 if (!locationBlobWithHashMap.containsKey(locationKey)) {
-                  return InternalFuture.failedStage(
+                  return Future.failedStage(
                       new ModelDBException(
                           "Blob Location '"
                               + locationBlobKeyMap.getValue().getLocationList()
@@ -404,18 +403,17 @@ public class VersionInputHandler {
               }
             }
           } catch (Exception ex) {
-            return InternalFuture.failedStage(ex);
+            return Future.failedStage(ex);
           }
-          return InternalFuture.completedInternalFuture(requestedLocationBlobWithHashMap);
-        },
-        executor);
+          return Future.of(requestedLocationBlobWithHashMap);
+        });
   }
 
   // We have a mapping table for the runs and VersionedInput called
   // versioning_modeldb_entity_mapping so while getting runs we will fetch versioned inout from
   // there.
-  public InternalFuture<Map<String, VersioningEntry>> getVersionedInputs(Set<String> runIds) {
-    return jdbi.withHandle(
+  public Future<Map<String, VersioningEntry>> getVersionedInputs(Set<String> runIds) {
+    return jdbi.call(
             handle ->
                 handle
                     .createQuery(
@@ -478,8 +476,7 @@ public class VersionInputHandler {
                   entryMap.put(entry.getKey(), entry.getValue());
                 }
               }
-              return InternalFuture.completedInternalFuture(entryMap);
-            },
-            executor);
+              return Future.of(entryMap);
+            });
   }
 }

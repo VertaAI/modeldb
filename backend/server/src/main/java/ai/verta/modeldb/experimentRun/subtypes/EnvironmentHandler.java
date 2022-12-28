@@ -1,8 +1,8 @@
 package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
 import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import java.util.ArrayList;
@@ -58,8 +58,8 @@ public class EnvironmentHandler {
     return builder.build();
   }
 
-  public InternalFuture<Void> logEnvironment(String runId, EnvironmentBlob environmentBlob) {
-    return jdbi.useHandle(
+  public Future<Void> logEnvironment(String runId, EnvironmentBlob environmentBlob) {
+    return jdbi.run(
         handle ->
             handle
                 .createUpdate(

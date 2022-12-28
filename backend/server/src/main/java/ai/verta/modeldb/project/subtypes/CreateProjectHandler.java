@@ -7,9 +7,9 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
@@ -61,8 +61,9 @@ public class CreateProjectHandler extends HandlerUtil {
     this.codeVersionHandler = new CodeVersionHandler(executor, jdbi, "project");
   }
 
-  public InternalFuture<Project> convertCreateRequest(final CreateProject request) {
-    return InternalFuture.completedInternalFuture(getProjectFromRequest(request));
+  public Future<Project> convertCreateRequest(final CreateProject request) {
+    Project thing = getProjectFromRequest(request);
+    return Future.of(thing);
   }
 
   /**
@@ -121,7 +122,7 @@ public class CreateProjectHandler extends HandlerUtil {
     return projectBuilder.build();
   }
 
-  public InternalFuture<Project> insertProject(Project newProject) {
+  public Future<Project> insertProject(Project newProject) {
     final var now = Calendar.getInstance().getTimeInMillis();
     Map<String, Object> valueMap = new LinkedHashMap<>();
     valueMap.put("id", newProject.getId());
@@ -138,9 +139,9 @@ public class CreateProjectHandler extends HandlerUtil {
     valueMap.put("created", false);
     valueMap.put("visibility_migration", true);
 
-    Supplier<InternalFuture<Project>> insertFutureSupplier =
+    Supplier<Future<Project>> insertFutureSupplier =
         () ->
-            jdbi.withTransaction(
+            jdbi.inTransaction(
                 handle -> {
                   final var builder = newProject.toBuilder();
                   String queryString = buildInsertQuery(valueMap, "project");
@@ -176,7 +177,7 @@ public class CreateProjectHandler extends HandlerUtil {
                   }
                   return builder.build();
                 });
-    return InternalFuture.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry, executor)
-        .thenApply(createdProject -> createdProject, executor);
+    return Future.retriableStage(insertFutureSupplier, CommonDBUtil::needToRetry)
+        .thenCompose(createdProject -> Future.of(createdProject));
   }
 }

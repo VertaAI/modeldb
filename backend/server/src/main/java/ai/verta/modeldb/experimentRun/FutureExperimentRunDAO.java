@@ -1,13 +1,7 @@
 package ai.verta.modeldb.experimentRun;
 
-import ai.verta.common.Artifact;
-import ai.verta.common.CodeVersion;
-import ai.verta.common.KeyValue;
-import ai.verta.common.KeyValueQuery;
+import ai.verta.common.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.OperatorEnum;
-import ai.verta.common.Pagination;
-import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.AddExperimentRunTags;
 import ai.verta.modeldb.CloneExperimentRun;
 import ai.verta.modeldb.CommitArtifactPart;
@@ -60,10 +54,9 @@ import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
@@ -114,6 +107,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -184,8 +178,7 @@ public class FutureExperimentRunDAO {
             datasetHandler,
             artifactStoreDAO,
             config);
-    predicatesHandler =
-        new PredicatesHandler(executor, "experiment_run", "experiment_run", uacApisUtil);
+    predicatesHandler = new PredicatesHandler("experiment_run", "experiment_run", uacApisUtil);
     sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
@@ -217,7 +210,7 @@ public class FutureExperimentRunDAO {
             executor, jdbi, config.isPopulateConnectionsBasedOnPrivileges());
   }
 
-  public InternalFuture<ExperimentRun> deleteObservations(DeleteObservations request) {
+  public Future<ExperimentRun> deleteObservations(DeleteObservations request) {
     // TODO: support artifacts?
 
     final var runId = request.getId();
@@ -228,13 +221,13 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> observationHandler.deleteObservations(runId, maybeKeys), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+        .thenCompose(unused -> observationHandler.deleteObservations(runId, maybeKeys))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<List<Observation>> getObservations(GetObservations request) {
+  public Future<List<Observation>> getObservations(GetObservations request) {
     // TODO: support artifacts?
 
     final var runId = request.getId();
@@ -242,16 +235,16 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> observationHandler.getObservations(runId, key), executor)
-        .thenApply(
+        .thenCompose(unused -> observationHandler.getObservations(runId, key))
+        .thenCompose(
             observations ->
-                observations.stream()
-                    .sorted(Comparator.comparing(RdbmsUtils::getObservationCompareKey))
-                    .collect(Collectors.toList()),
-            executor);
+                Future.of(
+                    observations.stream()
+                        .sorted(Comparator.comparing(RdbmsUtils::getObservationCompareKey))
+                        .collect(Collectors.toList())));
   }
 
-  public InternalFuture<ExperimentRun> logObservations(LogObservations request) {
+  public Future<ExperimentRun> logObservations(LogObservations request) {
     // TODO: support artifacts?
 
     final var runId = request.getId();
@@ -262,15 +255,14 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> observationHandler.logObservations(handle, runId, observations, now)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                jdbi.run(
+                    handle -> observationHandler.logObservations(handle, runId, observations, now)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> deleteMetrics(DeleteMetrics request) {
+  public Future<ExperimentRun> deleteMetrics(DeleteMetrics request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -280,15 +272,13 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused ->
-                jdbi.useHandle(handle -> metricsHandler.deleteKeyValues(handle, runId, maybeKeys)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+            unused -> jdbi.run(handle -> metricsHandler.deleteKeyValues(handle, runId, maybeKeys)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> deleteHyperparameters(DeleteHyperparameters request) {
+  public Future<ExperimentRun> deleteHyperparameters(DeleteHyperparameters request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -301,15 +291,14 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> hyperparametersHandler.deleteKeyValues(handle, runId, maybeKeys)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                jdbi.run(
+                    handle -> hyperparametersHandler.deleteKeyValues(handle, runId, maybeKeys)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> deleteAttributes(DeleteExperimentRunAttributes request) {
+  public Future<ExperimentRun> deleteAttributes(DeleteExperimentRunAttributes request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -320,44 +309,44 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> attributeHandler.deleteKeyValues(handle, runId, maybeKeys)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                jdbi.run(handle -> attributeHandler.deleteKeyValues(handle, runId, maybeKeys)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<List<KeyValue>> getMetrics(GetMetrics request) {
+  public Future<List<KeyValue>> getMetrics(GetMetrics request) {
     final var runId = request.getId();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true), executor);
+            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true).toFuture());
   }
 
-  public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
+  public Future<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
     final var runId = request.getId();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> hyperparametersHandler.getKeyValues(runId, Collections.emptyList(), true),
-            executor);
+            unused ->
+                hyperparametersHandler
+                    .getKeyValues(runId, Collections.emptyList(), true)
+                    .toFuture());
   }
 
-  public InternalFuture<List<KeyValue>> getAttributes(GetAttributes request) {
+  public Future<List<KeyValue>> getAttributes(GetAttributes request) {
     final var runId = request.getId();
     final var keys = request.getAttributeKeysList();
     final var getAll = request.getGetAll();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor);
+        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll).toFuture());
   }
 
-  public InternalFuture<ExperimentRun> logMetrics(LogMetrics request) {
+  public Future<ExperimentRun> logMetrics(LogMetrics request) {
     final var runId = request.getId();
     final var metrics = request.getMetricsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -365,14 +354,13 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused -> jdbi.useHandle(handle -> metricsHandler.logKeyValues(handle, runId, metrics)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+            unused -> jdbi.run(handle -> metricsHandler.logKeyValues(handle, runId, metrics)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> logHyperparameters(LogHyperparameters request) {
+  public Future<ExperimentRun> logHyperparameters(LogHyperparameters request) {
     final var runId = request.getId();
     final var hyperparameters = request.getHyperparametersList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -381,15 +369,14 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> hyperparametersHandler.logKeyValues(handle, runId, hyperparameters)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                jdbi.run(
+                    handle -> hyperparametersHandler.logKeyValues(handle, runId, hyperparameters)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> logAttributes(LogAttributes request) {
+  public Future<ExperimentRun> logAttributes(LogAttributes request) {
     final var runId = request.getId();
     final var attributes = request.getAttributesList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -397,15 +384,13 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
-            unused ->
-                jdbi.useHandle(handle -> attributeHandler.logKeyValues(handle, runId, attributes)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+            unused -> jdbi.run(handle -> attributeHandler.logKeyValues(handle, runId, attributes)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> addTags(AddExperimentRunTags request) {
+  public Future<ExperimentRun> addTags(AddExperimentRunTags request) {
     final var runId = request.getId();
     final var tags = request.getTagsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -414,17 +399,16 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
+                jdbi.run(
                     handle ->
                         tagsHandler.addTags(
-                            handle, runId, TagsHandlerBase.checkEntityTagsLength(tags))),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                            handle, runId, TagsHandlerBase.checkEntityTagsLength(tags))))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> deleteTags(DeleteExperimentRunTags request) {
+  public Future<ExperimentRun> deleteTags(DeleteExperimentRunTags request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -433,24 +417,22 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(
-            unused -> jdbi.useHandle(handle -> tagsHandler.deleteTags(handle, runId, maybeTags)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+        .thenCompose(unused -> jdbi.run(handle -> tagsHandler.deleteTags(handle, runId, maybeTags)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<List<String>> getTags(GetTags request) {
+  public Future<List<String>> getTags(GetTags request) {
     final var runId = request.getId();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> tagsHandler.getTags(runId), executor);
+        .thenCompose(unused -> tagsHandler.getTags(runId).toFuture());
   }
 
-  private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
-    return jdbi.useHandle(
+  private Future<Void> updateModifiedTimestamp(String runId, Long now) {
+    return jdbi.run(
         handle -> {
           final var currentDateUpdated =
               handle
@@ -467,8 +449,8 @@ public class FutureExperimentRunDAO {
         });
   }
 
-  private InternalFuture<Void> updateVersionNumber(String erId) {
-    return jdbi.useHandle(
+  private Future<Void> updateVersionNumber(String erId) {
+    return jdbi.run(
         handle ->
             handle
                 .createUpdate(
@@ -477,11 +459,11 @@ public class FutureExperimentRunDAO {
                 .execute());
   }
 
-  private InternalFuture<Boolean> getEntityPermissionBasedOnResourceTypes(
+  private Future<Boolean> getEntityPermissionBasedOnResourceTypes(
       List<String> entityIds,
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return FutureUtil.clientRequest(
+    return Future.fromListenableFuture(
             uac.getAuthzService()
                 .isSelfAllowed(
                     IsSelfAllowed.newBuilder()
@@ -496,24 +478,21 @@ public class FutureExperimentRunDAO {
                                     ResourceType.newBuilder()
                                         .setModeldbServiceResourceType(modelDBServiceResourceTypes))
                                 .addAllResourceIds(entityIds))
-                        .build()),
-            executor)
-        .thenCompose(
-            response -> InternalFuture.completedInternalFuture(response.getAllowed()), executor);
+                        .build()))
+        .thenCompose(response -> Future.of(response.getAllowed()));
   }
 
-  private InternalFuture<Void> checkPermission(
+  private Future<Void> checkPermission(
       List<String> runIds, ModelDBActionEnum.ModelDBServiceActions action) {
     // If request do not have ids and we are passing request.getId() then it will create list record
     // with `""` string
     final var finalRunIds = runIds.stream().filter(s -> !s.isEmpty()).collect(Collectors.toList());
     if (finalRunIds.isEmpty()) {
-      return InternalFuture.failedStage(
-          new InvalidArgumentException("Experiment run IDs is missing"));
+      return Future.failedStage(new InvalidArgumentException("Experiment run IDs is missing"));
     }
 
     var futureMaybeProjectIds =
-        jdbi.withHandle(
+        jdbi.call(
             handle ->
                 handle
                     .createQuery(
@@ -541,8 +520,7 @@ public class FutureExperimentRunDAO {
                         if (!allowed) {
                           throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
                         }
-                      },
-                      executor);
+                      });
             default:
               return getEntityPermissionBasedOnResourceTypes(
                       maybeProjectIds, action, ModelDBServiceResourceTypes.PROJECT)
@@ -551,37 +529,33 @@ public class FutureExperimentRunDAO {
                         if (!allowed) {
                           throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
                         }
-                      },
-                      executor);
+                      });
           }
-        },
-        executor);
+        });
   }
 
-  public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
+  public Future<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
     final var runIds = request.getIdsList();
     final var now = Calendar.getInstance().getTimeInMillis();
 
     var futureDeleteTask =
-        InternalFuture.runAsync(
+        Future.runAsync(
             () -> {
               if (runIds.isEmpty()) {
                 throw new InvalidArgumentException("ExperimentRun IDs not found in request");
               }
-            },
-            executor);
+            });
 
     return futureDeleteTask
         .thenCompose(
             unused ->
                 checkPermission(
-                    request.getIdsList(), ModelDBActionEnum.ModelDBServiceActions.DELETE),
-            executor)
-        .thenCompose(unused -> deleteExperimentRuns(runIds), executor);
+                    request.getIdsList(), ModelDBActionEnum.ModelDBServiceActions.DELETE))
+        .thenCompose(unused -> deleteExperimentRuns(runIds));
   }
 
-  private InternalFuture<Void> deleteExperimentRuns(List<String> runIds) {
-    return InternalFuture.runAsync(
+  private Future<Void> deleteExperimentRuns(List<String> runIds) {
+    return Future.runAsync(
         () ->
             jdbi.withHandle(
                 handle ->
@@ -590,11 +564,10 @@ public class FutureExperimentRunDAO {
                             "Update experiment_run SET deleted = :deleted WHERE id IN (<ids>)")
                         .bindList("ids", runIds)
                         .bind("deleted", true)
-                        .execute()),
-        executor);
+                        .execute()));
   }
 
-  public InternalFuture<ExperimentRun> logArtifacts(LogArtifacts request) {
+  public Future<ExperimentRun> logArtifacts(LogArtifacts request) {
     final var runId = request.getId();
     final var artifacts = request.getArtifactsList();
     final var now = Calendar.getInstance().getTimeInMillis();
@@ -603,25 +576,23 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
-                    handle -> artifactHandler.logArtifacts(handle, runId, artifacts, false)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                jdbi.run(handle -> artifactHandler.logArtifacts(handle, runId, artifacts, false)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<List<Artifact>> getArtifacts(GetArtifacts request) {
+  public Future<List<Artifact>> getArtifacts(GetArtifacts request) {
     final var runId = request.getId();
     final var key = request.getKey();
     Optional<String> maybeKey = key.isEmpty() ? Optional.empty() : Optional.of(key);
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor);
+        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey).toFuture());
   }
 
-  public InternalFuture<ExperimentRun> deleteArtifacts(DeleteArtifact request) {
+  public Future<ExperimentRun> deleteArtifacts(DeleteArtifact request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
     final var keys =
@@ -632,13 +603,13 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+        .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys).toFuture())
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> logDatasets(LogDatasets request) {
+  public Future<ExperimentRun> logDatasets(LogDatasets request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
 
@@ -647,56 +618,53 @@ public class FutureExperimentRunDAO {
         .thenCompose(
             unused ->
                 privilegedDatasetsHandler.filterAndGetPrivilegedDatasetsOnly(
-                    request.getDatasetsList(), true, this::getEntityPermissionBasedOnResourceTypes),
-            executor)
+                    request.getDatasetsList(), true, this::getEntityPermissionBasedOnResourceTypes))
         .thenCompose(
             privilegedDatasets ->
-                jdbi.useHandle(
+                jdbi.run(
                     handle ->
                         datasetHandler.logArtifacts(
-                            handle, runId, privilegedDatasets, request.getOverwrite())),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                            handle, runId, privilegedDatasets, request.getOverwrite())))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<List<Artifact>> getDatasets(GetDatasets request) {
+  public Future<List<Artifact>> getDatasets(GetDatasets request) {
     final var runId = request.getId();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
+        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()).toFuture());
   }
 
-  public InternalFuture<ExperimentRun> logCodeVersion(LogExperimentRunCodeVersion request) {
+  public Future<ExperimentRun> logCodeVersion(LogExperimentRunCodeVersion request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenCompose(
             unused ->
-                jdbi.useHandle(
+                jdbi.run(
                     handle ->
                         codeVersionHandler.logCodeVersion(
-                            handle, runId, request.getOverwrite(), request.getCodeVersion())),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                            handle, runId, request.getOverwrite(), request.getCodeVersion())))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<Optional<CodeVersion>> getCodeVersion(GetExperimentRunCodeVersion request) {
+  public Future<Optional<CodeVersion>> getCodeVersion(GetExperimentRunCodeVersion request) {
     final var runId = request.getId();
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> codeVersionHandler.getCodeVersion(request.getId()), executor);
+        .thenCompose(unused -> codeVersionHandler.getCodeVersion(request.getId()));
   }
 
-  public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
+  public Future<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
     final var runId = request.getId();
 
-    InternalFuture<Void> permissionCheck;
+    Future<Void> permissionCheck;
     if (request.getMethod().toUpperCase().equals("GET")) {
       permissionCheck =
           checkPermission(
@@ -707,42 +675,40 @@ public class FutureExperimentRunDAO {
               Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE);
     }
 
-    return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request), executor);
+    return permissionCheck.thenCompose(unused -> artifactHandler.getUrlForArtifact(request));
   }
 
-  public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
+  public Future<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
       GetCommittedArtifactParts request) {
     final var runId = request.getId();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getCommittedArtifactParts(request), executor);
+        .thenCompose(unused -> artifactHandler.getCommittedArtifactParts(request));
   }
 
-  public InternalFuture<Void> commitArtifactPart(CommitArtifactPart request) {
+  public Future<Void> commitArtifactPart(CommitArtifactPart request) {
     final var runId = request.getId();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.commitArtifactPart(request), executor);
+        .thenCompose(unused -> artifactHandler.commitArtifactPart(request));
   }
 
-  public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
+  public Future<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
     final var runId = request.getId();
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.commitMultipartArtifact(request), executor);
+        .thenCompose(unused -> artifactHandler.commitMultipartArtifact(request));
   }
 
-  public InternalFuture<FindExperimentRuns.Response> findExperimentRuns(
-      FindExperimentRuns request) {
+  public Future<FindExperimentRuns.Response> findExperimentRuns(FindExperimentRuns request) {
     // TODO: handle ids only?
     // TODO: filter by permission
 
     final var futureLocalContext =
-        InternalFuture.supplyAsync(
+        Future.supplyAsync(
             () -> {
               final var localQueryContext = new QueryFilterContext();
               localQueryContext.getConditions().add("experiment_run.deleted = :deleted");
@@ -781,18 +747,17 @@ public class FutureExperimentRunDAO {
               }
 
               return localQueryContext;
-            },
-            executor);
+            });
 
     // futurePredicatesContext
     final var futurePredicatesContext =
-        predicatesHandler.processPredicates(request.getPredicatesList(), executor);
+        predicatesHandler.processPredicates(request.getPredicatesList());
 
     // futureSortingContext
     final var futureSortingContext =
         sortingHandler.processSort(request.getSortKey(), request.getAscending());
 
-    final InternalFuture<QueryFilterContext> futureProjectIds =
+    final Future<QueryFilterContext> futureProjectIds =
         getAccessibleProjectIdsQueryFilterContext(
             request.getWorkspaceName(), request.getProjectId());
 
@@ -801,25 +766,23 @@ public class FutureExperimentRunDAO {
             accessibleProjectIdsQueryContext -> {
               // accessibleProjectIdsQueryContext == null means not allowed anything
               if (accessibleProjectIdsQueryContext == null) {
-                return InternalFuture.completedInternalFuture(new ArrayList<ExperimentRun>());
+                return Future.of(new ArrayList<ExperimentRun>());
               } else {
-                final var futureProjectIdsContext =
-                    InternalFuture.completedInternalFuture(accessibleProjectIdsQueryContext);
-                return InternalFuture.sequence(
+                final var futureProjectIdsContext = Future.of(accessibleProjectIdsQueryContext);
+                return Future.sequence(
                         Arrays.asList(
                             futureLocalContext,
                             futurePredicatesContext,
                             futureSortingContext,
-                            futureProjectIdsContext),
-                        executor)
-                    .thenApply(QueryFilterContext::combine, executor)
+                            futureProjectIdsContext))
+                    .thenCompose(a -> Future.of(QueryFilterContext.combine(a)))
                     .thenCompose(
                         queryContext -> {
                           // TODO: get environment
                           // TODO: get features?
                           // TODO: get versioned inputs
                           // TODO: get code version from blob
-                          return jdbi.withHandle(
+                          return jdbi.call(
                                   handle -> {
                                     var sql =
                                         "select experiment_run.id, experiment_run.date_created, experiment_run.date_updated, experiment_run.experiment_id, experiment_run.name, experiment_run.project_id, experiment_run.description, experiment_run.start_time, experiment_run.end_time, experiment_run.owner, experiment_run.environment, experiment_run.code_version, experiment_run.job_id, experiment_run.version_number from experiment_run";
@@ -879,19 +842,17 @@ public class FutureExperimentRunDAO {
                               .thenCompose(
                                   builders -> {
                                     if (builders == null || builders.isEmpty()) {
-                                      return InternalFuture.completedInternalFuture(
-                                          new LinkedList<ExperimentRun>());
+                                      return Future.of(new LinkedList<ExperimentRun>());
                                     }
 
-                                    var futureBuildersStream =
-                                        InternalFuture.completedInternalFuture(builders.stream());
+                                    var futureBuildersStream = Future.of(builders.stream());
                                     final var ids =
                                         builders.stream()
                                             .map(x -> x.getId())
                                             .collect(Collectors.toSet());
 
                                     // Get tags
-                                    final var futureTags = tagsHandler.getTagsMap(ids);
+                                    final var futureTags = tagsHandler.getTagsMap(ids).toFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureTags,
@@ -899,12 +860,11 @@ public class FutureExperimentRunDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllTags(
-                                                            tags.get(builder.getId()))),
-                                            executor);
+                                                            tags.get(builder.getId()))));
 
                                     // Get hyperparams
                                     final var futureHyperparams =
-                                        hyperparametersHandler.getKeyValuesMap(ids);
+                                        hyperparametersHandler.getKeyValuesMap(ids).toFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureHyperparams,
@@ -912,8 +872,7 @@ public class FutureExperimentRunDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllHyperparameters(
-                                                            hyperparams.get(builder.getId()))),
-                                            executor);
+                                                            hyperparams.get(builder.getId()))));
 
                                     final var futureHyperparamsFromConfigBlobs =
                                         getFutureHyperparamsFromConfigBlobs(ids);
@@ -931,8 +890,7 @@ public class FutureExperimentRunDAO {
                                                             hypFromConfigs);
                                                       }
                                                       return builder;
-                                                    }),
-                                            executor);
+                                                    }));
 
                                     final var futureCodeVersionFromBlob =
                                         getFutureCodeVersionFromBlob(ids);
@@ -950,11 +908,11 @@ public class FutureExperimentRunDAO {
                                                                 builder.getId()));
                                                       }
                                                       return builder;
-                                                    }),
-                                            executor);
+                                                    }));
 
                                     // Get metrics
-                                    final var futureMetrics = metricsHandler.getKeyValuesMap(ids);
+                                    final var futureMetrics =
+                                        metricsHandler.getKeyValuesMap(ids).toFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureMetrics,
@@ -962,12 +920,11 @@ public class FutureExperimentRunDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllMetrics(
-                                                            metrics.get(builder.getId()))),
-                                            executor);
+                                                            metrics.get(builder.getId()))));
 
                                     // Get attributes
                                     final var futureAttributes =
-                                        attributeHandler.getKeyValuesMap(ids);
+                                        attributeHandler.getKeyValuesMap(ids).toFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureAttributes,
@@ -975,12 +932,11 @@ public class FutureExperimentRunDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllAttributes(
-                                                            attributes.get(builder.getId()))),
-                                            executor);
+                                                            attributes.get(builder.getId()))));
 
                                     // Get artifacts
                                     final var futureArtifacts =
-                                        artifactHandler.getArtifactsMap(ids);
+                                        artifactHandler.getArtifactsMap(ids).toFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureArtifacts,
@@ -988,16 +944,15 @@ public class FutureExperimentRunDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllArtifacts(
-                                                            artifacts.get(builder.getId()))),
-                                            executor);
+                                                            artifacts.get(builder.getId()))));
 
                                     // Get datasets
                                     final var futureDatasetsMap =
-                                        datasetHandler.getArtifactsMap(ids);
+                                        datasetHandler.getArtifactsMap(ids).toFuture();
                                     final var filterDatasetsMap =
                                         futureDatasetsMap.thenCompose(
                                             artifactMapSubtypes -> {
-                                              List<InternalFuture<Map<String, List<Artifact>>>>
+                                              List<Future<Map<String, List<Artifact>>>>
                                                   internalFutureList = new ArrayList<>();
                                               for (ExperimentRun.Builder builder : builders) {
                                                 internalFutureList.add(
@@ -1009,28 +964,22 @@ public class FutureExperimentRunDAO {
                                                             this
                                                                 ::getEntityPermissionBasedOnResourceTypes)
                                                         .thenCompose(
-                                                            artifacts ->
-                                                                InternalFuture
-                                                                    .completedInternalFuture(
-                                                                        Collections.singletonMap(
-                                                                            builder.getId(),
-                                                                            artifacts)),
-                                                            executor));
+                                                            artifacts -> {
+                                                              Map<String, List<Artifact>> thing =
+                                                                  Collections.singletonMap(
+                                                                      builder.getId(), artifacts);
+                                                              return Future.of(thing);
+                                                            }));
                                               }
-                                              return InternalFuture.sequence(
-                                                      internalFutureList, executor)
+                                              return Future.sequence(internalFutureList)
                                                   .thenCompose(
                                                       maps -> {
                                                         Map<String, List<Artifact>>
                                                             finalDatasetMap = new HashMap<>();
                                                         maps.forEach(finalDatasetMap::putAll);
-                                                        return InternalFuture
-                                                            .completedInternalFuture(
-                                                                finalDatasetMap);
-                                                      },
-                                                      executor);
-                                            },
-                                            executor);
+                                                        return Future.of(finalDatasetMap);
+                                                      });
+                                            });
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             filterDatasetsMap,
@@ -1046,8 +995,7 @@ public class FutureExperimentRunDAO {
                                                             .addAllDatasets(datasetList);
                                                       }
                                                       return builder;
-                                                    }),
-                                            executor);
+                                                    }));
 
                                     // Get observations
                                     final var futureObservations =
@@ -1059,8 +1007,7 @@ public class FutureExperimentRunDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllObservations(
-                                                            observations.get(builder.getId()))),
-                                            executor);
+                                                            observations.get(builder.getId()))));
 
                                     // Get features
                                     final var futureFeatures = featureHandler.getFeaturesMap(ids);
@@ -1071,8 +1018,7 @@ public class FutureExperimentRunDAO {
                                                 stream.map(
                                                     builder ->
                                                         builder.addAllFeatures(
-                                                            features.get(builder.getId()))),
-                                            executor);
+                                                            features.get(builder.getId()))));
 
                                     // Get code version snapshot
                                     final var futureCodeVersionSnapshots =
@@ -1091,13 +1037,12 @@ public class FutureExperimentRunDAO {
                                                         builder.setCodeVersionSnapshot(
                                                             CodeVersion.getDefaultInstance());
                                                       }
-                                                    }),
-                                            executor);
+                                                    }));
 
                                     // Get VersionedInputs
                                     final var futureVersionedInputs =
                                         versionInputHandler.getVersionedInputs(ids);
-                                    final InternalFuture<Map<String, VersioningEntry>>
+                                    final Future<Map<String, VersioningEntry>>
                                         filterPrivilegeVersionedInputMap =
                                             privilegedVersionedInputsHandler
                                                 .filterVersionedInputsBasedOnPrivileges(
@@ -1119,40 +1064,34 @@ public class FutureExperimentRunDAO {
                                                         builder.clearVersionedInputs();
                                                       }
                                                       return builder;
-                                                    }),
-                                            executor);
+                                                    }));
 
-                                    return futureBuildersStream.thenApply(
+                                    return futureBuildersStream.thenCompose(
                                         experimentRunBuilders ->
-                                            experimentRunBuilders
-                                                .map(ExperimentRun.Builder::build)
-                                                .collect(Collectors.toList()),
-                                        executor);
-                                  },
-                                  executor);
-                        },
-                        executor);
+                                            Future.of(
+                                                experimentRunBuilders
+                                                    .map(ExperimentRun.Builder::build)
+                                                    .collect(Collectors.toList())));
+                                  });
+                        });
               }
-            },
-            executor);
+            });
 
     final var futureCount =
         futureProjectIds.thenCompose(
             accessibleProjectIdsQueryContext -> {
               // accessibleProjectIdsQueryContext == null means not allowed anything
               if (accessibleProjectIdsQueryContext == null) {
-                return InternalFuture.completedInternalFuture(0L);
+                return Future.of(0L);
               } else {
-                final var futureProjectIdsContext =
-                    InternalFuture.completedInternalFuture(accessibleProjectIdsQueryContext);
-                return InternalFuture.sequence(
+                final var futureProjectIdsContext = Future.of(accessibleProjectIdsQueryContext);
+                return Future.sequence(
                         Arrays.asList(
-                            futureLocalContext, futurePredicatesContext, futureProjectIdsContext),
-                        executor)
-                    .thenApply(QueryFilterContext::combine, executor)
+                            futureLocalContext, futurePredicatesContext, futureProjectIdsContext))
+                    .thenCompose(a -> Future.of(QueryFilterContext.combine(a)))
                     .thenCompose(
                         queryContext ->
-                            jdbi.withHandle(
+                            jdbi.call(
                                 handle -> {
                                   var sql = "select count(experiment_run.id) from experiment_run";
 
@@ -1171,22 +1110,19 @@ public class FutureExperimentRunDAO {
                                   queryContext.getBinds().forEach(b -> b.accept(query));
 
                                   return query.mapTo(Long.class).one();
-                                }),
-                        executor);
+                                }));
               }
-            },
-            executor);
+            });
 
     return futureExperimentRuns
-        .thenApply(this::sortExperimentRunFields, executor)
+        .thenCompose(a -> Future.of(this.sortExperimentRunFields(a)))
         .thenCombine(
             futureCount,
             (runs, count) ->
                 FindExperimentRuns.Response.newBuilder()
                     .addAllExperimentRuns(runs)
                     .setTotalRecords(count)
-                    .build(),
-            executor);
+                    .build());
   }
 
   private List<ExperimentRun> sortExperimentRunFields(List<ExperimentRun> experimentRuns) {
@@ -1236,48 +1172,48 @@ public class FutureExperimentRunDAO {
     return sortedRuns;
   }
 
-  private InternalFuture<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
+  private Future<QueryFilterContext> getAccessibleProjectIdsQueryFilterContext(
       String workspaceName, String requestedProjectId) {
     if (workspaceName.isEmpty()) {
       return uacApisUtil
           .getAllowedEntitiesByResourceType(
               ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
-          .thenApply(
+          .thenCompose(
               resources -> {
                 boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
                 if (allowedAllResources) {
-                  return new QueryFilterContext();
+                  return Future.of(new QueryFilterContext());
                 } else {
                   Set<String> accessibleProjectIds = RoleServiceUtils.getResourceIds(resources);
                   if (accessibleProjectIds.isEmpty()) {
-                    return null;
+                    return Future.of(null);
                   } else {
-                    return new QueryFilterContext()
-                        .addCondition("experiment_run.project_id in (<authz_project_ids>)")
-                        .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
+                    return Future.of(
+                        new QueryFilterContext()
+                            .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                            .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
                   }
                 }
-              },
-              executor);
+              });
     } else {
       // futureProjectIds based on workspace
       return uacApisUtil
           .getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
-          .thenApply(
+          .thenCompose(
               accessibleProjectIds -> {
                 if (accessibleProjectIds.isEmpty()) {
-                  return null;
+                  return Future.of(null);
                 } else {
-                  return new QueryFilterContext()
-                      .addCondition("experiment_run.project_id in (<authz_project_ids>)")
-                      .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds));
+                  return Future.of(
+                      new QueryFilterContext()
+                          .addCondition("experiment_run.project_id in (<authz_project_ids>)")
+                          .addBind(q -> q.bindList("authz_project_ids", accessibleProjectIds)));
                 }
-              },
-              executor);
+              });
     }
   }
 
-  private InternalFuture<MapSubtypes<String, KeyValue>> getFutureHyperparamsFromConfigBlobs(
+  private Future<MapSubtypes<String, KeyValue>> getFutureHyperparamsFromConfigBlobs(
       Set<String> ids) {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
@@ -1296,11 +1232,10 @@ public class FutureExperimentRunDAO {
                 return hyperparametersFromConfigHandler.getExperimentRunHyperparameterConfigBlobMap(
                     new ArrayList<>(ids), selfAllowedRepositoryIds, false);
               }
-            },
-            executor);
+            });
   }
 
-  private InternalFuture<Map<String, Map<String, CodeVersion>>> getFutureCodeVersionFromBlob(
+  private Future<Map<String, Map<String, CodeVersion>>> getFutureCodeVersionFromBlob(
       Set<String> ids) {
     return getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges()
         .thenCompose(
@@ -1319,13 +1254,11 @@ public class FutureExperimentRunDAO {
                 return codeVersionFromBlobHandler.getExperimentRunCodeVersionMap(
                     ids, selfAllowedRepositoryIds, false);
               }
-            },
-            executor);
+            });
   }
 
-  private InternalFuture<List<Resources>>
-      getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges() {
-    return InternalFuture.completedInternalFuture(config.isPopulateConnectionsBasedOnPrivileges())
+  private Future<List<Resources>> getRepositoryResourcesForPopulateConnectionsBasedOnPrivileges() {
+    return Future.of(config.isPopulateConnectionsBasedOnPrivileges())
         .thenCompose(
             populateConnectionsBasedOnPrivileges -> {
               // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
@@ -1336,42 +1269,38 @@ public class FutureExperimentRunDAO {
                     ModelDBServiceResourceTypes.REPOSITORY);
               } else {
                 // return empty list if populateConnectionsBasedOnPrivileges = false
-                return InternalFuture.completedInternalFuture(new ArrayList<>());
+                return Future.of(new ArrayList<Resources>());
               }
-            },
-            executor);
+            });
   }
 
-  public InternalFuture<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
+  public Future<ExperimentRun> createExperimentRun(CreateExperimentRun request) {
     // Validate arguments
     var futureTask =
-        InternalFuture.runAsync(
+        Future.runAsync(
             () -> {
               if (request.getProjectId().isEmpty()) {
                 throw new InvalidArgumentException("Project ID not present");
               } else if (request.getExperimentId().isEmpty()) {
                 throw new InvalidArgumentException("Experiment ID not present");
               }
-            },
-            executor);
+            });
     return futureTask
         .thenCompose(
             unused ->
                 getEntityPermissionBasedOnResourceTypes(
                     Collections.singletonList(request.getProjectId()),
                     ModelDBActionEnum.ModelDBServiceActions.UPDATE,
-                    ModelDBServiceResourceTypes.PROJECT),
-            executor)
+                    ModelDBServiceResourceTypes.PROJECT))
         .thenAccept(
             allowed -> {
               if (!allowed) {
                 throw new PermissionDeniedException(ModelDBMessages.PERMISSION_DENIED);
               }
-            },
-            executor)
+            })
         .thenCompose(
             unused ->
-                jdbi.useHandle(
+                jdbi.run(
                     handle -> {
                       Long count =
                           handle
@@ -1383,70 +1312,66 @@ public class FutureExperimentRunDAO {
                         throw new NotFoundException(
                             "Experiment not found for given ID: " + request.getExperimentId());
                       }
-                    }),
-            executor)
+                    }))
         .thenCompose(
-            unused ->
-                privilegedDatasetsHandler
-                    .filterAndGetPrivilegedDatasetsOnly(
-                        request.getDatasetsList(),
-                        true,
-                        this::getEntityPermissionBasedOnResourceTypes)
-                    .thenApply(
-                        privilegedDatasets ->
-                            request
-                                .toBuilder()
-                                .clearDatasets()
-                                .addAllDatasets(privilegedDatasets)
-                                .build(),
-                        executor),
-            executor)
-        .thenCompose(unused -> createExperimentRunHandler.convertCreateRequest(request), executor)
+            unused -> {
+              return privilegedDatasetsHandler
+                  .filterAndGetPrivilegedDatasetsOnly(
+                      request.getDatasetsList(),
+                      true,
+                      this::getEntityPermissionBasedOnResourceTypes)
+                  .thenCompose(
+                      privilegedDatasets ->
+                          Future.of(
+                              request
+                                  .toBuilder()
+                                  .clearDatasets()
+                                  .addAllDatasets(privilegedDatasets)
+                                  .build()));
+            })
+        .thenCompose(unused -> createExperimentRunHandler.convertCreateRequest(request))
         .thenCompose(
-            experimentRun ->
-                findExperimentRuns(
-                        FindExperimentRuns.newBuilder()
-                            .setIdsOnly(true)
-                            .setProjectId(experimentRun.getProjectId())
-                            .build())
-                    .thenApply(runsResponse -> experimentRun, executor),
-            executor)
+            experimentRun -> {
+              return findExperimentRuns(
+                      FindExperimentRuns.newBuilder()
+                          .setIdsOnly(true)
+                          .setProjectId(experimentRun.getProjectId())
+                          .build())
+                  .thenCompose(runsResponse -> Future.of(experimentRun));
+            })
         .thenCompose(
-            experimentRun ->
-                createExperimentRunHandler
-                    .insertExperimentRun(experimentRun)
-                    .thenApply(
-                        createdExperimentRun ->
-                            sortExperimentRunFields(Collections.singletonList(createdExperimentRun))
-                                .get(0),
-                        executor),
-            executor);
+            experimentRun -> {
+              return createExperimentRunHandler
+                  .insertExperimentRun(experimentRun)
+                  .thenCompose(
+                      createdExperimentRun ->
+                          Future.of(
+                              sortExperimentRunFields(
+                                      Collections.singletonList(createdExperimentRun))
+                                  .get(0)));
+            });
   }
 
-  public InternalFuture<ExperimentRun> logEnvironment(LogEnvironment request) {
+  public Future<ExperimentRun> logEnvironment(LogEnvironment request) {
     final var runId = request.getId();
 
     if (!request.hasEnvironment()) {
-      return InternalFuture.failedStage(
-          new InvalidArgumentException("Environment should not be empty"));
+      return Future.failedStage(new InvalidArgumentException("Environment should not be empty"));
     }
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> environmentHandler.logEnvironment(request.getId(), request.getEnvironment()),
-            executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+            unused -> environmentHandler.logEnvironment(request.getId(), request.getEnvironment()))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<ExperimentRun> logVersionedInputs(LogVersionedInput request) {
+  public Future<ExperimentRun> logVersionedInputs(LogVersionedInput request) {
     final var runId = request.getId();
     final var now = Calendar.getInstance().getTimeInMillis();
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(
-            unused -> versionInputHandler.getVersionedInputs(Collections.singleton(runId)),
-            executor)
+        .thenCompose(unused -> versionInputHandler.getVersionedInputs(Collections.singleton(runId)))
         .thenAccept(
             existingVersioningEntryMap -> {
               var existingVersioningEntry = existingVersioningEntryMap.get(request.getId());
@@ -1460,27 +1385,24 @@ public class FutureExperimentRunDAO {
                       ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE);
                 }
               }
-            },
-            executor)
+            })
         .thenCompose(
-            unused -> versionInputHandler.validateVersioningEntity(request.getVersionedInputs()),
-            executor)
+            unused -> versionInputHandler.validateVersioningEntity(request.getVersionedInputs()))
         .thenCompose(
             locationBlobWithHashMap ->
-                jdbi.useHandle(
+                jdbi.run(
                     handle ->
                         versionInputHandler.validateAndInsertVersionedInputs(
                             handle,
                             request.getId(),
                             request.getVersionedInputs(),
-                            locationBlobWithHashMap)),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                            locationBlobWithHashMap)))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<VersioningEntry> getVersionedInputs(GetVersionedInput request) {
+  public Future<VersioningEntry> getVersionedInputs(GetVersionedInput request) {
     final var futureVersionedInputs =
         versionInputHandler.getVersionedInputs(Collections.singleton(request.getId()));
     return privilegedVersionedInputsHandler
@@ -1488,104 +1410,118 @@ public class FutureExperimentRunDAO {
             Collections.singleton(request.getId()),
             futureVersionedInputs,
             this::getEntityPermissionBasedOnResourceTypes)
-        .thenApply(versioningEntryMap -> versioningEntryMap.get(request.getId()), executor);
+        .thenCompose(versioningEntryMap -> Future.of(versioningEntryMap.get(request.getId())));
   }
 
-  public InternalFuture<GetExperimentRunsByDatasetVersionId.Response>
-      getExperimentRunsByDatasetVersionId(GetExperimentRunsByDatasetVersionId request) {
+  public Future<GetExperimentRunsByDatasetVersionId.Response> getExperimentRunsByDatasetVersionId(
+      GetExperimentRunsByDatasetVersionId request) {
     var validationFuture =
-        InternalFuture.runAsync(
+        Future.runAsync(
             () -> {
               // Validate request parameter
               if (request.getDatasetVersionId().isEmpty()) {
                 throw new ModelDBException(
                     "DatasetVersion Id should not be empty", Code.INVALID_ARGUMENT);
               }
-            },
-            executor);
-    return validationFuture
-        .thenAccept(
-            unused ->
-                // Validate requested dataset version exists
-                jdbi.useHandle(
-                    handle -> {
-                      var query =
-                          "SELECT COUNT(commit_hash) FROM commit WHERE commit_hash = :commitHash";
-                      if (config.getDatabase().getRdbConfiguration().isMssql()) {
-                        query =
-                            "SELECT COUNT(commit_hash) FROM \"commit\" WHERE commit_hash = :commitHash";
-                      }
-                      Optional<Long> count =
-                          handle
-                              .createQuery(query)
-                              .bind("commitHash", request.getDatasetVersionId())
-                              .mapTo(Long.class)
-                              .findOne();
-                      if (count.isEmpty() || count.get() == 0) {
-                        throw new NotFoundException("DatasetVersion not found");
-                      }
+            });
+    // Validate requested dataset version exists
+    // Validate requested dataset version mappings with datasets
+    // Create find ER request using dataset version predicate and requested pagination
+    // parameters
+    // Build GetExperimentRunsByDatasetVersionId response from find ER response
+    Future<FindExperimentRuns.Response> responseFuture =
+        validationFuture
+            .thenAccept(
+                unused ->
+                    // Validate requested dataset version exists
+                    jdbi.useHandle(
+                        handle -> {
+                          var query =
+                              "SELECT COUNT(commit_hash) FROM commit WHERE commit_hash = :commitHash";
+                          if (config.getDatabase().getRdbConfiguration().isMssql()) {
+                            query =
+                                "SELECT COUNT(commit_hash) FROM \"commit\" WHERE commit_hash = :commitHash";
+                          }
+                          Optional<Long> count =
+                              handle
+                                  .createQuery(query)
+                                  .bind("commitHash", request.getDatasetVersionId())
+                                  .mapTo(Long.class)
+                                  .findOne();
+                          if (count.isEmpty() || count.get() == 0) {
+                            throw new NotFoundException("DatasetVersion not found");
+                          }
 
-                      // Validate requested dataset version mappings with datasets
-                      List<Long> mappingDatasetIds =
-                          handle
-                              .createQuery(
-                                  "SELECT repository_id FROM repository_commit WHERE commit_hash = :id")
-                              .bind("id", request.getDatasetVersionId())
-                              .mapTo(Long.class)
-                              .list();
+                          // Validate requested dataset version mappings with datasets
+                          List<Long> mappingDatasetIds =
+                              handle
+                                  .createQuery(
+                                      "SELECT repository_id FROM repository_commit WHERE commit_hash = :id")
+                                  .bind("id", request.getDatasetVersionId())
+                                  .mapTo(Long.class)
+                                  .list();
 
-                      if (mappingDatasetIds.size() == 0) {
-                        throw new InternalErrorException(
-                            "DatasetVersion not attached with the dataset");
-                      } else if (mappingDatasetIds.size() > 1) {
-                        throw new InternalErrorException(
-                            "DatasetVersion '"
-                                + request.getDatasetVersionId()
-                                + "' associated with multiple datasets");
-                      }
-                    }),
-            executor)
-        .thenApply(
-            unused -> {
-              // Create find ER request using dataset version predicate and requested pagination
-              // parameters
-              KeyValueQuery entityKeyValuePredicate =
-                  KeyValueQuery.newBuilder()
-                      .setKey(ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
-                      .setValue(
-                          Value.newBuilder().setStringValue(request.getDatasetVersionId()).build())
-                      .setOperator(OperatorEnum.Operator.EQ)
-                      .setValueType(ValueTypeEnum.ValueType.STRING)
-                      .build();
+                          if (mappingDatasetIds.size() == 0) {
+                            throw new InternalErrorException(
+                                "DatasetVersion not attached with the dataset");
+                          } else if (mappingDatasetIds.size() > 1) {
+                            throw new InternalErrorException(
+                                "DatasetVersion '"
+                                    + request.getDatasetVersionId()
+                                    + "' associated with multiple datasets");
+                          }
+                        }))
+            .thenSupply(
+                () -> {
+                  // Create find ER request using dataset version predicate and requested pagination
+                  // parameters
+                  KeyValueQuery entityKeyValuePredicate =
+                      KeyValueQuery.newBuilder()
+                          .setKey(
+                              ModelDBConstants.DATASETS + "." + ModelDBConstants.LINKED_ARTIFACT_ID)
+                          .setValue(
+                              Value.newBuilder()
+                                  .setStringValue(request.getDatasetVersionId())
+                                  .build())
+                          .setOperator(OperatorEnum.Operator.EQ)
+                          .setValueType(ValueTypeEnum.ValueType.STRING)
+                          .build();
 
-              return FindExperimentRuns.newBuilder()
-                  .setPageNumber(request.getPageNumber())
-                  .setPageLimit(request.getPageLimit())
-                  .setAscending(request.getAscending())
-                  .setSortKey(request.getSortKey())
-                  .addPredicates(entityKeyValuePredicate)
-                  .build();
-            },
-            executor)
-        .thenCompose(this::findExperimentRuns, executor)
-        .thenApply(
-            findExperimentRunsResponse -> {
-              // Build GetExperimentRunsByDatasetVersionId response from find ER response
-              LOGGER.trace(
-                  "Final return experiment_run count for dataset version: {}",
-                  findExperimentRunsResponse.getExperimentRunsCount());
-              LOGGER.trace(
-                  "Final return total record count : {}",
-                  findExperimentRunsResponse.getTotalRecords());
-              return GetExperimentRunsByDatasetVersionId.Response.newBuilder()
-                  .addAllExperimentRuns(findExperimentRunsResponse.getExperimentRunsList())
-                  .setTotalRecords(findExperimentRunsResponse.getTotalRecords())
-                  .build();
-            },
-            executor);
+                  return Future.of(
+                      FindExperimentRuns.newBuilder()
+                          .setPageNumber(request.getPageNumber())
+                          .setPageLimit(request.getPageLimit())
+                          .setAscending(request.getAscending())
+                          .setSortKey(request.getSortKey())
+                          .addPredicates(entityKeyValuePredicate)
+                          .build());
+                })
+            .thenCompose(this::findExperimentRuns);
+    return responseFuture.thenCompose(
+        t ->
+            Future.of(
+                ((Function<
+                            ? super FindExperimentRuns.Response,
+                            ? extends GetExperimentRunsByDatasetVersionId.Response>)
+                        findExperimentRunsResponse -> {
+                          // Build GetExperimentRunsByDatasetVersionId response from find ER
+                          // response
+                          LOGGER.trace(
+                              "Final return experiment_run count for dataset version: {}",
+                              findExperimentRunsResponse.getExperimentRunsCount());
+                          LOGGER.trace(
+                              "Final return total record count : {}",
+                              findExperimentRunsResponse.getTotalRecords());
+                          return GetExperimentRunsByDatasetVersionId.Response.newBuilder()
+                              .addAllExperimentRuns(
+                                  findExperimentRunsResponse.getExperimentRunsList())
+                              .setTotalRecords(findExperimentRunsResponse.getTotalRecords())
+                              .build();
+                        })
+                    .apply(t)));
   }
 
-  public InternalFuture<ExperimentRun> updateExperimentRunDescription(
+  public Future<ExperimentRun> updateExperimentRunDescription(
       UpdateExperimentRunDescription request) {
     final var runId = request.getId();
     final var description = request.getDescription();
@@ -1595,234 +1531,261 @@ public class FutureExperimentRunDAO {
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
         .thenAccept(
             unused ->
-                jdbi.useHandle(
+                jdbi.run(
                     handle ->
                         handle
                             .createUpdate(
                                 "UPDATE experiment_run SET description = :description WHERE id = :id")
                             .bind("id", runId)
                             .bind("description", description)
-                            .execute()),
-            executor)
-        .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
-        .thenCompose(unused -> updateVersionNumber(runId), executor)
-        .thenCompose(unused -> getExperimentRunById(runId), executor);
+                            .execute()))
+        .thenCompose(unused -> updateModifiedTimestamp(runId, now))
+        .thenCompose(unused -> updateVersionNumber(runId))
+        .thenCompose(unused -> getExperimentRunById(runId));
   }
 
-  public InternalFuture<GetExperimentRunsInExperiment.Response> getExperimentRunsInExperiment(
+  public Future<GetExperimentRunsInExperiment.Response> getExperimentRunsInExperiment(
       GetExperimentRunsInExperiment request) {
     final var requestValidationFuture =
-        InternalFuture.runAsync(
+        Future.runAsync(
             () -> {
               if (request.getExperimentId().isEmpty()) {
                 var errorMessage = "Experiment ID not present";
                 throw new InvalidArgumentException(errorMessage);
               }
-            },
-            executor);
-    return requestValidationFuture
-        .thenCompose(
-            unused ->
-                jdbi.withHandle(
-                    handle ->
-                        handle
-                            .createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id")
-                            .bind("id", request.getExperimentId())
-                            .mapTo(Long.class)
-                            .one()),
-            executor)
-        .thenAccept(
-            count -> {
-              if (count == 0) {
-                throw new NotFoundException("Experiment not found");
-              }
-            },
-            executor)
-        .thenCompose(
-            unused ->
-                findExperimentRuns(
-                    FindExperimentRuns.newBuilder()
-                        .setExperimentId(request.getExperimentId())
-                        .setSortKey(request.getSortKey())
-                        .setAscending(request.getAscending())
-                        .setPageLimit(request.getPageLimit())
-                        .setPageNumber(request.getPageNumber())
-                        .build()),
-            executor)
-        .thenApply(
-            findResponse ->
-                GetExperimentRunsInExperiment.Response.newBuilder()
-                    .addAllExperimentRuns(findResponse.getExperimentRunsList())
-                    .setTotalRecords(findResponse.getTotalRecords())
-                    .build(),
-            executor);
+            });
+    Future<FindExperimentRuns.Response> responseFuture =
+        requestValidationFuture
+            .thenCompose(
+                unused ->
+                    jdbi.call(
+                        handle ->
+                            handle
+                                .createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id")
+                                .bind("id", request.getExperimentId())
+                                .mapTo(Long.class)
+                                .one()))
+            .thenAccept(
+                count -> {
+                  if (count == 0) {
+                    throw new NotFoundException("Experiment not found");
+                  }
+                })
+            .thenCompose(
+                unused ->
+                    findExperimentRuns(
+                        FindExperimentRuns.newBuilder()
+                            .setExperimentId(request.getExperimentId())
+                            .setSortKey(request.getSortKey())
+                            .setAscending(request.getAscending())
+                            .setPageLimit(request.getPageLimit())
+                            .setPageNumber(request.getPageNumber())
+                            .build()));
+    return responseFuture.thenCompose(
+        t ->
+            Future.of(
+                ((Function<
+                            ? super FindExperimentRuns.Response,
+                            ? extends GetExperimentRunsInExperiment.Response>)
+                        findResponse ->
+                            GetExperimentRunsInExperiment.Response.newBuilder()
+                                .addAllExperimentRuns(findResponse.getExperimentRunsList())
+                                .setTotalRecords(findResponse.getTotalRecords())
+                                .build())
+                    .apply(t)));
   }
 
-  public InternalFuture<CloneExperimentRun.Response> cloneExperimentRun(
-      CloneExperimentRun request) {
+  public Future<CloneExperimentRun.Response> cloneExperimentRun(CloneExperimentRun request) {
     var validateRequestParamFuture =
-        InternalFuture.runAsync(
+        Future.runAsync(
             () -> {
               if (request.getSrcExperimentRunId().isEmpty()) {
                 throw new InvalidArgumentException("Source ExperimentRun Id should not be empty");
               }
-            },
-            executor);
+            });
 
     return validateRequestParamFuture
         .thenCompose(
             unused ->
-                FutureUtil.clientRequest(
-                    uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor),
-            executor)
+                Future.fromListenableFuture(
+                    uac.getUACService().getCurrentUser(Empty.newBuilder().build())))
         .thenCompose(
-            userInfo ->
-                findExperimentRuns(
-                        FindExperimentRuns.newBuilder()
-                            .addExperimentRunIds(request.getSrcExperimentRunId())
-                            .build())
-                    .thenApply(
-                        findExperimentRuns -> {
-                          if (findExperimentRuns.getExperimentRunsList().isEmpty()) {
-                            throw new NotFoundException("Source experiment run not found");
-                          }
-                          var srcExperimentRun = findExperimentRuns.getExperimentRuns(0);
-                          return srcExperimentRun.toBuilder().clone();
-                        },
-                        executor)
-                    .thenCompose(
-                        experimentRun ->
+            userInfo -> {
+              Future<FindExperimentRuns.Response> responseFuture1 =
+                  findExperimentRuns(
+                      FindExperimentRuns.newBuilder()
+                          .addExperimentRunIds(request.getSrcExperimentRunId())
+                          .build());
+              return responseFuture1
+                  .<ExperimentRun.Builder>thenCompose(
+                      t1 ->
+                          Future.of(
+                              ((Function<
+                                          ? super FindExperimentRuns.Response,
+                                          ? extends ExperimentRun.Builder>)
+                                      findExperimentRuns -> {
+                                        if (findExperimentRuns.getExperimentRunsList().isEmpty()) {
+                                          throw new NotFoundException(
+                                              "Source experiment run not found");
+                                        }
+                                        var srcExperimentRun =
+                                            findExperimentRuns.getExperimentRuns(0);
+                                        return srcExperimentRun.toBuilder().clone();
+                                      })
+                                  .apply(t1)))
+                  .thenCompose(
+                      experimentRun -> {
+                        Future<FindExperimentRuns.Response> responseFuture =
                             findExperimentRuns(
-                                    FindExperimentRuns.newBuilder()
-                                        .setIdsOnly(true)
-                                        .setProjectId(experimentRun.getProjectId())
-                                        .build())
-                                .thenApply(runsResponse -> experimentRun, executor),
-                        executor)
-                    .thenCompose(
-                        cloneExperimentRunBuilder ->
-                            checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
-                                request, cloneExperimentRunBuilder),
-                        executor)
-                    .thenCompose(
-                        desExperimentRunBuilder -> {
+                                FindExperimentRuns.newBuilder()
+                                    .setIdsOnly(true)
+                                    .setProjectId(experimentRun.getProjectId())
+                                    .build());
+                        return responseFuture.thenCompose(
+                            t ->
+                                Future.of(
+                                    ((Function<
+                                                ? super FindExperimentRuns.Response,
+                                                ? extends ExperimentRun.Builder>)
+                                            runsResponse -> experimentRun)
+                                        .apply(t)));
+                      })
+                  .thenCompose(
+                      cloneExperimentRunBuilder ->
+                          checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
+                              request, cloneExperimentRunBuilder))
+                  .thenCompose(
+                      desExperimentRunBuilder -> {
+                        desExperimentRunBuilder
+                            .setId(UUID.randomUUID().toString())
+                            .setDateCreated(Calendar.getInstance().getTimeInMillis())
+                            .setDateUpdated(Calendar.getInstance().getTimeInMillis())
+                            .setStartTime(Calendar.getInstance().getTimeInMillis())
+                            .setEndTime(Calendar.getInstance().getTimeInMillis());
+
+                        if (!request.getDestExperimentRunName().isEmpty()) {
+                          desExperimentRunBuilder.setName(request.getDestExperimentRunName());
+                        } else {
+                          desExperimentRunBuilder.setName(
+                              desExperimentRunBuilder.getName() + " - " + new Date().getTime());
+                        }
+
+                        if (userInfo != null) {
                           desExperimentRunBuilder
-                              .setId(UUID.randomUUID().toString())
-                              .setDateCreated(Calendar.getInstance().getTimeInMillis())
-                              .setDateUpdated(Calendar.getInstance().getTimeInMillis())
-                              .setStartTime(Calendar.getInstance().getTimeInMillis())
-                              .setEndTime(Calendar.getInstance().getTimeInMillis());
-
-                          if (!request.getDestExperimentRunName().isEmpty()) {
-                            desExperimentRunBuilder.setName(request.getDestExperimentRunName());
-                          } else {
-                            desExperimentRunBuilder.setName(
-                                desExperimentRunBuilder.getName() + " - " + new Date().getTime());
-                          }
-
-                          if (userInfo != null) {
-                            desExperimentRunBuilder
-                                .clearOwner()
-                                .setOwner(userInfo.getVertaInfo().getUserId());
-                          }
-                          return createExperimentRunHandler
-                              .insertExperimentRun(desExperimentRunBuilder.build())
-                              .thenApply(
-                                  unused1 ->
-                                      CloneExperimentRun.Response.newBuilder()
-                                          .setRun(desExperimentRunBuilder.build())
-                                          .build(),
-                                  executor);
-                        },
-                        executor),
-            executor);
+                              .clearOwner()
+                              .setOwner(userInfo.getVertaInfo().getUserId());
+                        }
+                        Future<ExperimentRun> experimentRunFuture =
+                            createExperimentRunHandler.insertExperimentRun(
+                                desExperimentRunBuilder.build());
+                        return experimentRunFuture.thenCompose(
+                            t ->
+                                Future.of(
+                                    ((Function<
+                                                ? super ExperimentRun,
+                                                ? extends CloneExperimentRun.Response>)
+                                            unused1 ->
+                                                CloneExperimentRun.Response.newBuilder()
+                                                    .setRun(desExperimentRunBuilder.build())
+                                                    .build())
+                                        .apply(t)));
+                      });
+            });
   }
 
-  private InternalFuture<ExperimentRun.Builder>
-      checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
-          CloneExperimentRun request, ExperimentRun.Builder cloneExperimentRunBuilder) {
+  private Future<ExperimentRun.Builder> checkPermissionAndPopulateFieldsBasedOnDestExperimentId(
+      CloneExperimentRun request, ExperimentRun.Builder cloneExperimentRunBuilder) {
     if (!request.getDestExperimentId().isEmpty()) {
       if (!cloneExperimentRunBuilder.getExperimentId().equals(request.getDestExperimentId())) {
-        return jdbi.withHandle(
+        Future<Optional<String>> optionalFuture =
+            jdbi.call(
                 handle ->
                     handle
                         .createQuery("SELECT project_id FROM experiment where id = :id")
                         .bind("id", request.getDestExperimentId())
                         .mapTo(String.class)
-                        .findOne())
-            .thenApply(
-                projectId -> {
-                  if (projectId.isEmpty()) {
-                    throw new NotFoundException(
-                        "Experiment not found for given ID: " + request.getDestExperimentId());
-                  }
-                  return projectId.get();
-                },
-                executor)
-            .thenCompose(
-                projectId ->
-                    getEntityPermissionBasedOnResourceTypes(
-                            Collections.singletonList(projectId),
-                            ModelDBActionEnum.ModelDBServiceActions.UPDATE,
-                            ModelDBServiceResourceTypes.PROJECT)
-                        .thenCompose(
-                            allowed -> {
-                              if (!allowed) {
-                                throw new PermissionDeniedException(
-                                    "Destination project is not accessible");
-                              }
-                              return InternalFuture.completedInternalFuture(projectId);
-                            },
-                            executor),
-                executor)
-            .thenApply(
-                projectId ->
-                    cloneExperimentRunBuilder
-                        .setExperimentId(request.getDestExperimentId())
-                        .setProjectId(projectId),
-                executor);
+                        .findOne());
+        Future<String> stringFuture =
+            optionalFuture
+                .<String>thenCompose(
+                    t1 ->
+                        Future.of(
+                            ((Function<? super Optional<String>, ? extends String>)
+                                    projectId1 -> {
+                                      if (projectId1.isEmpty()) {
+                                        throw new NotFoundException(
+                                            "Experiment not found for given ID: "
+                                                + request.getDestExperimentId());
+                                      }
+                                      return projectId1.get();
+                                    })
+                                .apply(t1)))
+                .thenCompose(
+                    projectId ->
+                        getEntityPermissionBasedOnResourceTypes(
+                                Collections.singletonList(projectId),
+                                ModelDBActionEnum.ModelDBServiceActions.UPDATE,
+                                ModelDBServiceResourceTypes.PROJECT)
+                            .thenCompose(
+                                allowed -> {
+                                  if (!allowed) {
+                                    throw new PermissionDeniedException(
+                                        "Destination project is not accessible");
+                                  }
+                                  return Future.of(projectId);
+                                }));
+        return stringFuture.thenCompose(
+            t ->
+                Future.of(
+                    ((Function<? super String, ? extends ExperimentRun.Builder>)
+                            projectId ->
+                                cloneExperimentRunBuilder
+                                    .setExperimentId(request.getDestExperimentId())
+                                    .setProjectId(projectId))
+                        .apply(t)));
       }
     }
-    return InternalFuture.completedInternalFuture(cloneExperimentRunBuilder);
+    return Future.of(cloneExperimentRunBuilder);
   }
 
-  private InternalFuture<ExperimentRun> getExperimentRunById(String experimentRunId) {
+  private Future<ExperimentRun> getExperimentRunById(String experimentRunId) {
     try {
       var validateArgumentFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (experimentRunId.isEmpty()) {
                   throw new InvalidArgumentException("ExperimentRun ID not present");
                 }
-              },
-              executor);
-      return validateArgumentFuture
-          .thenCompose(
+              });
+      Future<FindExperimentRuns.Response> responseFuture =
+          validateArgumentFuture.thenCompose(
               unused ->
                   findExperimentRuns(
                       FindExperimentRuns.newBuilder()
                           .addExperimentRunIds(experimentRunId)
                           .setPageLimit(1)
                           .setPageNumber(1)
-                          .build()),
-              executor)
-          .thenApply(
-              response -> {
-                if (response.getExperimentRunsList().isEmpty()) {
-                  throw new NotFoundException("ExperimentRun not found for given Id");
-                } else if (response.getExperimentRunsCount() > 1) {
-                  throw new InternalErrorException("More then one experiments found");
-                }
-                return response.getExperimentRuns(0);
-              },
-              executor);
+                          .build()));
+      return responseFuture.thenCompose(
+          t ->
+              Future.of(
+                  ((Function<? super FindExperimentRuns.Response, ? extends ExperimentRun>)
+                          response -> {
+                            if (response.getExperimentRunsList().isEmpty()) {
+                              throw new NotFoundException("ExperimentRun not found for given Id");
+                            } else if (response.getExperimentRunsCount() > 1) {
+                              throw new InternalErrorException("More then one experiments found");
+                            }
+                            return response.getExperimentRuns(0);
+                          })
+                      .apply(t)));
     } catch (Exception e) {
-      return InternalFuture.failedStage(e);
+      return Future.failedStage(e);
     }
   }
 
-  public InternalFuture<String> getProjectIdByExperimentRunId(String experimentRunId) {
-    return jdbi.withHandle(
+  public Future<String> getProjectIdByExperimentRunId(String experimentRunId) {
+    return jdbi.call(
         handle -> {
           try (var query =
               handle.createQuery("SELECT project_id from experiment_run where id = :id ")) {

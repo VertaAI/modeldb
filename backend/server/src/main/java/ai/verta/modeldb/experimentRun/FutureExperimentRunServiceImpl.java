@@ -14,9 +14,9 @@ import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.utils.UACApisUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
@@ -33,6 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -55,7 +56,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
     this.uacApisUtil = daoSet.getUacApisUtil();
   }
 
-  private InternalFuture<Void> addEvent(
+  private Future<Void> addEvent(
       String entityId,
       Optional<String> experimentId,
       String projectId,
@@ -65,7 +66,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       String eventMessage) {
 
     if (!App.getInstance().mdbConfig.isEvent_system_enabled()) {
-      return InternalFuture.completedInternalFuture(null);
+      return Future.of(null);
     }
 
     // Add succeeded event in local DB
@@ -96,41 +97,48 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
         .getEntityResource(projectId, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
         .thenCompose(
             projectResource ->
-                futureEventDAO.addLocalEventWithAsync(
-                    ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name(),
-                    eventType,
-                    projectResource.getWorkspaceId(),
-                    eventMetadata),
-            executor);
+                futureEventDAO
+                    .addLocalEventWithAsync(
+                        ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN.name(),
+                        eventType,
+                        projectResource.getWorkspaceId(),
+                        eventMetadata)
+                    .toFuture());
   }
 
   @Override
   public void createExperimentRun(
       CreateExperimentRun request, StreamObserver<CreateExperimentRun.Response> responseObserver) {
     try {
-      final var response =
+      Future<ExperimentRun> experimentRunFuture =
           futureExperimentRunDAO
               .createExperimentRun(request)
               .thenCompose(
                   experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              experimentRun.getId(),
-                              Optional.of(experimentRun.getExperimentId()),
-                              experimentRun.getProjectId(),
-                              ADD_EVENT_TYPE,
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "experiment_run added successfully")
-                          .thenApply(unused -> experimentRun, executor),
-                  executor)
-              .thenApply(
-                  experimentRun ->
-                      CreateExperimentRun.Response.newBuilder()
-                          .setExperimentRun(experimentRun)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            experimentRun.getId(),
+                            Optional.of(experimentRun.getExperimentId()),
+                            experimentRun.getProjectId(),
+                            ADD_EVENT_TYPE,
+                            Optional.empty(),
+                            Collections.emptyMap(),
+                            "experiment_run added successfully")
+                        .thenCompose(unused -> Future.of(experimentRun));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentRunFuture.<CreateExperimentRun.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super ExperimentRun, ? extends CreateExperimentRun.Response>)
+                              experimentRun ->
+                                  CreateExperimentRun.Response.newBuilder()
+                                      .setExperimentRun(experimentRun)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -140,41 +148,48 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void deleteExperimentRun(
       DeleteExperimentRun request, StreamObserver<DeleteExperimentRun.Response> responseObserver) {
     try {
-      final var response =
+      Future<List<Void>> listFuture =
           futureExperimentRunDAO
               .deleteExperimentRuns(
                   DeleteExperimentRuns.newBuilder().addIds(request.getId()).build())
               .thenCompose(
                   unused ->
-                      loggedDeleteExperimentRunEvents(Collections.singletonList(request.getId())),
-                  executor)
-              .thenApply(
-                  unused -> DeleteExperimentRun.Response.newBuilder().setStatus(true).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                      loggedDeleteExperimentRunEvents(Collections.singletonList(request.getId())));
+      final var response =
+          listFuture.<DeleteExperimentRun.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<Void>, ? extends DeleteExperimentRun.Response>)
+                              unused ->
+                                  DeleteExperimentRun.Response.newBuilder().setStatus(true).build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
   }
 
-  private InternalFuture<List<Void>> loggedDeleteExperimentRunEvents(List<String> runIds) {
+  private Future<List<Void>> loggedDeleteExperimentRunEvents(List<String> runIds) {
     // Add succeeded event in local DB
-    List<InternalFuture<Void>> futureList = new ArrayList<>();
+    List<Future<Void>> futureList = new ArrayList<>();
     Map<String, String> cacheMap = new ConcurrentHashMap<>();
-    InternalFuture<String> projectIdFuture;
+    Future<String> projectIdFuture;
     for (String runId : runIds) {
       if (cacheMap.containsKey(runId)) {
-        projectIdFuture = InternalFuture.completedInternalFuture(cacheMap.get(runId));
+        String thing = cacheMap.get(runId);
+        projectIdFuture = Future.of(thing);
       } else {
+        Future<String> stringFuture = futureExperimentRunDAO.getProjectIdByExperimentRunId(runId);
         projectIdFuture =
-            futureExperimentRunDAO
-                .getProjectIdByExperimentRunId(runId)
-                .thenApply(
-                    projectId -> {
-                      cacheMap.put(runId, projectId);
-                      return projectId;
-                    },
-                    executor);
+            stringFuture.thenCompose(
+                t ->
+                    Future.of(
+                        ((Function<? super String, ? extends String>)
+                                projectId -> {
+                                  cacheMap.put(runId, projectId);
+                                  return projectId;
+                                })
+                            .apply(t)));
       }
 
       var eventFuture =
@@ -187,11 +202,10 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       DELETE_EXPERIMENT_RUN_EVENT_TYPE,
                       Optional.empty(),
                       Collections.emptyMap(),
-                      "experiment_run deleted successfully"),
-              executor);
+                      "experiment_run deleted successfully"));
       futureList.add(eventFuture);
     }
-    return InternalFuture.sequence(futureList, executor);
+    return Future.sequence(futureList);
   }
 
   @Override
@@ -200,35 +214,38 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetExperimentRunsInProject.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getProjectId().isEmpty()) {
                   var errorMessage = "Project ID not present";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
+      Future<FindExperimentRuns.Response> responseFuture =
+          requestValidationFuture.thenCompose(
+              unused ->
+                  futureExperimentRunDAO.findExperimentRuns(
+                      FindExperimentRuns.newBuilder()
+                          .setProjectId(request.getProjectId())
+                          .setPageLimit(request.getPageLimit())
+                          .setPageNumber(request.getPageNumber())
+                          .setAscending(request.getAscending())
+                          .setSortKey(request.getSortKey())
+                          .build()));
       final var response =
-          requestValidationFuture
-              .thenCompose(
-                  unused ->
-                      futureExperimentRunDAO.findExperimentRuns(
-                          FindExperimentRuns.newBuilder()
-                              .setProjectId(request.getProjectId())
-                              .setPageLimit(request.getPageLimit())
-                              .setPageNumber(request.getPageNumber())
-                              .setAscending(request.getAscending())
-                              .setSortKey(request.getSortKey())
-                              .build()),
-                  executor)
-              .thenApply(
-                  findResponse ->
-                      GetExperimentRunsInProject.Response.newBuilder()
-                          .addAllExperimentRuns(findResponse.getExperimentRunsList())
-                          .setTotalRecords(findResponse.getTotalRecords())
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          responseFuture.<GetExperimentRunsInProject.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super FindExperimentRuns.Response,
+                                  ? extends GetExperimentRunsInProject.Response>)
+                              findResponse ->
+                                  GetExperimentRunsInProject.Response.newBuilder()
+                                      .addAllExperimentRuns(findResponse.getExperimentRunsList())
+                                      .setTotalRecords(findResponse.getTotalRecords())
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -240,7 +257,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetExperimentRunsInExperiment.Response> responseObserver) {
     try {
       final var response = futureExperimentRunDAO.getExperimentRunsInExperiment(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -252,39 +269,43 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetExperimentRunById.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "ExperimentRun ID not present";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
+      Future<FindExperimentRuns.Response> responseFuture =
+          requestValidationFuture.thenCompose(
+              unused ->
+                  futureExperimentRunDAO.findExperimentRuns(
+                      FindExperimentRuns.newBuilder()
+                          .addExperimentRunIds(request.getId())
+                          .build()));
       final var response =
-          requestValidationFuture
-              .thenCompose(
-                  unused ->
-                      futureExperimentRunDAO.findExperimentRuns(
-                          FindExperimentRuns.newBuilder()
-                              .addExperimentRunIds(request.getId())
-                              .build()),
-                  executor)
-              .thenApply(
-                  findResponse -> {
-                    if (findResponse.getExperimentRunsCount() > 1) {
-                      throw new InternalErrorException(
-                          "More than one ExperimentRun found for ID: " + request.getId());
-                    } else if (findResponse.getExperimentRunsCount() == 0) {
-                      throw new NotFoundException(
-                          "ExperimentRun not found for the ID: " + request.getId());
-                    } else {
-                      return GetExperimentRunById.Response.newBuilder()
-                          .setExperimentRun(findResponse.getExperimentRuns(0))
-                          .build();
-                    }
-                  },
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          responseFuture.<GetExperimentRunById.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super FindExperimentRuns.Response,
+                                  ? extends GetExperimentRunById.Response>)
+                              findResponse -> {
+                                if (findResponse.getExperimentRunsCount() > 1) {
+                                  throw new InternalErrorException(
+                                      "More than one ExperimentRun found for ID: "
+                                          + request.getId());
+                                } else if (findResponse.getExperimentRunsCount() == 0) {
+                                  throw new NotFoundException(
+                                      "ExperimentRun not found for the ID: " + request.getId());
+                                } else {
+                                  return GetExperimentRunById.Response.newBuilder()
+                                      .setExperimentRun(findResponse.getExperimentRuns(0))
+                                      .build();
+                                }
+                              })
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -296,7 +317,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetExperimentRunByName.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getName().isEmpty()) {
                   var errorMessage = "ExperimentRun name not present";
@@ -305,40 +326,41 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                   var errorMessage = "Experiment ID not present";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
+      Future<FindExperimentRuns.Response> responseFuture =
+          requestValidationFuture.thenCompose(
+              unused ->
+                  futureExperimentRunDAO.findExperimentRuns(
+                      FindExperimentRuns.newBuilder()
+                          .setExperimentId(request.getExperimentId())
+                          .addPredicates(
+                              KeyValueQuery.newBuilder()
+                                  .setKey("name")
+                                  .setValue(
+                                      Value.newBuilder().setStringValue(request.getName()).build())
+                                  .setOperator(OperatorEnum.Operator.EQ)
+                                  .setValueType(ValueTypeEnum.ValueType.STRING)
+                                  .build())
+                          .build()));
       final var response =
-          requestValidationFuture
-              .thenCompose(
-                  unused ->
-                      futureExperimentRunDAO.findExperimentRuns(
-                          FindExperimentRuns.newBuilder()
-                              .setExperimentId(request.getExperimentId())
-                              .addPredicates(
-                                  KeyValueQuery.newBuilder()
-                                      .setKey("name")
-                                      .setValue(
-                                          Value.newBuilder()
-                                              .setStringValue(request.getName())
-                                              .build())
-                                      .setOperator(OperatorEnum.Operator.EQ)
-                                      .setValueType(ValueTypeEnum.ValueType.STRING)
-                                      .build())
-                              .build()),
-                  executor)
-              .thenApply(
-                  findResponse -> {
-                    if (findResponse.getExperimentRunsCount() == 0) {
-                      throw new NotFoundException(
-                          "ExperimentRun not found for the name: " + request.getName());
-                    } else {
-                      return GetExperimentRunByName.Response.newBuilder()
-                          .setExperimentRun(findResponse.getExperimentRuns(0))
-                          .build();
-                    }
-                  },
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          responseFuture.<GetExperimentRunByName.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super FindExperimentRuns.Response,
+                                  ? extends GetExperimentRunByName.Response>)
+                              findResponse -> {
+                                if (findResponse.getExperimentRunsCount() == 0) {
+                                  throw new NotFoundException(
+                                      "ExperimentRun not found for the name: " + request.getName());
+                                } else {
+                                  return GetExperimentRunByName.Response.newBuilder()
+                                      .setExperimentRun(findResponse.getExperimentRuns(0))
+                                      .build();
+                                }
+                              })
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -357,29 +379,37 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       UpdateExperimentRunDescription request,
       StreamObserver<UpdateExperimentRunDescription.Response> responseObserver) {
     try {
-      final var response =
+      Future<ExperimentRun> experimentRunFuture =
           futureExperimentRunDAO
               .updateExperimentRunDescription(request)
               .thenCompose(
                   experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              experimentRun.getId(),
-                              Optional.of(experimentRun.getExperimentId()),
-                              experimentRun.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("description"),
-                              Collections.emptyMap(),
-                              "experiment_run description added successfully")
-                          .thenApply(unused -> experimentRun, executor),
-                  executor)
-              .thenApply(
-                  experimentRun ->
-                      UpdateExperimentRunDescription.Response.newBuilder()
-                          .setExperimentRun(experimentRun)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            experimentRun.getId(),
+                            Optional.of(experimentRun.getExperimentId()),
+                            experimentRun.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("description"),
+                            Collections.emptyMap(),
+                            "experiment_run description added successfully")
+                        .thenCompose(unused -> Future.of(experimentRun));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentRunFuture.<UpdateExperimentRunDescription.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super ExperimentRun,
+                                  ? extends UpdateExperimentRunDescription.Response>)
+                              experimentRun ->
+                                  UpdateExperimentRunDescription.Response.newBuilder()
+                                      .setExperimentRun(experimentRun)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -390,34 +420,40 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       AddExperimentRunTags request,
       StreamObserver<AddExperimentRunTags.Response> responseObserver) {
     try {
-      final var response =
+      Future<ExperimentRun> experimentRunFuture =
           futureExperimentRunDAO
               .addTags(request)
               .thenCompose(
                   experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              experimentRun.getId(),
-                              Optional.of(experimentRun.getExperimentId()),
-                              experimentRun.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getTagsList(),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment_run tags added successfully")
-                          .thenApply(unused -> experimentRun, executor),
-                  executor)
-              .thenApply(
-                  experimentRun ->
-                      AddExperimentRunTags.Response.newBuilder()
-                          .setExperimentRun(experimentRun)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            experimentRun.getId(),
+                            Optional.of(experimentRun.getExperimentId()),
+                            experimentRun.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            Collections.singletonMap(
+                                "tags",
+                                new Gson()
+                                    .toJsonTree(
+                                        request.getTagsList(),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment_run tags added successfully")
+                        .thenCompose(unused -> Future.of(experimentRun));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentRunFuture.<AddExperimentRunTags.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super ExperimentRun, ? extends AddExperimentRunTags.Response>)
+                              experimentRun ->
+                                  AddExperimentRunTags.Response.newBuilder()
+                                      .setExperimentRun(experimentRun)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -430,8 +466,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       final var response =
           futureExperimentRunDAO
               .getTags(request)
-              .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+              .thenCompose(
+                  tags -> Future.of(GetTags.Response.newBuilder().addAllTags(tags).build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -442,7 +479,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       DeleteExperimentRunTags request,
       StreamObserver<DeleteExperimentRunTags.Response> responseObserver) {
     try {
-      final var response =
+      Future<ExperimentRun> experimentRunFuture =
           futureExperimentRunDAO
               .deleteTags(request)
               .thenCompose(
@@ -467,16 +504,20 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                             Optional.of("tags"),
                             extraFieldValue,
                             "experiment_run tags deleted successfully")
-                        .thenApply(unused -> experimentRun, executor);
-                  },
-                  executor)
-              .thenApply(
-                  experimentRun ->
-                      DeleteExperimentRunTags.Response.newBuilder()
-                          .setExperimentRun(experimentRun)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                        .thenCompose(unused -> Future.of(experimentRun));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentRunFuture.<DeleteExperimentRunTags.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super ExperimentRun, ? extends DeleteExperimentRunTags.Response>)
+                              experimentRun ->
+                                  DeleteExperimentRunTags.Response.newBuilder()
+                                      .setExperimentRun(experimentRun)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -486,7 +527,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void addExperimentRunTag(
       AddExperimentRunTag request, StreamObserver<AddExperimentRunTag.Response> responseObserver) {
     try {
-      final var response =
+      Future<ExperimentRun> experimentRunFuture =
           futureExperimentRunDAO
               .addTags(
                   AddExperimentRunTags.newBuilder()
@@ -495,29 +536,35 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .build())
               .thenCompose(
                   experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              experimentRun.getId(),
-                              Optional.of(experimentRun.getExperimentId()),
-                              experimentRun.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getTag()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment_run tag added successfully")
-                          .thenApply(eventLoggedStatus -> experimentRun, executor),
-                  executor)
-              .thenApply(
-                  experimentRun ->
-                      AddExperimentRunTag.Response.newBuilder()
-                          .setExperimentRun(experimentRun)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            experimentRun.getId(),
+                            Optional.of(experimentRun.getExperimentId()),
+                            experimentRun.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            Collections.singletonMap(
+                                "tags",
+                                new Gson()
+                                    .toJsonTree(
+                                        Collections.singletonList(request.getTag()),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment_run tag added successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(experimentRun));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentRunFuture.<AddExperimentRunTag.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super ExperimentRun, ? extends AddExperimentRunTag.Response>)
+                              experimentRun ->
+                                  AddExperimentRunTag.Response.newBuilder()
+                                      .setExperimentRun(experimentRun)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -528,7 +575,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       DeleteExperimentRunTag request,
       StreamObserver<DeleteExperimentRunTag.Response> responseObserver) {
     try {
-      final var response =
+      Future<ExperimentRun> experimentRunFuture =
           futureExperimentRunDAO
               .deleteTags(
                   DeleteExperimentRunTags.newBuilder()
@@ -537,29 +584,35 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                       .build())
               .thenCompose(
                   experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              experimentRun.getId(),
-                              Optional.of(experimentRun.getExperimentId()),
-                              experimentRun.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getTag()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment_run tag deleted successfully")
-                          .thenApply(eventLoggedStatus -> experimentRun, executor),
-                  executor)
-              .thenApply(
-                  experimentRun ->
-                      DeleteExperimentRunTag.Response.newBuilder()
-                          .setExperimentRun(experimentRun)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            experimentRun.getId(),
+                            Optional.of(experimentRun.getExperimentId()),
+                            experimentRun.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            Collections.singletonMap(
+                                "tags",
+                                new Gson()
+                                    .toJsonTree(
+                                        Collections.singletonList(request.getTag()),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment_run tag deleted successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(experimentRun));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentRunFuture.<DeleteExperimentRunTag.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super ExperimentRun, ? extends DeleteExperimentRunTag.Response>)
+                              experimentRun ->
+                                  DeleteExperimentRunTag.Response.newBuilder()
+                                      .setExperimentRun(experimentRun)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -600,10 +653,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                             new Gson()
                                 .toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
                         "experiment_run observation added successfully");
-                  },
-                  executor)
-              .thenApply(unused -> LogObservation.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  })
+              .thenCompose(unused -> Future.of(LogObservation.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -640,10 +692,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                             new Gson()
                                 .toJsonTree(keys, new TypeToken<ArrayList<String>>() {}.getType())),
                         "experiment_run observations added successfully");
-                  },
-                  executor)
-              .thenApply(unused -> LogObservations.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  })
+              .thenCompose(unused -> Future.of(LogObservations.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -653,16 +704,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void getObservations(
       GetObservations request, StreamObserver<GetObservations.Response> responseObserver) {
     try {
+      Future<List<Observation>> listFuture = futureExperimentRunDAO.getObservations(request);
       final var response =
-          futureExperimentRunDAO
-              .getObservations(request)
-              .thenApply(
-                  observations ->
-                      GetObservations.Response.newBuilder()
-                          .addAllObservations(observations)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          listFuture.<GetObservations.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<Observation>, ? extends GetObservations.Response>)
+                              observations ->
+                                  GetObservations.Response.newBuilder()
+                                      .addAllObservations(observations)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -697,10 +750,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                         Optional.of("observations"),
                         extraFieldValue,
                         "experiment_run observations deleted successfully");
-                  },
-                  executor)
-              .thenApply(unused -> DeleteObservations.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  })
+              .thenCompose(unused -> Future.of(DeleteObservations.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -733,10 +785,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
                                       new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run metric added successfully"),
-                  executor)
-              .thenApply(unused -> LogMetric.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                          "experiment_run metric added successfully"))
+              .thenCompose(unused -> Future.of(LogMetric.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -765,10 +816,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
                                       new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run metrics added successfully"),
-                  executor)
-              .thenApply(unused -> LogMetrics.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                          "experiment_run metrics added successfully"))
+              .thenCompose(unused -> Future.of(LogMetrics.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -777,13 +827,16 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   @Override
   public void getMetrics(GetMetrics request, StreamObserver<GetMetrics.Response> responseObserver) {
     try {
+      Future<List<KeyValue>> listFuture = futureExperimentRunDAO.getMetrics(request);
       final var response =
-          futureExperimentRunDAO
-              .getMetrics(request)
-              .thenApply(
-                  metrics -> GetMetrics.Response.newBuilder().addAllMetrics(metrics).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          listFuture.<GetMetrics.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<KeyValue>, ? extends GetMetrics.Response>)
+                              metrics ->
+                                  GetMetrics.Response.newBuilder().addAllMetrics(metrics).build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -818,10 +871,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                         Optional.of("metrics"),
                         extraFieldValue,
                         "experiment_run metrics deleted successfully");
-                  },
-                  executor)
-              .thenApply(unused -> DeleteMetrics.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  })
+              .thenCompose(unused -> Future.of(DeleteMetrics.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -862,10 +914,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                         Optional.of("datasets"),
                         extraFieldValue,
                         "experiment_run datasets added successfully");
-                  },
-                  executor)
-              .thenApply(unused -> LogDataset.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  })
+              .thenCompose(unused -> Future.of(LogDataset.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -902,10 +953,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                         Optional.of("datasets"),
                         extraFieldValue,
                         "experiment_run datasets added successfully");
-                  },
-                  executor)
-              .thenApply(unused -> LogDatasets.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  })
+              .thenCompose(unused -> Future.of(LogDatasets.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -915,13 +965,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void getDatasets(
       GetDatasets request, StreamObserver<GetDatasets.Response> responseObserver) {
     try {
+      Future<List<Artifact>> listFuture = futureExperimentRunDAO.getDatasets(request);
       final var response =
-          futureExperimentRunDAO
-              .getDatasets(request)
-              .thenApply(
-                  datasets -> GetDatasets.Response.newBuilder().addAllDatasets(datasets).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          listFuture.<GetDatasets.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<Artifact>, ? extends GetDatasets.Response>)
+                              datasets ->
+                                  GetDatasets.Response.newBuilder()
+                                      .addAllDatasets(datasets)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -955,10 +1010,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
                                       new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run hyperparameter added successfully"),
-                  executor)
-              .thenApply(unused -> LogHyperparameter.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                          "experiment_run hyperparameter added successfully"))
+              .thenCompose(unused -> Future.of(LogHyperparameter.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -988,10 +1042,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
                                       new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run hyperparameters added successfully"),
-                  executor)
-              .thenApply(unused -> LogHyperparameters.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                          "experiment_run hyperparameters added successfully"))
+              .thenCompose(unused -> Future.of(LogHyperparameters.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1001,16 +1054,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void getHyperparameters(
       GetHyperparameters request, StreamObserver<GetHyperparameters.Response> responseObserver) {
     try {
+      Future<List<KeyValue>> listFuture = futureExperimentRunDAO.getHyperparameters(request);
       final var response =
-          futureExperimentRunDAO
-              .getHyperparameters(request)
-              .thenApply(
-                  hyperparameters ->
-                      GetHyperparameters.Response.newBuilder()
-                          .addAllHyperparameters(hyperparameters)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          listFuture.<GetHyperparameters.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<KeyValue>, ? extends GetHyperparameters.Response>)
+                              hyperparameters ->
+                                  GetHyperparameters.Response.newBuilder()
+                                      .addAllHyperparameters(hyperparameters)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1021,35 +1076,38 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       DeleteHyperparameters request,
       StreamObserver<DeleteHyperparameters.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture =
+          futureExperimentRunDAO.deleteHyperparameters(request);
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .deleteHyperparameters(request)
+          experimentRunFuture
               .thenCompose(
-                  experimentRun -> {
-                    // Add succeeded event in local DB
-                    Map<String, Object> extraFieldValue = new HashMap<>();
-                    if (request.getDeleteAll()) {
-                      extraFieldValue.put("hyperparameters_deleted_all", true);
-                    } else {
-                      extraFieldValue.put(
-                          "hyperparameter_keys",
-                          new Gson()
-                              .toJsonTree(
-                                  request.getHyperparameterKeysList(),
-                                  new TypeToken<ArrayList<String>>() {}.getType()));
-                    }
-                    return addEvent(
-                        experimentRun.getId(),
-                        Optional.of(experimentRun.getExperimentId()),
-                        experimentRun.getProjectId(),
-                        UPDATE_EVENT_TYPE,
-                        Optional.of("hyperparameters"),
-                        extraFieldValue,
-                        "experiment_run hyperparameters deleted successfully");
-                  },
-                  executor)
-              .thenApply(unused -> DeleteHyperparameters.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun -> {
+                        // Add succeeded event in local DB
+                        Map<String, Object> extraFieldValue = new HashMap<>();
+                        if (request.getDeleteAll()) {
+                          extraFieldValue.put("hyperparameters_deleted_all", true);
+                        } else {
+                          extraFieldValue.put(
+                              "hyperparameter_keys",
+                              new Gson()
+                                  .toJsonTree(
+                                      request.getHyperparameterKeysList(),
+                                      new TypeToken<ArrayList<String>>() {}.getType()));
+                        }
+                        return addEvent(
+                            experimentRun.getId(),
+                            Optional.of(experimentRun.getExperimentId()),
+                            experimentRun.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("hyperparameters"),
+                            extraFieldValue,
+                            "experiment_run hyperparameters deleted successfully");
+                      })
+              .thenCompose(
+                  unused -> Future.of(DeleteHyperparameters.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1059,34 +1117,36 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void logAttribute(
       LogAttribute request, StreamObserver<LogAttribute.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture =
+          futureExperimentRunDAO.logAttributes(
+              LogAttributes.newBuilder()
+                  .setId(request.getId())
+                  .addAttributes(request.getAttribute())
+                  .build());
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .logAttributes(
-                  LogAttributes.newBuilder()
-                      .setId(request.getId())
-                      .addAttributes(request.getAttribute())
-                      .build())
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("attributes"),
-                          Collections.singletonMap(
-                              "attributes",
-                              new Gson()
-                                  .toJsonTree(
-                                      Stream.of(request.getAttribute())
-                                          .map(KeyValue::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run attribute added successfully"),
-                  executor)
-              .thenApply(unused -> LogAttribute.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("attributes"),
+                              Collections.singletonMap(
+                                  "attributes",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Stream.of(request.getAttribute())
+                                              .map(KeyValue::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run attribute added successfully"))
+              .thenCompose(unused -> Future.of(LogAttribute.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1096,30 +1156,31 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void logAttributes(
       LogAttributes request, StreamObserver<LogAttributes.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture = futureExperimentRunDAO.logAttributes(request);
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .logAttributes(request)
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("attributes"),
-                          Collections.singletonMap(
-                              "attributes",
-                              new Gson()
-                                  .toJsonTree(
-                                      request.getAttributesList().stream()
-                                          .map(KeyValue::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run attributes added successfully"),
-                  executor)
-              .thenApply(unused -> LogAttributes.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("attributes"),
+                              Collections.singletonMap(
+                                  "attributes",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getAttributesList().stream()
+                                              .map(KeyValue::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run attributes added successfully"))
+              .thenCompose(unused -> Future.of(LogAttributes.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1129,14 +1190,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void getExperimentRunAttributes(
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
     try {
+      Future<List<KeyValue>> listFuture = futureExperimentRunDAO.getAttributes(request);
       final var response =
-          futureExperimentRunDAO
-              .getAttributes(request)
-              .thenApply(
-                  attributes ->
-                      GetAttributes.Response.newBuilder().addAllAttributes(attributes).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          listFuture.<GetAttributes.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<KeyValue>, ? extends GetAttributes.Response>)
+                              attributes ->
+                                  GetAttributes.Response.newBuilder()
+                                      .addAllAttributes(attributes)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1147,35 +1212,37 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       AddExperimentRunAttributes request,
       StreamObserver<AddExperimentRunAttributes.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture =
+          futureExperimentRunDAO.logAttributes(
+              LogAttributes.newBuilder()
+                  .setId(request.getId())
+                  .addAllAttributes(request.getAttributesList())
+                  .build());
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .logAttributes(
-                  LogAttributes.newBuilder()
-                      .setId(request.getId())
-                      .addAllAttributes(request.getAttributesList())
-                      .build())
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("attributes"),
-                          Collections.singletonMap(
-                              "attributes",
-                              new Gson()
-                                  .toJsonTree(
-                                      request.getAttributesList().stream()
-                                          .map(KeyValue::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run attributes added successfully"),
-                  executor)
-              .thenApply(
-                  unused -> AddExperimentRunAttributes.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("attributes"),
+                              Collections.singletonMap(
+                                  "attributes",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getAttributesList().stream()
+                                              .map(KeyValue::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run attributes added successfully"))
+              .thenCompose(
+                  unused -> Future.of(AddExperimentRunAttributes.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1186,36 +1253,37 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       DeleteExperimentRunAttributes request,
       StreamObserver<DeleteExperimentRunAttributes.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture = futureExperimentRunDAO.deleteAttributes(request);
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .deleteAttributes(request)
+          experimentRunFuture
               .thenCompose(
-                  experimentRun -> {
-                    // Add succeeded event in local DB
-                    Map<String, Object> extraFieldValue = new HashMap<>();
-                    if (request.getDeleteAll()) {
-                      extraFieldValue.put("attributes_deleted_all", true);
-                    } else {
-                      extraFieldValue.put(
-                          "attribute_keys",
-                          new Gson()
-                              .toJsonTree(
-                                  request.getAttributeKeysList(),
-                                  new TypeToken<ArrayList<String>>() {}.getType()));
-                    }
-                    return addEvent(
-                        experimentRun.getId(),
-                        Optional.of(experimentRun.getExperimentId()),
-                        experimentRun.getProjectId(),
-                        UPDATE_EVENT_TYPE,
-                        Optional.of("attributes"),
-                        extraFieldValue,
-                        "experiment_run attributes deleted successfully");
-                  },
-                  executor)
-              .thenApply(
-                  unused -> DeleteExperimentRunAttributes.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun -> {
+                        // Add succeeded event in local DB
+                        Map<String, Object> extraFieldValue = new HashMap<>();
+                        if (request.getDeleteAll()) {
+                          extraFieldValue.put("attributes_deleted_all", true);
+                        } else {
+                          extraFieldValue.put(
+                              "attribute_keys",
+                              new Gson()
+                                  .toJsonTree(
+                                      request.getAttributeKeysList(),
+                                      new TypeToken<ArrayList<String>>() {}.getType()));
+                        }
+                        return addEvent(
+                            experimentRun.getId(),
+                            Optional.of(experimentRun.getExperimentId()),
+                            experimentRun.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("attributes"),
+                            extraFieldValue,
+                            "experiment_run attributes deleted successfully");
+                      })
+              .thenCompose(
+                  unused -> Future.of(DeleteExperimentRunAttributes.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1225,23 +1293,24 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void logEnvironment(
       LogEnvironment request, StreamObserver<LogEnvironment.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture = futureExperimentRunDAO.logEnvironment(request);
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .logEnvironment(request)
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("environment"),
-                          Collections.emptyMap(),
-                          "experiment_run environment added successfully"),
-                  executor)
-              .thenApply(unused -> LogEnvironment.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("environment"),
+                              Collections.emptyMap(),
+                              "experiment_run environment added successfully"))
+              .thenCompose(unused -> Future.of(LogEnvironment.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1252,24 +1321,25 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       LogExperimentRunCodeVersion request,
       StreamObserver<LogExperimentRunCodeVersion.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture = futureExperimentRunDAO.logCodeVersion(request);
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .logCodeVersion(request)
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("code_version"),
-                          Collections.emptyMap(),
-                          "experiment_run code_version added successfully"),
-                  executor)
-              .thenApply(
-                  unused -> LogExperimentRunCodeVersion.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("code_version"),
+                              Collections.emptyMap(),
+                              "experiment_run code_version added successfully"))
+              .thenCompose(
+                  unused -> Future.of(LogExperimentRunCodeVersion.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1280,17 +1350,22 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       GetExperimentRunCodeVersion request,
       StreamObserver<GetExperimentRunCodeVersion.Response> responseObserver) {
     try {
+      Future<Optional<CodeVersion>> optionalFuture = futureExperimentRunDAO.getCodeVersion(request);
       final var response =
-          futureExperimentRunDAO
-              .getCodeVersion(request)
-              .thenApply(
-                  codeVersion ->
-                      GetExperimentRunCodeVersion.Response.newBuilder()
-                          .setCodeVersion(
-                              codeVersion.orElseGet(() -> CodeVersion.newBuilder().build()))
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          optionalFuture.<GetExperimentRunCodeVersion.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super Optional<CodeVersion>,
+                                  ? extends GetExperimentRunCodeVersion.Response>)
+                              codeVersion ->
+                                  GetExperimentRunCodeVersion.Response.newBuilder()
+                                      .setCodeVersion(
+                                          codeVersion.orElseGet(
+                                              () -> CodeVersion.newBuilder().build()))
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1300,34 +1375,36 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void logArtifact(
       LogArtifact request, StreamObserver<LogArtifact.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture =
+          futureExperimentRunDAO.logArtifacts(
+              LogArtifacts.newBuilder()
+                  .setId(request.getId())
+                  .addArtifacts(request.getArtifact())
+                  .build());
+      // Add succeeded event in local DB
       final var futureResponse =
-          futureExperimentRunDAO
-              .logArtifacts(
-                  LogArtifacts.newBuilder()
-                      .setId(request.getId())
-                      .addArtifacts(request.getArtifact())
-                      .build())
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("artifacts"),
-                          Collections.singletonMap(
-                              "artifacts",
-                              new Gson()
-                                  .toJsonTree(
-                                      Stream.of(request.getArtifact())
-                                          .map(Artifact::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run artifact added successfully"),
-                  executor)
-              .thenApply(unused -> LogArtifact.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifacts",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Stream.of(request.getArtifact())
+                                              .map(Artifact::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run artifact added successfully"))
+              .thenCompose(unused -> Future.of(LogArtifact.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1337,30 +1414,31 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void logArtifacts(
       LogArtifacts request, StreamObserver<LogArtifacts.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture = futureExperimentRunDAO.logArtifacts(request);
+      // Add succeeded event in local DB
       final var futureResponse =
-          futureExperimentRunDAO
-              .logArtifacts(request)
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("artifacts"),
-                          Collections.singletonMap(
-                              "artifacts",
-                              new Gson()
-                                  .toJsonTree(
-                                      request.getArtifactsList().stream()
-                                          .map(Artifact::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run artifacts added successfully"),
-                  executor)
-              .thenApply(unused -> LogArtifacts.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifacts",
+                                  new Gson()
+                                      .toJsonTree(
+                                          request.getArtifactsList().stream()
+                                              .map(Artifact::getKey)
+                                              .collect(Collectors.toSet()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run artifacts added successfully"))
+              .thenCompose(unused -> Future.of(LogArtifacts.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1370,14 +1448,18 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void getArtifacts(
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
     try {
+      Future<List<Artifact>> listFuture = futureExperimentRunDAO.getArtifacts(request);
       final var futureResponse =
-          futureExperimentRunDAO
-              .getArtifacts(request)
-              .thenApply(
-                  artifacts ->
-                      GetArtifacts.Response.newBuilder().addAllArtifacts(artifacts).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+          listFuture.<GetArtifacts.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<Artifact>, ? extends GetArtifacts.Response>)
+                              artifacts ->
+                                  GetArtifacts.Response.newBuilder()
+                                      .addAllArtifacts(artifacts)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1387,28 +1469,29 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void deleteArtifact(
       DeleteArtifact request, StreamObserver<DeleteArtifact.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture = futureExperimentRunDAO.deleteArtifacts(request);
+      // Add succeeded event in local DB
       final var futureResponse =
-          futureExperimentRunDAO
-              .deleteArtifacts(request)
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("artifacts"),
-                          Collections.singletonMap(
-                              "artifacts",
-                              new Gson()
-                                  .toJsonTree(
-                                      Collections.singletonList(request.getKey()),
-                                      new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment_run artifact deleted successfully"),
-                  executor)
-              .thenApply(deleted -> DeleteArtifact.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("artifacts"),
+                              Collections.singletonMap(
+                                  "artifacts",
+                                  new Gson()
+                                      .toJsonTree(
+                                          Collections.singletonList(request.getKey()),
+                                          new TypeToken<ArrayList<String>>() {}.getType())),
+                              "experiment_run artifact deleted successfully"))
+              .thenCompose(deleted -> Future.of(DeleteArtifact.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1419,7 +1502,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
     try {
       final var futureResponse = futureExperimentRunDAO.getUrlForArtifact(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1432,8 +1515,8 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       final var futureResponse =
           futureExperimentRunDAO
               .commitArtifactPart(request)
-              .thenApply(unused -> CommitArtifactPart.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+              .thenCompose(unused -> Future.of(CommitArtifactPart.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1445,7 +1528,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetCommittedArtifactParts.Response> responseObserver) {
     try {
       final var futureResponse = futureExperimentRunDAO.getCommittedArtifactParts(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1459,8 +1542,9 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       final var futureResponse =
           futureExperimentRunDAO
               .commitMultipartArtifact(request)
-              .thenApply(unused -> CommitMultipartArtifact.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+              .thenCompose(
+                  unused -> Future.of(CommitMultipartArtifact.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1471,7 +1555,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       FindExperimentRuns request, StreamObserver<FindExperimentRuns.Response> responseObserver) {
     try {
       final var futureResponse = futureExperimentRunDAO.findExperimentRuns(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1526,7 +1610,7 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       StreamObserver<GetExperimentRunsByDatasetVersionId.Response> responseObserver) {
     try {
       final var response = futureExperimentRunDAO.getExperimentRunsByDatasetVersionId(request);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1537,15 +1621,21 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       DeleteExperimentRuns request,
       StreamObserver<DeleteExperimentRuns.Response> responseObserver) {
     try {
-      final var response =
+      Future<List<Void>> listFuture =
           futureExperimentRunDAO
               .deleteExperimentRuns(request)
-              .thenCompose(
-                  unused -> loggedDeleteExperimentRunEvents(request.getIdsList()), executor)
-              .thenApply(
-                  unused -> DeleteExperimentRuns.Response.newBuilder().setStatus(true).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+              .thenCompose(unused -> loggedDeleteExperimentRunEvents(request.getIdsList()));
+      final var response =
+          listFuture.<DeleteExperimentRuns.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<Void>, ? extends DeleteExperimentRuns.Response>)
+                              unused ->
+                                  DeleteExperimentRuns.Response.newBuilder()
+                                      .setStatus(true)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1555,23 +1645,25 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void logVersionedInput(
       LogVersionedInput request, StreamObserver<LogVersionedInput.Response> responseObserver) {
     try {
+      Future<ExperimentRun> experimentRunFuture =
+          futureExperimentRunDAO.logVersionedInputs(request);
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .logVersionedInputs(request)
+          experimentRunFuture
               .thenCompose(
-                  experimentRun ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          experimentRun.getId(),
-                          Optional.of(experimentRun.getExperimentId()),
-                          experimentRun.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of("version_input"),
-                          Collections.emptyMap(),
-                          "experiment_run version_input added successfully"),
-                  executor)
-              .thenApply(unused -> LogVersionedInput.Response.newBuilder().build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  (Function<? super ExperimentRun, Future<Void>>)
+                      experimentRun ->
+                          // Add succeeded event in local DB
+                          addEvent(
+                              experimentRun.getId(),
+                              Optional.of(experimentRun.getExperimentId()),
+                              experimentRun.getProjectId(),
+                              UPDATE_EVENT_TYPE,
+                              Optional.of("version_input"),
+                              Collections.emptyMap(),
+                              "experiment_run version_input added successfully"))
+              .thenCompose(unused -> Future.of(LogVersionedInput.Response.newBuilder().build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1581,19 +1673,22 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void getVersionedInputs(
       GetVersionedInput request, StreamObserver<GetVersionedInput.Response> responseObserver) {
     try {
+      Future<VersioningEntry> versioningEntryFuture =
+          futureExperimentRunDAO.getVersionedInputs(request);
       final var response =
-          futureExperimentRunDAO
-              .getVersionedInputs(request)
-              .thenApply(
-                  versionedInputs -> {
-                    var builder = GetVersionedInput.Response.newBuilder();
-                    if (versionedInputs != null) {
-                      builder.setVersionedInputs(versionedInputs);
-                    }
-                    return builder.build();
-                  },
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          versioningEntryFuture.<GetVersionedInput.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super VersioningEntry, ? extends GetVersionedInput.Response>)
+                              versionedInputs -> {
+                                var builder = GetVersionedInput.Response.newBuilder();
+                                if (versionedInputs != null) {
+                                  builder.setVersionedInputs(versionedInputs);
+                                }
+                                return builder.build();
+                              })
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1619,23 +1714,32 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   public void cloneExperimentRun(
       CloneExperimentRun request, StreamObserver<CloneExperimentRun.Response> responseObserver) {
     try {
+      Future<CloneExperimentRun.Response> responseFuture =
+          futureExperimentRunDAO.cloneExperimentRun(request);
+      // Add succeeded event in local DB
       final var response =
-          futureExperimentRunDAO
-              .cloneExperimentRun(request)
-              .thenCompose(
+          responseFuture.thenCompose(
+              (Function<? super CloneExperimentRun.Response, Future<CloneExperimentRun.Response>>)
                   returnResponse ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              returnResponse.getRun().getId(),
-                              Optional.of(returnResponse.getRun().getExperimentId()),
-                              returnResponse.getRun().getProjectId(),
-                              ADD_EVENT_TYPE,
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "experiment_run cloned successfully")
-                          .thenApply(unused -> returnResponse, executor),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    Future<Void> voidFuture =
+                        addEvent(
+                            returnResponse.getRun().getId(),
+                            Optional.of(returnResponse.getRun().getExperimentId()),
+                            returnResponse.getRun().getProjectId(),
+                            ADD_EVENT_TYPE,
+                            Optional.empty(),
+                            Collections.emptyMap(),
+                            "experiment_run cloned successfully");
+                    return voidFuture.thenCompose(
+                        t ->
+                            Future.of(
+                                ((Function<? super Void, ? extends CloneExperimentRun.Response>)
+                                        unused -> returnResponse)
+                                    .apply(t)));
+                  });
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }

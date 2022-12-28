@@ -4,9 +4,9 @@ import ai.verta.common.Artifact;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.interfaces.CheckEntityPermissionBasedOnResourceTypesFunction;
 import ai.verta.uac.ModelDBActionEnum;
 import java.util.AbstractMap;
@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -40,7 +41,7 @@ public class FilterPrivilegedDatasetsHandler {
    *     fetch time
    * @return {@link List} : accessible datasets
    */
-  public InternalFuture<List<Artifact>> filterAndGetPrivilegedDatasetsOnly(
+  public Future<List<Artifact>> filterAndGetPrivilegedDatasetsOnly(
       List<Artifact> datasets,
       boolean errorOut,
       CheckEntityPermissionBasedOnResourceTypesFunction permissionCheck) {
@@ -55,9 +56,9 @@ public class FilterPrivilegedDatasetsHandler {
     // If linked dataset version ids do not exist in dataset then no need to check dataset
     // authorization.
     if (linkedDatasetVersionIds.isEmpty()) {
-      return InternalFuture.completedInternalFuture(datasets);
+      return Future.of(datasets);
     }
-    return jdbi.withHandle(
+    return jdbi.call(
             handle -> {
               // We have dataset version as a commit and dataset as a repository in MDB so added
               // commit_hash filter here
@@ -78,9 +79,8 @@ public class FilterPrivilegedDatasetsHandler {
               for (var entry : datasetVersionDatasetList) {
                 datasetVersionDatasetMap.put(entry.getKey(), String.valueOf(entry.getValue()));
               }
-              return InternalFuture.completedInternalFuture(datasetVersionDatasetMap);
-            },
-            executor)
+              return Future.of(datasetVersionDatasetMap);
+            })
         .thenCompose(
             datasetVersionDatasetMap -> {
               // Validate linked dataset in dataset version exists in database records if not then
@@ -93,7 +93,7 @@ public class FilterPrivilegedDatasetsHandler {
                   datasetIds.add(datasetVersionDatasetMap.get(datasetVersionId));
                 } else if (errorOut) { // While reading datasets for 'Find*', 'get*' we should not
                   // error out and just skip it.
-                  return InternalFuture.failedStage(
+                  return Future.failedStage(
                       new InvalidArgumentException(
                           "Dataset not found for dataset version: " + datasetVersionId));
                 }
@@ -101,52 +101,72 @@ public class FilterPrivilegedDatasetsHandler {
 
               // If all dataset with linked dataset versions found in database then checking
               // authorization for the current user for those datasets
-              List<InternalFuture<Optional<String>>> internalFutures = new LinkedList<>();
+              List<Future<Optional<String>>> internalFutures = new LinkedList<>();
               for (String datasetId : datasetIds) {
                 internalFutures.add(
-                    InternalFuture.completedInternalFuture(datasetId)
+                    Future.of(datasetId)
                         .thenCompose(
-                            id ->
-                                permissionCheck
-                                    .getEntityPermissionBasedOnResourceTypes(
-                                        Collections.singletonList(datasetId),
-                                        ModelDBActionEnum.ModelDBServiceActions.READ,
-                                        ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
-                                    .thenApply(
-                                        allowed -> {
-                                          /**
-                                           * Point 1:
-                                           *
-                                           * <p>- While creating ER with dataset which is has
-                                           * linked_artifact_id .
-                                           *
-                                           * <p>- If user do not have access of linked_artifact_id
-                                           * then we are throwing PermissionDeniedException
-                                           *
-                                           * <p>Point 2:
-                                           *
-                                           * <p>- While fetching ER if user do not have access on
-                                           * linked_artifact_id then we are just ignore to throw
-                                           * PermissionDeniedException and skipped to populate it in
-                                           * response ER.
-                                           */
-                                          if (!allowed && errorOut) {
-                                            throw new PermissionDeniedException(
-                                                "Permission denied");
-                                          } else if (allowed) {
-                                            return Optional.of(id);
-                                          } else {
-                                            return Optional.empty();
-                                          }
-                                        },
-                                        executor),
-                            executor));
+                            id -> {
+                              /**
+                               * Point 1:
+                               *
+                               * <p>- While creating ER with dataset which is has linked_artifact_id
+                               * .
+                               *
+                               * <p>- If user do not have access of linked_artifact_id then we are
+                               * throwing PermissionDeniedException
+                               *
+                               * <p>Point 2:
+                               *
+                               * <p>- While fetching ER if user do not have access on
+                               * linked_artifact_id then we are just ignore to throw
+                               * PermissionDeniedException and skipped to populate it in response
+                               * ER.
+                               */
+                              Future<Boolean> booleanFuture =
+                                  permissionCheck.getEntityPermissionBasedOnResourceTypes(
+                                      Collections.singletonList(datasetId),
+                                      ModelDBActionEnum.ModelDBServiceActions.READ,
+                                      ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
+                              return booleanFuture.thenCompose(
+                                  t ->
+                                      Future.of(
+                                          ((Function<? super Boolean, ? extends Optional<String>>)
+                                                  allowed -> {
+                                                    /**
+                                                     * Point 1:
+                                                     *
+                                                     * <p>- While creating ER with dataset which is
+                                                     * has linked_artifact_id .
+                                                     *
+                                                     * <p>- If user do not have access of
+                                                     * linked_artifact_id then we are throwing
+                                                     * PermissionDeniedException
+                                                     *
+                                                     * <p>Point 2:
+                                                     *
+                                                     * <p>- While fetching ER if user do not have
+                                                     * access on linked_artifact_id then we are just
+                                                     * ignore to throw PermissionDeniedException and
+                                                     * skipped to populate it in response ER.
+                                                     */
+                                                    if (!allowed && errorOut) {
+                                                      throw new PermissionDeniedException(
+                                                          "Permission denied");
+                                                    } else if (allowed) {
+                                                      return Optional.of(id);
+                                                    } else {
+                                                      return Optional.empty();
+                                                    }
+                                                  })
+                                              .apply(t)));
+                            }));
               }
 
               // If all mapped datasets are allowed for the user then we will filter datasets based
               // on linked dataset version and allowed dataset ids.
-              InternalFuture<Set<String>> accessibleDatasetIdsFutures =
-                  InternalFuture.sequence(internalFutures, executor)
+              Future<Set<String>> accessibleDatasetIdsFutures =
+                  Future.sequence(internalFutures)
                       .thenCompose(
                           accessibleDatasetIds -> {
                             Set<String> accessibleDatasetIdsSet =
@@ -154,9 +174,8 @@ public class FilterPrivilegedDatasetsHandler {
                                     .filter(s -> s.isPresent() && !s.get().isEmpty())
                                     .map(Optional::get)
                                     .collect(Collectors.toSet());
-                            return InternalFuture.completedInternalFuture(accessibleDatasetIdsSet);
-                          },
-                          executor);
+                            return Future.of(accessibleDatasetIdsSet);
+                          });
               return accessibleDatasetIdsFutures.thenCompose(
                   accessibleDatasetIds -> {
                     List<Artifact> accessibleDatasets = new ArrayList<>();
@@ -166,10 +185,8 @@ public class FilterPrivilegedDatasetsHandler {
                         accessibleDatasets.add(artifact);
                       }
                     }
-                    return InternalFuture.completedInternalFuture(accessibleDatasets);
-                  },
-                  executor);
-            },
-            executor);
+                    return Future.of(accessibleDatasets);
+                  });
+            });
   }
 }

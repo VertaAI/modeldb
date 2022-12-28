@@ -5,45 +5,18 @@ import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.AddAttributes;
-import ai.verta.modeldb.AddExperimentAttributes;
-import ai.verta.modeldb.AddExperimentTag;
-import ai.verta.modeldb.AddExperimentTags;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CreateExperiment;
-import ai.verta.modeldb.DAOSet;
-import ai.verta.modeldb.DeleteExperiment;
-import ai.verta.modeldb.DeleteExperimentArtifact;
-import ai.verta.modeldb.DeleteExperimentAttributes;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.DeleteExperimentAttributes.Response;
-import ai.verta.modeldb.DeleteExperimentTag;
-import ai.verta.modeldb.DeleteExperimentTags;
-import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceImplBase;
-import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.GetArtifacts;
-import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetExperimentById;
-import ai.verta.modeldb.GetExperimentByName;
-import ai.verta.modeldb.GetExperimentCodeVersion;
-import ai.verta.modeldb.GetExperimentsInProject;
-import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.LogExperimentArtifacts;
-import ai.verta.modeldb.LogExperimentCodeVersion;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.UpdateExperimentDescription;
-import ai.verta.modeldb.UpdateExperimentName;
-import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.UACApisUtil;
 import com.google.gson.Gson;
@@ -59,14 +32,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
 
-  private static final Logger LOGGER = LogManager.getLogger(FutureExperimentServiceImpl.class);
   private static final String UPDATE_EVENT_TYPE =
       "update.resource.experiment.update_experiment_succeeded";
   private static final String DELETE_EXPERIMENT_EVENT_TYPE =
@@ -85,7 +56,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
     this.uacApisUtil = daoSet.getUacApisUtil();
   }
 
-  private InternalFuture<Void> addEvent(
+  private Future<Void> addEvent(
       String entityId,
       String projectId,
       String eventType,
@@ -94,7 +65,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       String eventMessage) {
 
     if (!App.getInstance().mdbConfig.isEvent_system_enabled()) {
-      return InternalFuture.completedInternalFuture(null);
+      return Future.of(null);
     }
 
     // Add succeeded event in local DB
@@ -122,39 +93,44 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
         .getEntityResource(projectId, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
         .thenCompose(
             projectResource ->
-                futureEventDAO.addLocalEventWithAsync(
-                    ModelDBServiceResourceTypes.EXPERIMENT.name(),
-                    eventType,
-                    projectResource.getWorkspaceId(),
-                    eventMetadata),
-            executor);
+                futureEventDAO
+                    .addLocalEventWithAsync(
+                        ModelDBServiceResourceTypes.EXPERIMENT.name(),
+                        eventType,
+                        projectResource.getWorkspaceId(),
+                        eventMetadata)
+                    .toFuture());
   }
 
   @Override
   public void createExperiment(
       CreateExperiment request, StreamObserver<CreateExperiment.Response> responseObserver) {
     try {
-      final var futureResponse =
+      Future<Experiment> experimentFuture =
           futureExperimentDAO
               .createExperiment(request)
               .thenCompose(
-                  createdExperiment ->
-                      addEvent(
-                              createdExperiment.getId(),
-                              createdExperiment.getProjectId(),
-                              "add.resource.experiment.add_experiment_succeeded",
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "experiment logged successfully")
-                          .thenApply(eventLoggedStatus -> createdExperiment, executor),
-                  executor)
-              .thenApply(
-                  createdExperiment ->
-                      CreateExperiment.Response.newBuilder()
-                          .setExperiment(createdExperiment)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+                  createdExperiment -> {
+                    return addEvent(
+                            createdExperiment.getId(),
+                            createdExperiment.getProjectId(),
+                            "add.resource.experiment.add_experiment_succeeded",
+                            Optional.empty(),
+                            Collections.emptyMap(),
+                            "experiment logged successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(createdExperiment));
+                  });
+      final var futureResponse =
+          experimentFuture.<CreateExperiment.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends CreateExperiment.Response>)
+                              createdExperiment ->
+                                  CreateExperiment.Response.newBuilder()
+                                      .setExperiment(createdExperiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -166,18 +142,16 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<GetExperimentsInProject.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getProjectId().isEmpty()) {
                   var errorMessage = "Project ID not found in GetExperimentsInProject request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<FindExperiments.Response> responseFuture =
           requestValidationFuture
-              .thenCompose(
-                  unused -> futureProjectDAO.getProjectById(request.getProjectId()), executor)
+              .thenCompose(unused -> futureProjectDAO.getProjectById(request.getProjectId()))
               .thenCompose(
                   unused ->
                       futureExperimentDAO.findExperiments(
@@ -187,16 +161,21 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                               .setPageNumber(request.getPageNumber())
                               .setAscending(request.getAscending())
                               .setSortKey(request.getSortKey())
-                              .build()),
-                  executor)
-              .thenApply(
-                  findResponse ->
-                      GetExperimentsInProject.Response.newBuilder()
-                          .addAllExperiments(findResponse.getExperimentsList())
-                          .setTotalRecords(findResponse.getTotalRecords())
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                              .build()));
+      final var response =
+          responseFuture.<GetExperimentsInProject.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super FindExperiments.Response,
+                                  ? extends GetExperimentsInProject.Response>)
+                              findResponse ->
+                                  GetExperimentsInProject.Response.newBuilder()
+                                      .addAllExperiments(findResponse.getExperimentsList())
+                                      .setTotalRecords(findResponse.getTotalRecords())
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -207,37 +186,40 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       GetExperimentById request, StreamObserver<GetExperimentById.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in GetExperimentById request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
+      Future<FindExperiments.Response> responseFuture =
+          requestValidationFuture.thenCompose(
+              unused ->
+                  futureExperimentDAO.findExperiments(
+                      FindExperiments.newBuilder().addExperimentIds(request.getId()).build()));
       final var response =
-          requestValidationFuture
-              .thenCompose(
-                  unused ->
-                      futureExperimentDAO.findExperiments(
-                          FindExperiments.newBuilder().addExperimentIds(request.getId()).build()),
-                  executor)
-              .thenApply(
-                  findResponse -> {
-                    if (findResponse.getExperimentsCount() > 1) {
-                      throw new InternalErrorException(
-                          "More than one Experiment found for ID: " + request.getId());
-                    } else if (findResponse.getExperimentsCount() == 0) {
-                      throw new NotFoundException(
-                          "Experiment not found for the ID: " + request.getId());
-                    } else {
-                      return GetExperimentById.Response.newBuilder()
-                          .setExperiment(findResponse.getExperiments(0))
-                          .build();
-                    }
-                  },
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          responseFuture.<GetExperimentById.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super FindExperiments.Response,
+                                  ? extends GetExperimentById.Response>)
+                              findResponse -> {
+                                if (findResponse.getExperimentsCount() > 1) {
+                                  throw new InternalErrorException(
+                                      "More than one Experiment found for ID: " + request.getId());
+                                } else if (findResponse.getExperimentsCount() == 0) {
+                                  throw new NotFoundException(
+                                      "Experiment not found for the ID: " + request.getId());
+                                } else {
+                                  return GetExperimentById.Response.newBuilder()
+                                      .setExperiment(findResponse.getExperiments(0))
+                                      .build();
+                                }
+                              })
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -248,59 +230,60 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       GetExperimentByName request, StreamObserver<GetExperimentByName.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getProjectId().isEmpty()) {
-                  var errorMessage = "Project ID not found in GetExperimentByName request";
-                  throw new InvalidArgumentException(errorMessage);
+                  var errorMessage1 = "Project ID not found in GetExperimentByName request";
+                  throw new InvalidArgumentException(errorMessage1);
                 } else if (request.getName().isEmpty()) {
-                  var errorMessage = "Experiment name not found in GetExperimentByName request";
-                  throw new InvalidArgumentException(errorMessage);
+                  var errorMessage1 = "Experiment name not found in GetExperimentByName request";
+                  throw new InvalidArgumentException(errorMessage1);
                 }
-              },
-              executor);
+              });
+      Future<FindExperiments.Response> responseFuture =
+          requestValidationFuture.thenCompose(
+              unused ->
+                  futureExperimentDAO.findExperiments(
+                      FindExperiments.newBuilder()
+                          .setProjectId(request.getProjectId())
+                          .addPredicates(
+                              KeyValueQuery.newBuilder()
+                                  .setKey(ModelDBConstants.NAME)
+                                  .setValue(
+                                      Value.newBuilder().setStringValue(request.getName()).build())
+                                  .build())
+                          .build()));
       final var response =
-          requestValidationFuture
-              .thenCompose(
-                  unused ->
-                      futureExperimentDAO.findExperiments(
-                          FindExperiments.newBuilder()
-                              .setProjectId(request.getProjectId())
-                              .addPredicates(
-                                  KeyValueQuery.newBuilder()
-                                      .setKey(ModelDBConstants.NAME)
-                                      .setValue(
-                                          Value.newBuilder()
-                                              .setStringValue(request.getName())
-                                              .build())
-                                      .build())
-                              .build()),
-                  executor)
-              .thenApply(
-                  findResponse -> {
-                    var experiments = findResponse.getExperimentsList();
-                    if (experiments.isEmpty()) {
-                      var errorMessage =
-                          "Experiment with name "
-                              + request.getName()
-                              + " not found in project "
-                              + request.getProjectId();
-                      throw new ModelDBException(errorMessage, Code.NOT_FOUND);
-                    }
-                    if (experiments.size() != 1) {
-                      var errorMessage =
-                          "Multiple experiments with name "
-                              + request.getName()
-                              + " found in project "
-                              + request.getProjectId();
-                      throw new ModelDBException(errorMessage, Code.INTERNAL);
-                    }
-                    return GetExperimentByName.Response.newBuilder()
-                        .setExperiment(experiments.get(0))
-                        .build();
-                  },
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          responseFuture.<GetExperimentByName.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super FindExperiments.Response,
+                                  ? extends GetExperimentByName.Response>)
+                              findResponse -> {
+                                var experiments = findResponse.getExperimentsList();
+                                if (experiments.isEmpty()) {
+                                  var errorMessage =
+                                      "Experiment with name "
+                                          + request.getName()
+                                          + " not found in project "
+                                          + request.getProjectId();
+                                  throw new ModelDBException(errorMessage, Code.NOT_FOUND);
+                                }
+                                if (experiments.size() != 1) {
+                                  var errorMessage =
+                                      "Multiple experiments with name "
+                                          + request.getName()
+                                          + " found in project "
+                                          + request.getProjectId();
+                                  throw new ModelDBException(errorMessage, Code.INTERNAL);
+                                }
+                                return GetExperimentByName.Response.newBuilder()
+                                    .setExperiment(experiments.get(0))
+                                    .build();
+                              })
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -312,38 +295,41 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<UpdateExperimentNameOrDescription.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage =
                       "Experiment ID not found in UpdateExperimentNameOrDescription request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.updateExperimentNameOrDescription(request))
               .thenCompose(
-                  unused -> futureExperimentDAO.updateExperimentNameOrDescription(request),
-                  executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "experiment updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      UpdateExperimentNameOrDescription.Response.newBuilder()
-                          .setExperiment(experiment)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  updatedExperiment -> {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.empty(),
+                            Collections.emptyMap(),
+                            "experiment updated successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(updatedExperiment));
+                  });
+      final var response =
+          experimentFuture.<UpdateExperimentNameOrDescription.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super Experiment,
+                                  ? extends UpdateExperimentNameOrDescription.Response>)
+                              experiment ->
+                                  UpdateExperimentNameOrDescription.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -355,33 +341,38 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<UpdateExperimentName.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in UpdateExperimentName request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
-              .thenCompose(unused -> futureExperimentDAO.updateExperimentName(request), executor)
+              .thenCompose(unused -> futureExperimentDAO.updateExperimentName(request))
               .thenCompose(
-                  updatedExperiment ->
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("name"),
-                              Collections.singletonMap("name", updatedExperiment.getName()),
-                              "experiment name updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      UpdateExperimentName.Response.newBuilder().setExperiment(experiment).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  updatedExperiment -> {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("name"),
+                            Collections.singletonMap("name", updatedExperiment.getName()),
+                            "experiment name updated successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(updatedExperiment));
+                  });
+      final var response =
+          experimentFuture.<UpdateExperimentName.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends UpdateExperimentName.Response>)
+                              experiment ->
+                                  UpdateExperimentName.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -393,37 +384,41 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<UpdateExperimentDescription.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage =
                       "Experiment ID not found in UpdateExperimentDescription request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
+              .thenCompose(unused -> futureExperimentDAO.updateExperimentDescription(request))
               .thenCompose(
-                  unused -> futureExperimentDAO.updateExperimentDescription(request), executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("description"),
-                              Collections.emptyMap(),
-                              "experiment description updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      UpdateExperimentDescription.Response.newBuilder()
-                          .setExperiment(experiment)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  updatedExperiment -> {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("description"),
+                            Collections.emptyMap(),
+                            "experiment description updated successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(updatedExperiment));
+                  });
+      final var response =
+          experimentFuture.<UpdateExperimentDescription.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<
+                                  ? super Experiment,
+                                  ? extends UpdateExperimentDescription.Response>)
+                              experiment ->
+                                  UpdateExperimentDescription.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -434,7 +429,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       AddExperimentTags request, StreamObserver<AddExperimentTags.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in AddExperimentTags request";
@@ -443,35 +438,41 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                   var errorMessage = "Experiment tags not found in AddExperimentTags request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
               .thenCompose(
-                  unused -> futureExperimentDAO.addTags(request.getId(), request.getTagsList()),
-                  executor)
+                  unused -> futureExperimentDAO.addTags(request.getId(), request.getTagsList()))
               .thenCompose(
                   updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getTagsList(),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment tags added successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      AddExperimentTags.Response.newBuilder().setExperiment(experiment).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            Collections.singletonMap(
+                                "tags",
+                                new Gson()
+                                    .toJsonTree(
+                                        request.getTagsList(),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment tags added successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentFuture.<AddExperimentTags.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends AddExperimentTags.Response>)
+                              experiment ->
+                                  AddExperimentTags.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -482,7 +483,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       AddExperimentTag request, StreamObserver<AddExperimentTag.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in AddExperimentTag request";
@@ -491,37 +492,43 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                   var errorMessage = "Experiment Tag not found in AddExperimentTag request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
               .thenCompose(
                   unused ->
                       futureExperimentDAO.addTags(
-                          request.getId(), Collections.singletonList(request.getTag())),
-                  executor)
+                          request.getId(), Collections.singletonList(request.getTag())))
               .thenCompose(
                   updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getTag()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment tag added successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      AddExperimentTag.Response.newBuilder().setExperiment(experiment).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            Collections.singletonMap(
+                                "tags",
+                                new Gson()
+                                    .toJsonTree(
+                                        Collections.singletonList(request.getTag()),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment tag added successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentFuture.<AddExperimentTag.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends AddExperimentTag.Response>)
+                              experiment ->
+                                  AddExperimentTag.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -532,18 +539,17 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       GetTags request, StreamObserver<GetTags.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in GetTags request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
       final var response =
           requestValidationFuture.thenCompose(
-              unused -> futureExperimentDAO.getTags(request.getId()), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+              unused -> futureExperimentDAO.getTags(request.getId()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -555,7 +561,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<DeleteExperimentTags.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 String errorMessage = null;
                 if (request.getId().isEmpty()
@@ -572,15 +578,13 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                 if (errorMessage != null) {
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
               .thenCompose(
                   unused ->
                       futureExperimentDAO.deleteTags(
-                          request.getId(), request.getTagsList(), request.getDeleteAll()),
-                  executor)
+                          request.getId(), request.getTagsList(), request.getDeleteAll()))
               .thenCompose(
                   updatedExperiment -> {
                     Map<String, Object> extraField = new HashMap<>();
@@ -602,14 +606,20 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                             Optional.of("tags"),
                             extraField,
                             "experiment tags deleted successfully")
-                        .thenApply(unused -> updatedExperiment, executor);
-                  },
-                  executor)
-              .thenApply(
-                  experiment ->
-                      DeleteExperimentTags.Response.newBuilder().setExperiment(experiment).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                        .thenCompose(unused -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentFuture.<DeleteExperimentTags.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends DeleteExperimentTags.Response>)
+                              experiment ->
+                                  DeleteExperimentTags.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -620,7 +630,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       DeleteExperimentTag request, StreamObserver<DeleteExperimentTag.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 String errorMessage = null;
                 if (request.getId().isEmpty() && request.getTag().isEmpty()) {
@@ -635,37 +645,43 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                 if (errorMessage != null) {
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
               .thenCompose(
                   unused ->
                       futureExperimentDAO.deleteTags(
-                          request.getId(), Collections.singletonList(request.getTag()), false),
-                  executor)
+                          request.getId(), Collections.singletonList(request.getTag()), false))
               .thenCompose(
                   updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getTag()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment tag deleted successfully")
-                          .thenApply(unused -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      DeleteExperimentTag.Response.newBuilder().setExperiment(experiment).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("tags"),
+                            Collections.singletonMap(
+                                "tags",
+                                new Gson()
+                                    .toJsonTree(
+                                        Collections.singletonList(request.getTag()),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment tag deleted successfully")
+                        .thenCompose(unused -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentFuture.<DeleteExperimentTag.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends DeleteExperimentTag.Response>)
+                              experiment ->
+                                  DeleteExperimentTag.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -676,21 +692,19 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       AddAttributes request, StreamObserver<AddAttributes.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in AddAttributes request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
       final var response =
           requestValidationFuture
               .thenCompose(
                   unused ->
                       futureExperimentDAO.logAttributes(
-                          request.getId(), Collections.singletonList(request.getAttribute())),
-                  executor)
+                          request.getId(), Collections.singletonList(request.getAttribute())))
               .thenCompose(
                   updatedExperiment ->
                       // Add succeeded event in local DB
@@ -707,11 +721,10 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                                           .map(KeyValue::getKey)
                                           .collect(Collectors.toSet()),
                                       new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment attribute added successfully"),
-                  executor)
-              .thenApply(
-                  unused -> AddAttributes.Response.newBuilder().setStatus(true).build(), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                          "experiment attribute added successfully"))
+              .thenCompose(
+                  unused -> Future.of(AddAttributes.Response.newBuilder().setStatus(true).build()));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -723,7 +736,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<AddExperimentAttributes.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 String errorMessage = null;
                 if (request.getId().isEmpty() && request.getAttributesList().isEmpty()) {
@@ -739,41 +752,45 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                 if (errorMessage != null) {
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
               .thenCompose(
                   unused ->
                       futureExperimentDAO.logAttributes(
-                          request.getId(), request.getAttributesList()),
-                  executor)
+                          request.getId(), request.getAttributesList()))
               .thenCompose(
                   updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("attributes"),
-                              Collections.singletonMap(
-                                  "attribute_keys",
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getAttributesList().stream()
-                                              .map(KeyValue::getKey)
-                                              .collect(Collectors.toSet()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment attributes added successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      AddExperimentAttributes.Response.newBuilder()
-                          .setExperiment(experiment)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("attributes"),
+                            Collections.singletonMap(
+                                "attribute_keys",
+                                new Gson()
+                                    .toJsonTree(
+                                        request.getAttributesList().stream()
+                                            .map(KeyValue::getKey)
+                                            .collect(Collectors.toSet()),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment attributes added successfully")
+                        .thenCompose(eventLoggedStatus -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentFuture.<AddExperimentAttributes.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends AddExperimentAttributes.Response>)
+                              experiment ->
+                                  AddExperimentAttributes.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -784,7 +801,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       GetAttributes request, StreamObserver<GetAttributes.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 List<String> errorMessages = new ArrayList<>();
                 if (request.getId().isEmpty()) {
@@ -796,12 +813,11 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                 if (!errorMessages.isEmpty()) {
                   throw new InvalidArgumentException(String.join("\n", errorMessages));
                 }
-              },
-              executor);
+              });
       final var response =
           requestValidationFuture.thenCompose(
-              unused -> futureExperimentDAO.getExperimentAttributes(request), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+              unused -> futureExperimentDAO.getExperimentAttributes(request));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -812,7 +828,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       DeleteExperimentAttributes request, StreamObserver<Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage =
@@ -823,11 +839,10 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                       "Experiment Attribute keys not found in DeleteExperimentAttributes request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
-              .thenCompose(unused -> futureExperimentDAO.deleteAttributes(request), executor)
+              .thenCompose(unused -> futureExperimentDAO.deleteAttributes(request))
               .thenCompose(
                   updatedExperiment ->
                   // Add succeeded event in local DB
@@ -851,16 +866,18 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                             Optional.of("attributes"),
                             extraFieldValue,
                             "Experiment attributes deleted successfully")
-                        .thenApply(unused -> updatedExperiment, executor);
-                  },
-                  executor)
-              .thenApply(
-                  experiment ->
-                      DeleteExperimentAttributes.Response.newBuilder()
-                          .setExperiment(experiment)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                        .thenCompose(unused -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      // Add succeeded event in local DB
+      final var response =
+          experimentFuture.<Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends Response>)
+                              experiment -> Response.newBuilder().setExperiment(experiment).build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -871,26 +888,29 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       DeleteExperiment request, StreamObserver<DeleteExperiment.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessages = "Experiment ID not found in request";
                   throw new InvalidArgumentException(errorMessages);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Future<List<Void>>> futureFuture =
           requestValidationFuture
               .thenCompose(
                   unused ->
                       futureExperimentDAO.deleteExperiments(
-                          DeleteExperiments.newBuilder().addIds(request.getId()).build()),
-                  executor)
-              .thenApply(this::loggedDeleteExperimentEvents, executor)
-              .thenApply(
-                  unused -> DeleteExperiment.Response.newBuilder().setStatus(true).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                          DeleteExperiments.newBuilder().addIds(request.getId()).build()))
+              .thenCompose(a -> Future.of(this.loggedDeleteExperimentEvents(a)));
+      final var response =
+          futureFuture.<DeleteExperiment.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Future<List<Void>>, ? extends DeleteExperiment.Response>)
+                              unused ->
+                                  DeleteExperiment.Response.newBuilder().setStatus(true).build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -902,36 +922,41 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<LogExperimentCodeVersion.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessages = "Experiment ID not found in request";
                   throw new InvalidArgumentException(errorMessages);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Experiment> experimentFuture =
           requestValidationFuture
-              .thenCompose(unused -> futureExperimentDAO.logCodeVersion(request), executor)
+              .thenCompose(unused -> futureExperimentDAO.logCodeVersion(request))
               .thenCompose(
                   updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("code_version"),
-                              Collections.emptyMap(),
-                              "experiment code_version added successfully")
-                          .thenApply(unused -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  updatedExperiment ->
-                      LogExperimentCodeVersion.Response.newBuilder()
-                          .setExperiment(updatedExperiment)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("code_version"),
+                            Collections.emptyMap(),
+                            "experiment code_version added successfully")
+                        .thenCompose(unused -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      final var response =
+          experimentFuture.<LogExperimentCodeVersion.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends LogExperimentCodeVersion.Response>)
+                              updatedExperiment ->
+                                  LogExperimentCodeVersion.Response.newBuilder()
+                                      .setExperiment(updatedExperiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -943,18 +968,17 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<GetExperimentCodeVersion.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in GetExperimentCodeVersion request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
       final var response =
           requestValidationFuture.thenCompose(
-              unused -> futureExperimentDAO.getExperimentCodeVersion(request), executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+              unused -> futureExperimentDAO.getExperimentCodeVersion(request));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -965,7 +989,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       FindExperiments request, StreamObserver<FindExperiments.Response> responseObserver) {
     try {
       final var futureResponse = futureExperimentDAO.findExperiments(request);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -976,7 +1000,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       GetUrlForArtifact request, StreamObserver<GetUrlForArtifact.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in GetUrlForArtifact request";
@@ -988,12 +1012,11 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                   var errorMessage = "Method is not found in GetUrlForArtifact request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
       final var futureResponse =
           requestValidationFuture.thenCompose(
-              unused -> futureExperimentDAO.getUrlForArtifact(request), executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+              unused -> futureExperimentDAO.getUrlForArtifact(request));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1005,7 +1028,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<LogExperimentArtifacts.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in LogArtifacts request";
@@ -1014,37 +1037,44 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                   var errorMessage = "Artifacts not found in LogArtifacts request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var futureResponse =
-          requestValidationFuture
-              .thenCompose(unused -> futureExperimentDAO.logArtifacts(request), executor)
-              .thenCompose(
+              });
+      Future<Experiment> experimentFuture1 =
+          requestValidationFuture.thenCompose(unused -> futureExperimentDAO.logArtifacts(request));
+      // Add succeeded event in local DB
+      Future<Experiment> experimentFuture =
+          experimentFuture1.thenCompose(
+              (Function<? super Experiment, Future<Experiment>>)
                   updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("artifacts"),
-                              Collections.singletonMap(
-                                  "artifacts",
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getArtifactsList().stream()
-                                              .map(Artifact::getKey)
-                                              .collect(Collectors.toSet()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment artifacts added successfully")
-                          .thenApply(unused -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      LogExperimentArtifacts.Response.newBuilder()
-                          .setExperiment(experiment)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("artifacts"),
+                            Collections.singletonMap(
+                                "artifacts",
+                                new Gson()
+                                    .toJsonTree(
+                                        request.getArtifactsList().stream()
+                                            .map(Artifact::getKey)
+                                            .collect(Collectors.toSet()),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment artifacts added successfully")
+                        .thenCompose(unused -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      final var futureResponse =
+          experimentFuture.<LogExperimentArtifacts.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends LogExperimentArtifacts.Response>)
+                              experiment ->
+                                  LogExperimentArtifacts.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1055,22 +1085,26 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       GetArtifacts request, StreamObserver<GetArtifacts.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in GetArtifacts request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
+              });
+      Future<List<Artifact>> listFuture =
+          requestValidationFuture.thenCompose(unused -> futureExperimentDAO.getArtifacts(request));
       final var response =
-          requestValidationFuture
-              .thenCompose(unused -> futureExperimentDAO.getArtifacts(request), executor)
-              .thenApply(
-                  artifacts ->
-                      GetArtifacts.Response.newBuilder().addAllArtifacts(artifacts).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+          listFuture.<GetArtifacts.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super List<Artifact>, ? extends GetArtifacts.Response>)
+                              artifacts ->
+                                  GetArtifacts.Response.newBuilder()
+                                      .addAllArtifacts(artifacts)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1082,7 +1116,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       StreamObserver<DeleteExperimentArtifact.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getId().isEmpty()) {
                   var errorMessage = "Experiment ID not found in DeleteArtifact request";
@@ -1091,35 +1125,43 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                   var errorMessage = "Artifact key not found in DeleteArtifact request";
                   throw new InvalidArgumentException(errorMessage);
                 }
-              },
-              executor);
-      final var futureResponse =
-          requestValidationFuture
-              .thenCompose(unused -> futureExperimentDAO.deleteArtifacts(request), executor)
-              .thenCompose(
+              });
+      Future<Experiment> experimentFuture1 =
+          requestValidationFuture.thenCompose(
+              unused -> futureExperimentDAO.deleteArtifacts(request));
+      // Add succeeded event in local DB
+      Future<ai.verta.modeldb.Experiment> experimentFuture =
+          experimentFuture1.thenCompose(
+              (Function<? super Experiment, Future<Experiment>>)
                   updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("artifacts"),
-                              Collections.singletonMap(
-                                  "artifact_keys",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getKey()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment artifact deleted successfully")
-                          .thenApply(unused -> updatedExperiment, executor),
-                  executor)
-              .thenApply(
-                  experiment ->
-                      DeleteExperimentArtifact.Response.newBuilder()
-                          .setExperiment(experiment)
-                          .build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, futureResponse, executor);
+                  // Add succeeded event in local DB
+                  {
+                    return addEvent(
+                            updatedExperiment.getId(),
+                            updatedExperiment.getProjectId(),
+                            UPDATE_EVENT_TYPE,
+                            Optional.of("artifacts"),
+                            Collections.singletonMap(
+                                "artifact_keys",
+                                new Gson()
+                                    .toJsonTree(
+                                        Collections.singletonList(request.getKey()),
+                                        new TypeToken<ArrayList<String>>() {}.getType())),
+                            "experiment artifact deleted successfully")
+                        .thenCompose(unused -> Future.of(updatedExperiment));
+                  });
+      // Add succeeded event in local DB
+      final var futureResponse =
+          experimentFuture.<DeleteExperimentArtifact.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Experiment, ? extends DeleteExperimentArtifact.Response>)
+                              experiment ->
+                                  DeleteExperimentArtifact.Response.newBuilder()
+                                      .setExperiment(experiment)
+                                      .build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, futureResponse);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
@@ -1130,31 +1172,34 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       DeleteExperiments request, StreamObserver<DeleteExperiments.Response> responseObserver) {
     try {
       final var requestValidationFuture =
-          InternalFuture.runAsync(
+          Future.runAsync(
               () -> {
                 if (request.getIdsList().isEmpty()) {
                   var errorMessages = "Experiment IDs not found in request";
                   throw new InvalidArgumentException(errorMessages);
                 }
-              },
-              executor);
-      final var response =
+              });
+      Future<Future<List<Void>>> futureFuture =
           requestValidationFuture
-              .thenCompose(unused -> futureExperimentDAO.deleteExperiments(request), executor)
-              .thenApply(this::loggedDeleteExperimentEvents, executor)
-              .thenApply(
-                  unused -> DeleteExperiments.Response.newBuilder().setStatus(true).build(),
-                  executor);
-      FutureGrpc.ServerResponse(responseObserver, response, executor);
+              .thenCompose(unused -> futureExperimentDAO.deleteExperiments(request))
+              .thenCompose(a -> Future.of(this.loggedDeleteExperimentEvents(a)));
+      final var response =
+          futureFuture.<DeleteExperiments.Response>thenCompose(
+              t ->
+                  Future.of(
+                      ((Function<? super Future<List<Void>>, ? extends DeleteExperiments.Response>)
+                              unused ->
+                                  DeleteExperiments.Response.newBuilder().setStatus(true).build())
+                          .apply(t)));
+      FutureGrpc.serverResponse(responseObserver, response);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
   }
 
-  private InternalFuture<List<Void>> loggedDeleteExperimentEvents(
-      Map<String, String> experimentIdsMap) {
+  private Future<List<Void>> loggedDeleteExperimentEvents(Map<String, String> experimentIdsMap) {
     // Add succeeded event in local DB
-    List<InternalFuture<Void>> futureList = new ArrayList<>();
+    List<Future<Void>> futureList = new ArrayList<>();
     for (var entry : experimentIdsMap.entrySet()) {
       addEvent(
           entry.getKey(),
@@ -1164,6 +1209,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
           Collections.emptyMap(),
           "experiment deleted successfully");
     }
-    return InternalFuture.sequence(futureList, executor);
+    return Future.sequence(futureList);
   }
 }

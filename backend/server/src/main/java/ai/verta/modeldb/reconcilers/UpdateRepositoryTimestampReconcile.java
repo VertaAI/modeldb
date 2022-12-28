@@ -1,5 +1,6 @@
 package ai.verta.modeldb.reconcilers;
 
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
@@ -80,7 +81,7 @@ public class UpdateRepositoryTimestampReconcile
                 .map(AbstractMap.SimpleEntry::getKey)
                 .collect(Collectors.toList()));
     return futureJdbi
-        .useHandle(
+        .run(
             handle -> {
               var updateDatasetTimestampQuery =
                   "UPDATE repository SET date_updated = :updatedDate, version_number=(version_number + 1) WHERE id = :id";
@@ -95,7 +96,7 @@ public class UpdateRepositoryTimestampReconcile
                     .execute();
               }
             })
-        .thenApply(unused -> new ReconcileResult(), executor)
+        .thenCompose(unused -> Future.of(new ReconcileResult()))
         .get();
   }
 }

@@ -4,10 +4,10 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.Observation;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.protobuf.Value;
@@ -36,23 +36,22 @@ public class ObservationHandler {
     this.jdbi = jdbi;
   }
 
-  public InternalFuture<List<Observation>> getObservations(String runId, String key) {
+  public Future<List<Observation>> getObservations(String runId, String key) {
     // TODO: support artifacts?
 
     // Validate input
     var currentFuture =
-        InternalFuture.runAsync(
+        Future.runAsync(
             () -> {
               if (key.isEmpty()) {
                 throw new InvalidArgumentException("Empty observation key");
               }
-            },
-            executor);
+            });
 
     // Query
     return currentFuture.thenCompose(
         unused ->
-            jdbi.withHandle(
+            jdbi.call(
                 handle ->
                     handle
                         .createQuery(
@@ -79,12 +78,11 @@ public class ObservationHandler {
                                                         rs.getString("_value"), Value.newBuilder()))
                                             .setValueTypeValue(rs.getInt("_type")))
                                     .build())
-                        .list()),
-        executor);
+                        .list()));
   }
 
-  public InternalFuture<MapSubtypes<String, Observation>> getObservationsMap(Set<String> runIds) {
-    return jdbi.withHandle(
+  public Future<MapSubtypes<String, Observation>> getObservationsMap(Set<String> runIds) {
+    return jdbi.call(
             handle ->
                 handle
                     .createQuery(
@@ -114,7 +112,7 @@ public class ObservationHandler {
                                             .setValueTypeValue(rs.getInt("_type")))
                                     .build()))
                     .list())
-        .thenApply(MapSubtypes::from, executor);
+        .thenCompose(a -> Future.of(MapSubtypes.from(a)));
   }
 
   public void logObservations(
@@ -196,8 +194,8 @@ public class ObservationHandler {
     }
   }
 
-  public InternalFuture<Void> deleteObservations(String runId, Optional<List<String>> maybeKeys) {
-    return jdbi.useTransaction(
+  public Future<Void> deleteObservations(String runId, Optional<List<String>> maybeKeys) {
+    return jdbi.transaction(
         handle -> {
           // Delete from keyvalue
           var fetchQueryString = "select o.id, o.keyvaluemapping_id from observation as o ";

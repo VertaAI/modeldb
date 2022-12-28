@@ -2,7 +2,7 @@ package ai.verta.modeldb.experimentRun.subtypes;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.OrderTable;
 import ai.verta.modeldb.common.query.QueryFilterContext;
@@ -50,7 +50,7 @@ public class SortingHandler {
     return entityColumn;
   }
 
-  public InternalFuture<QueryFilterContext> processSort(String key, boolean ascending) {
+  public Future<QueryFilterContext> processSort(String key, boolean ascending) {
     if (key == null || key.isEmpty()) {
       key = "date_updated";
     }
@@ -59,8 +59,9 @@ public class SortingHandler {
       case "date_updated":
       case "date_created":
       case "name":
-        return InternalFuture.completedInternalFuture(
-            new QueryFilterContext().addOrderItem(new OrderColumn(key, ascending)));
+        QueryFilterContext thing =
+            new QueryFilterContext().addOrderItem(new OrderColumn(key, ascending));
+        return Future.of(thing);
       default:
         // Do nothing
         break;
@@ -71,11 +72,11 @@ public class SortingHandler {
 
     switch (names[0]) {
       case ModelDBConstants.METRICS:
-        return InternalFuture.completedInternalFuture(
-            processKeyValueSort(names[1], ascending, "metrics"));
+        QueryFilterContext thing2 = processKeyValueSort(names[1], ascending, "metrics");
+        return Future.of(thing2);
       case ModelDBConstants.ATTRIBUTES:
-        return InternalFuture.completedInternalFuture(
-            processAttributeSort(names[1], ascending, "attributes"));
+        QueryFilterContext thing1 = processAttributeSort(names[1], ascending, "attributes");
+        return Future.of(thing1);
       case ModelDBConstants.HYPERPARAMETERS:
         final var hyperparameterSoryPredicate =
             processKeyValueSort(names[1], ascending, "hyperparameters");
@@ -84,14 +85,14 @@ public class SortingHandler {
         List<QueryFilterContext> queryFilterContexts = new ArrayList<>();
         queryFilterContexts.add(hyperparameterSoryPredicate);
         queryFilterContexts.add(configHyperparameterSoryPredicate);
-        return InternalFuture.completedInternalFuture(
-            QueryFilterContext.combine(queryFilterContexts));
+        QueryFilterContext thing = QueryFilterContext.combine(queryFilterContexts);
+        return Future.of(thing);
       default:
         // Do nothing
         break;
     }
 
-    return InternalFuture.failedStage(new InvalidArgumentException("Sort key cannot be handled"));
+    return Future.failedStage(new InvalidArgumentException("Sort key cannot be handled"));
   }
 
   private QueryFilterContext processKeyValueSort(String key, boolean ascending, String fieldType) {

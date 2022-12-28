@@ -3,9 +3,9 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import static ai.verta.modeldb.entities.config.ConfigBlobEntity.HYPERPARAMETER;
 
 import ai.verta.common.KeyValue;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import ai.verta.modeldb.versioning.HyperparameterValuesConfigBlob;
 import com.google.protobuf.Value;
@@ -29,7 +29,7 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
     this.jdbi = jdbi;
   }
 
-  public InternalFuture<MapSubtypes<String, KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
+  public Future<MapSubtypes<String, KeyValue>> getExperimentRunHyperparameterConfigBlobMap(
       List<String> expRunIds,
       Collection<String> selfAllowedRepositoryIds,
       boolean allowedAllRepositories) {
@@ -37,10 +37,11 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
       // If all repositories are not allowed and some one send empty selfAllowedRepositoryIds list
       // then this will return empty list from here for security
       if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
-        return InternalFuture.completedInternalFuture(MapSubtypes.from(new ArrayList<>()));
+        MapSubtypes<String, KeyValue> thing = MapSubtypes.from(new ArrayList<>());
+        return Future.of(thing);
       }
     }
-    return jdbi.withHandle(
+    return jdbi.call(
             handle -> {
               String queryStr =
                   "SELECT distinct vme.experiment_run_id, hecb.name, hecb.value_type, hecb.int_value, hecb.float_value, hecb.string_value  FROM hyperparameter_element_config_blob hecb "
@@ -96,6 +97,6 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
                       })
                   .list();
             })
-        .thenApply(MapSubtypes::from, executor);
+        .thenCompose(a -> Future.of(MapSubtypes.from(a)));
   }
 }

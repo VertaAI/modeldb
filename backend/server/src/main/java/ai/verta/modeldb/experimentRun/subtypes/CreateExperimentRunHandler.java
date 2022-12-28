@@ -13,7 +13,9 @@ import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.utils.ModelDBUtils;
+import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.uac.*;
+import com.google.common.util.concurrent.ListenableFuture;
 import java.util.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,16 +72,15 @@ public class CreateExperimentRunHandler extends HandlerUtil {
     this.versionInputHandler = versionInputHandler;
   }
 
-  public InternalFuture<ExperimentRun> convertCreateRequest(final CreateExperimentRun request) {
-    return FutureUtil.clientRequest(
-            uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor)
+  public Future<ExperimentRun> convertCreateRequest(final CreateExperimentRun request) {
+    return Future.fromListenableFuture(
+            uac.getUACService().getCurrentUser(Empty.newBuilder().build()))
         .thenCompose(
             currentLoginUserInfo -> {
               final var experimentRun = getExperimentRunFromRequest(request, currentLoginUserInfo);
 
-              return InternalFuture.completedInternalFuture(experimentRun);
-            },
-            executor);
+              return Future.of(experimentRun);
+            });
     /*.thenCompose(
     experimentRun -> {
       // TODO: Fix below logic for checking privileges of linked dataset versions
@@ -88,14 +89,14 @@ public class CreateExperimentRunHandler extends HandlerUtil {
       experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
     }*/
     /*
-          return InternalFuture.completedInternalFuture(experimentRun);
+          return Future.completedFuture(experimentRun);
         },
         executor)
     .thenCompose(
         experimentRun -> {
           // TODO: Fix populating logic of setVersioned_inputs,
           // setHyperparameter_element_mappings here
-          return InternalFuture.completedInternalFuture(experimentRun);
+          return Future.completedFuture(experimentRun);
         },
         executor)*/
   }
@@ -165,7 +166,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
     return experimentRunBuilder.build();
   }
 
-  public InternalFuture<ExperimentRun> insertExperimentRun(ExperimentRun newExperimentRun) {
+  public Future<ExperimentRun> insertExperimentRun(ExperimentRun newExperimentRun) {
     final var now = Calendar.getInstance().getTimeInMillis();
     Map<String, Object> runValueMap = new LinkedHashMap<>();
     runValueMap.put("id", newExperimentRun.getId());
@@ -187,19 +188,18 @@ public class CreateExperimentRunHandler extends HandlerUtil {
     runValueMap.put("deleted", false);
     runValueMap.put("created", false);
 
-    return InternalFuture.completedInternalFuture(true)
+    return Future.of(true)
         .thenCompose(
             unused -> {
               if (newExperimentRun.getVersionedInputs().getRepositoryId() != 0) {
                 return versionInputHandler.validateVersioningEntity(
                     newExperimentRun.getVersionedInputs());
               }
-              return InternalFuture.completedInternalFuture(new HashMap<>());
-            },
-            executor)
+              return Future.of(new HashMap<String, Map.Entry<BlobExpanded, String>>());
+            })
         .thenCompose(
             locationBlobWithHashMap ->
-                jdbi.withTransaction(
+                jdbi.inTransaction(
                     handle -> {
                       final var builder = newExperimentRun.toBuilder();
                       Boolean exists = checkInsertedEntityAlreadyExists(handle, newExperimentRun);
@@ -229,7 +229,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                         LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
                       }
 
-                      final var futureLogs = new LinkedList<InternalFuture<Void>>();
+                      final var futureLogs = new LinkedList<Future<Void>>();
 
                       if (!builder.getTagsList().isEmpty()) {
                         tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
@@ -280,25 +280,24 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                             locationBlobWithHashMap);
                       }
                       return builder.build();
-                    }),
-            executor)
+                    }))
         .thenCompose(
-            createdExperimentRun ->
-                createRoleBindingsForExperimentRun(createdExperimentRun)
-                    .thenApply(unused -> createdExperimentRun, executor),
-            executor)
+            createdExperimentRun -> {
+              return createRoleBindingsForExperimentRun(createdExperimentRun)
+                  .thenCompose(unused -> Future.of(createdExperimentRun));
+            })
         .thenCompose(
-            createdExperimentRun ->
-                jdbi.useHandle(
-                        handle ->
-                            handle
-                                .createUpdate(
-                                    "UPDATE experiment_run SET created=:created WHERE id=:id")
-                                .bind("created", true)
-                                .bind("id", newExperimentRun.getId())
-                                .execute())
-                    .thenApply(unused -> createdExperimentRun, executor),
-            executor);
+            createdExperimentRun -> {
+              return jdbi.run(
+                      handle ->
+                          handle
+                              .createUpdate(
+                                  "UPDATE experiment_run SET created=:created WHERE id=:id")
+                              .bind("created", true)
+                              .bind("id", newExperimentRun.getId())
+                              .execute())
+                  .thenCompose(unused -> Future.of(createdExperimentRun));
+            });
   }
 
   private Boolean checkInsertedEntityAlreadyExists(Handle handle, ExperimentRun experimentRun) {
@@ -325,41 +324,38 @@ public class CreateExperimentRunHandler extends HandlerUtil {
     return roleName + "_" + resourceTypeName + "_" + resourceId + "_" + "User_" + vertaId;
   }
 
-  private InternalFuture<Void> createRoleBindingsForExperimentRun(
-      final ExperimentRun experimentRun) {
+  private Future<Void> createRoleBindingsForExperimentRun(final ExperimentRun experimentRun) {
     ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceType =
         ModelDBResourceEnum.ModelDBServiceResourceTypes.EXPERIMENT_RUN;
     String roleName = ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER;
-    return FutureUtil.clientRequest(
-            uac.getServiceAccountRoleServiceFutureStub()
-                .setRoleBinding(
-                    SetRoleBinding.newBuilder()
-                        .setRoleBinding(
-                            RoleBinding.newBuilder()
-                                .setName(
-                                    buildRoleBindingName(
-                                        roleName,
-                                        experimentRun.getId(),
-                                        experimentRun.getOwner(),
-                                        modelDBServiceResourceType.name()))
-                                .setScope(RoleScope.newBuilder().build())
-                                .setRoleName(roleName)
-                                .addEntities(
-                                    Entities.newBuilder()
-                                        .addUserIds(experimentRun.getOwner())
-                                        .build())
-                                .addResources(
-                                    Resources.newBuilder()
-                                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                                        .setResourceType(
-                                            ResourceType.newBuilder()
-                                                .setModeldbServiceResourceType(
-                                                    modelDBServiceResourceType))
-                                        .addResourceIds(experimentRun.getId())
-                                        .build())
-                                .build())
-                        .build()),
-            executor)
+    ListenableFuture<SetRoleBinding.Response> listenableFuture =
+        uac.getServiceAccountRoleServiceFutureStub()
+            .setRoleBinding(
+                SetRoleBinding.newBuilder()
+                    .setRoleBinding(
+                        RoleBinding.newBuilder()
+                            .setName(
+                                buildRoleBindingName(
+                                    roleName,
+                                    experimentRun.getId(),
+                                    experimentRun.getOwner(),
+                                    modelDBServiceResourceType.name()))
+                            .setScope(RoleScope.newBuilder().build())
+                            .setRoleName(roleName)
+                            .addEntities(
+                                Entities.newBuilder().addUserIds(experimentRun.getOwner()).build())
+                            .addResources(
+                                Resources.newBuilder()
+                                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                                    .setResourceType(
+                                        ResourceType.newBuilder()
+                                            .setModeldbServiceResourceType(
+                                                modelDBServiceResourceType))
+                                    .addResourceIds(experimentRun.getId())
+                                    .build())
+                            .build())
+                    .build());
+    return Future.fromListenableFuture(listenableFuture)
         .thenAccept(
             response -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);

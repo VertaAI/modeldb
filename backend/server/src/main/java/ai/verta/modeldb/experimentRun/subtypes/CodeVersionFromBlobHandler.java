@@ -4,8 +4,8 @@ import ai.verta.common.CodeVersion;
 import ai.verta.common.GitSnapshot;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
 import ai.verta.modeldb.entities.dataset.PathDatasetComponentBlobEntity;
@@ -44,7 +44,7 @@ public class CodeVersionFromBlobHandler {
    * @return {@link Map <String, Map<String, CodeBlob >>} : Map from experimentRunID to Map of
    *     LocationString to CodeVersion
    */
-  public InternalFuture<Map<String, Map<String, CodeVersion>>> getExperimentRunCodeVersionMap(
+  public Future<Map<String, Map<String, CodeVersion>>> getExperimentRunCodeVersionMap(
       Set<String> expRunIds,
       Collection<String> selfAllowedRepositoryIds,
       boolean allowedAllRepositories) {
@@ -52,7 +52,7 @@ public class CodeVersionFromBlobHandler {
       // If all repositories are not allowed and some one send empty selfAllowedRepositoryIds list
       // then this will return empty list from here for security
       if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
-        return InternalFuture.completedInternalFuture(new HashMap<>());
+        return Future.of(new HashMap<String, Map<String, CodeVersion>>());
       }
     }
 
@@ -124,7 +124,7 @@ public class CodeVersionFromBlobHandler {
         expRunCodeBlobMap.put(expRunId, codeBlobMap);
       }
     }
-    return InternalFuture.completedInternalFuture(expRunCodeBlobMap);
+    return Future.of(expRunCodeBlobMap);
   }
 
   private void convertGitBlobToGitSnapshot(

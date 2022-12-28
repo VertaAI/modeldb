@@ -3,10 +3,10 @@ package ai.verta.modeldb.experimentRun.subtypes;
 import ai.verta.common.CodeVersion;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.CodeVersionEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.RdbmsUtils;
@@ -15,6 +15,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Function;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
@@ -35,8 +36,9 @@ public class CodeVersionHandler {
     this.entityTableName = entityTableName;
   }
 
-  public InternalFuture<Optional<CodeVersion>> getCodeVersion(String entityId) {
-    return jdbi.withHandle(
+  public Future<Optional<CodeVersion>> getCodeVersion(String entityId) {
+    Future<Optional<Long>> optionalFuture =
+        jdbi.call(
             handle ->
                 handle
                     .createQuery(
@@ -45,21 +47,25 @@ public class CodeVersionHandler {
                             entityTableName))
                     .bind(ENTITY_ID_QUERY_PARAM, entityId)
                     .mapTo(Long.class)
-                    .findOne())
-        .thenApply(
-            maybeSnapshotId ->
-                maybeSnapshotId.map(
-                    snapshotId -> {
-                      try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-                        final CodeVersionEntity entity =
-                            session.get(
-                                CodeVersionEntity.class,
-                                maybeSnapshotId.get(),
-                                LockMode.PESSIMISTIC_WRITE);
-                        return entity.getProtoObject();
-                      }
-                    }),
-            executor);
+                    .findOne());
+    return optionalFuture.thenCompose(
+        t ->
+            Future.of(
+                ((Function<? super Optional<Long>, ? extends Optional<CodeVersion>>)
+                        maybeSnapshotId ->
+                            maybeSnapshotId.map(
+                                snapshotId -> {
+                                  try (var session =
+                                      modelDBHibernateUtil.getSessionFactory().openSession()) {
+                                    final CodeVersionEntity entity =
+                                        session.get(
+                                            CodeVersionEntity.class,
+                                            maybeSnapshotId.get(),
+                                            LockMode.PESSIMISTIC_WRITE);
+                                    return entity.getProtoObject();
+                                  }
+                                }))
+                    .apply(t)));
   }
 
   public void logCodeVersion(
@@ -119,8 +125,8 @@ public class CodeVersionHandler {
     }
   }
 
-  public InternalFuture<Map<String, CodeVersion>> getCodeVersionMap(List<String> entityIds) {
-    return jdbi.withHandle(
+  public Future<Map<String, CodeVersion>> getCodeVersionMap(List<String> entityIds) {
+    return jdbi.call(
             handle ->
                 handle
                     .createQuery(
@@ -146,8 +152,7 @@ public class CodeVersionHandler {
                   }
                 }
               }
-              return InternalFuture.completedInternalFuture(codeVersionMap);
-            },
-            executor);
+              return Future.of(codeVersionMap);
+            });
   }
 }

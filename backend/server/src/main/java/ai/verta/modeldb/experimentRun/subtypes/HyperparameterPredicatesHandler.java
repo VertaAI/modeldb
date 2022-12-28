@@ -4,13 +4,13 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.UnimplementedException;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import java.util.Date;
 
 public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
 
-  public InternalFuture<QueryFilterContext> processHyperparametersPredicate(
+  public Future<QueryFilterContext> processHyperparametersPredicate(
       long index, KeyValueQuery predicate, String name, String fieldType) {
     final var value = predicate.getValue();
     final var operator = predicate.getOperator();
@@ -52,11 +52,10 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
                   q -> q.bind(valueBindingName, wrapValue(operator, finalValueStr)));
           break;
         default:
-          return InternalFuture.failedStage(
-              new UnimplementedException("Unknown 'Value' type recognized"));
+          return Future.failedStage(new UnimplementedException("Unknown 'Value' type recognized"));
       }
     } catch (Exception ex) {
-      return InternalFuture.failedStage(ex);
+      return Future.failedStage(ex);
     }
 
     String finalHyperparametersFromERSql;
@@ -98,8 +97,7 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
                         valueBindingNameForHyperBlob, wrapValue(operator, value.getStringValue())));
         break;
       default:
-        return InternalFuture.failedStage(
-            new UnimplementedException("Unknown 'Value' type recognized"));
+        return Future.failedStage(new UnimplementedException("Unknown 'Value' type recognized"));
     }
 
     String finalHyperparameterFromBlobMappingSql;
@@ -128,6 +126,6 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
                       " OR ", finalHyperparametersFromERSql, finalHyperparameterFromBlobMappingSql)
                   + ")");
     }
-    return InternalFuture.completedInternalFuture(queryContext);
+    return Future.of(queryContext);
   }
 }
