@@ -17,7 +17,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.stream.Collectors;
-
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -53,14 +52,14 @@ public class MigratorPropertyTest {
   // for running ad-hoc against mysql (todo: figure out how to get sqlserver test files)
   private static RdbConfig createMysqlConfig() {
     return RdbConfig.builder()
-            .RdbUrl("jdbc:mysql://localhost:3306")
-            .RdbDriver("org.mariadb.jdbc.Driver")
-            .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
-            .RdbDatabaseName("migrationPropertyTestDb")
-            .RdbUsername("root")
-            .RdbPassword("MyN3wP4ssw0rd!")
-            .sslEnabled(false)
-            .build();
+        .RdbUrl("jdbc:mysql://localhost:3306")
+        .RdbDriver("org.mariadb.jdbc.Driver")
+        .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
+        .RdbDatabaseName("migrationPropertyTestDb")
+        .RdbUsername("root")
+        .RdbPassword("MyN3wP4ssw0rd!")
+        .sslEnabled(false)
+        .build();
   }
 
   @Property
@@ -72,7 +71,8 @@ public class MigratorPropertyTest {
     List<Pair<Integer, Boolean>> migrationContents = getSchemaMigrationContents();
     assertThat(migrationContents).containsExactly(new Pair<>(versions.getEnd(), false));
 
-    Set<String> tablesPresent = getAllTablesPresent().stream().map(String::toUpperCase).collect(Collectors.toSet());
+    Set<String> tablesPresent =
+        getAllTablesPresent().stream().map(String::toUpperCase).collect(Collectors.toSet());
     int finalVersion = versions.getEnd();
     String failureMessagePattern =
         "TEST_TABLE_%d : versions failed: "
