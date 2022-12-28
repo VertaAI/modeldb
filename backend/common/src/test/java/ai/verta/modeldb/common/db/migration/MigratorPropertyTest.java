@@ -82,7 +82,7 @@ public class MigratorPropertyTest {
             + " tablesPresentBeforeRun: "
             + beforeTablesPresent;
     for (int i = 1; i <= finalVersion; i++) {
-      //100 & 101 are empty migrations
+      // 100 & 101 are empty migrations
       if (i == 100 || i == 101) {
         continue;
       }
