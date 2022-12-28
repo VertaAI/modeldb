@@ -455,12 +455,20 @@ public abstract class ModeldbTestSetup extends TestCase {
     doReturn(collaboratorBlockingMock).when(authChannelMock).getCollaboratorServiceBlockingStub();
     doReturn(workspaceMock).when(uac).getWorkspaceService();
     doReturn(roleServiceMock).when(uac).getServiceAccountRoleServiceFutureStub();
-    doReturn(roleServiceBlockingMock).when(authChannelMock).getRoleServiceBlockingStubForServiceUser();
+    doReturn(roleServiceBlockingMock)
+        .when(authChannelMock)
+        .getRoleServiceBlockingStubForServiceUser();
     doReturn(organizationBlockingMock).when(authChannelMock).getOrganizationServiceBlockingStub();
 
     doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getCurrentUser(any());
     doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getUser(any());
-    doReturn(Futures.immediateFuture(GetUsersFuzzy.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build())).when(uacMock).getUsersFuzzy(any());
+    doReturn(
+            Futures.immediateFuture(
+                GetUsersFuzzy.Response.newBuilder()
+                    .addAllUserInfos(List.of(testUser1, testUser2))
+                    .build()))
+        .when(uacMock)
+        .getUsersFuzzy(any());
     when(authzMock.isSelfAllowed(any()))
         .thenReturn(
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -497,7 +505,9 @@ public abstract class ModeldbTestSetup extends TestCase {
                 .build());
     when(collaboratorBlockingMock.setResource(any()))
         .thenReturn(SetResource.Response.newBuilder().build());
-    doReturn(collaboratorBlockingMock).when(authChannelMock).getCollaboratorServiceBlockingStubForServiceUser();
+    doReturn(collaboratorBlockingMock)
+        .when(authChannelMock)
+        .getCollaboratorServiceBlockingStubForServiceUser();
     when(collaboratorBlockingMock.deleteResources(any()))
         .thenReturn(DeleteResources.Response.newBuilder().build());
     // allow any SetResource call
