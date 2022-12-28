@@ -1755,32 +1755,8 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
   @Test
   public void findExperimentRunPredicateValueEmptyNegativeTest() {
     LOGGER.info("FindExperimentRuns predicate value is empty negative test start.....");
-
-    // Validate check for predicate value not empty
-    List<KeyValueQuery> predicates = new ArrayList<>();
-    Value stringValueType = Value.newBuilder().setStringValue("").build();
-
-    KeyValueQuery keyValueQuery =
-        KeyValueQuery.newBuilder()
-            .setKey("metrics.loss")
-            .setValue(stringValueType)
-            .setOperator(OperatorEnum.Operator.LTE)
-            .build();
-    predicates.add(keyValueQuery);
-
-    FindExperimentRuns findExperimentRuns =
-        FindExperimentRuns.newBuilder()
-            .setProjectId(project1.getId())
-            .setExperimentId(experiment1.getId())
-            .addAllPredicates(predicates)
-            // .setIdsOnly(true)
-            .build();
-    AdvancedQueryExperimentRunsResponse response =
-        hydratedServiceBlockingStub.findHydratedExperimentRuns(findExperimentRuns);
-    assertEquals("Expected response not found", 0, response.getHydratedExperimentRunsCount());
-
     // If key is not set in predicate
-    findExperimentRuns =
+    var findExperimentRuns =
         FindExperimentRuns.newBuilder()
             .setProjectId(project1.getId())
             .setExperimentId(experiment1.getId())
