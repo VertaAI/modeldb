@@ -3,7 +3,6 @@ package ai.verta.modeldb.common.futures;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
@@ -11,17 +10,19 @@ import lombok.Value;
 @Value
 @Getter(AccessLevel.NONE)
 class DoublingBackoffStrategy<R> implements RetryStrategy<R> {
-  BiFunction<R, Throwable, Boolean> exceptionChecker;
+  private static final int INITIAL_DELAY_MILLIS = 10;
+  BiFunction<R, Throwable, Boolean> resultChecker;
   int maxRetries;
   AtomicInteger numberRetried = new AtomicInteger();
 
   @Override
   public Retry shouldRetry(R result, Throwable throwable) {
-    Boolean apply = exceptionChecker.apply(result, throwable);
-    if (!apply || numberRetried.getAndIncrement() == maxRetries) {
+    Boolean apply = resultChecker.apply(result, throwable);
+    if (!apply || numberRetried.get() == maxRetries) {
       return new Retry(false, 0, TimeUnit.SECONDS);
     }
 
-    return new Retry(true, (int) Math.pow(2, numberRetried.get()), TimeUnit.MILLISECONDS);
+    int nextDelay = INITIAL_DELAY_MILLIS * (int) Math.pow(2, numberRetried.getAndIncrement());
+    return new Retry(true, nextDelay, TimeUnit.MILLISECONDS);
   }
 }

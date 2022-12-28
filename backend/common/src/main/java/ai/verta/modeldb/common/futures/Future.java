@@ -344,7 +344,8 @@ public class Future<T> {
     return from(CompletableFuture.failedFuture(ex));
   }
 
-  public static <U> Future<U> retrying(Supplier<Future<U>> supplier, RetryStrategy<U> retryStrategy) {
+  public static <U> Future<U> retrying(
+      Supplier<Future<U>> supplier, RetryStrategy<U> retryStrategy) {
     final var promise = new CompletableFuture<U>();
 
     supplier
@@ -403,10 +404,12 @@ public class Future<T> {
 
   public static <U> Future<U> retriableStage(
       Supplier<Future<U>> supplier, Function<Throwable, Boolean> retryChecker) {
-    return retrying(supplier, (x, throwable) -> {
+    return retrying(
+        supplier,
+        (x, throwable) -> {
           boolean result = throwable != null && retryChecker.apply(throwable);
-      return new RetryStrategy.Retry(result, 0, TimeUnit.SECONDS);
-    });
+          return new RetryStrategy.Retry(result, 0, TimeUnit.SECONDS);
+        });
   }
 
   public static <U> Future<Optional<U>> flipOptional(Optional<Future<U>> val) {
