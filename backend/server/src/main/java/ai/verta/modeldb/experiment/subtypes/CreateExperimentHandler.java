@@ -270,7 +270,6 @@ public class CreateExperimentHandler extends HandlerUtil {
         .thenAccept(
             response -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);
-            },
-            executor);
+            });
   }
 }
