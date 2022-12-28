@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import org.assertj.core.api.Assertions;
+import org.checkerframework.checker.units.qual.Time;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -128,6 +129,7 @@ class FutureTest {
   }
 
   @Test
+  @Timeout(2)
   void retry() throws Exception {
     AtomicInteger sequencer = new AtomicInteger();
 
@@ -157,14 +159,14 @@ class FutureTest {
                           }
                           return Future.of("success!");
                         },
-                        RetryStrategy.backoff(throwable -> true, 5))
+                        RetryStrategy.backoff((x, throwable) -> true, 5))
                     .get())
         .isInstanceOf(NullPointerException.class);
     assertThat(sequencer).hasValue(6);
   }
 
   @Test
-  void retry_strategy() throws Exception {
+  void retry_throwableStrategy() throws Exception {
     AtomicInteger sequencer = new AtomicInteger();
 
     Future.retrying(
@@ -174,7 +176,23 @@ class FutureTest {
               }
               return Future.of("success!");
             },
-            RetryStrategy.backoff(throwable -> true, 10))
+            RetryStrategy.backoff((x, throwable) -> throwable != null, 10))
+        .get();
+    assertThat(sequencer).hasValue(6);
+  }
+
+  @Test
+  void retry_valueStrategy() throws Exception {
+    AtomicInteger sequencer = new AtomicInteger();
+
+    Future.retrying(
+            () -> {
+              if (sequencer.getAndIncrement() < 5) {
+                return Future.of("nope");
+              }
+              return Future.of("success!");
+            },
+            RetryStrategy.backoff((value, t) -> value.equals("nope"), 10))
         .get();
     assertThat(sequencer).hasValue(6);
   }

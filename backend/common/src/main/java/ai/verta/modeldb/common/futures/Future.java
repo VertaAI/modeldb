@@ -347,7 +347,7 @@ public class Future<T> {
   }
 
   public static <U> Future<U> retrying(
-      Supplier<Future<U>> supplier, RetryStrategy retryStrategy) {
+      Supplier<Future<U>> supplier, RetryStrategy<U> retryStrategy) {
     final var promise = new CompletableFuture<U>();
 
     supplier
@@ -356,18 +356,18 @@ public class Future<T> {
             (value, throwable) -> {
               RetryStrategy.Retry retry;
               try {
-                retry = retryStrategy.shouldRetry(throwable);
+                retry = retryStrategy.shouldRetry(value, throwable);
               } catch (Throwable e) {
                 promise.completeExceptionally(
                     new ExecutionException("retryStrategy threw an exception. Not retrying.", e));
                 return;
               }
-              if (throwable == null) {
-                promise.complete(value);
-                return;
-              }
               if (!retry.shouldRetry()) {
-                promise.completeExceptionally(throwable);
+                if (throwable == null) {
+                  promise.complete(value);
+                } else {
+                  promise.completeExceptionally(throwable);
+                }
                 return;
               }
               FutureExecutor delayedExecutor;
@@ -406,8 +406,8 @@ public class Future<T> {
 
   public static <U> Future<U> retriableStage(
       Supplier<Future<U>> supplier, Function<Throwable, Boolean> retryChecker) {
-    return retrying(supplier, throwable -> {
-      Boolean result = retryChecker.apply(throwable);
+    return retrying(supplier, (x, throwable) -> {
+      boolean result = throwable != null && retryChecker.apply(throwable);
       return new RetryStrategy.Retry(result, 0, TimeUnit.SECONDS);
     });
   }
