@@ -3,7 +3,6 @@ package ai.verta.modeldb.common.futures;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
-import java.util.function.Function;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Value;
