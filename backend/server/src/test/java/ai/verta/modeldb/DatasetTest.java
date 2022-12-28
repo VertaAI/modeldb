@@ -2,7 +2,7 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.Artifact;
@@ -113,7 +113,7 @@ public class DatasetTest extends ModeldbTestSetup {
                       .setVisibility(ResourceVisibility.PRIVATE)
                       .build())
               .build();
-      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      doReturn(resourcesResponse).when(collaboratorBlockingMock).getResources(any());
     }
 
     // Create two dataset of above dataset
@@ -463,7 +463,7 @@ public class DatasetTest extends ModeldbTestSetup {
     LOGGER.info("Get Dataset by name test start................................");
 
     if (isRunningIsolated()) {
-      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser2);
+      doReturn(testUser2).when(uacBlockingMock).getCurrentUser(any());
     }
 
     // Create dataset
@@ -496,7 +496,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
-          when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+          doReturn(testUser1).when(uacBlockingMock).getCurrentUser(any());
           mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser2);
         } else if (!testConfig.isPermissionV2Enabled()) {
           AddCollaboratorRequest addCollaboratorRequest =
@@ -569,7 +569,7 @@ public class DatasetTest extends ModeldbTestSetup {
       }
     } finally {
       if (isRunningIsolated()) {
-        when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser2);
+        doReturn(testUser2).when(uacBlockingMock).getCurrentUser(any());
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser2);
       }
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
@@ -592,7 +592,7 @@ public class DatasetTest extends ModeldbTestSetup {
     }
 
     if (isRunningIsolated()) {
-      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser2);
+      doReturn(testUser2).when(uacBlockingMock).getCurrentUser(any());
     }
 
     // Create dataset
@@ -641,7 +641,7 @@ public class DatasetTest extends ModeldbTestSetup {
     try {
 
       if (isRunningIsolated()) {
-        when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+        doReturn(testUser1).when(uacBlockingMock).getCurrentUser(any());
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
       } else if (!testConfig.isPermissionV2Enabled()) {
         AddCollaboratorRequest addCollaboratorRequest =
@@ -676,12 +676,13 @@ public class DatasetTest extends ModeldbTestSetup {
       try {
         if (isRunningIsolated()) {
           mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser2);
-          when(workspaceBlockingMock.getWorkspaceByName(any()))
-              .thenReturn(
+          doReturn(
                   Workspace.newBuilder()
                       .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                       .setUsername(testUser2.getVertaInfo().getUsername())
-                      .build());
+                      .build())
+              .when(workspaceBlockingMock)
+              .getWorkspaceByName(any());
         }
         GetDatasetByName getDataset =
             GetDatasetByName.newBuilder()
@@ -705,12 +706,13 @@ public class DatasetTest extends ModeldbTestSetup {
 
         if (isRunningIsolated()) {
           mockGetResourcesForAllDatasets(Map.of(selfDataset.getId(), selfDataset), testUser1);
-          when(workspaceBlockingMock.getWorkspaceByName(any()))
-              .thenReturn(
+          doReturn(
                   Workspace.newBuilder()
                       .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                       .setUsername(testUser1.getVertaInfo().getUsername())
-                      .build());
+                      .build())
+              .when(workspaceBlockingMock)
+              .getWorkspaceByName(any());
         }
 
         getDataset =
@@ -1386,7 +1388,7 @@ public class DatasetTest extends ModeldbTestSetup {
     LOGGER.info("batch delete Dataset test start................................");
 
     if (isRunningIsolated()) {
-      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      doReturn(testUser1).when(uacBlockingMock).getCurrentUser(any());
     }
 
     Map<String, Dataset> datasetMap = new HashMap<>();
@@ -2039,9 +2041,10 @@ public class DatasetTest extends ModeldbTestSetup {
                         .setVisibility(ResourceVisibility.PRIVATE)
                         .build())
                 .build();
-        when(collaboratorMock.getResources(any()))
-            .thenReturn(Futures.immediateFuture(resourcesResponse));
-        when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+        doReturn(Futures.immediateFuture(resourcesResponse))
+            .when(collaboratorMock)
+            .getResources(any());
+        doReturn(resourcesResponse).when(collaboratorBlockingMock).getResources(any());
       }
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
       DeleteDataset.Response deleteDatasetResponse =
