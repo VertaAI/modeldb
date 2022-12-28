@@ -24,13 +24,11 @@ import org.junit.runner.RunWith;
 public class MigratorPropertyTest {
   private static final String INPUT_DIRECTORY = "migrations/testing/property";
   private Migrator migrator;
-  private RdbConfig rdbConfig;
   private Connection connection;
 
   @Before
   public void setUp() throws Exception {
-    rdbConfig =
-        RdbConfig.builder()
+    RdbConfig rdbConfig = RdbConfig.builder()
             .DBConnectionURL("jdbc:h2:mem:migrationPropertyTestDb")
             .RdbDriver("org.h2.Driver")
             .RdbDialect("org.hibernate.dialect.H2Dialect")
@@ -61,6 +59,10 @@ public class MigratorPropertyTest {
             + " tablesPresentBeforeRun: "
             + beforeTablesPresent;
     for (int i = 1; i <= finalVersion; i++) {
+      //100 is an empty migration
+      if (i == 100) {
+        continue;
+      }
       assertThat(tablesPresent)
           .withFailMessage(String.format(failureMessagePattern, i))
           .contains("TEST_TABLE_" + i);
@@ -121,8 +123,8 @@ public class MigratorPropertyTest {
 
     @Override
     public IntPair generate(SourceOfRandomness random, GenerationStatus status) {
-      int one = random.nextInt(1, 99);
-      int two = random.nextInt(1, 99);
+      int one = random.nextInt(1, 100);
+      int two = random.nextInt(1, 100);
       return new IntPair(one, two);
     }
   }
