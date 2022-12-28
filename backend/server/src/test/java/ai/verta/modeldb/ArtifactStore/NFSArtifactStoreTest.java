@@ -31,7 +31,6 @@ import ai.verta.modeldb.configuration.ReconcilerInitializer;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResources.Response;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetWorkspaceById;
@@ -142,22 +141,25 @@ public class NFSArtifactStoreTest {
     when(workspaceMock.getWorkspaceByName(GetWorkspaceByName.newBuilder().setName("").build()))
         .thenReturn(Futures.immediateFuture(Workspace.newBuilder().setId(1L).build()));
 
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                Response.newBuilder()
-                    .addItem(
-                        GetResourcesResponseItem.newBuilder()
-                            .setVisibility(ResourceVisibility.PRIVATE)
-                            .setResourceType(
-                                ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(
-                                        ModelDBServiceResourceTypes.PROJECT)
-                                    .build())
-                            .setOwnerId(1L)
-                            .setWorkspaceId(1L)
+    var getResources =
+        GetResources.Response.newBuilder()
+            .addItem(
+                GetResourcesResponseItem.newBuilder()
+                    .setVisibility(ResourceVisibility.PRIVATE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
                             .build())
-                    .build()));
+                    .setOwnerId(1L)
+                    .setWorkspaceId(1L)
+                    .build())
+            .build();
+    if (testConfig.isPermissionV2Enabled()) {
+      when(collaboratorMock.getResources(any())).thenReturn(Futures.immediateFuture(getResources));
+    } else {
+      when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+          .thenReturn(Futures.immediateFuture(getResources));
+    }
     var roleServiceMock = mock(RoleServiceGrpc.RoleServiceFutureStub.class);
     when(uac.getServiceAccountRoleServiceFutureStub()).thenReturn(roleServiceMock);
     when(roleServiceMock.setRoleBinding(any()))
