@@ -28,7 +28,8 @@ public class MigratorPropertyTest {
 
   @Before
   public void setUp() throws Exception {
-    RdbConfig rdbConfig = RdbConfig.builder()
+    RdbConfig rdbConfig =
+        RdbConfig.builder()
             .DBConnectionURL("jdbc:h2:mem:migrationPropertyTestDb")
             .RdbDriver("org.h2.Driver")
             .RdbDialect("org.hibernate.dialect.H2Dialect")
@@ -59,7 +60,7 @@ public class MigratorPropertyTest {
             + " tablesPresentBeforeRun: "
             + beforeTablesPresent;
     for (int i = 1; i <= finalVersion; i++) {
-      //100 is an empty migration
+      // 100 is an empty migration
       if (i == 100) {
         continue;
       }
