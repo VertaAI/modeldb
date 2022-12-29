@@ -4,7 +4,6 @@ import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
@@ -613,8 +612,7 @@ public abstract class ModeldbTestSetup extends TestCase {
   protected void mockGetResourcesForAllProjects(
       Map<String, Project> projectMap, UserInfo userInfo) {
     mockGetResources(projectMap.keySet(), userInfo);
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(
+    doReturn(
             Futures.immediateFuture(
                 GetResources.Response.newBuilder()
                     .addAllItem(
@@ -634,7 +632,9 @@ public abstract class ModeldbTestSetup extends TestCase {
                                         .setWorkspaceId(project.getWorkspaceServiceId())
                                         .build())
                             .collect(Collectors.toList()))
-                    .build()));
+                    .build()))
+        .when(collaboratorMock)
+        .getResourcesSpecialPersonalWorkspace(any());
     mockGetSelfAllowedResources(
         projectMap.keySet(), ModelDBServiceResourceTypes.PROJECT, ModelDBServiceActions.READ);
   }
@@ -669,14 +669,15 @@ public abstract class ModeldbTestSetup extends TestCase {
     if (!allowedResourcesResponse.isEmpty()) {
       response.addAllResources(allowedResourcesResponse);
     }
-    when(authzMock.getSelfAllowedResources(getSelfAllowedResourcesRequest))
-        .thenReturn(Futures.immediateFuture(response.build()));
-    when(authzBlockingMock.getSelfAllowedResources(getSelfAllowedResourcesRequest))
-        .thenReturn(response.build());
+    doReturn(Futures.immediateFuture(response.build()))
+        .when(authzMock)
+        .getSelfAllowedResources(getSelfAllowedResourcesRequest);
+    doReturn(response.build())
+        .when(authzBlockingMock)
+        .getSelfAllowedResources(getSelfAllowedResourcesRequest);
     var authzBlockingMock = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
-    when(authChannelMock.getAuthzServiceBlockingStub(any())).thenReturn(authzBlockingMock);
-    when(authzBlockingMock.getAllowedEntities(any()))
-        .thenReturn(
+    doReturn(authzBlockingMock).when(authChannelMock).getAuthzServiceBlockingStub(any());
+    doReturn(
             GetAllowedEntities.Response.newBuilder()
                 .addEntities(
                     Entities.newBuilder()
@@ -685,7 +686,9 @@ public abstract class ModeldbTestSetup extends TestCase {
                                 testUser1.getVertaInfo().getUserId(),
                                 testUser2.getVertaInfo().getUserId()))
                         .build())
-                .build());
+                .build())
+        .when(authzBlockingMock)
+        .getAllowedEntities(any());
   }
 
   protected void mockGetResources(Set<String> resourceIds, UserInfo userInfo) {
@@ -703,16 +706,14 @@ public abstract class ModeldbTestSetup extends TestCase {
                                 .build())
                     .collect(Collectors.toList()))
             .build();
-    when(collaboratorMock.getResources(any()))
-        .thenReturn(Futures.immediateFuture(resourcesResponse));
-    when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    doReturn(Futures.immediateFuture(resourcesResponse)).when(collaboratorMock).getResources(any());
+    doReturn(resourcesResponse).when(collaboratorBlockingMock).getResources(any());
   }
 
   protected void mockGetResourcesForAllDatasets(
       Map<String, Dataset> datasetMap, UserInfo userInfo) {
     mockGetResources(datasetMap.keySet(), userInfo);
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(
+    doReturn(
             Futures.immediateFuture(
                 GetResources.Response.newBuilder()
                     .addAllItem(
@@ -732,7 +733,9 @@ public abstract class ModeldbTestSetup extends TestCase {
                                         .setWorkspaceId(dataset.getWorkspaceServiceId())
                                         .build())
                             .collect(Collectors.toList()))
-                    .build()));
+                    .build()))
+        .when(collaboratorMock)
+        .getResourcesSpecialPersonalWorkspace(any());
     mockGetSelfAllowedResources(
         datasetMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
   }
