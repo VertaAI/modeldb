@@ -1,0 +1,3 @@
+BEGIN /*!90000 PESSIMISTIC */;
+    ALTER TABLE test_table ADD visibility VARCHAR(200) NOT NULL DEFAULT 'PRIVATE';
+commit;

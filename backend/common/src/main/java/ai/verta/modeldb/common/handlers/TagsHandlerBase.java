@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.handlers;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -15,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -25,12 +25,12 @@ public abstract class TagsHandlerBase<T> {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
-  private final Executor executor;
+  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final String entityName;
   protected String entityIdReferenceColumn;
 
-  public TagsHandlerBase(Executor executor, FutureJdbi jdbi, String entityName) {
+  public TagsHandlerBase(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.entityName = entityName;
