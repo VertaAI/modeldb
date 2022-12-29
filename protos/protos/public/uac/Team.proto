@@ -5,6 +5,8 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 
 option java_multiple_files = true;
 import "google/api/annotations.proto";
+import "uac/UACService.proto";
+import "common/CommonService.proto";
 
 message Team {
     string id = 1;
@@ -13,6 +15,7 @@ message Team {
     string short_name = 8;
     string description = 4;
     string owner_id = 5;
+    IdServiceProviderEnum.IdServiceProvider id_service_provider = 9;
 
     int64 created_timestamp = 6;
     int64 updated_timestamp = 7;
@@ -47,8 +50,10 @@ message GetTeamByShortName {
 }
 
 message ListMyTeams {
+    common.Pagination pagination = 1;
     message Response {
         repeated Team teams = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -70,9 +75,11 @@ message DeleteTeam {
 
 message ListTeamUser {
     string team_id = 1;
+    common.Pagination pagination = 2;
 
     message Response {
         repeated string user_ids = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -116,7 +123,7 @@ service TeamService {
         };
     };
 
-    // Lists the teams that the current user can see
+    // Lists the teams that the current user is a member of
     rpc listMyTeams (ListMyTeams) returns (ListMyTeams.Response){
         option (google.api.http) = {
             get: "/v1/team/listMyTeams"
