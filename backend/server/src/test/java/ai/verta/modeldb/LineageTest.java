@@ -36,6 +36,7 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -415,6 +416,13 @@ public class LineageTest extends ModeldbTestSetup {
       LOGGER.info(deleteDatasetResponse.toString());
     }
 
+    if (isRunningIsolated()) {
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
+
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -461,6 +469,10 @@ public class LineageTest extends ModeldbTestSetup {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+    }
 
     CreateDatasetVersion createDatasetVersionRequest =
         DatasetVersionTest.getDatasetVersionRequest(dataset.getId());
