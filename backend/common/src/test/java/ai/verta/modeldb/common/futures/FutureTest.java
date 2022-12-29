@@ -148,17 +148,18 @@ class FutureTest {
   @Test
   void retry_strategy_failure() {
     AtomicInteger sequencer = new AtomicInteger();
-
+    int maxRetries = 5;
+    int moreRetriesThanExpected = 10;
     assertThatThrownBy(
             () ->
                 Future.retrying(
                         () -> {
-                          if (sequencer.getAndIncrement() < 10) {
+                          if (sequencer.getAndIncrement() < moreRetriesThanExpected) {
                             return Future.failedStage(new NullPointerException());
                           }
                           return Future.of("success!");
                         },
-                        RetryStrategy.backoff((x, throwable) -> true, 5))
+                        RetryStrategy.backoff((x, throwable) -> true, maxRetries))
                     .get())
         .isInstanceOf(NullPointerException.class);
     assertThat(sequencer).hasValue(6);

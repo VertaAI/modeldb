@@ -17,8 +17,8 @@ class DoublingBackoffStrategy<R> implements RetryStrategy<R> {
 
   @Override
   public Retry shouldRetry(R result, Throwable throwable) {
-    boolean apply = resultChecker.test(result, throwable);
-    if (!apply || numberRetried.get() == maxRetries) {
+    boolean shouldRetry = resultChecker.test(result, throwable);
+    if (!shouldRetry || numberRetried.get() == maxRetries) {
       return new Retry(false, 0, TimeUnit.SECONDS);
     }
 
