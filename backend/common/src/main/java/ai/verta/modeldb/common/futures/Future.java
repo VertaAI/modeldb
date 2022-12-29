@@ -44,6 +44,7 @@ public class Future<T> {
 
   private final String formattedStack;
   private final CompletionStage<T> stage;
+  // this special Executor can be assigned for a single future, for special cases like retries.
   private FutureExecutor specialExecutor = null;
 
   private Future(CompletionStage<T> stage) {
