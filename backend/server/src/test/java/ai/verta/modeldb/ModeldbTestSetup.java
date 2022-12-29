@@ -85,13 +85,12 @@ public abstract class ModeldbTestSetup extends TestCase {
   protected static DatasetServiceGrpc.DatasetServiceBlockingStub datasetServiceStubClient2;
   protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStub;
+  protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
+      datasetVersionServiceStubClient2;
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
       versioningServiceBlockingStub;
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
       versioningServiceBlockingStubClient2;
-  protected static HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub;
-  protected static HydratedServiceGrpc.HydratedServiceBlockingStub
-      hydratedServiceBlockingStubClient2;
   protected static MetadataServiceGrpc.MetadataServiceBlockingStub metadataServiceBlockingStub;
   protected static DatasetServiceBlockingStub datasetServiceStubServiceAccount;
   protected static UACServiceGrpc.UACServiceBlockingStub uacServiceStub;
@@ -180,8 +179,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     datasetServiceStubClient2 = DatasetServiceGrpc.newBlockingStub(channelUser2);
     datasetServiceStubServiceAccount = DatasetServiceGrpc.newBlockingStub(channelServiceUser);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
-    hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
-    hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(channelUser2);
+    datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(channel);
     versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
 
     if (!runningIsolated) {

@@ -8,19 +8,12 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.CollaboratorUserInfo;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.CommonUtils.RetryCallInterface;
-import ai.verta.modeldb.common.authservice.AuthService;
-import ai.verta.modeldb.common.collaborator.CollaboratorBase;
-import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
-import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
-import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
@@ -157,89 +150,6 @@ public class ModelDBUtils {
     vertaIdAndEmailIdMap.put(ModelDBConstants.EMAILID, new ArrayList<>(emailIdSet));
 
     return vertaIdAndEmailIdMap;
-  }
-
-  /**
-   * VERTA<br>
-   * Resolves the collaborators by looking them up in the map.
-   *
-   * @param collaboratorList : List of collaborators to be resolved from the map
-   * @param userInfoMap : Map from vertaId to UserInfo, containing vertaIds related to the current
-   *     higher RPC called.
-   * @return List of CollaboratorUserInfo
-   */
-  public static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfo(
-      AuthService authService,
-      MDBRoleService mdbRoleService,
-      List<GetCollaboratorResponseItem> collaboratorList,
-      Map<String, UserInfo> userInfoMap) {
-
-    return getHydratedCollaboratorUserInfoByAuthz(
-        authService, mdbRoleService, collaboratorList, userInfoMap);
-  }
-
-  private static List<CollaboratorUserInfo> getHydratedCollaboratorUserInfoByAuthz(
-      AuthService authService,
-      MDBRoleService mdbRoleService,
-      List<GetCollaboratorResponseItem> collaboratorList,
-      Map<String, UserInfo> userInfoMap) {
-
-    List<CollaboratorUserInfo> collaboratorUserInfos = new ArrayList<>();
-
-    if (collaboratorList != null && !collaboratorList.isEmpty()) {
-      for (GetCollaboratorResponseItem collaborator : collaboratorList) {
-
-        try {
-          CollaboratorBase collaborator1 = null;
-          switch (collaborator.getAuthzEntityType()) {
-            case USER:
-              var userInfoValue = userInfoMap.get(collaborator.getVertaId());
-              if (userInfoValue != null) {
-                collaborator1 = new CollaboratorUser(authService, userInfoValue);
-              } else {
-                LOGGER.info(
-                    String.format(
-                        "skipping %s because it is not found", collaborator.getVertaId()));
-              }
-              break;
-            case ORGANIZATION:
-              collaborator1 = new CollaboratorOrg(collaborator.getVertaId(), mdbRoleService);
-              break;
-            case TEAM:
-              collaborator1 = new CollaboratorTeam(collaborator.getVertaId(), mdbRoleService);
-              break;
-            default:
-              throw new InternalErrorException(CommonConstants.INTERNAL_ERROR);
-          }
-
-          final var builder = CollaboratorUserInfo.newBuilder();
-          if (collaborator1 != null) {
-            collaborator1.addToResponse(builder);
-            var collaboratorUserInfo =
-                builder
-                    .setCanDeploy(collaborator.getPermission().getCanDeploy())
-                    .setCollaboratorType(collaborator.getPermission().getCollaboratorType())
-                    .build();
-            collaboratorUserInfos.add(collaboratorUserInfo);
-          }
-        } catch (StatusRuntimeException ex) {
-          if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-            LOGGER.info(
-                String.format(
-                    "skipping %s because the current user doesn't have access to it",
-                    collaborator.getVertaId()));
-          } else if (ex.getStatus().getCode().value() == Code.NOT_FOUND_VALUE) {
-            LOGGER.info(
-                String.format("skipping %s because it is not found", collaborator.getVertaId()));
-          } else {
-            LOGGER.debug(ex.getMessage(), ex);
-            throw ex;
-          }
-        }
-      }
-    }
-
-    return collaboratorUserInfos;
   }
 
   /**

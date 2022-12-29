@@ -14,6 +14,7 @@ import string
 import sys
 import threading
 import time
+from typing import Optional, Union
 from urllib.parse import urljoin
 import warnings
 
@@ -27,7 +28,7 @@ from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 
 from ..external import six
 
-from verta.credentials import EmailCredentials, JWTCredentials
+from verta.credentials import EmailCredentials
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
 from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
@@ -535,7 +536,7 @@ def fabricate_200():
     return response
 
 
-def raise_for_http_error(response):
+def raise_for_http_error(response: requests.Response):
     """
     Raises a potential HTTP error with a back end message if provided, or a default error message otherwise.
 
@@ -554,8 +555,7 @@ def raise_for_http_error(response):
         response.raise_for_status()
     except requests.HTTPError as e:
         # get current time in UTC to display alongside exception
-        curr_time = timestamp_to_str(now(), utc=True)
-        time_str = " at {} UTC".format(curr_time)
+        time_str = f" at {timestamp_to_str(now(), utc=True)} UTC"
 
         try:
             reason = body_to_json(response)
@@ -569,12 +569,8 @@ def raise_for_http_error(response):
                 # fall back to entire text
                 reason = response.text.strip()
 
-        reason = six.ensure_str(reason)
-
         if not reason:
-            e.args = (e.args[0] + time_str,) + e.args[
-                1:
-            ]  # attach time to error message
+            e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
             six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
@@ -584,10 +580,8 @@ def raise_for_http_error(response):
                 cause = "Server"
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
-            message = "{} {} Error: {} for url: {}".format(
-                response.status_code, cause, reason, response.url
-            )
-            message += time_str  # attach time to error message
+            message = f"{response.status_code} {cause} Error: {reason} " \
+                      f"for url: {response.url}{time_str}"
             six.raise_from(requests.HTTPError(message, response=response), None)
 
 
