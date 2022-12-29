@@ -44,6 +44,38 @@
         ]
       }
     },
+    "/system_admin/createOrUpdateKafkaConfiguration": {
+      "post": {
+        "operationId": "SystemAdminService_createOrUpdateKafkaConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacKafkaConfiguration"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacKafkaConfiguration"
+            }
+          }
+        ],
+        "tags": [
+          "SystemAdminService"
+        ]
+      }
+    },
     "/system_admin/createOrUpdatePypiConfiguration": {
       "post": {
         "operationId": "SystemAdminService_createOrUpdatePypiConfiguration",
@@ -68,6 +100,38 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/uacPypiConfiguration"
+            }
+          }
+        ],
+        "tags": [
+          "SystemAdminService"
+        ]
+      }
+    },
+    "/system_admin/deleteKafkaConfiguration": {
+      "post": {
+        "operationId": "SystemAdminService_deleteKafkaConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacDeleteKafkaConfigurationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacDeleteKafkaConfiguration"
             }
           }
         ],
@@ -108,6 +172,38 @@
         ]
       }
     },
+    "/system_admin/enableKafkaConfiguration": {
+      "post": {
+        "operationId": "SystemAdminService_enableKafkaConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacEnableKafkaConfigurationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacEnableKafkaConfiguration"
+            }
+          }
+        ],
+        "tags": [
+          "SystemAdminService"
+        ]
+      }
+    },
     "/system_admin/enablePypiConfiguration": {
       "post": {
         "operationId": "SystemAdminService_enablePypiConfiguration",
@@ -140,6 +236,44 @@
         ]
       }
     },
+    "/system_admin/listKafkaConfiguration": {
+      "get": {
+        "operationId": "SystemAdminService_listKafkaConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacListKafkaConfigurationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
+        "tags": [
+          "SystemAdminService"
+        ]
+      }
+    },
     "/system_admin/listPypiConfiguration": {
       "get": {
         "operationId": "SystemAdminService_listPypiConfiguration",
@@ -157,6 +291,22 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
         "tags": [
           "SystemAdminService"
         ]
@@ -180,6 +330,22 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          }
+        ],
         "tags": [
           "SystemAdminService"
         ]
@@ -217,41 +383,58 @@
           "SystemAdminService"
         ]
       }
-    },
-    "/system_admin/reorderPypiConfiguration": {
-      "post": {
-        "operationId": "SystemAdminService_reorderPypiConfiguration",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacReorderPypiConfigurationResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacReorderPypiConfiguration"
-            }
-          }
-        ],
-        "tags": [
-          "SystemAdminService"
-        ]
-      }
     }
   },
   "definitions": {
+    "KafkaConfigurationKerberos": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "All fields below must be provided on an update, except when enabled=false"
+        },
+        "conf": {
+          "type": "string"
+        },
+        "keytab": {
+          "type": "string"
+        },
+        "client_name": {
+          "type": "string"
+        },
+        "service_name": {
+          "type": "string"
+        }
+      }
+    },
+    "KafkaConfigurationTLS": {
+      "type": "object",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "All fields below must be provided on an update, except when enabled=false"
+        },
+        "certificate": {
+          "type": "string"
+        }
+      }
+    },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
@@ -305,6 +488,17 @@
         }
       }
     },
+    "uacDeleteKafkaConfiguration": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        }
+      }
+    },
+    "uacDeleteKafkaConfigurationResponse": {
+      "type": "object"
+    },
     "uacDeletePypiConfiguration": {
       "type": "object",
       "properties": {
@@ -314,6 +508,21 @@
       }
     },
     "uacDeletePypiConfigurationResponse": {
+      "type": "object"
+    },
+    "uacEnableKafkaConfiguration": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "new_enabled": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      }
+    },
+    "uacEnableKafkaConfigurationResponse": {
       "type": "object"
     },
     "uacEnablePypiConfiguration": {
@@ -331,6 +540,46 @@
     "uacEnablePypiConfigurationResponse": {
       "type": "object"
     },
+    "uacKafkaConfiguration": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "tls": {
+          "$ref": "#/definitions/KafkaConfigurationTLS"
+        },
+        "kerberos": {
+          "$ref": "#/definitions/KafkaConfigurationKerberos"
+        },
+        "brokerAddresses": {
+          "type": "string",
+          "title": "All fields below must be provided on an update"
+        },
+        "enabled": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "name": {
+          "type": "string"
+        }
+      }
+    },
+    "uacListKafkaConfigurationResponse": {
+      "type": "object",
+      "properties": {
+        "configurations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacKafkaConfiguration"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "uacListPypiConfigurationResponse": {
       "type": "object",
       "properties": {
@@ -339,6 +588,10 @@
           "items": {
             "$ref": "#/definitions/uacPypiConfiguration"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -350,6 +603,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -373,10 +630,6 @@
         "password": {
           "type": "string"
         },
-        "index": {
-          "type": "string",
-          "format": "uint64"
-        },
         "enabled": {
           "type": "boolean",
           "format": "boolean"
@@ -399,21 +652,6 @@
           "format": "boolean"
         }
       }
-    },
-    "uacReorderPypiConfiguration": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "new_index": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "uacReorderPypiConfigurationResponse": {
-      "type": "object"
     }
   },
   "basePath": "/v1"

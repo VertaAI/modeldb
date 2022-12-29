@@ -242,7 +242,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
@@ -290,6 +290,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -320,6 +334,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -350,6 +378,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -380,6 +422,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -410,6 +466,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -440,6 +510,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -470,6 +554,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -549,7 +647,10 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION"
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           },
@@ -597,6 +698,20 @@
               "BUILD"
             ],
             "default": "UNKNOWN"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -689,7 +804,10 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION"
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           },
@@ -757,6 +875,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -849,7 +981,10 @@
               "EVENT",
               "WEBHOOK",
               "SYSTEM_ADMIN",
-              "PYPI_CONFIGURATION"
+              "PYPI_CONFIGURATION",
+              "KAFKA_CONFIGURATION",
+              "SCIM_CONFIGURATION",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           },
@@ -917,6 +1052,20 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "pagination.page_number",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
+          },
+          {
+            "name": "pagination.page_limit",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
         "tags": [
@@ -1323,7 +1472,7 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/uacEmpty"
+              "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
@@ -1397,7 +1546,8 @@
         "READ_SECRETS",
         "CREATE_SERVICE_ACCOUNT",
         "CREATE_CONTAINER_REGISTRY",
-        "CREATE_WEBHOOK"
+        "CREATE_WEBHOOK",
+        "CREATE_GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -1415,7 +1565,10 @@
         "EVENT",
         "WEBHOOK",
         "SYSTEM_ADMIN",
-        "PYPI_CONFIGURATION"
+        "PYPI_CONFIGURATION",
+        "KAFKA_CONFIGURATION",
+        "SCIM_CONFIGURATION",
+        "GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -1481,7 +1634,10 @@
         "VERTA",
         "SAML",
         "AD_OAUTH2",
-        "LDAP"
+        "LDAP",
+        "OKTA_SCIM",
+        "AD_SCIM",
+        "SCIM"
       ],
       "default": "UNKNOWN"
     },
@@ -1598,6 +1754,20 @@
         "FALSE"
       ],
       "default": "UNKNOWN"
+    },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -1737,9 +1907,6 @@
     "uacDeleteResourcesResponse": {
       "type": "object"
     },
-    "uacEmpty": {
-      "type": "object"
-    },
     "uacFlagEnum": {
       "type": "string",
       "enum": [
@@ -1757,6 +1924,10 @@
           "items": {
             "$ref": "#/definitions/uacGetCollaboratorResponseItem"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1797,6 +1968,10 @@
           "items": {
             "$ref": "#/definitions/uacGetResourcesResponseItem"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -1833,6 +2008,9 @@
           "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         }
       }
+    },
+    "uacIdServiceProviderEnum": {
+      "type": "object"
     },
     "uacModifyResourceAdmins": {
       "type": "object",
@@ -1877,6 +2055,9 @@
         },
         "owner_id": {
           "type": "string"
+        },
+        "idp": {
+          "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
           "type": "string",
@@ -1924,6 +2105,9 @@
         },
         "baseline_permissions": {
           "$ref": "#/definitions/uacOrganizationBaselinePermissions"
+        },
+        "namespace": {
+          "type": "string"
         }
       }
     },
@@ -1990,6 +2174,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
@@ -2123,6 +2311,9 @@
         "owner_id": {
           "type": "string"
         },
+        "id_service_provider": {
+          "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
+        },
         "created_timestamp": {
           "type": "string",
           "format": "int64"
@@ -2171,6 +2362,10 @@
         },
         "secondary_dev_key": {
           "type": "string"
+        },
+        "disabled": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -2210,6 +2405,9 @@
           "type": "string"
         }
       }
+    },
+    "vertauacEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"

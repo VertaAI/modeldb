@@ -831,17 +831,18 @@ class Endpoint(object):
             If the model is not currently deployed.
 
         """
-        status = self.get_status()
+        status: dict = self.get_status()
         if status["status"] not in ("active", "updating"):
             raise RuntimeError(
                 "model is not currently deployed (status: {})".format(status)
             )
-
-        access_token = self.get_access_token()
-        url = "{}://{}/api/v1/predict{}".format(
-            self._conn.scheme, self._conn.socket, self.path
-        )
-        return DeployedModel.from_url(url, access_token, creds=credentials)
+        details: dict = self._get_json_by_id(self._conn, self.workspace, self.id)
+        if 'full_url' in details.keys():
+            url: str = details['full_url']
+        else:
+            url: str = f"{self._conn.scheme}://{self._conn.socket}/api/v1/predict{self.path}"
+        access_token: str = self.get_access_token()
+        return DeployedModel(url, access_token, creds=credentials)
 
     def get_update_status(self):
         """
