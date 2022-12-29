@@ -18,7 +18,6 @@ import org.junit.runners.Suite;
   CommentTest.class,
   DatasetTest.class,
   DatasetVersionTest.class,
-  HydratedServiceTest.class,
   LineageTest.class,
   LineageServiceImplNegativeTest.class,
   FindProjectEntitiesTest.class,
