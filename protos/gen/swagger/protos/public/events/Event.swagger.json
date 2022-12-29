@@ -884,6 +884,43 @@
         }
       }
     },
+    "registryExternalDeployment": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "internal id"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "id of the model this belongs to"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "description": "Timestamp recorded when this ``external_deployment`` was created."
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64",
+          "description": "Timestamp recorded when metadata for this ``external_deployment`` was last updated."
+        },
+        "location_deployed": {
+          "type": "string",
+          "title": "Location where container will be deployed"
+        },
+        "url_path_title": {
+          "type": "string",
+          "title": "Deploy URL, path or title"
+        },
+        "description": {
+          "type": "string",
+          "title": "Brief description"
+        }
+      }
+    },
     "registryModelVersion": {
       "type": "object",
       "properties": {
@@ -1020,6 +1057,12 @@
           "type": "boolean",
           "format": "boolean",
           "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        },
+        "external_deployments": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryExternalDeployment"
+          }
         }
       }
     },
