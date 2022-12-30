@@ -33,8 +33,8 @@ message Job {
     JobTypeEnum.JobType job_type = 7;
     string owner = 8;
     oneof owner_tracking {
-        uint64 owner_id = 35;
-        common.GroupId group_owner_id = 36;
+        uint64 owner_id = 9;
+        common.GroupId group_owner_id = 10;
     }
 }
 

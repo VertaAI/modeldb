@@ -22,8 +22,8 @@ message DatasetVersion {
     repeated common.KeyValue attributes = 9;
     string owner = 10;
     oneof owner_tracking {
-        uint64 owner_id = 35;
-        common.GroupId group_owner_id = 36;
+        uint64 owner_id = 18;
+        common.GroupId group_owner_id = 19;
     }
     uint64 version = 11;
     oneof dataset_version_info {
