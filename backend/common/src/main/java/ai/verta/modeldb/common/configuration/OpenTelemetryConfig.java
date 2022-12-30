@@ -31,6 +31,7 @@ import io.opentelemetry.sdk.trace.export.BatchSpanProcessor;
 import io.opentelemetry.sdk.trace.export.SpanExporter;
 import io.opentelemetry.sdk.trace.samplers.Sampler;
 import io.opentelemetry.semconv.resource.attributes.ResourceAttributes;
+import io.opentelemetry.semconv.trace.attributes.SemanticAttributes;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
@@ -146,11 +147,11 @@ public class OpenTelemetryConfig {
   private static class JaegerCompatibilitySpanProcessor implements SpanProcessor {
     @Override
     public void onStart(Context parentContext, ReadWriteSpan span) {
-      String dbName = span.getAttribute(stringKey("db.name"));
+      String dbName = span.getAttribute(SemanticAttributes.DB_NAME);
       if (dbName != null) {
-        String netPeerName = span.getAttribute(stringKey("net.peer.name"));
+        String netPeerName = span.getAttribute(SemanticAttributes.NET_PEER_NAME);
         if (netPeerName != null) {
-          span.setAttribute(stringKey("peer.service"), dbName + "[" + netPeerName + "]");
+          span.setAttribute(SemanticAttributes.PEER_SERVICE, dbName + "[" + netPeerName + "]");
         }
       }
     }

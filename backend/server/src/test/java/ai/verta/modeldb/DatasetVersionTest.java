@@ -2,6 +2,9 @@ package ai.verta.modeldb;
 
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestUser;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.CollaboratorTypeEnum;
@@ -12,6 +15,9 @@ import ai.verta.modeldb.versioning.PathDatasetComponentBlob;
 import ai.verta.modeldb.versioning.S3DatasetBlob;
 import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -30,16 +36,17 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class DatasetVersionTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class DatasetVersionTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(DatasetVersionTest.class);
 
@@ -53,6 +60,12 @@ public class DatasetVersionTest extends TestsInit {
 
   @Before
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createDatasetEntities();
     createDatasetVersionEntities();
@@ -83,7 +96,19 @@ public class DatasetVersionTest extends TestsInit {
     datasetVersionMap = new HashMap<>();
   }
 
-  private static void createDatasetEntities() {
+  private void createDatasetEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setResourceId("1")
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
 
     // Create two dataset of above dataset
     CreateDataset createDatasetRequest =
@@ -96,6 +121,10 @@ public class DatasetVersionTest extends TestsInit {
         "Dataset name not match with expected Dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+    }
   }
 
   private static void createDatasetVersionEntities() {
@@ -1046,17 +1075,19 @@ public class DatasetVersionTest extends TestsInit {
     LOGGER.info("delete DatasetVersion by parent entities owner test start........");
 
     if (testConfig.hasAuth()) {
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestUser(
-              dataset.getId(),
-              authClientInterceptor.getClient2Email(),
-              CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
-              "Please refer shared dataset for your invention");
+      if (!isRunningIsolated()) {
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestUser(
+                dataset.getId(),
+                authClientInterceptor.getClient2Email(),
+                CollaboratorTypeEnum.CollaboratorType.READ_ONLY,
+                "Please refer shared dataset for your invention");
 
-      AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
-      assertTrue(addCollaboratorResponse.getStatus());
+        AddCollaboratorRequest.Response addCollaboratorResponse =
+            collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
+        assertTrue(addCollaboratorResponse.getStatus());
+      }
     }
 
     CreateDatasetVersion createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
@@ -1079,6 +1110,9 @@ public class DatasetVersionTest extends TestsInit {
         DeleteDatasetVersions.newBuilder().addAllIds(datasetVersionIds).build();
 
     if (testConfig.hasAuth()) {
+      if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+      }
       try {
         datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
       } catch (StatusRuntimeException e) {
@@ -1088,17 +1122,19 @@ public class DatasetVersionTest extends TestsInit {
         assertEquals(Status.PERMISSION_DENIED.getCode(), status.getCode());
       }
 
-      AddCollaboratorRequest addCollaboratorRequest =
-          addCollaboratorRequestUser(
-              dataset.getId(),
-              authClientInterceptor.getClient2Email(),
-              CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
-              "Please refer shared dataset for your invention");
+      if (!isRunningIsolated()) {
+        AddCollaboratorRequest addCollaboratorRequest =
+            addCollaboratorRequestUser(
+                dataset.getId(),
+                authClientInterceptor.getClient2Email(),
+                CollaboratorTypeEnum.CollaboratorType.READ_WRITE,
+                "Please refer shared dataset for your invention");
 
-      AddCollaboratorRequest.Response addCollaboratorResponse =
-          collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
-      LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
-      assertTrue(addCollaboratorResponse.getStatus());
+        AddCollaboratorRequest.Response addCollaboratorResponse =
+            collaboratorServiceStubClient1.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
+        LOGGER.info("Collaborator added in server : " + addCollaboratorResponse.getStatus());
+        assertTrue(addCollaboratorResponse.getStatus());
+      }
 
       try {
         datasetVersionServiceStubClient2.deleteDatasetVersions(deleteDatasetVersionsRequest);
