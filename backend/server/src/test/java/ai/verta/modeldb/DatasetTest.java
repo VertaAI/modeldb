@@ -110,7 +110,7 @@ public class DatasetTest extends ModeldbTestSetup {
     dataset4 = null;
     datasetMap = new HashMap<>();
 
-      cleanUpResources();
+    cleanUpResources();
   }
 
   private void createDatasetEntities() {
@@ -238,8 +238,8 @@ public class DatasetTest extends ModeldbTestSetup {
     }
   }
 
-  private void setupMockUacEndpointsDataset(UAC uac, Map<String, Dataset> datasetMap,
-      boolean mockResource) {
+  private void setupMockUacEndpointsDataset(
+      UAC uac, Map<String, Dataset> datasetMap, boolean mockResource) {
     doReturn(collaboratorMock).when(uac).getCollaboratorService();
     doReturn(authzMock).when(uac).getAuthzService();
     doReturn(uacMock).when(uac).getUACService();
@@ -258,10 +258,10 @@ public class DatasetTest extends ModeldbTestSetup {
     doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getCurrentUser(any());
     doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getUser(any());
     doReturn(
-        Futures.immediateFuture(
-            GetUsersFuzzy.Response.newBuilder()
-                .addAllUserInfos(List.of(testUser1, testUser2))
-                .build()))
+            Futures.immediateFuture(
+                GetUsersFuzzy.Response.newBuilder()
+                    .addAllUserInfos(List.of(testUser1, testUser2))
+                    .build()))
         .when(uacMock)
         .getUsersFuzzy(any());
     doReturn(Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()))
@@ -271,17 +271,17 @@ public class DatasetTest extends ModeldbTestSetup {
         .when(authzBlockingMock)
         .isSelfAllowed(any());
     doReturn(
-        GetSelfAllowedActionsBatch.Response.newBuilder()
-            .putActions(
-                "READ",
-                Actions.newBuilder()
-                    .addActions(
-                        Action.newBuilder()
-                            .setModeldbServiceAction(ModelDBServiceActions.READ)
-                            .setService(Service.MODELDB_SERVICE)
-                            .build())
-                    .build())
-            .build())
+            GetSelfAllowedActionsBatch.Response.newBuilder()
+                .putActions(
+                    "READ",
+                    Actions.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(ModelDBServiceActions.READ)
+                                .setService(Service.MODELDB_SERVICE)
+                                .build())
+                        .build())
+                .build())
         .when(authzBlockingMock)
         .getSelfAllowedActionsBatch(any());
     doReturn(testUser1).when(uacBlockingMock).getCurrentUser(any());
@@ -289,25 +289,23 @@ public class DatasetTest extends ModeldbTestSetup {
         .when(uacBlockingMock)
         .getUsers(any());
     doReturn(
-        Workspace.newBuilder()
-            .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-            .setUsername(testUser1.getVertaInfo().getUsername())
-            .build())
+            Workspace.newBuilder()
+                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                .setUsername(testUser1.getVertaInfo().getUsername())
+                .build())
         .when(workspaceBlockingMock)
         .getWorkspaceByName(any());
     doReturn(
-        Workspace.newBuilder()
-            .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-            .setUsername(testUser1.getVertaInfo().getUsername())
-            .build())
+            Workspace.newBuilder()
+                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                .setUsername(testUser1.getVertaInfo().getUsername())
+                .build())
         .when(workspaceBlockingMock)
         .getWorkspaceById(any());
     doReturn(SetResource.Response.newBuilder().build())
         .when(collaboratorBlockingMock)
         .setResource(any());
-    doReturn(Response.newBuilder().build())
-        .when(collaboratorBlockingMock)
-        .deleteResources(any());
+    doReturn(Response.newBuilder().build()).when(collaboratorBlockingMock).deleteResources(any());
     if (mockResource) {
       var resourcesResponse =
           GetResources.Response.newBuilder()
@@ -328,20 +326,20 @@ public class DatasetTest extends ModeldbTestSetup {
         .when(collaboratorMock)
         .setResource(any());
     doReturn(
-        Futures.immediateFuture(
-            Workspace.newBuilder()
-                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                .build()))
+            Futures.immediateFuture(
+                Workspace.newBuilder()
+                    .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .build()))
         .when(workspaceMock)
         .getWorkspaceById(
             GetWorkspaceById.newBuilder()
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                 .build());
     doReturn(
-        Futures.immediateFuture(
-            Workspace.newBuilder()
-                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                .build()))
+            Futures.immediateFuture(
+                Workspace.newBuilder()
+                    .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .build()))
         .when(workspaceMock)
         .getWorkspaceByName(
             GetWorkspaceByName.newBuilder()
@@ -375,7 +373,6 @@ public class DatasetTest extends ModeldbTestSetup {
       mockGetResourcesForAllDatasets(datasetMap, testUser1);
     }
   }
-
 
   private void checkValidArtifactPath(
       String entityId, String entityName, List<Artifact> artifacts) {

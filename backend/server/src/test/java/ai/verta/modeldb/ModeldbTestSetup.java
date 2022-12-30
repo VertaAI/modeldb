@@ -509,9 +509,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     doReturn(SetResource.Response.newBuilder().build())
         .when(collaboratorBlockingMock)
         .setResource(any());
-    doReturn(Response.newBuilder().build())
-        .when(collaboratorBlockingMock)
-        .deleteResources(any());
+    doReturn(Response.newBuilder().build()).when(collaboratorBlockingMock).deleteResources(any());
     // allow any SetResource call
     doReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()))
         .when(collaboratorMock)
