@@ -24,7 +24,7 @@ import ai.verta.uac.AddUserV2;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.DeleteOrganizationV2;
-import ai.verta.uac.DeleteResources;
+import ai.verta.uac.DeleteResources.Response;
 import ai.verta.uac.Entities;
 import ai.verta.uac.GetAllowedEntities;
 import ai.verta.uac.GetResources;
@@ -509,10 +509,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     doReturn(SetResource.Response.newBuilder().build())
         .when(collaboratorBlockingMock)
         .setResource(any());
-    doReturn(collaboratorBlockingMock)
-        .when(authChannelMock)
-        .getCollaboratorServiceBlockingStubForServiceUser();
-    doReturn(DeleteResources.Response.newBuilder().build())
+    doReturn(Response.newBuilder().build())
         .when(collaboratorBlockingMock)
         .deleteResources(any());
     // allow any SetResource call

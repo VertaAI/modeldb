@@ -1,6 +1,5 @@
 package ai.verta.modeldb;
 
-import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -10,7 +9,6 @@ import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.authservice.*;
 import ai.verta.uac.Action;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;

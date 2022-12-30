@@ -14,16 +14,31 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
+import ai.verta.uac.Action;
+import ai.verta.uac.Actions;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddGroupUsers;
+import ai.verta.uac.DeleteResources.Response;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedActionsBatch;
+import ai.verta.uac.GetUsers;
+import ai.verta.uac.GetUsersFuzzy;
+import ai.verta.uac.GetWorkspaceById;
+import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.GroupServiceGrpc;
+import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ListMyOrganizations;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceTypeV2;
 import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.ServiceEnum.Service;
+import ai.verta.uac.SetResource;
+import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.Workspace;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
@@ -68,7 +83,7 @@ public class DatasetTest extends ModeldbTestSetup {
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
-      setupMockUacEndpoints(uac);
+      setupMockUacEndpointsDataset(uac, null, true);
     }
 
     // Create all entities
@@ -77,20 +92,16 @@ public class DatasetTest extends ModeldbTestSetup {
 
   @After
   public void removeEntities() {
-    if (!datasetMap.isEmpty()) {
-      if (isRunningIsolated()) {
-        mockGetResourcesForAllDatasets(datasetMap, testUser1);
-        mockGetSelfAllowedResources(
-            datasetMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.DELETE);
+    if (!isRunningIsolated()) {
+      if (!datasetMap.isEmpty()) {
+        DeleteDatasets deleteDatasets =
+            DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
+        DeleteDatasets.Response deleteDatasetsResponse =
+            datasetServiceStub.deleteDatasets(deleteDatasets);
+        LOGGER.info("Datasets deleted successfully");
+        LOGGER.info(deleteDatasetsResponse.toString());
+        assertTrue(deleteDatasetsResponse.getStatus());
       }
-
-      DeleteDatasets deleteDatasets =
-          DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
-      DeleteDatasets.Response deleteDatasetsResponse =
-          datasetServiceStub.deleteDatasets(deleteDatasets);
-      LOGGER.info("Datasets deleted successfully");
-      LOGGER.info(deleteDatasetsResponse.toString());
-      assertTrue(deleteDatasetsResponse.getStatus());
     }
 
     dataset1 = null;
@@ -99,22 +110,10 @@ public class DatasetTest extends ModeldbTestSetup {
     dataset4 = null;
     datasetMap = new HashMap<>();
 
-    cleanUpResources();
+      cleanUpResources();
   }
 
   private void createDatasetEntities() {
-    if (isRunningIsolated()) {
-      var resourcesResponse =
-          GetResources.Response.newBuilder()
-              .addItem(
-                  GetResourcesResponseItem.newBuilder()
-                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                      .setVisibility(ResourceVisibility.PRIVATE)
-                      .build())
-              .build();
-      doReturn(resourcesResponse).when(collaboratorBlockingMock).getResources(any());
-    }
 
     // Create two dataset of above dataset
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-1-" + new Date().getTime());
@@ -235,9 +234,148 @@ public class DatasetTest extends ModeldbTestSetup {
     datasetMap.put(dataset4.getId(), dataset4);
 
     if (isRunningIsolated()) {
+      setupMockUacEndpointsDataset(uac, datasetMap, false);
+    }
+  }
+
+  private void setupMockUacEndpointsDataset(UAC uac, Map<String, Dataset> datasetMap,
+      boolean mockResource) {
+    doReturn(collaboratorMock).when(uac).getCollaboratorService();
+    doReturn(authzMock).when(uac).getAuthzService();
+    doReturn(uacMock).when(uac).getUACService();
+    doReturn(authChannelMock).when(uac).getBlockingAuthServiceChannel();
+    doReturn(authzBlockingMock).when(authChannelMock).getAuthzServiceBlockingStub();
+    doReturn(uacBlockingMock).when(authChannelMock).getUacServiceBlockingStub();
+    doReturn(workspaceBlockingMock).when(authChannelMock).getWorkspaceServiceBlockingStub();
+    doReturn(collaboratorBlockingMock).when(authChannelMock).getCollaboratorServiceBlockingStub();
+    doReturn(workspaceMock).when(uac).getWorkspaceService();
+    doReturn(roleServiceMock).when(uac).getServiceAccountRoleServiceFutureStub();
+    doReturn(roleServiceBlockingMock)
+        .when(authChannelMock)
+        .getRoleServiceBlockingStubForServiceUser();
+    doReturn(organizationBlockingMock).when(authChannelMock).getOrganizationServiceBlockingStub();
+
+    doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getCurrentUser(any());
+    doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getUser(any());
+    doReturn(
+        Futures.immediateFuture(
+            GetUsersFuzzy.Response.newBuilder()
+                .addAllUserInfos(List.of(testUser1, testUser2))
+                .build()))
+        .when(uacMock)
+        .getUsersFuzzy(any());
+    doReturn(Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()))
+        .when(authzMock)
+        .isSelfAllowed(any());
+    doReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build())
+        .when(authzBlockingMock)
+        .isSelfAllowed(any());
+    doReturn(
+        GetSelfAllowedActionsBatch.Response.newBuilder()
+            .putActions(
+                "READ",
+                Actions.newBuilder()
+                    .addActions(
+                        Action.newBuilder()
+                            .setModeldbServiceAction(ModelDBServiceActions.READ)
+                            .setService(Service.MODELDB_SERVICE)
+                            .build())
+                    .build())
+            .build())
+        .when(authzBlockingMock)
+        .getSelfAllowedActionsBatch(any());
+    doReturn(testUser1).when(uacBlockingMock).getCurrentUser(any());
+    doReturn(GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build())
+        .when(uacBlockingMock)
+        .getUsers(any());
+    doReturn(
+        Workspace.newBuilder()
+            .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+            .setUsername(testUser1.getVertaInfo().getUsername())
+            .build())
+        .when(workspaceBlockingMock)
+        .getWorkspaceByName(any());
+    doReturn(
+        Workspace.newBuilder()
+            .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+            .setUsername(testUser1.getVertaInfo().getUsername())
+            .build())
+        .when(workspaceBlockingMock)
+        .getWorkspaceById(any());
+    doReturn(SetResource.Response.newBuilder().build())
+        .when(collaboratorBlockingMock)
+        .setResource(any());
+    doReturn(Response.newBuilder().build())
+        .when(collaboratorBlockingMock)
+        .deleteResources(any());
+    if (mockResource) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setVisibility(ResourceVisibility.PRIVATE)
+                      .build())
+              .build();
+      doReturn(resourcesResponse).when(collaboratorBlockingMock).getResources(any());
+    }
+    doReturn(collaboratorBlockingMock)
+        .when(authChannelMock)
+        .getCollaboratorServiceBlockingStubForServiceUser();
+    // allow any SetResource call
+    doReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()))
+        .when(collaboratorMock)
+        .setResource(any());
+    doReturn(
+        Futures.immediateFuture(
+            Workspace.newBuilder()
+                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                .build()))
+        .when(workspaceMock)
+        .getWorkspaceById(
+            GetWorkspaceById.newBuilder()
+                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                .build());
+    doReturn(
+        Futures.immediateFuture(
+            Workspace.newBuilder()
+                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                .build()))
+        .when(workspaceMock)
+        .getWorkspaceByName(
+            GetWorkspaceByName.newBuilder()
+                .setName(testUser1.getVertaInfo().getUsername())
+                .build());
+    var getResources =
+        GetResources.Response.newBuilder()
+            .addItem(
+                GetResourcesResponseItem.newBuilder()
+                    .setVisibility(ResourceVisibility.PRIVATE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
+                            .build())
+                    .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .build())
+            .build();
+    doReturn(Futures.immediateFuture(getResources))
+        .when(collaboratorMock)
+        .getResourcesSpecialPersonalWorkspace(any());
+    doReturn(Futures.immediateFuture(getResources)).when(collaboratorMock).getResources(any());
+    doReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()))
+        .when(roleServiceMock)
+        .setRoleBinding(any());
+    doReturn(ListMyOrganizations.Response.newBuilder().build())
+        .when(organizationBlockingMock)
+        .listMyOrganizations(any());
+
+    if (datasetMap != null) {
       mockGetResourcesForAllDatasets(datasetMap, testUser1);
     }
   }
+
 
   private void checkValidArtifactPath(
       String entityId, String entityName, List<Artifact> artifacts) {
