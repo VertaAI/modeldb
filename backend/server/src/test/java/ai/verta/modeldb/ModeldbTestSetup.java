@@ -371,22 +371,13 @@ public abstract class ModeldbTestSetup {
   protected void updateTimestampOfResources() throws Exception {
     var updateTimestampRepo = reconcilerInitializer.getUpdateRepositoryTimestampReconcile();
     updateTimestampRepo.resync();
-    while (!updateTimestampRepo.isEmpty()) {
-      LOGGER.trace("Update repository timestamp is still in progress");
-      Thread.sleep(10);
-    }
+    await().until(updateTimestampRepo::isEmpty);
     var updateTimestampExp = reconcilerInitializer.getUpdateExperimentTimestampReconcile();
     updateTimestampExp.resync();
-    while (!updateTimestampExp.isEmpty()) {
-      LOGGER.trace("Update experiment timestamp is still in progress");
-      Thread.sleep(10);
-    }
+    await().until(updateTimestampExp::isEmpty);
     var updateTimestampProject = reconcilerInitializer.getUpdateProjectTimestampReconcile();
     updateTimestampProject.resync();
-    while (!updateTimestampProject.isEmpty()) {
-      LOGGER.trace("Update project timestamp is still in progress");
-      Thread.sleep(10);
-    }
+    await().until(updateTimestampProject::isEmpty);
   }
 
   protected void mockGetResourcesForAllProjects(
