@@ -8,10 +8,7 @@ import org.junit.platform.suite.api.Suite;
 @ExcludeClassNamePatterns({
   "ai.verta.modeldb.metadata.MetadataTest",
   "ai.verta.modeldb.BranchTest",
-  "ai.verta.modeldb.FindDatasetEntitiesTest",
   "ai.verta.modeldb.GlobalSharingTest",
-  "ai.verta.modeldb.LineageTest",
-  "ai.verta.modeldb.MergeTest",
   ".*TestSequenceSuite",
 })
 @SelectPackages({"ai.verta.modeldb"})

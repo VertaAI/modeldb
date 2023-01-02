@@ -730,7 +730,7 @@ public class RdbmsUtils {
         // builder.literal(10),builder.literal(10))),
         //            operator, value.getNumberValue());
         var dbConfig = App.getInstance().mdbConfig.getDatabase().getRdbConfiguration();
-        if (dbConfig.isPostgres() || dbConfig.isMssql()) {
+        if (dbConfig.isPostgres() || dbConfig.isMssql() || dbConfig.isH2()) {
           if (stringColumn) {
 
             return getOperatorPredicate(
