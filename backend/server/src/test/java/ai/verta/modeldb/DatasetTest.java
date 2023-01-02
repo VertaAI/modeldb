@@ -1580,7 +1580,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
       if (isRunningIsolated()) {
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
-        mockGetResources(Set.of(project.getId()), testUser1);
+        mockGetResources(Map.of(project.getId(), project.getName()), testUser1);
         mockGetSelfAllowedResources(
             Set.of(project.getId()),
             ModelDBServiceResourceTypes.PROJECT,
@@ -1833,7 +1833,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
       if (isRunningIsolated()) {
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
-        mockGetResources(Set.of(project.getId()), testUser1);
+        mockGetResources(Map.of(project.getId(), project.getName()), testUser1);
         mockGetSelfAllowedResources(
             Set.of(project.getId()),
             ModelDBServiceResourceTypes.PROJECT,
