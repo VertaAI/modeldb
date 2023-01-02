@@ -74,9 +74,11 @@ message GetCollaboratorResponseItem {
 
 message GetCollaborator {
     string entity_id = 1;
+    common.Pagination pagination = 2;
 
     message Response {
         repeated GetCollaboratorResponseItem shared_users = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -98,9 +100,11 @@ message GetResources {
     }
     // Optional. If Provided, workspace, resource service, type should be provided
     string resource_name = 4;
+    common.Pagination pagination = 5;
 
     message Response {
         repeated GetResourcesResponseItem item = 1;
+        int64 total_records = 2;
     }
 }
 
@@ -160,12 +164,14 @@ message DeleteResources {
 message ResourceAdmins {
     repeated string user_ids = 1;
     repeated string team_ids = 2;
+    int64 total_records = 3;
 }
 
 message GetResourceAdmins {
     ServiceEnum.Service service = 1;
     string resource_id = 2;
     ResourceType resource_type = 3;
+    common.Pagination pagination = 4;
 }
 
 message ModifyResourceAdmins {

@@ -1,0 +1,114 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+
+import "modeldb/versioning/Dataset.proto";
+
+message BatchIngestRequest {
+    message SourceTypeEnum {
+        enum SourceType {
+            UNKNOWN = 0; // Error
+            REFERENCE = 1;
+            GROUND_TRUTH = 2;
+            PREDICTION = 3;
+        }
+    }
+    SourceTypeEnum.SourceType source_type = 1;
+
+    // Name of the column in the data that can be used as the prediction id.
+    // Required for ground truth and predictions.
+    string id_column_name = 2;
+
+    // Timestamp associated with the samples in the batch. If not provided, the current timestamp will be used.
+    oneof timestamp {
+        // Name of the column in the data that can be used as the timestamp for each row.
+        string column_name = 3;
+        // String representation of the timestamp in RFC3339 format.
+        string rfc3339_nano = 4;
+        // UTC unix time in nanoseconds.
+        uint64 unix_utc_nano = 5;
+    }
+
+    // Only datasets saved in buckets owned by Verta are supported to start.
+    oneof dataset {
+        // ID of the dataset version inside Verta to be used for ingestion.
+        string dataset_version_id = 6;
+        // DatasetBlob that is equivalent to a dataset version, but not registered in the system.
+        ai.verta.modeldb.versioning.DatasetBlob config = 7;
+    }
+
+    message ColumnSpec {
+        // Name of the column that is associated with the monitoring system. Used to enable datasets to have different column names.
+        // Equivalent to x-verta-monitoring-name in the model API.
+        // Optional (will default to the original column name).
+        string monitoring_name = 1;
+
+        message IOTypeEnum {
+            enum IOType {
+                UNKNOWN = 0;
+                INPUT = 1;
+                OUTPUT = 2;
+                GROUND_TRUTH = 3;
+            }
+        }
+        // Type of the IO entry so that it can be mapped correctly.
+        IOTypeEnum.IOType io_type = 2;
+
+        // Name of the "monitoring_name" entry that this column corresponds to a confidence for.
+        // Equivalent to x-verta-monitoring-confidence-for in the model API.
+        // Optional.
+        string confidence_for = 3;
+
+        // Name of the "monitoring_name" entry that this column corresponds to the ground truth for.
+        // Optional.
+        string ground_truth_for = 4;
+    }
+
+    // Map from name of the column in the original data to a specification of how to ingest it.
+    map<string,ColumnSpec> ingest_columns = 8;
+
+    // Unique ID associated with this batch of data.
+    // Optional.
+    string batch_id = 9;
+
+    message EncodingTypeEnum {
+        enum EncodingType {
+            UNKNOWN = 0;
+            CSV = 1;
+            JSON = 2;
+            PARQUET = 3;
+        }
+    }
+    EncodingTypeEnum.EncodingType encoding_type = 10;
+
+    message CompressionTypeEnum {
+        enum CompressionType {
+            UNKNOWN = 0;
+            RAW = 1;
+            GZIP = 2;
+        }
+    }
+    CompressionTypeEnum.CompressionType compression_type = 11;
+
+    // MonitoredEntity to attach this batch to.
+    uint64 monitored_entity_id = 12;
+    // ModelVersion to which this batch is associated.
+    // TOOD: make this optional? We don't need a specific model to monitor data
+    uint64 model_version_id = 13;
+
+    message Response {}
+}
+
+service IngestService {
+    rpc batchIngest(BatchIngestRequest) returns (BatchIngestRequest.Response) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/ingest/batchIngest"
+            body: "*"
+        };
+    };
+}
