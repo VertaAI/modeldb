@@ -3,13 +3,30 @@ package ai.verta.modeldb;
 import static ai.verta.modeldb.ExperimentTest.getCreateExperimentRequestForOtherTests;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceBlockingStub;
 import ai.verta.modeldb.LineageEntryEnum.LineageEntryType;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
+import ai.verta.modeldb.common.authservice.AuthServiceChannel;
+import ai.verta.uac.Action;
+import ai.verta.uac.AuthzServiceGrpc;
+import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ServiceEnum;
+import com.google.common.util.concurrent.Futures;
 import io.grpc.Status;
 import io.grpc.Status.Code;
 import io.grpc.StatusRuntimeException;
@@ -18,26 +35,39 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
-import org.junit.FixMethodOrder;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class LineageTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class LineageTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageTest.class);
   private static final LineageEntry.Builder NOT_EXISTENT_DATASET =
       LineageEntry.newBuilder()
           .setType(LineageEntryType.DATASET_VERSION)
           .setExternalId("id_not_existent_dataset");
+
+  @Before
+  public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+  }
 
   @Test
   public void createAndDeleteLineageNegativeTest() {
@@ -46,6 +76,10 @@ public class LineageTest extends TestsInit {
     List<DatasetVersion> datasetVersionList = new ArrayList<>();
     // Create project
     Project project = getProject(projectServiceStub);
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
+    }
 
     // Create experiment of above project
     Experiment experiment = getExperiment(experimentIds, experimentServiceStub, project);
@@ -166,6 +200,23 @@ public class LineageTest extends TestsInit {
 
     // Create project
     Project project = getProject(projectServiceStub);
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
+      when(authzMock.getSelfAllowedResources(
+              GetSelfAllowedResources.newBuilder()
+                  .addActions(
+                      Action.newBuilder()
+                          .setModeldbServiceAction(ModelDBServiceActions.READ)
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                  .setResourceType(
+                      ResourceType.newBuilder()
+                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
+                  .build()))
+          .thenReturn(
+              Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+    }
 
     try {
 
@@ -336,12 +387,40 @@ public class LineageTest extends TestsInit {
       LOGGER.info("DeleteDatasetVersion deleted successfully");
       LOGGER.info(deleteDatasetVersionResponse.toString());
 
+      if (isRunningIsolated()) {
+        var authChannelMock = mock(AuthServiceChannel.class);
+        when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
+        var collaboratorBlockingMock = mock(CollaboratorServiceBlockingStub.class);
+        when(authChannelMock.getCollaboratorServiceBlockingStub())
+            .thenReturn(collaboratorBlockingMock);
+        var resourcesResponse =
+            GetResources.Response.newBuilder()
+                .addItem(
+                    GetResourcesResponseItem.newBuilder()
+                        .setResourceId(datasetVersion1.getDatasetId())
+                        .setWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
+                        .build())
+                .build();
+        when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+        var authzServiceBlockingStub = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
+        when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzServiceBlockingStub);
+        when(authzServiceBlockingStub.isSelfAllowed(any()))
+            .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+      }
+
       DeleteDataset deleteDataset =
           DeleteDataset.newBuilder().setId(datasetVersion1.getDatasetId()).build();
       DeleteDataset.Response deleteDatasetResponse =
           datasetServiceStub.deleteDataset(deleteDataset);
       LOGGER.info("Dataset deleted successfully");
       LOGGER.info(deleteDatasetResponse.toString());
+    }
+
+    if (isRunningIsolated()) {
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
     }
 
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
@@ -366,9 +445,8 @@ public class LineageTest extends TestsInit {
   }
 
   private Project getProject(ProjectServiceBlockingStub projectServiceStub) {
-    ProjectTest projectTest = new ProjectTest();
     CreateProject createProjectRequest =
-        projectTest.getCreateProjectRequest("Project-" + new Date().getTime());
+        ProjectTest.getCreateProjectRequest("Project-" + new Date().getTime());
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project project = createProjectResponse.getProject();
@@ -391,6 +469,10 @@ public class LineageTest extends TestsInit {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+    }
 
     CreateDatasetVersion createDatasetVersionRequest =
         DatasetVersionTest.getDatasetVersionRequest(dataset.getId());
