@@ -128,6 +128,7 @@ class FutureTest {
   }
 
   @Test
+  @Timeout(2)
   void retry() throws Exception {
     AtomicInteger sequencer = new AtomicInteger();
 
@@ -142,6 +143,58 @@ class FutureTest {
                     throwable -> true)
                 .get())
         .isEqualTo("success!");
+  }
+
+  @Test
+  void retry_strategy_failure() {
+    AtomicInteger sequencer = new AtomicInteger();
+    int maxRetries = 5;
+    int moreRetriesThanExpected = 10;
+    assertThatThrownBy(
+            () ->
+                Future.retrying(
+                        () -> {
+                          if (sequencer.getAndIncrement() < moreRetriesThanExpected) {
+                            return Future.failedStage(new NullPointerException());
+                          }
+                          return Future.of("success!");
+                        },
+                        RetryStrategy.backoff((x, throwable) -> true, maxRetries))
+                    .get())
+        .isInstanceOf(NullPointerException.class);
+    assertThat(sequencer).hasValue(6);
+  }
+
+  @Test
+  void retry_throwableStrategy() throws Exception {
+    AtomicInteger sequencer = new AtomicInteger();
+
+    Future.retrying(
+            () -> {
+              if (sequencer.getAndIncrement() < 5) {
+                return Future.failedStage(new NullPointerException());
+              }
+              return Future.of("success!");
+            },
+            RetryStrategy.backoff((x, throwable) -> throwable instanceof NullPointerException, 10))
+        .get();
+    assertThat(sequencer).hasValue(6);
+  }
+
+  @Test
+  void retry_valueStrategy() throws Exception {
+    AtomicInteger sequencer = new AtomicInteger();
+
+    Future.retrying(
+            () -> {
+              if (sequencer.getAndIncrement() < 5) {
+                return Future.of("nope");
+              }
+              return Future.of("success!");
+            },
+            RetryStrategy.backoff((value, t) -> value.equals("nope"), 10))
+        .get();
+    assertThat(sequencer).hasValue(6);
   }
 
   @Test
