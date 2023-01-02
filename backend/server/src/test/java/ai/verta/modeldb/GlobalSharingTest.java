@@ -3,9 +3,13 @@ package ai.verta.modeldb;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.ModelDBResourceEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.GetRepositoryRequest;
 import ai.verta.modeldb.versioning.Repository;
@@ -15,12 +19,18 @@ import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.uac.AddUser;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteOrganization;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.Organization;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetOrganization;
 import ai.verta.uac.SetResource;
+import ai.verta.uac.Workspace;
+import com.google.common.util.concurrent.Futures;
 import io.grpc.StatusRuntimeException;
 import java.util.AbstractMap;
 import java.util.Arrays;
@@ -29,24 +39,26 @@ import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.junit.runners.Parameterized;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(Parameterized.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class GlobalSharingTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+class GlobalSharingTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(GlobalSharingTest.class);
 
-  private final ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType;
-
-  @Parameterized.Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(
         new Object[][] {
@@ -54,10 +66,6 @@ public class GlobalSharingTest extends TestsInit {
           {ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET},
           {ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY},
         });
-  }
-
-  public GlobalSharingTest(ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
-    this.resourceType = resourceType;
   }
 
   static class TestParameters {
@@ -112,8 +120,19 @@ public class GlobalSharingTest extends TestsInit {
           new TestParameters(
               ResourceVisibility.PRIVATE, CollaboratorPermissions.newBuilder(), false, false));
 
-  @Test
-  public void createProjectWithGlobalSharingOrganization() {
+  @BeforeEach
+  public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+  }
+
+  @ParameterizedTest
+  @MethodSource(value = "data")
+  public void createProjectWithGlobalSharingOrganization(
+      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     LOGGER.info("Global organization Project test start................................");
 
     if (!testConfig.hasAuth()) {
@@ -122,27 +141,37 @@ public class GlobalSharingTest extends TestsInit {
     }
 
     String orgName = "Org-test-verta-" + new Date().getTime();
-    SetOrganization setOrganization =
-        SetOrganization.newBuilder()
-            .setOrganization(
-                Organization.newBuilder()
-                    .setName(orgName)
-                    .setDescription("This is the verta test organization")
-                    .build())
+    var organization =
+        Organization.newBuilder()
+            .setName(orgName)
+            .setDescription("This is the verta test organization")
             .build();
-    SetOrganization.Response orgResponse =
-        organizationServiceBlockingStub.setOrganization(setOrganization);
-    Organization organization = orgResponse.getOrganization();
-    assertEquals(
-        "Organization name not matched with expected organization name",
-        orgName,
-        organization.getName());
+    if (isRunningIsolated()) {
+      organization = organization.toBuilder().setId(UUID.randomUUID().toString()).build();
+      when(workspaceMock.getWorkspaceByName(any()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  Workspace.newBuilder()
+                      .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .setUsername(testUser2.getVertaInfo().getUsername())
+                      .build()));
+    } else {
+      SetOrganization setOrganization =
+          SetOrganization.newBuilder().setOrganization(organization).build();
+      SetOrganization.Response orgResponse =
+          organizationServiceBlockingStub.setOrganization(setOrganization);
+      organization = orgResponse.getOrganization();
+      assertEquals(
+          "Organization name not matched with expected organization name",
+          orgName,
+          organization.getName());
 
-    organizationServiceBlockingStub.addUser(
-        AddUser.newBuilder()
-            .setOrgId(organization.getId())
-            .setShareWith(authClientInterceptor.getClient2Email())
-            .build());
+      organizationServiceBlockingStub.addUser(
+          AddUser.newBuilder()
+              .setOrgId(organization.getId())
+              .setShareWith(authClientInterceptor.getClient2Email())
+              .build());
+    }
 
     String orgResourceId = null;
     Repository repository = null;
@@ -177,20 +206,26 @@ public class GlobalSharingTest extends TestsInit {
           orgResourceName = repository.getName();
           break;
       }
-      checkResourceActions(orgResourceId, repository, isReadAllowed, isWriteAllowed);
+      checkResourceActions(orgResourceId, repository, isReadAllowed, isWriteAllowed, resourceType);
       for (TestParameters testParameters : requestData) {
         resourceVisibility = testParameters.getResourceVisibility();
         customPermission = testParameters.getPermissions();
         isReadAllowed = testParameters.isReadCheckSuccess();
         isWriteAllowed = testParameters.isWriteCheckSuccess();
-        updateResource(
-            organization, orgResourceId, orgResourceName, resourceVisibility, customPermission);
-        checkResourceActions(orgResourceId, repository, isReadAllowed, isWriteAllowed);
+        if (!isRunningIsolated()) {
+          updateResource(
+              organization,
+              orgResourceId,
+              orgResourceName,
+              resourceVisibility,
+              customPermission,
+              resourceType);
+        }
+        checkResourceActions(
+            orgResourceId, repository, isReadAllowed, isWriteAllowed, resourceType);
       }
-
-      LOGGER.info("Project created successfully");
     } finally {
-      if (orgResourceId != null) {
+      /*if (orgResourceId != null) {
         switch (resourceType) {
           case PROJECT:
             deleteProject(orgResourceId);
@@ -203,20 +238,40 @@ public class GlobalSharingTest extends TestsInit {
             deleteRepository(orgResourceId);
             break;
         }
-      }
+      }*/
 
-      DeleteOrganization.Response deleteOrganization =
-          organizationServiceBlockingStub.deleteOrganization(
-              DeleteOrganization.newBuilder().setOrgId(organization.getId()).build());
-      assertTrue(deleteOrganization.getStatus());
+      if (!isRunningIsolated()) {
+        DeleteOrganization.Response deleteOrganization =
+            organizationServiceBlockingStub.deleteOrganization(
+                DeleteOrganization.newBuilder().setOrgId(organization.getId()).build());
+        assertTrue(deleteOrganization.getStatus());
+      }
     }
 
     LOGGER.info("Global organization Project test stop................................");
   }
 
   private void checkResourceActions(
-      String orgResourceId, Repository repository, boolean isReadAllowed, boolean isWriteAllowed) {
+      String orgResourceId,
+      Repository repository,
+      boolean isReadAllowed,
+      boolean isWriteAllowed,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     try {
+      if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+        when(authzMock.isSelfAllowed(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+        when(authzBlockingMock.isSelfAllowed(any()))
+            .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+        if (!isReadAllowed) {
+          mockGetResourcesForAllProjects(Map.of(), testUser2);
+          mockGetResourcesForAllDatasets(Map.of(), testUser2);
+          mockGetResourcesForAllRepositories(Map.of(), testUser2);
+        }
+      }
       switch (resourceType) {
         case PROJECT:
           client2ProjectServiceStub.getProjectById(
@@ -247,6 +302,24 @@ public class GlobalSharingTest extends TestsInit {
       }
     }
     try {
+      if (isRunningIsolated()) {
+        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+        if (isWriteAllowed) {
+          when(authzMock.isSelfAllowed(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+          when(authzBlockingMock.isSelfAllowed(any()))
+              .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+        } else {
+          when(authzMock.isSelfAllowed(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+          when(authzBlockingMock.isSelfAllowed(any()))
+              .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(false).build());
+        }
+      }
       String description = "new-description" + new Date().getTime();
       switch (resourceType) {
         case PROJECT:
@@ -289,7 +362,8 @@ public class GlobalSharingTest extends TestsInit {
       String orgResourceId,
       String orgResourceName,
       ResourceVisibility resourceVisibility,
-      CollaboratorPermissions.Builder customPermission) {
+      CollaboratorPermissions.Builder customPermission,
+      ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     collaboratorServiceStubClient1.setResource(
         SetResource.newBuilder()
             .setWorkspaceName(organization.getName())
@@ -339,7 +413,17 @@ public class GlobalSharingTest extends TestsInit {
       String orgName,
       ResourceVisibility resourceVisibility,
       CollaboratorPermissions.Builder customPermission) {
-    Repository repository;
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
     // Create repository
     String repoName = "repository-" + new Date().getTime();
     SetRepository.Response createRepositoryResponse =
@@ -357,7 +441,10 @@ public class GlobalSharingTest extends TestsInit {
                         .setName(repoName)
                         .setCustomPermission(customPermission))
                 .build());
-    repository = createRepositoryResponse.getRepository();
+    var repository = createRepositoryResponse.getRepository();
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser2);
+    }
     return repository;
   }
 
@@ -365,6 +452,17 @@ public class GlobalSharingTest extends TestsInit {
       Organization organization,
       ResourceVisibility resourceVisibility,
       CollaboratorPermissions.Builder customPermission) {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
     // Create dataset
     CreateDataset createDatasetRequest =
         DatasetTest.getDatasetRequestForOtherTests("dataset-" + new Date().getTime());
@@ -378,6 +476,13 @@ public class GlobalSharingTest extends TestsInit {
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     Dataset resource = createDatasetResponse.getDataset();
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllDatasets(Map.of(resource.getId(), resource), testUser2);
+      mockGetSelfAllowedResources(
+          Set.of(resource.getId()),
+          ModelDBServiceResourceTypes.DATASET,
+          ModelDBServiceActions.READ);
+    }
     return new AbstractMap.SimpleEntry<>(resource.getId(), resource.getName());
   }
 
@@ -398,6 +503,9 @@ public class GlobalSharingTest extends TestsInit {
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     Project resource = createProjectResponse.getProject();
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllProjects(Map.of(resource.getId(), resource), testUser2);
+    }
     return new AbstractMap.SimpleEntry<>(resource.getId(), resource.getName());
   }
 }

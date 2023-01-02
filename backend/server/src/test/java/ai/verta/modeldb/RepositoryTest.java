@@ -1,6 +1,9 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.EntitiesEnum;
@@ -10,6 +13,7 @@ import ai.verta.common.OperatorEnum;
 import ai.verta.common.Pagination;
 import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
 import ai.verta.modeldb.metadata.DeleteLabelsRequest;
 import ai.verta.modeldb.metadata.IDTypeEnum;
@@ -30,8 +34,12 @@ import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.UserInfo;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetUsers;
+import ai.verta.uac.GetUsersFuzzy;
+import ai.verta.uac.IsSelfAllowed;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -50,15 +58,16 @@ import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class RepositoryTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class RepositoryTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(RepositoryTest.class);
 
@@ -69,6 +78,12 @@ public class RepositoryTest extends TestsInit {
 
   @Before
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createRepositoryEntities();
   }
@@ -91,7 +106,19 @@ public class RepositoryTest extends TestsInit {
     repositoryMap = new HashMap<>();
   }
 
-  private static void createRepositoryEntities() {
+  private void createRepositoryEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
+
     String repoName = "Repo-" + new Date().getTime();
     repository = createRepository(repoName);
     LOGGER.info("Repository created successfully");
@@ -118,6 +145,10 @@ public class RepositoryTest extends TestsInit {
     repositoryMap.put(repository.getId(), repository);
     repositoryMap.put(repository2.getId(), repository2);
     repositoryMap.put(repository3.getId(), repository3);
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllRepositories(repositoryMap, testUser1);
+    }
   }
 
   public static Long createRepository(
@@ -127,7 +158,7 @@ public class RepositoryTest extends TestsInit {
     return result.getRepository().getId();
   }
 
-  private static Repository createRepository(String repoName) {
+  private Repository createRepository(String repoName) {
     SetRepository setRepository = getSetRepositoryRequest(repoName);
     SetRepository.Response result = versioningServiceBlockingStub.createRepository(setRepository);
     return result.getRepository();
@@ -159,7 +190,7 @@ public class RepositoryTest extends TestsInit {
     }
   }
 
-  public static List<KeyValue> getAttributeList() {
+  private List<KeyValue> getAttributeList() {
     List<KeyValue> attributeList = new ArrayList<>();
     Value intValue = Value.newBuilder().setNumberValue(1.1).build();
     attributeList.add(
@@ -187,7 +218,14 @@ public class RepositoryTest extends TestsInit {
 
     String repo1 = "Repo-1-" + new Date().getTime();
     String repo2 = "Repo-2-" + new Date().getTime();
-    long id = createRepository(versioningServiceBlockingStub, repo1);
+    var repository = createRepository(repo1);
+    long id = repository.getId();
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser1);
+      when(collaboratorBlockingMock.setResource(any()))
+          .thenThrow(new PermissionDeniedException("Permission Denied"));
+    }
     try {
       try {
         SetRepository setRepository =
@@ -212,6 +250,9 @@ public class RepositoryTest extends TestsInit {
         }
       }
       try {
+        if (isRunningIsolated()) {
+          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+        }
         versioningServiceBlockingStubClient2.updateRepository(
             SetRepository.newBuilder()
                 .setId(RepositoryIdentification.newBuilder().setRepoId(id))
@@ -225,6 +266,10 @@ public class RepositoryTest extends TestsInit {
         assertEquals(Code.INVALID_ARGUMENT, e.getStatus().getCode());
       }
       try {
+        if (isRunningIsolated()) {
+          when(authzBlockingMock.isSelfAllowed(any()))
+              .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(false).build());
+        }
         versioningServiceBlockingStubClient2.getRepository(
             GetRepositoryRequest.newBuilder()
                 .setId(RepositoryIdentification.newBuilder().setRepoId(id))
@@ -241,6 +286,10 @@ public class RepositoryTest extends TestsInit {
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(id))
               .build();
       try {
+        if (isRunningIsolated()) {
+          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+          mockGetResourcesForAllRepositories(Map.of(), testUser2);
+        }
         versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
         if (testConfig.hasAuth()) {
           Assert.fail();
@@ -250,6 +299,12 @@ public class RepositoryTest extends TestsInit {
       }
 
       if (testConfig.hasAuth()) {
+        if (isRunningIsolated()) {
+          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+          when(authzBlockingMock.isSelfAllowed(any()))
+              .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+          mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser1);
+        }
         DeleteRepositoryRequest.Response deleteResult =
             versioningServiceBlockingStub.deleteRepository(deleteRepository);
         Assert.assertTrue(deleteResult.getStatus());
@@ -302,6 +357,11 @@ public class RepositoryTest extends TestsInit {
     Assert.assertEquals(setRepository.getRepository().getName(), result.getRepository().getName());
     repository = result.getRepository();
 
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllRepositories(
+          Map.of(setRepository.getRepository().getId(), repository), testUser1);
+    }
+
     getRepositoryRequest =
         GetRepositoryRequest.newBuilder()
             .setId(
@@ -319,11 +379,8 @@ public class RepositoryTest extends TestsInit {
         repository.getName(),
         getByNameResult.getRepository().getName());
     if (testConfig.hasAuth()) {
-      UserInfo userInfo =
-          uacServiceStub.getUser(
-              GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
       Assert.assertEquals(
-          userInfo.getVertaInfo().getUserId(), getByNameResult.getRepository().getOwner());
+          testUser1.getVertaInfo().getUserId(), getByNameResult.getRepository().getOwner());
     }
 
     LOGGER.info("Update repository by name test end................................");
@@ -426,11 +483,8 @@ public class RepositoryTest extends TestsInit {
         repository.getName(),
         getByNameResult.getRepository().getName());
     if (testConfig.hasAuth()) {
-      UserInfo userInfo =
-          uacServiceStub.getUser(
-              GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build());
       Assert.assertEquals(
-          userInfo.getVertaInfo().getUserId(), getByNameResult.getRepository().getOwner());
+          testUser1.getVertaInfo().getUserId(), getByNameResult.getRepository().getOwner());
     }
 
     LOGGER.info("Get repository by name test end................................");
@@ -586,6 +640,10 @@ public class RepositoryTest extends TestsInit {
             findRepositoriesResponse.getRepositories(0).getName());
       }
 
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser1);
+      }
+
       findRepositoriesRequest =
           FindRepositories.newBuilder().addRepoIds(repository.getId()).build();
       findRepositoriesResponse =
@@ -598,6 +656,10 @@ public class RepositoryTest extends TestsInit {
           "Repository name not match with expected repository name",
           repository.getName(),
           findRepositoriesResponse.getRepositories(0).getName());
+
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllRepositories(repositoryMap, testUser1);
+      }
 
       findRepositoriesRequest =
           FindRepositories.newBuilder()
@@ -737,6 +799,13 @@ public class RepositoryTest extends TestsInit {
       }
 
       if (testConfig.hasAuth()) {
+        if (isRunningIsolated()) {
+          when(uacBlockingMock.getUsers(any()))
+              .thenReturn(
+                  GetUsers.Response.newBuilder()
+                      .addAllUserInfos(List.of(testUser1, testUser2))
+                      .build());
+        }
         findRepositoriesRequest =
             FindRepositories.newBuilder()
                 .addPredicates(
@@ -804,6 +873,10 @@ public class RepositoryTest extends TestsInit {
       deleteLabels(id2, Collections.singletonList(labels.get(1)));
       deleteLabels(id3, labels);
 
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+      }
+
       DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
       DeleteDataset.Response deleteDatasetResponse =
           datasetServiceStub.deleteDataset(deleteDataset);
@@ -823,11 +896,15 @@ public class RepositoryTest extends TestsInit {
       return;
     }
 
-    GetUser getUserRequest =
-        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-    // Get the user info by vertaId form the AuthService
-    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
     String testUser1UserName = testUser1.getVertaInfo().getUsername();
+
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getUsersFuzzy(any()))
+          .thenReturn(
+              GetUsersFuzzy.Response.newBuilder()
+                  .addAllUserInfos(List.of(testUser1, testUser2))
+                  .build());
+    }
 
     Value stringValue =
         Value.newBuilder().setStringValue(testUser1UserName.substring(0, 2)).build();
@@ -871,6 +948,11 @@ public class RepositoryTest extends TestsInit {
     LOGGER.info("FindProjects Response : " + repositoryList.size());
     assertEquals("Project count not match with expected project count", 0, repositoryList.size());
 
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getUsersFuzzy(any()))
+          .thenReturn(GetUsersFuzzy.Response.newBuilder().build());
+    }
+
     stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
     keyValueQuery =
         KeyValueQuery.newBuilder()
@@ -902,14 +984,13 @@ public class RepositoryTest extends TestsInit {
       return;
     }
 
-    GetUser getUserRequest =
-        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-    // Get the user info by vertaId form the AuthService
-    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
-
-    getUserRequest = GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
-    // Get the user info by vertaId form the AuthService
-    UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getUsers(any()))
+          .thenReturn(
+              GetUsers.Response.newBuilder()
+                  .addAllUserInfos(List.of(testUser1, testUser2))
+                  .build());
+    }
 
     String[] ownerArr = {
       testUser1.getVertaInfo().getUserId(), testUser2.getVertaInfo().getUserId()
@@ -1140,24 +1221,24 @@ public class RepositoryTest extends TestsInit {
       return;
     }
 
-    GetUser getUserRequest =
-        GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
-    // Get the user info by vertaId form the AuthService
-    UserInfo testUser2 = uacServiceStub.getUser(getUserRequest);
-
-    AddCollaboratorRequest addCollaboratorRequest =
-        AddCollaboratorRequest.newBuilder()
-            .setShareWith(testUser2.getEmail())
-            .setPermission(
-                CollaboratorPermissions.newBuilder()
-                    .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)
-                    .build())
-            .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
-            .addEntityIds(String.valueOf(repository.getId()))
-            .build();
-    AddCollaboratorRequest.Response collaboratorResponse =
-        collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
-    assertTrue(collaboratorResponse.getStatus());
+    if (isRunningIsolated()) {
+      when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+      mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser2);
+    } else {
+      AddCollaboratorRequest addCollaboratorRequest =
+          AddCollaboratorRequest.newBuilder()
+              .setShareWith(testUser2.getEmail())
+              .setPermission(
+                  CollaboratorPermissions.newBuilder()
+                      .setCollaboratorType(CollaboratorTypeEnum.CollaboratorType.READ_WRITE)
+                      .build())
+              .setAuthzEntityType(EntitiesEnum.EntitiesTypes.USER)
+              .addEntityIds(String.valueOf(repository.getId()))
+              .build();
+      AddCollaboratorRequest.Response collaboratorResponse =
+          collaboratorServiceStubClient1.addOrUpdateRepositoryCollaborator(addCollaboratorRequest);
+      assertTrue(collaboratorResponse.getStatus());
+    }
 
     FindRepositories findRepositoriesRequest =
         FindRepositories.newBuilder()
@@ -1212,6 +1293,10 @@ public class RepositoryTest extends TestsInit {
 
     Repository repository = createRepository("Test-" + Calendar.getInstance().getTimeInMillis());
 
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser1);
+    }
+
     CreateDataset createDatasetRequest =
         DatasetTest.getDatasetRequestForOtherTests(repository.getName());
     CreateDataset.Response createDatasetResponse =
@@ -1222,6 +1307,9 @@ public class RepositoryTest extends TestsInit {
         "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
         dataset.getName());
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+    }
 
     DeleteRepositoryRequest deleteRepository =
         DeleteRepositoryRequest.newBuilder()

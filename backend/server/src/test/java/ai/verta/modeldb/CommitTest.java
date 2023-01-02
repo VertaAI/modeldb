@@ -2,9 +2,13 @@ package ai.verta.modeldb;
 
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.ArtifactPart;
 import ai.verta.common.KeyValueQuery;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.Pagination;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.AddLabelsRequest;
@@ -65,6 +69,13 @@ import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.modeldb.versioning.VersioningUtils;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.ResourceType;
+import ai.verta.uac.ResourceVisibility;
+import ai.verta.uac.UserInfo;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.Status.Code;
@@ -81,35 +92,56 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
-import org.junit.FixMethodOrder;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class CommitTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class CommitTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(CommitTest.class);
-  private static long time = Calendar.getInstance().getTimeInMillis();
+  private static final long time = Calendar.getInstance().getTimeInMillis();
   private static Repository repository;
   private static Commit initialCommit;
 
   @Before
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createRepositoryEntities();
   }
 
-  private static void createRepositoryEntities() {
+  private void createRepositoryEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
+
     String repoName = "Repo-" + new Date().getTime();
     SetRepository setRepository = RepositoryTest.getSetRepositoryRequest(repoName);
     SetRepository.Response result = versioningServiceBlockingStub.createRepository(setRepository);
@@ -117,6 +149,10 @@ public class CommitTest extends TestsInit {
     LOGGER.info("Repository created successfully");
     assertEquals(
         "Repository name not match with expected Repository name", repoName, repository.getName());
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser1);
+    }
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -131,6 +167,40 @@ public class CommitTest extends TestsInit {
         ModelDBConstants.INITIAL_COMMIT_MESSAGE,
         getBranchResponse.getCommit().getMessage());
     initialCommit = getBranchResponse.getCommit();
+  }
+
+  protected void mockGetResourcesForAllRepositories(
+      Map<Long, Repository> repositoryMap, UserInfo userInfo) {
+    var repoIdNameMap =
+        repositoryMap.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
+    mockGetResources(repoIdNameMap, userInfo);
+    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                GetResources.Response.newBuilder()
+                    .addAllItem(
+                        repositoryMap.values().stream()
+                            .map(
+                                repository ->
+                                    GetResourcesResponseItem.newBuilder()
+                                        .setVisibility(ResourceVisibility.PRIVATE)
+                                        .setResourceId(String.valueOf(repository.getId()))
+                                        .setResourceName(repository.getName())
+                                        .setResourceType(
+                                            ResourceType.newBuilder()
+                                                .setModeldbServiceResourceType(
+                                                    ModelDBServiceResourceTypes.REPOSITORY)
+                                                .build())
+                                        .setOwnerId(repository.getWorkspaceServiceId())
+                                        .setWorkspaceId(repository.getWorkspaceServiceId())
+                                        .build())
+                            .collect(Collectors.toList()))
+                    .build()));
+    mockGetSelfAllowedResources(
+        repoIdNameMap.keySet(), ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
   }
 
   @After
