@@ -181,7 +181,6 @@ public abstract class ModeldbTestSetup extends TestCase {
     datasetServiceStubServiceAccount = DatasetServiceGrpc.newBlockingStub(channelServiceUser);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(channel);
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
 
     if (!runningIsolated) {
@@ -394,7 +393,12 @@ public abstract class ModeldbTestSetup extends TestCase {
 
   protected void mockGetResourcesForAllProjects(
       Map<String, Project> projectMap, UserInfo userInfo) {
-    mockGetResources(projectMap.keySet(), userInfo);
+    var projectIdNameMap =
+        projectMap.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
+    mockGetResources(projectIdNameMap, userInfo);
     when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
@@ -470,15 +474,16 @@ public abstract class ModeldbTestSetup extends TestCase {
                 .build());
   }
 
-  protected void mockGetResources(Set<String> resourceIds, UserInfo userInfo) {
+  protected void mockGetResources(Map<String, String> resourceIdNameMap, UserInfo userInfo) {
     var resourcesResponse =
         GetResources.Response.newBuilder()
             .addAllItem(
-                resourceIds.stream()
+                resourceIdNameMap.entrySet().stream()
                     .map(
-                        resourceId ->
+                        resourceIdNameEntry ->
                             GetResourcesResponseItem.newBuilder()
-                                .setResourceId(resourceId)
+                                .setResourceId(resourceIdNameEntry.getKey())
+                                .setResourceName(resourceIdNameEntry.getValue())
                                 .setWorkspaceId(userInfo.getVertaInfo().getDefaultWorkspaceId())
                                 .setOwnerId(userInfo.getVertaInfo().getDefaultWorkspaceId())
                                 .build())
@@ -491,7 +496,12 @@ public abstract class ModeldbTestSetup extends TestCase {
 
   protected void mockGetResourcesForAllDatasets(
       Map<String, Dataset> datasetMap, UserInfo userInfo) {
-    mockGetResources(datasetMap.keySet(), userInfo);
+    var datasetIdNameMap =
+        datasetMap.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
+    mockGetResources(datasetIdNameMap, userInfo);
     when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
@@ -515,6 +525,6 @@ public abstract class ModeldbTestSetup extends TestCase {
                             .collect(Collectors.toList()))
                     .build()));
     mockGetSelfAllowedResources(
-        datasetMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
+        datasetIdNameMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
   }
 }
