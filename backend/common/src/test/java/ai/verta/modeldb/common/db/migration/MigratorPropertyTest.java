@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.db.migration;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.config.RdbConfig;
 import com.pholser.junit.quickcheck.From;
 import com.pholser.junit.quickcheck.Pair;
@@ -15,6 +16,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.*;
+import java.util.stream.Collectors;
 import lombok.Value;
 import org.jetbrains.annotations.NotNull;
 import org.junit.Before;
@@ -24,22 +26,40 @@ import org.junit.runner.RunWith;
 public class MigratorPropertyTest {
   private static final String INPUT_DIRECTORY = "migrations/testing/property";
   private Migrator migrator;
-  private RdbConfig rdbConfig;
   private Connection connection;
 
   @Before
   public void setUp() throws Exception {
-    rdbConfig =
-        RdbConfig.builder()
-            .DBConnectionURL("jdbc:h2:mem:migrationPropertyTestDb")
-            .RdbDriver("org.h2.Driver")
-            .RdbDialect("org.hibernate.dialect.H2Dialect")
-            .RdbDatabaseName("migrationPropertyTestDb")
-            .RdbPassword("password")
-            .RdbUsername("sa")
-            .build();
+    RdbConfig rdbConfig = createH2Config();
+    if (!rdbConfig.isH2()) {
+      CommonDBUtil.createDBIfNotExists(rdbConfig);
+    }
     connection = MigratorTest.buildStandardDbConnection(rdbConfig);
     migrator = new Migrator(connection, INPUT_DIRECTORY, rdbConfig);
+  }
+
+  private static RdbConfig createH2Config() {
+    return RdbConfig.builder()
+        .DBConnectionURL("jdbc:h2:mem:migrationPropertyTestDb")
+        .RdbDriver("org.h2.Driver")
+        .RdbDialect("org.hibernate.dialect.H2Dialect")
+        .RdbDatabaseName("migrationPropertyTestDb")
+        .RdbPassword("password")
+        .RdbUsername("sa")
+        .build();
+  }
+
+  // for running ad-hoc against mysql (todo: figure out how to get sqlserver test files)
+  private static RdbConfig createMysqlConfig() {
+    return RdbConfig.builder()
+        .RdbUrl("jdbc:mysql://localhost:3306")
+        .RdbDriver("org.mariadb.jdbc.Driver")
+        .RdbDialect("org.hibernate.dialect.MySQL5Dialect")
+        .RdbDatabaseName("migrationPropertyTestDb")
+        .RdbUsername("root")
+        .RdbPassword("MyN3wP4ssw0rd!")
+        .sslEnabled(false)
+        .build();
   }
 
   @Property
@@ -51,7 +71,8 @@ public class MigratorPropertyTest {
     List<Pair<Integer, Boolean>> migrationContents = getSchemaMigrationContents();
     assertThat(migrationContents).containsExactly(new Pair<>(versions.getEnd(), false));
 
-    Set<String> tablesPresent = getAllTablesPresent();
+    Set<String> tablesPresent =
+        getAllTablesPresent().stream().map(String::toUpperCase).collect(Collectors.toSet());
     int finalVersion = versions.getEnd();
     String failureMessagePattern =
         "TEST_TABLE_%d : versions failed: "
@@ -61,6 +82,10 @@ public class MigratorPropertyTest {
             + " tablesPresentBeforeRun: "
             + beforeTablesPresent;
     for (int i = 1; i <= finalVersion; i++) {
+      // 100 & 101 are empty migrations
+      if (i == 100 || i == 101) {
+        continue;
+      }
       assertThat(tablesPresent)
           .withFailMessage(String.format(failureMessagePattern, i))
           .contains("TEST_TABLE_" + i);
@@ -85,7 +110,7 @@ public class MigratorPropertyTest {
             });
     try (ResultSet tables = connection.getMetaData().getTables(null, null, null, null)) {
       while (tables.next()) {
-        String tableName = tables.getString("TABLE_NAME");
+        String tableName = tables.getString("TABLE_NAME").toUpperCase();
         if (tableName.startsWith("TEST_TABLE_")) {
           tablesPresent.add(tableName);
         }
@@ -121,8 +146,8 @@ public class MigratorPropertyTest {
 
     @Override
     public IntPair generate(SourceOfRandomness random, GenerationStatus status) {
-      int one = random.nextInt(1, 99);
-      int two = random.nextInt(1, 99);
+      int one = random.nextInt(1, 101);
+      int two = random.nextInt(1, 101);
       return new IntPair(one, two);
     }
   }
