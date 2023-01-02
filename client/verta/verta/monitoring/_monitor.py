@@ -55,7 +55,6 @@ class Monitor(object):
 
     @property
     def name(self):
-        self.refresh_details()
         return self._details.name
 
     @property
@@ -103,7 +102,8 @@ class Monitor(object):
     @classmethod
     def _body_from_args(
             cls,
-            args: Dict[str, Any]
+            args: Dict[str, Any],
+            exclude_args: List[str]
             ) -> Dict:
         """
         Shortcut for processing the args from other class functions into a dict to be used as the body of a request.
@@ -128,12 +128,9 @@ class Monitor(object):
                 body['workspace_name'] = args['workspace']
             del args['workspace']
         # Make sure we don't mistakenly include the classes "self" or the connection arg.
-        if 'cls' in arg_keys:
-            del args['cls']
-        if 'conn' in arg_keys:
-            del args['conn']
-        if 'silent' in arg_keys:
-            del args['silent']
+        for key in exclude_args:
+            if key in arg_keys:
+                del args[key]
         for k, v in args.items():
             if v:
                 body[k] = v
@@ -159,7 +156,10 @@ class Monitor(object):
         parameters.
         """
         func_args: Dict[str, Any] = locals()  # Get all function args as a dict.
-        request_body = cls._body_from_args(func_args)
+        request_body = cls._body_from_args(
+            args=func_args,
+            exclude_args=['cls', 'conn', 'silent']  # should not be added to request body
+            )
 
         Message = _Monitor.FindMonitoredEntityRequest
         endpoint = "/api/v1/monitored_entity/findMonitoredEntity"
@@ -212,13 +212,15 @@ class Monitor(object):
                 raise ValueError(f"value for \"custom_permission\" must be one of {ok_cp_values}. "
                                  f"Received \"{custom_permission}\" instead.")
             func_args['custom_permission'] = (
-                # _Collaborator.CollaboratorPermissions.Value(custom_permission)
                 _Collaborator.CollaboratorPermissions(
                     collaborator_type = _CommonService.CollaboratorTypeEnum.CollaboratorType.Value(custom_permission)
                     )
                 )
 
-        request_body = cls._body_from_args(func_args)
+        request_body = cls._body_from_args(
+            args=func_args,
+            exclude_args=['cls', 'conn']  # should not be added to request body
+        )
         Message = _Monitor.CreateMonitoredEntityRequest
         endpoint = "/api/v1/monitored_entity/createMonitoredEntity"
         response = conn.make_proto_request(
