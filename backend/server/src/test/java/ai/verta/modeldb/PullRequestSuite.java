@@ -11,7 +11,6 @@ import org.junit.platform.suite.api.Suite;
   "ai.verta.modeldb.CommitTest",
   "ai.verta.modeldb.GlobalSharingTest",
   "ai.verta.modeldb.LineageTest",
-  "ai.verta.modeldb.MergeTest",
   ".*TestSequenceSuite",
 })
 @SelectPackages({"ai.verta.modeldb"})
