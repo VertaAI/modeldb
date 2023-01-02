@@ -16,6 +16,7 @@ import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
+import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.Action;
 import ai.verta.uac.ActionTypeV2;
@@ -117,6 +118,7 @@ public abstract class ModeldbTestSetup extends TestCase {
       datasetVersionServiceStub;
   protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStubClient2;
+  protected static LineageServiceGrpc.LineageServiceBlockingStub lineageServiceStub;
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
       versioningServiceBlockingStub;
   protected static VersioningServiceGrpc.VersioningServiceBlockingStub
@@ -213,7 +215,7 @@ public abstract class ModeldbTestSetup extends TestCase {
     datasetServiceStubServiceAccount = DatasetServiceGrpc.newBlockingStub(channelServiceUser);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(channel);
-    versioningServiceBlockingStub = VersioningServiceGrpc.newBlockingStub(channel);
+    lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
 
     if (!runningIsolated) {
       var authServiceChannel =
@@ -611,7 +613,12 @@ public abstract class ModeldbTestSetup extends TestCase {
 
   protected void mockGetResourcesForAllProjects(
       Map<String, Project> projectMap, UserInfo userInfo) {
-    mockGetResources(projectMap.keySet(), userInfo);
+    var projectIdNameMap =
+        projectMap.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
+    mockGetResources(projectIdNameMap, userInfo);
     doReturn(
             Futures.immediateFuture(
                 GetResources.Response.newBuilder()
@@ -691,15 +698,16 @@ public abstract class ModeldbTestSetup extends TestCase {
         .getAllowedEntities(any());
   }
 
-  protected void mockGetResources(Set<String> resourceIds, UserInfo userInfo) {
+  protected void mockGetResources(Map<String, String> resourceIdNameMap, UserInfo userInfo) {
     var resourcesResponse =
         GetResources.Response.newBuilder()
             .addAllItem(
-                resourceIds.stream()
+                resourceIdNameMap.entrySet().stream()
                     .map(
-                        resourceId ->
+                        resourceIdNameEntry ->
                             GetResourcesResponseItem.newBuilder()
-                                .setResourceId(resourceId)
+                                .setResourceId(resourceIdNameEntry.getKey())
+                                .setResourceName(resourceIdNameEntry.getValue())
                                 .setWorkspaceId(userInfo.getVertaInfo().getDefaultWorkspaceId())
                                 .setOwnerId(userInfo.getVertaInfo().getDefaultWorkspaceId())
                                 .setVisibility(ResourceVisibility.PRIVATE)
@@ -712,7 +720,12 @@ public abstract class ModeldbTestSetup extends TestCase {
 
   protected void mockGetResourcesForAllDatasets(
       Map<String, Dataset> datasetMap, UserInfo userInfo) {
-    mockGetResources(datasetMap.keySet(), userInfo);
+    var datasetIdNameMap =
+        datasetMap.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
+    mockGetResources(datasetIdNameMap, userInfo);
     doReturn(
             Futures.immediateFuture(
                 GetResources.Response.newBuilder()
@@ -737,6 +750,41 @@ public abstract class ModeldbTestSetup extends TestCase {
         .when(collaboratorMock)
         .getResourcesSpecialPersonalWorkspace(any());
     mockGetSelfAllowedResources(
-        datasetMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
+        datasetIdNameMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
+  }
+
+  protected void mockGetResourcesForAllRepositories(
+      Map<Long, Repository> repositoryMap, UserInfo userInfo) {
+    var repoIdNameMap =
+        repositoryMap.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
+    mockGetResources(repoIdNameMap, userInfo);
+    doReturn(
+            Futures.immediateFuture(
+                GetResources.Response.newBuilder()
+                    .addAllItem(
+                        repositoryMap.values().stream()
+                            .map(
+                                repository ->
+                                    GetResourcesResponseItem.newBuilder()
+                                        .setVisibility(ResourceVisibility.PRIVATE)
+                                        .setResourceId(String.valueOf(repository.getId()))
+                                        .setResourceName(repository.getName())
+                                        .setResourceType(
+                                            ResourceType.newBuilder()
+                                                .setModeldbServiceResourceType(
+                                                    ModelDBServiceResourceTypes.REPOSITORY)
+                                                .build())
+                                        .setOwnerId(repository.getWorkspaceServiceId())
+                                        .setWorkspaceId(repository.getWorkspaceServiceId())
+                                        .build())
+                            .collect(Collectors.toList()))
+                    .build()))
+        .when(collaboratorMock)
+        .getResourcesSpecialPersonalWorkspace(any());
+    mockGetSelfAllowedResources(
+        repoIdNameMap.keySet(), ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
   }
 }

@@ -1,5 +1,9 @@
 package ai.verta.modeldb;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
+
 import ai.verta.modeldb.authservice.*;
 import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobExpanded;
@@ -27,6 +31,8 @@ import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.SetRepository;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
@@ -36,23 +42,24 @@ import java.util.LinkedList;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.runner.RunWith;
-import org.junit.runners.MethodSorters;
-import org.junit.runners.Parameterized;
-import org.junit.runners.Parameterized.Parameters;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * Tests diffs after commit creation with diff or blob description and checks resulting diff. Tests
  * 2 modified cases: same type and different type.
  */
-@RunWith(Parameterized.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class MergeTest extends TestsInit {
+@RunWith(SpringRunner.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+class MergeTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(MergeTest.class);
   private static final String FIRST_NAME = "train.json";
@@ -63,28 +70,27 @@ public class MergeTest extends TestsInit {
   private static Repository repository;
   private static Commit parentCommit;
 
-  private static long time = Calendar.getInstance().getTimeInMillis();
-
-  private final int blobType;
+  private static final long time = Calendar.getInstance().getTimeInMillis();
 
   // 1. blob type: 0 -- dataset path, 1 -- config, 2 -- python environment, 3 --
   // Git Notebook Code
-  @Parameters
   public static Collection<Object[]> data() {
     return Arrays.asList(new Object[][] {{0}, {1}, {2}, {3}});
   }
 
-  public MergeTest(int blobType) {
-    this.blobType = blobType;
-  }
-
-  @Before
+  @BeforeEach
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createRepositoryEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     for (Repository repo : new Repository[] {repository}) {
       DeleteRepositoryRequest deleteRepository =
@@ -99,7 +105,19 @@ public class MergeTest extends TestsInit {
     repository = null;
   }
 
-  private static void createRepositoryEntities() {
+  private void createRepositoryEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
+
     String repoName = "Repo-" + new Date().getTime();
     SetRepository setRepository = RepositoryTest.getSetRepositoryRequest(repoName);
     repository = versioningServiceBlockingStub.createRepository(setRepository).getRepository();
@@ -118,8 +136,9 @@ public class MergeTest extends TestsInit {
     parentCommit = getBranchResponse.getCommit();
   }
 
-  @Test
-  public void mergeRepositoryCommitTest() {
+  @ParameterizedTest
+  @MethodSource(value = "data")
+  public void mergeRepositoryCommitTest(int blobType) {
     LOGGER.info("Merge Repository Commit test start................................");
 
     BlobExpanded[] blobExpandedArray;
@@ -284,23 +303,14 @@ public class MergeTest extends TestsInit {
     LOGGER.info("Compute repository diff test end................................");
   }
 
-  private static List<String> LOCATION1 =
+  private static final List<String> LOCATION1 =
       Arrays.asList("modeldb", "march", "environment", FIRST_NAME);
-  private static List<String> LOCATION2 = Arrays.asList("modeldb", "environment", SECOND_NAME);
-  private static List<String> LOCATION3 = Arrays.asList("modeldb", "blob", "march", "blob.json");
-  private static List<String> LOCATION4 = Collections.singletonList("modeldb.json");
-  private static List<String> LOCATION5 = Collections.singletonList("maths/algebra");
-
-  private BlobExpanded modifiedBlobExpanded(int blobType) {
-    String path3 = "/protos/proto/public/test22.txt";
-    BlobExpanded blobExpanded3 =
-        BlobExpanded.newBuilder()
-            .setBlob(getDatasetBlobFromPath(path3, 5))
-            .addAllLocation(LOCATION3)
-            .build();
-
-    return blobExpanded3;
-  }
+  private static final List<String> LOCATION2 =
+      Arrays.asList("modeldb", "environment", SECOND_NAME);
+  private static final List<String> LOCATION3 =
+      Arrays.asList("modeldb", "blob", "march", "blob.json");
+  private static final List<String> LOCATION4 = Collections.singletonList("modeldb.json");
+  private static final List<String> LOCATION5 = Collections.singletonList("maths/algebra");
 
   static Blob getDatasetBlobFromPath(String path, long size) {
     return Blob.newBuilder()
