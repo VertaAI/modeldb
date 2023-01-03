@@ -16,6 +16,7 @@ import ai.verta.modeldb.metadata.MetadataServiceGrpc;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
+import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
@@ -93,6 +94,7 @@ public abstract class ModeldbTestSetup {
   protected DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub datasetVersionServiceStub;
   protected DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStubClient2;
+  protected static LineageServiceGrpc.LineageServiceBlockingStub lineageServiceStub;
   protected VersioningServiceGrpc.VersioningServiceBlockingStub versioningServiceBlockingStub;
   protected VersioningServiceGrpc.VersioningServiceBlockingStub
       versioningServiceBlockingStubClient2;
@@ -181,6 +183,7 @@ public abstract class ModeldbTestSetup {
     datasetServiceStubServiceAccount = DatasetServiceGrpc.newBlockingStub(channelServiceUser);
     datasetVersionServiceStub = DatasetVersionServiceGrpc.newBlockingStub(channel);
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(channel);
+    lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
 
     if (!runningIsolated) {
       var authServiceChannel =
@@ -513,5 +516,39 @@ public abstract class ModeldbTestSetup {
                     .build()));
     mockGetSelfAllowedResources(
         datasetIdNameMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.READ);
+  }
+
+  protected void mockGetResourcesForAllRepositories(
+      Map<Long, Repository> repositoryMap, UserInfo userInfo) {
+    var repoIdNameMap =
+        repositoryMap.entrySet().stream()
+            .collect(
+                Collectors.toMap(
+                    entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
+    mockGetResources(repoIdNameMap, userInfo);
+    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+        .thenReturn(
+            Futures.immediateFuture(
+                GetResources.Response.newBuilder()
+                    .addAllItem(
+                        repositoryMap.values().stream()
+                            .map(
+                                repository ->
+                                    GetResourcesResponseItem.newBuilder()
+                                        .setVisibility(ResourceVisibility.PRIVATE)
+                                        .setResourceId(String.valueOf(repository.getId()))
+                                        .setResourceName(repository.getName())
+                                        .setResourceType(
+                                            ResourceType.newBuilder()
+                                                .setModeldbServiceResourceType(
+                                                    ModelDBServiceResourceTypes.REPOSITORY)
+                                                .build())
+                                        .setOwnerId(repository.getWorkspaceServiceId())
+                                        .setWorkspaceId(repository.getWorkspaceServiceId())
+                                        .build())
+                            .collect(Collectors.toList()))
+                    .build()));
+    mockGetSelfAllowedResources(
+        repoIdNameMap.keySet(), ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
   }
 }
