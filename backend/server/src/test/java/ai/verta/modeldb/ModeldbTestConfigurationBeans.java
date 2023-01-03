@@ -1,24 +1,28 @@
 package ai.verta.modeldb;
 
-import static org.mockito.Answers.RETURNS_DEEP_STUBS;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.GrpcServerConfig;
 import ai.verta.modeldb.common.config.ServiceConfig;
 import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.TestConfig;
+import ai.verta.uac.*;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.Optional;
 import java.util.Random;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import lombok.extern.log4j.Log4j2;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 
 @TestConfiguration
+@Log4j2
 public class ModeldbTestConfigurationBeans {
-  public static final Logger LOGGER = LogManager.getLogger(ModeldbTestConfigurationBeans.class);
 
   @Bean
   public TestConfig config() {
@@ -31,10 +35,60 @@ public class ModeldbTestConfigurationBeans {
   }
 
   @Bean
-  UAC uac(Config config, boolean runningIsolated) {
-    return runningIsolated
-        ? mock(UAC.class, RETURNS_DEEP_STUBS)
-        : UAC.fromConfig(config, Optional.empty());
+  UAC uac(Config config, @Qualifier("runningIsolated") boolean runningIsolated) {
+    return runningIsolated ? buildFullyMockedUac(config) : UAC.fromConfig(config, Optional.empty());
+  }
+
+  private static UAC buildFullyMockedUac(Config config) {
+    CollaboratorServiceGrpc.CollaboratorServiceFutureStub collab =
+        mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+    when(collab.withInterceptors(any())).thenReturn(collab);
+    CollaboratorServiceGrpc.CollaboratorServiceFutureStub serviceAccountCollab =
+        mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
+    when(serviceAccountCollab.withInterceptors(any())).thenReturn(serviceAccountCollab);
+    UACServiceGrpc.UACServiceFutureStub uacService =
+        mock(UACServiceGrpc.UACServiceFutureStub.class);
+    when(uacService.withInterceptors(any())).thenReturn(uacService);
+    WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspace =
+        mock(WorkspaceServiceGrpc.WorkspaceServiceFutureStub.class);
+    when(workspace.withInterceptors(any())).thenReturn(workspace);
+    AuthzServiceGrpc.AuthzServiceFutureStub authZ =
+        mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
+    when(authZ.withInterceptors(any())).thenReturn(authZ);
+
+    RoleServiceGrpc.RoleServiceFutureStub role = mock(RoleServiceGrpc.RoleServiceFutureStub.class);
+    when(role.withInterceptors(any())).thenReturn(role);
+    RoleServiceGrpc.RoleServiceFutureStub serviceAccountRole =
+        mock(RoleServiceGrpc.RoleServiceFutureStub.class);
+    when(serviceAccountRole.withInterceptors(any())).thenReturn(serviceAccountRole);
+    OrganizationServiceGrpc.OrganizationServiceFutureStub org =
+        mock(OrganizationServiceGrpc.OrganizationServiceFutureStub.class);
+    when(org.withInterceptors(any())).thenReturn(org);
+    EventServiceGrpc.EventServiceFutureStub event =
+        mock(EventServiceGrpc.EventServiceFutureStub.class);
+    when(event.withInterceptors(any())).thenReturn(event);
+    AuthServiceChannel authServiceChannel = mock(AuthServiceChannel.class);
+    return new UAC(
+        config,
+        collab,
+        serviceAccountCollab,
+        uacService,
+        workspace,
+        authZ,
+        role,
+        serviceAccountRole,
+        org,
+        event) {
+      @Override
+      public AuthServiceChannel getBlockingAuthServiceChannel() {
+        return authServiceChannel;
+      }
+    };
+  }
+
+  @Bean
+  OpenTelemetry openTelemetry() {
+    return OpenTelemetry.noop();
   }
 
   private static TestConfig initializeTestConfig() {

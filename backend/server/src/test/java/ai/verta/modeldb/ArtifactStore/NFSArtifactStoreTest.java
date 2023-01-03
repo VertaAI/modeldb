@@ -1,9 +1,9 @@
 package ai.verta.modeldb.ArtifactStore;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
 import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
@@ -26,10 +26,9 @@ import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectServiceGrpc;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
-import ai.verta.uac.AuthzServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResources.Response;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -40,17 +39,18 @@ import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
-import ai.verta.uac.RoleServiceGrpc;
 import ai.verta.uac.SetResource;
 import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.VertaUserInfo;
 import ai.verta.uac.Workspace;
-import ai.verta.uac.WorkspaceServiceGrpc;
 import com.google.api.client.util.IOUtils;
 import com.google.common.util.concurrent.Futures;
+import io.grpc.Context;
+import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
+import io.grpc.Metadata;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -61,44 +61,60 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Date;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class NFSArtifactStoreTest {
 
   private static final Logger LOGGER = LogManager.getLogger(NFSArtifactStoreTest.class);
-  protected static ProjectServiceBlockingStub projectServiceStub;
-  protected static ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
-  protected static ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub
-      experimentRunServiceStub;
   private static final String artifactKey = "readme.md";
-  private static Project project;
-  private static Experiment experiment;
-  private static ExperimentRun experimentRun;
+  private Project project;
+  private Experiment experiment;
+  private ExperimentRun experimentRun;
+  private ProjectServiceBlockingStub projectServiceStub;
+  private ExperimentServiceGrpc.ExperimentServiceBlockingStub experimentServiceStub;
+  private ExperimentRunServiceGrpc.ExperimentRunServiceBlockingStub experimentRunServiceStub;
 
   @Autowired UAC uac;
 
   @Autowired TestConfig testConfig;
 
-  @Autowired Executor executor;
+  @Autowired
+  @Qualifier("grpcExecutor")
+  Executor executor;
 
   @Autowired ReconcilerInitializer reconcilerInitializer;
+  private ManagedChannel channel;
+
+  @BeforeEach
+  public void createEntities() {
+    if (testConfig.getDatabase().getRdbConfiguration().isH2()) {
+      initializedChannelBuilderAndExternalServiceStubs();
+
+      setupMockUacEndpoints(uac);
+    }
+    createProjectEntities();
+    createExperimentEntities();
+    createExperimentRunEntities();
+  }
 
   private void setupMockUacEndpoints(UAC uac) {
-    var uacMock = mock(UACServiceGrpc.UACServiceFutureStub.class);
-    when(uac.getUACService()).thenReturn(uacMock);
+    Context.current().withValue(MetadataForwarder.METADATA_INFO, new Metadata()).attach();
+    UACServiceGrpc.UACServiceFutureStub uacMock = uac.getUACService();
     when(uacMock.getCurrentUser(any()))
         .thenReturn(
             Futures.immediateFuture(
@@ -124,25 +140,22 @@ public class NFSArtifactStoreTest {
                             .build())
                     .build()));
 
-    var authzMock = mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
-    when(uac.getAuthzService()).thenReturn(authzMock);
-    when(authzMock.isSelfAllowed(any()))
+    when(uac.getAuthzService().isSelfAllowed(any()))
         .thenReturn(
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
 
-    var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
-    when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
     // allow any SetResource call
-    when(collaboratorMock.setResource(any()))
+    when(uac.getCollaboratorService().setResource(any()))
         .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
-    var workspaceMock = mock(WorkspaceServiceGrpc.WorkspaceServiceFutureStub.class);
-    when(uac.getWorkspaceService()).thenReturn(workspaceMock);
-    when(workspaceMock.getWorkspaceById(GetWorkspaceById.newBuilder().setId(1L).build()))
+
+    when(uac.getWorkspaceService()
+            .getWorkspaceById(GetWorkspaceById.newBuilder().setId(1L).build()))
         .thenReturn(Futures.immediateFuture(Workspace.newBuilder().setId(1L).build()));
-    when(workspaceMock.getWorkspaceByName(GetWorkspaceByName.newBuilder().setName("").build()))
+    when(uac.getWorkspaceService()
+            .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName("").build()))
         .thenReturn(Futures.immediateFuture(Workspace.newBuilder().setId(1L).build()));
 
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+    when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
                 Response.newBuilder()
@@ -158,11 +171,10 @@ public class NFSArtifactStoreTest {
                             .setWorkspaceId(1L)
                             .build())
                     .build()));
-    var roleServiceMock = mock(RoleServiceGrpc.RoleServiceFutureStub.class);
-    when(uac.getServiceAccountRoleServiceFutureStub()).thenReturn(roleServiceMock);
-    when(roleServiceMock.setRoleBinding(any()))
+
+    when(uac.getServiceAccountRoleServiceFutureStub().setRoleBinding(any()))
         .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
-    when(authzMock.getSelfAllowedResources(any()))
+    when(uac.getAuthzService().getSelfAllowedResources(any()))
         .thenReturn(
             Futures.immediateFuture(
                 GetSelfAllowedResources.Response.newBuilder()
@@ -170,21 +182,9 @@ public class NFSArtifactStoreTest {
                     .build()));
   }
 
-  @Before
-  public void createEntities() {
-    if (testConfig.getDatabase().getRdbConfiguration().isH2()) {
-      initializedChannelBuilderAndExternalServiceStubs();
-
-      setupMockUacEndpoints(uac);
-    }
-    createProjectEntities();
-    createExperimentEntities();
-    createExperimentRunEntities();
-  }
-
   private void initializedChannelBuilderAndExternalServiceStubs() {
     var authClientInterceptor = new AuthClientInterceptor(testConfig);
-    var channel =
+    channel =
         ManagedChannelBuilder.forAddress("localhost", testConfig.getGrpcServer().getPort())
             .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
             .intercept(authClientInterceptor.getClient1AuthInterceptor())
@@ -200,18 +200,20 @@ public class NFSArtifactStoreTest {
     LOGGER.info("Test service infrastructure config complete.");
   }
 
-  @After
+  @AfterEach
   public void removeEntities() throws InterruptedException, IOException {
-    DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
-    DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
-    LOGGER.info("Project deleted successfully");
-    LOGGER.info(deleteProjectResponse.toString());
-    assertTrue(deleteProjectResponse.getStatus());
-
+    if (project != null) {
+      DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
+      projectServiceStub.deleteProject(deleteProject);
+    }
+    if (channel != null) {
+      channel.shutdown();
+      channel.awaitTermination(5, TimeUnit.SECONDS);
+    }
     cleanUpResources();
   }
 
-  private void cleanUpResources() throws InterruptedException, IOException {
+  private void cleanUpResources() throws IOException {
     // Remove all entities
     // removeEntities();
     // Delete entities by cron job
@@ -220,20 +222,11 @@ public class NFSArtifactStoreTest {
     var softDeleteExperimentRuns = reconcilerInitializer.getSoftDeleteExperimentRuns();
 
     softDeleteProjects.resync();
-    while (!softDeleteProjects.isEmpty()) {
-      LOGGER.trace("Project deletion is still in progress");
-      Thread.sleep(10);
-    }
+    await().until(softDeleteProjects::isEmpty);
     softDeleteExperiments.resync();
-    while (!softDeleteExperiments.isEmpty()) {
-      LOGGER.trace("Experiment deletion is still in progress");
-      Thread.sleep(10);
-    }
+    await().until(softDeleteExperiments::isEmpty);
     softDeleteExperimentRuns.resync();
-    while (!softDeleteExperimentRuns.isEmpty()) {
-      LOGGER.trace("ExperimentRun deletion is still in progress");
-      Thread.sleep(10);
-    }
+    await().until(softDeleteExperimentRuns::isEmpty);
 
     reconcilerInitializer.getSoftDeleteDatasets().resync();
     reconcilerInitializer.getSoftDeleteRepositories().resync();
@@ -254,9 +247,7 @@ public class NFSArtifactStoreTest {
     assertEquals("Project name not match with expected Project name", name, project.getName());
 
     if (testConfig.getDatabase().getRdbConfiguration().isH2()) {
-      var collaboratorMock = mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
-      when(uac.getCollaboratorService()).thenReturn(collaboratorMock);
-      when(collaboratorMock.getResources(any()))
+      when(uac.getCollaboratorService().getResources(any()))
           .thenReturn(
               Futures.immediateFuture(
                   GetResources.Response.newBuilder()
@@ -269,7 +260,7 @@ public class NFSArtifactStoreTest {
     }
   }
 
-  private static void createExperimentEntities() {
+  private void createExperimentEntities() {
     var name = "Experiment" + new Date().getTime();
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(
@@ -277,10 +268,10 @@ public class NFSArtifactStoreTest {
     experiment = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
-        "Experiment name not match with expected Experiment name", name, experiment.getName());
+        "Experiment name does not match with expected Experiment name", name, experiment.getName());
   }
 
-  private static void createExperimentRunEntities() {
+  private void createExperimentRunEntities() {
     var name = "ExperimentRun" + new Date().getTime();
     var createExperimentRunRequest =
         CreateExperimentRun.newBuilder()
@@ -319,15 +310,16 @@ public class NFSArtifactStoreTest {
     try (InputStream inputStream =
         new FileInputStream("src/test/java/ai/verta/modeldb/updateProjectReadMe.md")) {
 
-      HttpURLConnection httpClient =
-          (HttpURLConnection) new URL(getUrlForArtifactResponse.getUrl()).openConnection();
+      String url = getUrlForArtifactResponse.getUrl();
+      System.out.println("url = " + url);
+      HttpURLConnection httpClient = (HttpURLConnection) new URL(url).openConnection();
       httpClient.setRequestMethod("PUT");
       httpClient.setDoOutput(true);
       httpClient.setRequestProperty("Content-Type", "application/json");
-      OutputStream out = httpClient.getOutputStream();
-      IOUtils.copy(inputStream, out);
-      out.flush();
-      out.close();
+      try (OutputStream out = httpClient.getOutputStream()) {
+        IOUtils.copy(inputStream, out);
+        out.flush();
+      }
 
       int responseCode = httpClient.getResponseCode();
       LOGGER.info("POST Response Code :: {}", responseCode);
@@ -357,7 +349,7 @@ public class NFSArtifactStoreTest {
 
     String rootPath = System.getProperty("user.dir");
     FileOutputStream fileOutputStream =
-        new FileOutputStream(new File(rootPath + File.separator + artifactKey));
+        new FileOutputStream(rootPath + File.separator + artifactKey);
     IOUtils.copy(inputStream, fileOutputStream);
     fileOutputStream.close();
     inputStream.close();
