@@ -526,7 +526,7 @@ public abstract class ModeldbTestSetup {
                 Collectors.toMap(
                     entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
     mockGetResources(repoIdNameMap, userInfo);
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+    when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
                 GetResources.Response.newBuilder()
