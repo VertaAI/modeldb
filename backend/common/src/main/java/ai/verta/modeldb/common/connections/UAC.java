@@ -37,6 +37,32 @@ public class UAC extends Connection {
     return new UAC(config, tracingClientInterceptor);
   }
 
+  /** For use only for testing. */
+  public UAC(
+      Config config,
+      CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub,
+      CollaboratorServiceGrpc.CollaboratorServiceFutureStub
+          serviceAccountCollaboratorServiceFutureStub,
+      UACServiceGrpc.UACServiceFutureStub uacServiceFutureStub,
+      WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub,
+      AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub,
+      RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub,
+      RoleServiceGrpc.RoleServiceFutureStub serviceAccountRoleServiceFutureStub,
+      OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub,
+      EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub) {
+    super(Optional.empty());
+    this.config = config;
+    this.collaboratorServiceFutureStub = collaboratorServiceFutureStub;
+    this.serviceAccountCollaboratorServiceFutureStub = serviceAccountCollaboratorServiceFutureStub;
+    this.uacServiceFutureStub = uacServiceFutureStub;
+    this.workspaceServiceFutureStub = workspaceServiceFutureStub;
+    this.authzServiceFutureStub = authzServiceFutureStub;
+    this.roleServiceFutureStub = roleServiceFutureStub;
+    this.serviceAccountRoleServiceFutureStub = serviceAccountRoleServiceFutureStub;
+    this.organizationServiceFutureStub = organizationServiceFutureStub;
+    this.eventServiceFutureStub = eventServiceFutureStub;
+  }
+
   private UAC(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
     super(tracingClientInterceptor);
     String host = config.getAuthService().getHost();

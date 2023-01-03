@@ -148,7 +148,7 @@ class GlobalSharingTest extends ModeldbTestSetup {
             .build();
     if (isRunningIsolated()) {
       organization = organization.toBuilder().setId(UUID.randomUUID().toString()).build();
-      when(workspaceMock.getWorkspaceByName(any()))
+      when(uac.getWorkspaceService().getWorkspaceByName(any()))
           .thenReturn(
               Futures.immediateFuture(
                   Workspace.newBuilder()
@@ -259,8 +259,9 @@ class GlobalSharingTest extends ModeldbTestSetup {
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
     try {
       if (isRunningIsolated()) {
-        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getUACService().getCurrentUser(any()))
+            .thenReturn(Futures.immediateFuture(testUser2));
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -303,16 +304,17 @@ class GlobalSharingTest extends ModeldbTestSetup {
     }
     try {
       if (isRunningIsolated()) {
-        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+        when(uac.getUACService().getCurrentUser(any()))
+            .thenReturn(Futures.immediateFuture(testUser1));
         if (isWriteAllowed) {
-          when(authzMock.isSelfAllowed(any()))
+          when(uac.getAuthzService().isSelfAllowed(any()))
               .thenReturn(
                   Futures.immediateFuture(
                       IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
           when(authzBlockingMock.isSelfAllowed(any()))
               .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
         } else {
-          when(authzMock.isSelfAllowed(any()))
+          when(uac.getAuthzService().isSelfAllowed(any()))
               .thenReturn(
                   Futures.immediateFuture(
                       IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
