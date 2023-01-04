@@ -1573,7 +1573,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def set_hide_output_label(self, hide):
         """
-        Sets this whether to hide the model version's output label on the preview.
+        Sets whether to hide the model version's output label on the preview.
 
         Parameters
         ----------
