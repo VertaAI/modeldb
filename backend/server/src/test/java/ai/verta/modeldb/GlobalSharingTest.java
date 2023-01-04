@@ -45,14 +45,14 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 class GlobalSharingTest extends ModeldbTestSetup {
@@ -122,6 +122,7 @@ class GlobalSharingTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -267,6 +268,8 @@ class GlobalSharingTest extends ModeldbTestSetup {
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
         when(authzBlockingMock.isSelfAllowed(any()))
             .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+        when(uac.getWorkspaceService().getWorkspaceById(any()))
+            .thenReturn(Futures.immediateFuture(Workspace.newBuilder().build()));
         if (!isReadAllowed) {
           mockGetResourcesForAllProjects(Map.of(), testUser2);
           mockGetResourcesForAllDatasets(Map.of(), testUser2);

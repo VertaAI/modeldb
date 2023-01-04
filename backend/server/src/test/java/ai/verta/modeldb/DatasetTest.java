@@ -57,14 +57,16 @@ public class DatasetTest extends ModeldbTestSetup {
   private static final Logger LOGGER = LogManager.getLogger(DatasetTest.class);
 
   // Dataset Entities
-  private static Dataset dataset1;
-  private static Dataset dataset2;
-  private static Dataset dataset3;
-  private static Dataset dataset4;
-  private static Map<String, Dataset> datasetMap = new HashMap<>();
+  private Dataset dataset1;
+  private Dataset dataset2;
+  private Dataset dataset3;
+  private Dataset dataset4;
+  private final Map<String, Dataset> datasetMap = new HashMap<>();
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -76,24 +78,18 @@ public class DatasetTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     if (isRunningIsolated()) {
       when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
       mockGetResourcesForAllDatasets(datasetMap, testUser1);
     }
     DeleteDatasets deleteDatasets =
         DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
-    DeleteDatasets.Response deleteDatasetsResponse =
-        datasetServiceStub.deleteDatasets(deleteDatasets);
+    datasetServiceStub.deleteDatasets(deleteDatasets);
     LOGGER.info("Datasets deleted successfully");
-    LOGGER.info(deleteDatasetsResponse.toString());
-    assertTrue(deleteDatasetsResponse.getStatus());
 
-    dataset1 = null;
-    dataset2 = null;
-    dataset3 = null;
-    dataset4 = null;
-    datasetMap = new HashMap<>();
+    super.tearDown();
   }
 
   private void createDatasetEntities() {

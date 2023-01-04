@@ -53,7 +53,9 @@ public class ExperimentTest extends ModeldbTestSetup {
   private static Experiment experiment;
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -65,7 +67,8 @@ public class ExperimentTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     if (isRunningIsolated()) {
       when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
       mockGetSelfAllowedResources(
@@ -83,6 +86,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     // Experiment Entities
     experiment = null;
+    super.tearDown();
   }
 
   private void createProjectEntities() {
