@@ -39,6 +39,8 @@ public abstract class Config {
   @JsonProperty private volatile OpenTelemetry openTelemetry;
   @JsonProperty private ArtifactStoreConfig artifactStoreConfig;
 
+  @JsonProperty private boolean permissionV2Enabled = false;
+
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
     try {
