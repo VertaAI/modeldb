@@ -308,14 +308,16 @@ public class DatasetTest extends ModeldbTestSetup {
     when(uac.getCollaboratorService().setResource(any()))
         .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
     if (mockResource) {
-      when(collaboratorBlockingMock.getResources(any())).thenReturn(Response.newBuilder()
-          .addItem(
-              GetResourcesResponseItem.newBuilder()
-                  .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                  .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                  .setVisibility(ResourceVisibility.PRIVATE)
-                  .build())
-          .build());
+      when(collaboratorBlockingMock.getResources(any()))
+          .thenReturn(
+              Response.newBuilder()
+                  .addItem(
+                      GetResourcesResponseItem.newBuilder()
+                          .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                          .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                          .setVisibility(ResourceVisibility.PRIVATE)
+                          .build())
+                  .build());
     }
     when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
     when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
