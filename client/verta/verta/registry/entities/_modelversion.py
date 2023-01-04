@@ -1586,7 +1586,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def get_hide_output_label(self):
         """
-        Gets this whether to hide the model version's output label on the preview.
+        Gets whether to hide the model version's output label on the preview.
 
         Returns
         -------
