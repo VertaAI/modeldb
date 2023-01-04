@@ -122,11 +122,13 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
         .getEntityResource(projectId, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
         .thenCompose(
             projectResource ->
-                futureEventDAO.addLocalEventWithAsync(
-                    ModelDBServiceResourceTypes.EXPERIMENT.name(),
-                    eventType,
-                    projectResource.getWorkspaceId(),
-                    eventMetadata),
+                futureEventDAO
+                    .addLocalEventWithAsync(
+                        ModelDBServiceResourceTypes.EXPERIMENT.name(),
+                        eventType,
+                        projectResource.getWorkspaceId(),
+                        eventMetadata)
+                    .toInternalFuture(),
             executor);
   }
 

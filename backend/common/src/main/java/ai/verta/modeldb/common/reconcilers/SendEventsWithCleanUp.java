@@ -3,11 +3,10 @@ package ai.verta.modeldb.common.reconcilers;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.event.FutureEventDAO;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.uac.CreateEventRequest;
+import ai.verta.uac.Empty;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.Any;
 import com.google.protobuf.Value;
 import java.util.ArrayList;
@@ -56,33 +55,32 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
 
   @Override
   protected ReconcileResult reconcile(Set<CreateEventRequest> eventUUIDs) throws Exception {
-    return InternalFuture.completedInternalFuture(eventUUIDs)
+    return Future.of(eventUUIDs)
         .thenCompose(
             createEventRequests -> {
-              List<InternalFuture<String>> deletedEventUUIDFutures = new ArrayList<>();
+              List<Future<String>> deletedEventUUIDFutures = new ArrayList<>();
               for (CreateEventRequest request : createEventRequests) {
+                ListenableFuture<Empty> listenableFuture =
+                    uac.getEventService().createEvent(request);
                 deletedEventUUIDFutures.add(
-                    FutureUtil.clientRequest(uac.getEventService().createEvent(request), executor)
-                        .thenApply(empty -> request.getEventUuid(), executor));
+                    Future.fromListenableFuture(listenableFuture)
+                        .thenApply(empty -> request.getEventUuid()));
               }
-              return InternalFuture.sequence(deletedEventUUIDFutures, executor);
-            },
-            executor)
+              return Future.sequence(deletedEventUUIDFutures);
+            })
         .thenCompose(
             deleteEventUUIDs -> {
               logger.debug("Ready to delete local events from database");
-              InternalFuture<Void> statusFuture =
+              Future<Void> statusFuture =
                   futureEventDAO.deleteLocalEventWithAsync(deleteEventUUIDs);
               logger.debug("Deleted local events from database");
               return statusFuture;
-            },
-            executor)
+            })
         .thenApply(
             status -> {
               logger.debug("local events sent into the global event server successfully");
               return new ReconcileResult();
-            },
-            executor)
+            })
         .get();
   }
 }

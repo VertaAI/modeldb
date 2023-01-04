@@ -105,8 +105,10 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       eventMetadata.add("updated_field_value", updatedFieldValue);
     }
     eventMetadata.addProperty("message", eventMessage);
-    return futureEventDAO.addLocalEventWithAsync(
-        ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
+    return futureEventDAO
+        .addLocalEventWithAsync(
+            ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata)
+        .toInternalFuture();
   }
 
   @Override

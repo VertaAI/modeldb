@@ -5,10 +5,7 @@ import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.subtypes.CommonArtifactHandler;
 import com.google.rpc.Code;
 import java.sql.ResultSet;
@@ -30,12 +27,11 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
   protected String entityIdReferenceColumn;
 
   public ArtifactHandlerBase(
-      FutureExecutor executor,
       FutureJdbi jdbi,
       String fieldType,
       String entityName,
       ArtifactStoreConfig artifactStoreConfig) {
-    super(executor, jdbi, artifactStoreConfig, entityName);
+    super(jdbi, artifactStoreConfig, entityName);
     this.fieldType = fieldType;
 
     switch (entityName) {
@@ -75,17 +71,16 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
     return query;
   }
 
-  protected InternalFuture<Optional<Long>> getArtifactId(String entityId, String key) {
-    return InternalFuture.runAsync(
+  protected Future<Optional<Long>> getArtifactId(String entityId, String key) {
+    return Future.runAsync(
             () -> {
               if (key.isEmpty()) {
                 throw new ModelDBException("Key must be provided", Code.INVALID_ARGUMENT);
               }
-            },
-            executor)
+            })
         .thenCompose(
             unused ->
-                jdbi.withHandle(
+                jdbi.call(
                     handle ->
                         handle
                             .createQuery(
@@ -97,13 +92,12 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
                             .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                             .bind("ar_key", key)
                             .mapTo(Long.class)
-                            .findOne()),
-            executor);
+                            .findOne()));
   }
 
   @Override
-  public InternalFuture<Void> deleteArtifacts(String entityId, Optional<List<String>> maybeKeys) {
-    return jdbi.useHandle(handle -> deleteArtifactsWithHandle(entityId, maybeKeys, handle));
+  public Future<Void> deleteArtifacts(String entityId, Optional<List<String>> maybeKeys) {
+    return jdbi.run(handle -> deleteArtifactsWithHandle(entityId, maybeKeys, handle));
   }
 
   @Override

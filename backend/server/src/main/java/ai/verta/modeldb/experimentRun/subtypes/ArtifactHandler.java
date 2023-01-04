@@ -25,9 +25,10 @@ import org.hibernate.LockMode;
 import org.hibernate.Session;
 
 public class ArtifactHandler extends ArtifactHandlerBase {
-  private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
   private static final String KEY_S_NOT_LOGGED_ERROR = "Key %s not logged";
 
+  private final FutureExecutor executor;
   private final CodeVersionHandler codeVersionHandler;
   private final DatasetHandler datasetHandler;
   private final MDBConfig mdbConfig = App.getInstance().mdbConfig;
@@ -45,7 +46,8 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       DatasetHandler datasetHandler,
       ArtifactStoreDAO artifactStoreDAO,
       MDBConfig mdbConfig) {
-    super(executor, jdbi, "artifacts", entityName, mdbConfig.getArtifactStoreConfig());
+    super(jdbi, "artifacts", entityName, mdbConfig.getArtifactStoreConfig());
+    this.executor = executor;
     this.codeVersionHandler = codeVersionHandler;
     this.datasetHandler = datasetHandler;
     this.artifactStoreDAO = artifactStoreDAO;
@@ -128,6 +130,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
   private InternalFuture<Map.Entry<String, String>> getEntityArtifactS3PathAndMultipartUploadID(
       String entityId, String key, long partNumber, S3KeyFunction initializeMultipart) {
     return getArtifactId(entityId, key)
+        .toInternalFuture()
         .thenApply(
             maybeId -> {
               final var id =
@@ -193,6 +196,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
             unused ->
                 datasetHandler
                     .getArtifacts(request.getId(), Optional.of(request.getKey()))
+                    .toInternalFuture()
                     .thenApply(
                         artifacts -> {
                           if (artifacts.isEmpty()) {
@@ -219,6 +223,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
 
   public InternalFuture<Void> commitArtifactPart(CommitArtifactPart request) {
     return getArtifactId(request.getId(), request.getKey())
+        .toInternalFuture()
         .thenAccept(
             maybeId -> {
               final var id =
@@ -242,6 +247,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
   public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
       GetCommittedArtifactParts request) {
     return getArtifactId(request.getId(), request.getKey())
+        .toInternalFuture()
         .thenApply(
             maybeId -> {
               final var id =
@@ -267,6 +273,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
 
   public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
     return getArtifactId(request.getId(), request.getKey())
+        .toInternalFuture()
         .thenAccept(
             maybeId -> {
               final var id =

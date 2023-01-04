@@ -105,7 +105,7 @@ public class DAOSet {
             set.uacApisUtil,
             reconcilerInitializer);
     set.futureEventDAO =
-        new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
+        new FutureEventDAO(jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
     set.futureExperimentDAO =
         new FutureExperimentDAO(executor, jdbi, services.getUac(), mdbConfig, set);
 

@@ -4,10 +4,10 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import java.math.BigDecimal;
@@ -64,9 +64,8 @@ public abstract class KeyValueHandler<T> {
     setEntityIdReferenceColumn(entityName);
   }
 
-  public InternalFuture<List<KeyValue>> getKeyValues(
-      T entityId, List<String> attrKeys, boolean getAll) {
-    return jdbi.withHandle(
+  public Future<List<KeyValue>> getKeyValues(T entityId, List<String> attrKeys, boolean getAll) {
+    return jdbi.call(
             handle -> {
               var queryString =
                   String.format(
@@ -100,12 +99,11 @@ public abstract class KeyValueHandler<T> {
             attributes ->
                 attributes.stream()
                     .sorted(Comparator.comparing(KeyValue::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+                    .collect(Collectors.toList()));
   }
 
-  public InternalFuture<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
-    return jdbi.withHandle(
+  public Future<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
+    return jdbi.call(
             handle ->
                 handle
                     .createQuery(
@@ -119,11 +117,10 @@ public abstract class KeyValueHandler<T> {
                     .list())
         .thenApply(
             simpleEntries ->
-                simpleEntries.stream()
-                    .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
-                    .collect(Collectors.toList()),
-            executor)
-        .thenApply(MapSubtypes::from, executor);
+                MapSubtypes.from(
+                    simpleEntries.stream()
+                        .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
+                        .collect(Collectors.toList())));
   }
 
   protected abstract AbstractMap.SimpleEntry<T, KeyValue> getSimpleEntryFromResultSet(ResultSet rs)

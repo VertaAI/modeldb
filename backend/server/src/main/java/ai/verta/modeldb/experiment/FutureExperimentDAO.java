@@ -59,13 +59,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentDAO {
-  private static final Logger LOGGER = LogManager.getLogger(FutureExperimentDAO.class);
-
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
@@ -261,7 +257,7 @@ public class FutureExperimentDAO {
 
                                     // Get attributes
                                     final var futureAttributes =
-                                        attributeHandler.getKeyValuesMap(ids);
+                                        attributeHandler.getKeyValuesMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureAttributes,
@@ -274,7 +270,7 @@ public class FutureExperimentDAO {
 
                                     // Get artifacts
                                     final var futureArtifacts =
-                                        artifactHandler.getArtifactsMap(ids);
+                                        artifactHandler.getArtifactsMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureArtifacts,
@@ -662,7 +658,9 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> attributeHandler.getKeyValues(expId, keys, getAll), executor)
+        .thenCompose(
+            unused -> attributeHandler.getKeyValues(expId, keys, getAll).toInternalFuture(),
+            executor)
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
             executor);
@@ -771,7 +769,9 @@ public class FutureExperimentDAO {
                     projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(
-            unused -> artifactHandler.getArtifacts(experimentId, Optional.empty()), executor)
+            unused ->
+                artifactHandler.getArtifacts(experimentId, Optional.empty()).toInternalFuture(),
+            executor)
         .thenAccept(
             existingArtifacts -> {
               for (Artifact existingArtifact : existingArtifacts) {
@@ -810,7 +810,8 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> artifactHandler.getArtifacts(expId, maybeKey), executor);
+        .thenCompose(
+            unused -> artifactHandler.getArtifacts(expId, maybeKey).toInternalFuture(), executor);
   }
 
   public InternalFuture<Experiment> deleteArtifacts(DeleteExperimentArtifact request) {

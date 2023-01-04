@@ -5,10 +5,9 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.rpc.Code;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,7 +23,6 @@ import org.jdbi.v3.core.statement.Query;
 
 public abstract class CommonArtifactHandler<T> {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
-  protected final FutureExecutor executor;
   protected final FutureJdbi jdbi;
   private final ArtifactStoreConfig artifactStoreConfig;
   protected final String entityName;
@@ -34,22 +32,18 @@ public abstract class CommonArtifactHandler<T> {
   }
 
   public CommonArtifactHandler(
-      FutureExecutor executor,
-      FutureJdbi jdbi,
-      ArtifactStoreConfig artifactStoreConfig,
-      String entityName) {
-    this.executor = executor;
+      FutureJdbi jdbi, ArtifactStoreConfig artifactStoreConfig, String entityName) {
     this.jdbi = jdbi;
     this.artifactStoreConfig = artifactStoreConfig;
     this.entityName = entityName;
   }
 
-  public InternalFuture<List<Artifact>> getArtifacts(T entityId, Optional<String> maybeKey) {
-    var currentFuture = InternalFuture.runAsync(() -> validateField(entityId), executor);
+  public Future<List<Artifact>> getArtifacts(T entityId, Optional<String> maybeKey) {
+    var currentFuture = Future.runAsync(() -> validateField(entityId));
     return currentFuture
         .thenCompose(
             unused ->
-                jdbi.withHandle(
+                jdbi.call(
                     handle -> {
                       Query query =
                           buildGetArtifactsQuery(Collections.singleton(entityId), maybeKey, handle);
@@ -68,14 +62,12 @@ public abstract class CommonArtifactHandler<T> {
                                       .setUploadCompleted(rs.getBoolean("uc"))
                                       .build())
                           .list();
-                    }),
-            executor)
+                    }))
         .thenApply(
             artifacts ->
                 artifacts.stream()
                     .sorted(Comparator.comparing(Artifact::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+                    .collect(Collectors.toList()));
   }
 
   private void validateField(T entityId) {
@@ -89,8 +81,8 @@ public abstract class CommonArtifactHandler<T> {
   protected abstract Query buildGetArtifactsQuery(
       Set<T> entityIds, Optional<String> maybeKey, Handle handle);
 
-  public InternalFuture<MapSubtypes<T, Artifact>> getArtifactsMap(Set<T> entityIds) {
-    return jdbi.withHandle(
+  public Future<MapSubtypes<T, Artifact>> getArtifactsMap(Set<T> entityIds) {
+    return jdbi.call(
             handle -> {
               Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
               return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
@@ -99,9 +91,8 @@ public abstract class CommonArtifactHandler<T> {
             simpleEntries ->
                 simpleEntries.stream()
                     .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
-                    .collect(Collectors.toList()),
-            executor)
-        .thenApply(MapSubtypes::from, executor);
+                    .collect(Collectors.toList()))
+        .thenApply(MapSubtypes::from);
   }
 
   protected abstract AbstractMap.SimpleEntry<T, Artifact> getSimpleEntryFromResultSet(ResultSet rs)
@@ -171,8 +162,7 @@ public abstract class CommonArtifactHandler<T> {
   protected abstract void deleteArtifactsWithHandle(
       T entityId, Optional<List<String>> maybeKeys, Handle handle);
 
-  public abstract InternalFuture<Void> deleteArtifacts(
-      T entityId, Optional<List<String>> maybeKeys);
+  public abstract Future<Void> deleteArtifacts(T entityId, Optional<List<String>> maybeKeys);
 
   protected abstract void updateArtifactWithHandle(
       T entityId, Handle handle, Artifact artifact, boolean uploadCompleted, String storeTypePath);

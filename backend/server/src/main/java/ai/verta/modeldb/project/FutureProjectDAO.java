@@ -210,7 +210,9 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> attributeHandler.getKeyValues(projectId, keys, getAll), executor);
+        .thenCompose(
+            unused -> attributeHandler.getKeyValues(projectId, keys, getAll).toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<Void> logAttributes(LogAttributes request) {
@@ -575,7 +577,9 @@ public class FutureProjectDAO {
 
                                               // Get attributes
                                               final var futureAttributes =
-                                                  attributeHandler.getKeyValuesMap(ids);
+                                                  attributeHandler
+                                                      .getKeyValuesMap(ids)
+                                                      .toInternalFuture();
                                               futureBuildersStream =
                                                   futureBuildersStream.thenCombine(
                                                       futureAttributes,
@@ -589,7 +593,9 @@ public class FutureProjectDAO {
 
                                               // Get artifacts
                                               final var futureArtifacts =
-                                                  artifactHandler.getArtifactsMap(ids);
+                                                  artifactHandler
+                                                      .getArtifactsMap(ids)
+                                                      .toInternalFuture();
                                               futureBuildersStream =
                                                   futureBuildersStream.thenCombine(
                                                       futureArtifacts,
@@ -1107,7 +1113,9 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> artifactHandler.getArtifacts(projectId, maybeKey), executor);
+        .thenCompose(
+            unused -> artifactHandler.getArtifacts(projectId, maybeKey).toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(DeleteProjectArtifact request) {
@@ -1120,7 +1128,9 @@ public class FutureProjectDAO {
     Optional<List<String>> optionalKeys = keys.isEmpty() ? Optional.empty() : Optional.of(keys);
 
     return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.deleteArtifacts(projectId, optionalKeys), executor)
+        .thenCompose(
+            unused -> artifactHandler.deleteArtifacts(projectId, optionalKeys).toInternalFuture(),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }
