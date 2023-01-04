@@ -4,7 +4,6 @@ import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectIn
 import static ai.verta.modeldb.RepositoryTest.createRepository;
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
@@ -17,7 +16,6 @@ import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.GetExperimentRunById.Response;
 import ai.verta.modeldb.common.CommonConstants;
-import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -40,9 +38,7 @@ import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddGroupUsers;
-import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.CollaboratorServiceGrpc.CollaboratorServiceBlockingStub;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
@@ -53,6 +49,7 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.RemoveGroupUsers;
 import ai.verta.uac.ResourceType;
 import ai.verta.uac.ResourceTypeV2;
+import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
@@ -77,17 +74,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class ExperimentRunTest extends ModeldbTestSetup {
@@ -109,7 +106,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   private static ExperimentRun experimentRun2;
   private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -123,7 +120,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     createExperimentRunEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     DeleteExperimentRuns deleteExperimentRun =
         DeleteExperimentRuns.newBuilder().addAllIds(experimentRunMap.keySet()).build();
@@ -176,7 +173,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
 
       if (testConfig.isPermissionV2Enabled()) {
-        when(workspaceMock.getWorkspaceByName(any()))
+        when(uac.getWorkspaceService().getWorkspaceByName(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     Workspace.newBuilder()
@@ -227,17 +224,19 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllProjects(projectMap, testUser1);
-      when(authzMock.getSelfAllowedResources(
-              GetSelfAllowedResources.newBuilder()
-                  .addActions(
-                      Action.newBuilder()
-                          .setModeldbServiceAction(ModelDBServiceActions.READ)
-                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                  .setResourceType(
-                      ResourceType.newBuilder()
-                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                  .build()))
+      when(uac.getAuthzService()
+              .getSelfAllowedResources(
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
           .thenReturn(
               Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
     }
@@ -607,7 +606,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -622,7 +621,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -1125,7 +1124,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: updateExperimentRunName endpoint")
+  @Disabled("UNIMPLEMENTED: updateExperimentRunName endpoint")
   public void d_updateExperimentRunNameOrDescription() {
     LOGGER.info(
         "Update ExperimentRun Name & Description test start................................");
@@ -1177,7 +1176,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: updateExperimentRunName endpoint")
+  @Disabled("UNIMPLEMENTED: updateExperimentRunName endpoint")
   public void d_updateExperimentRunNameOrDescriptionNegativeTest() {
     LOGGER.info("Update ExperimentRun Name & Description Negative test start.......");
 
@@ -3948,7 +3947,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: sortExperimentRuns endpoint")
+  @Disabled("UNIMPLEMENTED: sortExperimentRuns endpoint")
   public void t_sortExperimentRunsTest() {
     LOGGER.info("SortExperimentRuns test start................................");
 
@@ -4203,7 +4202,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: sortExperimentRuns endpoint")
+  @Disabled("UNIMPLEMENTED: sortExperimentRuns endpoint")
   public void t_sortExperimentRunsNegativeTest() {
     LOGGER.info("SortExperimentRuns Negative test start................................");
 
@@ -4241,7 +4240,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getTopExperimentRuns endpoint")
+  @Disabled("UNIMPLEMENTED: getTopExperimentRuns endpoint")
   public void u_getTopExperimentRunsTest() {
     LOGGER.info("TopExperimentRuns test start................................");
 
@@ -4497,7 +4496,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getTopExperimentRuns endpoint")
+  @Disabled("UNIMPLEMENTED: getTopExperimentRuns endpoint")
   public void u_getTopExperimentRunsNegativeTest() {
     LOGGER.info("TopExperimentRuns Negative test start................................");
 
@@ -4539,7 +4538,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: logJobId endpoint")
+  @Disabled("UNIMPLEMENTED: logJobId endpoint")
   public void v_logJobIdTest() {
     LOGGER.info(" Log Job Id in ExperimentRun test start................................");
 
@@ -4566,7 +4565,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: logJobId endpoint")
+  @Disabled("UNIMPLEMENTED: logJobId endpoint")
   public void v_logJobIdNegativeTest() {
     LOGGER.info(" Log Job Id in ExperimentRun Negative test start................................");
 
@@ -4597,7 +4596,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: logJobId endpoint")
+  @Disabled("UNIMPLEMENTED: logJobId endpoint")
   public void w_getJobIdTest() {
     LOGGER.info(" Get Job Id in ExperimentRun test start................................");
 
@@ -4628,7 +4627,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: logJobId endpoint")
+  @Disabled("UNIMPLEMENTED: logJobId endpoint")
   public void w_getJobIdNegativeTest() {
     LOGGER.info(" Get Job Id in ExperimentRun Negative test start................................");
 
@@ -4839,7 +4838,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: getChildrenExperimentRuns endpoint")
+  @Disabled("UNIMPLEMENTED: getChildrenExperimentRuns endpoint")
   public void getChildExperimentRunWithPaginationTest() {
     LOGGER.info(
         "Get Children ExperimentRun using pagination test start................................");
@@ -5065,7 +5064,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: setParentExperimentRunId endpoint")
+  @Disabled("UNIMPLEMENTED: setParentExperimentRunId endpoint")
   public void setParentIdOnChildExperimentRunTest() {
     LOGGER.info(
         "Set Parent ID on Children ExperimentRun test start................................");
@@ -5441,9 +5440,10 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     if (testConfig.hasAuth()) {
       if (isRunningIsolated()) {
-        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+        when(uac.getUACService().getCurrentUser(any()))
+            .thenReturn(Futures.immediateFuture(testUser2));
         // mockGetResourcesForAllEntity(Map.of(project.getId(), project), testUser2);
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -5456,7 +5456,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       }
 
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -5499,8 +5499,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     }
 
     if (isRunningIsolated()) {
-      when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
-      when(authzMock.isSelfAllowed(any()))
+      when(uac.getUACService().getCurrentUser(any()))
+          .thenReturn(Futures.immediateFuture(testUser1));
+      when(uac.getAuthzService().isSelfAllowed(any()))
           .thenReturn(
               Futures.immediateFuture(
                   IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -5817,8 +5818,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
-          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
-          when(authzMock.isSelfAllowed(any()))
+          when(uac.getUACService().getCurrentUser(any()))
+              .thenReturn(Futures.immediateFuture(testUser2));
+          when(uac.getAuthzService().isSelfAllowed(any()))
               .thenReturn(
                   Futures.immediateFuture(
                       IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -5838,8 +5840,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       }
     } finally {
       if (isRunningIsolated()) {
-        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getUACService().getCurrentUser(any()))
+            .thenReturn(Futures.immediateFuture(testUser1));
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -5857,7 +5860,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: listCommitExperimentRuns endpoint")
+  @Disabled("UNIMPLEMENTED: listCommitExperimentRuns endpoint")
   public void listCommitExperimentRunsTest() throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun for commit test start................................");
 
@@ -6103,7 +6106,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore("UNIMPLEMENTED: listBlobExperimentRuns endpoint")
+  @Disabled("UNIMPLEMENTED: listBlobExperimentRuns endpoint")
   public void ListBlobExperimentRunsRequestTest()
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Fetch ExperimentRun blobs for commit test start................................");
@@ -6691,8 +6694,40 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       AddCollaboratorRequest.Response addCollaboratorResponse = null;
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
-          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+          when(uac.getUACService().getCurrentUser(any()))
+              .thenReturn(Futures.immediateFuture(testUser2));
           mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser2);
+          when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      GetResources.Response.newBuilder()
+                          .addItem(
+                              GetResourcesResponseItem.newBuilder()
+                                  .setVisibility(ResourceVisibility.PRIVATE)
+                                  .setResourceType(
+                                      ResourceType.newBuilder()
+                                          .setModeldbServiceResourceType(
+                                              ModelDBServiceResourceTypes.PROJECT)
+                                          .build())
+                                  .setOwnerId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                                  .setWorkspaceId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                                  .build())
+                          .build()));
+          when(uac.getAuthzService()
+                  .getSelfAllowedResources(
+                      GetSelfAllowedResources.newBuilder()
+                          .addActions(
+                              Action.newBuilder()
+                                  .setModeldbServiceAction(ModelDBServiceActions.READ)
+                                  .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                          .setResourceType(
+                              ResourceType.newBuilder()
+                                  .setModeldbServiceResourceType(
+                                      ModelDBServiceResourceTypes.REPOSITORY))
+                          .build()))
+              .thenReturn(
+                  Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
         } else if (testConfig.isPermissionV2Enabled()) {
           if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
             createAndGetRole(
@@ -6769,18 +6804,19 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         }
 
         if (isRunningIsolated()) {
-          when(authzMock.getSelfAllowedResources(
-                  GetSelfAllowedResources.newBuilder()
-                      .addActions(
-                          Action.newBuilder()
-                              .setModeldbServiceAction(ModelDBServiceActions.READ)
-                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                      .setResourceType(
-                          ResourceType.newBuilder()
-                              .setModeldbServiceResourceType(
-                                  ModelDBServiceResourceTypes.REPOSITORY))
-                      .build()))
+          when(uac.getAuthzService()
+                  .getSelfAllowedResources(
+                      GetSelfAllowedResources.newBuilder()
+                          .addActions(
+                              Action.newBuilder()
+                                  .setModeldbServiceAction(ModelDBServiceActions.READ)
+                                  .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                          .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                          .setResourceType(
+                              ResourceType.newBuilder()
+                                  .setModeldbServiceResourceType(
+                                      ModelDBServiceResourceTypes.REPOSITORY))
+                          .build()))
               .thenReturn(
                   Futures.immediateFuture(
                       GetSelfAllowedResources.Response.newBuilder()
@@ -7445,17 +7481,19 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       LOGGER.info("ExperimentRun created successfully");
 
       if (isRunningIsolated()) {
-        when(authzMock.getSelfAllowedResources(
-                GetSelfAllowedResources.newBuilder()
-                    .addActions(
-                        Action.newBuilder()
-                            .setModeldbServiceAction(ModelDBServiceActions.READ)
-                            .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                    .build()))
+        when(uac.getAuthzService()
+                .getSelfAllowedResources(
+                    GetSelfAllowedResources.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(ModelDBServiceActions.READ)
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                        .setResourceType(
+                            ResourceType.newBuilder()
+                                .setModeldbServiceResourceType(
+                                    ModelDBServiceResourceTypes.REPOSITORY))
+                        .build()))
             .thenReturn(
                 Futures.immediateFuture(
                     GetSelfAllowedResources.Response.newBuilder()
@@ -7548,8 +7586,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       }
     } finally {
       if (isRunningIsolated()) {
-        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getUACService().getCurrentUser(any()))
+            .thenReturn(Futures.immediateFuture(testUser1));
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -8099,8 +8138,9 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
-          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
-          when(authzMock.isSelfAllowed(any()))
+          when(uac.getUACService().getCurrentUser(any()))
+              .thenReturn(Futures.immediateFuture(testUser2));
+          when(uac.getAuthzService().isSelfAllowed(any()))
               .thenReturn(
                   Futures.immediateFuture(
                       IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -8173,11 +8213,6 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
       for (Dataset dataset : datasetList) {
         if (isRunningIsolated()) {
-          var authChannelMock = mock(AuthServiceChannel.class);
-          when(uac.getBlockingAuthServiceChannel()).thenReturn(authChannelMock);
-          var collaboratorBlockingMock = mock(CollaboratorServiceBlockingStub.class);
-          when(authChannelMock.getCollaboratorServiceBlockingStub())
-              .thenReturn(collaboratorBlockingMock);
           var resourcesResponse =
               GetResources.Response.newBuilder()
                   .addItem(
@@ -8187,10 +8222,6 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                           .build())
                   .build();
           when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
-          var authzServiceBlockingStub = mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
-          when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzServiceBlockingStub);
-          when(authzServiceBlockingStub.isSelfAllowed(any()))
-              .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
         }
         DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
         DeleteDataset.Response deleteDatasetResponse =
@@ -8201,7 +8232,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       }
 
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -8488,17 +8519,19 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     if (isRunningIsolated()) {
       mockGetResourcesForAllProjects(
           Map.of(project1.getId(), project1, project2.getId(), project2), testUser1);
-      when(authzMock.getSelfAllowedResources(
-              GetSelfAllowedResources.newBuilder()
-                  .addActions(
-                      Action.newBuilder()
-                          .setModeldbServiceAction(ModelDBServiceActions.READ)
-                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                  .setResourceType(
-                      ResourceType.newBuilder()
-                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                  .build()))
+      when(uac.getAuthzService()
+              .getSelfAllowedResources(
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
           .thenReturn(
               Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
     }

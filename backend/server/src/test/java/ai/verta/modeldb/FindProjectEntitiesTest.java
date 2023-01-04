@@ -1,6 +1,6 @@
 package ai.verta.modeldb;
 
-import static org.junit.Assert.assertNotEquals;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -29,16 +29,16 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class FindProjectEntitiesTest extends ModeldbTestSetup {
@@ -66,7 +66,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
   private static ExperimentRun experimentRun22;
   private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -80,7 +80,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
     createExperimentRunEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     if (isRunningIsolated()) {
       when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
@@ -233,17 +233,19 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllProjects(projectMap, testUser1);
-      when(authzMock.getSelfAllowedResources(
-              GetSelfAllowedResources.newBuilder()
-                  .addActions(
-                      Action.newBuilder()
-                          .setModeldbServiceAction(ModelDBServiceActions.READ)
-                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                  .setResourceType(
-                      ResourceType.newBuilder()
-                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                  .build()))
+      when(uac.getAuthzService()
+              .getSelfAllowedResources(
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
           .thenReturn(
               Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
     }
@@ -2228,7 +2230,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
 
   /** Find experimentRun by metrics and sort by code_version with pagination */
   @Test
-  @Ignore("sort by code_version not supported")
+  @Disabled("sort by code_version not supported")
   public void findExperimentRunsByMetricsWithPaginationTest() {
     LOGGER.info(
         "FindExperimentRuns by metrics sort by code_version with pagination test start..................");
@@ -2798,7 +2800,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
         "Total records count not matched with expected records count", 0, projectList.size());
 
     if (isRunningIsolated()) {
-      when(uacMock.getUsersFuzzy(any()))
+      when(uac.getUACService().getUsersFuzzy(any()))
           .thenReturn(Futures.immediateFuture(GetUsersFuzzy.Response.newBuilder().build()));
     }
     stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
