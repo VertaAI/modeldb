@@ -38,7 +38,6 @@ import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddGroupUsers;
-import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
