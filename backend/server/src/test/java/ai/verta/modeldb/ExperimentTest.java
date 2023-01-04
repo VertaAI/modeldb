@@ -31,15 +31,15 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class ExperimentTest extends ModeldbTestSetup {
@@ -52,7 +52,7 @@ public class ExperimentTest extends ModeldbTestSetup {
   // Experiment Entities
   private static Experiment experiment;
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -64,7 +64,7 @@ public class ExperimentTest extends ModeldbTestSetup {
     createExperimentEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     if (isRunningIsolated()) {
       when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
@@ -262,7 +262,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -560,10 +560,10 @@ public class ExperimentTest extends ModeldbTestSetup {
     try {
       if (isRunningIsolated()) {
         if (testConfig.isPermissionV2Enabled()) {
-          when(collaboratorMock.getResources(any()))
+          when(uac.getCollaboratorService().getResources(any()))
               .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
         } else {
-          when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+          when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
               .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
         }
       }
@@ -573,7 +573,7 @@ public class ExperimentTest extends ModeldbTestSetup {
       checkEqualsAssert(ex);
     } finally {
       if (isRunningIsolated() && testConfig.isPermissionV2Enabled()) {
-        when(collaboratorMock.getResources(any()))
+        when(uac.getCollaboratorService().getResources(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     GetResources.Response.newBuilder()
@@ -1181,7 +1181,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1350,7 +1350,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1713,7 +1713,7 @@ public class ExperimentTest extends ModeldbTestSetup {
         LogExperimentArtifacts.newBuilder().setId("asda").addAllArtifacts(artifacts).build();
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1733,7 +1733,7 @@ public class ExperimentTest extends ModeldbTestSetup {
             .build();
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -1787,7 +1787,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));

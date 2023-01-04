@@ -177,7 +177,8 @@ public class CommitTest extends ModeldbTestSetup {
                 Collectors.toMap(
                     entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
     mockGetResources(repoIdNameMap, userInfo);
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+    when(uac.getServiceAccountCollaboratorServiceForServiceUser()
+            .getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
                 GetResources.Response.newBuilder()
