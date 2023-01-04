@@ -472,12 +472,9 @@ public abstract class ModeldbTestSetup {
     when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzBlockingMock);
     when(authChannelMock.getUacServiceBlockingStub()).thenReturn(uacBlockingMock);
     when(authChannelMock.getWorkspaceServiceBlockingStub()).thenReturn(workspaceBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
     when(authChannelMock.getRoleServiceBlockingStubForServiceUser())
         .thenReturn(roleServiceBlockingMock);
     when(authChannelMock.getOrganizationServiceBlockingStub()).thenReturn(organizationBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
-        .thenReturn(collaboratorBlockingMock);
 
     UACServiceGrpc.UACServiceFutureStub uacMock = uac.getUACService();
     when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
@@ -526,6 +523,9 @@ public abstract class ModeldbTestSetup {
         .thenReturn(SetResource.Response.newBuilder().build());
     when(collaboratorBlockingMock.deleteResources(any()))
         .thenReturn(DeleteResources.Response.newBuilder().build());
+    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
+    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
+        .thenReturn(collaboratorBlockingMock);
     // allow any SetResource call
     when(uac.getCollaboratorService().setResource(any()))
         .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));

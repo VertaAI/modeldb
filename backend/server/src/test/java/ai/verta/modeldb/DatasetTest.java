@@ -26,6 +26,7 @@ import ai.verta.uac.AddGroupUsers;
 import ai.verta.uac.DeleteResources;
 import ai.verta.uac.DeleteWorkspaceV2;
 import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResources.Response;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedActionsBatch;
 import ai.verta.uac.GetUsers;
@@ -252,12 +253,9 @@ public class DatasetTest extends ModeldbTestSetup {
     when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzBlockingMock);
     when(authChannelMock.getUacServiceBlockingStub()).thenReturn(uacBlockingMock);
     when(authChannelMock.getWorkspaceServiceBlockingStub()).thenReturn(workspaceBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
     when(authChannelMock.getRoleServiceBlockingStubForServiceUser())
         .thenReturn(roleServiceBlockingMock);
     when(authChannelMock.getOrganizationServiceBlockingStub()).thenReturn(organizationBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
-        .thenReturn(collaboratorBlockingMock);
 
     UACServiceGrpc.UACServiceFutureStub uacMock = uac.getUACService();
     when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
@@ -309,6 +307,19 @@ public class DatasetTest extends ModeldbTestSetup {
     // allow any SetResource call
     when(uac.getCollaboratorService().setResource(any()))
         .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
+    if (mockResource) {
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(Response.newBuilder()
+          .addItem(
+              GetResourcesResponseItem.newBuilder()
+                  .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                  .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                  .setVisibility(ResourceVisibility.PRIVATE)
+                  .build())
+          .build());
+    }
+    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
+    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
+        .thenReturn(collaboratorBlockingMock);
     when(uac.getWorkspaceService()
             .getWorkspaceById(
                 GetWorkspaceById.newBuilder()
