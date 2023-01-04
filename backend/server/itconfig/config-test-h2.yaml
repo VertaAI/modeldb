@@ -3,6 +3,7 @@ grpcServer:
   port: 99999
   requestTimeout: 30
   metrics_port: 99999
+  threadCount: 4
 
 springServer:
   port: 99999
