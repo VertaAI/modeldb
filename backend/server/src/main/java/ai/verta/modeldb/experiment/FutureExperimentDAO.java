@@ -247,7 +247,8 @@ public class FutureExperimentDAO {
                                             .collect(Collectors.toSet());
 
                                     // Get tags
-                                    final var futureTags = tagsHandler.getTagsMap(ids);
+                                    final var futureTags =
+                                        tagsHandler.getTagsMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureTags,
@@ -602,7 +603,7 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> tagsHandler.getTags(expId), executor)
+        .thenCompose(unused -> tagsHandler.getTags(expId).toInternalFuture(), executor)
         .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
   }
 

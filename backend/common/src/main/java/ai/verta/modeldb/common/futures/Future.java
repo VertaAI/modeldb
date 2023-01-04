@@ -119,8 +119,6 @@ public class Future<T> {
   /** @deprecated Use {@link #of(Object)} instead. */
   @Deprecated
   public static <R> Future<R> completedInternalFuture(R value) {
-    Preconditions.checkNotNull(
-        futureExecutor, "A FutureExecutor is required to create a new Future.");
     return of(value);
   }
 
@@ -166,6 +164,11 @@ public class Future<T> {
                     "futureThenCompose"),
                 "futureThenApply"),
             executor));
+  }
+
+  public <U> Future<U> thenApply(Function<? super T, ? extends U> fn) {
+    final var executor = getExecutor().captureContext();
+    return from(stage.thenApplyAsync(traceFunction(fn, "futureThenApply"), executor));
   }
 
   private FutureExecutor getExecutor() {
@@ -474,5 +477,76 @@ public class Future<T> {
 
   public static void disableCallSiteStackCapture() {
     captureStacksAtCreation = false;
+  }
+
+  // a bunch of deprecated methods that match the signature of the InternalFuture, for easier
+  // conversion.
+
+  @Deprecated
+  public static <R> Future<R> completedFuture(R value) {
+    return of(value);
+  }
+
+  @Deprecated
+  public <U> Future<U> thenCompose(Function<? super T, Future<U>> fn, FutureExecutor ignored) {
+    return thenCompose(fn);
+  }
+
+  @Deprecated
+  public <U> Future<U> thenApply(Function<? super T, ? extends U> fn, FutureExecutor ignored) {
+    return thenApply(fn);
+  }
+
+  @Deprecated
+  public <U, V> Future<V> thenCombine(
+      Future<? extends U> other,
+      BiFunction<? super T, ? super U, ? extends V> fn,
+      FutureExecutor ignored) {
+    return thenCombine(other, fn);
+  }
+
+  @Deprecated
+  public Future<Void> thenAccept(Consumer<? super T> action, FutureExecutor ignored) {
+    return thenAccept(action);
+  }
+
+  @Deprecated
+  public Future<Void> thenRun(Runnable runnable, FutureExecutor ignored) {
+    return thenRun(runnable);
+  }
+
+  @Deprecated
+  public <U> Future<U> thenSupply(Supplier<Future<U>> supplier, FutureExecutor ignored) {
+    return thenSupply(supplier);
+  }
+
+  @Deprecated
+  public static Future<Void> runAsync(Runnable runnable, FutureExecutor ignored) {
+    return runAsync(runnable);
+  }
+
+  @Deprecated
+  public static <U> Future<U> supplyAsync(Supplier<U> supplier, FutureExecutor ignored) {
+    return supplyAsync(supplier);
+  }
+
+  @Deprecated
+  public static <T> Future<T> clientRequest(
+      ListenableFuture<T> listenableFuture, FutureExecutor ignored) {
+    return fromListenableFuture(listenableFuture);
+  }
+
+  @Deprecated
+  public static <T> Future<List<T>> sequence(
+      final List<Future<T>> futures, FutureExecutor ignored) {
+    return sequence(futures);
+  }
+
+  @Deprecated
+  public static <U> Future<U> retriableStage(
+      Supplier<Future<U>> supplier,
+      Function<Throwable, Boolean> retryChecker,
+      FutureExecutor ignored) {
+    return retriableStage(supplier, retryChecker);
   }
 }

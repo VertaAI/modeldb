@@ -2,10 +2,9 @@ package ai.verta.modeldb.common.handlers;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.rpc.Code;
 import java.sql.ResultSet;
@@ -25,13 +24,11 @@ public abstract class TagsHandlerBase<T> {
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
-  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final String entityName;
   protected String entityIdReferenceColumn;
 
-  public TagsHandlerBase(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
-    this.executor = executor;
+  public TagsHandlerBase(FutureJdbi jdbi, String entityName) {
     this.jdbi = jdbi;
     this.entityName = entityName;
     setEntityIdReferenceColumn(entityName);
@@ -56,9 +53,9 @@ public abstract class TagsHandlerBase<T> {
 
   protected abstract void setEntityIdReferenceColumn(String entityName);
 
-  public InternalFuture<List<String>> getTags(T entityId) {
-    return jdbi.withHandle(handle -> getTags(entityId, handle))
-        .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()), executor);
+  public Future<List<String>> getTags(T entityId) {
+    return jdbi.call(handle -> getTags(entityId, handle))
+        .thenApply(tags -> tags.stream().sorted().collect(Collectors.toList()));
   }
 
   private List<String> getTags(T entityId, Handle handle) {
@@ -74,8 +71,8 @@ public abstract class TagsHandlerBase<T> {
         .list();
   }
 
-  public InternalFuture<MapSubtypes<T, String>> getTagsMap(Set<T> entityIds) {
-    return jdbi.withHandle(
+  public Future<MapSubtypes<T, String>> getTagsMap(Set<T> entityIds) {
+    return jdbi.call(
             handle ->
                 handle
                     .createQuery(
@@ -88,11 +85,10 @@ public abstract class TagsHandlerBase<T> {
                     .list())
         .thenApply(
             simpleEntries ->
-                simpleEntries.stream()
-                    .sorted(Map.Entry.comparingByValue())
-                    .collect(Collectors.toList()),
-            executor)
-        .thenApply(MapSubtypes::from, executor);
+                MapSubtypes.from(
+                    simpleEntries.stream()
+                        .sorted(Map.Entry.comparingByValue())
+                        .collect(Collectors.toList())));
   }
 
   protected abstract AbstractMap.SimpleEntry<T, String> getSimpleEntryFromResultSet(ResultSet rs)

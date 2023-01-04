@@ -446,7 +446,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> tagsHandler.getTags(runId), executor);
+        .thenCompose(unused -> tagsHandler.getTags(runId).toInternalFuture(), executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
@@ -891,7 +891,8 @@ public class FutureExperimentRunDAO {
                                             .collect(Collectors.toSet());
 
                                     // Get tags
-                                    final var futureTags = tagsHandler.getTagsMap(ids);
+                                    final var futureTags =
+                                        tagsHandler.getTagsMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureTags,

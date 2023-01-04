@@ -346,7 +346,7 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> tagsHandler.getTags(projectId), executor);
+        .thenCompose(unused -> tagsHandler.getTags(projectId).toInternalFuture(), executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String projectId, Long now) {
@@ -561,7 +561,8 @@ public class FutureProjectDAO {
                                                       .collect(Collectors.toSet());
 
                                               // Get tags
-                                              final var futureTags = tagsHandler.getTagsMap(ids);
+                                              final var futureTags =
+                                                  tagsHandler.getTagsMap(ids).toInternalFuture();
                                               futureBuildersStream =
                                                   futureBuildersStream.thenCombine(
                                                       futureTags,
