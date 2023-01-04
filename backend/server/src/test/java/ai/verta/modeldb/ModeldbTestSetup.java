@@ -25,6 +25,7 @@ import ai.verta.uac.AddUserV2;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
 import ai.verta.uac.DeleteOrganizationV2;
+import ai.verta.uac.DeleteResources;
 import ai.verta.uac.Entities;
 import ai.verta.uac.GetAllowedEntities;
 import ai.verta.uac.GetResources;

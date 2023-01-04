@@ -14,14 +14,16 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.Action;
 import ai.verta.uac.Actions;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddGroupUsers;
-import ai.verta.uac.DeleteResources.Response;
+import ai.verta.uac.DeleteResources;
 import ai.verta.uac.DeleteWorkspaceV2;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -40,11 +42,14 @@ import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.SetResource;
 import ai.verta.uac.SetRoleBinding;
+import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.Workspace;
 import ai.verta.uac.WorkspaceServiceV2Grpc;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
+import io.grpc.Context;
+import io.grpc.Metadata;
 import io.grpc.Status;
 import io.grpc.StatusRuntimeException;
 import java.util.ArrayList;
@@ -242,37 +247,34 @@ public class DatasetTest extends ModeldbTestSetup {
 
   private void setupMockUacEndpointsDataset(
       UAC uac, Map<String, Dataset> datasetMap, boolean mockResource) {
-    doReturn(collaboratorMock).when(uac).getCollaboratorService();
-    doReturn(authzMock).when(uac).getAuthzService();
-    doReturn(uacMock).when(uac).getUACService();
-    doReturn(authChannelMock).when(uac).getBlockingAuthServiceChannel();
-    doReturn(authzBlockingMock).when(authChannelMock).getAuthzServiceBlockingStub();
-    doReturn(uacBlockingMock).when(authChannelMock).getUacServiceBlockingStub();
-    doReturn(workspaceBlockingMock).when(authChannelMock).getWorkspaceServiceBlockingStub();
-    doReturn(collaboratorBlockingMock).when(authChannelMock).getCollaboratorServiceBlockingStub();
-    doReturn(workspaceMock).when(uac).getWorkspaceService();
-    doReturn(roleServiceMock).when(uac).getServiceAccountRoleServiceFutureStub();
-    doReturn(roleServiceBlockingMock)
-        .when(authChannelMock)
-        .getRoleServiceBlockingStubForServiceUser();
-    doReturn(organizationBlockingMock).when(authChannelMock).getOrganizationServiceBlockingStub();
+    Context.current().withValue(MetadataForwarder.METADATA_INFO, new Metadata()).attach();
+    AuthServiceChannel authChannelMock = uac.getBlockingAuthServiceChannel();
+    when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzBlockingMock);
+    when(authChannelMock.getUacServiceBlockingStub()).thenReturn(uacBlockingMock);
+    when(authChannelMock.getWorkspaceServiceBlockingStub()).thenReturn(workspaceBlockingMock);
+    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
+    when(authChannelMock.getRoleServiceBlockingStubForServiceUser())
+        .thenReturn(roleServiceBlockingMock);
+    when(authChannelMock.getOrganizationServiceBlockingStub()).thenReturn(organizationBlockingMock);
+    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
+        .thenReturn(collaboratorBlockingMock);
 
-    doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getCurrentUser(any());
-    doReturn(Futures.immediateFuture(testUser1)).when(uacMock).getUser(any());
-    doReturn(
+    UACServiceGrpc.UACServiceFutureStub uacMock = uac.getUACService();
+    when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+    when(uacMock.getUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+    when(uacMock.getUsersFuzzy(any()))
+        .thenReturn(
             Futures.immediateFuture(
                 GetUsersFuzzy.Response.newBuilder()
                     .addAllUserInfos(List.of(testUser1, testUser2))
-                    .build()))
-        .when(uacMock)
-        .getUsersFuzzy(any());
-    doReturn(Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()))
-        .when(authzMock)
-        .isSelfAllowed(any());
-    doReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build())
-        .when(authzBlockingMock)
-        .isSelfAllowed(any());
-    doReturn(
+                    .build()));
+    when(uac.getAuthzService().isSelfAllowed(any()))
+        .thenReturn(
+            Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+    when(authzBlockingMock.isSelfAllowed(any()))
+        .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
+    when(authzBlockingMock.getSelfAllowedActionsBatch(any()))
+        .thenReturn(
             GetSelfAllowedActionsBatch.Response.newBuilder()
                 .putActions(
                     "READ",
@@ -283,70 +285,50 @@ public class DatasetTest extends ModeldbTestSetup {
                                 .setService(Service.MODELDB_SERVICE)
                                 .build())
                         .build())
-                .build())
-        .when(authzBlockingMock)
-        .getSelfAllowedActionsBatch(any());
-    doReturn(testUser1).when(uacBlockingMock).getCurrentUser(any());
-    doReturn(GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build())
-        .when(uacBlockingMock)
-        .getUsers(any());
-    doReturn(
+                .build());
+    when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+    when(uacBlockingMock.getUsers(any()))
+        .thenReturn(
+            GetUsers.Response.newBuilder().addAllUserInfos(List.of(testUser1, testUser2)).build());
+    when(workspaceBlockingMock.getWorkspaceByName(any()))
+        .thenReturn(
             Workspace.newBuilder()
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                 .setUsername(testUser1.getVertaInfo().getUsername())
-                .build())
-        .when(workspaceBlockingMock)
-        .getWorkspaceByName(any());
-    doReturn(
+                .build());
+    when(workspaceBlockingMock.getWorkspaceById(any()))
+        .thenReturn(
             Workspace.newBuilder()
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                 .setUsername(testUser1.getVertaInfo().getUsername())
-                .build())
-        .when(workspaceBlockingMock)
-        .getWorkspaceById(any());
-    doReturn(SetResource.Response.newBuilder().build())
-        .when(collaboratorBlockingMock)
-        .setResource(any());
-    doReturn(Response.newBuilder().build()).when(collaboratorBlockingMock).deleteResources(any());
-    if (mockResource) {
-      var resourcesResponse =
-          GetResources.Response.newBuilder()
-              .addItem(
-                  GetResourcesResponseItem.newBuilder()
-                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                      .setVisibility(ResourceVisibility.PRIVATE)
-                      .build())
-              .build();
-      doReturn(resourcesResponse).when(collaboratorBlockingMock).getResources(any());
-    }
-    doReturn(collaboratorBlockingMock)
-        .when(authChannelMock)
-        .getCollaboratorServiceBlockingStubForServiceUser();
+                .build());
+    when(collaboratorBlockingMock.setResource(any()))
+        .thenReturn(SetResource.Response.newBuilder().build());
+    when(collaboratorBlockingMock.deleteResources(any()))
+        .thenReturn(DeleteResources.Response.newBuilder().build());
     // allow any SetResource call
-    doReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()))
-        .when(collaboratorMock)
-        .setResource(any());
-    doReturn(
+    when(uac.getCollaboratorService().setResource(any()))
+        .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
+    when(uac.getWorkspaceService()
+            .getWorkspaceById(
+                GetWorkspaceById.newBuilder()
+                    .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .build()))
+        .thenReturn(
             Futures.immediateFuture(
                 Workspace.newBuilder()
                     .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .build()));
+    when(uac.getWorkspaceService()
+            .getWorkspaceByName(
+                GetWorkspaceByName.newBuilder()
+                    .setName(testUser1.getVertaInfo().getUsername())
                     .build()))
-        .when(workspaceMock)
-        .getWorkspaceById(
-            GetWorkspaceById.newBuilder()
-                .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                .build());
-    doReturn(
+        .thenReturn(
             Futures.immediateFuture(
                 Workspace.newBuilder()
                     .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                    .build()))
-        .when(workspaceMock)
-        .getWorkspaceByName(
-            GetWorkspaceByName.newBuilder()
-                .setName(testUser1.getVertaInfo().getUsername())
-                .build());
+                    .build()));
     var getResources =
         GetResources.Response.newBuilder()
             .addItem(
@@ -360,17 +342,14 @@ public class DatasetTest extends ModeldbTestSetup {
                     .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                     .build())
             .build();
-    doReturn(Futures.immediateFuture(getResources))
-        .when(collaboratorMock)
-        .getResourcesSpecialPersonalWorkspace(any());
-    doReturn(Futures.immediateFuture(getResources)).when(collaboratorMock).getResources(any());
-    doReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()))
-        .when(roleServiceMock)
-        .setRoleBinding(any());
-    doReturn(ListMyOrganizations.Response.newBuilder().build())
-        .when(organizationBlockingMock)
-        .listMyOrganizations(any());
-
+    when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+        .thenReturn(Futures.immediateFuture(getResources));
+    when(uac.getCollaboratorService().getResources(any()))
+        .thenReturn(Futures.immediateFuture(getResources));
+    when(uac.getServiceAccountRoleServiceFutureStub().setRoleBinding(any()))
+        .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
+    when(organizationBlockingMock.listMyOrganizations(any()))
+        .thenReturn(ListMyOrganizations.Response.newBuilder().build());
     if (datasetMap != null) {
       mockGetResourcesForAllDatasets(datasetMap, testUser1);
     }
