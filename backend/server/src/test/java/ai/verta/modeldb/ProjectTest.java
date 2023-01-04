@@ -582,10 +582,10 @@ public class ProjectTest extends ModeldbTestSetup {
 
     CreateProject createProjectRequest = getCreateProjectRequest(project.getName());
 
-    CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorService =
-        uac.getCollaboratorService();
     try {
       if (isRunningIsolated()) {
+        CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorService =
+            uac.getCollaboratorService();
         when(collaboratorService.setResource(any()))
             .thenThrow(new AlreadyExistsException("Already exists"))
             // reset it back for any following calls
@@ -1771,6 +1771,14 @@ public class ProjectTest extends ModeldbTestSetup {
                     Workspace.newBuilder()
                         .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                         .build()));
+      } else if (testConfig.isPermissionV2Enabled()) {
+        var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+        groupStub.addUsers(
+            AddGroupUsers.newBuilder()
+                .addUserId(testUser2.getVertaInfo().getUserId())
+                .setGroupId(groupIdUser1)
+                .setOrgId(organizationId)
+                .build());
       }
 
       // Create project
@@ -1810,7 +1818,7 @@ public class ProjectTest extends ModeldbTestSetup {
                           .setUsername(testUser1.getVertaInfo().getUsername())
                           .build()));
         }
-      } else if (testConfig.isPermissionV2Enabled()) {
+      } else if (!testConfig.isPermissionV2Enabled()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1838,10 +1846,11 @@ public class ProjectTest extends ModeldbTestSetup {
       }
 
       GetProjectByName getProject =
-          GetProjectByName.newBuilder()
-              .setName(selfProject.getName())
-              .setWorkspaceName(workspaceName)
-              .build();
+          GetProjectByName.newBuilder().setName(selfProject.getName()).build();
+
+      if (testConfig.isPermissionV2Enabled()) {
+        getProject = getProject.toBuilder().setWorkspaceName(getWorkspaceNameUser1()).build();
+      }
       GetProjectByName.Response getProjectByNameResponse =
           projectServiceStub.getProjectByName(getProject);
       LOGGER.info(
