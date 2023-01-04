@@ -1561,7 +1561,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         Gets this description of the model version's output.
 
         This field helps users have a quick view of what type of data will be produced as a result of executing a model.
-        This field also helps non-tech users to understand model behavior in a glance.
+        This field also helps non-tech users to understand model behavior at a glance.
 
         Returns
         -------
