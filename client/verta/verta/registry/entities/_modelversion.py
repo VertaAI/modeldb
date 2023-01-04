@@ -1517,7 +1517,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
     def set_hide_input_label(self, hide):
         """
-        Sets this whether to hide the model version's input label on the preview.
+        Sets whether to hide the model version's input label on the preview.
 
         Parameters
         ----------
