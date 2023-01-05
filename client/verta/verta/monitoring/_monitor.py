@@ -3,9 +3,8 @@ from typing import Any, Dict, List, Optional, Union
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 
+from verta._internal_utils import _monitoring_utils
 from verta._protos.public.monitoring import MonitoredEntity_pb2 as _Monitor
-from verta._protos.public.common import CommonService_pb2 as _CommonService
-from verta._protos.public.uac import Collaborator_pb2 as _Collaborator
 from verta._internal_utils._utils import Connection
 
 class Monitor(object):
@@ -45,7 +44,8 @@ class Monitor(object):
         self._details = details
 
     def __repr__(self):
-        return f"Monitor object representing \"{self.details.name}\" in workspace \"{self._workspace}\"\n" \
+        # self.refresh_details()
+        return f"Monitor object representing \"{self._details.name}\" in workspace \"{self._workspace}\"\n" \
                f"Details >>>\n" \
                f"{self._details}"
 
@@ -61,17 +61,13 @@ class Monitor(object):
     def id(self):
         return self._id
 
-    @property
-    def details(self):
-        self.refresh_details()
-        return self._details
-
     def refresh_details(self) -> None:
+        #TODO remove print
+        print("----Details refreshed")
         self._details = self._find_proto(
             conn=self._conn,
             workspace=self._workspace,
             ids=[self._id],
-            silent=True,
             )[0]
 
     @classmethod
@@ -100,45 +96,6 @@ class Monitor(object):
         )
 
     @classmethod
-    def _body_from_args(
-            cls,
-            args: Dict[str, Any],
-            exclude_args: List[str]
-            ) -> Dict:
-        """
-        Shortcut for processing the args from other class functions into a dict to be used as the body of a request.
-        Requires that parameter names be the same as the expected proto variables in the request.
-        variables for the given call.
-
-        Parameters
-        ----------
-        args: Dict[str, Any]
-            Dict of functions args (locals()) to be packaged up as a clean dict.
-
-        Returns
-        -------
-        Dict[str, Any]
-        """
-        body = dict()
-        arg_keys = args.keys()
-        if 'workspace' in arg_keys:
-            if isinstance(args['workspace'], int):
-                body['workspace_id'] = args['workspace']
-            if isinstance(args['workspace'], str):
-                body['workspace_name'] = args['workspace']
-            del args['workspace']
-        # Make sure we don't mistakenly include the classes "self" or the connection arg.
-        for key in exclude_args:
-            if key in arg_keys:
-                del args[key]
-        for k, v in args.items():
-            if v:
-                body[k] = v
-        return body
-
-
-
-    @classmethod
     def _find_proto(
             cls,
             conn: Connection,
@@ -149,20 +106,22 @@ class Monitor(object):
             model_version_ids: Optional[List[str]] = None,
             page_limit: int = 1000,
             page_number: int = 0,
-            silent: bool = False
             ) -> RepeatedCompositeFieldContainer:
         """
         Make a request to the back end to search for any existing monitors with the provided
         parameters.
+        See doc string for client.find_monitors().
         """
+        #TODO remove print
+        print(">>> _find_proto")
         func_args: Dict[str, Any] = locals()  # Get all function args as a dict.
-        request_body = cls._body_from_args(
+        request_body = _monitoring_utils._body_from_args(
             args=func_args,
             exclude_args=['cls', 'conn', 'silent']  # should not be added to request body
             )
 
         Message = _Monitor.FindMonitoredEntityRequest
-        endpoint = "/api/v1/monitored_entity/findMonitoredEntity"
+        endpoint = "/api/v1/monitoring/monitored_entity/findMonitoredEntity"
         response = conn.make_proto_request(
             method='POST',
             path=endpoint,
@@ -172,12 +131,6 @@ class Monitor(object):
             response=response,
             response_type=Message.Response,
             ).monitored_entities
-        if monitors:
-            if not silent:
-                print("\nFound existing monitors:\n---------------------------------")
-                monitor_names = [print(m.name) for m in monitors]
-        else:
-            print(f"\nNo monitors found matching {names}")
         return monitors
 
     @classmethod
@@ -190,39 +143,27 @@ class Monitor(object):
             attributes: Optional[Dict[str, str]],
             resource_visibility: Optional[str] = None,
             custom_permission: Optional[str] = None,
-            ) -> _Monitor.MonitoredEntity:
+            ) -> 'Monitor':
         """
         Make a request to the back end to create a new monitor with the provided parameters.
-        See doc string
+        See doc string for client.create_monitor()
         """
+        #TODO remove print
+        print(">>> _create_proto")
         func_args: Dict[str, Any] = locals()  # Get all function args as a dict.
 
         if resource_visibility:
-            ok_rv_values = [x[0] for x in _Collaborator.ResourceVisibility.items()]
-            if resource_visibility not in ok_rv_values:
-                raise ValueError(f"value for \"resource_visibility\" must be one of {ok_rv_values}. "
-                                 f"Received \"{resource_visibility}\" instead.")
-            func_args['resource_visibility'] = (
-                _Collaborator.ResourceVisibility.Value(resource_visibility)
-                )
+            func_args.update(_monitoring_utils.validate_resource_visibility(resource_visibility))
 
         if custom_permission:
-            ok_cp_values = [x[0] for x in _CommonService.CollaboratorTypeEnum.CollaboratorType.items()]
-            if custom_permission not in ok_cp_values:
-                raise ValueError(f"value for \"custom_permission\" must be one of {ok_cp_values}. "
-                                 f"Received \"{custom_permission}\" instead.")
-            func_args['custom_permission'] = (
-                _Collaborator.CollaboratorPermissions(
-                    collaborator_type = _CommonService.CollaboratorTypeEnum.CollaboratorType.Value(custom_permission)
-                    )
-                )
+            func_args.update(_monitoring_utils.validate_custom_permission(custom_permission))
 
-        request_body = cls._body_from_args(
+        request_body = _monitoring_utils._body_from_args(
             args=func_args,
             exclude_args=['cls', 'conn']  # should not be added to request body
         )
         Message = _Monitor.CreateMonitoredEntityRequest
-        endpoint = "/api/v1/monitored_entity/createMonitoredEntity"
+        endpoint = "/api/v1/monitoring/monitored_entity/createMonitoredEntity"
         response = conn.make_proto_request(
             method='POST',
             path=endpoint,
@@ -233,4 +174,78 @@ class Monitor(object):
             response_type=Message.Response,
             ).monitored_entity
         print(f"\nNew monitor \"{monitor.name}\" created in workspace \"{workspace}\".")
-        return monitor
+        return Monitor(
+            conn=conn,
+            workspace=workspace,
+            id=monitor.id,
+            details=monitor,
+        )
+
+    @classmethod
+    def _update_proto(
+            cls,
+            conn: Connection,
+            workspace: Optional[Union[str, int]],
+            id: int,
+            name: str,
+            attributes: Optional[Dict[str, str]],
+            resource_visibility: Optional[str] = None,
+            custom_permission: Optional[str] = None,
+            ) -> 'Monitor':
+        """
+        Make a request to the backend to update a monitor with the provided parameters.
+        See doc string for client.update_monitor().
+        """
+        #TODO remove print
+        print(">>> _update_proto")
+        func_args: Dict[str, Any] = locals()  # Get all function args as a dict.
+        if resource_visibility:
+            func_args.update(_monitoring_utils.validate_resource_visibility(resource_visibility))
+
+        if custom_permission:
+            func_args.update(_monitoring_utils.validate_custom_permission(custom_permission))
+
+        request_body = _monitoring_utils._body_from_args(
+            args=func_args,
+            exclude_args=['cls', 'conn']  # should not be added to request body
+        )
+        Message = _Monitor.UpdateMonitoredEntityRequest
+        endpoint = "/api/v1/monitoring/monitored_entity/updateMonitoredEntity"
+        response = conn.make_proto_request(
+            method='PATCH',
+            path=endpoint,
+            body=Message(**request_body),
+        )
+        monitor = conn.must_proto_response(
+            response=response,
+            response_type=Message.Response,
+        ).monitored_entity
+        print(f"\nMonitor \"{monitor.name}\" updated in workspace \"{workspace}\".")
+        return Monitor(
+            conn=conn,
+            workspace=workspace,
+            id=monitor.id,
+            details=monitor,
+        )
+
+    @classmethod
+    def _delete_proto(
+            cls,
+            conn: Connection,
+            id: int,
+            ):
+        """
+        Make a request to the backend to delete the provided monitor.
+        See doc string for client.delete_monitor()
+        """
+        #TODO remove print
+        print(">>> _delete_proto")
+        Message = _Monitor.DeleteMonitoredEntityRequest
+        endpoint = "/api/v1/monitoring/monitored_entity/deleteMonitoredEntity"
+        response = conn.make_proto_request(
+            method='DELETE',
+            path=endpoint,
+            body=Message(id=id),
+            )
+        if response.ok:
+            print(f"deleted monitor id: {id}")
