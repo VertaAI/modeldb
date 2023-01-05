@@ -6,6 +6,7 @@ import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.metrics.otelprom.PrometheusCollector;
 import io.grpc.ClientInterceptor;
 import io.grpc.ServerInterceptor;
+import io.opentelemetry.api.GlobalOpenTelemetry;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
@@ -36,12 +37,14 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
+@Log4j2
 public class OpenTelemetryConfig {
 
   @Bean
@@ -73,16 +76,20 @@ public class OpenTelemetryConfig {
     }
     SdkMeterProvider sdkMeterProvider = initializeMetricSdk();
 
-    OpenTelemetrySdk openTelemetry =
-        OpenTelemetrySdk.builder()
-            .setMeterProvider(sdkMeterProvider)
-            .setTracerProvider(tracerProvider)
-            .setPropagators(
-                ContextPropagators.create(
-                    TextMapPropagator.composite(
-                        W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
-            .buildAndRegisterGlobal();
-    return openTelemetry;
+    try {
+      return OpenTelemetrySdk.builder()
+          .setMeterProvider(sdkMeterProvider)
+          .setTracerProvider(tracerProvider)
+          .setPropagators(
+              ContextPropagators.create(
+                  TextMapPropagator.composite(
+                      W3CTraceContextPropagator.getInstance(), JaegerPropagator.getInstance())))
+          .buildAndRegisterGlobal();
+    } catch (IllegalStateException e) {
+      log.warn(
+          "OpenTelemetry has already been initialized.... returning whatever is in the global.");
+      return GlobalOpenTelemetry.get();
+    }
   }
 
   private static SdkMeterProvider initializeMetricSdk() {

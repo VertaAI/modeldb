@@ -2,7 +2,6 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
@@ -45,15 +44,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class ProjectTest extends ModeldbTestSetup {
@@ -74,7 +73,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
   private Dataset dataset;
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -88,7 +87,7 @@ public class ProjectTest extends ModeldbTestSetup {
     createExperimentRunEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     if (!projectMap.isEmpty()) {
       if (isRunningIsolated()) {
@@ -586,8 +585,12 @@ public class ProjectTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(collaboratorMock.setResource(any()))
-            .thenThrow(new AlreadyExistsException("Already exists"));
+        CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorService =
+            uac.getCollaboratorService();
+        when(collaboratorService.setResource(any()))
+            .thenThrow(new AlreadyExistsException("Already exists"))
+            // reset it back for any following calls
+            .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
       }
       projectServiceStub.createProject(createProjectRequest);
       fail();
@@ -978,7 +981,7 @@ public class ProjectTest extends ModeldbTestSetup {
             .build();
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1081,7 +1084,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1145,7 +1148,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1314,7 +1317,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1392,7 +1395,7 @@ public class ProjectTest extends ModeldbTestSetup {
         GetAttributes.newBuilder().setId("jfhdsjfhdsfjk").setGetAll(true).build();
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1513,10 +1516,10 @@ public class ProjectTest extends ModeldbTestSetup {
     try {
       if (isRunningIsolated()) {
         if (testConfig.isPermissionV2Enabled()) {
-          when(collaboratorMock.getResources(any()))
+          when(uac.getCollaboratorService().getResources(any()))
               .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
         } else {
-          when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+          when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
               .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
         }
       }
@@ -1535,20 +1538,23 @@ public class ProjectTest extends ModeldbTestSetup {
     LOGGER.info("Get Project by name test start................................");
 
     if (isRunningIsolated()) {
-      when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
-      when(workspaceMock.getWorkspaceByName(
-              GetWorkspaceByName.newBuilder()
-                  .setName(testUser2.getVertaInfo().getUsername())
-                  .build()))
+      when(uac.getUACService().getCurrentUser(any()))
+          .thenReturn(Futures.immediateFuture(testUser2));
+      when(uac.getWorkspaceService()
+              .getWorkspaceByName(
+                  GetWorkspaceByName.newBuilder()
+                      .setName(testUser2.getVertaInfo().getUsername())
+                      .build()))
           .thenReturn(
               Futures.immediateFuture(
                   Workspace.newBuilder()
                       .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                       .build()));
-      when(workspaceMock.getWorkspaceById(
-              GetWorkspaceById.newBuilder()
-                  .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
-                  .build()))
+      when(uac.getWorkspaceService()
+              .getWorkspaceById(
+                  GetWorkspaceById.newBuilder()
+                      .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .build()))
           .thenReturn(
               Futures.immediateFuture(
                   Workspace.newBuilder()
@@ -1569,10 +1575,10 @@ public class ProjectTest extends ModeldbTestSetup {
                       .build())
               .build();
       if (testConfig.isPermissionV2Enabled()) {
-        when(collaboratorMock.getResources(any()))
+        when(uac.getCollaboratorService().getResources(any()))
             .thenReturn(Futures.immediateFuture(getResources));
       } else {
-        when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+        when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
             .thenReturn(Futures.immediateFuture(getResources));
       }
     }
@@ -1608,7 +1614,8 @@ public class ProjectTest extends ModeldbTestSetup {
 
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
-          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+          when(uac.getUACService().getCurrentUser(any()))
+              .thenReturn(Futures.immediateFuture(testUser1));
           mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
           var getResources =
               GetResources.Response.newBuilder()
@@ -1625,10 +1632,10 @@ public class ProjectTest extends ModeldbTestSetup {
                           .build())
                   .build();
           if (testConfig.isPermissionV2Enabled()) {
-            when(collaboratorMock.getResources(any()))
+            when(uac.getCollaboratorService().getResources(any()))
                 .thenReturn(Futures.immediateFuture(getResources));
           } else {
-            when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+            when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
                 .thenReturn(Futures.immediateFuture(getResources));
           }
         } else if (!testConfig.isPermissionV2Enabled()) {
@@ -1638,10 +1645,10 @@ public class ProjectTest extends ModeldbTestSetup {
 
           AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse;
           if (isRunningIsolated()) {
-            var collaboratorMock =
-                mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
             addOrUpdateProjectCollaboratorResponse =
-                collaboratorMock.addOrUpdateProjectCollaborator(addCollaboratorRequest).get();
+                uac.getCollaboratorService()
+                    .addOrUpdateProjectCollaborator(addCollaboratorRequest)
+                    .get();
           } else {
             addOrUpdateProjectCollaboratorResponse =
                 collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(
@@ -1750,24 +1757,16 @@ public class ProjectTest extends ModeldbTestSetup {
     Project selfProject = null;
     Project project = null;
     try {
-      if (isRunningIsolated()) {
-        when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
-        when(workspaceMock.getWorkspaceByName(
-                GetWorkspaceByName.newBuilder()
-                    .setName(testUser2.getVertaInfo().getUsername())
-                    .build()))
-            .thenReturn(
-                Futures.immediateFuture(
-                    Workspace.newBuilder()
-                        .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
-                        .build()));
+      var workspaceName = testUser2.getVertaInfo().getUsername();
+      if (testConfig.isPermissionV2Enabled()) {
+        workspaceName = getWorkspaceNameUser2();
       }
 
       if (isRunningIsolated()) {
-        when(workspaceMock.getWorkspaceById(
-                GetWorkspaceById.newBuilder()
-                    .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
-                    .build()))
+        when(uac.getUACService().getCurrentUser(any()))
+            .thenReturn(Futures.immediateFuture(testUser2));
+        when(uac.getWorkspaceService()
+                .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()))
             .thenReturn(
                 Futures.immediateFuture(
                     Workspace.newBuilder()
@@ -1785,6 +1784,8 @@ public class ProjectTest extends ModeldbTestSetup {
 
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest();
+      createProjectRequest =
+          createProjectRequest.toBuilder().setWorkspaceName(workspaceName).build();
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1799,17 +1800,18 @@ public class ProjectTest extends ModeldbTestSetup {
         projectMap.put(project.getId(), project);
         mockGetResourcesForAllProjects(projectMap, testUser1);
         if (testConfig.isPermissionV2Enabled()) {
-          when(workspaceMock.getWorkspaceById(
-                  GetWorkspaceById.newBuilder()
-                      .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
-                      .build()))
+          when(uac.getWorkspaceService()
+                  .getWorkspaceById(
+                      GetWorkspaceById.newBuilder()
+                          .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                          .build()))
               .thenReturn(
                   Futures.immediateFuture(
                       Workspace.newBuilder()
                           .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                           .build()));
         } else {
-          when(workspaceMock.getWorkspaceByName(any()))
+          when(uac.getWorkspaceService().getWorkspaceByName(any()))
               .thenReturn(
                   Futures.immediateFuture(
                       Workspace.newBuilder()
@@ -1944,7 +1946,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(collaboratorMock.getResources(any()))
+        when(uac.getCollaboratorService().getResources(any()))
             .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
       }
       GetProjectByName getProject = GetProjectByName.newBuilder().setName("test").build();
@@ -2102,17 +2104,19 @@ public class ProjectTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
-      when(authzMock.getSelfAllowedResources(
-              GetSelfAllowedResources.newBuilder()
-                  .addActions(
-                      Action.newBuilder()
-                          .setModeldbServiceAction(ModelDBServiceActions.READ)
-                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                  .setResourceType(
-                      ResourceType.newBuilder()
-                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                  .build()))
+      when(uac.getAuthzService()
+              .getSelfAllowedResources(
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
           .thenReturn(
               Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
     }
@@ -3294,7 +3298,7 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     if (isRunningIsolated()) {
-      when(authzMock.isSelfAllowed(any()))
+      when(uac.getAuthzService().isSelfAllowed(any()))
           .thenReturn(
               Futures.immediateFuture(
                   IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -3316,7 +3320,7 @@ public class ProjectTest extends ModeldbTestSetup {
             .build();
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -3368,7 +3372,7 @@ public class ProjectTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));

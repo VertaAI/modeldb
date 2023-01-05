@@ -1,6 +1,7 @@
 package ai.verta.modeldb;
 
 import static ai.verta.modeldb.CommitTest.getDatasetBlobFromPath;
+import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -57,22 +58,21 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Tests diffs after commit creation with diff or blob description and checks resulting diff. Tests
  * 2 modified cases: same type and different type.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
-class DiffTest extends ModeldbTestSetup {
-  public DiffTest() {}
+public class DiffTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(DiffTest.class);
   private static final String FIRST_NAME = "train.json";
@@ -80,7 +80,7 @@ class DiffTest extends ModeldbTestSetup {
   private static final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
   private static final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
 
-  private static Repository repository;
+  private Repository repository;
   private static Commit parentCommit;
 
   // 1. blob type: 0 -- dataset path, 1 -- config, 2 -- python environment, 3 -- Git Notebook Code
@@ -101,16 +101,17 @@ class DiffTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
-    for (Repository repo : new Repository[] {repository}) {
-      DeleteRepositoryRequest deleteRepository =
-          DeleteRepositoryRequest.newBuilder()
-              .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repo.getId()))
-              .build();
-      DeleteRepositoryRequest.Response response =
-          versioningServiceBlockingStub.deleteRepository(deleteRepository);
-      assertTrue("Repository not delete", response.getStatus());
+  public void tearDown() {
+    if (repository == null) {
+      return;
     }
+    DeleteRepositoryRequest deleteRepository =
+        DeleteRepositoryRequest.newBuilder()
+            .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repository.getId()))
+            .build();
+    DeleteRepositoryRequest.Response response =
+        versioningServiceBlockingStub.deleteRepository(deleteRepository);
+    assertTrue("Repository not deleted", response.getStatus());
 
     repository = null;
 
@@ -135,7 +136,9 @@ class DiffTest extends ModeldbTestSetup {
     repository = versioningServiceBlockingStub.createRepository(setRepository).getRepository();
     LOGGER.info("Repository created successfully");
     assertEquals(
-        "Repository name not match with expected Repository name", repoName, repository.getName());
+        "Repository name does not match with expected Repository name",
+        repoName,
+        repository.getName());
 
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
@@ -151,7 +154,7 @@ class DiffTest extends ModeldbTestSetup {
   @ParameterizedTest
   @MethodSource(value = "data")
   public void computeRepositoryDiffTest(int blobType, int commitType) {
-    LOGGER.info("Compute repository diff test start................................");
+    LOGGER.trace("Compute repository diff test start................................");
 
     BlobExpanded[] blobExpandedArray;
     BlobDiff[] blobDiffsArray;
@@ -232,13 +235,12 @@ class DiffTest extends ModeldbTestSetup {
             .build();
     ComputeRepositoryDiffRequest.Response repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
-    LOGGER.info("Diff Response: {}", repositoryDiffResponse);
+    LOGGER.trace("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.trace("Diff Response: {}", repositoryDiffResponse);
     List<BlobDiff> blobDiffs = repositoryDiffResponse.getDiffsList();
     final boolean differentTypesModified = blobType > 1;
     final int expectedCount = differentTypesModified ? 5 : 4;
-    Assert.assertEquals(
-        "blob count not match with expected blob count", expectedCount, blobDiffs.size());
+    assertEquals("blob count not match with expected blob count", expectedCount, blobDiffs.size());
     Map<String, BlobDiff> result =
         blobDiffs.stream()
             .collect(
@@ -273,13 +275,13 @@ class DiffTest extends ModeldbTestSetup {
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
 
-    LOGGER.info("Compute repository diff test end................................");
+    LOGGER.trace("Compute repository diff test end................................");
   }
 
   @ParameterizedTest
   @MethodSource(value = "data")
   public void computeRepositoryDiffWithBranchTest(int blobType, int commitType) {
-    LOGGER.info("Compute repository diff with branch test start................................");
+    LOGGER.trace("Compute repository diff with branch test start................................");
 
     BlobExpanded[] blobExpandedArray;
     BlobDiff[] blobDiffsArray;
@@ -368,13 +370,12 @@ class DiffTest extends ModeldbTestSetup {
             .build();
     ComputeRepositoryDiffRequest.Response repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
-    LOGGER.info("Diff Response: {}", repositoryDiffResponse);
+    LOGGER.trace("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.trace("Diff Response: {}", repositoryDiffResponse);
     List<BlobDiff> blobDiffs = repositoryDiffResponse.getDiffsList();
     final boolean differentTypesModified = blobType > 1;
     final int expectedCount = differentTypesModified ? 5 : 4;
-    Assert.assertEquals(
-        "blob count not match with expected blob count", expectedCount, blobDiffs.size());
+    assertEquals("blob count not match with expected blob count", expectedCount, blobDiffs.size());
     Map<String, BlobDiff> result =
         blobDiffs.stream()
             .collect(
@@ -419,13 +420,13 @@ class DiffTest extends ModeldbTestSetup {
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
 
-    LOGGER.info("Compute repository diff with branch test end................................");
+    LOGGER.trace("Compute repository diff with branch test end................................");
   }
 
   @ParameterizedTest
   @MethodSource(value = "data")
   public void computeRepositoryDiffWithOneBranchOneCommitTest(int blobType, int commitType) {
-    LOGGER.info("Compute repository diff with one branch one commit test start...");
+    LOGGER.trace("Compute repository diff with one branch one commit test start...");
 
     BlobExpanded[] blobExpandedArray;
     BlobDiff[] blobDiffsArray;
@@ -520,7 +521,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -538,7 +540,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -556,7 +559,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -573,7 +577,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -591,7 +596,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -607,7 +613,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -625,7 +632,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -641,7 +649,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -658,7 +667,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -674,7 +684,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -690,7 +701,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -705,7 +717,8 @@ class DiffTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
-      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      LOGGER.trace(
+          "Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
@@ -719,13 +732,12 @@ class DiffTest extends ModeldbTestSetup {
             .build();
     ComputeRepositoryDiffRequest.Response repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
-    LOGGER.info("Diff Response: {}", repositoryDiffResponse);
+    LOGGER.trace("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.trace("Diff Response: {}", repositoryDiffResponse);
     List<BlobDiff> blobDiffs = repositoryDiffResponse.getDiffsList();
     boolean differentTypesModified = blobType > 1;
     int expectedCount = differentTypesModified ? 5 : 4;
-    Assert.assertEquals(
-        "blob count not match with expected blob count", expectedCount, blobDiffs.size());
+    assertEquals("blob count not match with expected blob count", expectedCount, blobDiffs.size());
     Map<String, BlobDiff> result =
         blobDiffs.stream()
             .collect(
@@ -760,13 +772,12 @@ class DiffTest extends ModeldbTestSetup {
             .build();
     repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
-    LOGGER.info("Diff Response: {}", repositoryDiffResponse);
+    LOGGER.trace("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.trace("Diff Response: {}", repositoryDiffResponse);
     blobDiffs = repositoryDiffResponse.getDiffsList();
     differentTypesModified = blobType > 1;
     expectedCount = differentTypesModified ? 5 : 4;
-    Assert.assertEquals(
-        "blob count not match with expected blob count", expectedCount, blobDiffs.size());
+    assertEquals("blob count not match with expected blob count", expectedCount, blobDiffs.size());
     result =
         blobDiffs.stream()
             .collect(
@@ -801,13 +812,12 @@ class DiffTest extends ModeldbTestSetup {
             .build();
     repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
-    LOGGER.info("Diff Response: {}", repositoryDiffResponse);
+    LOGGER.trace("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.trace("Diff Response: {}", repositoryDiffResponse);
     blobDiffs = repositoryDiffResponse.getDiffsList();
     differentTypesModified = blobType > 1;
     expectedCount = differentTypesModified ? 5 : 4;
-    Assert.assertEquals(
-        "blob count not match with expected blob count", expectedCount, blobDiffs.size());
+    assertEquals("blob count not match with expected blob count", expectedCount, blobDiffs.size());
     result =
         blobDiffs.stream()
             .collect(
@@ -842,13 +852,12 @@ class DiffTest extends ModeldbTestSetup {
             .build();
     repositoryDiffResponse =
         versioningServiceBlockingStub.computeRepositoryDiff(repositoryDiffRequest);
-    LOGGER.info("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
-    LOGGER.info("Diff Response: {}", repositoryDiffResponse);
+    LOGGER.trace("Diff Response: {}", CommonUtils.getStringFromProtoObject(repositoryDiffResponse));
+    LOGGER.trace("Diff Response: {}", repositoryDiffResponse);
     blobDiffs = repositoryDiffResponse.getDiffsList();
     differentTypesModified = blobType > 1;
     expectedCount = differentTypesModified ? 5 : 4;
-    Assert.assertEquals(
-        "blob count not match with expected blob count", expectedCount, blobDiffs.size());
+    assertEquals("blob count not match with expected blob count", expectedCount, blobDiffs.size());
     result =
         blobDiffs.stream()
             .collect(
@@ -892,8 +901,6 @@ class DiffTest extends ModeldbTestSetup {
               .build();
       versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
     }
-
-    LOGGER.info("Compute repository diff with one branch one commit test end....");
   }
 
   private void createBranch(Long repoId, String branch, String commitSHA) {

@@ -10,7 +10,6 @@ import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.authservice.*;
 import ai.verta.uac.Action;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -28,15 +27,15 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class IntegrationTest extends ModeldbTestSetup {
@@ -245,7 +244,7 @@ public class IntegrationTest extends ModeldbTestSetup {
         .build();
   }
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -254,7 +253,7 @@ public class IntegrationTest extends ModeldbTestSetup {
     }
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     cleanUpResources();
   }
@@ -277,17 +276,19 @@ public class IntegrationTest extends ModeldbTestSetup {
 
       if (isRunningIsolated()) {
         mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
-        when(authzMock.getSelfAllowedResources(
-                GetSelfAllowedResources.newBuilder()
-                    .addActions(
-                        Action.newBuilder()
-                            .setModeldbServiceAction(ModelDBServiceActions.READ)
-                            .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                    .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                    .setResourceType(
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                    .build()))
+        when(uac.getAuthzService()
+                .getSelfAllowedResources(
+                    GetSelfAllowedResources.newBuilder()
+                        .addActions(
+                            Action.newBuilder()
+                                .setModeldbServiceAction(ModelDBServiceActions.READ)
+                                .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                        .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                        .setResourceType(
+                            ResourceType.newBuilder()
+                                .setModeldbServiceResourceType(
+                                    ModelDBServiceResourceTypes.REPOSITORY))
+                        .build()))
             .thenReturn(
                 Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
       }

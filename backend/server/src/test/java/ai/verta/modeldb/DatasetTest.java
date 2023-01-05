@@ -40,16 +40,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class DatasetTest extends ModeldbTestSetup {
@@ -63,7 +63,7 @@ public class DatasetTest extends ModeldbTestSetup {
   private static Dataset dataset4;
   private static Map<String, Dataset> datasetMap = new HashMap<>();
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -75,7 +75,7 @@ public class DatasetTest extends ModeldbTestSetup {
     createDatasetEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     if (isRunningIsolated()) {
       when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
@@ -2064,7 +2064,7 @@ public class DatasetTest extends ModeldbTestSetup {
                         .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                         .build())
                 .build();
-        when(collaboratorMock.getResources(any()))
+        when(uac.getCollaboratorService().getResources(any()))
             .thenReturn(Futures.immediateFuture(resourcesResponse));
         when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
       }

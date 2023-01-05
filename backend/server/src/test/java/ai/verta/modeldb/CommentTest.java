@@ -24,31 +24,31 @@ import java.util.Map;
 import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class CommentTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentTest.class);
   // Project Entities
-  private static Project project;
+  private Project project;
 
   // Experiment Entities
-  private static Experiment experiment;
+  private Experiment experiment;
 
   // ExperimentRun Entities
-  private static ExperimentRun experimentRun;
-  private static List<Comment> commentList = new ArrayList<>();
+  private ExperimentRun experimentRun;
+  private List<Comment> commentList = new ArrayList<>();
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -61,7 +61,7 @@ public class CommentTest extends ModeldbTestSetup {
     createExperimentRunEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     DeleteExperimentRun deleteExperimentRun =
         DeleteExperimentRun.newBuilder().setId(experimentRun.getId()).build();
@@ -125,24 +125,25 @@ public class CommentTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
-      when(authzMock.getSelfAllowedResources(
-              GetSelfAllowedResources.newBuilder()
-                  .addActions(
-                      Action.newBuilder()
-                          .setModeldbServiceAction(ModelDBServiceActions.READ)
-                          .setService(ServiceEnum.Service.MODELDB_SERVICE))
-                  .setService(ServiceEnum.Service.MODELDB_SERVICE)
-                  .setResourceType(
-                      ResourceType.newBuilder()
-                          .setModeldbServiceResourceType(ModelDBServiceResourceTypes.REPOSITORY))
-                  .build()))
+      when(uac.getAuthzService()
+              .getSelfAllowedResources(
+                  GetSelfAllowedResources.newBuilder()
+                      .addActions(
+                          Action.newBuilder()
+                              .setModeldbServiceAction(ModelDBServiceActions.READ)
+                              .setService(ServiceEnum.Service.MODELDB_SERVICE))
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(
+                                  ModelDBServiceResourceTypes.REPOSITORY))
+                      .build()))
           .thenReturn(
               Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
     }
   }
 
   private void createExperimentEntities() {
-
     // Create two experiment of above project
     CreateExperiment createExperimentRequest =
         ExperimentTest.getCreateExperimentRequestForOtherTests(
