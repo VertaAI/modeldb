@@ -17,14 +17,16 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.DeleteOrganization;
+import ai.verta.uac.AddGroupUsers;
+import ai.verta.uac.DeleteWorkspaceV2;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GroupServiceGrpc;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.Organization;
+import ai.verta.uac.ResourceTypeV2;
 import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.SetOrganization;
 import ai.verta.uac.Workspace;
+import ai.verta.uac.WorkspaceServiceV2Grpc;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -36,11 +38,11 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -80,14 +82,20 @@ public class DatasetTest extends ModeldbTestSetup {
   @AfterEach
   @Override
   public void tearDown() {
-    if (isRunningIsolated()) {
-      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
-      mockGetResourcesForAllDatasets(datasetMap, testUser1);
+    if (!datasetMap.isEmpty()) {
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllDatasets(datasetMap, testUser1);
+        mockGetSelfAllowedResources(
+            datasetMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.DELETE);
+      }
+
+      DeleteDatasets deleteDatasets =
+          DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
+      DeleteDatasets.Response deleteDatasetsResponse =
+          datasetServiceStub.deleteDatasets(deleteDatasets);
+      LOGGER.info("Datasets deleted successfully");
+      LOGGER.info(deleteDatasetsResponse.toString());
     }
-    DeleteDatasets deleteDatasets =
-        DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
-    datasetServiceStub.deleteDatasets(deleteDatasets);
-    LOGGER.info("Datasets deleted successfully");
 
     dataset1 = null;
     dataset2 = null;
@@ -107,6 +115,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   GetResourcesResponseItem.newBuilder()
                       .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                       .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setVisibility(ResourceVisibility.PRIVATE)
                       .build())
               .build();
       when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
@@ -494,7 +503,7 @@ public class DatasetTest extends ModeldbTestSetup {
         if (isRunningIsolated()) {
           when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
           mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser2);
-        } else {
+        } else if (!testConfig.isPermissionV2Enabled()) {
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorUtils.addCollaboratorRequestDataset(
                   dataset,
@@ -593,11 +602,45 @@ public class DatasetTest extends ModeldbTestSetup {
 
     // Create dataset
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
+    var workspaceNameUser2 = testUser2.getVertaInfo().getUsername();
+    if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
+      var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+      workspaceStub.deleteWorkspace(
+          DeleteWorkspaceV2.newBuilder()
+              .setOrgId(organizationId)
+              .setWorkspaceId(testUser2Workspace.getId())
+              .build());
+      var groupIdUser1 =
+          createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
+      var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+      groupStub.addUsers(
+          AddGroupUsers.newBuilder()
+              .addUserId(testUser2.getVertaInfo().getUserId())
+              .setGroupId(groupIdUser1)
+              .setOrgId(organizationId)
+              .build());
+
+      var roleIdUser1 =
+          createAndGetRole(
+                  authServiceChannelServiceUser,
+                  organizationId,
+                  Optional.empty(),
+                  Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET))
+              .getRole()
+              .getId();
+
+      var testUser1Workspace =
+          createWorkspaceAndRoleForUser(
+              authServiceChannelServiceUser,
+              organizationId,
+              groupIdUser1,
+              roleIdUser1,
+              testUser2.getVertaInfo().getUsername(),
+              Optional.empty());
+      workspaceNameUser2 = organizationId + "/" + testUser1Workspace.getName();
+    }
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
-            .setWorkspaceName(testUser2.getVertaInfo().getUsername())
-            .build();
+        createDatasetRequest.toBuilder().setWorkspaceName(workspaceNameUser2).build();
     CreateDataset.Response createDatasetResponse =
         datasetServiceStubClient2.createDataset(createDatasetRequest);
     Dataset dataset = createDatasetResponse.getDataset();
@@ -611,7 +654,7 @@ public class DatasetTest extends ModeldbTestSetup {
       if (isRunningIsolated()) {
         when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
-      } else {
+      } else if (!testConfig.isPermissionV2Enabled()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestDataset(
                 dataset,
@@ -627,6 +670,12 @@ public class DatasetTest extends ModeldbTestSetup {
 
       // Create dataset
       createDatasetRequest = getDatasetRequest(dataset.getName());
+      var workspaceNameUser1 = testUser1.getVertaInfo().getUsername();
+      if (testConfig.isPermissionV2Enabled()) {
+        workspaceNameUser1 = getWorkspaceNameUser1();
+        createDatasetRequest =
+            createDatasetRequest.toBuilder().setWorkspaceName(workspaceNameUser1).build();
+      }
       createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
       Dataset selfDataset = createDatasetResponse.getDataset();
       LOGGER.info("Dataset created successfully");
@@ -648,7 +697,7 @@ public class DatasetTest extends ModeldbTestSetup {
         GetDatasetByName getDataset =
             GetDatasetByName.newBuilder()
                 .setName(selfDataset.getName())
-                .setWorkspaceName(testUser2.getVertaInfo().getUsername())
+                .setWorkspaceName(workspaceNameUser2)
                 .build();
         GetDatasetByName.Response getDatasetByNameResponse =
             datasetServiceStub.getDatasetByName(getDataset);
@@ -678,7 +727,7 @@ public class DatasetTest extends ModeldbTestSetup {
         getDataset =
             GetDatasetByName.newBuilder()
                 .setName(selfDataset.getName())
-                .setWorkspaceName(testUser1.getVertaInfo().getUsername())
+                .setWorkspaceName(workspaceNameUser1)
                 .build();
         getDatasetByNameResponse = datasetServiceStub.getDatasetByName(getDataset);
         LOGGER.info(
@@ -1915,71 +1964,6 @@ public class DatasetTest extends ModeldbTestSetup {
   }
 
   @Test
-  public void createDatasetWithGlobalSharingOrganization() {
-    LOGGER.info("Global organization Dataset test start................................");
-
-    if (!testConfig.hasAuth()) {
-      Assert.assertTrue(true);
-      return;
-    }
-
-    String orgName = "Org-test-verta-" + new Date().getTime();
-    Organization organization = null;
-    if (!isRunningIsolated()) {
-      SetOrganization setOrganization =
-          SetOrganization.newBuilder()
-              .setOrganization(
-                  Organization.newBuilder()
-                      .setName(orgName)
-                      .setDescription("This is the verta test organization")
-                      .build())
-              .build();
-      SetOrganization.Response orgResponse =
-          organizationServiceBlockingStub.setOrganization(setOrganization);
-      organization = orgResponse.getOrganization();
-      assertEquals(
-          "Organization name not matched with expected organization name",
-          orgName,
-          organization.getName());
-    }
-
-    CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
-    createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
-            .setVisibility(ResourceVisibility.ORG_CUSTOM)
-            .setWorkspaceName(orgName)
-            .build();
-    CreateDataset.Response createDatasetResponse =
-        datasetServiceStub.createDataset(createDatasetRequest);
-    LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
-    Dataset dataset = createDatasetResponse.getDataset();
-    assertEquals(
-        "Dataset name not match with expected dataset name",
-        createDatasetRequest.getName(),
-        dataset.getName());
-
-    if (isRunningIsolated()) {
-      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
-    }
-
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
-    if (!isRunningIsolated() && organization != null) {
-      DeleteOrganization.Response deleteOrganization =
-          organizationServiceBlockingStub.deleteOrganization(
-              DeleteOrganization.newBuilder().setOrgId(organization.getId()).build());
-      assertTrue(deleteOrganization.getStatus());
-    }
-
-    LOGGER.info("Global organization Dataset test stop................................");
-  }
-
-  @Test
   public void createDatasetAndRepositoryWithSameNameTest() {
     LOGGER.info("Create and delete Dataset test start................................");
 
@@ -2063,6 +2047,7 @@ public class DatasetTest extends ModeldbTestSetup {
                         .setResourceId(dataset.getId())
                         .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                         .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .setVisibility(ResourceVisibility.PRIVATE)
                         .build())
                 .build();
         when(uac.getCollaboratorService().getResources(any()))
@@ -2089,7 +2074,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     if (isRunningIsolated()) {
       var dataset = createDatasetResponse.getDataset();
-      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), serviceAccountUser);
     }
 
     DeleteDatasets deleteDatasets =

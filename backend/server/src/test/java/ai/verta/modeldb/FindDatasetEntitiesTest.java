@@ -13,6 +13,7 @@ import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetUsersFuzzy;
+import ai.verta.uac.ResourceVisibility;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -115,6 +116,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
                       .setResourceId("1")
                       .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                       .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setVisibility(ResourceVisibility.PRIVATE)
                       .build())
               .build();
       when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
