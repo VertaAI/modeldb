@@ -9,11 +9,9 @@ import warnings
 
 from google.protobuf.internal.containers import RepeatedCompositeFieldContainer
 
-import verta.monitoring
+from verta.monitoring import Monitor
 from verta.tracking._organization import Organization
 from ._internal_utils._utils import check_unnecessary_params_warning
-
-from ._protos.public.modeldb import CommonService_pb2 as _CommonService
 
 from .external import six
 
@@ -1751,7 +1749,6 @@ class Client(object):
     def _get_organization(self, name):
         return Organization._get_by_name(self._conn, name)
 
-
     def find_monitors(
             self,
             workspace: Optional[Union[str, int]] = None,
@@ -1762,34 +1759,34 @@ class Client(object):
             ) -> RepeatedCompositeFieldContainer:
         #TODO Update return type once LazyList class is created for "Monitors" > :class:`~verta.monitoring.Monitors`
         """
-               Searches for existing monitors. Calling with no parameters returns all monitors in the user's
-               personal workspace.  Calling with only the workspace parameter will return all monitors from
-               that workspace.
+           Searches for existing monitors. Calling with no parameters returns all monitors in the user's
+           personal workspace.  Calling with only the workspace parameter will return all monitors from
+           that workspace.
 
-               .. versionadded:: 0.22.2
-                   New client functions for working with monitors were added.
+           .. versionadded:: 0.22.2
+               New client functions for working with monitors were added.
 
-               Parameters
-               ----------
-               workspace : Union[str, int] optional
-                   Workspace under which the monitor with name `name` exists. Can be integer ID or string name.
-                   If not provided, the current user's personal workspace will be used.
-               names : List[str], optional
-                   Filter results to include only these names. If included with ``ids``, result sets are merged and
-                   deduplicated.
-               ids : List[str], optional
-                   Filter results to include only these IDs.  If included with ``names``, result sets are merged and
-                   deduplicated.
-               endpoint_ids : List[int], optional
-                   Filter results to include only these endpoint IDs.
-               model_version_ids : List[str], optional
-                   Filter results to include only these model version IDs.
-               fuzzy_names : List[str], Optional, default False
-                   Includes values in results that are similar but not exact matches to the values provided.
+           Parameters
+           ----------
+           workspace : Union[str, int] optional
+               Workspace under which the monitor with name `name` exists. Can be integer ID or string name.
+               If not provided, the current user's personal workspace will be used.
+           names : List[str], optional
+               Filter results to include only these names. If included with ``ids``, result sets are merged and
+               deduplicated.
+           ids : List[str], optional
+               Filter results to include only these IDs.  If included with ``names``, result sets are merged and
+               deduplicated.
+           endpoint_ids : List[int], optional
+               Filter results to include only these endpoint IDs.
+           model_version_ids : List[str], optional
+               Filter results to include only these model version IDs.
+           fuzzy_names : List[str], Optional, default False
+               Includes values in results that are similar but not exact matches to the values provided.
 
-               Returns
-               -------
-               :class: RepeatedCompositeFieldContainer
+           Returns
+           -------
+           :class: RepeatedCompositeFieldContainer
         """
         if not workspace:
             workspace = self.get_workspace()
@@ -1811,9 +1808,9 @@ class Client(object):
             attributes: Optional[Dict[str, Any]] = None,
             resource_visibility: Optional[str] = None,
             custom_permission: Optional[str] = None,
-            ) -> verta.monitoring.Monitor:
+            ) -> Monitor:
         """
-
+        Create and name a new monitor for a specific endpoint.
         Parameters
         ----------
         name : str
@@ -1851,4 +1848,74 @@ class Client(object):
             conn=self._conn,
             workspace=workspace,
             monitored_entity=monitored_entity,
+            )
+
+    def update_monitor(
+            self,
+            name: str,
+            id: int,
+            workspace: Optional[Union[str, int]] = None,
+            attributes: Optional[Dict[str, Any]] = None,
+            resource_visibility: Optional[str] = None,
+            custom_permission: Optional[str] = None,
+            ) -> Monitor:
+        """
+        Update an existing monitor with the given parameters.
+        Parameters
+        ----------
+        name : str
+            The name to assign to the newly created monitor.
+        id : int
+            The integer ID of the monitor to be deleted.
+        workspace : Union[str, int] optional
+            Workspace under which the new monitor will be created. Can be integer ID or string name.
+            If not provided, the current user's personal workspace will be used.
+        attributes : Dict[str, Any], optional
+            Attributes of the monitor.
+        resource_visibility : str, optional
+            The desired visibility level for the monitor being created.  Must be one of ['UNKNOWN', 'ORG_DEFAULT',
+            'ORG_CUSTOM', 'PRIVATE' 'WORKSPACE_DEFAULT']
+        custom_permission : str, optional
+            Custom permission setting for the new monitor.  Must be one of ['READ_ONLY', 'READ_WRITE']
+
+        Returns
+        -------
+        :class:`~verta.monitoring.Monitor`
+        """
+        if not workspace:
+            workspace = self.get_workspace()
+
+        monitored_entity = Monitor._update_proto(
+            conn=self._conn,
+            workspace=workspace,
+            name=name,
+            id=id,
+            attributes=attributes,
+            resource_visibility=resource_visibility,
+            custom_permission=custom_permission,
+        )
+        return Monitor.from_response(
+            conn=self._conn,
+            workspace=workspace,
+            monitored_entity=monitored_entity,
+        )
+
+    def delete_monitor(
+            self,
+            id: int,
+            ) -> None:
+        """
+        Delete an existing monitor by its integer id.
+        Parameters
+        ----------
+        id: int
+            Integer id of the monitor to be deleted
+
+        Returns
+        -------
+        None
+        """
+        Monitor._delete_proto(
+            conn=self._conn,
+            id=id,
             )
