@@ -113,6 +113,11 @@ public class DiffTest extends ModeldbTestSetup {
     DeleteRepositoryRequest.Response response =
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     assertTrue("Repository not deleted", response.getStatus());
+
+    repository = null;
+
+    cleanUpResources();
+
     super.tearDown();
   }
 

@@ -61,7 +61,7 @@ public class DatasetTest extends ModeldbTestSetup {
   private Dataset dataset2;
   private Dataset dataset3;
   private Dataset dataset4;
-  private final Map<String, Dataset> datasetMap = new HashMap<>();
+  private Map<String, Dataset> datasetMap = new HashMap<>();
 
   @BeforeEach
   @Override
@@ -89,6 +89,13 @@ public class DatasetTest extends ModeldbTestSetup {
     datasetServiceStub.deleteDatasets(deleteDatasets);
     LOGGER.info("Datasets deleted successfully");
 
+    dataset1 = null;
+    dataset2 = null;
+    dataset3 = null;
+    dataset4 = null;
+    datasetMap = new HashMap<>();
+
+    cleanUpResources();
     super.tearDown();
   }
 

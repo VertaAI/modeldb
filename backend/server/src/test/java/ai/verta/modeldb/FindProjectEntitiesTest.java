@@ -100,6 +100,8 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
     projectMap = new HashMap<>();
     experimentMap = new HashMap<>();
     experimentRunMap = new HashMap<>();
+
+    cleanUpResources();
     super.tearDown();
   }
 

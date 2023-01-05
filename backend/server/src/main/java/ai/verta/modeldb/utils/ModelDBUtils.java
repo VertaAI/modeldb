@@ -312,7 +312,7 @@ public class ModelDBUtils {
         mdbRoleService.getResourceItems(
             workspace, new HashSet<>(projectEntityIds), modelDBServiceResourceTypes, false);
     for (GetResourcesResponseItem item : responseItems) {
-      if (workspace.getId() == item.getWorkspaceId()) {
+      if (workspace != null && workspace.getId() == item.getWorkspaceId()) {
         // Throw error if it is an insert request and project with same name already exists
         LOGGER.info("{} with name {} already exists", modelDBServiceResourceTypes, name);
         throw new AlreadyExistsException(

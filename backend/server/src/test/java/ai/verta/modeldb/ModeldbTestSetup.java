@@ -295,14 +295,16 @@ public abstract class ModeldbTestSetup {
                 organizationId,
                 groupIdUser1,
                 roleIdUser1,
-                testUser1.getVertaInfo().getUsername());
+                testUser1.getVertaInfo().getUsername(),
+                Optional.empty());
         testUser2Workspace =
             createWorkspaceAndRoleForUser(
                 authServiceChannelServiceUser,
                 organizationId,
                 groupIdUser1,
                 roleIdUser1,
-                testUser2.getVertaInfo().getUsername());
+                testUser2.getVertaInfo().getUsername(),
+                Optional.empty());
       }
     } else {
       testUser1 =
@@ -431,18 +433,20 @@ public abstract class ModeldbTestSetup {
       String organizationId,
       String groupId,
       String roleId,
-      String username) {
-    WorkspaceV2 workspace =
+      String username,
+      Optional<Long> workspaceId) {
+    WorkspaceV2.Builder workspaceBuilder =
         WorkspaceV2.newBuilder()
             .setName(username)
             .setOrgId(organizationId)
             .setNamespace("namespace")
-            .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build())
-            .build();
+            .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build());
+    workspaceId.ifPresent(workspaceBuilder::setId);
     var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
     var testUserWorkspace =
         workspaceStub
-            .setWorkspace(SetWorkspaceV2.newBuilder().setWorkspace(workspace).build())
+            .setWorkspace(
+                SetWorkspaceV2.newBuilder().setWorkspace(workspaceBuilder.build()).build())
             .getWorkspace();
     LOGGER.debug("WorkspaceResult: {}", testUserWorkspace);
     return testUserWorkspace;

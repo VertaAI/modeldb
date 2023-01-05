@@ -86,6 +86,8 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     // Experiment Entities
     experiment = null;
+
+    cleanUpResources();
     super.tearDown();
   }
 
@@ -561,13 +563,30 @@ public class ExperimentTest extends ModeldbTestSetup {
     getExperiment = GetExperimentsInProject.newBuilder().setProjectId("hjhfdkshjfhdsk").build();
     try {
       if (isRunningIsolated()) {
-        when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
-            .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        if (testConfig.isPermissionV2Enabled()) {
+          when(uac.getCollaboratorService().getResources(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        } else {
+          when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        }
       }
       experimentServiceStub.getExperimentsInProject(getExperiment);
       fail();
     } catch (StatusRuntimeException ex) {
       checkEqualsAssert(ex);
+    } finally {
+      if (isRunningIsolated() && testConfig.isPermissionV2Enabled()) {
+        when(uac.getCollaboratorService().getResources(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    GetResources.Response.newBuilder()
+                        .addItem(
+                            GetResourcesResponseItem.newBuilder()
+                                .setResourceId(project.getId())
+                                .build())
+                        .build()));
+      }
     }
 
     LOGGER.info("Get Experiment of project Negative test stop................................");
