@@ -35,26 +35,9 @@ import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
-import ai.verta.uac.Action;
-import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.AddGroupUsers;
-import ai.verta.uac.CollaboratorPermissions;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.GroupServiceGrpc;
-import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.RemoveGroupUsers;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.ResourceTypeV2;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
-import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.Workspace;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -172,7 +155,8 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                       .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                       .build())
               .build();
-      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      hackToWorkAroundMockitoThreadingIssues(
+          () -> when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse));
 
       if (testConfig.isPermissionV2Enabled()) {
         when(uac.getWorkspaceService().getWorkspaceByName(any()))

@@ -2,6 +2,7 @@ package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
@@ -16,17 +17,8 @@ import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.AddGroupUsers;
-import ai.verta.uac.DeleteWorkspaceV2;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GroupServiceGrpc;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.ResourceTypeV2;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Workspace;
-import ai.verta.uac.WorkspaceServiceV2Grpc;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -118,7 +110,10 @@ public class DatasetTest extends ModeldbTestSetup {
                       .setVisibility(ResourceVisibility.PRIVATE)
                       .build())
               .build();
-      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      hackToWorkAroundMockitoThreadingIssues(
+          () ->
+              when(collaboratorBlockingMock.getResources(isA(GetResources.class)))
+                  .thenReturn(resourcesResponse));
     }
 
     // Create two dataset of above dataset

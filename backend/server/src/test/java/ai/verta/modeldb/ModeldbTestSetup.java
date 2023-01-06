@@ -1,5 +1,6 @@
 package ai.verta.modeldb;
 
+import static ai.verta.modeldb.ModeldbTestConfigurationBeans.resetUacMocks;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
@@ -17,58 +18,9 @@ import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
-import ai.verta.uac.Action;
-import ai.verta.uac.ActionTypeV2;
-import ai.verta.uac.Actions;
-import ai.verta.uac.AddUserV2;
-import ai.verta.uac.AuthzServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.DeleteOrganizationV2;
-import ai.verta.uac.DeleteResources;
-import ai.verta.uac.Entities;
-import ai.verta.uac.GetAllowedEntities;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetSelfAllowedActionsBatch;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.GetUsers;
-import ai.verta.uac.GetUsersFuzzy;
-import ai.verta.uac.GetWorkspaceById;
-import ai.verta.uac.GetWorkspaceByName;
-import ai.verta.uac.GroupServiceGrpc;
-import ai.verta.uac.GroupV2;
-import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.ListMyOrganizations;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.OrgAdminV2;
-import ai.verta.uac.OrganizationServiceGrpc;
-import ai.verta.uac.OrganizationServiceV2Grpc;
-import ai.verta.uac.OrganizationV2;
-import ai.verta.uac.Permission;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.ResourceTypeV2;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
-import ai.verta.uac.RoleResourceActions;
-import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.RoleServiceV2Grpc;
-import ai.verta.uac.RoleV2;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.SetGroup;
-import ai.verta.uac.SetOrganizationV2;
-import ai.verta.uac.SetResource;
-import ai.verta.uac.SetRoleBinding;
-import ai.verta.uac.SetRoleV2;
-import ai.verta.uac.SetWorkspaceV2;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.UserServiceV2Grpc;
-import ai.verta.uac.VertaUserInfo;
-import ai.verta.uac.Workspace;
-import ai.verta.uac.WorkspaceServiceGrpc;
-import ai.verta.uac.WorkspaceServiceV2Grpc;
-import ai.verta.uac.WorkspaceV2;
 import com.google.common.util.concurrent.Futures;
 import io.grpc.Context;
 import io.grpc.ManagedChannel;
@@ -85,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.exceptions.misusing.WrongTypeOfReturnValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -167,7 +120,7 @@ public abstract class ModeldbTestSetup {
     runningIsolated = testConfig.testsShouldRunIsolatedFromDependencies();
 
     if (runningIsolated) {
-      ModeldbTestConfigurationBeans.resetUacMocks(uac);
+      resetUacMocks(uac);
       collaboratorBlockingMock =
           uac.getBlockingAuthServiceChannel().getCollaboratorServiceBlockingStub();
       authzBlockingMock = uac.getBlockingAuthServiceChannel().getAuthzServiceBlockingStub();
@@ -184,6 +137,7 @@ public abstract class ModeldbTestSetup {
     channel.shutdown();
     channelUser2.shutdown();
     channelServiceUser.shutdown();
+    resetUacMocks(uac);
   }
 
   public void initializeChannelBuilderAndExternalServiceStubs() {
@@ -522,10 +476,11 @@ public abstract class ModeldbTestSetup {
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                 .setUsername(testUser1.getVertaInfo().getUsername())
                 .build());
-    when(collaboratorBlockingMock.setResource(any()))
-        .thenReturn(SetResource.Response.newBuilder().build());
-    when(collaboratorBlockingMock.deleteResources(any()))
-        .thenReturn(DeleteResources.Response.newBuilder().build());
+    hackToWorkAroundMockitoThreadingIssues(
+        () ->
+            when(collaboratorBlockingMock.setResource(isA(SetResource.class)))
+                .thenReturn(SetResource.Response.newBuilder().build()));
+
     // allow any SetResource call
     when(uac.getCollaboratorService().setResource(any()))
         .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
@@ -776,5 +731,17 @@ public abstract class ModeldbTestSetup {
                     .build()));
     mockGetSelfAllowedResources(
         repoIdNameMap.keySet(), ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
+  }
+
+  /**
+   * Please do not abuse this call. It should only be used as a very last resort when all hope has
+   * been lost, and you're ready to quit your job and become a goat farmer instead.
+   */
+  public static void hackToWorkAroundMockitoThreadingIssues(Runnable mockCall) {
+    try {
+      mockCall.run();
+    } catch (WrongTypeOfReturnValue e) {
+      mockCall.run();
+    }
   }
 }
