@@ -722,17 +722,9 @@ public class RdbmsUtils {
     var operator = keyValueQuery.getOperator();
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
-        LOGGER.debug("Called switch case : number_value");
-        //        return getOperatorPredicate(
-        //            builder,
-        //            builder.function("CAST", BigDecimal.class, valueExpression,
-        //            		builder.function("DECIMAL", BigDecimal.class,
-        // builder.literal(10),builder.literal(10))),
-        //            operator, value.getNumberValue());
         var dbConfig = App.getInstance().mdbConfig.getDatabase().getRdbConfiguration();
-        if (dbConfig.isPostgres() || dbConfig.isMssql() || dbConfig.isH2()) {
+        if (dbConfig.isMssql() || dbConfig.isH2()) {
           if (stringColumn) {
-
             return getOperatorPredicate(
                 builder,
                 builder
@@ -749,9 +741,7 @@ public class RdbmsUtils {
               builder, builder.toBigDecimal(valueExpression), operator, value.getNumberValue());
         }
       case STRING_VALUE:
-        LOGGER.debug("Called switch case : string_value");
         if (!value.getStringValue().isEmpty()) {
-          LOGGER.debug("Called switch case : string value exist");
           if (fieldName.equals(ModelDBConstants.ATTRIBUTES)
               && !(operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
             return getOperatorPredicate(
@@ -769,7 +759,6 @@ public class RdbmsUtils {
           throw new InvalidArgumentException("Predicate does not contain string value in request");
         }
       case BOOL_VALUE:
-        LOGGER.debug("Called switch case : bool_value");
         return getOperatorPredicate(builder, valueExpression, operator, value.getBoolValue());
       case LIST_VALUE:
         List<Object> valueList = new ArrayList<>();
