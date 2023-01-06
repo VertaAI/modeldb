@@ -1,8 +1,7 @@
 package ai.verta.modeldb.common.db.migration;
 
-import lombok.extern.log4j.Log4j2;
-
 import java.sql.*;
+import lombok.extern.log4j.Log4j2;
 
 @Log4j2
 class SqlServerMigrationDatastore implements MigrationDatastore {
@@ -50,7 +49,7 @@ class SqlServerMigrationDatastore implements MigrationDatastore {
 
   @Override
   public void ensureMigrationTableExists() throws SQLException {
-    //the simplest way in sql server to see if a table exists is just to try to query it.
+    // the simplest way in sql server to see if a table exists is just to try to query it.
     try (PreparedStatement ps =
         connection.prepareStatement("select count(*) from " + SCHEMA_MIGRATIONS_TABLE)) {
       ps.executeQuery().close();
