@@ -384,6 +384,7 @@ public class ProjectEntity implements Serializable {
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
     if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
       projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
+      projectBuilder.setOwner("");
     } else {
       projectBuilder.setOwnerId(projectResource.getOwnerId());
       projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));

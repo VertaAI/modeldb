@@ -239,6 +239,7 @@ public class RepositoryEntity implements Serializable {
     builder.setWorkspaceServiceId(responseItem.getWorkspaceId());
     if (responseItem.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
       builder.setGroupOwnerId(responseItem.getGroupOwnerId());
+      builder.setOwner("");
     } else {
       builder.setOwnerId(responseItem.getOwnerId());
       builder.setOwner(String.valueOf(responseItem.getOwnerId()));

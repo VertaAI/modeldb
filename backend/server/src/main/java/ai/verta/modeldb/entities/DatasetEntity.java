@@ -246,6 +246,7 @@ public class DatasetEntity implements Serializable {
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
     if (repositoryResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
       datasetBuilder.setGroupOwnerId(repositoryResource.getGroupOwnerId());
+      datasetBuilder.setOwner("");
     } else {
       datasetBuilder.setOwnerId(repositoryResource.getOwnerId());
       datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
