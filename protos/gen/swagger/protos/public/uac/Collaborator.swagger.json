@@ -1755,6 +1755,17 @@
       ],
       "default": "UNKNOWN"
     },
+    "commonGroupId": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "group_id": {
+          "type": "string"
+        }
+      }
+    },
     "commonPagination": {
       "type": "object",
       "properties": {
@@ -1996,8 +2007,10 @@
         },
         "owner_id": {
           "type": "string",
-          "format": "uint64",
-          "title": "Owner of the resource"
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility",
@@ -2259,8 +2272,10 @@
         },
         "owner_id": {
           "type": "string",
-          "format": "uint64",
-          "title": "Owner of the resource"
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility",
