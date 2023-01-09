@@ -19,4 +19,4 @@ class OrganizationV2:
         return self.conn.maybe_proto_response(response_roles, _Role.SearchRolesV2.Response).roles
 
     def create_role(self, name, resource_actions):
-        return Role._create_proto(self._conn, name, self.org_id, resource_actions).id
+        return Role._create_proto(self.conn, name, self.org_id, resource_actions).id
