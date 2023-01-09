@@ -8,6 +8,7 @@ import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.*;
 import io.grpc.*;
 import io.grpc.stub.MetadataUtils;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -16,7 +17,6 @@ public class UAC extends Connection {
   private static final Logger LOGGER = LogManager.getLogger(UAC.class);
 
   private final Config config;
-  private final ManagedChannel authServiceChannel;
 
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub;
   private final CollaboratorServiceGrpc.CollaboratorServiceFutureStub
@@ -29,28 +29,48 @@ public class UAC extends Connection {
   private final OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub;
   private final EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub;
 
-  /** @deprecated Please use {@link #fromConfig(Config)}. */
-  @Deprecated
-  public static UAC FromConfig(Config config) {
-    return fromConfig(config);
-  }
-
-  public static UAC fromConfig(Config config) {
+  public static UAC fromConfig(
+      Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
     if (!config.hasAuth()) {
       return null;
     }
-    return new UAC(config);
+    return new UAC(config, tracingClientInterceptor);
   }
 
-  private UAC(Config config) {
-    this(config.getAuthService().getHost(), config.getAuthService().getPort(), config);
+  /** For use only for testing. */
+  public UAC(
+      Config config,
+      CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorServiceFutureStub,
+      CollaboratorServiceGrpc.CollaboratorServiceFutureStub
+          serviceAccountCollaboratorServiceFutureStub,
+      UACServiceGrpc.UACServiceFutureStub uacServiceFutureStub,
+      WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspaceServiceFutureStub,
+      AuthzServiceGrpc.AuthzServiceFutureStub authzServiceFutureStub,
+      RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub,
+      RoleServiceGrpc.RoleServiceFutureStub serviceAccountRoleServiceFutureStub,
+      OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub,
+      EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub) {
+    super(Optional.empty());
+    this.config = config;
+    this.collaboratorServiceFutureStub = collaboratorServiceFutureStub;
+    this.serviceAccountCollaboratorServiceFutureStub = serviceAccountCollaboratorServiceFutureStub;
+    this.uacServiceFutureStub = uacServiceFutureStub;
+    this.workspaceServiceFutureStub = workspaceServiceFutureStub;
+    this.authzServiceFutureStub = authzServiceFutureStub;
+    this.roleServiceFutureStub = roleServiceFutureStub;
+    this.serviceAccountRoleServiceFutureStub = serviceAccountRoleServiceFutureStub;
+    this.organizationServiceFutureStub = organizationServiceFutureStub;
+    this.eventServiceFutureStub = eventServiceFutureStub;
   }
 
-  public UAC(String host, Integer port, Config config) {
-    super(config);
+  private UAC(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
+    super(tracingClientInterceptor);
+    String host = config.getAuthService().getHost();
+    int port = config.getAuthService().getPort();
     this.config = config;
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
-    if (host != null && port != null) { // AuthService not available.
+    ManagedChannel authServiceChannel;
+    if (host != null) {
       authServiceChannel =
           ManagedChannelBuilder.forTarget(host + CommonConstants.STRING_COLON + port)
               .usePlaintext()
@@ -81,7 +101,7 @@ public class UAC extends Connection {
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
-    return new AuthServiceChannel(config);
+    return new AuthServiceChannel(config, super.getTracingClientInterceptor());
   }
 
   private Metadata getServiceUserMetadata(Config config) {

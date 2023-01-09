@@ -22,6 +22,7 @@ import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import com.google.common.base.Strings;
 import com.google.rpc.Code;
 import io.grpc.Metadata;
 import io.grpc.StatusRuntimeException;
@@ -318,14 +319,10 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
   @Override
   public Workspace getWorkspaceByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
-    /*from the name for workspace, get the workspace id and type.
-    if no workspace is present assume user's personal workspace*/
-    if (workspaceName == null || workspaceName.isEmpty()) {
-      return authService.workspaceIdByName(
-          true, authService.getUsernameFromUserInfo(currentLoginUserInfo));
-    } else {
-      return authService.workspaceIdByName(true, workspaceName);
+    if (Strings.isNullOrEmpty(workspaceName)) {
+      return Workspace.newBuilder().build();
     }
+    return authService.workspaceIdByName(true, workspaceName);
   }
 
   /**

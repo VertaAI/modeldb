@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.awaitility.Awaitility.await;
 
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import io.grpc.Context;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -13,6 +15,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -125,6 +128,7 @@ class FutureTest {
   }
 
   @Test
+  @Timeout(2)
   void retry() throws Exception {
     AtomicInteger sequencer = new AtomicInteger();
 
@@ -139,6 +143,58 @@ class FutureTest {
                     throwable -> true)
                 .get())
         .isEqualTo("success!");
+  }
+
+  @Test
+  void retry_strategy_failure() {
+    AtomicInteger sequencer = new AtomicInteger();
+    int maxRetries = 5;
+    int moreRetriesThanExpected = 10;
+    assertThatThrownBy(
+            () ->
+                Future.retrying(
+                        () -> {
+                          if (sequencer.getAndIncrement() < moreRetriesThanExpected) {
+                            return Future.failedStage(new NullPointerException());
+                          }
+                          return Future.of("success!");
+                        },
+                        RetryStrategy.backoff((x, throwable) -> true, maxRetries))
+                    .get())
+        .isInstanceOf(NullPointerException.class);
+    assertThat(sequencer).hasValue(6);
+  }
+
+  @Test
+  void retry_throwableStrategy() throws Exception {
+    AtomicInteger sequencer = new AtomicInteger();
+
+    Future.retrying(
+            () -> {
+              if (sequencer.getAndIncrement() < 5) {
+                return Future.failedStage(new NullPointerException());
+              }
+              return Future.of("success!");
+            },
+            RetryStrategy.backoff((x, throwable) -> throwable instanceof NullPointerException, 10))
+        .get();
+    assertThat(sequencer).hasValue(6);
+  }
+
+  @Test
+  void retry_valueStrategy() throws Exception {
+    AtomicInteger sequencer = new AtomicInteger();
+
+    Future.retrying(
+            () -> {
+              if (sequencer.getAndIncrement() < 5) {
+                return Future.of("nope");
+              }
+              return Future.of("success!");
+            },
+            RetryStrategy.backoff((value, t) -> value.equals("nope"), 10))
+        .get();
+    assertThat(sequencer).hasValue(6);
   }
 
   @Test
@@ -293,5 +349,20 @@ class FutureTest {
           assertThat(future2.get()).isEqualTo("2");
           return null;
         });
+  }
+
+  @Test
+  void fromListenableFuture() throws Exception {
+    ListenableFuture<String> a = Futures.immediateFuture("cheese");
+    assertThat(Future.fromListenableFuture(a).get()).isEqualTo("cheese");
+
+    ListenableFuture<String> b =
+        Futures.submit(() -> "lemonade", Executors.newSingleThreadExecutor());
+    assertThat(Future.fromListenableFuture(b).get()).isEqualTo("lemonade");
+
+    ListenableFuture<String> c = Futures.immediateFailedFuture(new RuntimeException("oh no"));
+    assertThatThrownBy(() -> Future.fromListenableFuture(c).get())
+        .isInstanceOf(RuntimeException.class)
+        .hasMessage("oh no");
   }
 }

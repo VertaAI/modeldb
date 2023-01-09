@@ -16,10 +16,15 @@ import ai.verta.modeldb.entities.*;
 import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
+import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.metadata.IDTypeEnum;
+import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.versioning.Blob;
+import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobExpanded;
+import ai.verta.modeldb.versioning.Commit;
+import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
@@ -717,17 +722,9 @@ public class RdbmsUtils {
     var operator = keyValueQuery.getOperator();
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
-        LOGGER.debug("Called switch case : number_value");
-        //        return getOperatorPredicate(
-        //            builder,
-        //            builder.function("CAST", BigDecimal.class, valueExpression,
-        //            		builder.function("DECIMAL", BigDecimal.class,
-        // builder.literal(10),builder.literal(10))),
-        //            operator, value.getNumberValue());
         var dbConfig = App.getInstance().mdbConfig.getDatabase().getRdbConfiguration();
-        if (dbConfig.isPostgres() || dbConfig.isMssql()) {
+        if (dbConfig.isMssql() || dbConfig.isH2()) {
           if (stringColumn) {
-
             return getOperatorPredicate(
                 builder,
                 builder
@@ -744,9 +741,7 @@ public class RdbmsUtils {
               builder, builder.toBigDecimal(valueExpression), operator, value.getNumberValue());
         }
       case STRING_VALUE:
-        LOGGER.debug("Called switch case : string_value");
         if (!value.getStringValue().isEmpty()) {
-          LOGGER.debug("Called switch case : string value exist");
           if (fieldName.equals(ModelDBConstants.ATTRIBUTES)
               && !(operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
             return getOperatorPredicate(
@@ -764,7 +759,6 @@ public class RdbmsUtils {
           throw new InvalidArgumentException("Predicate does not contain string value in request");
         }
       case BOOL_VALUE:
-        LOGGER.debug("Called switch case : bool_value");
         return getOperatorPredicate(builder, valueExpression, operator, value.getBoolValue());
       case LIST_VALUE:
         List<Object> valueList = new ArrayList<>();
@@ -2242,5 +2236,24 @@ public class RdbmsUtils {
             }
           });
     }
+  }
+
+  public static List<DatasetVersion> convertRepoDatasetVersions(
+      RepositoryDAO repositoryDAO,
+      MetadataDAO metadataDAO,
+      BlobDAO blobDAO,
+      RepositoryEntity repositoryEntity,
+      List<Commit> commitList)
+      throws ModelDBException {
+    List<DatasetVersion> datasetVersions = new ArrayList<>();
+    for (Commit commit : commitList) {
+      if (commit.getParentShasList().isEmpty()) {
+        continue;
+      }
+      datasetVersions.add(
+          blobDAO.convertToDatasetVersion(
+              repositoryDAO, metadataDAO, repositoryEntity, commit.getCommitSha(), false));
+    }
+    return datasetVersions;
   }
 }

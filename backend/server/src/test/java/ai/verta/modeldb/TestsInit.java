@@ -9,8 +9,10 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.ArtifactStoreInitBeans;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.db.JdbiUtils;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
 import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.AppConfigBeans;
@@ -31,7 +33,9 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import javax.sql.DataSource;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.AfterClass;
@@ -79,9 +83,6 @@ public class TestsInit {
   protected static DatasetVersionServiceGrpc.DatasetVersionServiceBlockingStub
       datasetVersionServiceStubClient2;
   protected static LineageServiceGrpc.LineageServiceBlockingStub lineageServiceStub;
-  protected static HydratedServiceGrpc.HydratedServiceBlockingStub hydratedServiceBlockingStub;
-  protected static HydratedServiceGrpc.HydratedServiceBlockingStub
-      hydratedServiceBlockingStubClient2;
   protected static ArtifactStoreGrpc.ArtifactStoreBlockingStub artifactStoreBlockingStub;
   private static final AtomicBoolean setServerAndServiceRan = new AtomicBoolean(false);
   private static ReconcilerInitializer reconcilerInitializer;
@@ -111,13 +112,20 @@ public class TestsInit {
     ArtifactStoreService artifactStoreService =
         new ArtifactStoreInitBeans().artifactStoreService(testConfig, appContext);
     //  Initialize services that we depend on
-    services = ServiceSet.fromConfig(testConfig, artifactStoreService, UAC.FromConfig(testConfig));
+    services =
+        ServiceSet.fromConfig(
+            testConfig, artifactStoreService, UAC.fromConfig(testConfig, Optional.empty()));
     authService = services.getAuthService();
+
+    DataSource dataSource =
+        JdbiUtils.initializeDataSource(testConfig.getDatabase(), "modeldb-test");
+
+    FutureJdbi futureJdbi = JdbiUtils.initializeFutureJdbi(testConfig.getDatabase(), dataSource);
     // Initialize data access
     daos =
         DAOSet.fromServices(
-            services, testConfig.getJdbi(), handleExecutor, testConfig, reconcilerInitializer);
-    new Migration(testConfig);
+            services, futureJdbi, handleExecutor, testConfig, reconcilerInitializer);
+    new Migration(testConfig, futureJdbi);
 
     new AppConfigBeans(appContext)
         .initializeBackendServices(serverBuilder, services, daos, handleExecutor);
@@ -128,7 +136,8 @@ public class TestsInit {
     // Initialize cron jobs
     new CronJobUtils().initializeCronJobs(testConfig, services);
     reconcilerInitializer =
-        new ReconcilerInitializer().initialize(testConfig, services, daos, handleExecutor);
+        new ReconcilerInitializer()
+            .initialize(testConfig, services, daos, handleExecutor, futureJdbi);
 
     if (testConfig.getTestUsers() != null && !testConfig.getTestUsers().isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig);
@@ -187,8 +196,6 @@ public class TestsInit {
     datasetVersionServiceStubClient2 = DatasetVersionServiceGrpc.newBlockingStub(client2Channel);
     lineageServiceStub = LineageServiceGrpc.newBlockingStub(channel);
     artifactStoreBlockingStub = ArtifactStoreGrpc.newBlockingStub(channel);
-    hydratedServiceBlockingStub = HydratedServiceGrpc.newBlockingStub(channel);
-    hydratedServiceBlockingStubClient2 = HydratedServiceGrpc.newBlockingStub(client2Channel);
 
     serverBuilder.build().start();
     setServerAndServiceRan.set(true);

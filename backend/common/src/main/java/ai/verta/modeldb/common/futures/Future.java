@@ -3,15 +3,15 @@ package ai.verta.modeldb.common.futures;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionStage;
-import java.util.concurrent.ExecutionException;
+import java.util.concurrent.*;
 import java.util.function.*;
 import java.util.stream.Collectors;
 import lombok.extern.log4j.Log4j2;
@@ -28,6 +28,8 @@ public class Future<T> {
    */
   private static FutureExecutor futureExecutor;
 
+  private static Tracer futureTracer;
+
   private static final boolean DEEP_TRACING_ENABLED;
   private static boolean captureStacksAtCreation;
 
@@ -40,9 +42,10 @@ public class Future<T> {
         Boolean.parseBoolean(System.getProperty(FUTURE_TESTING_STACKS_ENABLED));
   }
 
-  private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
   private final String formattedStack;
   private final CompletionStage<T> stage;
+  // this special Executor can be assigned for a single future, for special cases like retries.
+  private FutureExecutor specialExecutor = null;
 
   private Future(CompletionStage<T> stage) {
     if (DEEP_TRACING_ENABLED || captureStacksAtCreation) {
@@ -103,7 +106,11 @@ public class Future<T> {
     return Future.from(promise);
   }
 
-  static <R> Future<R> from(CompletionStage<R> other) {
+  /**
+   * Create a {@link Future} from an existing {@link CompletionStage}. Useful for interop with other
+   * libraries.
+   */
+  public static <R> Future<R> from(CompletionStage<R> other) {
     Preconditions.checkNotNull(
         futureExecutor, "A FutureExecutor is required to create a new Future.");
     return new Future<>(other);
@@ -123,10 +130,22 @@ public class Future<T> {
     return new Future<>(CompletableFuture.completedFuture(value));
   }
 
+  /**
+   * Converts a {@link ListenableFuture}, returned by a non-blocking call via grpc, to a {@link
+   * Future}.
+   */
+  public static <T> Future<T> fromListenableFuture(ListenableFuture<T> listenableFuture) {
+    Preconditions.checkNotNull(
+        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    CompletableFuture<T> promise = new CompletableFuture<>();
+    Futures.addCallback(listenableFuture, new FutureUtil.Callback<>(promise), futureExecutor);
+    return from(promise);
+  }
+
   public <U> Future<U> thenCompose(Function<? super T, Future<U>> fn) {
     Preconditions.checkNotNull(
         futureExecutor, "A FutureExecutor is required to be present for this method.");
-    final var executor = futureExecutor.captureContext();
+    final var executor = getExecutor();
     return from(
         stage.thenComposeAsync(
             traceFunction(
@@ -149,6 +168,13 @@ public class Future<T> {
             executor));
   }
 
+  private FutureExecutor getExecutor() {
+    if (specialExecutor != null) {
+      return specialExecutor.captureContext();
+    }
+    return futureExecutor.captureContext();
+  }
+
   private <U> Function<? super T, ? extends U> traceFunction(
       Function<? super T, ? extends U> fn, String spanName) {
     if (!DEEP_TRACING_ENABLED) {
@@ -165,6 +191,9 @@ public class Future<T> {
   }
 
   private Span startSpan(String futureThenApply) {
+    if (futureTracer == null) {
+      return Span.getInvalid();
+    }
     return futureTracer
         .spanBuilder(futureThenApply)
         .setAttribute(STACK_ATTRIBUTE_KEY, formattedStack)
@@ -175,7 +204,7 @@ public class Future<T> {
     Preconditions.checkNotNull(
         futureExecutor,
         "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
-    final var executor = futureExecutor.captureContext();
+    final var executor = getExecutor();
     return from(stage.handleAsync(traceBiFunctionThrowable(fn), executor));
   }
 
@@ -199,7 +228,7 @@ public class Future<T> {
     Preconditions.checkNotNull(
         futureExecutor,
         "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
-    final var executor = futureExecutor.captureContext();
+    final var executor = getExecutor();
     BiFunction<? super T, ? super U, ? extends V> tracedBiFunction = traceBiFunction(fn);
     return from(stage.thenCombineAsync(other.stage, tracedBiFunction, executor));
   }
@@ -223,7 +252,7 @@ public class Future<T> {
     Preconditions.checkNotNull(
         futureExecutor,
         "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
-    final var executor = futureExecutor.captureContext();
+    final var executor = getExecutor();
     return from(stage.thenAcceptAsync(traceConsumer(action), executor));
   }
 
@@ -245,7 +274,7 @@ public class Future<T> {
     Preconditions.checkNotNull(
         futureExecutor,
         "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
-    final var executor = futureExecutor.captureContext();
+    final var executor = getExecutor();
     return from(stage.thenRunAsync(traceRunnable(runnable), executor));
   }
 
@@ -264,7 +293,7 @@ public class Future<T> {
   }
 
   public Future<T> whenComplete(BiConsumer<? super T, ? super Throwable> action) {
-    final var executor = futureExecutor.captureContext();
+    final var executor = getExecutor();
     return from(stage.whenCompleteAsync(traceBiConsumer(action), executor));
   }
 
@@ -316,46 +345,72 @@ public class Future<T> {
     return from(CompletableFuture.failedFuture(ex));
   }
 
-  public static <U> Future<U> retriableStage(
-      Supplier<Future<U>> supplier, Function<Throwable, Boolean> retryChecker) {
+  public static <U> Future<U> retrying(
+      Supplier<Future<U>> supplier, RetryStrategy<U> retryStrategy) {
     final var promise = new CompletableFuture<U>();
 
     supplier
         .get()
         .whenComplete(
             (value, throwable) -> {
-              boolean retryCheckerFlag;
+              RetryStrategy.Retry retry;
               try {
-                retryCheckerFlag = retryChecker.apply(throwable);
+                retry = retryStrategy.shouldRetry(value, throwable);
               } catch (Throwable e) {
                 promise.completeExceptionally(
-                    new ExecutionException("retryChecker threw an exception. Not retrying.", e));
+                    new ExecutionException("retryStrategy threw an exception. Not retrying.", e));
                 return;
               }
-              if (throwable == null) {
-                promise.complete(value);
-              } else if (retryCheckerFlag) {
-                // If we should retry, then perform the retry and map the result of the future to
-                // the current promise
-                // This build up a chain of promises, which can consume memory. I couldn't figure
-                // out how to do better
-                // with Java constraints of final vars in lambdas and not using uninitialized
-                // variables.
-                retriableStage(supplier, retryChecker)
-                    .whenComplete(
-                        (v, t) -> {
-                          if (t == null) {
-                            promise.complete(v);
-                          } else {
-                            promise.completeExceptionally(t);
-                          }
-                        });
-              } else {
-                promise.completeExceptionally(throwable);
+              if (!retry.shouldRetry()) {
+                if (throwable == null) {
+                  promise.complete(value);
+                } else {
+                  promise.completeExceptionally(throwable);
+                }
+                return;
               }
+              FutureExecutor delayedExecutor;
+              if (retry.getAmountToDelay() == 0) {
+                delayedExecutor = futureExecutor;
+              } else {
+                delayedExecutor =
+                    FutureExecutor.makeCompatibleExecutor(
+                        CompletableFuture.delayedExecutor(
+                            retry.getAmountToDelay(), retry.getTimeUnit(), futureExecutor));
+              }
+
+              retrying(
+                      () -> {
+                        Future<U> newFuture = supplier.get();
+                        newFuture.setSpecialExecutor(delayedExecutor);
+                        return newFuture;
+                      },
+                      retryStrategy)
+                  .whenComplete(
+                      (v, t) -> {
+                        if (t == null) {
+                          promise.complete(v);
+                        } else {
+                          promise.completeExceptionally(t);
+                        }
+                      });
             });
 
     return Future.from(promise);
+  }
+
+  private void setSpecialExecutor(FutureExecutor delayedExecutor) {
+    this.specialExecutor = delayedExecutor;
+  }
+
+  public static <U> Future<U> retriableStage(
+      Supplier<Future<U>> supplier, Function<Throwable, Boolean> retryChecker) {
+    return retrying(
+        supplier,
+        (x, throwable) -> {
+          boolean result = throwable != null && retryChecker.apply(throwable);
+          return new RetryStrategy.Retry(result, 0, TimeUnit.SECONDS);
+        });
   }
 
   public static <U> Future<Optional<U>> flipOptional(Optional<Future<U>> val) {
@@ -391,6 +446,15 @@ public class Future<T> {
           "A FutureExecutor has already been set. Ignoring this call.",
           new RuntimeException("call-site capturer"));
     }
+  }
+
+  public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
+    if (futureTracer != null) {
+      log.warn(
+          "OpenTelemetry has already been set. Ignoring this call.",
+          new RuntimeException("call-site capturer"));
+    }
+    futureTracer = openTelemetry.getTracer("futureTracer");
   }
 
   /** @deprecated Only use this as a part of the conversion process between versions of Futures. */

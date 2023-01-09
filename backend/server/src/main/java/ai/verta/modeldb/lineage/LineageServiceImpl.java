@@ -11,7 +11,6 @@ import ai.verta.modeldb.LineageServiceGrpc.LineageServiceImplBase;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
@@ -22,13 +21,11 @@ import org.hibernate.Session;
 public class LineageServiceImpl extends LineageServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageServiceImpl.class);
-  private final ExperimentRunDAO experimentDAO;
   private final CommitDAO commitDAO;
   private final LineageDAO lineageDAO;
 
   public LineageServiceImpl(DAOSet daoSet) {
     this.lineageDAO = daoSet.getLineageDAO();
-    this.experimentDAO = daoSet.getExperimentRunDAO();
     this.commitDAO = daoSet.getCommitDAO();
   }
 
@@ -127,7 +124,12 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       throws ModelDBException {
     switch (type) {
       case EXPERIMENT_RUN:
-        return experimentDAO.isExperimentRunExists(session, id);
+        var query =
+            session.createQuery(
+                "select count(*) From ExperimentRunEntity ere where ere.id = :experimentRunId AND ere.deleted = false");
+        query.setParameter("experimentRunId", id);
+        Long count = (Long) query.uniqueResult();
+        return count > 0;
       case DATASET_VERSION:
         return commitDAO.isCommitExists(session, id);
       default:

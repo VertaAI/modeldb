@@ -72,11 +72,11 @@ database:
   liquibaseLockThreshold: 60 #time in second
   RdbConfiguration:
     RdbDatabaseName: modeldb
-    RdbDriver: "org.postgresql.Driver"
-    RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-    RdbUrl: "jdbc:postgresql://localhost:5432"
-    RdbUsername: postgres
-    RdbPassword: root
+    RdbDriver: "org.mariadb.jdbc.Driver"
+    RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+    RdbUrl: "jdbc:mysql://localhost:3306"
+    RdbUsername: root
+    RdbPassword: root_password_here
 ```
 
 1. `DBType` provide the provision to configure different database like Relation DB, noSql DB. based on this type modeldb-backend initialize the database. (***Note:*** Currently modeldb-backend support only relational DB but you can extend it by writing your own database code)
@@ -97,11 +97,11 @@ test:
     liquibaseLockThreshold: 60 #time in second
     RdbConfiguration:
       RdbDatabaseName: modeldb_test
-      RdbDriver: "org.postgresql.Driver"
-      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-      RdbUrl: "jdbc:postgresql://localhost:5432"
-      RdbUsername: postgres
-      RdbPassword: root
+      RdbDriver: "org.mariadb.jdbc.Driver"
+      RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+      RdbUrl: "jdbc:mysql://localhost:3306"
+      RdbUsername: root
+      RdbPassword: root_password_here
   testUsers:
     primaryUser:
       email:

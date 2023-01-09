@@ -394,7 +394,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
-        sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+        sql += applyOperator(operator, columnAsNumber(colValue), ":" + valueBindingName);
         queryContext = queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
         break;
       case STRING_VALUE:
@@ -462,7 +462,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
       switch (value.getKindCase()) {
         case NUMBER_VALUE:
-          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          sql += applyOperator(operator, columnAsNumber(colValue), ":" + valueBindingName);
           queryContext =
               queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
           break;
@@ -551,7 +551,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
       switch (value.getKindCase()) {
         case NUMBER_VALUE:
-          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          sql += applyOperator(operator, columnAsNumber(colValue), ":" + valueBindingName);
           queryContext =
               queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
           break;
@@ -570,10 +570,11 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                   q -> q.bind(valueBindingName, wrapValue(operator, finalValueStr)));
           break;
         case LIST_VALUE:
-          List<Object> valueList = new LinkedList<>();
+          var valueList = new LinkedList<>();
           for (final var value1 : value.getListValue().getValuesList()) {
             if (value1.getKindCase().ordinal() == Value.KindCase.STRING_VALUE.ordinal()) {
               var valueStr1 = CommonUtils.getStringFromProtoObject(value1);
+              valueStr1 = valueStr1.replaceAll("^\"|\"$", "");
               if (operator.equals(OperatorEnum.Operator.CONTAIN)) {
                 valueStr1 = value.getStringValue();
               }
