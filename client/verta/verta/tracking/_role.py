@@ -24,7 +24,7 @@ class Role(object):
 
         response = conn.make_proto_request(
             "POST",
-            "/api/v2/uac-proxy/organization/{}/roles".format(org_id),
+            f"/api/v2/uac-proxy/organization/{org_id}/roles",
             body=Message(role=msg),
         )
         role = conn.must_proto_response(response, Message.Response).role
