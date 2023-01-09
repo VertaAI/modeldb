@@ -9,11 +9,14 @@ import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
 import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.uac.DeleteRoleBindings;
 import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -25,17 +28,18 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class ExperimentTest extends ModeldbTestSetup {
@@ -48,7 +52,7 @@ public class ExperimentTest extends ModeldbTestSetup {
   // Experiment Entities
   private static Experiment experiment;
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -60,8 +64,15 @@ public class ExperimentTest extends ModeldbTestSetup {
     createExperimentEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");
@@ -75,6 +86,18 @@ public class ExperimentTest extends ModeldbTestSetup {
   }
 
   private void createProjectEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
+
     // Create two project of above project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
@@ -88,7 +111,7 @@ public class ExperimentTest extends ModeldbTestSetup {
         project.getName());
 
     if (isRunningIsolated()) {
-      mockGetResourcesForAllEntities(Map.of(project.getId(), project), testUser1);
+      mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
     }
   }
 
@@ -237,7 +260,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -534,7 +557,7 @@ public class ExperimentTest extends ModeldbTestSetup {
     getExperiment = GetExperimentsInProject.newBuilder().setProjectId("hjhfdkshjfhdsk").build();
     try {
       if (isRunningIsolated()) {
-        when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+        when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
             .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
       }
       experimentServiceStub.getExperimentsInProject(getExperiment);
@@ -1139,7 +1162,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1308,7 +1331,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1671,7 +1694,7 @@ public class ExperimentTest extends ModeldbTestSetup {
         LogExperimentArtifacts.newBuilder().setId("asda").addAllArtifacts(artifacts).build();
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1691,7 +1714,7 @@ public class ExperimentTest extends ModeldbTestSetup {
             .build();
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
@@ -1745,7 +1768,7 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     try {
       if (isRunningIsolated()) {
-        when(authzMock.isSelfAllowed(any()))
+        when(uac.getAuthzService().isSelfAllowed(any()))
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
@@ -1948,6 +1971,13 @@ public class ExperimentTest extends ModeldbTestSetup {
     }
 
     // Delete Project
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
+      mockGetSelfAllowedResources(
+          Set.of(project.getId()),
+          ModelDBServiceResourceTypes.PROJECT,
+          ModelDBServiceActions.DELETE);
+    }
     DeleteProject deleteProject = DeleteProject.newBuilder().setId(project.getId()).build();
     DeleteProject.Response deleteProjectResponse = projectServiceStub.deleteProject(deleteProject);
     LOGGER.info("Project deleted successfully");

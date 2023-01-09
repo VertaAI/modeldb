@@ -22,7 +22,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experiment.FutureExperimentDAO;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -70,7 +70,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final MDBRoleService mdbRoleService;
   private final FutureProjectDAO futureProjectDAO;
   private final FutureExperimentDAO futureExperimentDAO;
-  private final ExperimentRunDAO experimentRunDAO;
+  private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final FutureEventDAO futureEventDAO;
   private final boolean isEventSystemEnabled;
 
@@ -79,7 +79,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     this.mdbRoleService = serviceSet.getMdbRoleService();
     this.futureProjectDAO = daoSet.getFutureProjectDAO();
     this.futureExperimentDAO = daoSet.getFutureExperimentDAO();
-    this.experimentRunDAO = daoSet.getExperimentRunDAO();
+    this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
     this.repositoryDAO = daoSet.getRepositoryDAO();
     this.commitDAO = daoSet.getCommitDAO();
     this.metadataDAO = daoSet.getMetadataDAO();
@@ -797,7 +797,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                   RepositoryIdentification.newBuilder().setRepoId(Long.parseLong(datasetId)))
               .build(),
           commitDAO,
-          experimentRunDAO,
+          futureExperimentRunDAO,
           false,
           RepositoryEnums.RepositoryTypeEnum.DATASET);
 
@@ -824,8 +824,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       // Validate if current user has access to the entity or not
       mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
-      // Get the user info from the Context
-      var userInfo = authService.getCurrentLoginUserInfo();
 
       var repositoryIdentification =
           RepositoryIdentification.newBuilder()
@@ -867,11 +865,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         var findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         var experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(userInfo, findExperimentRuns);
+            futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).get();
         if (experimentRunPaginationDTO != null
-            && experimentRunPaginationDTO.getExperimentRuns() != null
-            && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
-          List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRuns();
+            && !experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
+          List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRunsList();
           List<String> experimentIds = new ArrayList<>();
           for (ExperimentRun experimentRun : experimentRuns) {
             experimentIds.add(experimentRun.getExperimentId());
@@ -923,8 +920,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.DATASET, request.getDatasetId(), ModelDBServiceActions.READ);
 
-      // Get the user info from the Context
-      var userInfo = authService.getCurrentLoginUserInfo();
       var repositoryIdentification =
           RepositoryIdentification.newBuilder()
               .setRepoId(Long.parseLong(request.getDatasetId()))
@@ -964,11 +959,10 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         var findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         var experimentRunPaginationDTO =
-            experimentRunDAO.findExperimentRuns(userInfo, findExperimentRuns);
+            futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).get();
         if (experimentRunPaginationDTO != null
-            && experimentRunPaginationDTO.getExperimentRuns() != null
-            && !experimentRunPaginationDTO.getExperimentRuns().isEmpty()) {
-          experimentRuns.addAll(experimentRunPaginationDTO.getExperimentRuns());
+            && !experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
+          experimentRuns.addAll(experimentRunPaginationDTO.getExperimentRunsList());
         }
       }
 

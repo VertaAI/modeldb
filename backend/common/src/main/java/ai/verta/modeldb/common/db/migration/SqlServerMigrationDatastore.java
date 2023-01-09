@@ -1,7 +1,9 @@
 package ai.verta.modeldb.common.db.migration;
 
 import java.sql.*;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 class SqlServerMigrationDatastore implements MigrationDatastore {
   private final Connection connection;
 
@@ -47,13 +49,18 @@ class SqlServerMigrationDatastore implements MigrationDatastore {
 
   @Override
   public void ensureMigrationTableExists() throws SQLException {
+    // the simplest way in sql server to see if a table exists is just to try to query it.
+    try (PreparedStatement ps =
+        connection.prepareStatement("select count(*) from " + SCHEMA_MIGRATIONS_TABLE)) {
+      ps.executeQuery().close();
+      return;
+    } catch (SQLException e) {
+      log.info(SCHEMA_MIGRATIONS_TABLE + " does not exist. Creating");
+      // this means the table doesn't already exist, so go ahead and created it below...
+    }
+
     String sql =
-        "IF NOT EXISTS"
-            + "(SELECT *  FROM sysobjects  WHERE id = object_id(N'[dbo].["
-            + SCHEMA_MIGRATIONS_TABLE
-            + "]') "
-            + " AND OBJECTPROPERTY(id, N'IsUserTable') = 1 )"
-            + "CREATE TABLE "
+        "CREATE TABLE "
             + SCHEMA_MIGRATIONS_TABLE
             + " ( version BIGINT PRIMARY KEY NOT NULL, dirty BIT NOT NULL );";
     try (PreparedStatement ps = connection.prepareStatement(sql)) {

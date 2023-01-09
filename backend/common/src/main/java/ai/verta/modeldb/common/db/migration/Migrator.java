@@ -226,6 +226,10 @@ public class Migrator {
         Resources.toString(
             Resources.getResource(resourcesDirectory + "/" + migration.getFilename()),
             StandardCharsets.UTF_8);
+    if (sql.trim().isEmpty()) {
+      log.info("Skipping empty migration : " + migration.getFilename());
+      return;
+    }
     try (Statement statement = connection.createStatement()) {
       statement.executeUpdate(sql);
     }

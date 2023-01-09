@@ -7,7 +7,6 @@ import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureJdbi;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.FileInputStream;
 import java.io.InputStream;
@@ -99,16 +98,6 @@ public class TestConfig extends MDBConfig {
   @Override
   public boolean hasServiceAccount() {
     return getService_user() != null;
-  }
-
-  @Override
-  public FutureJdbi getJdbi() {
-    if (this.jdbi == null) {
-      // Initialize HikariCP and jdbi
-      final var databaseConfig = config.getDatabase();
-      this.jdbi = initializeFutureJdbi(databaseConfig, "modeldb-test");
-    }
-    return this.jdbi;
   }
 
   public boolean testsShouldRunIsolatedFromDependencies() {

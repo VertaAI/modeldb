@@ -191,3 +191,8 @@ message GitSnapshot {
 message Empty {
 
 }
+
+message GroupId {
+    string org_id = 1;
+    string group_id = 2;
+}

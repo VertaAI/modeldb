@@ -68,7 +68,7 @@ import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
+import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
 import ai.verta.modeldb.experimentRun.subtypes.CodeVersionFromBlobHandler;
@@ -117,6 +117,9 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.hibernate.LockMode;
+import org.hibernate.LockOptions;
+import org.hibernate.Session;
 import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentRunDAO {
@@ -154,7 +157,6 @@ public class FutureExperimentRunDAO {
       MDBConfig config,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO,
       RepositoryDAO repositoryDAO,
       CommitDAO commitDAO,
       BlobDAO blobDAO,
@@ -181,7 +183,6 @@ public class FutureExperimentRunDAO {
             codeVersionHandler,
             datasetHandler,
             artifactStoreDAO,
-            datasetVersionDAO,
             config);
     predicatesHandler =
         new PredicatesHandler(executor, "experiment_run", "experiment_run", uacApisUtil);
@@ -518,7 +519,7 @@ public class FutureExperimentRunDAO {
                     .createQuery(
                         "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=:deleted")
                     .bindList("ids", finalRunIds)
-                    .bind("deleted", false)
+                    .bind("deleted", 0)
                     .mapTo(String.class)
                     .list());
 
@@ -1822,11 +1823,27 @@ public class FutureExperimentRunDAO {
 
   public InternalFuture<String> getProjectIdByExperimentRunId(String experimentRunId) {
     return jdbi.withHandle(
-        handle ->
-            handle
-                .createQuery("SELECT project_id from experiment_run where id = :id ")
-                .bind("id", experimentRunId)
-                .mapTo(String.class)
-                .one());
+        handle -> {
+          try (var query =
+              handle.createQuery("SELECT project_id from experiment_run where id = :id ")) {
+            var projectId = query.bind("id", experimentRunId).mapTo(String.class).findOne();
+            return projectId.orElse("");
+          }
+        });
+  }
+
+  public void deleteLogVersionedInputs(Session session, List<Long> repoIds) {
+    String fetchAllExpRunLogVersionedInputsHqlBuilder =
+        String.format(
+            "DELETE FROM VersioningModeldbEntityMapping vm WHERE vm.repository_id IN (:repoIds) "
+                + " AND vm.entity_type = '%s'",
+            ExperimentRunEntity.class.getSimpleName());
+    var query =
+        session
+            .createQuery(fetchAllExpRunLogVersionedInputsHqlBuilder)
+            .setLockOptions(new LockOptions().setLockMode(LockMode.PESSIMISTIC_WRITE));
+    query.setParameter("repoIds", repoIds);
+    query.executeUpdate();
+    LOGGER.debug("ExperimentRun versioning deleted successfully");
   }
 }

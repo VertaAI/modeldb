@@ -113,12 +113,6 @@
             <artifactId>jdbi3-core</artifactId>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/org.postgresql/postgresql -->
-        <dependency>
-            <groupId>org.postgresql</groupId>
-            <artifactId>postgresql</artifactId>
-        </dependency>
-
         <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->
         <dependency>
             <groupId>com.amazonaws</groupId>
@@ -202,18 +196,6 @@
           <artifactId>mariadb-java-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>io.jaegertracing</groupId>
-            <artifactId>jaeger-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>opentracing-grpc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentracing.contrib</groupId>
-            <artifactId>opentracing-jdbc</artifactId>
-        </dependency>
-        <dependency>
             <groupId>com.oblac</groupId>
             <artifactId>nomen-est-omen</artifactId>
         </dependency>
@@ -248,10 +230,6 @@
         <dependency>
             <groupId>io.opentelemetry</groupId>
             <artifactId>opentelemetry-exporter-jaeger-thrift</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-opentracing-shim</artifactId>
         </dependency>
         <dependency>
             <groupId>io.opentelemetry.instrumentation</groupId>

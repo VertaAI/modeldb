@@ -11,7 +11,6 @@ import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
 import ai.verta.modeldb.experimentRun.S3KeyFunction;
@@ -34,7 +33,6 @@ public class ArtifactHandler extends ArtifactHandlerBase {
   private final MDBConfig mdbConfig = App.getInstance().mdbConfig;
 
   private final ArtifactStoreDAO artifactStoreDAO;
-  private final DatasetVersionDAO datasetVersionDAO;
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private final int artifactEntityType;
@@ -46,12 +44,10 @@ public class ArtifactHandler extends ArtifactHandlerBase {
       CodeVersionHandler codeVersionHandler,
       DatasetHandler datasetHandler,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO,
       MDBConfig mdbConfig) {
     super(executor, jdbi, "artifacts", entityName, mdbConfig.getArtifactStoreConfig());
     this.codeVersionHandler = codeVersionHandler;
     this.datasetHandler = datasetHandler;
-    this.datasetVersionDAO = datasetVersionDAO;
     this.artifactStoreDAO = artifactStoreDAO;
 
     if (entityName.equals("ProjectEntity")) {
@@ -203,10 +199,7 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                             throw new InvalidArgumentException(
                                 String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey()));
                           }
-                          return new AbstractMap.SimpleEntry<>(
-                              datasetVersionDAO.getUrlForDatasetVersion(
-                                  artifacts.get(0).getLinkedArtifactId(), request.getMethod()),
-                              null);
+                          throw new InvalidArgumentException("Not supported yet");
                         },
                         executor),
             executor);

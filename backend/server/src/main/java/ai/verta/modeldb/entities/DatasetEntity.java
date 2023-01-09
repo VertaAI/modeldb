@@ -9,6 +9,7 @@ import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetResourcesResponseItem.OwnerTrackingCase;
 import ai.verta.uac.ResourceVisibility;
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -243,7 +244,13 @@ public class DatasetEntity implements Serializable {
             ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET);
     datasetBuilder.setVisibility(repositoryResource.getVisibility());
     datasetBuilder.setWorkspaceServiceId(repositoryResource.getWorkspaceId());
-    datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
+    if (repositoryResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+      datasetBuilder.setGroupOwnerId(repositoryResource.getGroupOwnerId());
+      datasetBuilder.setOwner("");
+    } else {
+      datasetBuilder.setOwnerId(repositoryResource.getOwnerId());
+      datasetBuilder.setOwner(String.valueOf(repositoryResource.getOwnerId()));
+    }
     datasetBuilder.setCustomPermission(repositoryResource.getCustomPermission());
 
     DatasetVisibilityEnum.DatasetVisibility visibility =

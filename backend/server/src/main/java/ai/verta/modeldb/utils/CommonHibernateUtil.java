@@ -32,7 +32,6 @@ import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
 import org.hibernate.tool.hbm2ddl.SchemaExport;
 import org.hibernate.tool.schema.TargetType;
 import org.mariadb.jdbc.MariaDbDataSource;
-import org.postgresql.ds.PGSimpleDataSource;
 
 public abstract class CommonHibernateUtil extends CommonDBUtil {
   private static final Logger LOGGER = LogManager.getLogger(CommonHibernateUtil.class);
@@ -156,9 +155,6 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
     }
     if (rdbConfiguration.isMysql()) {
       return MariaDbDataSource.class.getName();
-    }
-    if (rdbConfiguration.isPostgres()) {
-      return PGSimpleDataSource.class.getName();
     }
     if (rdbConfiguration.isH2()) {
       return JdbcDataSource.class.getName();

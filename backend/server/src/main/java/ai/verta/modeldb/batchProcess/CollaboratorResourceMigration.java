@@ -50,7 +50,7 @@ public class CollaboratorResourceMigration {
     var config = App.getInstance().mdbConfig;
     CollaboratorResourceMigration.paginationSize = 100;
     if (config.hasAuth()) {
-      uac = UAC.FromConfig(config);
+      uac = UAC.fromConfig(config, Optional.empty());
       authService = MDBAuthServiceUtils.FromConfig(config, uac);
       mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
     } else {

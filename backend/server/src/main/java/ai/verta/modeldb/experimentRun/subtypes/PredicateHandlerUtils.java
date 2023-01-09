@@ -8,16 +8,12 @@ import java.util.regex.Pattern;
 public class PredicateHandlerUtils {
   private static final MDBConfig mdbConfig = App.getInstance().mdbConfig;
 
-  protected String columnAsNumber(String colName, boolean isString) {
-    if (mdbConfig.getDatabase().getRdbConfiguration().isPostgres()) {
-      if (isString) {
-        return String.format("cast(trim('\"' from %s) as double precision)", colName);
-      } else {
-        return String.format("cast(%s as double precision)", colName);
-      }
-    } else {
-      return String.format("cast(%s as decimal(16, 8))", colName);
+  protected String columnAsNumber(String colName) {
+    if (mdbConfig.getDatabase().getRdbConfiguration().isH2()) {
+      return String.format("cast(trim('\"' from %s) as double precision)", colName);
     }
+
+    return String.format("cast(%s as decimal(16, 8))", colName);
   }
 
   protected String applyOperator(
@@ -53,7 +49,7 @@ public class PredicateHandlerUtils {
     switch (operator.ordinal()) {
       case OperatorEnum.Operator.CONTAIN_VALUE:
       case OperatorEnum.Operator.NOT_CONTAIN_VALUE:
-        return String.format("%%%s%%", value);
+        return String.format("%%%s%%", String.valueOf(value).toLowerCase());
       default:
         return value;
     }

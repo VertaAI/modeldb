@@ -9,7 +9,7 @@ import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.versioning.BranchEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
-import ai.verta.modeldb.experimentRun.ExperimentRunDAO;
+import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.UserInfo;
@@ -45,16 +45,19 @@ public interface RepositoryDAO {
   DeleteRepositoryRequest.Response deleteRepository(
       DeleteRepositoryRequest request,
       CommitDAO commitDAO,
-      ExperimentRunDAO experimentRunDAO,
+      FutureExperimentRunDAO futureExperimentRunDAO,
       boolean canNotOperateOnProtected,
       RepositoryEnums.RepositoryTypeEnum repositoryType)
       throws ModelDBException;
 
-  Boolean deleteRepositories(List<String> repositoryIds, ExperimentRunDAO experimentRunDAO)
+  Boolean deleteRepositories(
+      List<String> repositoryIds, FutureExperimentRunDAO futureExperimentRunDAO)
       throws ModelDBException;
 
   void deleteRepositories(
-      Session session, ExperimentRunDAO experimentRunDAO, Collection<String> allowedRepositoryIds);
+      Session session,
+      FutureExperimentRunDAO futureExperimentRunDAO,
+      Collection<String> allowedRepositoryIds);
 
   Dataset createOrUpdateDataset(
       Dataset dataset, String workspaceName, boolean create, UserInfo userInfo)

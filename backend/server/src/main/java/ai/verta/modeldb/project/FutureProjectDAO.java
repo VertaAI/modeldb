@@ -43,7 +43,12 @@ import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.authservice.RoleServiceUtils;
 import ai.verta.modeldb.common.connections.UAC;
-import ai.verta.modeldb.common.exceptions.*;
+import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
+import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.FutureUtil;
@@ -51,7 +56,6 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
-import ai.verta.modeldb.datasetVersion.DatasetVersionDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.experimentRun.subtypes.ArtifactHandler;
 import ai.verta.modeldb.experimentRun.subtypes.AttributeHandler;
@@ -68,6 +72,7 @@ import ai.verta.uac.Action;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetResourcesResponseItem.OwnerTrackingCase;
 import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
@@ -122,7 +127,6 @@ public class FutureProjectDAO {
       FutureJdbi jdbi,
       UAC uac,
       ArtifactStoreDAO artifactStoreDAO,
-      DatasetVersionDAO datasetVersionDAO,
       MDBConfig mdbConfig,
       FutureExperimentRunDAO futureExperimentRunDAO,
       UACApisUtil uacApisUtil,
@@ -147,7 +151,6 @@ public class FutureProjectDAO {
             codeVersionHandler,
             datasetHandler,
             artifactStoreDAO,
-            datasetVersionDAO,
             mdbConfig);
     predicatesHandler = new PredicatesHandler(executor, "project", "p", uacApisUtil);
     sortingHandler = new SortingHandler("project");
@@ -691,7 +694,13 @@ public class FutureProjectDAO {
     var projectResource = getResourcesMap.get(projectBuilder.getId());
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+      projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
+      projectBuilder.setOwner("");
+    } else {
+      projectBuilder.setOwnerId(projectResource.getOwnerId());
+      projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    }
     projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
     Workspace workspace;
@@ -1601,7 +1610,13 @@ public class FutureProjectDAO {
 
               projectBuilder.setVisibility(projectResource.getVisibility());
               projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-              projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+              if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+                projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
+                projectBuilder.setOwner("");
+              } else {
+                projectBuilder.setOwnerId(projectResource.getOwnerId());
+                projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+              }
               projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
               switch (workspace.getInternalIdCase()) {

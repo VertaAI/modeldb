@@ -1,7 +1,7 @@
 package ai.verta.modeldb.common.futures;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import io.opentelemetry.api.GlobalOpenTelemetry;
+import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.Tracer;
@@ -12,7 +12,9 @@ import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ExecutionException;
 import java.util.function.*;
 import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class InternalFuture<T> {
   private static final boolean DEEP_TRACING_ENABLED;
   public static final AttributeKey<String> STACK_ATTRIBUTE_KEY = AttributeKey.stringKey("stack");
@@ -22,7 +24,7 @@ public class InternalFuture<T> {
     DEEP_TRACING_ENABLED = Boolean.parseBoolean(internalFutureTracingEnabled);
   }
 
-  private final Tracer futureTracer = GlobalOpenTelemetry.getTracer("futureTracer");
+  private static Tracer futureTracer;
   private final String formattedStack;
   private CompletionStage<T> stage;
 
@@ -129,6 +131,9 @@ public class InternalFuture<T> {
   }
 
   private Span startSpan(String futureThenApply) {
+    if (futureTracer == null) {
+      return Span.getInvalid();
+    }
     return futureTracer
         .spanBuilder(futureThenApply)
         .setAttribute(STACK_ATTRIBUTE_KEY, formattedStack)
@@ -351,5 +356,14 @@ public class InternalFuture<T> {
 
   public Future<T> toFuture() {
     return Future.from(stage);
+  }
+
+  public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
+    if (futureTracer != null) {
+      log.warn(
+          "OpenTelemetry has already been set. Ignoring this call.",
+          new RuntimeException("call-site capturer"));
+    }
+    futureTracer = openTelemetry.getTracer("futureTracer");
   }
 }

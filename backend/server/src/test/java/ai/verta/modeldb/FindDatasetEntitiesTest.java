@@ -1,14 +1,18 @@
 package ai.verta.modeldb;
 
 import static org.junit.Assert.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.when;
+import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
 
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.UserInfo;
+import ai.verta.uac.GetResources;
+import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetUsersFuzzy;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -20,18 +24,19 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.FixMethodOrder;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.runners.MethodSorters;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(JUnit4.class)
-@FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class FindDatasetEntitiesTest extends TestsInit {
+@ExtendWith(SpringExtension.class)
+@SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
+@ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
+public class FindDatasetEntitiesTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(FindDatasetEntitiesTest.class);
 
@@ -49,14 +54,20 @@ public class FindDatasetEntitiesTest extends TestsInit {
   private static DatasetVersion datasetVersion4;
   private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
 
-  @Before
+  @BeforeEach
   public void createEntities() {
+    initializeChannelBuilderAndExternalServiceStubs();
+
+    if (isRunningIsolated()) {
+      setupMockUacEndpoints(uac);
+    }
+
     // Create all entities
     createDatasetEntities();
     createDatasetVersionEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     for (DatasetVersion datasetVersion : datasetVersionMap.values()) {
       DeleteDatasetVersion deleteDatasetVersion =
@@ -91,10 +102,23 @@ public class FindDatasetEntitiesTest extends TestsInit {
     datasetVersionMap = new HashMap<>();
   }
 
-  private static void createDatasetEntities() {
+  private void createDatasetEntities() {
+    if (isRunningIsolated()) {
+      var resourcesResponse =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setResourceId("1")
+                      .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+    }
+
     // Create two dataset of above dataset
     CreateDataset createDatasetRequest =
-        DatasetTest.getDatasetRequest("Dataset-1-" + new Date().getTime());
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-1-" + new Date().getTime());
     KeyValue attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -123,7 +147,8 @@ public class FindDatasetEntitiesTest extends TestsInit {
         dataset1.getName());
 
     // dataset2 of above dataset
-    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-2-" + new Date().getTime());
+    createDatasetRequest =
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-2-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -152,7 +177,8 @@ public class FindDatasetEntitiesTest extends TestsInit {
         dataset2.getName());
 
     // dataset3 of above dataset
-    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-3-" + new Date().getTime());
+    createDatasetRequest =
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-3-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -178,7 +204,8 @@ public class FindDatasetEntitiesTest extends TestsInit {
         dataset3.getName());
 
     // dataset4 of above dataset
-    createDatasetRequest = DatasetTest.getDatasetRequest("Dataset-4-" + new Date().getTime());
+    createDatasetRequest =
+        DatasetTest.getDatasetRequestForOtherTests("Dataset-4-" + new Date().getTime());
     attribute1 =
         KeyValue.newBuilder()
             .setKey("attribute_1")
@@ -210,9 +237,13 @@ public class FindDatasetEntitiesTest extends TestsInit {
     datasetMap.put(dataset2.getId(), dataset2);
     datasetMap.put(dataset3.getId(), dataset3);
     datasetMap.put(dataset4.getId(), dataset4);
+
+    if (isRunningIsolated()) {
+      mockGetResourcesForAllDatasets(datasetMap, testUser1);
+    }
   }
 
-  private static void createDatasetVersionEntities() {
+  private void createDatasetVersionEntities() {
     // Create two datasetVersion of above dataset
     CreateDatasetVersion createDatasetVersionRequest =
         DatasetVersionTest.getDatasetVersionRequest(dataset1.getId());
@@ -327,9 +358,6 @@ public class FindDatasetEntitiesTest extends TestsInit {
   @Test
   public void findDatasetPredicateValueEmptyNegativeTest() {
     LOGGER.info("FindDatasets predicate value is empty negative test start.........");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     // Validate check for predicate value not empty
     List<KeyValueQuery> predicates = new ArrayList<>();
     Value stringValueType = Value.newBuilder().setStringValue("").build();
@@ -382,9 +410,6 @@ public class FindDatasetEntitiesTest extends TestsInit {
   public void findDatasetStructTypeNotImplemented() {
     LOGGER.info(
         "check for protobuf struct type in KeyValueQuery not implemented test start........");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     // Validate check for struct Type not implemented
     Value numValue = Value.newBuilder().setNumberValue(17.1716586149719).build();
 
@@ -468,9 +493,6 @@ public class FindDatasetEntitiesTest extends TestsInit {
   @Test
   public void findDatasetsByMultipleAttributeTest() {
     LOGGER.info("FindDatasets by multiple attribute condition test start..................");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     List<KeyValueQuery> predicates = new ArrayList<>();
     Value numValue = Value.newBuilder().setNumberValue(0.6543210).build();
     KeyValueQuery keyValueQuery =
@@ -615,9 +637,6 @@ public class FindDatasetEntitiesTest extends TestsInit {
   public void findDatasetsByAttributeWithPaginationTest() {
     LOGGER.info(
         "FindDatasets by attribute with pagination test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     Value numValue = Value.newBuilder().setNumberValue(0.6543210).build();
     KeyValueQuery keyValueQuery2 =
         KeyValueQuery.newBuilder()
@@ -690,9 +709,6 @@ public class FindDatasetEntitiesTest extends TestsInit {
   @Test
   public void findDatasetsNotSupportObservationsAttributesTest() {
     LOGGER.info("FindDatasets not support the observation.attributes test start............");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     Value numValue = Value.newBuilder().setNumberValue(0.31).build();
     KeyValueQuery keyValueQuery2 =
         KeyValueQuery.newBuilder()
@@ -724,9 +740,6 @@ public class FindDatasetEntitiesTest extends TestsInit {
   @Test
   public void findDatasetsByTagsTest() {
     LOGGER.info("FindDatasets by tags test start................................");
-
-    DatasetTest datasetTest = new DatasetTest();
-
     // get dataset with value of tags == test_tag_123
     Value stringValue1 = Value.newBuilder().setStringValue("A1").build();
     KeyValueQuery keyValueQueryTag1 =
@@ -1456,10 +1469,14 @@ public class FindDatasetEntitiesTest extends TestsInit {
       assertTrue(true);
       return;
     }
-    GetUser getUserRequest =
-        GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-    // Get the user info by vertaId form the AuthService
-    UserInfo testUser1 = uacServiceStub.getUser(getUserRequest);
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getUsersFuzzy(any()))
+          .thenReturn(
+              GetUsersFuzzy.Response.newBuilder()
+                  .addAllUserInfos(List.of(testUser1, testUser2))
+                  .build());
+    }
+
     String testUser1UserName = testUser1.getVertaInfo().getUsername();
 
     // get datasetVersion with value of attributes.attribute_1 <= 0.6543210
@@ -1526,6 +1543,11 @@ public class FindDatasetEntitiesTest extends TestsInit {
             .setDatasetId(dataset1.getId())
             .addPredicates(keyValueQuery)
             .build();
+
+    if (isRunningIsolated()) {
+      when(uacBlockingMock.getUsersFuzzy(any()))
+          .thenReturn(GetUsersFuzzy.Response.newBuilder().build());
+    }
 
     response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);
     LOGGER.info("FindDatasetVersions Response : " + response.getDatasetVersionsList());

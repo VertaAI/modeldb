@@ -169,12 +169,7 @@ public abstract class CommonDBUtil {
 
   private static ResultSet getTableBasedOnDialect(Connection conn, String tableName, RdbConfig rdb)
       throws SQLException {
-    if (rdb.isPostgres()) {
-      // TODO: make postgres implementation multitenant as well.
-      return conn.getMetaData().getTables(null, null, tableName, null);
-    } else {
-      return conn.getMetaData().getTables(RdbConfig.buildDatabaseName(rdb), null, tableName, null);
-    }
+    return conn.getMetaData().getTables(RdbConfig.buildDatabaseName(rdb), null, tableName, null);
   }
 
   protected void createTablesLiquibaseMigration(
