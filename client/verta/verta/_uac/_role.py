@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from .._protos.public.uac import RoleV2_pb2 as _Role
+from verta._protos.public.uac import RoleV2_pb2 as _Role
 
 
 class Role(object):
