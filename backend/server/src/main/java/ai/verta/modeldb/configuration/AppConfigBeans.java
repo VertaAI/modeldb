@@ -22,6 +22,7 @@ import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.interceptors.ActiveCountGrpcInterceptor;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.common.metrics.ThreadSchedulingMonitor;
 import ai.verta.modeldb.config.MDBConfig;
@@ -195,6 +196,7 @@ public class AppConfigBeans {
     serverBuilder.intercept(new MetadataForwarder());
     serverBuilder.intercept(new ExceptionInterceptor());
     serverBuilder.intercept(new MonitoringInterceptor());
+    serverBuilder.intercept(new ActiveCountGrpcInterceptor());
     serverBuilder.intercept(new AuthInterceptor());
 
     return serverBuilder;
@@ -309,7 +311,7 @@ public class AppConfigBeans {
         long timeoutRemaining = mdbConfig.getGrpcServer().getRequestTimeout();
         while (timeoutRemaining > pollInterval
             && !server.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
-          int activeRequestCount = MonitoringInterceptor.ACTIVE_REQUEST_COUNT.get();
+          int activeRequestCount = ActiveCountGrpcInterceptor.activeRequestCount.get();
           LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
 
           timeoutRemaining -= pollInterval;
