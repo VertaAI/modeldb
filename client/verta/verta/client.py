@@ -1739,7 +1739,7 @@ class Client(object):
         return datasets
 
     def _create_organization(
-            self, name, desc=None, collaborator_type=None, global_can_deploy=None
+        self, name, desc=None, collaborator_type=None, global_can_deploy=None
     ):
         return Organization._create(
             self._conn, name, desc, collaborator_type, global_can_deploy
