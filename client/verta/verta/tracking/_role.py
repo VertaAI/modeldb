@@ -16,7 +16,7 @@ class Role(object):
         self.name = "{}:{}".format(msg.org_id, msg.name)
 
     @classmethod
-    def _create(
+    def _create_proto(
         cls, conn, name, org_id, resource_actions
     ):
         Message = _Role.SetRoleV2

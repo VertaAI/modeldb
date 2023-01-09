@@ -1740,6 +1740,23 @@ class Client(object):
         return datasets
 
     def _create_workspace(self, org_id, workspace_name, resource_action_groups):
+        """
+        creates a workspace with a custom role for all users.
+
+        Parameters
+        ----------
+        org_id : str
+            ID of organization in which workspace is created.
+        workspace_name : str
+            name of workspace.
+        resource_action_groups : [_Role.RoleResourceActions]
+            role description with allowed actions for resource types.
+
+        Returns
+        -------
+        :class:`~verta.tracking._workspace.Workspace`
+
+        """
         response_groups = self._conn.make_proto_request(
             "GET", "/api/v1/uac-proxy/organization/{}/groups".format(org_id)
         )
@@ -1751,8 +1768,8 @@ class Client(object):
         admins_group_id = next(iter(set(group.id for group in groups if group.name == "Admins")))
         roles = self._conn.maybe_proto_response(response_roles, _Role.SearchRolesV2.Response).roles
         super_user_role_id = next(iter(set(role.id for role in roles if role.name == "Super User")))
-        custom_role_id = Role._create(self._conn, workspace_name + "role", org_id, resource_action_groups).id
-        return Workspace._create(
+        custom_role_id = Role._create_proto(self._conn, workspace_name + "role", org_id, resource_action_groups).id
+        return Workspace._create_proto(
             self._conn, workspace_name, org_id, [_Workspace.Permission(group_id = admins_group_id,
                                                                        role_id = super_user_role_id),
                                                  _Workspace.Permission(group_id = all_users_group_id,
