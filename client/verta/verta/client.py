@@ -9,6 +9,7 @@ import warnings
 
 import requests
 from ._internal_utils._utils import check_unnecessary_params_warning
+from ._uac._organization import OrganizationV2
 
 from .external import six
 
@@ -22,7 +23,6 @@ from verta import credentials
 from verta.credentials import EmailCredentials, JWTCredentials
 
 from .tracking import _Context
-from verta._uac._organization import Organization
 from .tracking.entities import (
     Project,
     Projects,
@@ -1755,7 +1755,7 @@ class Client(object):
         :class:`~verta.tracking._workspace.Workspace`
 
         """
-        org = Organization(self._conn, org_id)
+        org = OrganizationV2(self._conn, org_id)
         groups = org.get_groups()
         all_users_group_id = next(iter(set(group.id for group in groups if group.name == "All Users")))
         admins_group_id = next(iter(set(group.id for group in groups if group.name == "Admins")))
