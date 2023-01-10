@@ -85,8 +85,7 @@ public class DatasetTest extends ModeldbTestSetup {
     if (!datasetMap.isEmpty()) {
       if (isRunningIsolated()) {
         when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
-        mockGetSelfAllowedResources(
-            datasetMap.keySet(), ModelDBServiceResourceTypes.DATASET, ModelDBServiceActions.DELETE);
+        mockGetResourcesForAllDatasets(datasetMap, testUser1);
       }
       DeleteDatasets deleteDatasets =
           DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
