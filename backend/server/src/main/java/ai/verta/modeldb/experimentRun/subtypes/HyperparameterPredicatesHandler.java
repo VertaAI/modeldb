@@ -35,7 +35,7 @@ public class HyperparameterPredicatesHandler extends PredicateHandlerUtils {
     try {
       switch (value.getKindCase()) {
         case NUMBER_VALUE:
-          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          sql += applyOperator(operator, columnAsNumber(colValue), ":" + valueBindingName);
           queryContext =
               queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
           break;
