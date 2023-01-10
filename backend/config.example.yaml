@@ -51,12 +51,12 @@ database:
   idleTimeout: "60000"
   maxLifetime: "300000"
   RdbConfiguration:
-    RdbDatabaseName:
-    RdbDriver: "org.postgresql.Driver"
-    RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-    RdbUrl: "jdbc:postgresql://localhost:5432"
-    RdbUsername:
-    RdbPassword:
+    RdbDatabaseName: modeldb
+    RdbDriver: "org.mariadb.jdbc.Driver"
+    RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+    RdbUrl: "jdbc:mysql://localhost:3306"
+    RdbUsername: root
+    RdbPassword: root_password_here
     sslMode: DISABLED
     sslEnabled: false
 
@@ -72,11 +72,11 @@ test:
     connectionTimeout: 300
     RdbConfiguration:
       RdbDatabaseName: test
-      RdbDriver: "org.postgresql.Driver"
-      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-      RdbUrl: "jdbc:postgresql://localhost:5432"
-      RdbUsername:
-      RdbPassword:
+      RdbDriver: "org.mariadb.jdbc.Driver"
+      RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+      RdbUrl: "jdbc:mysql://localhost:3306"
+      RdbUsername: root
+      RdbPassword: root_password_here
       sslMode: DISABLED
   testUsers:
     primaryUser:

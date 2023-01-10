@@ -55,31 +55,31 @@ CREATE TABLE [attribute] (
 	entity_hash nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	CONSTRAINT PK_ATTRIBUTE PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX at_d_id ON dbo.attribute (  dataset_id ASC  )
+ CREATE NONCLUSTERED INDEX at_d_id ON attribute (  dataset_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX at_dsv_id ON dbo.attribute (  dataset_version_id ASC  )
+ CREATE NONCLUSTERED INDEX at_dsv_id ON attribute (  dataset_version_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX at_e_id ON dbo.attribute (  experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX at_e_id ON attribute (  experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX at_er_id ON dbo.attribute (  experiment_run_id ASC  )
+ CREATE NONCLUSTERED INDEX at_er_id ON attribute (  experiment_run_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX at_j_id ON dbo.attribute (  job_id ASC  )
+ CREATE NONCLUSTERED INDEX at_j_id ON attribute (  job_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX at_p_id ON dbo.attribute (  project_id ASC  )
+ CREATE NONCLUSTERED INDEX at_p_id ON attribute (  project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX attr_field_type ON dbo.attribute (  field_type ASC  )
+ CREATE NONCLUSTERED INDEX attr_field_type ON attribute (  field_type ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX attr_id ON dbo.attribute (  id ASC  )
+ CREATE NONCLUSTERED INDEX attr_id ON attribute (  id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_entity_hash ON dbo.attribute (  entity_hash ASC  )
+ CREATE NONCLUSTERED INDEX index_entity_hash ON attribute (  entity_hash ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -119,7 +119,7 @@ CREATE TABLE comment (
 	entity_name nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	CONSTRAINT PK_COMMENT PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX c_e_id ON dbo.comment (  entity_id ASC  )
+ CREATE NONCLUSTERED INDEX c_e_id ON comment (  entity_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -140,7 +140,7 @@ CREATE TABLE [commit] (
 	version_number bigint DEFAULT 1 NULL,
 	CONSTRAINT PK_COMMIT PRIMARY KEY (commit_hash)
 );
- CREATE NONCLUSTERED INDEX index_commit_hash_date_created ON dbo.[commit] (  date_created ASC  , commit_hash ASC  )
+ CREATE NONCLUSTERED INDEX index_commit_hash_date_created ON [commit] (  date_created ASC  , commit_hash ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -205,19 +205,19 @@ CREATE TABLE dataset (
 	workspace_id bigint NULL,
 	CONSTRAINT PK_DATASET PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX d_name_wspace_wspace_type_deleted ON dbo.dataset (  workspace ASC  , deleted ASC  , name ASC  , workspace_type ASC  )
+ CREATE NONCLUSTERED INDEX d_name_wspace_wspace_type_deleted ON dataset (  workspace ASC  , deleted ASC  , name ASC  , workspace_type ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dataset_deleted ON dbo.dataset (  deleted ASC  )
+ CREATE NONCLUSTERED INDEX index_dataset_deleted ON dataset (  deleted ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dataset_id_deleted ON dbo.dataset (  deleted ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_dataset_id_deleted ON dataset (  deleted ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dataset_id_time_updated ON dbo.dataset (  id ASC  , time_updated ASC  )
+ CREATE NONCLUSTERED INDEX index_dataset_id_time_updated ON dataset (  id ASC  , time_updated ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dataset_time_updated ON dbo.dataset (  time_updated ASC  )
+ CREATE NONCLUSTERED INDEX index_dataset_time_updated ON dataset (  time_updated ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -363,10 +363,10 @@ CREATE TABLE labels_mapping (
 	label nvarchar(50) COLLATE SQL_Latin1_General_CP1_CI_AS NOT NULL,
 	CONSTRAINT pk_label_mapping PRIMARY KEY (entity_type,entity_hash,label)
 );
- CREATE NONCLUSTERED INDEX index_labels_mapping_entity_hash_entity_type ON dbo.labels_mapping (  entity_type ASC  , entity_hash ASC  )
+ CREATE NONCLUSTERED INDEX index_labels_mapping_entity_hash_entity_type ON labels_mapping (  entity_type ASC  , entity_hash ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_labels_mapping_label ON dbo.labels_mapping (  label ASC  )
+ CREATE NONCLUSTERED INDEX index_labels_mapping_label ON labels_mapping (  label ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -384,10 +384,10 @@ CREATE TABLE lineage (
 	output_type int NOT NULL,
 	CONSTRAINT PK_LINEAGE PRIMARY KEY (output_type,input_type,output_external_id,input_external_id)
 );
- CREATE NONCLUSTERED INDEX p_input_lineage ON dbo.lineage (  input_type ASC  , input_external_id ASC  )
+ CREATE NONCLUSTERED INDEX p_input_lineage ON lineage (  input_type ASC  , input_external_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX p_output_lineage ON dbo.lineage (  output_type ASC  , output_external_id ASC  )
+ CREATE NONCLUSTERED INDEX p_output_lineage ON lineage (  output_type ASC  , output_external_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -565,19 +565,19 @@ CREATE TABLE repository (
 	version_number bigint DEFAULT 1 NULL,
 	CONSTRAINT PK_REPOSITORY PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX index_repo_date_updated ON dbo.repository (  date_updated ASC  )
+ CREATE NONCLUSTERED INDEX index_repo_date_updated ON repository (  date_updated ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_repo_id_date_updated ON dbo.repository (  date_updated ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_repo_id_date_updated ON repository (  date_updated ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_repository_deleted ON dbo.repository (  deleted ASC  )
+ CREATE NONCLUSTERED INDEX index_repository_deleted ON repository (  deleted ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_repository_id_deleted ON dbo.repository (  deleted ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_repository_id_deleted ON repository (  deleted ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_visibility_migration_repository ON dbo.repository (  visibility_migration ASC  )
+ CREATE NONCLUSTERED INDEX index_visibility_migration_repository ON repository (  visibility_migration ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -651,16 +651,16 @@ CREATE TABLE versioning_modeldb_entity_mapping (
 	blob_hash nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	CONSTRAINT ck_versioning_modeldb_entity_mapping UNIQUE (entity_type,versioning_key,[commit],repository_id,experiment_run_id)
 );
- CREATE NONCLUSTERED INDEX index_vmem_exp_run_id ON dbo.versioning_modeldb_entity_mapping (  experiment_run_id ASC  )
+ CREATE NONCLUSTERED INDEX index_vmem_exp_run_id ON versioning_modeldb_entity_mapping (  experiment_run_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_vmem_repo_id_commit ON dbo.versioning_modeldb_entity_mapping (  [commit] ASC  , repository_id ASC  )
+ CREATE NONCLUSTERED INDEX index_vmem_repo_id_commit ON versioning_modeldb_entity_mapping (  [commit] ASC  , repository_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_vmem_table ON dbo.versioning_modeldb_entity_mapping (  versioning_blob_type ASC  , [commit] ASC  , repository_id ASC  , experiment_run_id ASC  )
+ CREATE NONCLUSTERED INDEX index_vmem_table ON versioning_modeldb_entity_mapping (  versioning_blob_type ASC  , [commit] ASC  , repository_id ASC  , experiment_run_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_vmem_versioning_blob_type ON dbo.versioning_modeldb_entity_mapping (  versioning_blob_type ASC  )
+ CREATE NONCLUSTERED INDEX index_vmem_versioning_blob_type ON versioning_modeldb_entity_mapping (  versioning_blob_type ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -745,7 +745,7 @@ CREATE TABLE dataset_part_info (
 	CONSTRAINT PK_DATASET_PART_INFO PRIMARY KEY (id),
 	CONSTRAINT [createTable-9_fk_path_dataset_version_info_id] FOREIGN KEY (path_dataset_version_info_id) REFERENCES path_dataset_version_info(id)
 );
- CREATE NONCLUSTERED INDEX dsp_pdsv_id ON dbo.dataset_part_info (  path_dataset_version_info_id ASC  )
+ CREATE NONCLUSTERED INDEX dsp_pdsv_id ON dataset_part_info (  path_dataset_version_info_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -789,28 +789,28 @@ CREATE TABLE dataset_version (
 	CONSTRAINT datasetversion_fk_query_dataset_version_info_id FOREIGN KEY (query_dataset_version_info_id) REFERENCES query_dataset_version_info(id),
 	CONSTRAINT datasetversion_fk_raw_dataset_version_info_id FOREIGN KEY (raw_dataset_version_info_id) REFERENCES raw_dataset_version_info(id)
 );
- CREATE NONCLUSTERED INDEX dsv_pdsv_id ON dbo.dataset_version (  path_dataset_version_info_id ASC  )
+ CREATE NONCLUSTERED INDEX dsv_pdsv_id ON dataset_version (  path_dataset_version_info_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX dsv_qdsv_id ON dbo.dataset_version (  query_dataset_version_info_id ASC  )
+ CREATE NONCLUSTERED INDEX dsv_qdsv_id ON dataset_version (  query_dataset_version_info_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX dsv_rdsv_id ON dbo.dataset_version (  raw_dataset_version_info_id ASC  )
+ CREATE NONCLUSTERED INDEX dsv_rdsv_id ON dataset_version (  raw_dataset_version_info_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dataset_version_dataset_id_version_deleted ON dbo.dataset_version (  deleted ASC  , dataset_id ASC  , version ASC  )
+ CREATE NONCLUSTERED INDEX index_dataset_version_dataset_id_version_deleted ON dataset_version (  deleted ASC  , dataset_id ASC  , version ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dataset_version_deleted ON dbo.dataset_version (  deleted ASC  )
+ CREATE NONCLUSTERED INDEX index_dataset_version_deleted ON dataset_version (  deleted ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dataset_version_id_deleted ON dbo.dataset_version (  deleted ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_dataset_version_id_deleted ON dataset_version (  deleted ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dv_dataset_id ON dbo.dataset_version (  dataset_id ASC  )
+ CREATE NONCLUSTERED INDEX index_dv_dataset_id ON dataset_version (  dataset_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_dv_dataset_id_time_updated ON dbo.dataset_version (  dataset_id ASC  , time_updated ASC  )
+ CREATE NONCLUSTERED INDEX index_dv_dataset_id_time_updated ON dataset_version (  dataset_id ASC  , time_updated ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -873,7 +873,7 @@ CREATE TABLE git_snapshot_file_paths (
 	file_paths nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	CONSTRAINT fk_gitsnapshotentity_id FOREIGN KEY (git_snapshot_id) REFERENCES git_snapshot(id)
 );
- CREATE NONCLUSTERED INDEX gfp_g_id ON dbo.git_snapshot_file_paths (  git_snapshot_id ASC  )
+ CREATE NONCLUSTERED INDEX gfp_g_id ON git_snapshot_file_paths (  git_snapshot_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -950,7 +950,7 @@ CREATE TABLE query_parameter (
 	CONSTRAINT PK_QUERY_PARAMETER PRIMARY KEY (id),
 	CONSTRAINT query_parameter_fk_query_dataset_version_info_id FOREIGN KEY (query_dataset_version_info_id) REFERENCES query_dataset_version_info(id)
 );
- CREATE NONCLUSTERED INDEX qp_qdsv_id ON dbo.query_parameter (  query_dataset_version_info_id ASC  )
+ CREATE NONCLUSTERED INDEX qp_qdsv_id ON query_parameter (  query_dataset_version_info_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -967,7 +967,7 @@ CREATE TABLE repository_commit (
 	CONSTRAINT fk_entity_id_repository_entity_mapping FOREIGN KEY (commit_hash) REFERENCES [commit](commit_hash),
 	CONSTRAINT fk_repository_id_commit_hash_mapping FOREIGN KEY (repository_id) REFERENCES repository(id)
 );
- CREATE NONCLUSTERED INDEX index_repository_commit_repo_id ON dbo.repository_commit (  repository_id ASC  )
+ CREATE NONCLUSTERED INDEX index_repository_commit_repo_id ON repository_commit (  repository_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1005,7 +1005,7 @@ CREATE TABLE user_comment (
 	CONSTRAINT PK_USER_COMMENT PRIMARY KEY (id),
 	CONSTRAINT fk_comment_id FOREIGN KEY (comment_id) REFERENCES comment(id)
 );
- CREATE NONCLUSTERED INDEX uc_c_id ON dbo.user_comment (  comment_id ASC  )
+ CREATE NONCLUSTERED INDEX uc_c_id ON user_comment (  comment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1069,16 +1069,16 @@ CREATE TABLE artifact (
 	artifact_subtype nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	CONSTRAINT PK_ARTIFACT PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX a_e_id ON dbo.artifact (  experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX a_e_id ON artifact (  experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX a_er_id ON dbo.artifact (  experiment_run_id ASC  )
+ CREATE NONCLUSTERED INDEX a_er_id ON artifact (  experiment_run_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX a_l_a_id ON dbo.artifact (  linked_artifact_id ASC  )
+ CREATE NONCLUSTERED INDEX a_l_a_id ON artifact (  linked_artifact_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX a_p_id ON dbo.artifact (  project_id ASC  )
+ CREATE NONCLUSTERED INDEX a_p_id ON artifact (  project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1097,10 +1097,10 @@ CREATE TABLE code_version (
 	git_snapshot_id bigint NULL,
 	CONSTRAINT PK_CODE_VERSION PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX cv_ca_id ON dbo.code_version (  code_archive_id ASC  )
+ CREATE NONCLUSTERED INDEX cv_ca_id ON code_version (  code_archive_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX cv_gss_id ON dbo.code_version (  git_snapshot_id ASC  )
+ CREATE NONCLUSTERED INDEX cv_gss_id ON code_version (  git_snapshot_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1125,25 +1125,25 @@ CREATE TABLE experiment (
 	created bit DEFAULT 0 NULL,
 	CONSTRAINT PK_EXPERIMENT PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX e_cvs_id ON dbo.experiment (  code_version_snapshot_id ASC  )
+ CREATE NONCLUSTERED INDEX e_cvs_id ON experiment (  code_version_snapshot_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_exp_date_updated ON dbo.experiment (  date_updated ASC  )
+ CREATE NONCLUSTERED INDEX index_exp_date_updated ON experiment (  date_updated ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_exp_name_project_id ON dbo.experiment (  project_id ASC  , name ASC  )
+ CREATE NONCLUSTERED INDEX index_exp_name_project_id ON experiment (  project_id ASC  , name ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_exp_project_id ON dbo.experiment (  project_id ASC  )
+ CREATE NONCLUSTERED INDEX index_exp_project_id ON experiment (  project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_experiment_deleted ON dbo.experiment (  deleted ASC  )
+ CREATE NONCLUSTERED INDEX index_experiment_deleted ON experiment (  deleted ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_experiment_id_deleted ON dbo.experiment (  deleted ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_experiment_id_deleted ON experiment (  deleted ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_project_id_date_updated ON dbo.experiment (  date_updated ASC  , project_id ASC  )
+ CREATE NONCLUSTERED INDEX index_project_id_date_updated ON experiment (  date_updated ASC  , project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1175,46 +1175,46 @@ CREATE TABLE experiment_run (
 	version_number bigint DEFAULT 1 NULL,
 	CONSTRAINT PK_EXPERIMENT_RUN PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX er_cvs_id ON dbo.experiment_run (  code_version_snapshot_id ASC  )
+ CREATE NONCLUSTERED INDEX er_cvs_id ON experiment_run (  code_version_snapshot_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX er_dc ON dbo.experiment_run (  date_created ASC  )
+ CREATE NONCLUSTERED INDEX er_dc ON experiment_run (  date_created ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX er_dp ON dbo.experiment_run (  date_updated ASC  )
+ CREATE NONCLUSTERED INDEX er_dp ON experiment_run (  date_updated ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX er_experiment_id ON dbo.experiment_run (  experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX er_experiment_id ON experiment_run (  experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX er_n ON dbo.experiment_run (  name ASC  )
+ CREATE NONCLUSTERED INDEX er_n ON experiment_run (  name ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX er_o ON dbo.experiment_run (  owner ASC  )
+ CREATE NONCLUSTERED INDEX er_o ON experiment_run (  owner ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX er_p_id ON dbo.experiment_run (  project_id ASC  )
+ CREATE NONCLUSTERED INDEX er_p_id ON experiment_run (  project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_exp_run_exp_id_date_updated ON dbo.experiment_run (  date_updated ASC  , experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX index_exp_run_exp_id_date_updated ON experiment_run (  date_updated ASC  , experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_exp_run_id_project_id ON dbo.experiment_run (  project_id ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_exp_run_id_project_id ON experiment_run (  project_id ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_exp_run_name_project_id ON dbo.experiment_run (  project_id ASC  , name ASC  )
+ CREATE NONCLUSTERED INDEX index_exp_run_name_project_id ON experiment_run (  project_id ASC  , name ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_exp_run_project_id_experiment_id ON dbo.experiment_run (  project_id ASC  , experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX index_exp_run_project_id_experiment_id ON experiment_run (  project_id ASC  , experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_experiment_run_deleted ON dbo.experiment_run (  deleted ASC  )
+ CREATE NONCLUSTERED INDEX index_experiment_run_deleted ON experiment_run (  deleted ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_experiment_run_id_deleted ON dbo.experiment_run (  deleted ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_experiment_run_id_deleted ON experiment_run (  deleted ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_experiment_run_name_pro_id_exp_id_deleted ON dbo.experiment_run (  deleted ASC  , project_id ASC  , experiment_id ASC  , name ASC  )
+ CREATE NONCLUSTERED INDEX index_experiment_run_name_pro_id_exp_id_deleted ON experiment_run (  deleted ASC  , project_id ASC  , experiment_id ASC  , name ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1235,16 +1235,16 @@ CREATE TABLE feature (
 	raw_dataset_version_info_id bigint NULL,
 	CONSTRAINT PK_FEATURE PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX f_e_id ON dbo.feature (  experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX f_e_id ON feature (  experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX f_er_id ON dbo.feature (  experiment_run_id ASC  )
+ CREATE NONCLUSTERED INDEX f_er_id ON feature (  experiment_run_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX f_p_id ON dbo.feature (  project_id ASC  )
+ CREATE NONCLUSTERED INDEX f_p_id ON feature (  project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX f_rdsv_id ON dbo.feature (  raw_dataset_version_info_id ASC  )
+ CREATE NONCLUSTERED INDEX f_rdsv_id ON feature (  raw_dataset_version_info_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1288,25 +1288,25 @@ CREATE TABLE keyvalue (
 	project_id nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	CONSTRAINT PK_KEYVALUE PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX kv_d_id ON dbo.keyvalue (  dataset_id ASC  )
+ CREATE NONCLUSTERED INDEX kv_d_id ON keyvalue (  dataset_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX kv_dsv_id ON dbo.keyvalue (  dataset_version_id ASC  )
+ CREATE NONCLUSTERED INDEX kv_dsv_id ON keyvalue (  dataset_version_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX kv_e_id ON dbo.keyvalue (  experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX kv_e_id ON keyvalue (  experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX kv_er_id ON dbo.keyvalue (  experiment_run_id ASC  )
+ CREATE NONCLUSTERED INDEX kv_er_id ON keyvalue (  experiment_run_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX kv_field_type ON dbo.keyvalue (  field_type ASC  )
+ CREATE NONCLUSTERED INDEX kv_field_type ON keyvalue (  field_type ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX kv_j_id ON dbo.keyvalue (  job_id ASC  )
+ CREATE NONCLUSTERED INDEX kv_j_id ON keyvalue (  job_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX kv_p_id ON dbo.keyvalue (  project_id ASC  )
+ CREATE NONCLUSTERED INDEX kv_p_id ON keyvalue (  project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1330,19 +1330,19 @@ CREATE TABLE observation (
 	epoch_number bigint NULL,
 	CONSTRAINT PK_OBSERVATION PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX o_a_id ON dbo.observation (  artifact_id ASC  )
+ CREATE NONCLUSTERED INDEX o_a_id ON observation (  artifact_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX o_e_id ON dbo.observation (  experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX o_e_id ON observation (  experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX o_er_id ON dbo.observation (  experiment_run_id ASC  )
+ CREATE NONCLUSTERED INDEX o_er_id ON observation (  experiment_run_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX o_kv_id ON dbo.observation (  keyvaluemapping_id ASC  )
+ CREATE NONCLUSTERED INDEX o_kv_id ON observation (  keyvaluemapping_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX o_p_id ON dbo.observation (  project_id ASC  )
+ CREATE NONCLUSTERED INDEX o_p_id ON observation (  project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1373,28 +1373,28 @@ CREATE TABLE project (
 	version_number bigint DEFAULT 1 NULL,
 	CONSTRAINT PK_PROJECT PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX index_project_date_updated ON dbo.project (  date_updated ASC  )
+ CREATE NONCLUSTERED INDEX index_project_date_updated ON project (  date_updated ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_project_deleted ON dbo.project (  deleted ASC  )
+ CREATE NONCLUSTERED INDEX index_project_deleted ON project (  deleted ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_project_id_deleted ON dbo.project (  deleted ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_project_id_deleted ON project (  deleted ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_project_p_id_date_updated ON dbo.project (  date_updated ASC  , id ASC  )
+ CREATE NONCLUSTERED INDEX index_project_p_id_date_updated ON project (  date_updated ASC  , id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX index_visibility_migration_project ON dbo.project (  visibility_migration ASC  )
+ CREATE NONCLUSTERED INDEX index_visibility_migration_project ON project (  visibility_migration ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX p_cvs_id ON dbo.project (  code_version_snapshot_id ASC  )
+ CREATE NONCLUSTERED INDEX p_cvs_id ON project (  code_version_snapshot_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX p_name ON dbo.project (  name ASC  )
+ CREATE NONCLUSTERED INDEX p_name ON project (  name ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX p_name_wspace_wspace_type_deleted ON dbo.project (  workspace ASC  , deleted ASC  , name ASC  , workspace_type ASC  )
+ CREATE NONCLUSTERED INDEX p_name_wspace_wspace_type_deleted ON project (  workspace ASC  , deleted ASC  , name ASC  , workspace_type ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 
@@ -1416,19 +1416,19 @@ CREATE TABLE tag_mapping (
 	project_id nvarchar(255) COLLATE SQL_Latin1_General_CP1_CI_AS NULL,
 	CONSTRAINT PK_TAG_MAPPING PRIMARY KEY (id)
 );
- CREATE NONCLUSTERED INDEX t_ds_id ON dbo.tag_mapping (  dataset_id ASC  )
+ CREATE NONCLUSTERED INDEX t_ds_id ON tag_mapping (  dataset_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX t_dsv_id ON dbo.tag_mapping (  dataset_version_id ASC  )
+ CREATE NONCLUSTERED INDEX t_dsv_id ON tag_mapping (  dataset_version_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX t_e_id ON dbo.tag_mapping (  experiment_id ASC  )
+ CREATE NONCLUSTERED INDEX t_e_id ON tag_mapping (  experiment_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX t_er_id ON dbo.tag_mapping (  experiment_run_id ASC  )
+ CREATE NONCLUSTERED INDEX t_er_id ON tag_mapping (  experiment_run_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
- CREATE NONCLUSTERED INDEX t_p_id ON dbo.tag_mapping (  project_id ASC  )
+ CREATE NONCLUSTERED INDEX t_p_id ON tag_mapping (  project_id ASC  )
 	 WITH (  PAD_INDEX = OFF ,FILLFACTOR = 100  ,SORT_IN_TEMPDB = OFF , IGNORE_DUP_KEY = OFF , STATISTICS_NORECOMPUTE = OFF , ONLINE = OFF , ALLOW_ROW_LOCKS = ON , ALLOW_PAGE_LOCKS = ON  )
 	 ON [PRIMARY ] ;
 

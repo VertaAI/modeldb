@@ -44,6 +44,10 @@ message ExperimentRun {
     repeated Feature features = 27;
     string job_id = 28;
     string owner = 29;
+    oneof owner_tracking {
+        uint64 owner_id = 33;
+        common.GroupId group_owner_id = 34;
+    }
     VersioningEntry versioned_inputs = 30;
     map<string, common.CodeVersion> code_version_from_blob = 31;
     // Doc for version_number https://github.com/VertaAI/docs/pull/53

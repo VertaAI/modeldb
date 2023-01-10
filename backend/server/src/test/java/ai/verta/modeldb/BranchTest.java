@@ -68,6 +68,7 @@ public class BranchTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -91,6 +92,7 @@ public class BranchTest extends ModeldbTestSetup {
       repository = null;
       parentCommit = null;
     }
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {

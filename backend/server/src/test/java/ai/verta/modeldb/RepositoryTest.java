@@ -78,6 +78,7 @@ public class RepositoryTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -104,6 +105,7 @@ public class RepositoryTest extends ModeldbTestSetup {
     repository2 = null;
     repository3 = null;
     repositoryMap = new HashMap<>();
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {

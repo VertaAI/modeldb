@@ -91,6 +91,7 @@ public class DiffTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -112,6 +113,7 @@ public class DiffTest extends ModeldbTestSetup {
     DeleteRepositoryRequest.Response response =
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     assertTrue("Repository not deleted", response.getStatus());
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {
