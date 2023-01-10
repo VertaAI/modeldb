@@ -1657,16 +1657,16 @@ public class FutureProjectDAO {
           }
           GetResourcesResponseItem projectResource = responseItem.get();
 
-              projectBuilder.setVisibility(projectResource.getVisibility());
-              projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-              if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
-                projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
-                projectBuilder.setOwner("");
-              } else {
-                projectBuilder.setOwnerId(projectResource.getOwnerId());
-                projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
-              }
-              projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+          projectBuilder.setVisibility(projectResource.getVisibility());
+          projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+          if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+            projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
+            projectBuilder.setOwner("");
+          } else {
+            projectBuilder.setOwnerId(projectResource.getOwnerId());
+            projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+          }
+          projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
           switch (workspace.getInternalIdCase()) {
             case ORG_ID:
