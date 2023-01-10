@@ -69,7 +69,8 @@ public class DAOSet {
             services.getAuthService(),
             services.getMdbRoleService(),
             set.commitDAO,
-            set.metadataDAO);
+            set.metadataDAO,
+            mdbConfig);
     set.blobDAO = new BlobDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
 
     if (services.getArtifactStoreService() == null

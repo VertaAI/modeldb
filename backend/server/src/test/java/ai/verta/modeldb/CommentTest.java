@@ -95,6 +95,8 @@ public class CommentTest extends ModeldbTestSetup {
     assertTrue(deleteProjectResponse.getStatus());
     project = null;
     commentList = new ArrayList<>();
+
+    cleanUpResources();
     super.tearDown();
   }
 

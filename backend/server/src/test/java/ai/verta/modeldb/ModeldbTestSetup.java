@@ -102,6 +102,7 @@ public abstract class ModeldbTestSetup {
 
   protected UserInfo testUser1;
   protected UserInfo testUser2;
+  protected UserInfo serviceAccountUser;
 
   protected WorkspaceV2 testUser1Workspace;
   protected WorkspaceV2 testUser2Workspace;
@@ -259,6 +260,9 @@ public abstract class ModeldbTestSetup {
       getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       testUser2 = uacServiceStub.getUser(getUserRequest);
+      getUserRequest =
+          GetUser.newBuilder().setEmail(testConfig.getService_user().getEmail()).build();
+      serviceAccountUser = uacServiceStub.getUser(getUserRequest);
 
       if (testConfig.isPermissionV2Enabled()) {
         authServiceChannelServiceUser =
@@ -295,16 +299,30 @@ public abstract class ModeldbTestSetup {
                 organizationId,
                 groupIdUser1,
                 roleIdUser1,
-                testUser1.getVertaInfo().getUsername());
+                testUser1.getVertaInfo().getUsername(),
+                Optional.empty());
         testUser2Workspace =
             createWorkspaceAndRoleForUser(
                 authServiceChannelServiceUser,
                 organizationId,
                 groupIdUser1,
                 roleIdUser1,
-                testUser2.getVertaInfo().getUsername());
+                testUser2.getVertaInfo().getUsername(),
+                Optional.empty());
       }
     } else {
+      serviceAccountUser =
+          UserInfo.newBuilder()
+              .setEmail(testConfig.getService_user().getEmail())
+              .setVertaInfo(
+                  VertaUserInfo.newBuilder()
+                      .setUserId("-111")
+                      .setUsername(testConfig.getService_user().getEmail())
+                      .setDefaultWorkspaceId(-111)
+                      .setWorkspaceId("-111")
+                      .build())
+              .build();
+
       testUser1 =
           UserInfo.newBuilder()
               .setEmail(authClientInterceptor.getClient1Email())
@@ -431,18 +449,20 @@ public abstract class ModeldbTestSetup {
       String organizationId,
       String groupId,
       String roleId,
-      String username) {
-    WorkspaceV2 workspace =
+      String username,
+      Optional<Long> workspaceId) {
+    WorkspaceV2.Builder workspaceBuilder =
         WorkspaceV2.newBuilder()
             .setName(username)
             .setOrgId(organizationId)
             .setNamespace("namespace")
-            .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build())
-            .build();
+            .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build());
+    workspaceId.ifPresent(workspaceBuilder::setId);
     var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
     var testUserWorkspace =
         workspaceStub
-            .setWorkspace(SetWorkspaceV2.newBuilder().setWorkspace(workspace).build())
+            .setWorkspace(
+                SetWorkspaceV2.newBuilder().setWorkspace(workspaceBuilder.build()).build())
             .getWorkspace();
     LOGGER.debug("WorkspaceResult: {}", testUserWorkspace);
     return testUserWorkspace;

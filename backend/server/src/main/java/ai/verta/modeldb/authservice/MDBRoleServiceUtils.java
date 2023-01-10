@@ -15,9 +15,9 @@ import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
@@ -35,12 +35,12 @@ import org.apache.logging.log4j.Logger;
 public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleService {
   private static final Logger LOGGER = LogManager.getLogger(MDBRoleServiceUtils.class);
 
-  public static MDBRoleService FromConfig(Config config, AuthService authService, UAC uac) {
-    if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(authService);
+  public static MDBRoleService FromConfig(MDBConfig config, AuthService authService, UAC uac) {
+    if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(authService, config);
     else return new MDBRoleServiceUtils(config, authService, uac);
   }
 
-  private MDBRoleServiceUtils(Config config, AuthService authService, UAC uac) {
+  private MDBRoleServiceUtils(MDBConfig config, AuthService authService, UAC uac) {
     super(authService, config.getGrpcServer().getRequestTimeout(), uac);
   }
 

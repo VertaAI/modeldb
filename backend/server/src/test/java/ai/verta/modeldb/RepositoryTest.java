@@ -153,6 +153,29 @@ public class RepositoryTest extends ModeldbTestSetup {
     }
   }
 
+  public static Long createRepositoryWithWorkspace(
+      VersioningServiceBlockingStub versioningServiceBlockingStub,
+      String repoName,
+      String workspaceName) {
+    SetRepository setRepository =
+        SetRepository.newBuilder()
+            .setId(
+                RepositoryIdentification.newBuilder()
+                    .setNamedId(
+                        RepositoryNamedIdentification.newBuilder()
+                            .setName(repoName)
+                            .setWorkspaceName(workspaceName)
+                            .build())
+                    .build())
+            .setRepository(
+                Repository.newBuilder()
+                    .setName(repoName)
+                    .setDescription("This is test repository description"))
+            .build();
+    Response result = versioningServiceBlockingStub.createRepository(setRepository);
+    return result.getRepository().getId();
+  }
+
   public static Long createRepository(
       VersioningServiceBlockingStub versioningServiceBlockingStub, String repoName) {
     SetRepository setRepository = getSetRepositoryRequest(repoName);
