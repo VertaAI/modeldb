@@ -61,6 +61,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -97,6 +98,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     datasetVersionMap = new HashMap<>();
 
     cleanUpResources();
+    super.tearDown();
   }
 
   private void createDatasetEntities() {

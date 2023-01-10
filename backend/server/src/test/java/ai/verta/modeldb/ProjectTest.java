@@ -74,7 +74,9 @@ public class ProjectTest extends ModeldbTestSetup {
   private Dataset dataset;
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -88,7 +90,8 @@ public class ProjectTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     if (!projectMap.isEmpty()) {
       if (isRunningIsolated()) {
         mockGetResourcesForAllProjects(projectMap, testUser1);
@@ -105,19 +108,23 @@ public class ProjectTest extends ModeldbTestSetup {
       assertTrue(deleteProjectsResponse.getStatus());
     }
 
-    if (isRunningIsolated()) {
-      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
-    }
+    if (dataset != null) {
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+      }
 
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
+      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
+      DeleteDataset.Response deleteDatasetResponse =
+          datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+      assertTrue(deleteDatasetResponse.getStatus());
+    }
 
     projectMap.clear();
 
     cleanUpResources();
+    super.tearDown();
   }
 
   private void createProjectEntities() {

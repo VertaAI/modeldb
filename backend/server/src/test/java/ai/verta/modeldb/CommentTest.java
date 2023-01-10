@@ -50,6 +50,7 @@ public class CommentTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -96,6 +97,7 @@ public class CommentTest extends ModeldbTestSetup {
     commentList = new ArrayList<>();
 
     cleanUpResources();
+    super.tearDown();
   }
 
   private void createProjectEntities() {

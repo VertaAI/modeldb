@@ -56,7 +56,9 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
   private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -69,7 +71,8 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     for (DatasetVersion datasetVersion : datasetVersionMap.values()) {
       DeleteDatasetVersion deleteDatasetVersion =
           DeleteDatasetVersion.newBuilder()
@@ -101,6 +104,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
     datasetVersion3 = null;
     datasetVersion4 = null;
     datasetVersionMap = new HashMap<>();
+    super.tearDown();
   }
 
   private void createDatasetEntities() {

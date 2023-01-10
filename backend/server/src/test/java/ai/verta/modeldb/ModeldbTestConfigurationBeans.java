@@ -1,8 +1,6 @@
 package ai.verta.modeldb;
 
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.config.Config;
@@ -12,6 +10,7 @@ import ai.verta.modeldb.common.config.SpringServerConfig;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.uac.*;
+import io.grpc.stub.AbstractStub;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.Optional;
 import java.util.Random;
@@ -39,35 +38,34 @@ public class ModeldbTestConfigurationBeans {
     return runningIsolated ? buildFullyMockedUac(config) : UAC.fromConfig(config, Optional.empty());
   }
 
-  private static UAC buildFullyMockedUac(Config config) {
+  public static UAC buildFullyMockedUac(Config config) {
     CollaboratorServiceGrpc.CollaboratorServiceFutureStub collab =
         mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
-    when(collab.withInterceptors(any())).thenReturn(collab);
+
     CollaboratorServiceGrpc.CollaboratorServiceFutureStub serviceAccountCollab =
         mock(CollaboratorServiceGrpc.CollaboratorServiceFutureStub.class);
-    when(serviceAccountCollab.withInterceptors(any())).thenReturn(serviceAccountCollab);
+
     UACServiceGrpc.UACServiceFutureStub uacService =
         mock(UACServiceGrpc.UACServiceFutureStub.class);
-    when(uacService.withInterceptors(any())).thenReturn(uacService);
+
     WorkspaceServiceGrpc.WorkspaceServiceFutureStub workspace =
         mock(WorkspaceServiceGrpc.WorkspaceServiceFutureStub.class);
-    when(workspace.withInterceptors(any())).thenReturn(workspace);
+
     AuthzServiceGrpc.AuthzServiceFutureStub authZ =
         mock(AuthzServiceGrpc.AuthzServiceFutureStub.class);
-    when(authZ.withInterceptors(any())).thenReturn(authZ);
 
     RoleServiceGrpc.RoleServiceFutureStub role = mock(RoleServiceGrpc.RoleServiceFutureStub.class);
-    when(role.withInterceptors(any())).thenReturn(role);
+
     RoleServiceGrpc.RoleServiceFutureStub serviceAccountRole =
         mock(RoleServiceGrpc.RoleServiceFutureStub.class);
-    when(serviceAccountRole.withInterceptors(any())).thenReturn(serviceAccountRole);
+
     OrganizationServiceGrpc.OrganizationServiceFutureStub org =
         mock(OrganizationServiceGrpc.OrganizationServiceFutureStub.class);
-    when(org.withInterceptors(any())).thenReturn(org);
+
     EventServiceGrpc.EventServiceFutureStub event =
         mock(EventServiceGrpc.EventServiceFutureStub.class);
-    when(event.withInterceptors(any())).thenReturn(event);
-    AuthServiceChannel authServiceChannel = mock(AuthServiceChannel.class);
+
+    AuthServiceChannel authServiceChannel = new TestAuthServiceChannel(config);
     return new UAC(
         config,
         collab,
@@ -83,7 +81,32 @@ public class ModeldbTestConfigurationBeans {
       public AuthServiceChannel getBlockingAuthServiceChannel() {
         return authServiceChannel;
       }
+
+      @Override
+      protected <T extends AbstractStub<T>> T attachInterceptors(AbstractStub<T> stub) {
+        return (T) stub;
+      }
     };
+  }
+
+  public static void resetUacMocks(UAC uac) {
+    reset(uac.getBlockingAuthServiceChannel().getCollaboratorServiceBlockingStub());
+    reset(uac.getBlockingAuthServiceChannel().getCollaboratorServiceBlockingStubForServiceUser());
+    reset(uac.getBlockingAuthServiceChannel().getUacServiceBlockingStub());
+    reset(uac.getBlockingAuthServiceChannel().getUacServiceBlockingStubForServiceUser());
+    reset(uac.getBlockingAuthServiceChannel().getWorkspaceServiceBlockingStub());
+    reset(uac.getBlockingAuthServiceChannel().getRoleServiceBlockingStub());
+    reset(uac.getBlockingAuthServiceChannel().getRoleServiceBlockingStubForServiceUser());
+    reset(uac.getBlockingAuthServiceChannel().getOrganizationServiceBlockingStub());
+    reset(uac.getBlockingAuthServiceChannel().getAuthzServiceBlockingStub());
+    reset(uac.getUACService());
+    reset(uac.getCollaboratorService());
+    reset(uac.getEventService());
+    reset(uac.getServiceAccountRoleServiceFutureStub());
+    reset(uac.getRoleService());
+    reset(uac.getAuthzService());
+    reset(uac.getWorkspaceService());
+    reset(uac.getServiceAccountCollaboratorServiceForServiceUser());
   }
 
   @Bean
@@ -131,5 +154,86 @@ public class ModeldbTestConfigurationBeans {
     }
     System.getProperties().put("server.port", testConfig.getSpringServer().getPort());
     return testConfig;
+  }
+
+  private static class TestAuthServiceChannel extends AuthServiceChannel {
+
+    private final RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub =
+        mock(RoleServiceGrpc.RoleServiceBlockingStub.class);
+    private final AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub =
+        mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
+    private final CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+        collaboratorServiceBlockingStub =
+            mock(CollaboratorServiceGrpc.CollaboratorServiceBlockingStub.class);
+    private final WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceServiceBlockingStub =
+        mock(WorkspaceServiceGrpc.WorkspaceServiceBlockingStub.class);
+    private final OrganizationServiceGrpc.OrganizationServiceBlockingStub
+        organizationServiceBlockingStub =
+            mock(OrganizationServiceGrpc.OrganizationServiceBlockingStub.class);
+    private final OrganizationServiceGrpc.OrganizationServiceBlockingStub
+        organizationServiceBlockingStubForServiceUser =
+            mock(OrganizationServiceGrpc.OrganizationServiceBlockingStub.class);
+    private final UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStub =
+        mock(UACServiceGrpc.UACServiceBlockingStub.class);
+    private final UACServiceGrpc.UACServiceBlockingStub uacServiceBlockingStubForServiceUser =
+        mock(UACServiceGrpc.UACServiceBlockingStub.class);
+
+    public TestAuthServiceChannel(Config config) {
+      super(config, Optional.empty());
+    }
+
+    @Override
+    public UACServiceGrpc.UACServiceBlockingStub getUacServiceBlockingStub() {
+      return uacServiceBlockingStub;
+    }
+
+    @Override
+    public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStub() {
+      return roleServiceBlockingStub;
+    }
+
+    @Override
+    public AuthzServiceGrpc.AuthzServiceBlockingStub getAuthzServiceBlockingStub() {
+      return authzServiceBlockingStub;
+    }
+
+    @Override
+    public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+        getCollaboratorServiceBlockingStub() {
+      return collaboratorServiceBlockingStub;
+    }
+
+    @Override
+    public WorkspaceServiceGrpc.WorkspaceServiceBlockingStub getWorkspaceServiceBlockingStub() {
+      return workspaceServiceBlockingStub;
+    }
+
+    @Override
+    public OrganizationServiceGrpc.OrganizationServiceBlockingStub
+        getOrganizationServiceBlockingStub() {
+      return organizationServiceBlockingStub;
+    }
+
+    @Override
+    public CollaboratorServiceGrpc.CollaboratorServiceBlockingStub
+        getCollaboratorServiceBlockingStubForServiceUser() {
+      return collaboratorServiceBlockingStub;
+    }
+
+    @Override
+    public OrganizationServiceGrpc.OrganizationServiceBlockingStub
+        getOrganizationServiceBlockingStubForServiceUser() {
+      return organizationServiceBlockingStubForServiceUser;
+    }
+
+    @Override
+    public RoleServiceGrpc.RoleServiceBlockingStub getRoleServiceBlockingStubForServiceUser() {
+      return roleServiceBlockingStub;
+    }
+
+    @Override
+    public UACServiceGrpc.UACServiceBlockingStub getUacServiceBlockingStubForServiceUser() {
+      return uacServiceBlockingStubForServiceUser;
+    }
   }
 }

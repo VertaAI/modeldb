@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
@@ -85,6 +84,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -102,6 +102,7 @@ public abstract class ModeldbTestSetup {
 
   protected UserInfo testUser1;
   protected UserInfo testUser2;
+  protected UserInfo serviceAccountUser;
 
   protected WorkspaceV2 testUser1Workspace;
   protected WorkspaceV2 testUser2Workspace;
@@ -133,26 +134,20 @@ public abstract class ModeldbTestSetup {
   protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStubClient1;
   protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStubClient2;
   protected OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
-  private static OrganizationServiceV2Grpc.OrganizationServiceV2BlockingStub
+  private OrganizationServiceV2Grpc.OrganizationServiceV2BlockingStub
       organizationServiceV2BlockingStub;
 
   protected AuthClientInterceptor authClientInterceptor;
   protected final String random = String.valueOf((long) (Math.random() * 1_000_000));
   private static boolean runningIsolated;
-  protected static ManagedChannel authServiceChannelServiceUser;
+  protected ManagedChannel authServiceChannelServiceUser;
 
-  protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorBlockingMock =
-      mock(CollaboratorServiceGrpc.CollaboratorServiceBlockingStub.class);
-  protected AuthzServiceGrpc.AuthzServiceBlockingStub authzBlockingMock =
-      mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
-  protected UACServiceGrpc.UACServiceBlockingStub uacBlockingMock =
-      mock(UACServiceGrpc.UACServiceBlockingStub.class);
-  protected WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceBlockingMock =
-      mock(WorkspaceServiceGrpc.WorkspaceServiceBlockingStub.class);
-  protected RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingMock =
-      mock(RoleServiceGrpc.RoleServiceBlockingStub.class);
-  protected OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationBlockingMock =
-      mock(OrganizationServiceGrpc.OrganizationServiceBlockingStub.class);
+  protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorBlockingMock;
+  protected AuthzServiceGrpc.AuthzServiceBlockingStub authzBlockingMock;
+  protected UACServiceGrpc.UACServiceBlockingStub uacBlockingMock;
+  protected WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceBlockingMock;
+  protected RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingMock;
+  protected OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationBlockingMock;
   private ManagedChannel channel;
   private ManagedChannel channelUser2;
   private ManagedChannel channelServiceUser;
@@ -167,6 +162,23 @@ public abstract class ModeldbTestSetup {
     return runningIsolated;
   }
 
+  @BeforeEach
+  void setUp() {
+    runningIsolated = testConfig.testsShouldRunIsolatedFromDependencies();
+
+    if (runningIsolated) {
+      ModeldbTestConfigurationBeans.resetUacMocks(uac);
+      collaboratorBlockingMock =
+          uac.getBlockingAuthServiceChannel().getCollaboratorServiceBlockingStub();
+      authzBlockingMock = uac.getBlockingAuthServiceChannel().getAuthzServiceBlockingStub();
+      uacBlockingMock = uac.getBlockingAuthServiceChannel().getUacServiceBlockingStub();
+      workspaceBlockingMock = uac.getBlockingAuthServiceChannel().getWorkspaceServiceBlockingStub();
+      roleServiceBlockingMock = uac.getBlockingAuthServiceChannel().getRoleServiceBlockingStub();
+      organizationBlockingMock =
+          uac.getBlockingAuthServiceChannel().getOrganizationServiceBlockingStub();
+    }
+  }
+
   @AfterEach
   public void tearDown() {
     channel.shutdown();
@@ -175,7 +187,6 @@ public abstract class ModeldbTestSetup {
   }
 
   public void initializeChannelBuilderAndExternalServiceStubs() {
-    runningIsolated = testConfig.testsShouldRunIsolatedFromDependencies();
     authClientInterceptor = new AuthClientInterceptor(testConfig);
     channel =
         ManagedChannelBuilder.forAddress("localhost", testConfig.getGrpcServer().getPort())
@@ -249,6 +260,9 @@ public abstract class ModeldbTestSetup {
       getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       testUser2 = uacServiceStub.getUser(getUserRequest);
+      getUserRequest =
+          GetUser.newBuilder().setEmail(testConfig.getService_user().getEmail()).build();
+      serviceAccountUser = uacServiceStub.getUser(getUserRequest);
 
       if (testConfig.isPermissionV2Enabled()) {
         authServiceChannelServiceUser =
@@ -297,6 +311,18 @@ public abstract class ModeldbTestSetup {
                 Optional.empty());
       }
     } else {
+      serviceAccountUser =
+          UserInfo.newBuilder()
+              .setEmail(testConfig.getService_user().getEmail())
+              .setVertaInfo(
+                  VertaUserInfo.newBuilder()
+                      .setUserId("-111")
+                      .setUsername(testConfig.getService_user().getEmail())
+                      .setDefaultWorkspaceId(-111)
+                      .setWorkspaceId("-111")
+                      .build())
+              .build();
+
       testUser1 =
           UserInfo.newBuilder()
               .setEmail(authClientInterceptor.getClient1Email())
@@ -452,16 +478,6 @@ public abstract class ModeldbTestSetup {
 
   protected void setupMockUacEndpoints(UAC uac) {
     Context.current().withValue(MetadataForwarder.METADATA_INFO, new Metadata()).attach();
-    AuthServiceChannel authChannelMock = uac.getBlockingAuthServiceChannel();
-    when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzBlockingMock);
-    when(authChannelMock.getUacServiceBlockingStub()).thenReturn(uacBlockingMock);
-    when(authChannelMock.getWorkspaceServiceBlockingStub()).thenReturn(workspaceBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
-    when(authChannelMock.getRoleServiceBlockingStubForServiceUser())
-        .thenReturn(roleServiceBlockingMock);
-    when(authChannelMock.getOrganizationServiceBlockingStub()).thenReturn(organizationBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
-        .thenReturn(collaboratorBlockingMock);
 
     UACServiceGrpc.UACServiceFutureStub uacMock = uac.getUACService();
     when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
@@ -475,7 +491,7 @@ public abstract class ModeldbTestSetup {
     when(uac.getAuthzService().isSelfAllowed(any()))
         .thenReturn(
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
-    when(authzBlockingMock.isSelfAllowed(any()))
+    when(authzBlockingMock.isSelfAllowed(any(IsSelfAllowed.class)))
         .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
     when(authzBlockingMock.getSelfAllowedActionsBatch(any()))
         .thenReturn(

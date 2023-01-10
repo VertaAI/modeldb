@@ -91,6 +91,7 @@ public class DiffTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -116,6 +117,7 @@ public class DiffTest extends ModeldbTestSetup {
     repository = null;
 
     cleanUpResources();
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {
