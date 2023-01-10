@@ -39,13 +39,19 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private final String alias;
   private final FutureExecutor executor;
   private final UACApisUtil uacApisUtil;
+  private final boolean isPermissionV2;
 
   public PredicatesHandler(
-      FutureExecutor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
+      FutureExecutor executor,
+      String tableName,
+      String alias,
+      UACApisUtil uacApisUtil,
+      boolean isPermissionV2) {
     this.executor = executor;
     this.tableName = tableName;
     this.alias = alias;
     this.uacApisUtil = uacApisUtil;
+    this.isPermissionV2 = isPermissionV2;
 
     if ("experiment_run".equals(tableName)) {
       this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler();
@@ -640,7 +646,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
               resourceItemsFutures.add(
                   uacApisUtil
                       .getResourceItemsForLoginUserWorkspace(
-                          userInfo.getVertaInfo().getUsername(),
+                          isPermissionV2
+                              ? Optional.empty()
+                              : Optional.of(userInfo.getVertaInfo().getUsername()),
+                          userInfo.getVertaInfo().getDefaultWorkspaceId(),
                           Optional.empty(),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
                       .thenApply(

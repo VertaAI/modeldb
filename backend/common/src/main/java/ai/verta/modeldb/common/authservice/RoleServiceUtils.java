@@ -85,14 +85,8 @@ public class RoleServiceUtils implements RoleService {
       if (ownerId.isPresent()) {
         setResourcesBuilder.setOwnerId(ownerId.get());
       }
-      if (workspaceId.isPresent()) {
-        setResourcesBuilder.setWorkspaceId(workspaceId.get());
-      } else if (workspaceName.isPresent()) {
-        setResourcesBuilder = setResourcesBuilder.setWorkspaceName(workspaceName.get());
-      } else {
-        throw new IllegalArgumentException(
-            "workspaceId and workspaceName are both empty.  One must be provided.");
-      }
+      workspaceId.ifPresent(setResourcesBuilder::setWorkspaceId);
+      workspaceName.ifPresent(setResourcesBuilder::setWorkspaceName);
 
       var blockingStub =
           isServiceUser
@@ -326,40 +320,6 @@ public class RoleServiceUtils implements RoleService {
               ? authServiceChannel.getCollaboratorServiceBlockingStubForServiceUser()
               : authServiceChannel.getCollaboratorServiceBlockingStub();
       final var response = blockingStub.getResources(builder.build());
-      return response.getItemList();
-    } catch (StatusRuntimeException ex) {
-      LOGGER.trace(ex);
-      throw ex;
-    }
-  }
-
-  @Override
-  public List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
-      Workspace workspace,
-      Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      var resourceType =
-          ResourceType.newBuilder()
-              .setModeldbServiceResourceType(modelDBServiceResourceTypes)
-              .build();
-      Resources.Builder resources =
-          Resources.newBuilder()
-              .setResourceType(resourceType)
-              .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-      if (resourceIds != null && !resourceIds.isEmpty()) {
-        resources.addAllResourceIds(resourceIds);
-      }
-
-      var builder = GetResources.newBuilder().setResources(resources.build());
-      if (workspace != null) {
-        builder.setWorkspaceId(workspace.getId());
-      }
-      final var response =
-          authServiceChannel
-              .getCollaboratorServiceBlockingStub()
-              .getResourcesSpecialPersonalWorkspace(builder.build());
       return response.getItemList();
     } catch (StatusRuntimeException ex) {
       LOGGER.trace(ex);

@@ -11,6 +11,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
@@ -48,6 +49,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   private final MDBRoleService mdbRoleService;
   private final CommitDAO commitDAO;
   private final MetadataDAO metadataDAO;
+  private final boolean isPermissionV2;
 
   private static final String SHORT_NAME = "repo";
 
@@ -77,11 +79,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       AuthService authService,
       MDBRoleService mdbRoleService,
       CommitDAO commitDAO,
-      MetadataDAO metadataDAO) {
+      MetadataDAO metadataDAO,
+      MDBConfig mdbConfig) {
     this.authService = authService;
     this.mdbRoleService = mdbRoleService;
     this.commitDAO = commitDAO;
     this.metadataDAO = metadataDAO;
+    this.isPermissionV2 = mdbConfig.isPermissionV2Enabled();
   }
 
   private void checkIfEntityAlreadyExists(
@@ -161,11 +165,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException {
     RepositoryEntity repository;
     if (id.hasNamedId()) {
-      if (workspace == null) {
-        workspace =
-            mdbRoleService.getWorkspaceByWorkspaceName(
-                authService.getCurrentLoginUserInfo(), id.getNamedId().getWorkspaceName());
-      }
       repository =
           getRepositoryByName(session, id.getNamedId().getName(), workspace, repositoryType)
               .orElseThrow(
@@ -302,7 +301,14 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
     RepositoryEntity repositoryEntity;
     var nameChanged = false;
-    var workspace = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    Workspace workspace = null;
+    if (isPermissionV2) {
+      if (workspaceName != null && !workspaceName.isEmpty()) {
+        workspace = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+      }
+    } else {
+      workspace = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
+    }
     if (create) {
       String name = repository.getName();
       if (name.isEmpty()) {
@@ -368,12 +374,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         if (repository.getVisibility().equals(ResourceVisibility.UNKNOWN)) {
           resourceVisibility =
               ModelDBUtils.getResourceVisibility(
-                  Optional.of(workspace), repository.getRepositoryVisibility());
+                  workspace == null ? Optional.empty() : Optional.of(workspace),
+                  repository.getRepositoryVisibility());
         }
         var modelDBServiceResourceTypes =
             ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
         mdbRoleService.createWorkspacePermissions(
-            Optional.of(workspace.getId()),
+            workspace == null ? Optional.empty() : Optional.of(workspace.getId()),
             Optional.empty(),
             String.valueOf(repositoryEntity.getId()),
             repositoryEntity.getName(),

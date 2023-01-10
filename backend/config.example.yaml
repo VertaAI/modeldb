@@ -134,3 +134,4 @@ cron_job:
 populateConnectionsBasedOnPrivileges: false
 disabled_audits: true
 jdbi_retry_time: 100 # Time in ms
+permissionV2Enabled: false

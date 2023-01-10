@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
@@ -26,10 +27,11 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   private RepositoryDAO repositoryDAO;
   private MetadataDAO metadataDAO;
 
-  public PublicMDBRoleServiceUtils(AuthService authService) {
+  public PublicMDBRoleServiceUtils(AuthService authService, MDBConfig mdbConfig) {
     this.metadataDAO = new MetadataDAORdbImpl();
     var commitDAO = new CommitDAORdbImpl(authService, this);
-    this.repositoryDAO = new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO);
+    this.repositoryDAO =
+        new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO, mdbConfig);
   }
 
   @Override
@@ -242,14 +244,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       boolean isServiceUser) {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public List<GetResourcesResponseItem> getResourceItemsSpecialPersonalWorkspace(
-      Workspace workspace,
-      Set<String> resourceIds,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return Collections.emptyList();
   }
 

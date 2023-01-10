@@ -71,3 +71,4 @@ migrations:
 cron_job:
 
 populateConnectionsBasedOnPrivileges: true
+permissionV2Enabled: true

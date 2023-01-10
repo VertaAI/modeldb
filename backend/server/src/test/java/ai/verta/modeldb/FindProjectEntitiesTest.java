@@ -68,6 +68,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -99,6 +100,9 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
     projectMap = new HashMap<>();
     experimentMap = new HashMap<>();
     experimentRunMap = new HashMap<>();
+
+    cleanUpResources();
+    super.tearDown();
   }
 
   private void createProjectEntities() {

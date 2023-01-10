@@ -78,6 +78,7 @@ public class RepositoryTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -104,6 +105,7 @@ public class RepositoryTest extends ModeldbTestSetup {
     repository2 = null;
     repository3 = null;
     repositoryMap = new HashMap<>();
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {
@@ -149,6 +151,29 @@ public class RepositoryTest extends ModeldbTestSetup {
     if (isRunningIsolated()) {
       mockGetResourcesForAllRepositories(repositoryMap, testUser1);
     }
+  }
+
+  public static Long createRepositoryWithWorkspace(
+      VersioningServiceBlockingStub versioningServiceBlockingStub,
+      String repoName,
+      String workspaceName) {
+    SetRepository setRepository =
+        SetRepository.newBuilder()
+            .setId(
+                RepositoryIdentification.newBuilder()
+                    .setNamedId(
+                        RepositoryNamedIdentification.newBuilder()
+                            .setName(repoName)
+                            .setWorkspaceName(workspaceName)
+                            .build())
+                    .build())
+            .setRepository(
+                Repository.newBuilder()
+                    .setName(repoName)
+                    .setDescription("This is test repository description"))
+            .build();
+    Response result = versioningServiceBlockingStub.createRepository(setRepository);
+    return result.getRepository().getId();
   }
 
   public static Long createRepository(

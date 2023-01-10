@@ -127,7 +127,8 @@ public class UACApisUtil {
   }
 
   public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
-      String workspaceName,
+      Optional<String> workspaceName,
+      Long workspaceId,
       Optional<List<String>> resourceIdsOptional,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceTypes) {
     var resourceType =
@@ -143,7 +144,8 @@ public class UACApisUtil {
     }
 
     var builder = GetResources.newBuilder().setResources(resources.build());
-    builder.setWorkspaceName(workspaceName);
+    workspaceName.ifPresent(builder::setWorkspaceName);
+    builder.setWorkspaceId(workspaceId);
     return FutureUtil.clientRequest(
             uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
             executor)

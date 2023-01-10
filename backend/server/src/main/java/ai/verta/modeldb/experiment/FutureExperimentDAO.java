@@ -104,7 +104,9 @@ public class FutureExperimentDAO {
             datasetHandler,
             daoSet.getArtifactStoreDAO(),
             mdbConfig);
-    predicatesHandler = new PredicatesHandler(executor, "experiment", "experiment", uacApisUtil);
+    predicatesHandler =
+        new PredicatesHandler(
+            executor, "experiment", "experiment", uacApisUtil, mdbConfig.isPermissionV2Enabled());
     sortingHandler = new SortingHandler("experiment");
 
     createExperimentHandler =

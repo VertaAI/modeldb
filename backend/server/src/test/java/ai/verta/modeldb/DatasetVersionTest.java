@@ -17,6 +17,7 @@ import ai.verta.modeldb.versioning.S3DatasetComponentBlob;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.ResourceVisibility;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -60,6 +61,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -94,6 +96,9 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     datasetVersion2 = null;
     datasetVersion3 = null;
     datasetVersionMap = new HashMap<>();
+
+    cleanUpResources();
+    super.tearDown();
   }
 
   private void createDatasetEntities() {
@@ -105,6 +110,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
                       .setResourceId("1")
                       .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                       .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setVisibility(ResourceVisibility.PRIVATE)
                       .build())
               .build();
       when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
