@@ -394,7 +394,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
     switch (value.getKindCase()) {
       case NUMBER_VALUE:
-        sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+        sql += applyOperator(operator, columnAsNumber(colValue), ":" + valueBindingName);
         queryContext = queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
         break;
       case STRING_VALUE:
@@ -462,7 +462,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
       switch (value.getKindCase()) {
         case NUMBER_VALUE:
-          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          sql += applyOperator(operator, columnAsNumber(colValue), ":" + valueBindingName);
           queryContext =
               queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
           break;
@@ -551,7 +551,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
       switch (value.getKindCase()) {
         case NUMBER_VALUE:
-          sql += applyOperator(operator, columnAsNumber(colValue, true), ":" + valueBindingName);
+          sql += applyOperator(operator, columnAsNumber(colValue), ":" + valueBindingName);
           queryContext =
               queryContext.addBind(q -> q.bind(valueBindingName, value.getNumberValue()));
           break;

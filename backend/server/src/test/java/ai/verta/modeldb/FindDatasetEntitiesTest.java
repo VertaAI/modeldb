@@ -24,16 +24,16 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class FindDatasetEntitiesTest extends ModeldbTestSetup {
@@ -54,7 +54,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
   private static DatasetVersion datasetVersion4;
   private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
 
-  @Before
+  @BeforeEach
   public void createEntities() {
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -67,7 +67,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
     createDatasetVersionEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     for (DatasetVersion datasetVersion : datasetVersionMap.values()) {
       DeleteDatasetVersion deleteDatasetVersion =

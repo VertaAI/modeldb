@@ -72,6 +72,7 @@ import ai.verta.uac.Action;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.DeleteResources;
 import ai.verta.uac.GetResourcesResponseItem;
+import ai.verta.uac.GetResourcesResponseItem.OwnerTrackingCase;
 import ai.verta.uac.GetWorkspaceByName;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum;
@@ -693,7 +694,13 @@ public class FutureProjectDAO {
     var projectResource = getResourcesMap.get(projectBuilder.getId());
     projectBuilder.setVisibility(projectResource.getVisibility());
     projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-    projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+      projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
+      projectBuilder.setOwner("");
+    } else {
+      projectBuilder.setOwnerId(projectResource.getOwnerId());
+      projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+    }
     projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
     Workspace workspace;
@@ -1603,7 +1610,13 @@ public class FutureProjectDAO {
 
               projectBuilder.setVisibility(projectResource.getVisibility());
               projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-              projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+              if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+                projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
+                projectBuilder.setOwner("");
+              } else {
+                projectBuilder.setOwnerId(projectResource.getOwnerId());
+                projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+              }
               projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
               switch (workspace.getInternalIdCase()) {

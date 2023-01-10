@@ -116,7 +116,10 @@ message GetResourcesResponseItem {
 
     uint64 workspace_id = 2;
     // Owner of the resource
-    uint64 owner_id = 3;
+    oneof owner_tracking {
+        uint64 owner_id = 3;
+        common.GroupId group_owner_id = 14;
+    }
     // Type of the visibility
     ResourceVisibility visibility = 4;
 
@@ -141,7 +144,10 @@ message SetResource {
         string workspace_name = 3;
     }
     // Owner of the resource
-    uint64 owner_id = 4;
+    oneof owner_tracking {
+        uint64 owner_id = 4;
+        common.GroupId group_owner_id = 12;
+    }
     // Type of the visibility
     ResourceVisibility visibility = 5;
 
