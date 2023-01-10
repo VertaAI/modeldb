@@ -102,6 +102,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
   @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -150,6 +151,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRun2 = null;
 
     experimentRunMap = new HashMap<>();
+    super.tearDown();
   }
 
   private void createProjectEntities() {
