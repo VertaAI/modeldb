@@ -179,6 +179,17 @@
       ],
       "default": "STRING"
     },
+    "commonGroupId": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "group_id": {
+          "type": "string"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -274,6 +285,13 @@
         },
         "owner": {
           "type": "string"
+        },
+        "owner_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
         }
       }
     },
