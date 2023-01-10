@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -1839,6 +1840,33 @@ public class ProjectTest extends ModeldbTestSetup {
 
       // Create project
       createProjectRequest = getCreateProjectRequest(project.getName());
+      if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
+        var groupIdUser =
+            createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
+
+        var roleIdUser =
+            createAndGetRole(
+                    authServiceChannelServiceUser,
+                    organizationId,
+                    Optional.empty(),
+                    Set.of(ResourceTypeV2.PROJECT))
+                .getRole()
+                .getId();
+
+        var testUserWorkspace =
+            createWorkspaceAndRoleForUser(
+                authServiceChannelServiceUser,
+                organizationId,
+                groupIdUser,
+                roleIdUser,
+                testUser2.getVertaInfo().getUsername(),
+                Optional.empty());
+        createProjectRequest =
+            createProjectRequest
+                .toBuilder()
+                .setWorkspaceName(organizationId + "/" + testUserWorkspace.getName())
+                .build();
+      }
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       selfProject = createProjectResponse.getProject();
       LOGGER.info("Project created successfully");
