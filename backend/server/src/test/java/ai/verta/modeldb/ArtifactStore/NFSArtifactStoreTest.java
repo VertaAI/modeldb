@@ -168,7 +168,8 @@ public class NFSArtifactStoreTest {
                     .build())
             .build();
     if (testConfig.isPermissionV2Enabled()) {
-      when(uac.getCollaboratorService().getResources(any())).thenReturn(Futures.immediateFuture(getResources));
+      when(uac.getCollaboratorService().getResources(any()))
+          .thenReturn(Futures.immediateFuture(getResources));
     } else {
       when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
           .thenReturn(Futures.immediateFuture(getResources));
