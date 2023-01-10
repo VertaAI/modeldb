@@ -34,7 +34,6 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
       collaboratorServiceBlockingStubForServiceUser;
   private final String serviceUserEmail;
   private final String serviceUserDevKey;
-  private final Config config;
 
   public AuthServiceChannel(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
     super(tracingClientInterceptor);
@@ -53,7 +52,6 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
       throw new UnavailableException(
           "Host OR Port not found for contacting authentication service");
     }
-    this.config = config;
   }
 
   private Metadata getServiceUserMetadataHeaders() {

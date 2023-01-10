@@ -55,16 +55,16 @@ import java.util.List;
 import java.util.Map;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class RepositoryTest extends ModeldbTestSetup {
@@ -76,8 +76,9 @@ public class RepositoryTest extends ModeldbTestSetup {
   private static Repository repository3;
   private static Map<Long, Repository> repositoryMap;
 
-  @Before
+  @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -88,7 +89,7 @@ public class RepositoryTest extends ModeldbTestSetup {
     createRepositoryEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     for (Repository repo : new Repository[] {repository, repository2, repository3}) {
       DeleteRepositoryRequest deleteRepository =
@@ -104,6 +105,7 @@ public class RepositoryTest extends ModeldbTestSetup {
     repository2 = null;
     repository3 = null;
     repositoryMap = new HashMap<>();
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {
@@ -274,7 +276,8 @@ public class RepositoryTest extends ModeldbTestSetup {
       }
       try {
         if (isRunningIsolated()) {
-          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+          when(uac.getUACService().getCurrentUser(any()))
+              .thenReturn(Futures.immediateFuture(testUser2));
         }
         versioningServiceBlockingStubClient2.updateRepository(
             SetRepository.newBuilder()
@@ -310,7 +313,8 @@ public class RepositoryTest extends ModeldbTestSetup {
               .build();
       try {
         if (isRunningIsolated()) {
-          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+          when(uac.getUACService().getCurrentUser(any()))
+              .thenReturn(Futures.immediateFuture(testUser2));
           mockGetResourcesForAllRepositories(Map.of(), testUser2);
         }
         versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
@@ -323,7 +327,8 @@ public class RepositoryTest extends ModeldbTestSetup {
 
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
-          when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
+          when(uac.getUACService().getCurrentUser(any()))
+              .thenReturn(Futures.immediateFuture(testUser1));
           when(authzBlockingMock.isSelfAllowed(any()))
               .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
           mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser1);
@@ -1245,7 +1250,8 @@ public class RepositoryTest extends ModeldbTestSetup {
     }
 
     if (isRunningIsolated()) {
-      when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser2));
+      when(uac.getUACService().getCurrentUser(any()))
+          .thenReturn(Futures.immediateFuture(testUser2));
       mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser2);
     } else {
       AddCollaboratorRequest addCollaboratorRequest =

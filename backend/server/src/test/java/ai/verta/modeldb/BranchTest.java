@@ -48,16 +48,16 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class BranchTest extends ModeldbTestSetup {
@@ -66,8 +66,9 @@ public class BranchTest extends ModeldbTestSetup {
   private static Repository repository;
   private static Commit parentCommit;
 
-  @Before
+  @BeforeEach
   public void createEntities() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -78,7 +79,7 @@ public class BranchTest extends ModeldbTestSetup {
     createRepositoryEntities();
   }
 
-  @After
+  @AfterEach
   public void removeEntities() {
     if (repository != null) {
       DeleteRepositoryRequest deleteRepository =
@@ -91,6 +92,7 @@ public class BranchTest extends ModeldbTestSetup {
       repository = null;
       parentCommit = null;
     }
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {
@@ -135,7 +137,8 @@ public class BranchTest extends ModeldbTestSetup {
                 Collectors.toMap(
                     entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
     mockGetResources(repoIdNameMap, userInfo);
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+    when(uac.getServiceAccountCollaboratorServiceForServiceUser()
+            .getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
                 GetResources.Response.newBuilder()
@@ -161,7 +164,7 @@ public class BranchTest extends ModeldbTestSetup {
         repoIdNameMap.keySet(), ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
   }
 
-  public static Repository createRepository(String repoName) {
+  public Repository createRepository(String repoName) {
     SetRepository setRepository = RepositoryTest.getSetRepositoryRequest(repoName);
     SetRepository.Response result = versioningServiceBlockingStub.createRepository(setRepository);
     return result.getRepository();

@@ -40,16 +40,16 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class DatasetTest extends ModeldbTestSetup {
@@ -57,14 +57,16 @@ public class DatasetTest extends ModeldbTestSetup {
   private static final Logger LOGGER = LogManager.getLogger(DatasetTest.class);
 
   // Dataset Entities
-  private static Dataset dataset1;
-  private static Dataset dataset2;
-  private static Dataset dataset3;
-  private static Dataset dataset4;
-  private static Map<String, Dataset> datasetMap = new HashMap<>();
+  private Dataset dataset1;
+  private Dataset dataset2;
+  private Dataset dataset3;
+  private Dataset dataset4;
+  private final Map<String, Dataset> datasetMap = new HashMap<>();
 
-  @Before
-  public void createEntities() {
+  @BeforeEach
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -75,25 +77,19 @@ public class DatasetTest extends ModeldbTestSetup {
     createDatasetEntities();
   }
 
-  @After
-  public void removeEntities() {
+  @AfterEach
+  @Override
+  public void tearDown() {
     if (isRunningIsolated()) {
       when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
       mockGetResourcesForAllDatasets(datasetMap, testUser1);
     }
     DeleteDatasets deleteDatasets =
         DeleteDatasets.newBuilder().addAllIds(datasetMap.keySet()).build();
-    DeleteDatasets.Response deleteDatasetsResponse =
-        datasetServiceStub.deleteDatasets(deleteDatasets);
+    datasetServiceStub.deleteDatasets(deleteDatasets);
     LOGGER.info("Datasets deleted successfully");
-    LOGGER.info(deleteDatasetsResponse.toString());
-    assertTrue(deleteDatasetsResponse.getStatus());
 
-    dataset1 = null;
-    dataset2 = null;
-    dataset3 = null;
-    dataset4 = null;
-    datasetMap = new HashMap<>();
+    super.tearDown();
   }
 
   private void createDatasetEntities() {
@@ -2062,7 +2058,7 @@ public class DatasetTest extends ModeldbTestSetup {
                         .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                         .build())
                 .build();
-        when(collaboratorMock.getResources(any()))
+        when(uac.getCollaboratorService().getResources(any()))
             .thenReturn(Futures.immediateFuture(resourcesResponse));
         when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
       }

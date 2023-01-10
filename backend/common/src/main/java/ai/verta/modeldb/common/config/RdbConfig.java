@@ -40,7 +40,7 @@ public class RdbConfig {
     if (RdbUsername == null || RdbUsername.isEmpty()) {
       throw new InvalidConfigException(base + ".RdbUsername", CommonMessages.MISSING_REQUIRED);
     }
-    if (!isPostgres() && !isMysql() && !isMssql() && !isH2()) {
+    if (!isMysql() && !isMssql() && !isH2()) {
       throw new InvalidConfigException(base + ".RdbDialect", "Unknown or unsupported dialect.");
     }
 
@@ -56,10 +56,6 @@ public class RdbConfig {
         throw new InvalidConfigException(base + ".sslMode", CommonMessages.MISSING_REQUIRED);
       }
     }
-  }
-
-  public boolean isPostgres() {
-    return RdbDialect.equals("org.hibernate.dialect.PostgreSQL82Dialect");
   }
 
   public boolean isMysql() {
@@ -128,9 +124,6 @@ public class RdbConfig {
     }
 
     if (dbName.contains("-")) {
-      if (rdb.isPostgres()) {
-        throw new ModelDBException("Postgres does not support database names containing -");
-      }
       if (rdb.isMysql()) {
         return String.format("`%s`", dbName);
       }
@@ -146,9 +139,6 @@ public class RdbConfig {
     if (rdb.isMssql()) {
       // Regex reference: https://regex101.com/r/yaU0DY/1
       regex = ";databaseName=([^;]*)";
-    } else if (rdb.isPostgres()) {
-      // Regex reference: https://regex101.com/r/Ez1xre/1
-      regex = "^jdbc:postgresql:(?://[^/]+/)?(\\w+)";
     } else {
       regex = "^jdbc:mysql:(?://[^/]+/)?(\\w+)";
     }

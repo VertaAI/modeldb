@@ -1485,38 +1485,114 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             os.remove(tempf.name)
 
     def set_input_description(self, desc):
+        """
+        Sets this description of the model version's input.
+
+        This field helps users have a quick view of what type of data will be used as input for a model.
+        This field also helps non-tech users to understand model behavior at a glance.
+
+        Parameters
+        ----------
+        desc : str
+
+        """
         if not desc:
             raise ValueError("input description is not specified")
         self._update(self.ModelVersionMessage(input_description=desc))
 
     def get_input_description(self):
+        """
+        Gets this description of the model version's input.
+
+        This field helps users have a quick view of what type of data will be used as input for a model.
+        This field also helps non-tech users to understand model behavior at a glance.
+
+        Returns
+        -------
+        desc : str
+
+        """
         self._refresh_cache()
         return self._msg.input_description
 
     def set_hide_input_label(self, hide):
+        """
+        Sets whether to hide the model version's input label on the preview.
+
+        Parameters
+        ----------
+        hide : bool
+
+        """
         if not hide:
             raise ValueError("hide input label is not specified")
         self._update(self.ModelVersionMessage(hide_input_label=hide))
 
     def get_hide_input_label(self):
+        """
+        Gets whether to hide the model version's input label on the preview.
+
+        Returns
+        -------
+        hide : bool
+
+        """
         self._refresh_cache()
         return self._msg.hide_input_label
 
     def set_output_description(self, desc):
+        """
+        Sets this description of the model version's output.
+
+        This field helps users have a quick view of what type of data will be produced as a result of executing a model.
+        This field also helps non-tech users to understand model behavior at a glance.
+
+        Parameters
+        ----------
+        desc : str
+
+        """
         if not desc:
             raise ValueError("output description is not specified")
         self._update(self.ModelVersionMessage(output_description=desc))
 
     def get_output_description(self):
+        """
+        Gets this description of the model version's output.
+
+        This field helps users have a quick view of what type of data will be produced as a result of executing a model.
+        This field also helps non-tech users to understand model behavior at a glance.
+
+        Returns
+        -------
+        desc : str
+
+        """
         self._refresh_cache()
         return self._msg.output_description
 
     def set_hide_output_label(self, hide):
+        """
+        Sets whether to hide the model version's output label on the preview.
+
+        Parameters
+        ----------
+        hide : bool
+
+        """
         if not hide:
             raise ValueError("hide output label is not specified")
         self._update(self.ModelVersionMessage(hide_output_label=hide))
 
     def get_hide_output_label(self):
+        """
+        Gets whether to hide the model version's output label on the preview.
+
+        Returns
+        -------
+        hide : bool
+
+        """
         self._refresh_cache()
         return self._msg.hide_output_label
 

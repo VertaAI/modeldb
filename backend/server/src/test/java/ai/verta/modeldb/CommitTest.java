@@ -99,15 +99,15 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class CommitTest extends ModeldbTestSetup {
@@ -117,8 +117,10 @@ public class CommitTest extends ModeldbTestSetup {
   private static Repository repository;
   private static Commit initialCommit;
 
-  @Before
-  public void createEntities() {
+  @BeforeEach
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -177,7 +179,8 @@ public class CommitTest extends ModeldbTestSetup {
                 Collectors.toMap(
                     entry -> String.valueOf(entry.getKey()), entry -> entry.getValue().getName()));
     mockGetResources(repoIdNameMap, userInfo);
-    when(collaboratorMock.getResourcesSpecialPersonalWorkspace(any()))
+    when(uac.getServiceAccountCollaboratorServiceForServiceUser()
+            .getResourcesSpecialPersonalWorkspace(any()))
         .thenReturn(
             Futures.immediateFuture(
                 GetResources.Response.newBuilder()
@@ -2365,7 +2368,7 @@ public class CommitTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore
+  @Disabled
   public void getURLForVersionedBlob() throws IOException {
     LOGGER.info("Get Url for VersionedBlob test start................................");
 
