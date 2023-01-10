@@ -168,14 +168,13 @@ public class NFSArtifactStoreTest {
                     .build())
             .build();
     if (testConfig.isPermissionV2Enabled()) {
-      when(uac.getCollaboratorService().getResources(any())).thenReturn(Futures.immediateFuture(getResources));
+      when(uac.getCollaboratorService().getResources(any()))
+          .thenReturn(Futures.immediateFuture(getResources));
     } else {
       when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
           .thenReturn(Futures.immediateFuture(getResources));
     }
-    var roleServiceMock = mock(RoleServiceGrpc.RoleServiceFutureStub.class);
-    when(uac.getServiceAccountRoleServiceFutureStub()).thenReturn(roleServiceMock);
-    when(roleServiceMock.setRoleBinding(any()))
+    when(uac.getServiceAccountRoleServiceFutureStub().setRoleBinding(any()))
         .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
     when(uac.getAuthzService().getSelfAllowedResources(any()))
         .thenReturn(
