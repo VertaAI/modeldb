@@ -48,7 +48,7 @@ from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
 from ._protos.public.uac import WorkspaceV2_pb2
-from verta._uac._workspace import Workspace
+from ._uac._workspace import Workspace
 
 
 VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR = "VERTA_DISABLE_CLIENT_CONFIG"
