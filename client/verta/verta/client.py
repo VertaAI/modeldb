@@ -1748,7 +1748,7 @@ class Client(object):
         workspace_name : str
             name of workspace.
         resource_action_groups : list of RoleV2_pb2.RoleResourceActions
-            role description with allowed actions for resource types.
+            Resource actions for non-admins in this workspace.
 
         Returns
         -------
