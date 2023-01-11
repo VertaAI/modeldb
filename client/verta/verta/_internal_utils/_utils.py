@@ -343,7 +343,7 @@ class Connection(object):
         workspace_id = user_info.verta_info.default_workspace_id
         if workspace_id:
             return self.get_workspace_name_from_id(workspace_id)
-        else:  # old backend
+        else:
             raise ValueError("default_workspace_id is not set")
 
 
