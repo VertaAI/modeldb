@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x11uac/GroupV2.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\x1a\x1a\x63ommon/CommonService.proto\"\xa4\x01\n\x07GroupV2\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06org_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x10\n\x08\x62uilt_in\x18\x05 \x01(\x08\x12\x12\n\nmember_ids\x18\x06 \x03(\t\x12\x19\n\x11\x63reated_timestamp\x18\x07 \x01(\x03\x12\x19\n\x11updated_timestamp\x18\x08 \x01(\x03\"b\n\x0cGetGroupById\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x1a\x30\n\x08Response\x12$\n\x05group\x18\x01 \x01(\x0b\x32\x15.ai.verta.uac.GroupV2\"&\n\x13SearchGroupCriteria\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"\x86\x02\n\x0cSearchGroups\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12:\n\x0fsearch_criteria\x18\x02 \x01(\x0b\x32!.ai.verta.uac.SearchGroupCriteria\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1ay\n\x08Response\x12%\n\x06groups\x18\x01 \x03(\x0b\x32\x15.ai.verta.uac.GroupV2\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\"b\n\x08SetGroup\x12$\n\x05group\x18\x01 \x01(\x0b\x32\x15.ai.verta.uac.GroupV2\x1a\x30\n\x08Response\x12$\n\x05group\x18\x01 \x01(\x0b\x32\x15.ai.verta.uac.GroupV2\";\n\x0b\x44\x65leteGroup\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"N\n\rAddGroupUsers\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x03 \x03(\t\x1a\n\n\x08Response\"Q\n\x10RemoveGroupUsers\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x03 \x03(\t\x1a\n\n\x08Response2\xb7\x06\n\x0cGroupService\x12\x84\x01\n\x0cgetGroupById\x12\x1a.ai.verta.uac.GetGroupById\x1a#.ai.verta.uac.GetGroupById.Response\"3\x82\xd3\xe4\x93\x02-\x12+/v1/organization/{org_id}/groups/{group_id}\x12y\n\x0csearchGroups\x12\x1a.ai.verta.uac.SearchGroups\x1a#.ai.verta.uac.SearchGroups.Response\"(\x82\xd3\xe4\x93\x02\"\x12 /v1/organization/{org_id}/groups\x12v\n\x08setGroup\x12\x16.ai.verta.uac.SetGroup\x1a\x1f.ai.verta.uac.SetGroup.Response\"1\x82\xd3\xe4\x93\x02+\"&/v1/organization/{group.org_id}/groups:\x01*\x12\x81\x01\n\x0b\x64\x65leteGroup\x12\x19.ai.verta.uac.DeleteGroup\x1a\".ai.verta.uac.DeleteGroup.Response\"3\x82\xd3\xe4\x93\x02-*+/v1/organization/{org_id}/groups/{group_id}\x12\x8b\x01\n\x08\x61\x64\x64Users\x12\x1b.ai.verta.uac.AddGroupUsers\x1a$.ai.verta.uac.AddGroupUsers.Response\"<\x82\xd3\xe4\x93\x02\x36\"1/v1/organization/{org_id}/groups/{group_id}/users:\x01*\x12\x9a\x01\n\x0bremoveUsers\x12\x1e.ai.verta.uac.RemoveGroupUsers\x1a\'.ai.verta.uac.RemoveGroupUsers.Response\"B\x82\xd3\xe4\x93\x02<\"7/v1/organization/{org_id}/groups/{group_id}/removeUsers:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x11uac/GroupV2.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x14uac/UACService.proto\x1a\x1a\x63ommon/CommonService.proto\"\xa4\x01\n\x07GroupV2\x12\n\n\x02id\x18\x01 \x01(\t\x12\x0e\n\x06org_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12\x10\n\x08\x62uilt_in\x18\x05 \x01(\x08\x12\x12\n\nmember_ids\x18\x06 \x03(\t\x12\x19\n\x11\x63reated_timestamp\x18\x07 \x01(\x03\x12\x19\n\x11updated_timestamp\x18\x08 \x01(\x03\"b\n\x0cGetGroupById\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x1a\x30\n\x08Response\x12$\n\x05group\x18\x01 \x01(\x0b\x32\x15.ai.verta.uac.GroupV2\"&\n\x13SearchGroupCriteria\x12\x0f\n\x07user_id\x18\x01 \x01(\t\"\x86\x02\n\x0cSearchGroups\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12:\n\x0fsearch_criteria\x18\x02 \x01(\x0b\x32!.ai.verta.uac.SearchGroupCriteria\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1ay\n\x08Response\x12%\n\x06groups\x18\x01 \x03(\x0b\x32\x15.ai.verta.uac.GroupV2\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\"b\n\x08SetGroup\x12$\n\x05group\x18\x01 \x01(\x0b\x32\x15.ai.verta.uac.GroupV2\x1a\x30\n\x08Response\x12$\n\x05group\x18\x01 \x01(\x0b\x32\x15.ai.verta.uac.GroupV2\";\n\x0b\x44\x65leteGroup\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"N\n\rAddGroupUsers\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x03 \x03(\t\x1a\n\n\x08Response\"Q\n\x10RemoveGroupUsers\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07user_id\x18\x03 \x03(\t\x1a\n\n\x08Response2\xb7\x06\n\x0cGroupService\x12\x84\x01\n\x0cgetGroupById\x12\x1a.ai.verta.uac.GetGroupById\x1a#.ai.verta.uac.GetGroupById.Response\"3\x82\xd3\xe4\x93\x02-\x12+/v2/organization/{org_id}/groups/{group_id}\x12y\n\x0csearchGroups\x12\x1a.ai.verta.uac.SearchGroups\x1a#.ai.verta.uac.SearchGroups.Response\"(\x82\xd3\xe4\x93\x02\"\x12 /v2/organization/{org_id}/groups\x12v\n\x08setGroup\x12\x16.ai.verta.uac.SetGroup\x1a\x1f.ai.verta.uac.SetGroup.Response\"1\x82\xd3\xe4\x93\x02+\"&/v2/organization/{group.org_id}/groups:\x01*\x12\x81\x01\n\x0b\x64\x65leteGroup\x12\x19.ai.verta.uac.DeleteGroup\x1a\".ai.verta.uac.DeleteGroup.Response\"3\x82\xd3\xe4\x93\x02-*+/v2/organization/{org_id}/groups/{group_id}\x12\x8b\x01\n\x08\x61\x64\x64Users\x12\x1b.ai.verta.uac.AddGroupUsers\x1a$.ai.verta.uac.AddGroupUsers.Response\"<\x82\xd3\xe4\x93\x02\x36\"1/v2/organization/{org_id}/groups/{group_id}/users:\x01*\x12\x9a\x01\n\x0bremoveUsers\x12\x1e.ai.verta.uac.RemoveGroupUsers\x1a\'.ai.verta.uac.RemoveGroupUsers.Response\"B\x82\xd3\xe4\x93\x02<\"7/v2/organization/{org_id}/groups/{group_id}/removeUsers:\x01*B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
@@ -699,7 +699,7 @@ _GROUPSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_GETGROUPBYID,
     output_type=_GETGROUPBYID_RESPONSE,
-    serialized_options=b'\202\323\344\223\002-\022+/v1/organization/{org_id}/groups/{group_id}',
+    serialized_options=b'\202\323\344\223\002-\022+/v2/organization/{org_id}/groups/{group_id}',
   ),
   _descriptor.MethodDescriptor(
     name='searchGroups',
@@ -708,7 +708,7 @@ _GROUPSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_SEARCHGROUPS,
     output_type=_SEARCHGROUPS_RESPONSE,
-    serialized_options=b'\202\323\344\223\002\"\022 /v1/organization/{org_id}/groups',
+    serialized_options=b'\202\323\344\223\002\"\022 /v2/organization/{org_id}/groups',
   ),
   _descriptor.MethodDescriptor(
     name='setGroup',
@@ -717,7 +717,7 @@ _GROUPSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_SETGROUP,
     output_type=_SETGROUP_RESPONSE,
-    serialized_options=b'\202\323\344\223\002+\"&/v1/organization/{group.org_id}/groups:\001*',
+    serialized_options=b'\202\323\344\223\002+\"&/v2/organization/{group.org_id}/groups:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='deleteGroup',
@@ -726,7 +726,7 @@ _GROUPSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_DELETEGROUP,
     output_type=_DELETEGROUP_RESPONSE,
-    serialized_options=b'\202\323\344\223\002-*+/v1/organization/{org_id}/groups/{group_id}',
+    serialized_options=b'\202\323\344\223\002-*+/v2/organization/{org_id}/groups/{group_id}',
   ),
   _descriptor.MethodDescriptor(
     name='addUsers',
@@ -735,7 +735,7 @@ _GROUPSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_ADDGROUPUSERS,
     output_type=_ADDGROUPUSERS_RESPONSE,
-    serialized_options=b'\202\323\344\223\0026\"1/v1/organization/{org_id}/groups/{group_id}/users:\001*',
+    serialized_options=b'\202\323\344\223\0026\"1/v2/organization/{org_id}/groups/{group_id}/users:\001*',
   ),
   _descriptor.MethodDescriptor(
     name='removeUsers',
@@ -744,7 +744,7 @@ _GROUPSERVICE = _descriptor.ServiceDescriptor(
     containing_service=None,
     input_type=_REMOVEGROUPUSERS,
     output_type=_REMOVEGROUPUSERS_RESPONSE,
-    serialized_options=b'\202\323\344\223\002<\"7/v1/organization/{org_id}/groups/{group_id}/removeUsers:\001*',
+    serialized_options=b'\202\323\344\223\002<\"7/v2/organization/{org_id}/groups/{group_id}/removeUsers:\001*',
   ),
 ])
 _sym_db.RegisterServiceDescriptor(_GROUPSERVICE)
