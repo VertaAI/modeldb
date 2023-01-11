@@ -47,7 +47,7 @@ from .endpoint import Endpoint
 from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
-from ._protos.public.uac import WorkspaceV2_pb2 as _Workspace
+from ._protos.public.uac import WorkspaceV2_pb2
 from verta._uac._workspace import Workspace
 
 
