@@ -352,6 +352,7 @@ class Connection(object):
         else:  # old backend
             return self.get_personal_workspace()
 
+
 class NoneProtoResponse(object):
     def __init__(self):
         pass
