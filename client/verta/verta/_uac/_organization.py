@@ -8,13 +8,13 @@ class OrganizationV2:
 
     def get_groups(self):
         response_groups = self.conn.make_proto_request(
-            "GET", "/api/v1/uac-proxy/organization/{}/groups".format(self.org_id)
+            "GET", f"/api/v1/uac-proxy/organization/{self.org_id}/groups"
         )
         return self.conn.maybe_proto_response(response_groups, _Group.SearchGroups.Response).groups
 
     def get_roles(self):
         response_roles = self.conn.make_proto_request(
-            "GET", "/api/v2/uac-proxy/organization/{}/roles".format(self.org_id)
+            "GET", f"/api/v2/uac-proxy/organization//{self.org_id}/roles"
         )
         return self.conn.maybe_proto_response(response_roles, _Role.SearchRolesV2.Response).roles
 
