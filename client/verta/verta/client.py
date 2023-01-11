@@ -1747,7 +1747,7 @@ class Client(object):
             ID of organization in which workspace is created.
         workspace_name : str
             name of workspace.
-        resource_action_groups : [_Role.RoleResourceActions]
+        resource_action_groups : list of RoleV2_pb2.RoleResourceActions
             role description with allowed actions for resource types.
 
         Returns
