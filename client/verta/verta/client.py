@@ -1752,7 +1752,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.tracking._workspace.Workspace`
+        :class:`~verta._uac._workspace.Workspace`
 
         """
         org = OrganizationV2(self._conn, org_id)
