@@ -21,6 +21,7 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
+import ai.verta.modeldb.versioning.Repository.OwnerTrackingCase;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import io.grpc.Status.Code;
@@ -585,6 +586,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       Session session, MetadataDAO metadataDAO, Repository repository) throws ModelDBException {
     var dataset = Dataset.newBuilder();
     dataset.setId(String.valueOf(repository.getId()));
+    if (repository.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+      dataset.setGroupOwnerId(repository.getGroupOwnerId());
+      dataset.setOwner("");
+    } else {
+      dataset.setOwnerId(repository.getOwnerId());
+      dataset.setOwner(String.valueOf(repository.getOwnerId()));
+    }
 
     dataset
         .setVisibility(repository.getVisibility())
@@ -595,7 +603,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         .setTimeUpdated(repository.getDateUpdated())
         .setName(repository.getName())
         .setDescription(repository.getDescription())
-        .setOwner(repository.getOwner())
         .setCustomPermission(repository.getCustomPermission())
         .setDatasetVisibility(
             DatasetVisibilityEnum.DatasetVisibility.forNumber(
