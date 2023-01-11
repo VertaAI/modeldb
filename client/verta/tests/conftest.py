@@ -534,10 +534,10 @@ def class_endpoint_updated(
 @pytest.fixture
 def workspace(client, created_entities):
     workspace = client._create_workspace(client._conn._get_organization_id(), generate_default_name(), [
-        _Role.RoleResourceActions(resource_type=_Role.ResourceTypeV2.ENDPOINT,
-                                  allowed_actions=[_Role.ActionTypeV2.READ]),
-        _Role.RoleResourceActions(resource_type=_Role.ResourceTypeV2.REGISTERED_MODEL,
-                                  allowed_actions=[_Role.ActionTypeV2.READ, _Role.ActionTypeV2.UPDATE]),
+        RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                                  allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
+        RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                                  allowed_actions=[RoleV2_pb2.ActionTypeV2.READ, RoleV2_pb2.ActionTypeV2.UPDATE]),
     ])
     created_entities.append(workspace)
     return workspace
