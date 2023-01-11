@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from verta._protos.public.uac import WorkspaceV2_pb2 as _Workspace
+from verta._protos.public.uac import WorkspaceV2_pb2
 
 class Workspace(object):
     """
