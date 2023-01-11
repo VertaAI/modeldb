@@ -37,7 +37,7 @@ from .env_fixtures import (
     mock_env_authn_missing,
 )
 from verta._internal_utils._utils import generate_default_name
-from verta._protos.public.uac import RoleV2_pb2 as _Role
+from verta._protos.public.uac import RoleV2_pb2
 
 
 RANDOM_SEED = 0
