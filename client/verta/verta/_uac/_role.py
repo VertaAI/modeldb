@@ -19,7 +19,7 @@ class Role(object):
     def _create_proto(
         cls, conn, name, org_id, resource_actions
     ):
-        Message = _Role.SetRoleV2
+        Message = RoleV2_pb2.SetRoleV2
         msg = cls._create_msg(name, org_id, resource_actions)
 
         response = conn.make_proto_request(
@@ -34,7 +34,7 @@ class Role(object):
 
     @classmethod
     def _create_msg(cls, name, org_id, resource_actions):
-        Message = _Role.RoleV2
+        Message = RoleV2_pb2.RoleV2
         msg = Message(name=name, org_id=org_id,
                       resource_actions = resource_actions)
         return msg
@@ -44,7 +44,7 @@ class Role(object):
         Deletes this role.
 
         """
-        Message = _Role.DeleteRoleV2
-        endpoint = "/api/v2/uac-proxy/organization/{}/role/{}".format(self.org_id, self.id)
+        Message = RoleV2_pb2.DeleteRoleV2
+        endpoint = f"/api/v2/uac-proxy/organization/{self.org_id}/role/{self.id}"
         response = self.conn.make_proto_request("DELETE", endpoint)
         self.conn.must_proto_response(response, Message.Response)

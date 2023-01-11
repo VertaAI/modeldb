@@ -1762,8 +1762,8 @@ class Client(object):
         super_user_role_id = next(iter(set(role.id for role in org.get_roles() if role.name == "Super User")))
         custom_role_id: str = org.create_role(workspace_name + "role", resource_action_groups)
         return Workspace._create_proto(
-            self._conn, workspace_name, org_id, [_Workspace.Permission(group_id = admins_group_id,
+            self._conn, workspace_name, org_id, [WorkspaceV2_pb2.Permission(group_id = admins_group_id,
                                                                        role_id = super_user_role_id),
-                                                 _Workspace.Permission(group_id = all_users_group_id,
+                                                 WorkspaceV2_pb2.Permission(group_id = all_users_group_id,
                                                                        role_id = custom_role_id)])
 
