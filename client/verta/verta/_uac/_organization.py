@@ -1,6 +1,6 @@
 from ._role import Role
-from verta._protos.public.uac import GroupV2_pb2 as _Group
-from verta._protos.public.uac import RoleV2_pb2 as _Role
+from verta._protos.public.uac import GroupV2_pb2
+from verta._protos.public.uac import RoleV2_pb2
 class OrganizationV2:
     def __init__(self, conn, org_id):
         self.conn = conn
