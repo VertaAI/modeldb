@@ -799,17 +799,17 @@ func RegisterGroupServiceHandlerClient(ctx context.Context, mux *runtime.ServeMu
 }
 
 var (
-	pattern_GroupService_GetGroupById_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "organization", "org_id", "groups", "group_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GroupService_GetGroupById_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v2", "organization", "org_id", "groups", "group_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GroupService_SearchGroups_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "organization", "org_id", "groups"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GroupService_SearchGroups_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v2", "organization", "org_id", "groups"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GroupService_SetGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v1", "organization", "group.org_id", "groups"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GroupService_SetGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3}, []string{"v2", "organization", "group.org_id", "groups"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GroupService_DeleteGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v1", "organization", "org_id", "groups", "group_id"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GroupService_DeleteGroup_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4}, []string{"v2", "organization", "org_id", "groups", "group_id"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GroupService_AddUsers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "organization", "org_id", "groups", "group_id", "users"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GroupService_AddUsers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v2", "organization", "org_id", "groups", "group_id", "users"}, "", runtime.AssumeColonVerbOpt(true)))
 
-	pattern_GroupService_RemoveUsers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v1", "organization", "org_id", "groups", "group_id", "removeUsers"}, "", runtime.AssumeColonVerbOpt(true)))
+	pattern_GroupService_RemoveUsers_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 1, 0, 4, 1, 5, 2, 2, 3, 1, 0, 4, 1, 5, 4, 2, 5}, []string{"v2", "organization", "org_id", "groups", "group_id", "removeUsers"}, "", runtime.AssumeColonVerbOpt(true)))
 )
 
 var (
