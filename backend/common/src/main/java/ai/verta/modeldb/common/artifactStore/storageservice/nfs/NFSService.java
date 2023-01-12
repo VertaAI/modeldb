@@ -1,5 +1,7 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.nfs;
 
+import static org.springframework.util.FileCopyUtils.copy;
+
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
@@ -15,14 +17,11 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import javax.servlet.http.HttpServletRequest;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.StringUtils;
-
-import static org.springframework.util.FileCopyUtils.copy;
 
 public class NFSService implements ArtifactStoreService {
 
@@ -69,8 +68,7 @@ public class NFSService implements ArtifactStoreService {
    * @return {@link String} : upload filename
    * @throws ModelDBException ModelDBException
    */
-  String storeFile(
-      String artifactPath, InputStream uploadedFileInputStream)
+  String storeFile(String artifactPath, InputStream uploadedFileInputStream)
       throws ModelDBException {
     LOGGER.trace("NFSService - storeFile called");
 
