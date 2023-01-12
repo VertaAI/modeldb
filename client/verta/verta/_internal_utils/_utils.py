@@ -266,9 +266,9 @@ class Connection(object):
         )
         response = self.must_proto_response(response, Workspace_pb2.Workspaces)
 
-        workspace_names = map(lambda workspace: "{}:{}".format(workspace.org_id, workspace.org_name), response.workspace)
-        workspace_names = filter(None, workspace_names)
-        return list(workspace_names)
+        org_names = map(lambda workspace: workspace.org_name, response.workspace)
+        org_names = filter(None, org_names)
+        return list(org_names)
 
     def _get_organization_id(self):
         response = self.make_proto_request(
@@ -316,7 +316,7 @@ class Connection(object):
         )
 
         workspace = self.must_proto_response(response, Workspace_pb2.Workspace)
-        return "{}:{}".format(workspace.org_id, workspace.org_name)
+        return workspace.username or workspace.org_name
 
     def get_personal_workspace(self):
         email = self.auth.get("Grpc-Metadata-email")
