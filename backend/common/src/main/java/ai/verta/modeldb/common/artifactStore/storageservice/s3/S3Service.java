@@ -23,7 +23,6 @@ import com.amazonaws.services.s3.model.S3Object;
 import com.amazonaws.services.s3.model.S3ObjectInputStream;
 import com.amazonaws.services.s3.model.UploadPartRequest;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
-import com.google.api.client.http.HttpStatusCodes;
 import com.google.rpc.Code;
 import java.io.IOException;
 import java.io.InputStream;
@@ -168,7 +167,7 @@ public class S3Service implements ArtifactStoreService {
           client.getClient().completeMultipartUpload(completeMultipartUploadRequest);
       LOGGER.info("upload result: {}", result);
     } catch (AmazonS3Exception e) {
-      if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_BAD_REQUEST) {
+      if (e.getStatusCode() == 400) {
         LOGGER.info("message: {} additional details: {}", e.getMessage(), e.getAdditionalDetails());
         throw new ModelDBException(e.getErrorMessage(), Code.FAILED_PRECONDITION);
       }

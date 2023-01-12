@@ -5,7 +5,6 @@ import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.amazonaws.services.s3.model.PartETag;
-import com.google.api.client.util.IOUtils;
 import com.google.rpc.Code;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -22,6 +21,8 @@ import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.util.StringUtils;
+
+import static org.springframework.util.FileCopyUtils.copy;
 
 public class NFSService implements ArtifactStoreService {
 
@@ -69,7 +70,7 @@ public class NFSService implements ArtifactStoreService {
    * @throws ModelDBException ModelDBException
    */
   String storeFile(
-      String artifactPath, InputStream uploadedFileInputStream, HttpServletRequest request)
+      String artifactPath, InputStream uploadedFileInputStream)
       throws ModelDBException {
     LOGGER.trace("NFSService - storeFile called");
 
@@ -106,7 +107,7 @@ public class NFSService implements ArtifactStoreService {
       }
       LOGGER.trace("NFSService - storeFile -  file found : {}", foldersExists.getAbsolutePath());
       var fileOutputStream = new FileOutputStream(destinationFile);
-      IOUtils.copy(uploadedFileInputStream, fileOutputStream);
+      copy(uploadedFileInputStream, fileOutputStream);
       fileOutputStream.close();
       uploadedFileInputStream.close();
       LOGGER.trace(
