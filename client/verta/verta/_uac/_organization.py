@@ -14,7 +14,7 @@ class OrganizationV2:
 
     def get_roles(self):
         response_roles = self.conn.make_proto_request(
-            "GET", f"/api/v2/uac-proxy/organization//{self.org_id}/roles"
+            "GET", f"/api/v2/uac-proxy/organization/{self.org_id}/roles"
         )
         return self.conn.maybe_proto_response(response_roles, RoleV2_pb2.SearchRolesV2.Response).roles
 

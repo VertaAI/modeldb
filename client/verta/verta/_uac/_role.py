@@ -13,7 +13,7 @@ class Role(object):
         self.msg = msg
         self.id = msg.id
         self.org_id = msg.org_id
-        self.name = "{}:{}".format(msg.org_id, msg.name)
+        self.name = msg.name
 
     @classmethod
     def _create_proto(
