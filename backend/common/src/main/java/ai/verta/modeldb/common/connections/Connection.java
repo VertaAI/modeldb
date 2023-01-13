@@ -52,22 +52,25 @@ public abstract class Connection {
 
   // DO NOT use outside of tests as this causes nasty grpc error messages
   public static Context inplaceSetContextCredentials(ServiceUserConfig config) {
-    final var authHeaders = new Metadata();
+    // Force using the ROOT context so that we must lose any context of the current execution
+    return Context.ROOT.withValue(MetadataForwarder.METADATA_INFO, getServiceUserMetadata(config)).attach();
+  }
+
+  protected Optional<ClientInterceptor> getTracingClientInterceptor() {
+    return tracingClientInterceptor;
+  }
+
+  protected static Metadata getServiceUserMetadata(ServiceUserConfig config) {
+    var requestHeaders = new Metadata();
     var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
     var devKey = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
     var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
     var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-    authHeaders.put(emailKey, config.getEmail());
-    authHeaders.put(devKey, config.getDevKey());
-    authHeaders.put(devKeyHyphen, config.getDevKey());
-    authHeaders.put(sourceKey, "PythonClient");
-
-    // Force using the ROOT context so that we must lose any context of the current execution
-    return Context.ROOT.withValue(MetadataForwarder.METADATA_INFO, authHeaders).attach();
-  }
-
-  protected Optional<ClientInterceptor> getTracingClientInterceptor() {
-    return tracingClientInterceptor;
+    requestHeaders.put(emailKey, config.getEmail());
+    requestHeaders.put(devKey, config.getDevKey());
+    requestHeaders.put(devKeyHyphen, config.getDevKey());
+    requestHeaders.put(sourceKey, "PythonClient");
+    return requestHeaders;
   }
 }
