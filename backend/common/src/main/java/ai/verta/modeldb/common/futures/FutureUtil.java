@@ -22,9 +22,11 @@ public final class FutureUtil {
   // Callback for a ListenableFuture to satisfy a promise
   static class Callback<T> implements FutureCallback<T> {
     final CompletableFuture<T> promise;
+    final Exception callSiteHolder;
 
     Callback(CompletableFuture<T> promise) {
       this.promise = promise;
+      this.callSiteHolder = new Exception("call site:");
     }
 
     @Override
@@ -34,6 +36,7 @@ public final class FutureUtil {
 
     @Override
     public void onFailure(@NonNull Throwable t) {
+      t.addSuppressed(callSiteHolder);
       promise.completeExceptionally(t);
     }
   }

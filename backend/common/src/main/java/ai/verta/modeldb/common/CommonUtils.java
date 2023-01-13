@@ -163,7 +163,7 @@ public class CommonUtils {
                 .build();
       } else {
         LOGGER.error(
-            "Stacktrace with {} elements for {} {}", stack.length, e.getClass(), e.getMessage());
+            "Stacktrace with {} elements for {}: {}", stack.length, e.getClass(), e.getMessage());
         status =
             Status.newBuilder()
                 .setCode(Code.INTERNAL_VALUE)

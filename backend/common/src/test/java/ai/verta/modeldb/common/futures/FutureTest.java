@@ -19,6 +19,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+
+import lombok.extern.log4j.Log4j2;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,6 +28,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+@Log4j2
 class FutureTest {
   @RegisterExtension
   static final OpenTelemetryExtension otelTesting = OpenTelemetryExtension.create();
@@ -71,7 +74,7 @@ class FutureTest {
                   return Future.failedStage(new RuntimeException("broken"));
                 });
 
-    assertThatThrownBy(testFuture::get).isInstanceOf(RuntimeException.class).hasMessage("borken");
+    assertThatThrownBy(testFuture::blockAndGet).isInstanceOf(RuntimeException.class).hasMessage("borken");
   }
 
   @Test
@@ -84,7 +87,7 @@ class FutureTest {
               return null;
             });
     Future<String> result = testFuture.thenSupply(() -> Future.of("cheese"));
-    assertThat(result.get()).isEqualTo("cheese");
+    assertThat(result.blockAndGet()).isEqualTo("cheese");
     assertThat(firstWasCalled).isTrue();
   }
 
@@ -104,7 +107,7 @@ class FutureTest {
                       secondWasCalled.set(true);
                       return "cheese";
                     }));
-    assertThatThrownBy(result::get)
+    assertThatThrownBy(result::blockAndGet)
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("failed");
     assertThat(secondWasCalled).isFalse();
@@ -121,7 +124,7 @@ class FutureTest {
                           // retry checker throws an exception....
                           throw new RuntimeException("uh oh!");
                         })
-                    .get())
+                    .blockAndGet())
         .isInstanceOf(ExecutionException.class)
         .hasRootCauseInstanceOf(RuntimeException.class)
         .hasRootCauseMessage("uh oh!");
@@ -141,7 +144,7 @@ class FutureTest {
                       return Future.of("success!");
                     },
                     throwable -> true)
-                .get())
+                .blockAndGet())
         .isEqualTo("success!");
   }
 
@@ -160,7 +163,7 @@ class FutureTest {
                           return Future.of("success!");
                         },
                         RetryStrategy.backoff((x, throwable) -> true, maxRetries))
-                    .get())
+                    .blockAndGet())
         .isInstanceOf(NullPointerException.class);
     assertThat(sequencer).hasValue(6);
   }
@@ -177,7 +180,7 @@ class FutureTest {
               return Future.of("success!");
             },
             RetryStrategy.backoff((x, throwable) -> throwable instanceof NullPointerException, 10))
-        .get();
+        .blockAndGet();
     assertThat(sequencer).hasValue(6);
   }
 
@@ -193,7 +196,7 @@ class FutureTest {
               return Future.of("success!");
             },
             RetryStrategy.backoff((value, t) -> value.equals("nope"), 10))
-        .get();
+        .blockAndGet();
     assertThat(sequencer).hasValue(6);
   }
 
@@ -204,43 +207,43 @@ class FutureTest {
             () ->
                 Future.sequence(
                         List.of(Future.of("one"), Future.failedStage(new IOException("io failed"))))
-                    .get())
+                    .blockAndGet())
         .isInstanceOf(IOException.class)
         .hasMessage("io failed");
   }
 
   @Test
   void sequence() throws Exception {
-    assertThat(Future.sequence(List.of(Future.of("one"), Future.of("two"))).get())
+    assertThat(Future.sequence(List.of(Future.of("one"), Future.of("two"))).blockAndGet())
         .containsExactly("one", "two");
   }
 
   @Test
   void thenCombine() throws Exception {
-    assertThat(Future.of("one").thenCombine(Future.of("two"), (s, s2) -> s + s2).get())
+    assertThat(Future.of("one").thenCombine(Future.of("two"), (s, s2) -> s + s2).blockAndGet())
         .isEqualTo("onetwo");
   }
 
   @Test
   void thenAccept() throws Exception {
     AtomicReference<String> seenValue = new AtomicReference<>();
-    Future.of("one").thenAccept(seenValue::set).get();
+    Future.of("one").thenAccept(seenValue::set).blockAndGet();
     assertThat(seenValue).hasValue("one");
   }
 
   @Test
   void thenRun() throws Exception {
     AtomicBoolean runnableCalled = new AtomicBoolean();
-    Future.of("one").thenRun(() -> runnableCalled.set(true)).get();
+    Future.of("one").thenRun(() -> runnableCalled.set(true)).blockAndGet();
     assertThat(runnableCalled).isTrue();
   }
 
   @Test
   void flipOptional() throws Exception {
-    final var res1 = Future.flipOptional(Optional.of(Future.of("123"))).get();
+    final var res1 = Future.flipOptional(Optional.of(Future.of("123"))).blockAndGet();
     assertThat(res1).isPresent().hasValue("123");
 
-    final var res2 = Future.flipOptional(Optional.empty()).get();
+    final var res2 = Future.flipOptional(Optional.empty()).blockAndGet();
     assertThat(res2).isEmpty();
   }
 
@@ -256,7 +259,7 @@ class FutureTest {
                   return Future.of(123);
                 })
             .recover(t -> 456)
-            .get();
+            .blockAndGet();
 
     assertThat(value).isEqualTo(456);
   }
@@ -290,7 +293,7 @@ class FutureTest {
                         return "two";
                       }))
           .thenRun(() -> tracer.spanBuilder("three").startSpan().end())
-          .get();
+          .blockAndGet();
     } finally {
       outside.end();
     }
@@ -346,7 +349,7 @@ class FutureTest {
                           return Future.of(key.get());
                         });
                   });
-          assertThat(future2.get()).isEqualTo("2");
+          assertThat(future2.blockAndGet()).isEqualTo("2");
           return null;
         });
   }
@@ -354,15 +357,23 @@ class FutureTest {
   @Test
   void fromListenableFuture() throws Exception {
     ListenableFuture<String> a = Futures.immediateFuture("cheese");
-    assertThat(Future.fromListenableFuture(a).get()).isEqualTo("cheese");
+    assertThat(Future.fromListenableFuture(a).blockAndGet()).isEqualTo("cheese");
 
     ListenableFuture<String> b =
         Futures.submit(() -> "lemonade", Executors.newSingleThreadExecutor());
-    assertThat(Future.fromListenableFuture(b).get()).isEqualTo("lemonade");
+    assertThat(Future.fromListenableFuture(b).blockAndGet()).isEqualTo("lemonade");
 
     ListenableFuture<String> c = Futures.immediateFailedFuture(new RuntimeException("oh no"));
-    assertThatThrownBy(() -> Future.fromListenableFuture(c).get())
+    assertThatThrownBy(() -> {
+        try {
+            Future.fromListenableFuture(c).blockAndGet();
+        } catch (Exception e) {
+            log.error("failed", e);
+            throw e;
+        }
+    })
         .isInstanceOf(RuntimeException.class)
-        .hasMessage("oh no");
+        .hasMessage("oh no")
+        .satisfies(throwable -> assertThat(throwable.getSuppressed()).hasSize(1));
   }
 }
