@@ -12,11 +12,13 @@ public class ModelDBException extends RuntimeException {
 
   private final Code code;
 
+  @Deprecated(forRemoval = true)
   public ModelDBException() {
     super();
     code = Code.INTERNAL;
   }
 
+  @Deprecated(forRemoval = true)
   public ModelDBException(String message) {
     super(message);
     code = Code.INTERNAL;
@@ -27,21 +29,25 @@ public class ModelDBException extends RuntimeException {
     code = Code.INTERNAL;
   }
 
+  @Deprecated(forRemoval = true)
   public ModelDBException(Throwable cause) {
     super(cause);
     code = Code.INTERNAL;
   }
 
+  @Deprecated(forRemoval = true)
   public ModelDBException(String message, Code code) {
     super(message);
     this.code = code;
   }
 
+  @Deprecated(forRemoval = true)
   public ModelDBException(String message, com.google.rpc.Code code, Throwable cause) {
     super(message, cause);
     this.code = Code.valueOf(code.name());
   }
 
+  @Deprecated(forRemoval = true)
   public ModelDBException(String message, com.google.rpc.Code code) {
     super(message);
     this.code = Code.valueOf(code.name());
