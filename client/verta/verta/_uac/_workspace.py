@@ -28,7 +28,7 @@ class Workspace(object):
         )
         workspace = conn.must_proto_response(response, Message.Response).workspace
 
-        print("created new Workspace : {}".format(workspace.name))
+        print(f"created new Workspace : {workspace.name}")
         return cls(conn, workspace)
 
     @classmethod
