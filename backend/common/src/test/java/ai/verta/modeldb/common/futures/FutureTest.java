@@ -365,8 +365,7 @@ class FutureTest {
     assertThat(Future.fromListenableFuture(b).blockAndGet()).isEqualTo("lemonade");
 
     ListenableFuture<String> c = Futures.immediateFailedFuture(new RuntimeException("oh no"));
-    assertThatThrownBy(
-            () -> Future.fromListenableFuture(c).blockAndGet())
+    assertThatThrownBy(() -> Future.fromListenableFuture(c).blockAndGet())
         .isInstanceOf(RuntimeException.class)
         .hasMessage("oh no")
         .satisfies(
