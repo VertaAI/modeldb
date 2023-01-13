@@ -15,7 +15,7 @@ class Workspace(object):
         self.name = msg.name
 
     @classmethod
-    def _create_proto(
+    def _create(
         cls, conn, name, org_id, permissions
     ):
         Message = WorkspaceV2_pb2.SetWorkspaceV2
