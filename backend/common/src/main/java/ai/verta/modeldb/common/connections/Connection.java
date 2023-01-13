@@ -53,7 +53,9 @@ public abstract class Connection {
   // DO NOT use outside of tests as this causes nasty grpc error messages
   public static Context inplaceSetContextCredentials(ServiceUserConfig config) {
     // Force using the ROOT context so that we must lose any context of the current execution
-    return Context.ROOT.withValue(MetadataForwarder.METADATA_INFO, getServiceUserMetadata(config)).attach();
+    return Context.ROOT
+        .withValue(MetadataForwarder.METADATA_INFO, getServiceUserMetadata(config))
+        .attach();
   }
 
   protected Optional<ClientInterceptor> getTracingClientInterceptor() {

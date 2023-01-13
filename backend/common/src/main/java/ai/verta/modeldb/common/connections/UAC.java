@@ -4,7 +4,6 @@ import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.config.Config;
-import ai.verta.modeldb.common.config.ServiceUserConfig;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import ai.verta.uac.*;
 import io.grpc.*;
@@ -85,7 +84,8 @@ public class UAC extends Connection {
     serviceAccountCollaboratorServiceFutureStub =
         CollaboratorServiceGrpc.newFutureStub(authServiceChannel)
             .withInterceptors(
-                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config.getService_user())));
+                MetadataUtils.newAttachHeadersInterceptor(
+                    getServiceUserMetadata(config.getService_user())));
     uacServiceFutureStub = UACServiceGrpc.newFutureStub(authServiceChannel);
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
     authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
@@ -93,12 +93,14 @@ public class UAC extends Connection {
     serviceAccountRoleServiceFutureStub =
         RoleServiceGrpc.newFutureStub(authServiceChannel)
             .withInterceptors(
-                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config.getService_user())));
+                MetadataUtils.newAttachHeadersInterceptor(
+                    getServiceUserMetadata(config.getService_user())));
     organizationServiceFutureStub = OrganizationServiceGrpc.newFutureStub(authServiceChannel);
     eventServiceFutureStub =
         EventServiceGrpc.newFutureStub(authServiceChannel)
             .withInterceptors(
-                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config.getService_user())));
+                MetadataUtils.newAttachHeadersInterceptor(
+                    getServiceUserMetadata(config.getService_user())));
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
