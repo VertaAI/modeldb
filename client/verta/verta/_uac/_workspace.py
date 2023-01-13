@@ -44,6 +44,6 @@ class Workspace(object):
 
         """
         Message = WorkspaceV2_pb2.DeleteWorkspaceV2
-        endpoint = "/api/v2/uac-proxy/organization/{}/workspace/{}".format(self.org_id, self.id)
+        endpoint = f"/api/v2/uac-proxy/organization/{self.org_id}/workspace/{self.id}"
         response = self.conn.make_proto_request("DELETE", endpoint)
         self.conn.must_proto_response(response, Message.Response)
