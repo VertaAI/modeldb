@@ -8,7 +8,7 @@ class OrganizationV2:
 
     def get_groups(self):
         response_groups = self.conn.make_proto_request(
-            "GET", f"/api/v1/uac-proxy/organization/{self.org_id}/groups"
+            "GET", f"/api/v2/uac-proxy/organization/{self.org_id}/groups"
         )
         return self.conn.maybe_proto_response(response_groups, GroupV2_pb2.SearchGroups.Response).groups
 

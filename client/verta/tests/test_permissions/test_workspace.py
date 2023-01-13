@@ -69,7 +69,7 @@ class TestClientGetWorkspace:
     """Order of precedence for `client.get_workspace()`."""
 
     def test_client_get_workspace(
-            self, create_client, created_entities, in_tempdir, workspace
+            self, create_client, created_entities, in_tempdir, workspace, workspace2, workspace3
     ):
         client = create_client()
 
@@ -77,8 +77,8 @@ class TestClientGetWorkspace:
             client._conn.get_default_workspace()
         )  # TODO: first change default workspace
         CONFIG_WORKSPACE = workspace.name
-        CLIENT_WORKSPACE = workspace.name
-        PARAM_WORKSPACE = workspace.name
+        CLIENT_WORKSPACE = workspace2.name
+        PARAM_WORKSPACE = workspace3.name
 
         # default workspace
         dataset = client.create_dataset()
