@@ -19,7 +19,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
 import lombok.extern.log4j.Log4j2;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.AfterEach;
@@ -74,7 +73,9 @@ class FutureTest {
                   return Future.failedStage(new RuntimeException("broken"));
                 });
 
-    assertThatThrownBy(testFuture::blockAndGet).isInstanceOf(RuntimeException.class).hasMessage("borken");
+    assertThatThrownBy(testFuture::blockAndGet)
+        .isInstanceOf(RuntimeException.class)
+        .hasMessage("borken");
   }
 
   @Test
@@ -364,16 +365,13 @@ class FutureTest {
     assertThat(Future.fromListenableFuture(b).blockAndGet()).isEqualTo("lemonade");
 
     ListenableFuture<String> c = Futures.immediateFailedFuture(new RuntimeException("oh no"));
-    assertThatThrownBy(() -> {
-        try {
-            Future.fromListenableFuture(c).blockAndGet();
-        } catch (Exception e) {
-            log.error("failed", e);
-            throw e;
-        }
-    })
+    assertThatThrownBy(() -> Future.fromListenableFuture(c).blockAndGet())
         .isInstanceOf(RuntimeException.class)
         .hasMessage("oh no")
-        .satisfies(throwable -> assertThat(throwable.getSuppressed()).hasSize(1));
+        .satisfies(
+            throwable -> {
+              Throwable[] suppressed = throwable.getSuppressed();
+              assertThat(suppressed).hasSize(1).allMatch(t -> t.getMessage().contains("call site"));
+            });
   }
 }
