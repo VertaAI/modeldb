@@ -23,7 +23,7 @@ class Workspace(object):
 
         response = conn.make_proto_request(
             "POST",
-            "/api/v2/uac-proxy/organization/{}/workspaces".format(org_id),
+            f"/api/v2/uac-proxy/organization/{org_id}/workspaces",
             body=Message(workspace=msg),
         )
         workspace = conn.must_proto_response(response, Message.Response).workspace
