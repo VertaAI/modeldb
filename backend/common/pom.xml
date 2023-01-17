@@ -138,6 +138,11 @@
             <artifactId>opentelemetry-jdbc</artifactId>
             <version>${otel.instrumentation.version}</version>
         </dependency>
+        <dependency>
+            <groupId>io.opentelemetry.contrib</groupId>
+            <artifactId>opentelemetry-prometheus-client-bridge</artifactId>
+            <version>${otel.instrumentation.version}</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/org.apache.logging.log4j/log4j-slf4j-impl -->
         <dependency>
