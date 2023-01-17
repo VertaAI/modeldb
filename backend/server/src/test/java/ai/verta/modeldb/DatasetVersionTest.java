@@ -52,15 +52,16 @@ public class DatasetVersionTest extends ModeldbTestSetup {
   private static final Logger LOGGER = LogManager.getLogger(DatasetVersionTest.class);
 
   // Dataset Entities
-  private static Dataset dataset;
+  private Dataset dataset;
 
-  private static DatasetVersion datasetVersion1;
-  private static DatasetVersion datasetVersion2;
-  private static DatasetVersion datasetVersion3;
-  private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
+  private DatasetVersion datasetVersion1;
+  private DatasetVersion datasetVersion2;
+  private DatasetVersion datasetVersion3;
+  private final Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
     super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -74,7 +75,8 @@ public class DatasetVersionTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     for (String datasetVersionId : datasetVersionMap.keySet()) {
       DeleteDatasetVersion deleteDatasetVersion =
           DeleteDatasetVersion.newBuilder().setId(datasetVersionId).build();
@@ -95,7 +97,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
     datasetVersion1 = null;
     datasetVersion2 = null;
     datasetVersion3 = null;
-    datasetVersionMap = new HashMap<>();
+    datasetVersionMap.clear();
 
     cleanUpResources();
     super.tearDown();

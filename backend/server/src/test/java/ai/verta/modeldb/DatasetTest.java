@@ -18,7 +18,6 @@ import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddGroupUsers;
-import ai.verta.uac.DeleteWorkspaceV2;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GroupServiceGrpc;
@@ -26,7 +25,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.ResourceTypeV2;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Workspace;
-import ai.verta.uac.WorkspaceServiceV2Grpc;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -600,12 +598,12 @@ public class DatasetTest extends ModeldbTestSetup {
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     var workspaceNameUser2 = testUser2.getVertaInfo().getUsername();
     if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
-      var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+      /*var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
       workspaceStub.deleteWorkspace(
           DeleteWorkspaceV2.newBuilder()
               .setOrgId(organizationId)
               .setWorkspaceId(testUser2Workspace.getId())
-              .build());
+              .build());*/
       var groupIdUser1 =
           createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
       var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);

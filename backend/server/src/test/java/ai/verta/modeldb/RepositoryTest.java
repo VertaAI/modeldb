@@ -33,11 +33,13 @@ import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.AddGroupUsers;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetUsersFuzzy;
+import ai.verta.uac.GroupServiceGrpc;
 import ai.verta.uac.IsSelfAllowed;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
@@ -71,13 +73,14 @@ public class RepositoryTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(RepositoryTest.class);
 
-  private static Repository repository;
-  private static Repository repository2;
-  private static Repository repository3;
-  private static Map<Long, Repository> repositoryMap;
+  private Repository repository;
+  private Repository repository2;
+  private Repository repository3;
+  private Map<Long, Repository> repositoryMap;
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
     super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -90,7 +93,8 @@ public class RepositoryTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     for (Repository repo : new Repository[] {repository, repository2, repository3}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -104,7 +108,8 @@ public class RepositoryTest extends ModeldbTestSetup {
     repository = null;
     repository2 = null;
     repository3 = null;
-    repositoryMap = new HashMap<>();
+    repositoryMap.clear();
+    cleanUpResources();
     super.tearDown();
   }
 
@@ -1249,10 +1254,20 @@ public class RepositoryTest extends ModeldbTestSetup {
       return;
     }
 
+    var workspaceName = testUser2.getVertaInfo().getUsername();
     if (isRunningIsolated()) {
       when(uac.getUACService().getCurrentUser(any()))
           .thenReturn(Futures.immediateFuture(testUser2));
       mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser2);
+    } else if (testConfig.isPermissionV2Enabled()) {
+      var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+      groupStub.addUsers(
+          AddGroupUsers.newBuilder()
+              .addUserId(testUser2.getVertaInfo().getUserId())
+              .setGroupId(groupIdUser1)
+              .setOrgId(organizationId)
+              .build());
+      workspaceName = getWorkspaceNameUser1();
     } else {
       AddCollaboratorRequest addCollaboratorRequest =
           AddCollaboratorRequest.newBuilder()
@@ -1270,9 +1285,7 @@ public class RepositoryTest extends ModeldbTestSetup {
     }
 
     FindRepositories findRepositoriesRequest =
-        FindRepositories.newBuilder()
-            .setWorkspaceName(testUser2.getVertaInfo().getUsername())
-            .build();
+        FindRepositories.newBuilder().setWorkspaceName(workspaceName).build();
     FindRepositories.Response findRepositoriesResponse =
         versioningServiceBlockingStubClient2.findRepositories(findRepositoriesRequest);
     LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
