@@ -31,8 +31,9 @@
         <aws.version>1.12.302</aws.version>
         <jackson.version>2.14.0</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
-        <otel.core.version>1.21.0</otel.core.version>
-        <otel.instrumentation.version>1.21.0-alpha</otel.instrumentation.version>
+        <otel.core.version>1.22.0</otel.core.version>
+        <otel.instrumentation.version>1.22.0-alpha</otel.instrumentation.version>
+        <otel.contrib.version>1.22.0-alpha</otel.contrib.version>
         <springframework.version>5.3.23</springframework.version>
         <lombok.version>1.18.24</lombok.version>
 
