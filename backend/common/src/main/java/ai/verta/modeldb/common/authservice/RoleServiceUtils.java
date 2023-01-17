@@ -23,11 +23,11 @@ import org.apache.logging.log4j.Logger;
 public class RoleServiceUtils implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
   protected final UAC uac;
-  protected AuthService authService;
+  protected UACApisUtil uacApisUtil;
   private final Integer timeout;
 
-  public RoleServiceUtils(AuthService authService, Integer timeout, UAC uac) {
-    this.authService = authService;
+  public RoleServiceUtils(UACApisUtil uacApisUtil, Integer timeout, UAC uac) {
+    this.uacApisUtil = uacApisUtil;
     this.timeout = timeout;
     this.uac = uac;
   }
@@ -361,10 +361,10 @@ public class RoleServiceUtils implements RoleService {
               }
             }
             Organization org = (Organization) getOrgById(workspaceId);
-            collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
+            collaboratorUser = new CollaboratorUser(uacApisUtil, org.getOwnerId());
             break;
           case USER:
-            collaboratorUser = new CollaboratorUser(authService, workspaceId);
+            collaboratorUser = new CollaboratorUser(uacApisUtil, workspaceId);
             break;
           default:
             return workspaceRoleBindingList;
@@ -388,7 +388,7 @@ public class RoleServiceUtils implements RoleService {
   public String buildRoleBindingName(
       String roleName, String resourceId, String userId, String resourceTypeName) {
     return buildRoleBindingName(
-        roleName, resourceId, new CollaboratorUser(authService, userId), resourceTypeName);
+        roleName, resourceId, new CollaboratorUser(uacApisUtil, userId), resourceTypeName);
   }
 
   @Override

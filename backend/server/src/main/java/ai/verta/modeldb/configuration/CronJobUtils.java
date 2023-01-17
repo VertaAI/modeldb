@@ -33,9 +33,7 @@ public class CronJobUtils {
             && (mdbConfig.hasServiceAccount() || !services.getMdbRoleService().IsImplemented())) {
           task =
               new DeleteEntitiesCron(
-                  services.getAuthService(),
-                  services.getMdbRoleService(),
-                  cronJob.getValue().getRecord_update_limit());
+                  services.getMdbRoleService(), cronJob.getValue().getRecord_update_limit());
         } else if (cronJob.getKey().equals(ModelDBConstants.UPDATE_RUN_ENVIRONMENTS)
             && services.getArtifactStoreService() != null
             && !(services.getArtifactStoreService() instanceof ArtifactStoreDAODisabled)) {

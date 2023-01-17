@@ -5,7 +5,7 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -54,7 +54,7 @@ public class FindRepositoriesQuery {
         LogManager.getLogger(FindRepositoriesHQLQueryBuilder.class);
 
     final Session session;
-    final AuthService authService;
+    final UACApisUtil uacApisUtil;
     final MDBRoleService mdbRoleService;
     String countQueryString;
     Map<String, Object> parametersMap = new HashMap<>();
@@ -66,9 +66,9 @@ public class FindRepositoriesQuery {
     private Integer pageLimit = 0;
 
     public FindRepositoriesHQLQueryBuilder(
-        Session session, AuthService authService, MDBRoleService mdbRoleService) {
+        Session session, UACApisUtil uacApisUtil, MDBRoleService mdbRoleService) {
       this.session = session;
-      this.authService = authService;
+      this.uacApisUtil = uacApisUtil;
       this.mdbRoleService = mdbRoleService;
     }
 
@@ -258,9 +258,15 @@ public class FindRepositoriesQuery {
       List<UserInfo> userInfoList;
       if (operator.equals(OperatorEnum.Operator.CONTAIN)
           || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-        var userInfoPaginationDTO =
-            authService.getFuzzyUserInfoList(keyValueQuery.getValue().getStringValue());
-        userInfoList = userInfoPaginationDTO.getUserInfoList();
+        try {
+          var userInfoPaginationDTO =
+              uacApisUtil
+                  .getFuzzyUserInfoList(keyValueQuery.getValue().getStringValue())
+                  .blockAndGet();
+          userInfoList = userInfoPaginationDTO.getUserInfoList();
+        } catch (Exception e) {
+          throw new ModelDBException(e);
+        }
       } else {
         var ownerIdsArrString = keyValueQuery.getValue().getStringValue();
         List<String> ownerIds = new ArrayList<>();
@@ -269,16 +275,25 @@ public class FindRepositoriesQuery {
         } else {
           ownerIds.add(ownerIdsArrString);
         }
-        Map<String, UserInfo> userInfoMap =
-            authService.getUserInfoFromAuthServer(
-                new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList(), false);
-        userInfoList = new ArrayList<>(userInfoMap.values());
+        try {
+          var userInfoMap =
+              uacApisUtil
+                  .getUserInfoFromAuthServer(
+                      new HashSet<>(ownerIds),
+                      Collections.emptySet(),
+                      Collections.emptyList(),
+                      false)
+                  .blockAndGet();
+          userInfoList = new ArrayList<>(userInfoMap.values());
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
       }
 
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Set<String> repositoryIdSet =
             RdbmsUtils.getResourceIdsFromUserWorkspaces(
-                authService,
+                uacApisUtil,
                 mdbRoleService,
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
                 userInfoList);

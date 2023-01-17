@@ -19,16 +19,22 @@ import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
+import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
 import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.RoleServiceUtils;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.futures.*;
+import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.FutureJdbi;
+import ai.verta.modeldb.common.futures.FutureUtil;
+import ai.verta.modeldb.common.futures.Handle;
+import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
@@ -43,7 +49,6 @@ import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.Empty;
 import ai.verta.uac.ModelDBActionEnum;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -82,13 +87,18 @@ public class FutureExperimentDAO {
   private final UACApisUtil uacApisUtil;
 
   public FutureExperimentDAO(
-      FutureExecutor executor, FutureJdbi jdbi, UAC uac, MDBConfig mdbConfig, DAOSet daoSet) {
+      FutureExecutor executor,
+      FutureJdbi jdbi,
+      UAC uac,
+      MDBConfig mdbConfig,
+      DAOSet daoSet,
+      ServiceSet serviceSet) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.uac = uac;
     this.isMssql = mdbConfig.getDatabase().getRdbConfiguration().isMssql();
     this.futureProjectDAO = daoSet.getFutureProjectDAO();
-    this.uacApisUtil = daoSet.getUacApisUtil();
+    this.uacApisUtil = serviceSet.getUacApisUtil();
 
     var entityName = "ExperimentEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);

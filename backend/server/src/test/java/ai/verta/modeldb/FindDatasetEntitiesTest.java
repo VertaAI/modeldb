@@ -14,6 +14,7 @@ import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.ResourceVisibility;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -1551,8 +1552,8 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .build();
 
     if (isRunningIsolated()) {
-      when(uacBlockingMock.getUsersFuzzy(any()))
-          .thenReturn(GetUsersFuzzy.Response.newBuilder().build());
+      when(uac.getUACService().getUsersFuzzy(any()))
+          .thenReturn(Futures.immediateFuture(GetUsersFuzzy.Response.newBuilder().build()));
     }
 
     response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);

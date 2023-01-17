@@ -7,7 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -46,7 +46,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       "Unexpected error on repository entity conversion to proto";
   private static final String REPOSITORY_ID_QUERY_PARAM = "repositoryId";
   private static final String BRANCH_QUERY_PARAM = "branch";
-  private final AuthService authService;
+  private final UACApisUtil uacApisUtil;
   private final MDBRoleService mdbRoleService;
   private final CommitDAO commitDAO;
   private final MetadataDAO metadataDAO;
@@ -77,12 +77,12 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       "SELECT repo.id FROM RepositoryEntity repo where repo.name = :name AND repo.deleted = true ";
 
   public RepositoryDAORdbImpl(
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       MDBRoleService mdbRoleService,
       CommitDAO commitDAO,
       MetadataDAO metadataDAO,
       MDBConfig mdbConfig) {
-    this.authService = authService;
+    this.uacApisUtil = uacApisUtil;
     this.mdbRoleService = mdbRoleService;
     this.commitDAO = commitDAO;
     this.metadataDAO = metadataDAO;
@@ -124,7 +124,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       RepositoryEntity repository = getRepositoryById(session, request.getId());
       return GetRepositoryRequest.Response.newBuilder()
           .setRepository(
-              repository.toProto(mdbRoleService, authService, new HashMap<>(), new HashMap<>()))
+              repository.toProto(mdbRoleService, uacApisUtil, new HashMap<>(), new HashMap<>()))
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -274,7 +274,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               RepositoryTypeEnum.REGULAR);
       return SetRepository.Response.newBuilder()
           .setRepository(
-              repository.toProto(mdbRoleService, authService, new HashMap<>(), new HashMap<>()))
+              repository.toProto(mdbRoleService, uacApisUtil, new HashMap<>(), new HashMap<>()))
           .build();
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
@@ -352,7 +352,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               session,
               initCommit,
               FileHasher.getSha(new String()),
-              authService.getVertaIdFromUserInfo(userInfo),
+              uacApisUtil.getVertaIdFromUserInfo(userInfo),
               repositoryEntity);
 
       saveBranch(
@@ -566,7 +566,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             create,
             RepositoryTypeEnum.DATASET);
 
-    return repositoryEntity.toProto(mdbRoleService, authService, new HashMap<>(), new HashMap<>());
+    return repositoryEntity.toProto(mdbRoleService, uacApisUtil, new HashMap<>(), new HashMap<>());
   }
 
   Dataset convertToDataset(
@@ -578,7 +578,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       throws ModelDBException {
 
     var repository =
-        repositoryEntity.toProto(mdbRoleService, authService, cacheWorkspaceMap, getResourcesMap);
+        repositoryEntity.toProto(mdbRoleService, uacApisUtil, cacheWorkspaceMap, getResourcesMap);
     return repositoryToDataset(session, metadataDAO, repository);
   }
 
@@ -638,7 +638,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
       String workspaceName = request.getWorkspaceName();
       if (!workspaceName.isEmpty()
-          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          && workspaceName.equals(uacApisUtil.getUsernameFromUserInfo(currentLoginUserInfo))) {
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             mdbRoleService.getResourceItems(
                 null, Collections.emptySet(), ModelDBServiceResourceTypes.REPOSITORY, false);
@@ -720,7 +720,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       for (RepositoryEntity repositoryEntity : repositoryEntities) {
         repositories.add(
             repositoryEntity.toProto(
-                mdbRoleService, authService, cacheWorkspaceMap, getResourcesMap));
+                mdbRoleService, uacApisUtil, cacheWorkspaceMap, getResourcesMap));
       }
       builder.addAllRepositories(repositories);
 
@@ -1089,13 +1089,13 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   public FindRepositories.Response findRepositories(FindRepositories request)
       throws ModelDBException {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-      var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      var currentLoginUserInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       try {
         Set<String> accessibleResourceIdsWithCollaborator =
             new HashSet<>(
                 mdbRoleService.getAccessibleResourceIds(
                     null,
-                    new CollaboratorUser(authService, currentLoginUserInfo),
+                    new CollaboratorUser(uacApisUtil, currentLoginUserInfo),
                     ModelDBServiceResourceTypes.REPOSITORY,
                     request.getRepoIdsList().stream()
                         .map(String::valueOf)
@@ -1104,7 +1104,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
         String workspaceName = request.getWorkspaceName();
         if (!workspaceName.isEmpty()
-            && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+            && workspaceName.equals(uacApisUtil.getUsernameFromUserInfo(currentLoginUserInfo))) {
           List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
               mdbRoleService.getResourceItems(
                   null,
@@ -1165,7 +1165,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         var findRepositoriesQuery =
             new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
-                    session, authService, mdbRoleService)
+                    session, uacApisUtil, mdbRoleService)
                 .setRepoIds(
                     accessibleResourceIdsWithCollaborator.stream()
                         .map(Long::valueOf)
@@ -1186,7 +1186,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         for (RepositoryEntity repositoryEntity : repositoryEntities) {
           repositories.add(
               repositoryEntity.toProto(
-                  mdbRoleService, authService, cacheWorkspaceMap, getResourcesMap));
+                  mdbRoleService, uacApisUtil, cacheWorkspaceMap, getResourcesMap));
         }
 
         return FindRepositories.Response.newBuilder()
@@ -1210,7 +1210,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       if (ModelDBUtils.needToRetry(ex)) {
         return findRepositories(request);
       } else {
-        throw ex;
+        throw new ModelDBException(ex);
       }
     }
   }
@@ -1300,7 +1300,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       String workspaceName = queryParameters.getWorkspaceName();
       Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
       if (!workspaceName.isEmpty()
-          && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+          && workspaceName.equals(uacApisUtil.getUsernameFromUserInfo(currentLoginUserInfo))) {
         List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
             mdbRoleService.getResourceItems(
                 null,
@@ -1380,7 +1380,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 builder,
                 criteriaQuery,
                 repositoryRoot,
-                authService,
+                uacApisUtil,
                 mdbRoleService,
                 ModelDBServiceResourceTypes.DATASET);
         if (!queryPredicatesList.isEmpty()) {
@@ -1610,7 +1610,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
           convertToDataset(
               session, metadataDAO, repositoryEntity, cacheWorkspaceMap, getResourcesMap),
           repositoryEntity.toProto(
-              mdbRoleService, authService, cacheWorkspaceMap, getResourcesMap));
+              mdbRoleService, uacApisUtil, cacheWorkspaceMap, getResourcesMap));
     } catch (ModelDBException e) {
       LOGGER.warn(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);
       throw new InternalErrorException(UNEXPECTED_ERROR_ON_REPOSITORY_ENTITY_CONVERSION_TO_PROTO);

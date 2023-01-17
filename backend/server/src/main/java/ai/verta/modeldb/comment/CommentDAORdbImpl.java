@@ -3,7 +3,7 @@ package ai.verta.modeldb.comment;
 import ai.verta.modeldb.Comment;
 import ai.verta.modeldb.EntityComment;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.UserCommentEntity;
@@ -22,7 +22,7 @@ public class CommentDAORdbImpl implements CommentDAO {
   private static final Logger LOGGER = LogManager.getLogger(CommentDAORdbImpl.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private final AuthService authService;
+  private final UACApisUtil uacApisUtil;
   // queries
   private static final String GET_ENTITY_COMMENT_QUERY =
       new StringBuilder("From UserCommentEntity c where c.commentEntity.")
@@ -43,8 +43,8 @@ public class CommentDAORdbImpl implements CommentDAO {
   private static final String DELETE_USER_COMMENTS_QUERY =
       new StringBuilder("delete from UserCommentEntity uc where ").append("uc.id = :id").toString();
 
-  public CommentDAORdbImpl(AuthService authService) {
-    this.authService = authService;
+  public CommentDAORdbImpl(UACApisUtil uacApisUtil) {
+    this.uacApisUtil = uacApisUtil;
   }
 
   @Override
@@ -139,7 +139,7 @@ public class CommentDAORdbImpl implements CommentDAO {
       var query = session.createQuery(finalQuery);
       query.setParameter("id", commentId);
       if (userInfo != null) {
-        query.setParameter("vertaId", authService.getVertaIdFromUserInfo(userInfo));
+        query.setParameter("vertaId", uacApisUtil.getVertaIdFromUserInfo(userInfo));
       }
       var transaction = session.beginTransaction();
       query.executeUpdate();

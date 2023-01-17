@@ -9,7 +9,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -57,11 +57,11 @@ public class CommitDAORdbImpl implements CommitDAO {
   private static final String REPO_ID_QUERY_PARAM = "repoId";
   private static final String COMMIT_HASHES_QUERY_PARAM = "commitHashes";
   private static final String REPOSITORY_ID_QUERY_PARAM = "repositoryId";
-  private final AuthService authService;
+  private final UACApisUtil uacApisUtil;
   private final MDBRoleService mdbRoleService;
 
-  public CommitDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
-    this.authService = authService;
+  public CommitDAORdbImpl(UACApisUtil uacApisUtil, MDBRoleService mdbRoleService) {
+    this.uacApisUtil = uacApisUtil;
     this.mdbRoleService = mdbRoleService;
   }
 
@@ -221,7 +221,7 @@ public class CommitDAORdbImpl implements CommitDAO {
                   .setPageLimit(1)
                   .addRepoIds(repositoryEntity.getId())
                   .build(),
-              authService.getCurrentLoginUserInfo(),
+              uacApisUtil.getCurrentLoginUserInfo().blockAndGet(),
               false,
               false,
               true,
@@ -310,7 +310,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         return setCommitFromDatasetVersion(
             datasetVersion, repositoryDAO, blobDAO, metadataDAO, repositoryEntity);
       } else {
-        throw ex;
+        throw new ModelDBException(ex);
       }
     }
   }
@@ -997,7 +997,7 @@ public class CommitDAORdbImpl implements CommitDAO {
         new HashSet<>(
             mdbRoleService.getAccessibleResourceIds(
                 null,
-                new CollaboratorUser(authService, currentLoginUserInfo),
+                new CollaboratorUser(uacApisUtil, currentLoginUserInfo),
                 modelDBServiceResourceTypes,
                 request.getRepoIdsList().stream()
                     .map(String::valueOf)
@@ -1086,11 +1086,11 @@ public class CommitDAORdbImpl implements CommitDAO {
               var operator = predicate.getOperator();
               if ((operator.equals(OperatorEnum.Operator.CONTAIN)
                   || operator.equals(OperatorEnum.Operator.NOT_CONTAIN))) {
-                List<UserInfo> userInfoList = RdbmsUtils.getFuzzyUserInfos(authService, predicate);
+                List<UserInfo> userInfoList = RdbmsUtils.getFuzzyUserInfos(uacApisUtil, predicate);
                 if (userInfoList != null && !userInfoList.isEmpty()) {
                   List<String> vertaIds =
                       userInfoList.stream()
-                          .map(authService::getVertaIdFromUserInfo)
+                          .map(uacApisUtil::getVertaIdFromUserInfo)
                           .collect(Collectors.toList());
                   String key = "fuzzy_owners_" + index;
                   if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
