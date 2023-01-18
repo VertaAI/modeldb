@@ -47,7 +47,7 @@ def log(key: str, value: Any) -> None:
     -------
     None
     """
-    local_context: Dict[str, Any] = _get_thread_context().copy()
+    local_context: Dict[str, Any] = _get_thread_context()
     local_context.update({key: value})
     _set_thread_context(local_context)
 
