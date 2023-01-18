@@ -1266,7 +1266,7 @@ public class RepositoryTest extends ModeldbTestSetup {
     if (isRunningIsolated()) {
       when(uac.getUACService().getCurrentUser(any()))
           .thenReturn(Futures.immediateFuture(testUser2));
-      if (testConfig.isPermissionV2Enabled()){
+      if (testConfig.isPermissionV2Enabled()) {
         mockGetResourcesForAllRepositories(repositoryMap, testUser2);
       } else {
         mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser2);

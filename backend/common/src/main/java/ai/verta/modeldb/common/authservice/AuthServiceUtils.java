@@ -192,7 +192,7 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public Long getWorkspaceIdFromUserInfo(UserInfo userInfo) {
-    if (isPermissionV2){
+    if (isPermissionV2) {
       if (userInfo != null && userInfo.getVertaInfo().getDefaultWorkspaceId() != 0) {
         return userInfo.getVertaInfo().getDefaultWorkspaceId();
       }
