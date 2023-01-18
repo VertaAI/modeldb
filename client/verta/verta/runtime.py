@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from collections import defaultdict
 import json
 import threading
-
 from typing import Any, Dict, Optional
+
 
 _THREAD = threading.local()
 
@@ -66,26 +65,29 @@ class context:
     as_json : str
         A JSON string representation of all the current saved logging context.
     """
-    def __init__(self, context: Optional[Dict[str, Any]] = None):
-        self.context = context or dict()
+    def __init__(self):
+        pass
 
     def __enter__(self):
-        _set_thread_logs(self.context)
+        """ Ensure an empty logging context to start. """
+        _set_thread_logs(dict())
         return self
 
     def __exit__(self, *args):
-        """ Return thread-local context to prior state when exiting this context. """
+        """ Ensure an empty logging context after exiting context manager. """
         _set_thread_logs(dict())
 
     def logs(self) -> Dict[str, Any]:
         """
-        Return a JSON string representation of currently stored context.
-        If JSON conversion fails, raise an error.
+        Return the currently stored, thread-local logs from inside this
+        context manager.  If JSON conversion fails, an error is raised.
+
+        Will return None after exiting context manager.
         """
         try:
-            context: Dict[str, Any] = _get_thread_logs()
-            json.dumps(context)
-            return context
+            logs: Dict[str, Any] = _get_thread_logs()
+            json.dumps(logs)
+            return logs
         except json.JSONDecodeError as json_err:
             raise Exception("Unable to convert logging data to JSON") from json_err
         except TypeError as type_err:
