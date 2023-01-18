@@ -1,84 +1,93 @@
 # -*- coding: utf-8 -*-
 
+from collections import defaultdict
 import json
-from typing import Any, Dict
+import threading
+import os
 
 
-class LogHandler:
+_THREAD = threading.local()
+
+def init_thread_context() -> None:
+    """Initialize our thread-local variable for storing logging context."""
+    if not hasattr(_THREAD, "context"):
+        _THREAD.context = defaultdict()
+
+
+def get_thread_context() -> defaultdict:
     """
-    Container class for collecting and dumping log entries.
+    Return the current thread-local context or initialize a new one.
     """
-    def __init__(self):
-        self.attributes: Dict[str, Any] = dict()
+    init_thread_context()
+    return _THREAD.context
 
-    def __repr__(self):
-        return str(self.attributes)
 
-    def add(self, **kwargs):
-        # Overwrites existing key-values
-        self.attributes.update(**kwargs)
-
-    def wipe_clean(self):
-        self.attributes = dict()
-
-# Use a single handler object that is wiped clean after each log entry
-# to minimize memory usage
-LOG_HANDLER = LogHandler()
+def set_thread_context(context: defaultdict) -> defaultdict:
+    """
+    Sets the thread-local context, overwriting any existing values.
+    """
+    # init_thread_context()
+    _THREAD.context = context
+    return _THREAD.context
 
 
 def log(**kwargs) -> None:
     """
     Log any number of key-value pairs to the current prediction context.
-    Values are deleted upon completion of the active model's predict() method.
+    Context is stored in thread-local variables.
 
     Parameters
     ----------
     kwargs : Any
-        Arguments and values to be added as key-value pairs to the current log record.
-        Values must be serializable to JSON.
+        Arguments and values to be added as key-value pairs to the current
+        logging context. Values must be serializable to JSON.
 
     Returns
     -------
     None
     """
-    LOG_HANDLER.add(**kwargs)
+    local_context: defaultdict = get_thread_context().copy()
+    local_context.update(**kwargs)
+    set_thread_context(local_context)
 
 
-class ContextLogger():
+class context:
     """
     Context manager for aggregating key-value pairs into a custom log entry.
-    Any logged data is deleted upon exiting the context.
+    Uses thread-local variables to store context in a thread-safe manner.
 
+    Parameters
+    ----------
+    kwargs : Any
+        Key-value pairs to be added to the current logging context.
     Attributes
     ----------
     as_json : str
         A JSON string representation of all the current saved logging context.
     """
-    def __init__(self):
-        self.context = LOG_HANDLER
-        if bool(self.context.attributes): # if not empty dict
-            self.context.wipe_clean()
-
-    def log(self, **kwargs) -> None:
-        self.context.add(**kwargs)
+    def __init__(self, **kwargs):
+        self.new_context = kwargs
+        self.prior_context = defaultdict()
 
     def __enter__(self):
+        self.prior_context = get_thread_context()
+        updated_context: defaultdict = self.prior_context.copy()
+        updated_context.update(self.new_context)
+        set_thread_context(updated_context)
         return self
 
     def __exit__(self, *args):
-        # Handler attributes get deleted when context is exited.
-        self.context.wipe_clean()
+        """ Return thread-local context to prior state when exiting this context. """
+        set_thread_context(self.prior_context)
 
-    @property
     def as_json(self) -> str:
         """
-        Return a JSON string representation of currently stored context attributes.
-        If JSON conversion fails, return string of current context.
+        Return a JSON string representation of currently stored context.
+        If JSON conversion fails, raise an error.
         """
         try:
-            return json.dumps(self.context.attributes)
+            return json.dumps(get_thread_context(), indent=2)
         except json.JSONDecodeError as json_err:
             raise Exception("Unable to convert logging data to JSON") from json_err
         except TypeError as type_err:
             raise Exception("Unable to serialize log value to JSON.") from type_err
-
