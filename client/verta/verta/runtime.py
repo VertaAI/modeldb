@@ -8,21 +8,21 @@ from typing import Any, Dict, Optional
 
 _THREAD = threading.local()
 
-def init_thread_context() -> None:
+def _init_thread_context() -> None:
     """Initialize our thread-local variable for storing logging context."""
     if not hasattr(_THREAD, "context"):
         _THREAD.context = dict()
 
 
-def get_thread_context() -> Dict[str, Any]:
+def _get_thread_context() -> Dict[str, Any]:
     """
     Return the current thread-local context or initialize a new one.
     """
-    init_thread_context()
+    _init_thread_context()
     return _THREAD.context
 
 
-def set_thread_context(context: Dict[str, Any]) -> Dict[str, Any]:
+def _set_thread_context(context: Dict[str, Any]) -> Dict[str, Any]:
     """
     Sets the thread-local context, overwriting any existing values.
     """
@@ -47,9 +47,9 @@ def log(key: str, value: Any) -> None:
     -------
     None
     """
-    local_context: Dict[str, Any] = get_thread_context().copy()
+    local_context: Dict[str, Any] = _get_thread_context().copy()
     local_context.update({key: value})
-    set_thread_context(local_context)
+    _set_thread_context(local_context)
 
 
 class context:
@@ -70,12 +70,12 @@ class context:
         self.context = context or dict()
 
     def __enter__(self):
-        set_thread_context(self.context)
+        _set_thread_context(self.context)
         return self
 
     def __exit__(self, *args):
         """ Return thread-local context to prior state when exiting this context. """
-        set_thread_context(dict())
+        _set_thread_context(dict())
 
     def logs(self) -> Dict[str, Any]:
         """
@@ -83,7 +83,7 @@ class context:
         If JSON conversion fails, raise an error.
         """
         try:
-            context: Dict[str, Any] = get_thread_context()
+            context: Dict[str, Any] = _get_thread_context()
             json.dumps(context)
             return context
         except json.JSONDecodeError as json_err:
