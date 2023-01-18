@@ -49,22 +49,12 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
         </dependency>
-        <dependency> <!-- necessary for Java 9+ -->
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>annotations-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
         <!-- https://mvnrepository.com/artifact/io.grpc/grpc-services -->
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-services</artifactId>
         </dependency>
-        <!-- Provide Utils for grpc like using jsonFormat this utils you can convert
-            json to protobuf object. (https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) -->
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
