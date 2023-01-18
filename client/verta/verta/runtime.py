@@ -4,17 +4,17 @@ from collections import defaultdict
 import json
 import threading
 
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 _THREAD = threading.local()
 
 def init_thread_context() -> None:
     """Initialize our thread-local variable for storing logging context."""
     if not hasattr(_THREAD, "context"):
-        _THREAD.context = defaultdict()
+        _THREAD.context = dict()
 
 
-def get_thread_context() -> defaultdict:
+def get_thread_context() -> Dict[str, Any]:
     """
     Return the current thread-local context or initialize a new one.
     """
@@ -22,7 +22,7 @@ def get_thread_context() -> defaultdict:
     return _THREAD.context
 
 
-def set_thread_context(context: defaultdict) -> defaultdict:
+def set_thread_context(context: Dict[str, Any]) -> Dict[str, Any]:
     """
     Sets the thread-local context, overwriting any existing values.
     """
@@ -31,23 +31,24 @@ def set_thread_context(context: defaultdict) -> defaultdict:
     return _THREAD.context
 
 
-def log(**kwargs) -> None:
+def log(key: str, value: Any) -> None:
     """
-    Log any number of key-value pairs to the current prediction context.
+    Update current context dict with provided key and value.
     Context is stored in thread-local variables.
 
     Parameters
     ----------
-    kwargs : Any
-        Arguments and values to be added as key-value pairs to the current
-        logging context. Values must be serializable to JSON.
+    key : str
+        String value to use as data label (key) in logging context.
+    value : Any
+        Any JSON serializable value you wish to include in the context logs.
 
     Returns
     -------
     None
     """
-    local_context: defaultdict = get_thread_context().copy()
-    local_context.update(**kwargs)
+    local_context: Dict[str, Any] = get_thread_context().copy()
+    local_context.update({key: value})
     set_thread_context(local_context)
 
 
@@ -58,27 +59,23 @@ class context:
 
     Parameters
     ----------
-    kwargs : Any
-        Key-value pairs to be added to the current logging context.
+    context : Optional[Dict[str, Any]]
+        Dict to be merged with the current logging context.
     Attributes
     ----------
     as_json : str
         A JSON string representation of all the current saved logging context.
     """
-    def __init__(self, **kwargs):
-        self.new_context = kwargs
-        self.prior_context = defaultdict()
+    def __init__(self, context: Optional[Dict[str, Any]] = None):
+        self.context = context or dict()
 
     def __enter__(self):
-        self.prior_context = get_thread_context()
-        updated_context: defaultdict = self.prior_context.copy()
-        updated_context.update(self.new_context)
-        set_thread_context(updated_context)
+        set_thread_context(self.context)
         return self
 
     def __exit__(self, *args):
         """ Return thread-local context to prior state when exiting this context. """
-        set_thread_context(self.prior_context)
+        set_thread_context(dict())
 
     def logs(self) -> Dict[str, Any]:
         """
@@ -86,9 +83,9 @@ class context:
         If JSON conversion fails, raise an error.
         """
         try:
-            context: defaultdict = get_thread_context()
+            context: Dict[str, Any] = get_thread_context()
             json.dumps(context)
-            return dict(context)
+            return context
         except json.JSONDecodeError as json_err:
             raise Exception("Unable to convert logging data to JSON") from json_err
         except TypeError as type_err:
