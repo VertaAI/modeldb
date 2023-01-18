@@ -29,7 +29,6 @@ EMAIL_2 = os.environ.get(EMAIL_2_ENV_VAR)
 DEV_KEY_2 = os.environ.get(DEV_KEY_2_ENV_VAR)
 EMAIL_3 = os.environ.get(EMAIL_3_ENV_VAR)
 DEV_KEY_3 = os.environ.get(DEV_KEY_3_ENV_VAR)
-WORKSPACE = os.environ.get(WORKSPACE_ENV_VAR, DEFAULT_ENV)
 
 # for virtualenv tests
 PYTHON_VERSION_SEGMENT = "python{}.{}".format(

@@ -208,6 +208,14 @@ class TestLockLevels:
         user_model_ver.set_lock_level(lock.redact)
         user_model_ver.set_lock_level(lock.closed)
 
+        # R/W user cannot downgrade; admin can
+        with pytest.raises(requests.HTTPError, match="^403"):
+            user_model_ver.set_lock_level(lock.redact)
+        admin_model_ver.set_lock_level(lock.redact)
+        with pytest.raises(requests.HTTPError, match="^403"):
+            user_model_ver.set_lock_level(lock.open)
+        admin_model_ver.set_lock_level(lock.open)
+
         # admin can upgrade lock level
         admin_model_ver.set_lock_level(lock.redact)
         admin_model_ver.set_lock_level(lock.closed)
@@ -261,9 +269,15 @@ class TestLockLevels:
             model_ver.del_label(label)
 
         admin_model_ver.add_attribute("a", {"a": 1})
+        with pytest.raises(requests.HTTPError, match="^403"):
+            user_model_ver.del_attribute("a")
 
         admin_model_ver.log_artifact("b", {"b": 2})
+        with pytest.raises(requests.HTTPError, match="^403"):
+            user_model_ver.del_artifact("b")
 
+        with pytest.raises(requests.HTTPError, match="^403"):
+            user_model_ver.delete()
         admin_model_ver.delete()
 
 

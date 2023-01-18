@@ -31,10 +31,9 @@ from ..external import six
 from verta.credentials import EmailCredentials
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
+from .._protos.public.uac import UACService_pb2, Workspace_pb2
 
 from . import importer
-
 
 logger = logging.getLogger(__name__)
 

@@ -37,4 +37,33 @@ class TestFromRun:
             )
             assert np.array_equal(model_version.get_artifact("some-artifact"), artifact)
 
-# TODO: test_from_run_diff_workspaces with separate workspace
+    def test_from_run_diff_workspaces(
+        self, client, experiment_run, workspace, created_entities
+    ):
+        registered_model = client.create_registered_model(workspace=workspace.name)
+        created_entities.append(registered_model)
+
+        model_version = registered_model.create_version_from_run(
+            run_id=experiment_run.id, name="From Run {}".format(experiment_run.id)
+        )
+
+        assert model_version.workspace != experiment_run.workspace
+
+    def test_from_run_diff_workspaces_no_access_error(
+        self, client_2, created_entities, workspace, workspace2, client
+    ):
+        proj = client.set_project(workspace=workspace.name)
+        client.set_experiment()
+        run = client.set_experiment_run()
+        created_entities.append(proj)
+        registered_model = client_2.create_registered_model(workspace=workspace2.name)
+        created_entities.append(registered_model)
+
+        with pytest.raises(requests.HTTPError) as excinfo:
+            registered_model.create_version_from_run(
+                run_id=run.id, name="From Run {}".format(run.id)
+            )
+
+        exc_msg = str(excinfo.value).strip()
+        assert exc_msg.startswith("404")
+        assert "not found" in exc_msg

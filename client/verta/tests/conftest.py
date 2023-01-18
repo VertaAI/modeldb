@@ -36,6 +36,8 @@ from .env_fixtures import (
     mock_env_jwt_auth,
     mock_env_authn_missing,
 )
+from verta._internal_utils._utils import generate_default_name
+from verta._protos.public.uac import RoleV2_pb2
 
 
 RANDOM_SEED = 0
@@ -469,6 +471,15 @@ def created_entities():
 
     yield to_delete
 
+    # move workspaces to the end
+    from verta._uac._workspace import Workspace
+
+    is_workspace = lambda entity: entity.__class__ is Workspace
+    to_delete = itertools.chain(
+        filterfalse(is_workspace, to_delete),
+        filter(is_workspace, to_delete),
+    )
+
     # TODO: avoid duplicates
     for entity in to_delete:
         entity.delete()
@@ -520,13 +531,51 @@ def class_endpoint_updated(
     return ep
 
 
-class Workspace:
-    def __init__(self, name):
-        self.name = name
-
 @pytest.fixture
 def workspace(client, created_entities):
-    return Workspace(client._conn.get_default_workspace())
+    return create_workspace(
+        client,
+        created_entities,
+        [
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                allowed_actions=[RoleV2_pb2.ActionTypeV2.READ],
+            ),
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
+                                 RoleV2_pb2.ActionTypeV2.UPDATE],
+            ),
+        ],
+    )
+
+
+@pytest.fixture
+def workspace2(client, created_entities):
+    return create_workspace(client, created_entities, [
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.CREATE, RoleV2_pb2.ActionTypeV2.READ,
+                                                    RoleV2_pb2.ActionTypeV2.UPDATE, RoleV2_pb2.ActionTypeV2.DELETE]),
+])
+
+
+@pytest.fixture
+def workspace3(client, created_entities):
+    return create_workspace(client, created_entities, [
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
+                                                    RoleV2_pb2.ActionTypeV2.UPDATE]),
+])
+
+
+def create_workspace(client, created_entities, roles):
+    workspace = client._create_workspace(client._conn._get_organization_id(), generate_default_name(), roles)
+    created_entities.append(workspace)
+    return workspace
 
 
 @pytest.fixture

@@ -9,8 +9,7 @@ import warnings
 
 import requests
 from ._internal_utils._utils import check_unnecessary_params_warning
-
-from ._protos.public.modeldb import CommonService_pb2 as _CommonService
+from ._uac._organization import OrganizationV2
 
 from .external import six
 
@@ -48,6 +47,8 @@ from .endpoint import Endpoint
 from .endpoint import Endpoints
 from .endpoint.update import DirectUpdateStrategy
 from .visibility import _visibility
+from ._protos.public.uac import WorkspaceV2_pb2
+from ._uac._workspace import Workspace
 
 
 VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR = "VERTA_DISABLE_CLIENT_CONFIG"
@@ -1735,3 +1736,34 @@ class Client(object):
             datasets = datasets.find(predicates)
 
         return datasets
+
+    def _create_workspace(self, org_id, workspace_name, resource_action_groups):
+        """
+        creates a workspace with a custom role for all users.
+
+        Parameters
+        ----------
+        org_id : str
+            ID of organization in which workspace is created.
+        workspace_name : str
+            name of workspace.
+        resource_action_groups : list of RoleV2_pb2.RoleResourceActions
+            Resource actions for non-admins in this workspace.
+
+        Returns
+        -------
+        :class:`~verta._uac._workspace.Workspace`
+
+        """
+        org = OrganizationV2(self._conn, org_id)
+        groups = org.get_groups()
+        all_users_group_id = next(iter(set(group.id for group in groups if group.name == "All Users")))
+        admins_group_id = next(iter(set(group.id for group in groups if group.name == "Admins")))
+        super_user_role_id = next(iter(set(role.id for role in org.get_roles() if role.name == "Super User")))
+        custom_role_id: str = org.create_role(workspace_name + "role", resource_action_groups)
+        return Workspace._create(
+            self._conn, workspace_name, org_id, [WorkspaceV2_pb2.Permission(group_id = admins_group_id,
+                                                                       role_id = super_user_role_id),
+                                                 WorkspaceV2_pb2.Permission(group_id = all_users_group_id,
+                                                                       role_id = custom_role_id)])
+
