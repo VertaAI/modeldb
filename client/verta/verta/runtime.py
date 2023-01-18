@@ -80,7 +80,7 @@ class context:
         """ Return thread-local context to prior state when exiting this context. """
         set_thread_context(self.prior_context)
 
-    def as_json(self) -> str:
+    def logs(self) -> str:
         """
         Return a JSON string representation of currently stored context.
         If JSON conversion fails, raise an error.
