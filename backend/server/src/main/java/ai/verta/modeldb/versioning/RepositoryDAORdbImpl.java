@@ -1103,8 +1103,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
         String workspaceName = request.getWorkspaceName();
-        if (!workspaceName.isEmpty()
-            && workspaceName.equals(authService.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        if (!workspaceName.isEmpty()) {
           List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
               mdbRoleService.getResourceItems(
                   null,

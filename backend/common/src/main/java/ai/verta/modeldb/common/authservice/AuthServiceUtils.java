@@ -16,10 +16,12 @@ import org.apache.logging.log4j.Logger;
 public class AuthServiceUtils implements AuthService {
   private final UAC uac;
   private final Integer timeout;
+  private final boolean isPermissionV2;
 
-  public AuthServiceUtils(UAC uac, Integer timeout) {
+  public AuthServiceUtils(UAC uac, Integer timeout, boolean isPermissionV2) {
     this.uac = uac;
     this.timeout = timeout;
+    this.isPermissionV2 = isPermissionV2;
   }
 
   private static final Logger LOGGER = LogManager.getLogger(AuthServiceUtils.class);
@@ -190,8 +192,14 @@ public class AuthServiceUtils implements AuthService {
 
   @Override
   public Long getWorkspaceIdFromUserInfo(UserInfo userInfo) {
-    if (userInfo != null && !userInfo.getVertaInfo().getWorkspaceId().isEmpty()) {
-      return Long.parseLong(userInfo.getVertaInfo().getWorkspaceId());
+    if (isPermissionV2){
+      if (userInfo != null && userInfo.getVertaInfo().getDefaultWorkspaceId() != 0) {
+        return userInfo.getVertaInfo().getDefaultWorkspaceId();
+      }
+    } else {
+      if (userInfo != null && !userInfo.getVertaInfo().getWorkspaceId().isEmpty()) {
+        return Long.parseLong(userInfo.getVertaInfo().getWorkspaceId());
+      }
     }
     throw new NotFoundException("WorkspaceId not found in userInfo");
   }

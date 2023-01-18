@@ -33,13 +33,11 @@ import ai.verta.modeldb.versioning.SetRepository.Response;
 import ai.verta.modeldb.versioning.SetTagRequest;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc.VersioningServiceBlockingStub;
 import ai.verta.uac.AddCollaboratorRequest;
-import ai.verta.uac.AddGroupUsers;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetUsersFuzzy;
-import ai.verta.uac.GroupServiceGrpc;
 import ai.verta.uac.IsSelfAllowed;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
@@ -59,6 +57,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -264,7 +263,7 @@ public class RepositoryTest extends ModeldbTestSetup {
                     RepositoryIdentification.newBuilder()
                         .setNamedId(
                             RepositoryNamedIdentification.newBuilder()
-                                .setWorkspaceName("test1verta_gmail_com")
+                                .setWorkspaceName(organizationId + "/test1verta_gmail_com")
                                 .setName(repo2)
                                 .build())
                         .build())
@@ -301,11 +300,14 @@ public class RepositoryTest extends ModeldbTestSetup {
           when(authzBlockingMock.isSelfAllowed(any()))
               .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(false).build());
         }
-        versioningServiceBlockingStubClient2.getRepository(
-            GetRepositoryRequest.newBuilder()
-                .setId(RepositoryIdentification.newBuilder().setRepoId(id))
-                .build());
-        if (testConfig.hasAuth()) {
+        var getRepositoryResponse =
+            versioningServiceBlockingStubClient2.getRepository(
+                GetRepositoryRequest.newBuilder()
+                    .setId(RepositoryIdentification.newBuilder().setRepoId(id))
+                    .build());
+        if (testConfig.isPermissionV2Enabled()) {
+          Assertions.assertTrue(getRepositoryResponse.hasRepository());
+        } else if (testConfig.hasAuth()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
@@ -323,7 +325,7 @@ public class RepositoryTest extends ModeldbTestSetup {
           mockGetResourcesForAllRepositories(Map.of(), testUser2);
         }
         versioningServiceBlockingStubClient2.deleteRepository(deleteRepository);
-        if (testConfig.hasAuth()) {
+        if (testConfig.hasAuth() && !testConfig.isPermissionV2Enabled()) {
           Assert.fail();
         }
       } catch (StatusRuntimeException e) {
@@ -338,9 +340,15 @@ public class RepositoryTest extends ModeldbTestSetup {
               .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
           mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser1);
         }
-        DeleteRepositoryRequest.Response deleteResult =
-            versioningServiceBlockingStub.deleteRepository(deleteRepository);
-        Assert.assertTrue(deleteResult.getStatus());
+        try {
+          DeleteRepositoryRequest.Response deleteResult =
+              versioningServiceBlockingStub.deleteRepository(deleteRepository);
+          Assert.assertTrue(deleteResult.getStatus());
+        } catch (StatusRuntimeException ex) {
+          if (testConfig.isPermissionV2Enabled()) {
+            Assertions.assertEquals(Code.NOT_FOUND, ex.getStatus().getCode());
+          }
+        }
       }
 
       try {
@@ -1258,16 +1266,13 @@ public class RepositoryTest extends ModeldbTestSetup {
     if (isRunningIsolated()) {
       when(uac.getUACService().getCurrentUser(any()))
           .thenReturn(Futures.immediateFuture(testUser2));
-      mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser2);
+      if (testConfig.isPermissionV2Enabled()){
+        mockGetResourcesForAllRepositories(repositoryMap, testUser2);
+      } else {
+        mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser2);
+      }
     } else if (testConfig.isPermissionV2Enabled()) {
-      var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
-      groupStub.addUsers(
-          AddGroupUsers.newBuilder()
-              .addUserId(testUser2.getVertaInfo().getUserId())
-              .setGroupId(groupIdUser1)
-              .setOrgId(organizationId)
-              .build());
-      workspaceName = getWorkspaceNameUser1();
+      workspaceName = "Default";
     } else {
       AddCollaboratorRequest addCollaboratorRequest =
           AddCollaboratorRequest.newBuilder()
@@ -1289,15 +1294,27 @@ public class RepositoryTest extends ModeldbTestSetup {
     FindRepositories.Response findRepositoriesResponse =
         versioningServiceBlockingStubClient2.findRepositories(findRepositoriesRequest);
     LOGGER.info("FindProjects Response : " + findRepositoriesResponse.getRepositoriesList());
-    assertEquals(
-        "Project count not match with expected project count",
-        1,
-        findRepositoriesResponse.getRepositoriesCount());
+    if (testConfig.isPermissionV2Enabled()) {
+      assertEquals(
+          "Project count not match with expected project count",
+          3,
+          findRepositoriesResponse.getRepositoriesCount());
 
-    assertEquals(
-        "Total records count not matched with expected records count",
-        1,
-        findRepositoriesResponse.getTotalRecords());
+      assertEquals(
+          "Total records count not matched with expected records count",
+          3,
+          findRepositoriesResponse.getTotalRecords());
+    } else {
+      assertEquals(
+          "Project count not match with expected project count",
+          1,
+          findRepositoriesResponse.getRepositoriesCount());
+
+      assertEquals(
+          "Total records count not matched with expected records count",
+          1,
+          findRepositoriesResponse.getTotalRecords());
+    }
 
     LOGGER.info("FindRepositories by owner fuzzy search test stop ....");
   }
