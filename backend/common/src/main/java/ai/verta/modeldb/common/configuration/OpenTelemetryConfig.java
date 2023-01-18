@@ -3,7 +3,6 @@ package ai.verta.modeldb.common.configuration;
 import static io.opentelemetry.api.common.AttributeKey.stringKey;
 
 import ai.verta.modeldb.common.config.Config;
-import ai.verta.modeldb.common.metrics.otelprom.PrometheusCollector;
 import io.grpc.ClientInterceptor;
 import io.grpc.ServerInterceptor;
 import io.opentelemetry.api.GlobalOpenTelemetry;
@@ -13,6 +12,7 @@ import io.opentelemetry.api.trace.propagation.W3CTraceContextPropagator;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.propagation.ContextPropagators;
 import io.opentelemetry.context.propagation.TextMapPropagator;
+import io.opentelemetry.contrib.metrics.prometheus.clientbridge.PrometheusCollector;
 import io.opentelemetry.exporter.jaeger.JaegerGrpcSpanExporter;
 import io.opentelemetry.extension.trace.propagation.JaegerPropagator;
 import io.opentelemetry.instrumentation.grpc.v1_6.GrpcTelemetry;

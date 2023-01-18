@@ -84,7 +84,8 @@ public class UAC extends Connection {
     serviceAccountCollaboratorServiceFutureStub =
         CollaboratorServiceGrpc.newFutureStub(authServiceChannel)
             .withInterceptors(
-                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
+                MetadataUtils.newAttachHeadersInterceptor(
+                    getServiceUserMetadata(config.getService_user())));
     uacServiceFutureStub = UACServiceGrpc.newFutureStub(authServiceChannel);
     workspaceServiceFutureStub = WorkspaceServiceGrpc.newFutureStub(authServiceChannel);
     authzServiceFutureStub = AuthzServiceGrpc.newFutureStub(authServiceChannel);
@@ -92,30 +93,18 @@ public class UAC extends Connection {
     serviceAccountRoleServiceFutureStub =
         RoleServiceGrpc.newFutureStub(authServiceChannel)
             .withInterceptors(
-                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
+                MetadataUtils.newAttachHeadersInterceptor(
+                    getServiceUserMetadata(config.getService_user())));
     organizationServiceFutureStub = OrganizationServiceGrpc.newFutureStub(authServiceChannel);
     eventServiceFutureStub =
         EventServiceGrpc.newFutureStub(authServiceChannel)
             .withInterceptors(
-                MetadataUtils.newAttachHeadersInterceptor(getServiceUserMetadata(config)));
+                MetadataUtils.newAttachHeadersInterceptor(
+                    getServiceUserMetadata(config.getService_user())));
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
     return new AuthServiceChannel(config, super.getTracingClientInterceptor());
-  }
-
-  private Metadata getServiceUserMetadata(Config config) {
-    var requestHeaders = new Metadata();
-    var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-    var devKey = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-    var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
-    var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
-
-    requestHeaders.put(emailKey, config.getService_user().getEmail());
-    requestHeaders.put(devKey, config.getService_user().getDevKey());
-    requestHeaders.put(devKeyHyphen, config.getService_user().getDevKey());
-    requestHeaders.put(sourceKey, "PythonClient");
-    return requestHeaders;
   }
 
   public CollaboratorServiceGrpc.CollaboratorServiceFutureStub getCollaboratorService() {
@@ -148,10 +137,10 @@ public class UAC extends Connection {
   }
 
   public RoleServiceGrpc.RoleServiceFutureStub getServiceAccountRoleServiceFutureStub() {
-    return serviceAccountRoleServiceFutureStub;
+    return attachInterceptors(serviceAccountRoleServiceFutureStub);
   }
 
   public EventServiceGrpc.EventServiceFutureStub getEventService() {
-    return eventServiceFutureStub;
+    return attachInterceptors(eventServiceFutureStub);
   }
 }
