@@ -8,27 +8,27 @@ from typing import Any, Dict, Optional
 
 _THREAD = threading.local()
 
-def _init_thread_context() -> None:
+def _init_thread_logs() -> None:
     """Initialize our thread-local variable for storing logging context."""
-    if not hasattr(_THREAD, "context"):
-        _THREAD.context = dict()
+    if not hasattr(_THREAD, "logs"):
+        _THREAD.logs = dict()
 
 
-def _get_thread_context() -> Dict[str, Any]:
+def _get_thread_logs() -> Dict[str, Any]:
     """
-    Return the current thread-local context or initialize a new one.
+    Return the current thread-local logs or initialize a new dict.
     """
-    _init_thread_context()
-    return _THREAD.context
+    _init_thread_logs()
+    return _THREAD.logs
 
 
-def _set_thread_context(context: Dict[str, Any]) -> Dict[str, Any]:
+def _set_thread_logs(logs: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Sets the thread-local context, overwriting any existing values.
+    Sets the thread-local logs, overwriting any existing values.
     """
     # init_thread_context()
-    _THREAD.context = context
-    return _THREAD.context
+    _THREAD.logs = logs
+    return _THREAD.logs
 
 
 def log(key: str, value: Any) -> None:
@@ -47,9 +47,9 @@ def log(key: str, value: Any) -> None:
     -------
     None
     """
-    local_context: Dict[str, Any] = _get_thread_context()
+    local_context: Dict[str, Any] = _get_thread_logs()
     local_context.update({key: value})
-    _set_thread_context(local_context)
+    _set_thread_logs(local_context)
 
 
 class context:
@@ -70,12 +70,12 @@ class context:
         self.context = context or dict()
 
     def __enter__(self):
-        _set_thread_context(self.context)
+        _set_thread_logs(self.context)
         return self
 
     def __exit__(self, *args):
         """ Return thread-local context to prior state when exiting this context. """
-        _set_thread_context(dict())
+        _set_thread_logs(dict())
 
     def logs(self) -> Dict[str, Any]:
         """
@@ -83,7 +83,7 @@ class context:
         If JSON conversion fails, raise an error.
         """
         try:
-            context: Dict[str, Any] = _get_thread_context()
+            context: Dict[str, Any] = _get_thread_logs()
             json.dumps(context)
             return context
         except json.JSONDecodeError as json_err:
