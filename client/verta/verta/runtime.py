@@ -3,8 +3,8 @@
 from collections import defaultdict
 import json
 import threading
-import os
 
+from typing import Any, Dict
 
 _THREAD = threading.local()
 
@@ -80,13 +80,15 @@ class context:
         """ Return thread-local context to prior state when exiting this context. """
         set_thread_context(self.prior_context)
 
-    def logs(self) -> str:
+    def logs(self) -> Dict[str, Any]:
         """
         Return a JSON string representation of currently stored context.
         If JSON conversion fails, raise an error.
         """
         try:
-            return json.dumps(get_thread_context(), indent=2)
+            context: defaultdict = get_thread_context()
+            json.dumps(context)
+            return dict(context)
         except json.JSONDecodeError as json_err:
             raise Exception("Unable to convert logging data to JSON") from json_err
         except TypeError as type_err:
