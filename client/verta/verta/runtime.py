@@ -80,8 +80,8 @@ def _validate_json(value: Any) -> str:
 def log(key: str, value: Any) -> None:
     """
     Updates current logging context dict with provided key and value.
-    For use within a model's ``predict()`` method to collect logging
-    context, which is stored in thread-local variables.
+    For use within a model's :meth:`~verta.registry.VertaModelBase.predict`
+    method to collect logging context.
 
     Parameters
     ----------
@@ -94,18 +94,28 @@ def log(key: str, value: Any) -> None:
     -------
     None
 
+    Raises
+    -------
+    TypeError
+        If `validate` was set to ``True`` on the active :class:`context`, and
+        `value` is not a JSON-serializable type.
+    JSONDecodeError
+        If `validate` was set to ``True`` on the active :class:`context`, and
+        `value` is not JSON-serializable.
+
     Examples
     --------
     .. code-block:: python
-       :emphasize-lines: 10,13
+       :emphasize-lines: 11,14
 
         from verta import runtime
 
         # Sample model code:
         class MyModel(VertaModelBase):
             def __init__(self, artifacts):
-                "ok"
+                pass
 
+            @verify.io
             def predict(self, data):
                 logs = {'some_stuff': 'I_care_about'}
                 runtime.log('my_logging_key', logs)
