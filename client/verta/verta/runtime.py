@@ -66,7 +66,7 @@ class context:
         A JSON string representation of all the current saved logging context.
     """
     def __init__(self):
-        pass
+        self.log_dict = dict()
 
     def __enter__(self):
         """ Ensure an empty logging context to start. """
@@ -75,6 +75,7 @@ class context:
 
     def __exit__(self, *args):
         """ Ensure an empty logging context after exiting context manager. """
+        self.log_dict = _get_thread_logs()
         _set_thread_logs(dict())
 
     def logs(self) -> Dict[str, Any]:
@@ -85,7 +86,7 @@ class context:
         Will return None after exiting context manager.
         """
         try:
-            logs: Dict[str, Any] = _get_thread_logs()
+            logs: Dict[str, Any] = self.log_dict
             json.dumps(logs)
             return logs
         except json.JSONDecodeError as json_err:
