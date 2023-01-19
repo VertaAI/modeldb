@@ -129,7 +129,6 @@ def log(key: str, value: Any) -> None:
         _validate_json(value)
     local_context: Dict[str, Any] = _get_thread_logs()
     local_context.update({key: value})
-    _set_thread_logs(local_context)
 
 
 class context:
