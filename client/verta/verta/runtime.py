@@ -8,8 +8,10 @@ from typing import Any, Dict, Optional
 _THREAD = threading.local()
 
 def _init_thread_logs() -> None:
-    """Initialize our thread-local variable for storing logging context."""
-    if not hasattr(_THREAD, "logs"):
+    """
+    Initialize our thread-local variable for storing logging context.
+    """
+    if not hasattr(_THREAD, 'logs'):
         _THREAD.logs = dict()
 
 
@@ -25,9 +27,44 @@ def _set_thread_logs(logs: Dict[str, Any]) -> Dict[str, Any]:
     """
     Sets the thread-local logs, overwriting any existing values.
     """
-    # init_thread_context()
     _THREAD.logs = logs
     return _THREAD.logs
+
+def _init_validate_flag() -> None:
+    """
+    Initialize our thread-local variable for the validation flag.
+    """
+    if not hasattr(_THREAD, 'validate'):
+        _THREAD.validate = False
+
+
+def _get_validate_flag() -> bool:
+    """
+    Return the current thread-local validate flag or initialize a new boolean.
+    """
+    _init_validate_flag()
+    return _THREAD.validate
+
+
+def _set_validate_flag(flag: bool) -> bool:
+    """
+    Sets the thread-local validate flag boolean value.
+    """
+    _THREAD.validate = flag
+    return _THREAD.validate
+
+
+def validate_json(value: Any) -> str:
+    """
+    Attempt to serialize the provided value to JSON.
+    Raise an error on failure.
+    """
+    try:
+        return json.dumps(value)
+    except json.JSONDecodeError as json_err:
+        raise Exception("Unable to convert logging data to JSON") from json_err
+    except TypeError as type_err:
+        raise Exception("Unable to serialize log value to JSON.") from type_err
 
 
 def log(key: str, value: Any) -> None:
@@ -46,6 +83,8 @@ def log(key: str, value: Any) -> None:
     -------
     None
     """
+    if _get_validate_flag():
+        validate_json(value)
     local_context: Dict[str, Any] = _get_thread_logs()
     local_context.update({key: value})
     _set_thread_logs(local_context)
@@ -58,38 +97,47 @@ class context:
 
     Parameters
     ----------
-    context : Optional[Dict[str, Any]]
-        Dict to be merged with the current logging context.
+    validate : Optional[bool]
+        If true, each individual call to ``runtime.log('key', value)`` will
+        verify that the value provided is JSON serializable.
+
     Attributes
     ----------
-    as_json : str
-        A JSON string representation of all the current saved logging context.
+    logs : Dict[str, Any]
+        Dictionary of the current logging context.  If called after exiting
+        the context manager, the final complete log entry is returned.
     """
-    def __init__(self):
-        self.log_dict = dict()
+    def __init__(self, validate: Optional[bool] = False):
+        self.validate = validate
+        self.logs_dict = dict()
 
     def __enter__(self):
-        """ Ensure an empty logging context to start. """
+        """
+        Ensure an empty logging context to start and set validation flag.
+        """
         _set_thread_logs(dict())
+        if self.validate:
+            _set_validate_flag(True)
         return self
 
     def __exit__(self, *args):
-        """ Ensure an empty logging context after exiting context manager. """
-        self.log_dict = _get_thread_logs()
+        """
+        Capture the final complete log entry in a class variable, ensure an
+        empty logging context, and reset the validation flag upon exit.
+        """
+        self.logs_dict = _get_thread_logs()
         _set_thread_logs(dict())
+        _set_validate_flag(False)
 
     def logs(self) -> Dict[str, Any]:
         """
         Return the currently stored, thread-local logs from inside this
-        context manager.  If JSON conversion fails, an error is raised.
+        context manager. JSON serialization is attempted on the whole
+        dictionary and an error is raised on failure.
 
-        Will return None after exiting context manager.
+        If called after exiting the context manager, the final complete
+        log entry is returned.
         """
-        try:
-            logs: Dict[str, Any] = self.log_dict
-            json.dumps(logs)
-            return logs
-        except json.JSONDecodeError as json_err:
-            raise Exception("Unable to convert logging data to JSON") from json_err
-        except TypeError as type_err:
-            raise Exception("Unable to serialize log value to JSON.") from type_err
+        logs: Dict[str, Any] = self.logs_dict
+        validate_json(logs)
+        return logs
