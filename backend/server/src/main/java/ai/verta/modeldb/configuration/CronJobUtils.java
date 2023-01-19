@@ -2,13 +2,13 @@ package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.config.CronJobConfig;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.cron_jobs.CleanUpEntitiesCron;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.PopulateEnvironmentInRunCron;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -53,7 +53,7 @@ public class CronJobUtils {
           LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
         }
         if (task != null) {
-          ModelDBUtils.scheduleTask(
+          CommonUtils.scheduleTask(
               task,
               cronJob.getValue().getInitial_delay(),
               cronJob.getValue().getFrequency(),

@@ -35,7 +35,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(GetLabelsRequest.Response.newBuilder().addAllLabels(labels).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetLabelsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -59,7 +59,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(AddLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -77,7 +77,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(AddLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, AddLabelsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -94,8 +94,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(GetLabelIdsRequest.Response.newBuilder().addAllIds(labelIds).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, GetLabelIdsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -121,8 +120,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(DeleteLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteLabelsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -149,8 +147,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(AddKeyValuePropertiesRequest.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, AddKeyValuePropertiesRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -181,8 +178,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, GetKeyValuePropertiesRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -210,8 +206,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(DeleteKeyValuePropertiesRequest.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteKeyValuePropertiesRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -230,8 +225,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, GenerateRandomNameRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }
