@@ -88,23 +88,23 @@ public class CommonUtils {
       var invalidFieldNameArr = ex.getMessage().split("'");
       invalidFieldName = invalidFieldNameArr[1].substring(3);
       return new ModelDBException(
-              "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     } else if (ex != null
-            && ex.getMessage() != null
-            && ex.getMessage().contains("Invalid column ")) {
+        && ex.getMessage() != null
+        && ex.getMessage().contains("Invalid column ")) {
       // Logic for MSSQL
       invalidFieldName = ex.getMessage();
       invalidFieldName = invalidFieldName.substring("Invalid column name '".length());
       invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("'"));
       return new ModelDBException(
-              "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     } else if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Column ")) {
       // Logic for H2 Database
       invalidFieldName = ex.getMessage();
       invalidFieldName = invalidFieldName.substring("Column '*..".length());
       invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("\""));
       return new ModelDBException(
-              "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     }
     throw new ModelDBException(ex);
   }
