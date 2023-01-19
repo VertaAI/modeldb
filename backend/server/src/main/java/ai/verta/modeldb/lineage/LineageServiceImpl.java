@@ -45,7 +45,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, AddLineage.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -66,7 +66,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, DeleteLineage.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -82,7 +82,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, FindAllInputs.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -98,7 +98,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, FindAllOutputs.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -116,7 +116,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onCompleted();
     } catch (Exception e) {
       CommonUtils.observeError(
-          responseObserver, e, FindAllInputsOutputs.Response.getDefaultInstance());
+          responseObserver, e);
     }
   }
 

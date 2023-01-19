@@ -2,6 +2,7 @@ package ai.verta.modeldb.configuration;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.config.CronJobConfig;
 import ai.verta.modeldb.config.MDBConfig;
@@ -53,7 +54,7 @@ public class CronJobUtils {
           LOGGER.info("Unknown config key ({}) found for the cron job", cronJob.getKey());
         }
         if (task != null) {
-          ModelDBUtils.scheduleTask(
+          CommonUtils.scheduleTask(
               task,
               cronJob.getValue().getInitial_delay(),
               cronJob.getValue().getFrequency(),

@@ -1,5 +1,6 @@
 package ai.verta.modeldb.configuration;
 
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.config.MDBConfig;
@@ -26,7 +27,7 @@ public class TelemetryInitBean {
     if (!mdbConfig.getTelemetry().isOpt_out()) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(mdbConfig.getTelemetry().getConsumer());
-      ModelDBUtils.scheduleTask(
+      CommonUtils.scheduleTask(
           task,
           mdbConfig.getTelemetry().getFrequency(),
           mdbConfig.getTelemetry().getFrequency(),

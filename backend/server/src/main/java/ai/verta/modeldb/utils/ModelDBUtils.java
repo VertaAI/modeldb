@@ -53,28 +53,6 @@ public class ModelDBUtils {
 
   private ModelDBUtils() {}
 
-  public static Map<String, Object> readYamlProperties(String filePath) throws IOException {
-    LOGGER.info("Reading File {} as YAML", filePath);
-    filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
-    InputStream inputStream = new FileInputStream(new File(filePath));
-    var yaml = new Yaml();
-    @SuppressWarnings("unchecked")
-    Map<String, Object> prop = (Map<String, Object>) yaml.load(inputStream);
-    return prop;
-  }
-
-  public static boolean isValidEmail(String email) {
-    String emailRegex =
-        "^[a-zA-Z0-9_+&*-]+(?:\\."
-            + "[a-zA-Z0-9_+&*-]+)*@"
-            + "(?:[a-zA-Z0-9-]+\\.)+[a-z"
-            + "A-Z]{2,7}$";
-
-    var pat = Pattern.compile(emailRegex);
-    if (email == null) return false;
-    return pat.matcher(email).matches();
-  }
-
   private static String getMd5String(String inputString) {
     try {
       @SuppressWarnings("squid:S4790")
@@ -118,41 +96,6 @@ public class ModelDBUtils {
   }
 
   /**
-   * VERTA <br>
-   * Function to divide the list of collaborators by one's which can be resolved by email_id and
-   * ones which can be resolved by user_id. <br>
-   * The output just contains email_id or user_id as appropriate instead of entire collaborator
-   * object.
-   *
-   * @param entityCollaboratorList : list of collaborators
-   * @return map with keys `user_id` and `email_id` and values being a list of user_ids or
-   *     email_ids.
-   */
-  public static Map<String, List<String>> getVertaIdOrEmailIdMapFromCollaborator(
-      List<GetCollaboratorResponseItem> entityCollaboratorList) {
-
-    Set<String> vertaIdSet = new HashSet<>();
-    Set<String> emailIdSet = new HashSet<>();
-
-    for (GetCollaboratorResponseItem collaborator : entityCollaboratorList) {
-      if (collaborator.getAuthzEntityType() == EntitiesTypes.USER) {
-        if (collaborator.getShareViaType().ordinal() == ShareViaEnum.EMAIL_ID_VALUE
-            && ModelDBUtils.isValidEmail(collaborator.getVertaId())) {
-          emailIdSet.add(collaborator.getVertaId());
-        } else {
-          vertaIdSet.add(collaborator.getVertaId());
-        }
-      }
-    }
-
-    Map<String, List<String>> vertaIdAndEmailIdMap = new HashMap<>();
-    vertaIdAndEmailIdMap.put(ModelDBConstants.VERTA_ID, new ArrayList<>(vertaIdSet));
-    vertaIdAndEmailIdMap.put(ModelDBConstants.EMAILID, new ArrayList<>(emailIdSet));
-
-    return vertaIdAndEmailIdMap;
-  }
-
-  /**
    * Create artifact path using entityId and artifact key
    *
    * @param entityId : Project.id, Experiment.id, ExperimentRun.id
@@ -193,65 +136,6 @@ public class ModelDBUtils {
     return artifactList;
   }
 
-  public static List<Action> getActionsList(List<String> ids, Map<String, Actions> actions) {
-    return new ArrayList<>(
-        actions.values().stream()
-            .findFirst()
-            .orElseThrow(
-                () -> {
-                  var status =
-                      Status.newBuilder()
-                          .setCode(Code.INTERNAL_VALUE)
-                          .setMessage("Can't find allowed actions of current user for: " + ids)
-                          .build();
-                  return StatusProto.toStatusRuntimeException(status);
-                })
-            .getActionsList());
-  }
-
-  public static List<KeyValueQuery> getKeyValueQueriesByWorkspace(
-      MDBRoleService mdbRoleService, UserInfo userInfo, String workspaceName) {
-    var workspaceDTO = mdbRoleService.getWorkspaceByWorkspaceName(userInfo, workspaceName);
-    return getKeyValueQueriesByWorkspaceDTO(workspaceDTO);
-  }
-
-  public static List<KeyValueQuery> getKeyValueQueriesByWorkspaceDTO(Workspace workspaceDTO) {
-    List<KeyValueQuery> workspaceQueries = new ArrayList<>();
-    if (workspaceDTO != null && workspaceDTO.getId() != 0) {
-      KeyValueQuery workspacePredicates =
-          KeyValueQuery.newBuilder()
-              .setKey(ModelDBConstants.WORKSPACE)
-              .setValue(
-                  Value.newBuilder().setStringValue(String.valueOf(workspaceDTO.getId())).build())
-              .setOperator(OperatorEnum.Operator.EQ)
-              .setValueType(ValueTypeEnum.ValueType.STRING)
-              .build();
-      workspaceQueries.add(workspacePredicates);
-      KeyValueQuery workspaceTypePredicates =
-          KeyValueQuery.newBuilder()
-              .setKey(ModelDBConstants.WORKSPACE_TYPE)
-              .setValue(
-                  Value.newBuilder()
-                      .setNumberValue(
-                          workspaceDTO.getOrgId().isEmpty()
-                              ? WorkspaceType.USER_VALUE
-                              : WorkspaceType.ORGANIZATION_VALUE)
-                      .build())
-              .setOperator(OperatorEnum.Operator.EQ)
-              .setValueType(ValueTypeEnum.ValueType.NUMBER)
-              .build();
-      workspaceQueries.add(workspaceTypePredicates);
-    }
-    return workspaceQueries;
-  }
-
-  public static void scheduleTask(
-      TimerTask task, long initialDelay, long frequency, TimeUnit timeUnit) {
-    // scheduling the timer instance
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
-    executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
-  }
-
   public static boolean needToRetry(Exception ex) {
     Throwable communicationsException = findCommunicationsFailedCause(ex);
     if (communicationsException.getCause() instanceof SocketException) {
@@ -283,23 +167,6 @@ public class ModelDBUtils {
       rootCause = rootCause.getCause();
     }
     return rootCause;
-  }
-
-  /**
-   * Throws an error if the workspace type is USER and the workspaceId and userID do not match. Is a
-   * NO-OP if userinfo is null.
-   */
-  public static void checkPersonalWorkspace(
-      UserInfo userInfo,
-      WorkspaceType workspaceType,
-      String workspaceId,
-      String resourceNameString) {
-    if (userInfo != null
-        && workspaceType == WorkspaceType.USER
-        && !workspaceId.equals(userInfo.getVertaInfo().getUserId())) {
-      throw new PermissionDeniedException(
-          "Creation of " + resourceNameString + " in other user's workspace is not permitted");
-    }
   }
 
   public static void checkIfEntityAlreadyExists(
@@ -346,11 +213,6 @@ public class ModelDBUtils {
     return String.join("#", location);
   }
 
-  public static boolean isEnvSet(String envVar) {
-    String envVarVal = System.getenv(envVar);
-    return envVarVal != null && !envVarVal.isEmpty();
-  }
-
   public static void validateEntityNameWithColonAndSlash(String name) throws ModelDBException {
     if (name != null
         && !name.isEmpty()
@@ -358,26 +220,6 @@ public class ModelDBUtils {
       throw new ModelDBException(
           "Name can not contain ':' or '/' or '\\\\'", Code.INVALID_ARGUMENT);
     }
-  }
-
-  public static ModelDBException getInvalidFieldException(IllegalArgumentException ex) {
-    if (ex.getCause() != null
-        && ex.getCause().getMessage() != null
-        && ex.getCause().getMessage().contains("could not resolve property: ")) {
-      String invalidFieldName = ex.getCause().getMessage();
-      invalidFieldName = invalidFieldName.substring("could not resolve property: ".length());
-      invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf(" of:"));
-      return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
-    }
-    throw ex;
-  }
-
-  public static void logAmazonServiceExceptionErrorCodes(Logger LOGGER, AmazonServiceException e) {
-    LOGGER.info("Amazon Service Status Code: " + e.getStatusCode());
-    LOGGER.info("Amazon Service Error Code: " + e.getErrorCode());
-    LOGGER.info("Amazon Service Error Type: " + e.getErrorType());
-    LOGGER.info("Amazon Service Error Message: " + e.getErrorMessage());
   }
 
   public static ResourceVisibility getResourceVisibility(
