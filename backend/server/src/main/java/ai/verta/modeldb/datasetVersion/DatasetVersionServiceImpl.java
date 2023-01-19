@@ -239,8 +239,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -270,8 +269,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -357,8 +355,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -428,8 +425,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -486,8 +482,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -528,8 +523,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -583,8 +577,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -644,8 +637,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -703,8 +695,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -762,8 +753,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -804,8 +794,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -871,8 +860,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -911,8 +899,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -935,8 +922,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -982,10 +968,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver,
-          e
-      );
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -1004,10 +987,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver,
-          e
-      );
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -1032,10 +1012,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver,
-          e
-      );
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -1058,8 +1035,7 @@ public class DatasetVersionServiceImpl extends DatasetVersionServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }

@@ -109,8 +109,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -123,8 +122,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -247,8 +245,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -264,8 +261,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -347,8 +343,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -403,8 +398,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -425,8 +419,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -447,8 +440,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -461,8 +453,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -491,8 +482,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -519,8 +509,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -532,8 +521,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -608,8 +596,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -622,8 +609,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -733,8 +719,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -756,8 +741,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -820,8 +804,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -855,10 +838,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver,
-          e
-      );
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -897,8 +877,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }

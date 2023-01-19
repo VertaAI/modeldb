@@ -5,7 +5,6 @@ import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.telemetry.TelemetryCron;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import java.io.FileNotFoundException;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;

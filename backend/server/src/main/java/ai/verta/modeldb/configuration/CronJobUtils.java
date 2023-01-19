@@ -9,7 +9,6 @@ import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.cron_jobs.CleanUpEntitiesCron;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.cron_jobs.PopulateEnvironmentInRunCron;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import java.util.Map;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;

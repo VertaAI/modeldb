@@ -115,8 +115,7 @@ public class LineageServiceImpl extends LineageServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 

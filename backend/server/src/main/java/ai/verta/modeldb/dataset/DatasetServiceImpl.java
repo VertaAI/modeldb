@@ -415,8 +415,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -460,8 +459,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -576,8 +574,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -634,8 +631,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -689,8 +685,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -756,8 +751,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -902,8 +896,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -974,8 +967,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }

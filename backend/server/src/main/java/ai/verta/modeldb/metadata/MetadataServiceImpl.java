@@ -94,8 +94,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(GetLabelIdsRequest.Response.newBuilder().addAllIds(labelIds).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -121,8 +120,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(DeleteLabelsRequest.Response.newBuilder().setStatus(status).build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -149,8 +147,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(AddKeyValuePropertiesRequest.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -181,8 +178,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -210,8 +206,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       responseObserver.onNext(DeleteKeyValuePropertiesRequest.Response.newBuilder().build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -230,8 +225,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
               .build());
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e);
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }
