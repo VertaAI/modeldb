@@ -138,6 +138,6 @@ class context:
         If called after exiting the context manager, the final complete
         log entry is returned.
         """
-        logs: Dict[str, Any] = self.logs_dict
+        logs: Dict[str, Any] = self.logs_dict or _get_thread_logs()
         validate_json(logs)
         return logs
