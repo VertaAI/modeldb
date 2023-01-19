@@ -62,7 +62,7 @@ def _set_validate_flag(flag: bool) -> bool:
     return _THREAD.validate
 
 
-def validate_json(value: Any) -> str:
+def _validate_json(value: Any) -> str:
     """
     Attempt to serialize the provided value to JSON.
     Raise an error on failure.
@@ -70,9 +70,11 @@ def validate_json(value: Any) -> str:
     try:
         return json.dumps(value)
     except json.JSONDecodeError as json_err:
-        raise Exception("Unable to convert logging data to JSON") from json_err
+        print("provided data cannot be serialized into JSON for logging.")
+        raise json_err
     except TypeError as type_err:
-        raise Exception("Unable to serialize log value to JSON.") from type_err
+        print("provided data type cannot be converted to JSON for logging.")
+        raise type_err
 
 
 def log(key: str, value: Any) -> None:
@@ -114,7 +116,7 @@ def log(key: str, value: Any) -> None:
 
     """
     if _get_validate_flag():
-        validate_json(value)
+        _validate_json(value)
     local_context: Dict[str, Any] = _get_thread_logs()
     local_context.update({key: value})
     _set_thread_logs(local_context)
@@ -169,5 +171,5 @@ class context:
         log entry is returned.
         """
         logs: Dict[str, Any] = self.logs_dict or _get_thread_logs()
-        validate_json(logs)
+        _validate_json(logs)
         return logs
