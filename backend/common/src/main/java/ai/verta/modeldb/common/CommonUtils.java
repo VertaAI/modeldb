@@ -82,17 +82,31 @@ public class CommonUtils {
     executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
   }
 
-  public static ModelDBException getInvalidFieldException(IllegalArgumentException ex) {
-    if (ex.getCause() != null
-        && ex.getCause().getMessage() != null
-        && ex.getCause().getMessage().contains("could not resolve property: ")) {
-      String invalidFieldName = ex.getCause().getMessage();
-      invalidFieldName = invalidFieldName.substring("could not resolve property: ".length());
-      invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf(" of:"));
+  public static ModelDBException getInvalidFieldException(Exception ex) {
+    String invalidFieldName;
+    if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Unknown column ")) {
+      var invalidFieldNameArr = ex.getMessage().split("'");
+      invalidFieldName = invalidFieldNameArr[1].substring(3);
       return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+              "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+    } else if (ex != null
+            && ex.getMessage() != null
+            && ex.getMessage().contains("Invalid column ")) {
+      // Logic for MSSQL
+      invalidFieldName = ex.getMessage();
+      invalidFieldName = invalidFieldName.substring("Invalid column name '".length());
+      invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("'"));
+      return new ModelDBException(
+              "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+    } else if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Column ")) {
+      // Logic for H2 Database
+      invalidFieldName = ex.getMessage();
+      invalidFieldName = invalidFieldName.substring("Column '*..".length());
+      invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("\""));
+      return new ModelDBException(
+              "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     }
-    throw ex;
+    throw new ModelDBException(ex);
   }
 
   public interface RetryCallInterface<T> {
