@@ -1,4 +1,10 @@
 # -*- coding: utf-8 -*-
+"""Classes and functions to enable context logging within predictions made against
+models on the Verta Platform.
+
+.. versionadded:: 0.22.0
+
+"""
 
 import json
 import threading
@@ -30,6 +36,7 @@ def _set_thread_logs(logs: Dict[str, Any]) -> Dict[str, Any]:
     _THREAD.logs = logs
     return _THREAD.logs
 
+
 def _init_validate_flag() -> None:
     """
     Initialize our thread-local variable for the validation flag.
@@ -40,7 +47,8 @@ def _init_validate_flag() -> None:
 
 def _get_validate_flag() -> bool:
     """
-    Return the current thread-local validate flag or initialize a new boolean.
+    Return the current thread-local variable for validate or initialize a
+    new boolean.
     """
     _init_validate_flag()
     return _THREAD.validate
@@ -69,8 +77,9 @@ def validate_json(value: Any) -> str:
 
 def log(key: str, value: Any) -> None:
     """
-    Update current context dict with provided key and value.
-    Context is stored in thread-local variables.
+    Updates current logging context dict with provided key and value.
+    For use within a model's ``predict()`` method to collect logging
+    context, which is stored in thread-local variables.
 
     Parameters
     ----------
@@ -82,6 +91,27 @@ def log(key: str, value: Any) -> None:
     Returns
     -------
     None
+
+    Examples
+    --------
+    .. code-block:: python
+       :emphasize-lines: 10,13
+
+        from verta import runtime
+
+        # Sample model code:
+        class MyModel(VertaModelBase):
+            def __init__(self, artifacts):
+                "ok"
+
+            def predict(self, data):
+                logs = {'some_stuff': 'I_care_about'}
+                runtime.log('my_logging_key', logs)
+                prediction_output = 'some_output'
+                more_logs = ['a', 'list', 'of', 'things']
+                runtime.log('things', more_logs)
+                return prediction_output
+
     """
     if _get_validate_flag():
         validate_json(value)
