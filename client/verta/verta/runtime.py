@@ -147,12 +147,6 @@ class context:
         If true, each individual call to ``runtime.log('key', value)`` will
         verify that the value provided is JSON serializable.
 
-    Attributes
-    ----------
-    logs : Dict[str, Any]
-        Dictionary of the current logging context.  If called after exiting
-        the context manager, the final complete log entry is returned.
-
     Examples
     --------
 
