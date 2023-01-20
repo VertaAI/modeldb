@@ -12,7 +12,7 @@ import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateComment;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
@@ -28,7 +28,7 @@ import org.apache.logging.log4j.Logger;
 public class CommentServiceImpl extends CommentServiceImplBase {
 
   private static final Logger LOGGER = LogManager.getLogger(CommentServiceImpl.class);
-  private final AuthService authService;
+  private final UACApisUtil uacApisUtil;
   private final MDBRoleService mdbRoleService;
   private final CommentDAO commentDAO;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
@@ -36,7 +36,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
   String experimentRunEntity = ExperimentRunEntity.class.getSimpleName();
 
   public CommentServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
-    this.authService = serviceSet.getAuthService();
+    this.uacApisUtil = serviceSet.getUacApisUtil();
     this.mdbRoleService = serviceSet.getMdbRoleService();
     this.commentDAO = daoSet.getCommentDAO();
     this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
@@ -68,7 +68,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
     return Comment.newBuilder()
         .setId(UUID.randomUUID().toString())
         .setUserId(userInfo != null ? userInfo.getUserId() : "")
-        .setVertaId(authService.getVertaIdFromUserInfo(userInfo))
+        .setVertaId(uacApisUtil.getVertaIdFromUserInfo(userInfo))
         .setDateTime(Calendar.getInstance().getTimeInMillis())
         .setMessage(request.getMessage())
         .build();
@@ -97,7 +97,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
     return Comment.newBuilder()
         .setId(request.getId())
         .setUserId(userInfo != null ? userInfo.getUserId() : "")
-        .setVertaId(authService.getVertaIdFromUserInfo(userInfo))
+        .setVertaId(uacApisUtil.getVertaIdFromUserInfo(userInfo))
         .setDateTime(Calendar.getInstance().getTimeInMillis())
         .setMessage(request.getMessage())
         .build();
@@ -108,14 +108,14 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       AddComment request, StreamObserver<AddComment.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       var comment = getCommentFromRequest(request, userInfo);
       var newComment = commentDAO.addComment(experimentRunEntity, request.getEntityId(), comment);
       var response = AddComment.Response.newBuilder().setComment(newComment).build();
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -124,7 +124,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       UpdateComment request, StreamObserver<UpdateComment.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       var updatedComment = getUpdatedCommentFromRequest(request, userInfo);
       updatedComment =
           commentDAO.updateComment(experimentRunEntity, request.getEntityId(), updatedComment);
@@ -133,7 +133,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -146,7 +146,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
         throw new InvalidArgumentException(errorMessage);
       }
       String projectId =
-          futureExperimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId()).get();
+          futureExperimentRunDAO.getProjectIdByExperimentRunId(request.getEntityId()).blockAndGet();
       // Validate if current user has access to the entity or not
       mdbRoleService.validateEntityUserWithUserInfo(
           ModelDBServiceResourceTypes.PROJECT, projectId, ModelDBServiceActions.READ);
@@ -156,7 +156,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -178,7 +178,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       }
 
       // Get the user info from the Context
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       Boolean status =
           commentDAO.deleteComment(
               experimentRunEntity, request.getEntityId(), request.getId(), userInfo);
@@ -186,7 +186,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }
