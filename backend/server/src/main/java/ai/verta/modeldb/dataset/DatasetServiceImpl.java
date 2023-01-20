@@ -163,7 +163,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, CreateDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -238,7 +238,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetAllDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -261,7 +261,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, DeleteDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -287,7 +287,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetDatasetById.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -308,7 +308,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, FindDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -368,7 +368,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetDatasetByName.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -415,8 +415,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, UpdateDatasetName.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -460,8 +459,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, UpdateDatasetDescription.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -510,7 +508,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, AddDatasetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -522,7 +520,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -576,8 +574,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteDatasetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -634,8 +631,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, AddDatasetAttributes.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -689,8 +685,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, UpdateDatasetAttributes.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -756,8 +751,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteDatasetAttributes.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -785,7 +779,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -902,8 +896,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, LastExperimentByDatasetId.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -974,8 +967,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, GetExperimentRunByDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }
