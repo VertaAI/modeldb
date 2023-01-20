@@ -169,15 +169,15 @@ class context:
 
     """
     def __init__(self, validate: Optional[bool] = False):
-        self.validate = validate
-        self.logs_dict = dict()
+        self._validate = validate
+        self._logs_dict = dict()
 
     def __enter__(self):
         """
         Ensure an empty logging context to start and set validation flag.
         """
         _set_thread_logs(dict())
-        if self.validate:
+        if self._validate:
             _set_validate_flag(True)
         return self
 
@@ -186,7 +186,7 @@ class context:
         Capture the final complete log entry in a class variable, ensure an
         empty logging context, and reset the validation flag upon exit.
         """
-        self.logs_dict = _get_thread_logs()
+        self._logs_dict = _get_thread_logs()
         _set_thread_logs(dict())
         _set_validate_flag(False)
 
@@ -206,6 +206,6 @@ class context:
         JSONDecodeError
             If logs contain any values that are not JSON-serializable.
             """
-        logs: Dict[str, Any] = self.logs_dict or _get_thread_logs()
+        logs: Dict[str, Any] = self._logs_dict or _get_thread_logs()
         _validate_json(logs)
         return logs
