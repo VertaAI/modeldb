@@ -134,11 +134,16 @@ def log(key: str, value: Any) -> None:
 class context:
     """
     Context manager for aggregating key-value pairs into a custom log entry.
-    Uses thread-local variables to store context in a thread-safe manner.
+    It should not be necessary to instantiate this class directly unless you
+    wish to export log entries manually to a resource other than Amazon S3.
+
+    For all models deployed in Verta with active endpoints, the :meth:`~verta.registry.VertaModelBase.predict`
+    of the model is wrapped inside an object of this class by default. Logs
+    collected inside the `predict()` function are exported to S3.
 
     Parameters
     ----------
-    validate : Optional[bool]
+    validate : bool, default False
         If true, each individual call to ``runtime.log('key', value)`` will
         verify that the value provided is JSON serializable.
 
@@ -147,6 +152,27 @@ class context:
     logs : Dict[str, Any]
         Dictionary of the current logging context.  If called after exiting
         the context manager, the final complete log entry is returned.
+
+    Examples
+    --------
+
+    .. code-block:: python
+       :emphasize-lines: 4
+
+        import json
+        from verta import runtime
+
+        with runtime.context() as ctx:
+            runtime.log('labels', {'model_type': 'scikit_learn'})
+            output = 'this_is_output'
+            runtime.log('output', output)
+            print json.dumps(ctx.logs())
+
+        # After exiting the context manager:
+        final_log_entry = json.dumps(ctx.logs())
+
+        # Output (both) = {"labels": {"model_type": "scikit_learn"}, "output": "this_is_output"}
+
     """
     def __init__(self, validate: Optional[bool] = False):
         self.validate = validate
@@ -178,7 +204,14 @@ class context:
 
         If called after exiting the context manager, the final complete
         log entry is returned.
-        """
+
+        Raises
+        -------
+        TypeError
+            If logs contain a type that is not JSON-serializable.
+        JSONDecodeError
+            If logs contain any values that are not JSON-serializable.
+            """
         logs: Dict[str, Any] = self.logs_dict or _get_thread_logs()
         _validate_json(logs)
         return logs
