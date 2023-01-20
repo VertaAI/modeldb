@@ -145,8 +145,8 @@ def log(key: str, value: Any) -> None:
     if _get_validate_flag():
         _validate_json(value)
     _validate_s3(key)
-    local_context: Dict[str, Any] = _get_thread_logs()
-    local_context.update({key: value})
+    local_logs: Dict[str, Any] = _get_thread_logs()
+    local_logs.update({key: value})
 
 
 class context:
