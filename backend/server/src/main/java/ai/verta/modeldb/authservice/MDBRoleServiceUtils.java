@@ -324,6 +324,8 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
     }
     try {
       return uacApisUtil.getWorkspaceByName(workspaceName).blockAndGet();
+    } catch (StatusRuntimeException e) {
+      throw e;
     } catch (Exception e) {
       throw new ModelDBException(e);
     }
