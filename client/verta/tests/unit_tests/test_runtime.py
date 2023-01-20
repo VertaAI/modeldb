@@ -7,9 +7,9 @@ Tests for the runtime context logging tools
 from concurrent import futures
 import unittest
 import pytest
-from typing import Any, Dict, List
-
+from typing import Any, Dict
 from verta import runtime
+
 
 def test_thread_safety() -> None:
     """
@@ -24,7 +24,6 @@ def test_thread_safety() -> None:
         thread_2_log = {'thread_2_key': 'thread_2_val'}
         with runtime.context():
             executor.map(log_in_thread, [thread_1_log, thread_2_log])
-
 
 
 class TestThreadLocalFunctions(unittest.TestCase):
