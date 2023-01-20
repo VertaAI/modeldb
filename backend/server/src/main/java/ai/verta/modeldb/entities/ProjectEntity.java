@@ -6,7 +6,8 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.ProjectVisibility;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.utils.RdbmsUtils;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -340,7 +341,7 @@ public class ProjectEntity implements Serializable {
 
   public Project getProtoObject(
       MDBRoleService mdbRoleService,
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       Map<Long, Workspace> cacheWorkspaceMap,
       Map<String, GetResourcesResponseItem> getResourcesMap) {
     var projectBuilder =
@@ -395,8 +396,12 @@ public class ProjectEntity implements Serializable {
     if (cacheWorkspaceMap.containsKey(projectResource.getWorkspaceId())) {
       workspace = cacheWorkspaceMap.get(projectResource.getWorkspaceId());
     } else {
-      workspace = authService.workspaceById(false, projectResource.getWorkspaceId());
-      cacheWorkspaceMap.put(workspace.getId(), workspace);
+      try {
+        workspace = uacApisUtil.getWorkspaceById(projectResource.getWorkspaceId()).blockAndGet();
+        cacheWorkspaceMap.put(workspace.getId(), workspace);
+      } catch (Exception e) {
+        throw new ModelDBException(e);
+      }
     }
     switch (workspace.getInternalIdCase()) {
       case ORG_ID:

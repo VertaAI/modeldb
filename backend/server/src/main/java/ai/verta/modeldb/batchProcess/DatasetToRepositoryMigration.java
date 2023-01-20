@@ -8,10 +8,9 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetTypeEnum;
 import ai.verta.modeldb.DatasetVersion;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
@@ -28,7 +27,6 @@ import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.*;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.Role;
@@ -57,7 +55,7 @@ public class DatasetToRepositoryMigration {
   private static final Logger LOGGER = LogManager.getLogger(DatasetToRepositoryMigration.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private static AuthService authService;
+  private static UACApisUtil uacApisUtil;
   private static MDBRoleService mdbRoleService;
   private static CommitDAO commitDAO;
   private static RepositoryDAO repositoryDAO;
@@ -72,16 +70,16 @@ public class DatasetToRepositoryMigration {
     DatasetToRepositoryMigration.recordUpdateLimit = recordUpdateLimit;
     config = App.getInstance().mdbConfig;
     var uac = UAC.fromConfig(config, Optional.empty());
-    authService = MDBAuthServiceUtils.FromConfig(config, uac);
-    mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
+    var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
+    uacApisUtil = new UACApisUtil(executor, uac);
+    mdbRoleService = MDBRoleServiceUtils.FromConfig(config, uacApisUtil, uac);
 
-    commitDAO = new CommitDAORdbImpl(authService, mdbRoleService);
+    commitDAO = new CommitDAORdbImpl(uacApisUtil, mdbRoleService);
     repositoryDAO =
-        new RepositoryDAORdbImpl(authService, mdbRoleService, commitDAO, metadataDAO, config);
-    blobDAO = new BlobDAORdbImpl(authService, mdbRoleService);
+        new RepositoryDAORdbImpl(uacApisUtil, mdbRoleService, commitDAO, metadataDAO, config);
+    blobDAO = new BlobDAORdbImpl(uacApisUtil, mdbRoleService);
     metadataDAO = new MetadataDAORdbImpl();
 
-    var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
     futureExperimentRunDAO =
         new FutureExperimentRunDAO(
             executor,
@@ -174,7 +172,8 @@ public class DatasetToRepositoryMigration {
           // Fetch the Dataset owners userInfo
           Map<String, UserInfo> userInfoMap = new HashMap<>();
           if (!userIds.isEmpty()) {
-            userInfoMap = authService.getUserInfoFromAuthServer(userIds, null, null, true);
+            userInfoMap =
+                uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
           }
           LOGGER.debug("Resolved owners in the batch from uac ");
 
@@ -208,7 +207,7 @@ public class DatasetToRepositoryMigration {
         if (ModelDBUtils.needToRetry(ex)) {
           migrateDatasetsToRepositories();
         } else {
-          throw ex;
+          throw new ModelDBException(ex);
         }
       } finally {
         LOGGER.debug("gc starts");
@@ -295,7 +294,7 @@ public class DatasetToRepositoryMigration {
       LOGGER.debug("Creating repository for dataset {}", datasetEntity.getId());
       dataset =
           repositoryDAO.createOrUpdateDataset(
-              newDataset, authService.getUsernameFromUserInfo(userInfoValue), true, userInfoValue);
+              newDataset, uacApisUtil.getUsernameFromUserInfo(userInfoValue), true, userInfoValue);
       markStartedDatasetMigration(datasetId, Long.parseLong(dataset.getId()), STARTED);
       LOGGER.debug("Adding repository collaborattor for dataset {}", datasetEntity.getId());
       migrateDatasetCollaborators(datasetId, dataset);
@@ -308,7 +307,7 @@ public class DatasetToRepositoryMigration {
           dataset =
               repositoryDAO.createOrUpdateDataset(
                   newDataset,
-                  authService.getUsernameFromUserInfo(userInfoValue),
+                  uacApisUtil.getUsernameFromUserInfo(userInfoValue),
                   false,
                   userInfoValue);
           LOGGER.debug(
@@ -348,7 +347,7 @@ public class DatasetToRepositoryMigration {
             .equals(EntitiesEnum.EntitiesTypes.TEAM)) {
           collaboratorBase = new CollaboratorTeam(collaboratorResponse.getVertaId());
         } else {
-          collaboratorBase = new CollaboratorUser(authService, collaboratorResponse.getVertaId());
+          collaboratorBase = new CollaboratorUser(uacApisUtil, collaboratorResponse.getVertaId());
         }
         if (collaboratorResponse
             .getPermission()

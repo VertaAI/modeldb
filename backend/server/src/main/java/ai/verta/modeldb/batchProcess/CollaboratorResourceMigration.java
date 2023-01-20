@@ -7,11 +7,12 @@ import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.DatasetVisibilityEnum;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.entities.ProjectEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
@@ -41,7 +42,7 @@ public class CollaboratorResourceMigration {
   private static final String REPOSITORY_GLOBAL_SHARING = "_REPO_GLOBAL_SHARING";
   private static final String VISIBILITY_MIGRATION = "visibility_migration";
   private static final String CREATED = "created";
-  private static AuthService authService;
+  private static UACApisUtil uacApisUtil;
   private static UAC uac;
   private static MDBRoleService mdbRoleService;
   private static int paginationSize;
@@ -51,8 +52,10 @@ public class CollaboratorResourceMigration {
     CollaboratorResourceMigration.paginationSize = 100;
     if (config.hasAuth()) {
       uac = UAC.fromConfig(config, Optional.empty());
-      authService = MDBAuthServiceUtils.FromConfig(config, uac);
-      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
+      var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
+      ;
+      uacApisUtil = new UACApisUtil(executor, uac);
+      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, uacApisUtil, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found, OSS setup found");
       return;
@@ -108,14 +111,18 @@ public class CollaboratorResourceMigration {
           if (!userInfoMap.containsKey(project.getOwner())) {
             try {
               userInfoMap.putAll(
-                  authService.getUserInfoFromAuthServer(
-                      Collections.singleton(project.getOwner()), null, null, true));
+                  uacApisUtil
+                      .getUserInfoFromAuthServer(
+                          Collections.singleton(project.getOwner()), null, null, true)
+                      .blockAndGet());
             } catch (StatusRuntimeException ex) {
               if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
                 LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
                 continue;
               }
               throw ex;
+            } catch (Exception ex) {
+              throw new ModelDBException(ex);
             }
           }
           try {
@@ -256,14 +263,18 @@ public class CollaboratorResourceMigration {
           if (!userInfoMap.containsKey(repository.getOwner())) {
             try {
               userInfoMap.putAll(
-                  authService.getUserInfoFromAuthServer(
-                      Collections.singleton(repository.getOwner()), null, null, true));
+                  uacApisUtil
+                      .getUserInfoFromAuthServer(
+                          Collections.singleton(repository.getOwner()), null, null, true)
+                      .blockAndGet());
             } catch (StatusRuntimeException ex) {
               if (ex.getStatus().getCode() == Status.Code.NOT_FOUND) {
                 LOGGER.warn("Failed to get user info (skipping) : " + ex.toString());
                 continue;
               }
               throw ex;
+            } catch (Exception ex) {
+              throw new ModelDBException(ex);
             }
           }
           try {

@@ -3,7 +3,7 @@ package ai.verta.modeldb.authservice;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -27,11 +27,11 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   private RepositoryDAO repositoryDAO;
   private MetadataDAO metadataDAO;
 
-  public PublicMDBRoleServiceUtils(AuthService authService, MDBConfig mdbConfig) {
+  public PublicMDBRoleServiceUtils(UACApisUtil uacApisUtil, MDBConfig mdbConfig) {
     this.metadataDAO = new MetadataDAORdbImpl();
-    var commitDAO = new CommitDAORdbImpl(authService, this);
+    var commitDAO = new CommitDAORdbImpl(uacApisUtil, this);
     this.repositoryDAO =
-        new RepositoryDAORdbImpl(authService, this, commitDAO, metadataDAO, mdbConfig);
+        new RepositoryDAORdbImpl(uacApisUtil, this, commitDAO, metadataDAO, mdbConfig);
   }
 
   @Override
@@ -103,7 +103,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
     if (resourceId != null && !resourceId.isEmpty()) {
       if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
         try {
-          if (futureProjectDAO.getProjectById(resourceId).get() != null) {
+          if (futureProjectDAO.getProjectById(resourceId).blockAndGet() != null) {
             throw new NotFoundException(ModelDBMessages.PROJECT_NOT_FOUND_FOR_ID);
           }
         } catch (Exception e) {

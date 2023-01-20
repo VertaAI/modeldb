@@ -6901,6 +6901,16 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             Optional.of(roleIdUser1),
             Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET));
       }
+
+      if (testConfig.isPermissionV2Enabled() && isRunningIsolated()) {
+        when(uac.getWorkspaceService().getWorkspaceById(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    Workspace.newBuilder()
+                        .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .setUsername(testUser1.getVertaInfo().getUsername())
+                        .build()));
+      }
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))

@@ -1,11 +1,11 @@
 package ai.verta.modeldb;
 
-import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.config.MDBConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
@@ -22,17 +22,20 @@ import lombok.Setter;
 @Setter(AccessLevel.NONE)
 public class ServiceSet {
   @JsonProperty private ArtifactStoreService artifactStoreService = null;
-  @JsonProperty private AuthService authService;
+  @JsonProperty private UACApisUtil uacApisUtil;
   @JsonProperty private UAC uac;
   @JsonProperty private MDBRoleService mdbRoleService;
   @JsonProperty private App app;
 
   public static ServiceSet fromConfig(
-      MDBConfig mdbConfig, ArtifactStoreService artifactStoreService, UAC uac) {
+      MDBConfig mdbConfig,
+      ArtifactStoreService artifactStoreService,
+      UAC uac,
+      FutureExecutor executor) {
     var set = new ServiceSet();
     set.uac = uac;
-    set.authService = MDBAuthServiceUtils.FromConfig(mdbConfig, set.uac);
-    set.mdbRoleService = MDBRoleServiceUtils.FromConfig(mdbConfig, set.authService, set.uac);
+    set.uacApisUtil = new UACApisUtil(executor, uac);
+    set.mdbRoleService = MDBRoleServiceUtils.FromConfig(mdbConfig, set.uacApisUtil, set.uac);
 
     // Initialize App.java singleton instance
     set.app = App.getInstance();
