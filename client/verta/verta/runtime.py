@@ -183,8 +183,8 @@ class context:
 
     def __exit__(self, *args):
         """
-        Capture the final complete log entry in a class variable, ensure an
-        empty logging context, and reset the validation flag upon exit.
+        Capture the final complete log entry in an instance variable, ensure
+        an empty logging context, and reset the validation flag upon exit.
         """
         self._logs_dict = _get_thread_logs()
         _set_thread_logs(dict())
