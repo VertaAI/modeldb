@@ -115,7 +115,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, AddComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -133,7 +133,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, UpdateComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -156,7 +156,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetComments.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -186,7 +186,7 @@ public class CommentServiceImpl extends CommentServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, DeleteComment.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }

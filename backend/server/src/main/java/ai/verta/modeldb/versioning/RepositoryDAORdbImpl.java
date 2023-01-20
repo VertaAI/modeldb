@@ -7,6 +7,7 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.authservice.MDBRoleService;
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -1205,7 +1206,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         throw ex;
       }
     } catch (IllegalArgumentException ex) {
-      throw ModelDBUtils.getInvalidFieldException(ex);
+      throw CommonUtils.getInvalidFieldException(ex);
     } catch (Exception ex) {
       if (ModelDBUtils.needToRetry(ex)) {
         return findRepositories(request);

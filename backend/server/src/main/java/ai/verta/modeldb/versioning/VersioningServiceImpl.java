@@ -109,8 +109,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, ListRepositoriesRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -123,8 +122,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, GetRepositoryRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -172,7 +170,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, SetRepository.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -214,7 +212,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, SetRepository.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -248,8 +246,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteRepositoryRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -265,8 +262,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, ListCommitsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -282,7 +278,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetCommitRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -348,8 +344,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, CreateCommitRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -404,8 +399,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteCommitRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -426,8 +420,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, ListCommitBlobsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -448,8 +441,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, GetCommitComponentRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -462,8 +454,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, ComputeRepositoryDiffRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -492,8 +483,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, MergeRepositoryCommitsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -520,8 +510,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(mergeResponse);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, RevertRepositoryCommitsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -533,8 +522,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, ListBranchesRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -547,7 +535,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetBranchRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -578,7 +566,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, SetBranchRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -609,8 +597,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteBranchRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -623,8 +610,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, ListCommitsLogRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -636,7 +622,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, ListTagsRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -648,7 +634,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetTagRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -678,7 +664,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, SetTagRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -708,7 +694,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, DeleteTagRequest.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -720,7 +706,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, FindRepositories.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -734,8 +720,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, FindRepositoriesBlobs.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -757,8 +742,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, GetUrlForBlobVersioned.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -821,8 +805,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, CommitVersionedBlobArtifactPart.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -856,10 +839,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver,
-          e,
-          GetCommittedVersionedBlobArtifactParts.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -898,8 +878,7 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
       responseObserver.onNext(response);
       responseObserver.onCompleted();
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, CommitMultipartVersionedBlobArtifact.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }

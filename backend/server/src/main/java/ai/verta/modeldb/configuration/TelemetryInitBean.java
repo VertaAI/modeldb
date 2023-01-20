@@ -1,10 +1,10 @@
 package ai.verta.modeldb.configuration;
 
+import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.telemetry.TelemetryCron;
-import ai.verta.modeldb.utils.ModelDBUtils;
 import java.io.FileNotFoundException;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
@@ -26,7 +26,7 @@ public class TelemetryInitBean {
     if (!mdbConfig.getTelemetry().isOpt_out()) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(mdbConfig.getTelemetry().getConsumer());
-      ModelDBUtils.scheduleTask(
+      CommonUtils.scheduleTask(
           task,
           mdbConfig.getTelemetry().getFrequency(),
           mdbConfig.getTelemetry().getFrequency(),
