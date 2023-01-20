@@ -7,11 +7,14 @@ models on the Verta Platform.
 """
 
 import json
+import re
 import threading
 from typing import Any, Dict, Optional
 
 
 _THREAD = threading.local()
+_S3_REGEX = re.compile("^[a-zA-Z0-9!_.*'()-]+(/[a-zA-Z0-9!_.*'()-]+)*$")
+# https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
 
 def _init_thread_logs() -> None:
     """
@@ -77,6 +80,20 @@ def _validate_json(value: Any) -> str:
         raise type_err
 
 
+def _validate_s3(
+        value: str,
+        pattern: re.Pattern = _S3_REGEX
+    ) -> None:
+    """
+    Check the provided value for any special characters that would
+    violate Amazon S3 path naming rules. Raise ValueError if any are found.
+    """
+    if not pattern.match(value):
+        raise ValueError(f" provided value \"{value}\" does not conform to "
+                         f"Amazon S3 object key naming rules. See \"Safe characters\": "
+                         f"https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html")
+
+
 def log(key: str, value: Any) -> None:
     """
     Updates current logging context dict with provided key and value.
@@ -127,6 +144,7 @@ def log(key: str, value: Any) -> None:
     """
     if _get_validate_flag():
         _validate_json(value)
+    _validate_s3(key)
     local_context: Dict[str, Any] = _get_thread_logs()
     local_context.update({key: value})
 

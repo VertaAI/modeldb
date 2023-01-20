@@ -7,7 +7,7 @@ Tests for the runtime context logging tools
 from concurrent import futures
 import unittest
 import pytest
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 from verta import runtime
 
@@ -26,12 +26,6 @@ def test_thread_safety() -> None:
             executor.map(log_in_thread, [thread_1_log, thread_2_log])
 
 
-def test_json_validation() -> None:
-    """
-    Validate that bad types and unserializable JSON are caught
-    """
-    with pytest.raises(TypeError):
-        runtime._validate_json(unittest.TestCase)
 
 class TestThreadLocalFunctions(unittest.TestCase):
     """ Unit tests for the functions that handle thread local variables """
@@ -66,3 +60,49 @@ class TestThreadLocalFunctions(unittest.TestCase):
         runtime._set_validate_flag(True)
         assert runtime._get_validate_flag() == True
         runtime._set_validate_flag(False)
+
+
+
+def test_json_validation() -> None:
+    """
+    Validate that bad types and unserializable JSON are caught
+    """
+    with pytest.raises(TypeError):
+        runtime._validate_json(unittest.TestCase)
+
+
+@pytest.mark.parametrize(
+    'key',
+    [
+        '',
+        'not_an_ok_val_@',
+        'no spaces allowed',
+        '<no_brackets>',
+        'no+plus_or_=equals'
+    ]
+)
+def test_s3_validation_bad_keys(key: str):
+    """
+    Ensure improper keys trigger a ValueError exception
+    """
+    with pytest.raises(ValueError):
+        runtime._validate_s3(key)
+
+
+@pytest.mark.parametrize(
+    'key',
+    [
+        'abc123xyz',
+        '-/abc/(def)/!x*yz.def.hij',
+        'this-key-is-just-fine!(yipEEEE*)'
+        'single_quotes\'are_ok_too'
+    ]
+)
+def test_s3_validation_good_keys(key: str):
+    """
+    Ensure improper keys trigger a ValueError exception
+    """
+    runtime._validate_s3(key)
+
+
+
