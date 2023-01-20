@@ -207,5 +207,6 @@ class context:
             If logs contain any values that are not JSON-serializable.
             """
         logs: Dict[str, Any] = self._logs_dict or _get_thread_logs()
-        _validate_json(logs)
+        if self._validate:
+            _validate_json(logs)
         return logs
