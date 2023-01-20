@@ -72,9 +72,6 @@ def _validate_json(value: Any) -> str:
     """
     try:
         return json.dumps(value)
-    except json.JSONDecodeError as json_err:
-        print("provided data cannot be serialized into JSON for logging.")
-        raise json_err
     except TypeError as type_err:
         print("provided data type cannot be converted to JSON for logging.")
         raise type_err
@@ -105,8 +102,8 @@ def log(key: str, value: Any) -> None:
     key : str
         String value to use as data label (key) in logging context.
     value : Any
-        Any JSON serializable value you wish to include in the context logs.
-
+        Any `JSON serializable <https://docs.python.org/3/library/json.html#json.JSONEncoder>`__
+        value you wish to include in the context logs.
     Returns
     -------
     None
@@ -116,9 +113,6 @@ def log(key: str, value: Any) -> None:
     TypeError
         If `validate` was set to ``True`` on the active :class:`context`, and
         `value` is not a JSON-serializable type.
-    JSONDecodeError
-        If `validate` was set to ``True`` on the active :class:`context`, and
-        `value` is not JSON-serializable.
 
     Examples
     --------
@@ -211,17 +205,12 @@ class context:
     def logs(self) -> Dict[str, Any]:
         """
         Return the currently stored, thread-local logs from inside this
-        context manager. JSON serialization is attempted on the whole
-        dictionary and an error is raised on failure.
+        context manager. If called after exiting the context manager, the
+        final complete log entry is returned.
 
-        If called after exiting the context manager, the final complete
-        log entry is returned.
-
-        Raises
+        Returns
         -------
-        TypeError
-            If logs contain a type that is not JSON-serializable.
-        JSONDecodeError
-            If logs contain any values that are not JSON-serializable.
-            """
+        logs : Dict[str, Any]
+            Dictionary of log entries collected within this context manager.
+        """
         return  self._logs_dict or _get_thread_logs()
