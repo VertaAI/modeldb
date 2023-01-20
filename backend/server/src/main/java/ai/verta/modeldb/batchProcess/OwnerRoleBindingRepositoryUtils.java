@@ -2,17 +2,22 @@ package ai.verta.modeldb.batchProcess;
 
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.UserInfo;
-import java.util.*;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
 import javax.persistence.TypedQuery;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Root;
@@ -25,7 +30,7 @@ public class OwnerRoleBindingRepositoryUtils {
   private static final Logger LOGGER = LogManager.getLogger(OwnerRoleBindingUtils.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private static AuthService authService;
+  private static UACApisUtil uacApisUtil;
   private static UAC uac;
   private static MDBRoleService mdbRoleService;
 
@@ -33,8 +38,9 @@ public class OwnerRoleBindingRepositoryUtils {
     var config = App.getInstance().mdbConfig;
     if (config.hasAuth()) {
       uac = UAC.fromConfig(config, Optional.empty());
-      authService = MDBAuthServiceUtils.FromConfig(config, uac);
-      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
+      var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
+      uacApisUtil = new UACApisUtil(executor, uac);
+      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, uacApisUtil, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;
@@ -84,7 +90,7 @@ public class OwnerRoleBindingRepositoryUtils {
           }
           // Fetch the Repository owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null, true);
+              uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
             var userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
             if (userInfoValue != null) {
@@ -93,7 +99,7 @@ public class OwnerRoleBindingRepositoryUtils {
                     ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
                 mdbRoleService.createRoleBinding(
                     ModelDBConstants.ROLE_REPOSITORY_OWNER,
-                    new CollaboratorUser(authService, userInfoValue),
+                    new CollaboratorUser(uacApisUtil, userInfoValue),
                     String.valueOf(repositoryEntity.getId()),
                     modelDBServiceResourceTypes);
               } catch (Exception e) {
@@ -116,7 +122,7 @@ public class OwnerRoleBindingRepositoryUtils {
         if (ModelDBUtils.needToRetry(ex)) {
           migrateRepositories();
         } else {
-          throw ex;
+          throw new ModelDBException(ex);
         }
       }
     }

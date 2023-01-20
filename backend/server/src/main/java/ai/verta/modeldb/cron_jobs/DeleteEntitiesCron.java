@@ -3,7 +3,6 @@ package ai.verta.modeldb.cron_jobs;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.DatasetEntity;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
@@ -40,13 +39,10 @@ public class DeleteEntitiesCron extends TimerTask {
   private static final String DELETED_KEY = "deleted";
   private static final String REPO_ID_KEY = "repoId";
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-  private final AuthService authService;
   private final MDBRoleService mdbRoleService;
   private final Integer recordUpdateLimit;
 
-  public DeleteEntitiesCron(
-      AuthService authService, MDBRoleService mdbRoleService, Integer recordUpdateLimit) {
-    this.authService = authService;
+  public DeleteEntitiesCron(MDBRoleService mdbRoleService, Integer recordUpdateLimit) {
     this.mdbRoleService = mdbRoleService;
     this.recordUpdateLimit = recordUpdateLimit;
   }

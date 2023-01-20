@@ -8,9 +8,9 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.authservice.RoleServiceUtils;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorTeam;
@@ -35,13 +35,13 @@ import org.apache.logging.log4j.Logger;
 public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleService {
   private static final Logger LOGGER = LogManager.getLogger(MDBRoleServiceUtils.class);
 
-  public static MDBRoleService FromConfig(MDBConfig config, AuthService authService, UAC uac) {
-    if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(authService, config);
-    else return new MDBRoleServiceUtils(config, authService, uac);
+  public static MDBRoleService FromConfig(MDBConfig config, UACApisUtil uacApisUtil, UAC uac) {
+    if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(uacApisUtil, config);
+    else return new MDBRoleServiceUtils(config, uacApisUtil, uac);
   }
 
-  private MDBRoleServiceUtils(MDBConfig config, AuthService authService, UAC uac) {
-    super(authService, config.getGrpcServer().getRequestTimeout(), uac);
+  private MDBRoleServiceUtils(MDBConfig config, UACApisUtil uacApisUtil, UAC uac) {
+    super(uacApisUtil, config.getGrpcServer().getRequestTimeout(), uac);
   }
 
   @Override
@@ -125,7 +125,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
       for (Entities entities : getAllowedEntitiesResponse.getEntitiesList()) {
         entities.getUserIdsList().stream()
             .filter(id -> !id.equals(resourceOwnerId))
-            .forEach(id -> collaborators.add(new CollaboratorUser(authService, id)));
+            .forEach(id -> collaborators.add(new CollaboratorUser(uacApisUtil, id)));
         entities
             .getTeamIdsList()
             .forEach(
@@ -322,7 +322,11 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
     if (Strings.isNullOrEmpty(workspaceName)) {
       return Workspace.newBuilder().build();
     }
-    return authService.workspaceIdByName(true, workspaceName);
+    try {
+      return uacApisUtil.getWorkspaceByName(workspaceName).blockAndGet();
+    } catch (Exception e) {
+      throw new ModelDBException(e);
+    }
   }
 
   /**
@@ -344,12 +348,18 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
       case WorkspaceType.USER_VALUE:
         workspaceDTO.setWorkspaceType(WorkspaceType.USER);
         if (workspaceId.equalsIgnoreCase(
-            authService.getVertaIdFromUserInfo(currentLoginUserInfo))) {
-          workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(currentLoginUserInfo));
+            uacApisUtil.getVertaIdFromUserInfo(currentLoginUserInfo))) {
+          workspaceDTO.setWorkspaceName(uacApisUtil.getUsernameFromUserInfo(currentLoginUserInfo));
         } else {
-          var userInfo =
-              authService.getUserInfo(workspaceId, CommonConstants.UserIdentifier.VERTA_ID);
-          workspaceDTO.setWorkspaceName(authService.getUsernameFromUserInfo(userInfo));
+          try {
+            var userInfo =
+                uacApisUtil
+                    .getUserInfo(workspaceId, CommonConstants.UserIdentifier.VERTA_ID)
+                    .blockAndGet();
+            workspaceDTO.setWorkspaceName(uacApisUtil.getUsernameFromUserInfo(userInfo));
+          } catch (Exception e) {
+            throw new ModelDBException(e);
+          }
         }
         return workspaceDTO;
       default:

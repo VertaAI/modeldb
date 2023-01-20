@@ -1,7 +1,8 @@
-package ai.verta.modeldb.utils;
+package ai.verta.modeldb.common.authservice;
 
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.modeldb.common.CommonConstants.UserIdentifier;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
@@ -10,9 +11,11 @@ import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.Action;
+import ai.verta.uac.Empty;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
+import ai.verta.uac.GetUser;
 import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.GetWorkspaceById;
@@ -126,6 +129,13 @@ public class UACApisUtil {
         executor);
   }
 
+  public InternalFuture<Workspace> getWorkspaceByName(String workspaceName) {
+    return FutureUtil.clientRequest(
+        uac.getWorkspaceService()
+            .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
+        executor);
+  }
+
   public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
       Optional<String> workspaceName,
       Long workspaceId,
@@ -201,7 +211,10 @@ public class UACApisUtil {
   }
 
   public InternalFuture<Map<String, UserInfo>> getUserInfoFromAuthServer(
-      Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
+      Set<String> vertaIdList,
+      Set<String> emailIdList,
+      List<String> usernameList,
+      boolean isServiceUser) {
     var getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
     if (emailIdList != null && !emailIdList.isEmpty()) {
       getUserRequestBuilder.addAllEmails(emailIdList);
@@ -262,5 +275,54 @@ public class UACApisUtil {
               }
             },
             executor);
+  }
+
+  public InternalFuture<UserInfo> getCurrentLoginUserInfo() {
+    return FutureUtil.clientRequest(
+        uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor);
+  }
+
+  public InternalFuture<UserInfo> getUserInfo(String vertaId, UserIdentifier vertaIdentifier) {
+    GetUser getUserRequest;
+    if (vertaIdentifier == UserIdentifier.EMAIL_ID) {
+      getUserRequest = GetUser.newBuilder().setEmail(vertaId).build();
+    } else if (vertaIdentifier == UserIdentifier.USER_NAME) {
+      getUserRequest = GetUser.newBuilder().setUsername(vertaId).build();
+    } else {
+      getUserRequest = GetUser.newBuilder().setUserId(vertaId).build();
+    }
+
+    LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
+    // Get the user info from the Context
+    return FutureUtil.clientRequest(uac.getUACService().getUser(getUserRequest), executor)
+        .thenApply(
+            userInfo -> {
+              if (userInfo == null) {
+                throw new NotFoundException("User not found with the provided metadata");
+              }
+              return userInfo;
+            },
+            executor);
+  }
+
+  public String getVertaIdFromUserInfo(UserInfo userInfo) {
+    if (userInfo != null && !userInfo.getVertaInfo().getUserId().isEmpty()) {
+      return userInfo.getVertaInfo().getUserId();
+    }
+    throw new NotFoundException("VertaId not found in userInfo");
+  }
+
+  public String getUsernameFromUserInfo(UserInfo userInfo) {
+    if (userInfo != null && !userInfo.getVertaInfo().getUsername().isEmpty()) {
+      return userInfo.getVertaInfo().getUsername();
+    }
+    throw new NotFoundException("Username not found in userInfo");
+  }
+
+  public Long getWorkspaceIdFromUserInfo(UserInfo userInfo) {
+    if (userInfo != null && !userInfo.getVertaInfo().getWorkspaceId().isEmpty()) {
+      return Long.parseLong(userInfo.getVertaInfo().getWorkspaceId());
+    }
+    throw new NotFoundException("WorkspaceId not found in userInfo");
   }
 }

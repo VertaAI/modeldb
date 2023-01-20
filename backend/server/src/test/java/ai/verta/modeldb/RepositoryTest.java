@@ -38,7 +38,9 @@ import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetUsersFuzzy;
+import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.IsSelfAllowed;
+import ai.verta.uac.Workspace;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -250,6 +252,13 @@ public class RepositoryTest extends ModeldbTestSetup {
       mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser1);
       when(collaboratorBlockingMock.setResource(any()))
           .thenThrow(new PermissionDeniedException("Permission Denied"));
+      when(uac.getWorkspaceService().getWorkspaceByName(any()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  Workspace.newBuilder()
+                      .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .setUsername(testUser1.getVertaInfo().getUsername())
+                      .build()));
     }
     try {
       try {
@@ -828,11 +837,12 @@ public class RepositoryTest extends ModeldbTestSetup {
 
       if (testConfig.hasAuth()) {
         if (isRunningIsolated()) {
-          when(uacBlockingMock.getUsers(any()))
+          when(uac.getUACService().getUsers(any()))
               .thenReturn(
-                  GetUsers.Response.newBuilder()
-                      .addAllUserInfos(List.of(testUser1, testUser2))
-                      .build());
+                  Futures.immediateFuture(
+                      GetUsers.Response.newBuilder()
+                          .addAllUserInfos(List.of(testUser1, testUser2))
+                          .build()));
         }
         findRepositoriesRequest =
             FindRepositories.newBuilder()
@@ -977,8 +987,8 @@ public class RepositoryTest extends ModeldbTestSetup {
     assertEquals("Project count not match with expected project count", 0, repositoryList.size());
 
     if (isRunningIsolated()) {
-      when(uacBlockingMock.getUsersFuzzy(any()))
-          .thenReturn(GetUsersFuzzy.Response.newBuilder().build());
+      when(uac.getUACService().getUsersFuzzy(any()))
+          .thenReturn(Futures.immediateFuture(GetUsersFuzzy.Response.newBuilder().build()));
     }
 
     stringValue = Value.newBuilder().setStringValue("asdasdasd").build();
@@ -1013,11 +1023,12 @@ public class RepositoryTest extends ModeldbTestSetup {
     }
 
     if (isRunningIsolated()) {
-      when(uacBlockingMock.getUsers(any()))
+      when(uac.getUACService().getUsers(any()))
           .thenReturn(
-              GetUsers.Response.newBuilder()
-                  .addAllUserInfos(List.of(testUser1, testUser2))
-                  .build());
+              Futures.immediateFuture(
+                  GetUsers.Response.newBuilder()
+                      .addAllUserInfos(List.of(testUser1, testUser2))
+                      .build()));
     }
 
     String[] ownerArr = {
@@ -1253,6 +1264,16 @@ public class RepositoryTest extends ModeldbTestSetup {
       when(uac.getUACService().getCurrentUser(any()))
           .thenReturn(Futures.immediateFuture(testUser2));
       mockGetResourcesForAllRepositories(Map.of(repository.getId(), repository), testUser2);
+      when(uac.getWorkspaceService()
+              .getWorkspaceById(
+                  GetWorkspaceById.newBuilder()
+                      .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .build()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  Workspace.newBuilder()
+                      .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .build()));
     } else {
       AddCollaboratorRequest addCollaboratorRequest =
           AddCollaboratorRequest.newBuilder()

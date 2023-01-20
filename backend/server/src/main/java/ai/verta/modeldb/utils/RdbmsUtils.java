@@ -7,7 +7,7 @@ import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
@@ -65,7 +65,7 @@ public class RdbmsUtils {
   // TODO: delete as it seems unused
   public static List<Project> convertProjectsFromProjectEntityList(
       MDBRoleService mdbRoleService,
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       List<ProjectEntity> projectEntityList) {
     List<Project> projects = new ArrayList<>();
     if (projectEntityList != null) {
@@ -74,7 +74,7 @@ public class RdbmsUtils {
       for (ProjectEntity projectEntity : projectEntityList) {
         projects.add(
             projectEntity.getProtoObject(
-                mdbRoleService, authService, cacheWorkspaceMap, getResourcesMap));
+                mdbRoleService, uacApisUtil, cacheWorkspaceMap, getResourcesMap));
       }
     }
     return projects;
@@ -1345,7 +1345,7 @@ public class RdbmsUtils {
       CriteriaBuilder builder,
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       MDBRoleService mdbRoleService,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes)
       throws ModelDBException {
@@ -1724,7 +1724,7 @@ public class RdbmsUtils {
                   setFuzzyOwnerPredicateBasedOnUACWorkspace(
                       builder,
                       entityRootPath,
-                      authService,
+                      uacApisUtil,
                       modelDBServiceResourceTypes,
                       keyValuePredicates,
                       predicate,
@@ -1735,7 +1735,7 @@ public class RdbmsUtils {
                       builder,
                       criteriaQuery,
                       entityRootPath,
-                      authService,
+                      uacApisUtil,
                       keyValuePredicates,
                       predicate,
                       key,
@@ -1785,7 +1785,7 @@ public class RdbmsUtils {
   private static void setFuzzyOwnerPredicateBasedOnUACWorkspace(
       CriteriaBuilder builder,
       Root<?> entityRootPath,
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<Predicate> keyValuePredicates,
       KeyValueQuery predicate,
@@ -1794,7 +1794,7 @@ public class RdbmsUtils {
     if ((operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN))) {
       var fuzzySearchPredicate =
           getFuzzyUsersQueryPredicate(
-              authService,
+              uacApisUtil,
               mdbRoleService,
               builder,
               entityRootPath,
@@ -1807,21 +1807,27 @@ public class RdbmsUtils {
             ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
       }
     } else {
-      var ownerId = predicate.getValue().getStringValue();
-      Map<String, UserInfo> userInfoMap =
-          authService.getUserInfoFromAuthServer(
-              new HashSet<>(Collections.singleton(ownerId)),
-              Collections.emptySet(),
-              Collections.emptyList(),
-              false);
-      Set<String> resourceIdSet =
-          getResourceIdsFromUserWorkspaces(
-              authService,
-              mdbRoleService,
-              modelDBServiceResourceTypes,
-              Collections.singletonList(userInfoMap.get(ownerId)));
-      Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
-      keyValuePredicates.add(exp.in(resourceIdSet));
+      try {
+        var ownerId = predicate.getValue().getStringValue();
+        var userInfoMap =
+            uacApisUtil
+                .getUserInfoFromAuthServer(
+                    new HashSet<>(Collections.singleton(ownerId)),
+                    Collections.emptySet(),
+                    Collections.emptyList(),
+                    false)
+                .blockAndGet();
+        Set<String> resourceIdSet =
+            getResourceIdsFromUserWorkspaces(
+                uacApisUtil,
+                mdbRoleService,
+                modelDBServiceResourceTypes,
+                Collections.singletonList(userInfoMap.get(ownerId)));
+        Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
+        keyValuePredicates.add(exp.in(resourceIdSet));
+      } catch (Exception e) {
+        throw new RuntimeException(e);
+      }
     }
   }
 
@@ -1829,7 +1835,7 @@ public class RdbmsUtils {
       CriteriaBuilder builder,
       CriteriaQuery<?> criteriaQuery,
       Root<?> entityRootPath,
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       List<Predicate> keyValuePredicates,
       KeyValueQuery predicate,
       String key,
@@ -1837,7 +1843,7 @@ public class RdbmsUtils {
     Path expression;
     if (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN)) {
       var fuzzySearchPredicate =
-          getFuzzyUsersQueryPredicate(authService, builder, entityRootPath, predicate);
+          getFuzzyUsersQueryPredicate(uacApisUtil, builder, entityRootPath, predicate);
       if (fuzzySearchPredicate != null) {
         keyValuePredicates.add(fuzzySearchPredicate);
       } else {
@@ -1858,25 +1864,25 @@ public class RdbmsUtils {
    * where added two function one for old logic with owner Id for other entities excluding project,
    * repository
    *
-   * @param authService: authService
+   * @param uacApisUtil: uacApisUtil
    * @param builder: CriteriaBuilder
    * @param entityRootPath: entityRootPath
    * @param requestedPredicate: requestedPredicate
    * @return {@link Predicate}: criteria query predicate
    */
   private static Predicate getFuzzyUsersQueryPredicate(
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
       KeyValueQuery requestedPredicate) {
     if (requestedPredicate.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
       var operator = requestedPredicate.getOperator();
-      List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
+      List<UserInfo> userInfoList = getFuzzyUserInfos(uacApisUtil, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Expression<String> exp = entityRootPath.get(requestedPredicate.getKey());
         List<String> vertaIds =
             userInfoList.stream()
-                .map(authService::getVertaIdFromUserInfo)
+                .map(uacApisUtil::getVertaIdFromUserInfo)
                 .collect(Collectors.toList());
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
           return builder.not(exp.in(vertaIds));
@@ -1892,7 +1898,7 @@ public class RdbmsUtils {
   }
 
   private static Predicate getFuzzyUsersQueryPredicate(
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       MDBRoleService mdbRoleService,
       CriteriaBuilder builder,
       Root<?> entityRootPath,
@@ -1900,11 +1906,11 @@ public class RdbmsUtils {
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     if (requestedPredicate.getValue().getKindCase().equals(Value.KindCase.STRING_VALUE)) {
       var operator = requestedPredicate.getOperator();
-      List<UserInfo> userInfoList = getFuzzyUserInfos(authService, requestedPredicate);
+      List<UserInfo> userInfoList = getFuzzyUserInfos(uacApisUtil, requestedPredicate);
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Set<String> projectIdSet =
             getResourceIdsFromUserWorkspaces(
-                authService, mdbRoleService, modelDBServiceResourceTypes, userInfoList);
+                uacApisUtil, mdbRoleService, modelDBServiceResourceTypes, userInfoList);
         Expression<String> exp = entityRootPath.get(ModelDBConstants.ID);
         if (operator.equals(Operator.NOT_CONTAIN) || operator.equals(Operator.NE)) {
           return builder.not(exp.in(projectIdSet));
@@ -1920,7 +1926,7 @@ public class RdbmsUtils {
   }
 
   public static Set<String> getResourceIdsFromUserWorkspaces(
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       MDBRoleService mdbRoleService,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       List<UserInfo> userInfoList) {
@@ -1929,7 +1935,7 @@ public class RdbmsUtils {
       List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
           mdbRoleService.getResourceItems(
               Workspace.newBuilder()
-                  .setId(authService.getWorkspaceIdFromUserInfo(userInfo))
+                  .setId(uacApisUtil.getWorkspaceIdFromUserInfo(userInfo))
                   .build(),
               Collections.emptySet(),
               modelDBServiceResourceTypes,
@@ -1943,10 +1949,16 @@ public class RdbmsUtils {
   }
 
   public static List<UserInfo> getFuzzyUserInfos(
-      AuthService authService, KeyValueQuery requestedPredicate) {
-    var userInfoPaginationDTO =
-        authService.getFuzzyUserInfoList(requestedPredicate.getValue().getStringValue());
-    return userInfoPaginationDTO.getUserInfoList();
+      UACApisUtil uacApisUtil, KeyValueQuery requestedPredicate) {
+    try {
+      var userInfoPaginationDTO =
+          uacApisUtil
+              .getFuzzyUserInfoList(requestedPredicate.getValue().getStringValue())
+              .blockAndGet();
+      return userInfoPaginationDTO.getUserInfoList();
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   private static Predicate getVersionedInputHyperparameterPredicate(
@@ -2128,7 +2140,6 @@ public class RdbmsUtils {
    * @param entityName : dataset, project etc.
    * @param accessibleEntityIds : accessible entity ids like project.ids, dataset.ids etc.
    * @param predicate : predicate request
-   * @param mdbRoleService : role service
    */
   public static void validatePredicates(
       String entityName,

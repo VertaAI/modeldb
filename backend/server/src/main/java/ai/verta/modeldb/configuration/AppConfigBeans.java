@@ -136,9 +136,13 @@ public class AppConfigBeans {
   }
 
   @Bean
-  ServiceSet serviceSet(MDBConfig config, ArtifactStoreService artifactStoreService, UAC uac) {
+  ServiceSet serviceSet(
+      MDBConfig config,
+      ArtifactStoreService artifactStoreService,
+      UAC uac,
+      FutureExecutor executor) {
     // Initialize services that we depend on
-    return ServiceSet.fromConfig(config, artifactStoreService, uac);
+    return ServiceSet.fromConfig(config, artifactStoreService, uac, executor);
   }
 
   @Bean
@@ -276,9 +280,9 @@ public class AppConfigBeans {
       FutureExecutor grpcExecutor) {
     serverBuilder.addService(new FutureProjectServiceImpl(daos, grpcExecutor));
     LOGGER.trace("Project serviceImpl initialized");
-    serverBuilder.addService(new FutureExperimentServiceImpl(daos, grpcExecutor));
+    serverBuilder.addService(new FutureExperimentServiceImpl(daos, services, grpcExecutor));
     LOGGER.trace("Experiment serviceImpl initialized");
-    serverBuilder.addService(new FutureExperimentRunServiceImpl(daos, grpcExecutor));
+    serverBuilder.addService(new FutureExperimentRunServiceImpl(daos, services, grpcExecutor));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
     serverBuilder.addService(new CommentServiceImpl(services, daos));
     LOGGER.trace("Comment serviceImpl initialized");
