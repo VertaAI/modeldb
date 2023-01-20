@@ -224,7 +224,4 @@ class context:
         JSONDecodeError
             If logs contain any values that are not JSON-serializable.
             """
-        logs: Dict[str, Any] = self._logs_dict or _get_thread_logs()
-        if self._validate:
-            _validate_json(logs)
-        return logs
+        return  self._logs_dict or _get_thread_logs()
