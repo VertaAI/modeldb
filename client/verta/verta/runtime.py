@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Classes and functions to enable context logging within predictions made against
-models on the Verta Platform.
-
+"""Classes and functions to enable context logging within a model's predict() function.
 .. versionadded:: 0.22.0
 
 """
@@ -13,8 +11,8 @@ from typing import Any, Dict, Optional
 
 
 _THREAD = threading.local()
-_S3_REGEX = re.compile("^[a-zA-Z0-9!_.*'()-]+(/[a-zA-Z0-9!_.*'()-]+)*$")
-# https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html
+_S3_REGEX = re.compile("[0-9a-zA-Z_-]+$")
+
 
 def _init_thread_logs() -> None:
     """
@@ -83,12 +81,14 @@ def _validate_s3(
     ) -> None:
     """
     Check the provided value for any special characters that would
-    violate Amazon S3 path naming rules. Raise ValueError if any are found.
+    violate Amazon S3 object key naming rules. Raise ValueError if any
+    are found.
     """
+    # if re.match(pattern=pattern, string=value):
+    #     print("MATCHED")
     if not pattern.match(value):
-        raise ValueError(f" provided value \"{value}\" does not conform to "
-                         f"Amazon S3 object key naming rules. See \"Safe characters\": "
-                         f"https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-keys.html")
+        raise ValueError(f" provided value \"{value}\" contains non-alphanumeric "
+                         f"characters. (dashes and underscores permitted)")
 
 
 def log(key: str, value: Any) -> None:
@@ -113,6 +113,9 @@ def log(key: str, value: Any) -> None:
     TypeError
         If `validate` was set to ``True`` on the active :class:`context`, and
         `value` is not a JSON-serializable type.
+    ValueError
+        If `key` provided contains non-alphanumeric characters.  Dashes `-`
+        and underscores `_` are permitted.
 
     Examples
     --------
@@ -150,20 +153,20 @@ class context:
     wish to export log entries manually to a resource other than Amazon S3.
 
     For all models deployed in Verta with active endpoints, the :meth:`~verta.registry.VertaModelBase.predict`
-    of the model is wrapped inside an object of this class by default. Logs
-    collected inside the `predict()` function are exported to S3.
+    function of the model is wrapped inside an object of this class by default.
+    Logs collected inside the `predict()` function are exported to S3.
 
     Parameters
     ----------
     validate : bool, default False
-        If true, each individual call to ``runtime.log('key', value)`` will
+        If true, each individual call to :meth:`~verta.runtime.log`  will
         verify that the value provided is JSON serializable.
 
     Examples
     --------
 
     .. code-block:: python
-       :emphasize-lines: 4
+       :emphasize-lines: 4,8,11
 
         import json
         from verta import runtime
@@ -211,6 +214,6 @@ class context:
         Returns
         -------
         logs : Dict[str, Any]
-            Dictionary of log entries collected within this context manager.
+            Dictionary of logging context collected within this context manager.
         """
         return  self._logs_dict or _get_thread_logs()
