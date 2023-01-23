@@ -21,13 +21,12 @@ def test_thread_safety() -> None:
         assert runtime._get_thread_logs() == {'test_key': value}
 
     with futures.ThreadPoolExecutor(max_workers=5) as executor:
-        with runtime.context():
-            list(
-                executor.map(
-                    log_in_thread,
-                    [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
-                )
+        list(
+            executor.map(
+                log_in_thread,
+                [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
             )
+        )
 
 
 def test_thread_safe_context() -> None:
@@ -42,13 +41,12 @@ def test_thread_safe_context() -> None:
         assert test_ctx.logs() == {'test_key': value}
 
     with futures.ThreadPoolExecutor(max_workers=5) as executor:
-        with runtime.context():
-            list(
-                executor.map(
-                    log_in_context,
-                    [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
-                )
+        list(
+            executor.map(
+                log_in_context,
+                [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
             )
+        )
 
 
 class TestThreadLocalFunctions(unittest.TestCase):
