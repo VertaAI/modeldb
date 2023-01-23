@@ -116,6 +116,17 @@ class TestLog(unittest.TestCase):
             assert ctx.logs() == self.log3
 
 
+def test_exception_on_prior_logging_context() -> None:
+    """
+    A Runtime error is thrown if logging context is added outside the context
+    manager's scope that would otherwise be overwritten.
+    """
+    with pytest.raises(RuntimeError):
+        runtime.log('outside_of_scope', {'this': 'that'})
+        with runtime.context() as test_ctx:
+            pass
+
+
 def test_json_validation() -> None:
     """
     Validate that bad types and unserializable JSON are caught

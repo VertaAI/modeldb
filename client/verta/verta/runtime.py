@@ -192,6 +192,12 @@ class context:
         """
         Ensure an empty logging context to start and set validation flag.
         """
+        if bool(_get_thread_logs()):  # If not an empty dict.
+            raise RuntimeError(
+                " cannot overwrite prior logging context. Please ensure all calls"
+                " to runtime.log() are made within the predict() method of your"
+                " model, or inside the scope of an instance of verta.runtime.context()."
+            )
         _set_thread_logs(dict())
         if self._validate:
             _set_validate_flag(True)
