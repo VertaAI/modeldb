@@ -163,6 +163,13 @@ class context:
         If true, each individual call to :meth:`~verta.runtime.log`  will
         verify that the value provided is JSON serializable.
 
+    Raises
+    ------
+    RuntimeError
+        If logging context has been added via :meth:`~verta.runtime.log()`
+        outside the scope of the model's :meth:`~verta.registry.VertaModelBase.predict`
+        method, or outside the scope of this context manager.
+
     Examples
     --------
 
