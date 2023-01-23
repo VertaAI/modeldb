@@ -30,6 +30,27 @@ def test_thread_safety() -> None:
             )
 
 
+def test_thread_safe_context() -> None:
+    """
+    Validate that multiple threads running a context manager simultaneously
+    will stay thread-safe.
+    """
+    def log_in_context(value):
+        with runtime.context() as test_ctx:
+            runtime.log('test_key', value)
+        assert runtime._get_thread_logs() == {}
+        assert test_ctx.logs() == {'test_key': value}
+
+    with futures.ThreadPoolExecutor(max_workers=5) as executor:
+        with runtime.context():
+            list(
+                executor.map(
+                    log_in_context,
+                    [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
+                )
+            )
+
+
 class TestThreadLocalFunctions(unittest.TestCase):
     """ Unit tests for the functions that handle thread local variables """
 
