@@ -1,0 +1,1167 @@
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.9.xsd"
+        logicalFilePath="liquibase/create-index-changelog.xml">
+
+    <changeSet author="anandJ" id="1-create-text-indexes-postgres" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <createIndex indexName="kv_kv_val"
+                     tableName="keyvalue"
+                     unique="true">
+            <column name="kv_value"/>
+        </createIndex>
+        <createIndex indexName="kv_kv_key"
+                     tableName="keyvalue"
+                     unique="true">
+            <column name="kv_key"/>
+        </createIndex>
+        <createIndex indexName="at_kv_key"
+                     tableName="attribute"
+                     unique="true">
+            <column name="kv_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="1-create-text-indexes-mysql" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+        </preConditions>
+        <sql>
+            CREATE INDEX kv_kv_val ON keyvalue (kv_value(255));
+            CREATE INDEX kv_kv_key ON keyvalue (kv_key(255));
+            CREATE INDEX at_kv_key on attribute (kv_key(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="raviS" id="recreate-text-indexes-postgres" failOnError="false">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+        </preConditions>
+        <dropIndex tableName="keyvalue" indexName="kv_kv_val"/>
+        <dropIndex tableName="keyvalue" indexName="kv_kv_key"/>
+        <dropIndex tableName="attribute" indexName="at_kv_key"/>
+        <createIndex indexName="kv_kv_val"
+                     tableName="keyvalue">
+            <column name="kv_value"/>
+        </createIndex>
+        <createIndex indexName="kv_kv_key"
+                     tableName="keyvalue">
+            <column name="kv_key"/>
+        </createIndex>
+        <createIndex indexName="at_kv_key"
+                     tableName="attribute">
+            <column name="kv_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_er_experiment_id_index">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="er_experiment_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="er_experiment_id"
+                     tableName="experiment_run">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_kv_dsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="kv_dsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_dsv_id" tableName="keyvalue">
+            <column name="dataset_version_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_kv_p_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="kv_p_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_p_id" tableName="keyvalue">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_kv_j_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="kv_j_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_j_id" tableName="keyvalue">
+            <column name="job_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_kv_e_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="kv_e_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_e_id" tableName="keyvalue">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_kv_d_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="kv_d_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_d_id" tableName="keyvalue">
+            <column name="dataset_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_kv_er_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="kv_er_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_er_id" tableName="keyvalue">
+            <column name="experiment_run_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_at_d_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="at_d_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="at_d_id" tableName="attribute">
+            <column name="dataset_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_at_dsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="at_dsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="at_dsv_id" tableName="attribute">
+            <column name="dataset_version_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_at_e_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="at_e_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="at_e_id" tableName="attribute">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_at_er_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="at_er_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="at_er_id" tableName="attribute">
+            <column name="experiment_run_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_at_j_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="at_j_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="at_j_id" tableName="attribute">
+            <column name="job_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_at_p_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="at_p_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="at_p_id" tableName="attribute">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_a_e_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="a_e_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="a_e_id" tableName="artifact">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_a_er_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="a_er_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="a_er_id" tableName="artifact">
+            <column name="experiment_run_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_a_p_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="a_p_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="a_p_id" tableName="artifact">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_a_l_a_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="a_l_a_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="a_l_a_id" tableName="artifact">
+            <column name="linked_artifact_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_t_e_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="t_e_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="t_e_id" tableName="tag_mapping">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_t_dsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="t_dsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="t_dsv_id" tableName="tag_mapping">
+            <column name="dataset_version_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_t_ds_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="t_ds_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="t_ds_id" tableName="tag_mapping">
+            <column name="dataset_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_t_p_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="t_p_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="t_p_id" tableName="tag_mapping">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_t_er_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="t_er_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="t_er_id" tableName="tag_mapping">
+            <column name="experiment_run_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_o_kv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="o_kv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="o_kv_id" tableName="observation">
+            <column name="keyvaluemapping_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_o_e_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="o_e_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="o_e_id" tableName="observation ">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_o_a_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="o_a_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="o_a_id" tableName="observation ">
+            <column name="artifact_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_o_er_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="o_er_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="o_er_id" tableName="observation">
+            <column name="experiment_run_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_o_p_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="o_p_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="o_p_id" tableName="observation ">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_er_cvs_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="er_cvs_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="er_cvs_id" tableName="experiment_run">
+            <column name="code_version_snapshot_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_er_dc">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="er_dc"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="er_dc" tableName="experiment_run">
+            <column name="date_created"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_er_dp">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="er_dp"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="er_dp" tableName="experiment_run">
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_er_n">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="er_n"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="er_n" tableName="experiment_run">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_er_o">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="er_o"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="er_o" tableName="experiment_run">
+            <column name="owner"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_er_p_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="er_p_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="er_p_id" tableName="experiment_run">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_p_cvs_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="p_cvs_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="p_cvs_id" tableName="project">
+            <column name="code_version_snapshot_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_p_name">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="p_name"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="p_name" tableName="project">
+            <column name="name"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_e_cvs_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="e_cvs_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="e_cvs_id" tableName="experiment">
+            <column name="code_version_snapshot_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_uc_c_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="uc_c_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="uc_c_id" tableName="user_comment">
+            <column name="comment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_gfp_g_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="gfp_g_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="gfp_g_id" tableName="git_snapshot_file_paths">
+            <column name="git_snapshot_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_dsv_qdsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="dsv_qdsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="dsv_qdsv_id" tableName="dataset_version">
+            <column name="query_dataset_version_info_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_dsv_rdsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="dsv_rdsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="dsv_rdsv_id" tableName="dataset_version ">
+            <column name="raw_dataset_version_info_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_dsp_pdsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="dsp_pdsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="dsp_pdsv_id" tableName="dataset_part_info">
+            <column name="path_dataset_version_info_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_cv_gss_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="cv_gss_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="cv_gss_id" tableName="code_version">
+            <column name="git_snapshot_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_cv_ca_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="cv_ca_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="cv_ca_id" tableName="code_version">
+            <column name="code_archive_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_dsv_pdsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="dsv_pdsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="dsv_pdsv_id" tableName="dataset_version">
+            <column name="path_dataset_version_info_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_f_rdsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="f_rdsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="f_rdsv_id" tableName="feature">
+            <column name="raw_dataset_version_info_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_f_er_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="f_er_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="f_er_id" tableName="feature">
+            <column name="experiment_run_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_f_p_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="f_p_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="f_p_id" tableName="feature">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_f_e_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="f_e_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="f_e_id" tableName="feature">
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_qp_qdsv_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="qp_qdsv_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="qp_qdsv_id" tableName="query_parameter">
+            <column name="query_dataset_version_info_id"/>
+        </createIndex>
+    </changeSet>
+    <changeSet author="raviS" id="create_c_e_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="c_e_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="c_e_id" tableName="comment">
+            <column name="entity_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_kv_kv_val_sql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <indexExists indexName="kv_kv_val"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX kv_kv_val ON keyvalue (kv_value(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_kv_kv_key_sql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <indexExists indexName="kv_kv_key"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX kv_kv_key ON keyvalue (kv_key(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_at_kv_key_sql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <indexExists indexName="at_kv_key"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX at_kv_key on attribute (kv_key(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_kv_kv_val_postgres">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <indexExists indexName="kv_kv_val"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_kv_val"
+                     tableName="keyvalue">
+            <column name="kv_value"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_kv_kv_key_postgres">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <indexExists indexName="kv_kv_key"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="kv_kv_key"
+                     tableName="keyvalue">
+            <column name="kv_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="create_at_kv_key_postgres">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <indexExists indexName="at_kv_key"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="at_kv_key"
+                     tableName="attribute">
+            <column name="kv_key"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_name_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_name_project_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_name_project_id"
+                     tableName="experiment">
+            <column name="name"/>
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_name_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_name_project_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_name_project_id"
+                     tableName="experiment_run">
+            <column name="name"/>
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_id_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_id_project_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_id_project_id"
+                     tableName="experiment_run">
+            <column name="id"/>
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_project_id_experiment_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_project_id_experiment_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_project_id_experiment_id"
+                     tableName="experiment_run">
+            <column name="project_id"/>
+            <column name="experiment_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_project_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_project_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_project_id"
+                     tableName="experiment">
+            <column name="project_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_exp_run_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_vmem_exp_run_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_exp_run_id"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="experiment_run_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_repo_id_commit">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_vmem_repo_id_commit"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_repo_id_commit"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="repository_id"/>
+            <column name="commit"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_versioning_location_postgresql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="postgresql"/>
+            <not>
+                <indexExists indexName="index_vmem_versioning_location"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_versioning_location"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="versioning_location"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_versioning_location_mysql">
+        <preConditions onFail="MARK_RAN">
+            <dbms type="mysql"/>
+            <not>
+                <indexExists indexName="index_vmem_versioning_location"/>
+            </not>
+        </preConditions>
+        <sql>
+            CREATE INDEX index_vmem_versioning_location ON versioning_modeldb_entity_mapping (versioning_location(255));
+        </sql>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_versioning_blob_type">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_vmem_versioning_blob_type"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_versioning_blob_type"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="versioning_blob_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_vmem_table">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_vmem_table"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_vmem_table"
+                     tableName="versioning_modeldb_entity_mapping">
+            <column name="repository_id"/>
+            <column name="commit"/>
+            <column name="experiment_run_id"/>
+            <column name="versioning_blob_type"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_project_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_project_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_project_id_date_updated"
+                     tableName="experiment">
+            <column name="project_id"/>
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_project_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_project_p_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_project_p_id_date_updated"
+                     tableName="project">
+            <column name="id"/>
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_run_ex_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_run_exp_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_run_exp_id_date_updated"
+                     tableName="experiment_run">
+            <column name="experiment_id"/>
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dv_dataset_id_time_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dv_dataset_id_time_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dv_dataset_id_time_updated"
+                     tableName="dataset_version">
+            <column name="dataset_id"/>
+            <column name="time_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dv_dataset_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dv_dataset_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dv_dataset_id"
+                     tableName="dataset_version">
+            <column name="dataset_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_id_time_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_id_time_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_id_time_updated"
+                     tableName="dataset">
+            <column name="id"/>
+            <column name="time_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_repo_repo_id_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_repo_id_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_repo_id_date_updated"
+                     tableName="repository">
+            <column name="id"/>
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_repository_commit_repo_id">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_repository_commit_repo_id"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_repository_commit_repo_id"
+                     tableName="repository_commit">
+            <column name="repository_id"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_commit_commit_hash_date_created">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_commit_hash_date_created"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_commit_hash_date_created"
+                     tableName="commit">
+            <column name="commit_hash"/>
+            <column name="date_created"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_dataset_id_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_id_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_id_deleted"
+                     tableName="dataset">
+            <column name="id"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_version_id_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_version_id_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_version_id_deleted"
+                     tableName="dataset_version">
+            <column name="id"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_version_dataset_id_version_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_version_dataset_id_version_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_version_dataset_id_version_deleted"
+                     tableName="dataset_version">
+            <column name="dataset_id"/>
+            <column name="version"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_experiment_exp_id_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_experiment_id_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_experiment_id_deleted"
+                     tableName="experiment">
+            <column name="id"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_experiment_run_name_pro_id_exp_id_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_experiment_run_name_pro_id_exp_id_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_experiment_run_name_pro_id_exp_id_deleted"
+                     tableName="experiment_run">
+            <column name="name"/>
+            <column name="project_id"/>
+            <column name="experiment_id"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_experiment_run_id_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_experiment_run_id_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_experiment_run_id_deleted"
+                     tableName="experiment_run">
+            <column name="id"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_project_id_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_project_id_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_project_id_deleted"
+                     tableName="project">
+            <column name="id"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_repository_id_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_repository_id_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_repository_id_deleted"
+                     tableName="repository">
+            <column name="id"/>
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="11.1.1-drop-index-projectname-workspace-workspacetype" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <indexExists indexName="p_name_wspace_wspace_type"/>
+        </preConditions>
+        <dropIndex tableName="project" indexName="p_name_wspace_wspace_type"/>
+    </changeSet>
+
+    <changeSet id="11.1.2-index-projectname-workspace-workspacetype-deleted" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="p_name_wspace_wspace_type_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="p_name_wspace_wspace_type_deleted"
+                     tableName="project">
+            <column name="name" type="varchar(255)"/>
+            <column name="workspace" type="varchar(255)"/>
+            <column name="workspace_type" type="int"/>
+            <column name="deleted" type="boolean"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="11.2.1-drop-index-datasetname-workspace-workspacetype" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <indexExists indexName="d_name_wspace_wspace_type"/>
+        </preConditions>
+        <dropIndex tableName="dataset" indexName="d_name_wspace_wspace_type"/>
+    </changeSet>
+
+    <changeSet id="11.2.2-index-datasetname-workspace-workspacetype_deleted" author="anandJ">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="d_name_wspace_wspace_type_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="d_name_wspace_wspace_type_deleted"
+                     tableName="dataset">
+            <column name="name" type="varchar(255)"/>
+            <column name="workspace" type="varchar(255)"/>
+            <column name="workspace_type" type="int"/>
+            <column name="deleted" type="boolean"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_project_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_project_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_project_deleted"
+                     tableName="project">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_repository_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_repository_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_repository_deleted"
+                     tableName="repository">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_experiment_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_experiment_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_experiment_deleted"
+                     tableName="experiment">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_experiment_run_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_experiment_run_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_experiment_run_deleted"
+                     tableName="experiment_run">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_deleted"
+                     tableName="dataset">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_version_deleted">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_version_deleted"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_version_deleted"
+                     tableName="dataset_version">
+            <column name="deleted"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_project_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_project_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_project_date_updated"
+                     tableName="project">
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_exp_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_exp_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_exp_date_updated"
+                     tableName="experiment">
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_repo_date_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_repo_date_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_repo_date_updated"
+                     tableName="repository">
+            <column name="date_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="anandJ" id="index_dataset_time_updated">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists indexName="index_dataset_time_updated"/>
+            </not>
+        </preConditions>
+        <createIndex indexName="index_dataset_time_updated"
+                     tableName="dataset">
+            <column name="time_updated"/>
+        </createIndex>
+    </changeSet>
+
+    <!-- WARNING: Do not add new change sets to these files -->
+
+</databaseChangeLog>

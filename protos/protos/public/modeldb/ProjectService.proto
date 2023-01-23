@@ -36,8 +36,14 @@ message Project {
     repeated common.KeyValue attributes = 20;
     repeated string tags = 21;
     string owner = 22;
-    CodeVersion code_version_snapshot = 23;
+    oneof owner_tracking {
+        uint64 owner_id = 26;
+        common.GroupId group_owner_id = 27;
+    }
+    common.CodeVersion code_version_snapshot = 23;
     repeated common.Artifact artifacts = 24;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 25;
 }
 
 enum ProjectVisibility {
@@ -168,7 +174,7 @@ message DeleteProjectAttributes {
 // code version
 message LogProjectCodeVersion {
     string id = 1;
-    CodeVersion code_version = 2;
+    common.CodeVersion code_version = 2;
 
     message Response {
         Project project = 1;
@@ -179,7 +185,7 @@ message GetProjectCodeVersion {
     string id = 1;
 
     message Response {
-        CodeVersion code_version = 1;
+        common.CodeVersion code_version = 1;
     }
 }
 
@@ -295,6 +301,14 @@ message GetProjectShortName {
 
     message Response {
         string short_name = 2;
+    }
+}
+
+message GetProjectDatasetCount {
+    string project_id = 1;
+
+    message Response {
+        int64 dataset_count = 1;
     }
 }
 
@@ -509,6 +523,12 @@ service ProjectService {
     rpc getProjectShortName(GetProjectShortName) returns (GetProjectShortName.Response) {
         option (google.api.http) = {
             get: "/v1/project/getProjectShortName"
+        };
+    };
+
+    rpc getProjectDatasetCount(GetProjectDatasetCount) returns (GetProjectDatasetCount.Response) {
+        option (google.api.http) = {
+            get: "/v1/project/getProjectDatasetCount"
         };
     };
 

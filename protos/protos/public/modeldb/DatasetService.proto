@@ -16,6 +16,10 @@ message Dataset {
     string id = 1;//For backend reference
     string name = 2;
     string owner = 3;
+    oneof owner_tracking {
+        uint64 owner_id = 17;
+        common.GroupId group_owner_id = 18;
+    }
     string description = 4;
     repeated string tags = 5;
     DatasetVisibilityEnum.DatasetVisibility dataset_visibility = 6;
@@ -31,6 +35,8 @@ message Dataset {
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 14;
     uac.ResourceVisibility visibility = 15;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 16;
 }
 
 message DatasetTypeEnum {

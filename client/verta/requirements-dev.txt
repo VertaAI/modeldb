@@ -1,0 +1,35 @@
+# development
+pylint
+
+# packaging
+setuptools>=40.8
+twine>=1.13
+wheel>=0.32
+
+# unit testing
+-r requirements-unit-tests.txt
+
+# unit testing dependencies
+boto3
+google-cloud-bigquery
+h5py<3.0.0; python_version < '3.9'  # https://github.com/tensorflow/tensorflow/issues/44467
+matplotlib<3.0; python_version < '3.8'
+matplotlib>=3.2; python_version >= '3.8'
+numpy
+pandas
+pillow
+scikit-learn<0.21; python_version < '3.8'  # https://scikit-learn.org/stable/install.html
+scikit-learn>=0.22; python_version >= '3.8'
+scipy<1.3; python_version < '3.8'
+scipy>=1.4; python_version >= '3.8'
+spacy
+tensorflow<2.0; python_version < '3.8'
+tensorflow>=2.2; python_version >= '3.8'  # https://www.tensorflow.org/install/pip
+torch
+xgboost
+
+# documentation
+-r docs/requirements.txt
+
+# verta
+-e .

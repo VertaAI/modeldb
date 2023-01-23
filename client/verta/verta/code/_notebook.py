@@ -4,7 +4,9 @@ from __future__ import print_function
 
 import os
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 
 from .._internal_utils import _git_utils
 from .._internal_utils import _utils
@@ -27,7 +29,8 @@ class Notebook(_code._Code):
     notebook_path : str, optional
         Filepath of the Jupyter Notebook. If not provided, it will automatically be determined.
     _autocapture : bool, default True
-        Whether to enable the automatic capturing behavior of parameters above.
+        Whether to automatically capture the above parameters by reading the
+        local environment where this code is being executed.
 
     Raises
     ------
@@ -39,18 +42,41 @@ class Notebook(_code._Code):
     .. code-block:: python
 
         from verta.code import Notebook
-        code1 = Notebook()
-        code2 = Notebook("Spam-Detection.ipynb")
+
+        Notebook()
+        # Notebook Version
+        #     deployment/sklearn/sklearn-census-end-to-end.ipynb
+        #         11513 bytes
+        #         last modified: 2021-07-30 09:50:17.344000
+        #         MD5 checksum: 0cc9939f0625e430917950256a768f17
+        #     Git Version
+        #         commit 87084c33d12d281420db7769a9fc2cff28051fba
+        #         on branch main
+        #         in repo git@github.com:VertaAI/examples.git
+
+        Notebook("../spacy/text-classification-spacy.ipynb")
+        # Notebook Version
+        #     deployment/spacy/text-classification-spacy.ipynb
+        #         15273 bytes
+        #         last modified: 2021-07-30 09:45:26.768000
+        #         MD5 checksum: 491b0367a178c394d3a276865757b29a
+        #     Git Version
+        #         commit 87084c33d12d281420db7769a9fc2cff28051fba
+        #         on branch main
+        #         in repo git@github.com:VertaAI/examples.git
 
     """
+
     def __init__(self, notebook_path=None, _autocapture=True):
         if notebook_path is None and _autocapture:
             notebook_path = _utils.get_notebook_filepath()
             try:
                 _utils.save_notebook(notebook_path)
             except (ImportError, OSError):
-                print("unable to automatically save current Notebook;"
-                      " capturing latest checkpoint on disk")
+                print(
+                    "unable to automatically save current Notebook;"
+                    " capturing latest checkpoint on disk"
+                )
 
         super(Notebook, self).__init__()
 
@@ -59,7 +85,9 @@ class Notebook(_code._Code):
             notebook_component = _path.Path(notebook_path).list_components()[0]
             self._msg.notebook.path.CopyFrom(notebook_component._as_proto())
             try:
-                git_blob = _git.Git()  # do not store as attribute, to avoid data duplication
+                git_blob = (
+                    _git.Git()
+                )  # do not store as attribute, to avoid data duplication
                 repo_root = _git_utils.get_git_repo_root_dir()
             except OSError:
                 # TODO: impl and catch a more specific exception for git calls
@@ -82,9 +110,7 @@ class Notebook(_code._Code):
             git_blob = _git.Git(_autocapture=False)
             git_blob._msg.git.CopyFrom(self._msg.notebook.git_repo)
             # this will intentionally add a level of indentation in the final repr
-            lines.extend(
-                repr(git_blob).splitlines()
-            )
+            lines.extend(repr(git_blob).splitlines())
 
         return "\n    ".join(lines)
 

@@ -31,6 +31,8 @@ message Commit {
     string commit_sha = 5;
     // Updated Date while create tags & attribute for the commit.
     uint64 date_updated = 6;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 7;
 }
 
 // Data structure used to compute the SHA of a folder
@@ -111,12 +113,18 @@ message Repository {
     RepositoryVisibilityEnum.RepositoryVisibility repository_visibility = 7;
 
     string owner = 10;
+    oneof owner_tracking {
+        uint64 owner_id = 16;
+        common.GroupId group_owner_id = 17;
+    }
     string description = 11;
     repeated common.KeyValue attributes = 12;
     // The next field only makes sense when visibility == ORG_CUSTOM
     // They will be empty otherwise
     uac.CollaboratorPermissions custom_permission = 13;
     uac.ResourceVisibility visibility = 14;
+    // Doc for version_number https://github.com/VertaAI/docs/pull/53
+    uint64 version_number = 15;
 }
 
 

@@ -22,12 +22,12 @@ database:
   timeout: 4
   liquibaseLockThreshold: 60 #time in second
   RdbConfiguration:
-    RdbDatabaseName: postgres
-    RdbDriver: "org.postgresql.Driver"
-    RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-    RdbUrl: "jdbc:postgresql://modeldb-postgres:5432"
-    RdbUsername: postgres
-    RdbPassword: root
+    RdbDatabaseName: modeldb
+    RdbDriver: "org.mariadb.jdbc.Driver"
+    RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+    RdbUrl: "jdbc:mysql://localhost:3306"
+    RdbUsername: root
+    RdbPassword: root_password_here
 
 # Test Database settings (type mongodb, couchbasedb etc..)
 test:
@@ -36,12 +36,12 @@ test:
     timeout: 4
     liquibaseLockThreshold: 60 #time in second
     RdbConfiguration:
-      RdbDatabaseName: postgres
-      RdbDriver: "org.postgresql.Driver"
-      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-      RdbUrl: "jdbc:postgresql://modeldb-postgres:5432"
-      RdbUsername: postgres
-      RdbPassword: root
+      RdbDatabaseName: modeldb-test
+      RdbDriver: "org.mariadb.jdbc.Driver"
+      RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+      RdbUrl: "jdbc:mysql://localhost:3306"
+      RdbUsername: root
+      RdbPassword: root_password_here
 
 #ArtifactStore Properties
 artifactStore_grpcServer:

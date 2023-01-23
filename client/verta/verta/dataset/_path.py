@@ -5,7 +5,9 @@ from __future__ import print_function
 import hashlib
 import os
 
-from .._protos.public.modeldb.versioning import VersioningService_pb2 as _VersioningService
+from .._protos.public.modeldb.versioning import (
+    VersioningService_pb2 as _VersioningService,
+)
 
 from ..external import six
 
@@ -55,6 +57,7 @@ class Path(_dataset._Dataset):
         Returns a new dataset with paths from the dataset and all others.
 
     """
+
     def __init__(self, paths, base_path=None, enable_mdb_versioning=False):
         super(Path, self).__init__(enable_mdb_versioning=enable_mdb_versioning)
 
@@ -62,18 +65,25 @@ class Path(_dataset._Dataset):
             paths = [paths]
         paths = map(os.path.expanduser, paths)
 
+        paths = map(self._remove_file_scheme, paths)
+
         filepaths = _file_utils.flatten_file_trees(paths)
         components = list(map(self._file_to_component, filepaths))
 
         # remove `base_path` from the beginning of component paths
+        # TODO: move this into _add_components()
         if base_path is not None:
             for component in components:
-                path = _file_utils.remove_prefix_dir(component.path, prefix_dir=base_path)
+                path = _file_utils.remove_prefix_dir(
+                    component.path, prefix_dir=base_path
+                )
                 if path == component.path:  # no change
-                    raise ValueError("path {} does not begin with `base_path` {}".format(
-                        component.path,
-                        base_path,
-                    ))
+                    raise ValueError(
+                        "path {} does not begin with `base_path` {}".format(
+                            component.path,
+                            base_path,
+                        )
+                    )
 
                 # update component with modified path
                 component.path = path
@@ -81,19 +91,18 @@ class Path(_dataset._Dataset):
                 # track base path
                 component.base_path = base_path
 
-        self._components_map.update({
-            component.path: component
-            for component
-            in components
-        })
+        self._add_components(components)
 
     @classmethod
     def _from_proto(cls, blob_msg):
-        obj = cls(paths=[])
+        obj = cls._create_empty()
 
-        for component_msg in blob_msg.dataset.path.components:
-            component = _dataset.Component._from_proto(component_msg)
-            obj._components_map[component.path] = component
+        obj._add_components(
+            [
+                _dataset.Component._from_proto(component_msg)
+                for component_msg in blob_msg.dataset.path.components
+            ]
+        )
 
         return obj
 
@@ -114,6 +123,37 @@ class Path(_dataset._Dataset):
             md5=self._hash_file(filepath),
         )
 
+    def _add_components(self, components):
+        for component in components:
+            component.path = self._remove_file_scheme(component.path)
+
+        super(Path, self)._add_components(components)
+
+    @staticmethod
+    def _remove_file_scheme(path):
+        """
+        Removes the "file" scheme from `path`, if present.
+
+        Parameters
+        ----------
+        path : str
+            Filepath.
+
+        Returns
+        -------
+        str
+            `path` without "file" scheme.
+
+        References
+        ----------
+        .. [1] https://en.wikipedia.org/wiki/File_URI_scheme
+
+        """
+        path = _file_utils.remove_prefix(path, "file://")
+        path = _file_utils.remove_prefix(path, "file:")
+
+        return path
+
     # TODO: move to _file_utils.calc_md5()
     def _hash_file(self, filepath):
         """
@@ -126,8 +166,8 @@ class Path(_dataset._Dataset):
 
         """
         file_hash = hashlib.md5()
-        with open(filepath, 'rb') as f:
-            for chunk in iter(lambda: f.read(8192), b''):
+        with open(filepath, "rb") as f:
+            for chunk in iter(lambda: f.read(8192), b""):
                 file_hash.update(chunk)
         return file_hash.hexdigest()
 
@@ -153,9 +193,11 @@ class Path(_dataset._Dataset):
             component._local_path = filepath
 
             # track MDB path to component
-            with open(filepath, 'rb') as f:
+            with open(filepath, "rb") as f:
                 artifact_hash = _artifact_utils.calc_sha256(f)
-            component._internal_versioned_path = artifact_hash + '/' + os.path.basename(filepath)
+            component._internal_versioned_path = (
+                artifact_hash + "/" + os.path.basename(filepath)
+            )
 
     def _clean_up_uploaded_components(self):
         """
@@ -163,6 +205,24 @@ class Path(_dataset._Dataset):
 
         """
         return
+
+    @classmethod
+    def with_spark(cls, sc, paths):
+        if all(map(os.path.exists, paths)):
+            # This `if` is a slight hack to check for local files,
+            # because we don't want this behavior in the HDFS subclass.
+            # TODO: maybe have an abstract base class for filesystem datasets
+
+            # PySpark won't traverse directories, so we have to
+            paths = _file_utils.flatten_file_trees(paths)
+
+            # PySpark won't see hidden files, so we have filter them out
+            removed_paths = list(filter(cls._is_hidden_to_spark, paths))
+            for removed_path in removed_paths:
+                print("ignored by Spark: {}".format(removed_path))
+                paths.remove(removed_path)
+
+        return super(Path, cls).with_spark(sc, paths)
 
     def add(self, paths, base_path=None):
         """
@@ -178,7 +238,8 @@ class Path(_dataset._Dataset):
         """
         # re-use logic in __init__
         other = self.__class__(
-            paths=paths, base_path=base_path,
+            paths=paths,
+            base_path=base_path,
             enable_mdb_versioning=self._mdb_versioned,
         )
 

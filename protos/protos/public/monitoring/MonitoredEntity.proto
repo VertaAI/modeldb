@@ -1,0 +1,153 @@
+syntax = "proto3";
+
+package ai.verta.monitoring;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring";
+
+option java_multiple_files = true;
+
+import "uac/Collaborator.proto";
+import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
+
+// Common
+
+message Empty {}
+
+message KeyValue {
+  string key = 1;
+  google.protobuf.Value value = 2;
+
+  /*
+  *   As per documentation of proto buffer 3.
+  *   For enums, the default value is the first defined enum value, which must be 0.
+  */
+  ValueTypeEnum.ValueType value_type = 3;
+}
+
+message ValueTypeEnum {
+  enum ValueType {
+    STRING = 0;
+    NUMBER = 1;
+    LIST = 2;
+    BLOB = 3;
+  }
+}
+
+
+// Monitored entity
+
+message MonitoredEntity {
+  reserved 3, 4;  // Previously deleted fields
+  uint64 id = 1;
+  string name = 2;
+  uint64 workspace_id = 5;
+  uint64 created_at_timestamp_millis = 6;
+  uint64 updated_at_timestamp_millis = 7;
+  map<string, string> attributes = 8;
+  //owner's verta_id
+  string owner = 9;
+  uac.ResourceVisibility resource_visibility = 10;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 11;
+  uint64 version_number = 12;
+  uint64 endpoint_id = 13;
+}
+
+message CreateMonitoredEntityRequest {
+  reserved 2, 3;  // Previously deleted fields
+  string name = 1;
+
+  oneof workspace_identifier {
+    uint64 workspace_id = 4;
+    string workspace_name = 5;
+  }
+
+  map<string, string> attributes = 6;
+  uac.ResourceVisibility resource_visibility = 7;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 8;
+  uint64 endpoint_id = 9;
+
+  message Response {
+    MonitoredEntity monitored_entity = 1;
+  }
+}
+
+message UpdateMonitoredEntityRequest {
+  reserved 4 to 6;  // Previously deleted fields
+  uint64 id = 1;
+  string name = 2;
+
+  map<string, string> attributes = 7;
+  uac.ResourceVisibility resource_visibility = 8;
+  // The next field only makes sense when visibility == ORG_CUSTOM
+  // They will be empty otherwise
+  uac.CollaboratorPermissions custom_permission = 9;
+
+  message Response {
+    MonitoredEntity monitored_entity = 1;
+  }
+}
+
+message FindMonitoredEntityRequest {
+  repeated uint64 ids = 1;
+  repeated string names = 2;
+  // Add names to find with a fuzzy (non-exact) search
+  repeated string fuzzy_names = 7;
+  repeated uint64 endpoint_ids = 8;
+  repeated string model_version_ids = 9;
+
+  oneof workspace_identifier {
+    uint64 workspace_id = 3;
+    string workspace_name = 6;
+  }
+
+  // Pagination
+  int32 page_number = 4;
+  int32 page_limit = 5;
+
+  message Response {
+    repeated MonitoredEntity monitored_entities = 1;
+    int32 total_records = 2;
+  }
+}
+
+message DeleteMonitoredEntityRequest {
+  uint64 id = 1;
+
+  message Response {
+  }
+}
+
+// Service definitions
+service MonitoredEntityService {
+  rpc createMonitoredEntity(CreateMonitoredEntityRequest) returns (CreateMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      post: "/api/v1/monitoring/monitored_entity/createMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc updateMonitoredEntity(UpdateMonitoredEntityRequest) returns (UpdateMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      patch: "/api/v1/monitoring/monitored_entity/updateMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc findMonitoredEntity(FindMonitoredEntityRequest) returns (FindMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      post: "/api/v1/monitoring/monitored_entity/findMonitoredEntity"
+      body: "*"
+    };
+  };
+
+  rpc deleteMonitoredEntity(DeleteMonitoredEntityRequest) returns (DeleteMonitoredEntityRequest.Response) {
+    option (google.api.http) = {
+      delete: "/api/v1/monitoring/monitored_entity/deleteMonitoredEntity"
+      body: "*"
+    };
+  };
+}

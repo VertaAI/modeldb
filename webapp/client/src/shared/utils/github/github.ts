@@ -32,19 +32,20 @@ export const parseGithubRemoteRepoUrl = (
   remoteRepoUrl: GithubRemoteRepoUrl
 ): Result<IGithubRemoteRepoUrlComponents, string> => {
   if (remoteRepoUrl.startsWith('git@')) {
-    const [, userName, repoName] = /git@github.com:(.+)\/(.+).git/.exec(
-      remoteRepoUrl
-    );
-    return {
-      type: 'success',
-      data: {
-        userName,
-        repositoryInfo: {
-          name: repoName,
-          nameWithExtension: `${repoName}.git`,
+    const matched = /git@github.com:(.+)\/(.+)(\.git|)/.exec(remoteRepoUrl);
+    if (matched) {
+      const [, userName, repoName] = matched;
+      return {
+        type: 'success',
+        data: {
+          userName,
+          repositoryInfo: {
+            name: repoName,
+            nameWithExtension: `${repoName}.git`,
+          },
         },
-      },
-    };
+      };
+    }
   }
   if (
     ['https://github.com', 'http://github.com', 'github.com'].some((t) =>

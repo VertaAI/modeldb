@@ -1,0 +1,6 @@
+filelock
+hypothesis
+pytest >= 4.3
+pytest-xdist >= 1.32
+six >= 1.11
+responses >= 0.22

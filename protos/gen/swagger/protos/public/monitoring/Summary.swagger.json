@@ -1,0 +1,798 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "monitoring/Summary.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/monitoring/summaries/createSample": {
+      "post": {
+        "operationId": "SummaryService_createSample",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringSummarySample"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateSummarySample"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
+    "/api/v1/monitoring/summaries/createSampleBatch": {
+      "post": {
+        "operationId": "SummaryService_createSampleBatch",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertamonitoringEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateSummarySampleBatch"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
+    "/api/v1/monitoring/summaries/createSummary": {
+      "post": {
+        "operationId": "SummaryService_createSummary",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringSummary"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateSummaryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
+    "/api/v1/monitoring/summaries/createValue": {
+      "post": {
+        "operationId": "SummaryService_createValue",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringSummaryValue"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringCreateSummaryValue"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
+    "/api/v1/monitoring/summaries/deleteSample": {
+      "delete": {
+        "operationId": "SummaryService_deleteSample",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertamonitoringEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteSummarySampleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
+    "/api/v1/monitoring/summaries/deleteSummary": {
+      "delete": {
+        "operationId": "SummaryService_deleteSummary",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/vertamonitoringEmpty"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringDeleteSummaryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
+    "/api/v1/monitoring/summaries/findSample": {
+      "post": {
+        "operationId": "SummaryService_findSample",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringFindSummarySampleRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringFindSummarySampleRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    },
+    "/api/v1/monitoring/summaries/findSummary": {
+      "post": {
+        "operationId": "SummaryService_findSummary",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/monitoringFindSummaryRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/monitoringFindSummaryRequest"
+            }
+          }
+        ],
+        "tags": [
+          "SummaryService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "AggregationQuerySummaryAggregationOperation": {
+      "type": "string",
+      "enum": [
+        "SUM"
+      ],
+      "default": "SUM"
+    },
+    "monitoringAggregationQuerySummary": {
+      "type": "object",
+      "properties": {
+        "time_granularity_millis": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Optional time granularity for aggregation\nThis applies to time_window_start_at_millis and time_window_end_at_millis\nThe time window precision is reduced to this granularity\nFor example, if time_granularity_millis = \"1 day\", we will group samples that fall in the same\nday and aggregate them to create a single \"aggregated sample\""
+        },
+        "operation": {
+          "$ref": "#/definitions/AggregationQuerySummaryAggregationOperation"
+        },
+        "exclude_values": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      },
+      "description": "If any of the fields are not provided, we assume that the original value from the sample is kept.\nFor example, if time_granularity_millis=0, then time for the \"aggregated sample\" must match the\ntime of all the original samples associated with it.\nBy default the aggregation will include any logged values for the time window.  This\nbehavior can be disable to exclude the observations."
+    },
+    "monitoringCreateSummaryRequest": {
+      "type": "object",
+      "properties": {
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type_name": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "title": "Request to create a summary sample"
+    },
+    "monitoringCreateSummarySample": {
+      "type": "object",
+      "properties": {
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Summary info if detailed (e.g. want to avoid the extra hop to fetch the id and do the creation dance)"
+        },
+        "summary_name": {
+          "type": "string"
+        },
+        "summary_type_name": {
+          "type": "string"
+        },
+        "summary_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "or just the summary id"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Sample info"
+        },
+        "content": {
+          "type": "string"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "time_window_start_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "time_window_end_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "Request to create a summary sample"
+    },
+    "monitoringCreateSummarySampleBatch": {
+      "type": "object",
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringCreateSummarySample"
+          }
+        }
+      },
+      "title": "Request to create a batch of summary samples"
+    },
+    "monitoringCreateSummaryValue": {
+      "type": "object",
+      "properties": {
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Summary info if detailed (e.g. want to avoid the extra hop to fetch the id and do the creation dance)"
+        },
+        "summary_name": {
+          "type": "string"
+        },
+        "summary_type_name": {
+          "type": "string"
+        },
+        "summary_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "or just the summary id"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Sample info"
+        },
+        "type": {
+          "$ref": "#/definitions/monitoringSummaryValueType"
+        },
+        "string_value": {
+          "type": "string"
+        },
+        "double_value": {
+          "type": "number",
+          "format": "double"
+        },
+        "boolean_value": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp_millis": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "Request to create a summary value"
+    },
+    "monitoringDeleteSummaryRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      },
+      "title": "Request to delete summaries. It deletes all the associated samples"
+    },
+    "monitoringDeleteSummarySampleRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        }
+      },
+      "title": "Request to delete summary samples"
+    },
+    "monitoringFilterQuerySummarySample": {
+      "type": "object",
+      "properties": {
+        "find_summaries": {
+          "$ref": "#/definitions/monitoringFindSummaryRequest"
+        },
+        "sample_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "$ref": "#/definitions/monitoringLabelFilterQuerySummarySample"
+          }
+        },
+        "time_window_start_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "time_window_end_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "created_at_after_millis": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "Filters the caller wants to apply to selectively summary samples."
+    },
+    "monitoringFindMonitoredEntityRequest": {
+      "type": "object",
+      "properties": {
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "fuzzy_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "Add names to find with a fuzzy (non-exact) search"
+        },
+        "workspace_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "workspace_name": {
+          "type": "string"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "monitoringFindSummaryRequest": {
+      "type": "object",
+      "properties": {
+        "find_monitored_entities": {
+          "$ref": "#/definitions/monitoringFindMonitoredEntityRequest"
+        },
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "type_names": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "monitored_entity_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "format": "uint64"
+          }
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "Request to fetch multiple summaries"
+    },
+    "monitoringFindSummaryRequestResponse": {
+      "type": "object",
+      "properties": {
+        "summaries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringSummary"
+          }
+        },
+        "total_records": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "monitoringFindSummarySampleRequest": {
+      "type": "object",
+      "properties": {
+        "filter": {
+          "$ref": "#/definitions/monitoringFilterQuerySummarySample"
+        },
+        "aggregation": {
+          "$ref": "#/definitions/monitoringAggregationQuerySummary"
+        },
+        "page_number": {
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "store_aggregate": {
+          "type": "boolean",
+          "format": "boolean",
+          "title": "If there is an aggregation defined and this value is true, the aggregation will be stored to the database"
+        },
+        "allow_aggregate_samples": {
+          "type": "boolean",
+          "format": "boolean",
+          "description": "If true aggregate samples will be included in the results.  If false, only raw samples are returned."
+        }
+      },
+      "description": "Request to fetch multiple summary samples, potentially with aggregation."
+    },
+    "monitoringFindSummarySampleRequestResponse": {
+      "type": "object",
+      "properties": {
+        "samples": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/monitoringSummarySample"
+          }
+        },
+        "total_records": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "monitoringLabelFilterQuerySummarySample": {
+      "type": "object",
+      "properties": {
+        "label_value": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Filter details for a given label."
+    },
+    "monitoringSummary": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "monitored_entity_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "name": {
+          "type": "string"
+        },
+        "type_name": {
+          "type": "string"
+        },
+        "attributes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "description": "Summary is a collection of multiple samples through time with a shared name and type. It's used to make sure the multiple samples are consistent with each other."
+    },
+    "monitoringSummarySample": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "summary_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "content": {
+          "type": "string"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "time_window_start_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "time_window_end_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "is_aggregate": {
+          "type": "boolean",
+          "format": "boolean"
+        }
+      },
+      "description": "Summary sample is one instance of a summary corresponding to a given time range and a given set of labels."
+    },
+    "monitoringSummaryValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "summary_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "labels": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "type": {
+          "$ref": "#/definitions/monitoringSummaryValueType"
+        },
+        "string_value": {
+          "type": "string"
+        },
+        "double_value": {
+          "type": "number",
+          "format": "double"
+        },
+        "boolean_value": {
+          "type": "boolean",
+          "format": "boolean"
+        },
+        "created_at_millis": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp_millis": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "description": "Summary value is a single data point for a summary corresponding to a specific time and a given set of labels."
+    },
+    "monitoringSummaryValueType": {
+      "type": "string",
+      "enum": [
+        "STRING",
+        "NUMBER",
+        "BOOLEAN"
+      ],
+      "default": "STRING"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    },
+    "vertamonitoringEmpty": {
+      "type": "object"
+    }
+  },
+  "basePath": "/v1"
+}

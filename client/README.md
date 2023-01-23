@@ -2,6 +2,4 @@
 
 Thanks for stopping by, and for taking your first step towards a healthier, more sustainable model lifecycle!
 
-Come see [our user guide and documentation](https://docs.verta.ai/en/master/index.html) to get started.
-
-Take a look at [our development guide](https://github.com/VertaAI/modeldb/blob/master/client/CONTRIBUTING.md) for source installation and how to contribute.
+Come see [our user guide and documentation](https://docs.verta.ai/) to get started.

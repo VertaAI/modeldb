@@ -302,7 +302,7 @@ class Commit(
           List(
             "Merge conflict.", "Resolution is not currently supported through the client",
             "Please create a new Commit with the updated blobs.",
-            "See https://docs.verta.ai/en/master/examples/tutorials/merge.html for instructions"
+            "See https://docs.verta.ai/verta/experiment-management/guides/merge for instructions"
           ).mkString("\n")
         ))
         else versioningCommitToCommit(r.commit.get))

@@ -2679,7 +2679,8 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
     },
@@ -2732,6 +2733,17 @@
         }
       }
     },
+    "commonGroupId": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "group_id": {
+          "type": "string"
+        }
+      }
+    },
     "commonKeyValue": {
       "type": "object",
       "properties": {
@@ -2763,6 +2775,20 @@
           "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
+    },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "protobufAny": {
       "type": "object",
@@ -2813,6 +2839,9 @@
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
+        },
+        "can_predict": {
+          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -2826,6 +2855,17 @@
         "WORKSPACE_DEFAULT"
       ],
       "default": "UNKNOWN"
+    },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
     },
     "versioningBlob": {
       "type": "object",
@@ -2981,6 +3021,11 @@
           "type": "string",
           "format": "uint64",
           "description": "Updated Date while create tags & attribute for the commit."
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       },
       "title": "Base commit for the versioning system\nDO NOT USE TO COMPUTE SHA"
@@ -3236,6 +3281,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },
@@ -3882,6 +3930,13 @@
           "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
+        },
+        "raw_requirements": {
+          "type": "string",
+          "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
+        },
+        "raw_constraints": {
+          "type": "string"
         }
       }
     },
@@ -4029,6 +4084,13 @@
         "owner": {
           "type": "string"
         },
+        "owner_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
+        },
         "description": {
           "type": "string"
         },
@@ -4044,6 +4106,11 @@
         },
         "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
@@ -4197,20 +4264,6 @@
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }
-    },
-    "vertacommonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     }
   },
   "basePath": "/v1"

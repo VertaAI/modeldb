@@ -6,7 +6,7 @@ import { createCodeErrorFromError, HttpError } from 'shared/models/Error';
 import { commonAPIErrorMessages } from 'shared/utils/customErrorMessages';
 
 axiosRetry(axios, {
-  retryCondition: error => {
+  retryCondition: (error) => {
     return (
       error.code === 'ECONNABORTED' ||
       Boolean(error.response && [502, 503, 504].includes(error.response.status))
@@ -14,7 +14,7 @@ axiosRetry(axios, {
   },
   shouldResetTimeout: true,
   retries: 3,
-  retryDelay: retryNumber => {
+  retryDelay: (retryNumber) => {
     const delays: Record<number, number> = {
       1: 500,
       2: 1000,
@@ -27,9 +27,9 @@ axiosRetry(axios, {
 export class BaseDataService {
   public constructor() {
     // we have to use absolute baseURL when we use axios-retry. https://github.com/JustinBeckwith/retry-axios/issues/4
-    axios.defaults.baseURL = `${window.location.origin}/api`;
+    axios.defaults.baseURL = `${process.env.REACT_APP_PUBLIC_URL || '/'}api`;
     axios.defaults.responseType = 'json';
-    axios.defaults.validateStatus = status =>
+    axios.defaults.validateStatus = (status) =>
       (status >= 200 && status < 300) || status === 302;
     axios.defaults.timeout = 30000;
   }
@@ -37,7 +37,7 @@ export class BaseDataService {
   public get<T = any, ErrorType extends string = string>(
     opt: IHttpMethodRequestConfig<ErrorType>
   ): AxiosPromise<T> {
-    return axios.get(opt.url, opt.config).catch(error => {
+    return axios.get(opt.url, opt.config).catch((error) => {
       if (isAxiosError(error) && opt.errorConverters) {
         throw this.handleCustomApiErrorWithFallback(
           error,
@@ -52,7 +52,7 @@ export class BaseDataService {
   public post<T = any, ErrorType extends string = string>(
     opt: IHttpMethodRequestConfig<ErrorType>
   ): AxiosPromise<T> {
-    return axios.post(opt.url, opt.data, opt.config).catch(error => {
+    return axios.post(opt.url, opt.data, opt.config).catch((error) => {
       if (isAxiosError(error) && opt.errorConverters) {
         throw this.handleCustomApiErrorWithFallback(
           error,
@@ -67,7 +67,7 @@ export class BaseDataService {
   public put<T = any, ErrorType extends string = string>(
     opt: IHttpMethodRequestConfig<ErrorType>
   ): AxiosPromise<T> {
-    return axios.put(opt.url, opt.data, opt.config).catch(error => {
+    return axios.put(opt.url, opt.data, opt.config).catch((error) => {
       if (isAxiosError(error) && opt.errorConverters) {
         throw this.handleCustomApiErrorWithFallback(
           error,
@@ -82,7 +82,7 @@ export class BaseDataService {
   public delete<T = any, ErrorType extends string = string>(
     opt: IHttpMethodRequestConfig<ErrorType>
   ): AxiosPromise<T> {
-    return axios.delete(opt.url, opt.config).catch(error => {
+    return axios.delete(opt.url, opt.config).catch((error) => {
       if (isAxiosError(error) && opt.errorConverters) {
         throw this.handleCustomApiErrorWithFallback(
           error,

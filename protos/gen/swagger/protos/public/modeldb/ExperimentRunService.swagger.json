@@ -2306,7 +2306,8 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
     },
@@ -2350,6 +2351,16 @@
         },
         "filename_extension": {
           "type": "string"
+        },
+        "serialization": {
+          "type": "string"
+        },
+        "artifact_subtype": {
+          "type": "string"
+        },
+        "upload_completed": {
+          "type": "boolean",
+          "format": "boolean"
         }
       }
     },
@@ -2361,6 +2372,53 @@
           "format": "uint64"
         },
         "etag": {
+          "type": "string"
+        }
+      }
+    },
+    "commonCodeVersion": {
+      "type": "object",
+      "properties": {
+        "git_snapshot": {
+          "$ref": "#/definitions/commonGitSnapshot"
+        },
+        "code_archive": {
+          "$ref": "#/definitions/commonArtifact"
+        },
+        "date_logged": {
+          "type": "string",
+          "format": "uint64"
+        }
+      },
+      "title": "code version"
+    },
+    "commonGitSnapshot": {
+      "type": "object",
+      "properties": {
+        "filepaths": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "repo": {
+          "type": "string"
+        },
+        "hash": {
+          "type": "string"
+        },
+        "is_dirty": {
+          "$ref": "#/definitions/TernaryEnumTernary"
+        }
+      }
+    },
+    "commonGroupId": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "group_id": {
           "type": "string"
         }
       }
@@ -2396,6 +2454,20 @@
           "$ref": "#/definitions/OperatorEnumOperator"
         }
       }
+    },
+    "commonPagination": {
+      "type": "object",
+      "properties": {
+        "page_number": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "page_limit": {
+          "type": "integer",
+          "format": "int32"
+        }
+      },
+      "title": "For pagination"
     },
     "modeldbAddExperimentRunAttributes": {
       "type": "object",
@@ -2480,22 +2552,6 @@
         }
       }
     },
-    "modeldbCodeVersion": {
-      "type": "object",
-      "properties": {
-        "git_snapshot": {
-          "$ref": "#/definitions/modeldbGitSnapshot"
-        },
-        "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
-        },
-        "date_logged": {
-          "type": "string",
-          "format": "uint64"
-        }
-      },
-      "title": "code version"
-    },
     "modeldbCommitArtifactPart": {
       "type": "object",
       "properties": {
@@ -2565,7 +2621,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "parent_id": {
           "type": "string"
@@ -2855,7 +2911,7 @@
           "type": "string"
         },
         "code_version_snapshot": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "parent_id": {
           "type": "string"
@@ -2918,14 +2974,26 @@
         "owner": {
           "type": "string"
         },
+        "owner_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
+        },
         "versioned_inputs": {
           "$ref": "#/definitions/modeldbVersioningEntry"
         },
         "code_version_from_blob": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/modeldbCodeVersion"
+            "$ref": "#/definitions/commonCodeVersion"
           }
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       },
       "title": "ExperimentRun Entity"
@@ -3078,7 +3146,7 @@
       "type": "object",
       "properties": {
         "code_version": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         }
       }
     },
@@ -3223,26 +3291,6 @@
       "properties": {
         "versioned_inputs": {
           "$ref": "#/definitions/modeldbVersioningEntry"
-        }
-      }
-    },
-    "modeldbGitSnapshot": {
-      "type": "object",
-      "properties": {
-        "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "repo": {
-          "type": "string"
-        },
-        "hash": {
-          "type": "string"
-        },
-        "is_dirty": {
-          "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
@@ -3404,7 +3452,7 @@
           "type": "string"
         },
         "code_version": {
-          "$ref": "#/definitions/modeldbCodeVersion"
+          "$ref": "#/definitions/commonCodeVersion"
         },
         "overwrite": {
           "type": "boolean",
@@ -3683,6 +3731,17 @@
         }
       }
     },
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
+      "properties": {
+        "packages": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "versioningDockerEnvironmentBlob": {
       "type": "object",
       "properties": {
@@ -3717,6 +3776,9 @@
           "items": {
             "type": "string"
           }
+        },
+        "apt": {
+          "$ref": "#/definitions/versioningAptEnvironmentBlob"
         }
       }
     },
@@ -3748,6 +3810,13 @@
           "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
+        },
+        "raw_requirements": {
+          "type": "string",
+          "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
+        },
+        "raw_constraints": {
+          "type": "string"
         }
       }
     },
@@ -3809,20 +3878,6 @@
           "type": "string"
         }
       }
-    },
-    "vertacommonPagination": {
-      "type": "object",
-      "properties": {
-        "page_number": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "For pagination"
     },
     "vertamodeldbLocation": {
       "type": "object",

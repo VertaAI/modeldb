@@ -62,11 +62,11 @@ test:
     DBType: relational
     RdbConfiguration:
       RdbDatabaseName: modeldb_test
-      RdbDriver: "org.postgresql.Driver"
-      RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-      RdbUrl: "jdbc:postgresql://localhost:5432"
-      RdbUsername: postgres
-      RdbPassword: root
+      RdbDriver: "org.mariadb.jdbc.Driver"
+      RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+      RdbUrl: "jdbc:mysql://localhost:3306"
+      RdbUsername: root
+      RdbPassword: root_password_here
 ```
 
 Set the **VERTA_MODELDB_CONFIG** environment variable to point to config.yaml
@@ -102,11 +102,11 @@ database:
   liquibaseLockThreshold: 60 #time in second
   RdbConfiguration:
     RdbDatabaseName: modeldb
-    RdbDriver: "org.postgresql.Driver"
-    RdbDialect: "org.hibernate.dialect.PostgreSQLDialect"
-    RdbUrl: "jdbc:postgresql://localhost:5432"
-    RdbUsername: postgres
-    RdbPassword: root
+    RdbDriver: "org.mariadb.jdbc.Driver"
+    RdbDialect: "org.hibernate.dialect.MySQL5Dialect"
+    RdbUrl: "jdbc:mysql://localhost:3306"
+    RdbUsername: root
+    RdbPassword: root_password_here
 ```
 
 1. If you are connecting to postgres, the database needs to be already created.

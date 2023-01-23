@@ -738,7 +738,8 @@
         "LTE",
         "CONTAIN",
         "NOT_CONTAIN",
-        "IN"
+        "IN",
+        "NOT_IN"
       ],
       "default": "EQ"
     },
@@ -770,6 +771,17 @@
           "format": "uint64"
         },
         "etag": {
+          "type": "string"
+        }
+      }
+    },
+    "commonGroupId": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "group_id": {
           "type": "string"
         }
       }
@@ -1006,6 +1018,13 @@
         "owner": {
           "type": "string"
         },
+        "owner_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
+        },
         "version": {
           "type": "string",
           "format": "uint64"
@@ -1025,6 +1044,11 @@
         },
         "dataset_blob": {
           "$ref": "#/definitions/versioningDatasetBlob"
+        },
+        "version_number": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
