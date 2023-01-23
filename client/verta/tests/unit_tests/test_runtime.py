@@ -123,7 +123,7 @@ def test_exception_on_prior_logging_context() -> None:
     """
     with pytest.raises(RuntimeError):
         runtime.log('outside_of_scope', {'this': 'that'})
-        with runtime.context() as test_ctx:
+        with runtime.context():
             pass
 
 
