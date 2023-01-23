@@ -105,7 +105,6 @@ public abstract class ModeldbTestSetup {
   protected UserInfo serviceAccountUser;
 
   protected WorkspaceV2 testUser1Workspace;
-  protected WorkspaceV2 testUser2Workspace;
 
   protected String organizationId;
   protected String groupIdUser1;
@@ -301,14 +300,6 @@ public abstract class ModeldbTestSetup {
                 roleIdUser1,
                 testUser1.getVertaInfo().getUsername(),
                 Optional.empty());
-        /*testUser2Workspace =
-        createWorkspaceAndRoleForUser(
-            authServiceChannelServiceUser,
-            organizationId,
-            groupIdUser1,
-            roleIdUser1,
-            testUser2.getVertaInfo().getUsername(),
-            Optional.empty());*/
       }
     } else {
       serviceAccountUser =
@@ -354,14 +345,6 @@ public abstract class ModeldbTestSetup {
               .setNamespace("namespace")
               .addPermissions(Permission.newBuilder().setGroupId("-1").setRoleId("-1").build())
               .build();
-      /*testUser2Workspace =
-      WorkspaceV2.newBuilder()
-          .setId(Long.parseLong(testUser2.getVertaInfo().getWorkspaceId()))
-          .setName(testUser2.getVertaInfo().getUsername())
-          .setOrgId("-1")
-          .setNamespace("namespace")
-          .addPermissions(Permission.newBuilder().setGroupId("-1").setRoleId("-1").build())
-          .build();*/
     }
 
     LOGGER.trace("Test service infrastructure config complete.");
@@ -470,10 +453,6 @@ public abstract class ModeldbTestSetup {
 
   public String getWorkspaceNameUser1() {
     return testUser1Workspace.getOrgId() + "/" + testUser1Workspace.getName();
-  }
-
-  public String getWorkspaceNameUser2() {
-    return testUser2Workspace.getOrgId() + "/" + testUser2Workspace.getName();
   }
 
   protected void setupMockUacEndpoints(UAC uac) {

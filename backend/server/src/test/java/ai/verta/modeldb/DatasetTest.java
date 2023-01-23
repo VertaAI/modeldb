@@ -610,12 +610,6 @@ public class DatasetTest extends ModeldbTestSetup {
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     var workspaceNameUser2 = testUser2.getVertaInfo().getUsername();
     if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
-      /*var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
-      workspaceStub.deleteWorkspace(
-          DeleteWorkspaceV2.newBuilder()
-              .setOrgId(organizationId)
-              .setWorkspaceId(testUser2Workspace.getId())
-              .build());*/
       var groupIdUser1 =
           createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
       var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);

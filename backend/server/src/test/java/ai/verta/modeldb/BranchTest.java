@@ -488,8 +488,6 @@ public class BranchTest extends ModeldbTestSetup {
         Assert.assertEquals(Code.NOT_FOUND, e.getStatus().getCode());
       }
 
-    } catch (Exception ex) {
-      ex.printStackTrace();
     } finally {
       Commit commit3Final = commit3;
       commitShaList.forEach(
