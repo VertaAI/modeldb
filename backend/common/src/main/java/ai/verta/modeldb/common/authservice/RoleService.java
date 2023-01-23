@@ -7,7 +7,6 @@ import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.protobuf.GeneratedMessageV3;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
@@ -36,11 +35,6 @@ public interface RoleService {
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return getEntityResource(Optional.of(entityId), Optional.empty(), modelDBServiceResourceTypes);
   }
-
-  List<GetResourcesResponseItem> getEntityResourcesByName(
-      Optional<String> entityName,
-      Optional<String> workspaceName,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   GeneratedMessageV3 getOrgById(String orgId);
 
@@ -73,10 +67,6 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions);
 
-  List<String> getSelfDirectlyAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions);
-
   void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
@@ -87,9 +77,6 @@ public interface RoleService {
       ModelDBServiceActions modelDBServiceActions,
       List<String> requestedResourceIds);
 
-  Map<String, Actions> getSelfAllowedActionsBatch(
-      List<String> resourceIds, ModelDBServiceResourceTypes type);
-
   void createRoleBinding(
       String roleName,
       CollaboratorBase collaborator,
@@ -97,10 +84,6 @@ public interface RoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes);
 
   boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames);
-
-  GeneratedMessageV3 getTeamByName(String orgId, String teamName);
-
-  GeneratedMessageV3 getOrgByName(String name);
 
   List<Organization> listMyOrganizations();
 }

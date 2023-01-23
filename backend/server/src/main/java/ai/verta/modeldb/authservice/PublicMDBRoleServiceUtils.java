@@ -67,12 +67,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public Map<String, Actions> getSelfAllowedActionsBatch(
-      List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    return new HashMap<>();
-  }
-
-  @Override
   public boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames) {
     return true;
   }
@@ -121,13 +115,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public List<String> getSelfDirectlyAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions) {
-    return Collections.emptyList();
-  }
-
-  @Override
   public List<Resources> getAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
@@ -141,17 +128,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public GeneratedMessageV3 getTeamByName(String orgId, String teamName) {
-    return null;
-  }
-
-  @Override
   public GeneratedMessageV3 getOrgById(String orgId) {
-    return null;
-  }
-
-  @Override
-  public GeneratedMessageV3 getOrgByName(String name) {
     return null;
   }
 
@@ -189,14 +166,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
-  }
-
-  @Override
-  public List<GetResourcesResponseItem> getEntityResourcesByName(
-      Optional<String> entityName,
-      Optional<String> workspaceName,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return Collections.emptyList();
   }
 
   @Override

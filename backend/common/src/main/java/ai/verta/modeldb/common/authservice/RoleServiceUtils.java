@@ -175,40 +175,6 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  @Override
-  public List<GetResourcesResponseItem> getEntityResourcesByName(
-      Optional<String> entityName,
-      Optional<String> workspaceName,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      if (!entityName.isPresent()) {
-        return Collections.emptyList();
-      }
-      List<GetResourcesResponseItem> responseItems =
-          getGetResourcesResponseItems(
-              Optional.empty(),
-              entityName,
-              workspaceName,
-              modelDBServiceResourceTypes,
-              authServiceChannel);
-      if (!responseItems.isEmpty()) {
-        return responseItems;
-      } else {
-        StringBuilder errorMessage =
-            new StringBuilder("Failed to locate ")
-                .append(modelDBServiceResourceTypes.name())
-                .append(" resources in UAC for ")
-                .append(modelDBServiceResourceTypes.name())
-                .append(" Name ")
-                .append(entityName.get());
-        throw new NotFoundException(errorMessage.toString());
-      }
-    } catch (StatusRuntimeException ex) {
-      LOGGER.trace(ex);
-      throw ex;
-    }
-  }
-
   private List<GetResourcesResponseItem> getGetResourcesResponseItems(
       Optional<String> entityId,
       Optional<String> entityName,
@@ -510,62 +476,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<String> getSelfDirectlyAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
-    return getSelfDirectlyAllowedResources(
-        true, modelDBServiceResourceTypes, modelDBServiceActions);
-  }
-
-  private List<String> getSelfDirectlyAllowedResources(
-      boolean retry,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
-    var action =
-        Action.newBuilder()
-            .setService(Service.MODELDB_SERVICE)
-            .setModeldbServiceAction(modelDBServiceActions)
-            .build();
-    GetSelfAllowedResources getAllowedResourcesRequest =
-        GetSelfAllowedResources.newBuilder()
-            .addActions(action)
-            .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-            .setService(Service.MODELDB_SERVICE)
-            .build();
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      var getAllowedResourcesResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub()
-              .getSelfDirectlyAllowedResources(getAllowedResourcesRequest);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
-
-      if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
-        List<String> getSelfDirectlyAllowedResourceIds = new ArrayList<>();
-        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-          getSelfDirectlyAllowedResourceIds.addAll(resources.getResourceIdsList());
-        }
-        return getSelfDirectlyAllowedResourceIds;
-      } else {
-        return Collections.emptyList();
-      }
-    } catch (StatusRuntimeException ex) {
-      return (List<String>)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<List<String>>)
-                  retry1 ->
-                      getSelfDirectlyAllowedResources(
-                          retry1, modelDBServiceResourceTypes, modelDBServiceActions),
-              timeout);
-    }
-  }
-
-  @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
@@ -636,47 +546,6 @@ public class RoleServiceUtils implements RoleService {
 
     // Validate if current user has access to the entity or not
     return getAccessibleResourceIdsFromAllowedResources(requestedResourceIds, accessibleResources);
-  }
-
-  @Override
-  public Map<String, Actions> getSelfAllowedActionsBatch(
-      List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    return getSelfAllowedActionsBatch(true, resourceIds, type);
-  }
-
-  private Map<String, Actions> getSelfAllowedActionsBatch(
-      boolean retry, List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      var getSelfAllowedActionsBatch =
-          GetSelfAllowedActionsBatch.newBuilder()
-              .setResources(
-                  Resources.newBuilder()
-                      .setService(Service.MODELDB_SERVICE)
-                      .addAllResourceIds(resourceIds)
-                      .setResourceType(
-                          ResourceType.newBuilder().setModeldbServiceResourceType(type))
-                      .build())
-              .build();
-
-      var getSelfAllowedActionsBatchResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub()
-              .getSelfAllowedActionsBatch(getSelfAllowedActionsBatch);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getSelfAllowedActionsBatchResponse);
-      return getSelfAllowedActionsBatchResponse.getActionsMap();
-
-    } catch (StatusRuntimeException ex) {
-      return (Map<String, Actions>)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<Map<String, Actions>>)
-                  retry1 -> getSelfAllowedActionsBatch(retry1, resourceIds, type),
-              timeout);
-    }
   }
 
   @Override
@@ -761,11 +630,6 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  @Override
-  public GeneratedMessageV3 getTeamByName(String orgId, String teamName) {
-    return getTeamByName(true, orgId, teamName);
-  }
-
   private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       var getTeamByName = GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
@@ -781,11 +645,6 @@ public class RoleServiceUtils implements RoleService {
                   retry1 -> getTeamByName(retry1, orgId, teamName),
               timeout);
     }
-  }
-
-  @Override
-  public GeneratedMessageV3 getOrgByName(String name) {
-    return getOrgByName(true, name);
   }
 
   private GeneratedMessageV3 getOrgByName(boolean retry, String name) {
