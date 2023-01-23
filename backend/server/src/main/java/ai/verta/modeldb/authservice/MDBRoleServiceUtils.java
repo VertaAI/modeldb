@@ -98,17 +98,4 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
         return null;
     }
   }
-
-  public boolean checkConnectionsBasedOnPrivileges(
-      ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBServiceActions serviceActions,
-      String resourceId) {
-    try {
-      isSelfAllowed(serviceResourceTypes, serviceActions, resourceId);
-      return true;
-    } catch (Exception ex) {
-      LOGGER.debug(ex.getMessage());
-      return false;
-    }
-  }
 }

@@ -235,12 +235,4 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       String globalSharing) {
     return Collections.emptyList();
   }
-
-  @Override
-  public boolean checkConnectionsBasedOnPrivileges(
-      ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBServiceActions serviceActions,
-      String resourceId) {
-    return true;
-  }
 }

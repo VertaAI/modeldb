@@ -38,9 +38,4 @@ public interface MDBRoleService extends RoleService {
 
   WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
       UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
-
-  boolean checkConnectionsBasedOnPrivileges(
-      ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBServiceActions serviceActions,
-      String resourceId);
 }
