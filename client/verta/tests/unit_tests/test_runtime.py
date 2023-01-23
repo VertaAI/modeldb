@@ -146,9 +146,8 @@ def test_s3_validation_bad_keys(key: str):
     'key',
     [
         'abc123xyz',
-        '-/abc/(def)/!x*yz.def.hij',
-        'this-key-is-just-fine!(yipEEEE*)'
-        'single_quotes\'are_ok_too'
+        '-abc-123_d34kfhx',
+        'this-key-is-just-fine_yipEEEE'
     ]
 )
 def test_s3_validation_good_keys(key: str):
