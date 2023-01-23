@@ -2,8 +2,6 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.common.authservice.RoleService;
-import ai.verta.modeldb.common.collaborator.CollaboratorBase;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.GetCollaboratorResponseItem;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
@@ -34,11 +32,6 @@ public interface MDBRoleService extends RoleService {
       String resourceId,
       ModelDBServiceActions modelDBServiceActions);
 
-  String buildReadOnlyRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes);
-
   GeneratedMessageV3 getTeamById(String teamId);
 
   GeneratedMessageV3 getOrgById(String orgId);
@@ -52,12 +45,4 @@ public interface MDBRoleService extends RoleService {
    * @return {@link Workspace} : workspace
    */
   Workspace getWorkspaceByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
-
-  WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
-      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
-
-  boolean checkConnectionsBasedOnPrivileges(
-      ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBServiceActions serviceActions,
-      String resourceId);
 }

@@ -1,14 +1,12 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -116,14 +114,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public String buildReadOnlyRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return null;
-  }
-
-  @Override
   public List<Resources> getSelfAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions) {
@@ -189,15 +179,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
-      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
-    var workspaceDTO = new WorkspaceDTO();
-    workspaceDTO.setWorkspaceId(workspaceId);
-    workspaceDTO.setWorkspaceType(WorkspaceType.forNumber(workspaceType));
-    return workspaceDTO;
-  }
-
-  @Override
   public List<Organization> listMyOrganizations() {
     return Collections.emptyList();
   }
@@ -245,25 +226,5 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       boolean isServiceUser) {
     return Collections.emptyList();
-  }
-
-  @Override
-  public List<String> getWorkspaceRoleBindings(
-      String workspace_id,
-      WorkspaceType forNumber,
-      String valueOf,
-      String roleRepositoryAdmin,
-      ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic,
-      String globalSharing) {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public boolean checkConnectionsBasedOnPrivileges(
-      ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBServiceActions serviceActions,
-      String resourceId) {
-    return true;
   }
 }

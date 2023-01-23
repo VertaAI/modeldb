@@ -3,9 +3,6 @@ package ai.verta.modeldb.authservice;
 import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.TernaryEnum;
-import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
@@ -18,7 +15,6 @@ import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
@@ -289,34 +285,6 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
   }
 
   @Override
-  public String buildReadOnlyRoleBindingName(
-      String resourceId,
-      CollaboratorBase collaborator,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.PROJECT)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_PROJECT_READ_ONLY,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.PROJECT.name());
-    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.DATASET)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_DATASET_READ_ONLY,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.DATASET.name());
-    } else if (modelDBServiceResourceTypes.equals(ModelDBServiceResourceTypes.REPOSITORY)) {
-      return buildRoleBindingName(
-          ModelDBConstants.ROLE_REPOSITORY_READ_ONLY,
-          resourceId,
-          collaborator,
-          ModelDBServiceResourceTypes.REPOSITORY.name());
-    } else {
-      return CommonConstants.EMPTY_STRING;
-    }
-  }
-
-  @Override
   public Workspace getWorkspaceByWorkspaceName(
       UserInfo currentLoginUserInfo, String workspaceName) {
     if (Strings.isNullOrEmpty(workspaceName)) {
@@ -326,57 +294,6 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
       return uacApisUtil.getWorkspaceByName(workspaceName).blockAndGet();
     } catch (Exception e) {
       throw new ModelDBException(e);
-    }
-  }
-
-  /**
-   * Given the workspace id and type, returns WorkspaceDTO which has the id, name and type for the
-   * workspace.
-   */
-  @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
-      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
-    var workspaceDTO = new WorkspaceDTO();
-    workspaceDTO.setWorkspaceId(workspaceId);
-
-    switch (workspaceType) {
-      case WorkspaceType.ORGANIZATION_VALUE:
-        var organization = (Organization) getOrgById(true, workspaceId, true);
-        workspaceDTO.setWorkspaceType(WorkspaceType.ORGANIZATION);
-        workspaceDTO.setWorkspaceName(organization.getName());
-        return workspaceDTO;
-      case WorkspaceType.USER_VALUE:
-        workspaceDTO.setWorkspaceType(WorkspaceType.USER);
-        if (workspaceId.equalsIgnoreCase(
-            uacApisUtil.getVertaIdFromUserInfo(currentLoginUserInfo))) {
-          workspaceDTO.setWorkspaceName(uacApisUtil.getUsernameFromUserInfo(currentLoginUserInfo));
-        } else {
-          try {
-            var userInfo =
-                uacApisUtil
-                    .getUserInfo(workspaceId, CommonConstants.UserIdentifier.VERTA_ID)
-                    .blockAndGet();
-            workspaceDTO.setWorkspaceName(uacApisUtil.getUsernameFromUserInfo(userInfo));
-          } catch (Exception e) {
-            throw new ModelDBException(e);
-          }
-        }
-        return workspaceDTO;
-      default:
-        return null;
-    }
-  }
-
-  public boolean checkConnectionsBasedOnPrivileges(
-      ModelDBServiceResourceTypes serviceResourceTypes,
-      ModelDBServiceActions serviceActions,
-      String resourceId) {
-    try {
-      isSelfAllowed(serviceResourceTypes, serviceActions, resourceId);
-      return true;
-    } catch (Exception ex) {
-      LOGGER.debug(ex.getMessage());
-      return false;
     }
   }
 }
