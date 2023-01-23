@@ -131,7 +131,8 @@ def test_json_validation() -> None:
         'not_an_ok_val_@',
         'no spaces allowed',
         '<no_brackets>',
-        'no+plus_or_=equals'
+        'no+plus_or_=equals',
+        'this_string_does_not_contain_any_forbidden_characters_however_it_is_really_long_like_absurdly_too_long'
     ]
 )
 def test_s3_validation_bad_keys(key: str):

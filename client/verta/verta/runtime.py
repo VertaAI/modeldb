@@ -84,8 +84,8 @@ def _validate_s3(
     violate Amazon S3 object key naming rules. Raise ValueError if any
     are found.
     """
-    # if re.match(pattern=pattern, string=value):
-    #     print("MATCHED")
+    if len(value) > 100:
+        raise ValueError("Provided key value must be 100 characters or less in length.")
     if not pattern.match(value):
         raise ValueError(f" provided value \"{value}\" contains non-alphanumeric "
                          f"characters. (dashes and underscores permitted)")
@@ -100,7 +100,8 @@ def log(key: str, value: Any) -> None:
     Parameters
     ----------
     key : str
-        String value to use as data label (key) in logging context.
+        String value to use as data label (key) in logging context, with a limit of
+        100 characters or less.
     value : Any
         Any `JSON serializable <https://docs.python.org/3/library/json.html#json.JSONEncoder>`__
         value you wish to include in the context logs.
