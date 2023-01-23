@@ -101,9 +101,8 @@ public class NFSArtifactStoreTest {
 
   @BeforeEach
   public void createEntities() {
+    initializedChannelBuilderAndExternalServiceStubs();
     if (testConfig.getDatabase().getRdbConfiguration().isH2()) {
-      initializedChannelBuilderAndExternalServiceStubs();
-
       setupMockUacEndpoints(uac);
     }
     createProjectEntities();

@@ -67,7 +67,8 @@ public class BranchTest extends ModeldbTestSetup {
   private static Commit parentCommit;
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
     super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -80,7 +81,8 @@ public class BranchTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     if (repository != null) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -92,6 +94,7 @@ public class BranchTest extends ModeldbTestSetup {
       repository = null;
       parentCommit = null;
     }
+    cleanUpResources();
     super.tearDown();
   }
 
@@ -483,7 +486,6 @@ public class BranchTest extends ModeldbTestSetup {
         Assert.fail();
       } catch (StatusRuntimeException e) {
         Assert.assertEquals(Code.NOT_FOUND, e.getStatus().getCode());
-        e.printStackTrace();
       }
 
     } finally {
@@ -501,7 +503,6 @@ public class BranchTest extends ModeldbTestSetup {
                 versioningServiceBlockingStub.deleteCommit(deleteCommitRequest);
               } catch (StatusRuntimeException e) {
                 Assert.assertEquals(Code.FAILED_PRECONDITION, e.getStatus().getCode());
-                e.printStackTrace();
 
                 DeleteBranchRequest deleteBranchRequest1 =
                     DeleteBranchRequest.newBuilder()
