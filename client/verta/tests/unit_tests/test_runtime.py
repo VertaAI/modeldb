@@ -22,7 +22,12 @@ def test_thread_safety() -> None:
 
     with futures.ThreadPoolExecutor(max_workers=5) as executor:
         with runtime.context():
-            executor.map(log_in_thread, [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)])
+            list(
+                executor.map(
+                    log_in_thread,
+                    [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
+                )
+            )
 
 
 class TestThreadLocalFunctions(unittest.TestCase):
