@@ -85,7 +85,7 @@ def _validate_s3(
     are found.
     """
     if len(value) > 100:
-        raise ValueError("Provided key value must be 100 characters or less in length.")
+        raise ValueError(" provided key value must be 100 characters or less in length.")
     if not pattern.match(value):
         raise ValueError(f" provided value \"{value}\" contains non-alphanumeric "
                          f"characters. (dashes and underscores permitted)")
