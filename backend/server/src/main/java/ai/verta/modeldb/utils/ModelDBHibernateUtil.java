@@ -1,8 +1,6 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.batchProcess.CollaboratorResourceMigration;
-import ai.verta.modeldb.batchProcess.DatasetToRepositoryMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
@@ -252,16 +250,6 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
           case ModelDBConstants.POPULATE_VERSION_MIGRATION:
             PopulateVersionMigration.execute(migrationConfig.record_update_limit);
             break;
-          case ModelDBConstants.DATASET_VERSIONING_MIGRATION:
-            boolean isLocked = checkMigrationLockedStatus(migrationConfig.name, rdb);
-            if (!isLocked) {
-              LOGGER.debug("Obtaining migration lock");
-              lockedMigration(migrationConfig.name, rdb);
-              DatasetToRepositoryMigration.execute(migrationConfig.record_update_limit);
-            } else {
-              LOGGER.debug("Migration already locked");
-            }
-            break;
           default:
             // Do nothing
             break;
@@ -269,8 +257,5 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
       }
     }
     LOGGER.debug("Completed code migrations.");
-    LOGGER.debug("Running collaborator resource migration.");
-    CollaboratorResourceMigration.execute();
-    LOGGER.debug("Completed collaborator resource migration.");
   }
 }

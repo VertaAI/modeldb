@@ -97,8 +97,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -114,8 +114,8 @@ public class CommitTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(CommitTest.class);
   private static final long time = Calendar.getInstance().getTimeInMillis();
-  private static Repository repository;
-  private static Commit initialCommit;
+  private Repository repository;
+  private Commit initialCommit;
 
   @BeforeEach
   @Override
@@ -206,8 +206,9 @@ public class CommitTest extends ModeldbTestSetup {
         repoIdNameMap.keySet(), ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
   }
 
-  @After
-  public void removeEntities() {
+  @AfterEach
+  @Override
+  public void tearDown() {
     for (Repository repo : new Repository[] {repository}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -219,6 +220,9 @@ public class CommitTest extends ModeldbTestSetup {
     }
     repository = null;
     initialCommit = null;
+
+    cleanUpResources();
+    super.tearDown();
   }
 
   private static PathDatasetComponentBlob getPathDatasetComponentBlob(String blobLocation) {

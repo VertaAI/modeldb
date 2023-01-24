@@ -1087,8 +1087,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
   }
 
   @Override
-  public FindRepositories.Response findRepositories(FindRepositories request)
-      throws ModelDBException {
+  public FindRepositories.Response findRepositories(FindRepositories request) throws Exception {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       var currentLoginUserInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       try {
@@ -1104,8 +1103,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
         String workspaceName = request.getWorkspaceName();
-        if (!workspaceName.isEmpty()
-            && workspaceName.equals(uacApisUtil.getUsernameFromUserInfo(currentLoginUserInfo))) {
+        if (!workspaceName.isEmpty()) {
           List<GetResourcesResponseItem> accessibleAllWorkspaceItems =
               mdbRoleService.getResourceItems(
                   null,
@@ -1166,7 +1164,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
 
         var findRepositoriesQuery =
             new FindRepositoriesQuery.FindRepositoriesHQLQueryBuilder(
-                    session, uacApisUtil, mdbRoleService)
+                    session, uacApisUtil, mdbRoleService, isPermissionV2)
                 .setRepoIds(
                     accessibleResourceIdsWithCollaborator.stream()
                         .map(Long::valueOf)
@@ -1211,7 +1209,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
       if (ModelDBUtils.needToRetry(ex)) {
         return findRepositories(request);
       } else {
-        throw new ModelDBException(ex);
+        throw ex;
       }
     }
   }
