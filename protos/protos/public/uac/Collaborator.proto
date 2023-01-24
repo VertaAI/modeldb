@@ -101,6 +101,7 @@ message GetResources {
     // Optional. If Provided, workspace, resource service, type should be provided
     string resource_name = 4;
     common.Pagination pagination = 5;
+    repeated uint64 owner_ids = 6;
 
     message Response {
         repeated GetResourcesResponseItem item = 1;
