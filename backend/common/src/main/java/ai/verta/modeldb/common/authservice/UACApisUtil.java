@@ -47,12 +47,10 @@ public class UACApisUtil {
   private static final Logger LOGGER = LogManager.getLogger(UACApisUtil.class);
   protected final FutureExecutor executor;
   protected final UAC uac;
-  protected final boolean isPermissionV2;
 
-  public UACApisUtil(FutureExecutor executor, UAC uac, boolean isPermissionV2) {
+  public UACApisUtil(FutureExecutor executor, UAC uac) {
     this.executor = executor;
     this.uac = uac;
-    this.isPermissionV2 = isPermissionV2;
   }
 
   public InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
