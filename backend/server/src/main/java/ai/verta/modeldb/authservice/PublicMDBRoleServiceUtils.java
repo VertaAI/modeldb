@@ -1,14 +1,12 @@
 package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.WorkspaceTypeEnum.WorkspaceType;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
@@ -68,12 +66,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public Map<String, Actions> getSelfAllowedActionsBatch(
-      List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    return new HashMap<>();
-  }
-
-  @Override
   public boolean deleteRoleBindingsUsingServiceUser(List<String> roleBindingNames) {
     return true;
   }
@@ -113,13 +105,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public List<String> getSelfDirectlyAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions) {
-    return Collections.emptyList();
-  }
-
-  @Override
   public List<Resources> getAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBServiceActions modelDBServiceActions,
@@ -128,17 +113,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public GeneratedMessageV3 getTeamByName(String orgId, String teamName) {
-    return null;
-  }
-
-  @Override
   public GeneratedMessageV3 getOrgById(String orgId) {
-    return null;
-  }
-
-  @Override
-  public GeneratedMessageV3 getOrgByName(String name) {
     return null;
   }
 
@@ -166,15 +141,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
-      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType) {
-    var workspaceDTO = new WorkspaceDTO();
-    workspaceDTO.setWorkspaceId(workspaceId);
-    workspaceDTO.setWorkspaceType(WorkspaceType.forNumber(workspaceType));
-    return workspaceDTO;
-  }
-
-  @Override
   public List<Organization> listMyOrganizations() {
     return Collections.emptyList();
   }
@@ -185,14 +151,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       Optional<String> workspaceName,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return GetResourcesResponseItem.newBuilder().setVisibility(ResourceVisibility.PRIVATE).build();
-  }
-
-  @Override
-  public List<GetResourcesResponseItem> getEntityResourcesByName(
-      Optional<String> entityName,
-      Optional<String> workspaceName,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return Collections.emptyList();
   }
 
   @Override
@@ -221,18 +179,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       Set<String> resourceIds,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       boolean isServiceUser) {
-    return Collections.emptyList();
-  }
-
-  @Override
-  public List<String> getWorkspaceRoleBindings(
-      String workspace_id,
-      WorkspaceType forNumber,
-      String valueOf,
-      String roleRepositoryAdmin,
-      ModelDBServiceResourceTypes repository,
-      boolean orgScopedPublic,
-      String globalSharing) {
     return Collections.emptyList();
   }
 }

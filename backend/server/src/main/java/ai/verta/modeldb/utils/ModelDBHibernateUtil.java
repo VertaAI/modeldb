@@ -1,7 +1,6 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.batchProcess.CollaboratorResourceMigration;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
@@ -258,8 +257,5 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
       }
     }
     LOGGER.debug("Completed code migrations.");
-    LOGGER.debug("Running collaborator resource migration.");
-    CollaboratorResourceMigration.execute();
-    LOGGER.debug("Completed collaborator resource migration.");
   }
 }

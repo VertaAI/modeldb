@@ -2,7 +2,6 @@ package ai.verta.modeldb.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.common.authservice.RoleService;
-import ai.verta.modeldb.dto.WorkspaceDTO;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
@@ -35,7 +34,4 @@ public interface MDBRoleService extends RoleService {
    * @return {@link Workspace} : workspace
    */
   Workspace getWorkspaceByWorkspaceName(UserInfo currentLoginUserInfo, String workspaceName);
-
-  WorkspaceDTO getWorkspaceDTOByWorkspaceIdForServiceUser(
-      UserInfo currentLoginUserInfo, String workspaceId, Integer workspaceType);
 }
