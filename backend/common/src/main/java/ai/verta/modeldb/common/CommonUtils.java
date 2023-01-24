@@ -105,6 +105,8 @@ public class CommonUtils {
       invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("\""));
       return new ModelDBException(
           "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+    } else if (ex instanceof IllegalArgumentException) {
+      throw (IllegalArgumentException)ex;
     }
     throw new ModelDBException(ex);
   }
