@@ -106,7 +106,7 @@ public class CommonUtils {
       return new ModelDBException(
           "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     } else if (ex instanceof IllegalArgumentException) {
-      throw (IllegalArgumentException)ex;
+      throw (IllegalArgumentException) ex;
     }
     throw new ModelDBException(ex);
   }
