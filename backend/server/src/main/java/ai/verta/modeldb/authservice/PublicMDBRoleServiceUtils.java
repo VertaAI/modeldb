@@ -16,7 +16,6 @@ import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
 import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
 import com.google.protobuf.GeneratedMessageV3;
-import io.grpc.Metadata;
 import java.util.*;
 
 public class PublicMDBRoleServiceUtils implements MDBRoleService {
@@ -71,15 +70,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
     return true;
   }
 
-  @Override
-  public List<GetCollaboratorResponseItem> getResourceCollaborators(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      String resourceId,
-      String resourceOwnerId,
-      Metadata requestHeaders) {
-    return Collections.emptyList();
-  }
-
   /**
    * Checks permissions of the user wrt the Entity
    *
@@ -120,11 +110,6 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
       ModelDBServiceActions modelDBServiceActions,
       CollaboratorBase collaboratorBase) {
     return Collections.emptyList();
-  }
-
-  @Override
-  public GeneratedMessageV3 getTeamById(String teamId) {
-    return null;
   }
 
   @Override

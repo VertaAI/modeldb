@@ -201,27 +201,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public GeneratedMessageV3 getTeamById(String teamId) {
-    return getTeamById(true, teamId);
-  }
-
-  public GeneratedMessageV3 getTeamById(boolean retry, String teamId) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      var getTeamById = GetTeamById.newBuilder().setTeamId(teamId).build();
-      var getTeamByIdResponse =
-          authServiceChannel.getTeamServiceBlockingStub().getTeamById(getTeamById);
-      return getTeamByIdResponse.getTeam();
-    } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<GeneratedMessageV3>) retry1 -> getTeamById(teamId),
-              timeout);
-    }
-  }
-
-  @Override
   public GeneratedMessageV3 getOrgById(String orgId) {
     return getOrgById(true, orgId, false);
   }

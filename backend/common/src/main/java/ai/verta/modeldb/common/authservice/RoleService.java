@@ -38,8 +38,6 @@ public interface RoleService {
 
   GeneratedMessageV3 getOrgById(String orgId);
 
-  GeneratedMessageV3 getTeamById(String teamId);
-
   List<GetResourcesResponseItem> getResourceItems(
       Workspace workspace,
       Set<String> resourceIds,

@@ -7,6 +7,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.UnimplementedException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
@@ -55,6 +56,7 @@ public class FindRepositoriesQuery {
 
     final Session session;
     final UACApisUtil uacApisUtil;
+    final boolean isPermissionV2;
     final MDBRoleService mdbRoleService;
     String countQueryString;
     Map<String, Object> parametersMap = new HashMap<>();
@@ -66,10 +68,14 @@ public class FindRepositoriesQuery {
     private Integer pageLimit = 0;
 
     public FindRepositoriesHQLQueryBuilder(
-        Session session, UACApisUtil uacApisUtil, MDBRoleService mdbRoleService) {
+        Session session,
+        UACApisUtil uacApisUtil,
+        MDBRoleService mdbRoleService,
+        boolean isPermissionV2) {
       this.session = session;
       this.uacApisUtil = uacApisUtil;
       this.mdbRoleService = mdbRoleService;
+      this.isPermissionV2 = isPermissionV2;
     }
 
     public FindRepositoriesHQLQueryBuilder setRepoIds(List<Long> repoIds) {
@@ -254,6 +260,9 @@ public class FindRepositoriesQuery {
     private void setOwnerPredicate(
         int index, KeyValueQuery keyValueQuery, StringBuilder predicateStringBuilder)
         throws ModelDBException {
+      if (isPermissionV2) {
+        throw new UnimplementedException("Filter by owner is not supported");
+      }
       var operator = keyValueQuery.getOperator();
       List<UserInfo> userInfoList;
       if (operator.equals(OperatorEnum.Operator.CONTAIN)

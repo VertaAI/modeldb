@@ -1766,7 +1766,7 @@ public class ProjectTest extends ModeldbTestSetup {
     try {
       var workspaceName = testUser2.getVertaInfo().getUsername();
       if (testConfig.isPermissionV2Enabled()) {
-        workspaceName = getWorkspaceNameUser2();
+        workspaceName = getWorkspaceNameUser1();
       }
 
       if (isRunningIsolated()) {
