@@ -28,7 +28,7 @@
         <liquibase.version>4.9.1</liquibase.version>
         <prometheus.version>0.16.0</prometheus.version>
         <protobuf.version>3.21.12</protobuf.version>
-        <aws.version>1.12.302</aws.version>
+        <aws.version>1.12.390</aws.version>
         <jackson.version>2.14.0</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <otel.core.version>1.22.0</otel.core.version>
