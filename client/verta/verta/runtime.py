@@ -97,6 +97,10 @@ def log(key: str, value: Any) -> None:
     For use within a model's :meth:`~verta.registry.VertaModelBase.predict`
     method to collect logging context.
 
+    .. note::
+        Multithreading of calls to log() within a model's predict() method is not
+        currently supported.
+
     Parameters
     ----------
     key : str
