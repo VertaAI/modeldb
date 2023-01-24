@@ -193,7 +193,7 @@ def test_s3_validation_bad_keys(key: str):
 )
 def test_s3_validation_good_keys(key: str):
     """
-    Ensure improper keys trigger a ValueError exception
+    Ensure valid keys do not throw an exception
     """
     runtime._validate_s3(key)
 
