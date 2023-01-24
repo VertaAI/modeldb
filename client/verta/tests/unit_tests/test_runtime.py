@@ -8,6 +8,8 @@ import unittest
 import pytest
 from typing import Any, Dict
 from verta import runtime
+import time
+import random
 
 
 def test_thread_safety() -> None:
@@ -18,15 +20,17 @@ def test_thread_safety() -> None:
     """
     def log_in_thread(value):
         runtime.log('test_key', value)
+        time.sleep(random.uniform(0, 1))
         assert runtime._get_thread_logs() == {'test_key': value}
 
-    with futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with futures.ThreadPoolExecutor(max_workers=10) as executor:
         list(
             executor.map(
                 log_in_thread,
                 [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
             )
         )
+    runtime._set_thread_logs({})  # clean-up logs left by test.
 
 
 def test_thread_safe_context() -> None:
@@ -37,10 +41,11 @@ def test_thread_safe_context() -> None:
     def log_in_context(value):
         with runtime.context() as test_ctx:
             runtime.log('test_key', value)
+            time.sleep(random.uniform(0, 1))
         assert runtime._get_thread_logs() == {}
         assert test_ctx.logs() == {'test_key': value}
 
-    with futures.ThreadPoolExecutor(max_workers=5) as executor:
+    with futures.ThreadPoolExecutor(max_workers=10) as executor:
         list(
             executor.map(
                 log_in_context,
