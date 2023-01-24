@@ -10,6 +10,7 @@ import ai.verta.common.ValueTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.ExperimentRunServiceGrpc.ExperimentRunServiceImplBase;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
@@ -17,7 +18,6 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.utils.UACApisUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -48,11 +48,12 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
   private final FutureEventDAO futureEventDAO;
   private final UACApisUtil uacApisUtil;
 
-  public FutureExperimentRunServiceImpl(DAOSet daoSet, FutureExecutor executor) {
+  public FutureExperimentRunServiceImpl(
+      DAOSet daoSet, ServiceSet serviceSet, FutureExecutor executor) {
     this.executor = executor;
     this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
     this.futureEventDAO = daoSet.getFutureEventDAO();
-    this.uacApisUtil = daoSet.getUacApisUtil();
+    this.uacApisUtil = serviceSet.getUacApisUtil();
   }
 
   private InternalFuture<Void> addEvent(

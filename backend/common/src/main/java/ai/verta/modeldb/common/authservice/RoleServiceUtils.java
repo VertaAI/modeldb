@@ -1,11 +1,9 @@
 package ai.verta.modeldb.common.authservice;
 
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.collaborator.CollaboratorBase;
-import ai.verta.modeldb.common.collaborator.CollaboratorOrg;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -23,11 +21,11 @@ import org.apache.logging.log4j.Logger;
 public class RoleServiceUtils implements RoleService {
   private static final Logger LOGGER = LogManager.getLogger(RoleServiceUtils.class);
   protected final UAC uac;
-  protected AuthService authService;
+  protected UACApisUtil uacApisUtil;
   private final Integer timeout;
 
-  public RoleServiceUtils(AuthService authService, Integer timeout, UAC uac) {
-    this.authService = authService;
+  public RoleServiceUtils(UACApisUtil uacApisUtil, Integer timeout, UAC uac) {
+    this.uacApisUtil = uacApisUtil;
     this.timeout = timeout;
     this.uac = uac;
   }
@@ -177,40 +175,6 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  @Override
-  public List<GetResourcesResponseItem> getEntityResourcesByName(
-      Optional<String> entityName,
-      Optional<String> workspaceName,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      if (!entityName.isPresent()) {
-        return Collections.emptyList();
-      }
-      List<GetResourcesResponseItem> responseItems =
-          getGetResourcesResponseItems(
-              Optional.empty(),
-              entityName,
-              workspaceName,
-              modelDBServiceResourceTypes,
-              authServiceChannel);
-      if (!responseItems.isEmpty()) {
-        return responseItems;
-      } else {
-        StringBuilder errorMessage =
-            new StringBuilder("Failed to locate ")
-                .append(modelDBServiceResourceTypes.name())
-                .append(" resources in UAC for ")
-                .append(modelDBServiceResourceTypes.name())
-                .append(" Name ")
-                .append(entityName.get());
-        throw new NotFoundException(errorMessage.toString());
-      }
-    } catch (StatusRuntimeException ex) {
-      LOGGER.trace(ex);
-      throw ex;
-    }
-  }
-
   private List<GetResourcesResponseItem> getGetResourcesResponseItems(
       Optional<String> entityId,
       Optional<String> entityName,
@@ -234,27 +198,6 @@ public class RoleServiceUtils implements RoleService {
             .getCollaboratorServiceBlockingStub()
             .getResources(getResourcesBuilder.build());
     return response.getItemList();
-  }
-
-  @Override
-  public GeneratedMessageV3 getTeamById(String teamId) {
-    return getTeamById(true, teamId);
-  }
-
-  public GeneratedMessageV3 getTeamById(boolean retry, String teamId) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      var getTeamById = GetTeamById.newBuilder().setTeamId(teamId).build();
-      var getTeamByIdResponse =
-          authServiceChannel.getTeamServiceBlockingStub().getTeamById(getTeamById);
-      return getTeamByIdResponse.getTeam();
-    } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<GeneratedMessageV3>) retry1 -> getTeamById(teamId),
-              timeout);
-    }
   }
 
   @Override
@@ -328,67 +271,10 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<String> getWorkspaceRoleBindings(
-      String workspaceId,
-      WorkspaceTypeEnum.WorkspaceType workspaceType,
-      String resourceId,
-      String roleName,
-      ModelDBServiceResourceTypes resourceTypes,
-      boolean orgScopedPublic,
-      String globalSharing) {
-    List<String> workspaceRoleBindingList = new ArrayList<>();
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      try {
-        CollaboratorUser collaboratorUser;
-        switch (workspaceType) {
-          case ORGANIZATION:
-            if (orgScopedPublic) {
-              var globalSharingRoleName =
-                  new StringBuilder()
-                      .append("O_")
-                      .append(workspaceId)
-                      .append(globalSharing)
-                      .toString();
-
-              String globalSharingRoleBindingName =
-                  buildRoleBindingName(
-                      globalSharingRoleName,
-                      resourceId,
-                      new CollaboratorOrg(workspaceId),
-                      resourceTypes.name());
-              if (globalSharingRoleBindingName != null) {
-                workspaceRoleBindingList.add(globalSharingRoleBindingName);
-              }
-            }
-            Organization org = (Organization) getOrgById(workspaceId);
-            collaboratorUser = new CollaboratorUser(authService, org.getOwnerId());
-            break;
-          case USER:
-            collaboratorUser = new CollaboratorUser(authService, workspaceId);
-            break;
-          default:
-            return workspaceRoleBindingList;
-        }
-        String roleBindingName =
-            buildRoleBindingName(roleName, resourceId, collaboratorUser, resourceTypes.name());
-        if (roleBindingName != null) {
-          workspaceRoleBindingList.add(roleBindingName);
-        }
-      } catch (Exception e) {
-        if (!e.getMessage().contains("Details: Doesn't exist")) {
-          throw e;
-        }
-        LOGGER.info("Workspace ({}) not found on UAC", workspaceId);
-      }
-    }
-    return workspaceRoleBindingList;
-  }
-
-  @Override
   public String buildRoleBindingName(
       String roleName, String resourceId, String userId, String resourceTypeName) {
     return buildRoleBindingName(
-        roleName, resourceId, new CollaboratorUser(authService, userId), resourceTypeName);
+        roleName, resourceId, new CollaboratorUser(uacApisUtil, userId), resourceTypeName);
   }
 
   @Override
@@ -569,62 +455,6 @@ public class RoleServiceUtils implements RoleService {
   }
 
   @Override
-  public List<String> getSelfDirectlyAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
-    return getSelfDirectlyAllowedResources(
-        true, modelDBServiceResourceTypes, modelDBServiceActions);
-  }
-
-  private List<String> getSelfDirectlyAllowedResources(
-      boolean retry,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions) {
-    var action =
-        Action.newBuilder()
-            .setService(Service.MODELDB_SERVICE)
-            .setModeldbServiceAction(modelDBServiceActions)
-            .build();
-    GetSelfAllowedResources getAllowedResourcesRequest =
-        GetSelfAllowedResources.newBuilder()
-            .addActions(action)
-            .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-            .setService(Service.MODELDB_SERVICE)
-            .build();
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      var getAllowedResourcesResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub()
-              .getSelfDirectlyAllowedResources(getAllowedResourcesRequest);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
-
-      if (!getAllowedResourcesResponse.getResourcesList().isEmpty()) {
-        List<String> getSelfDirectlyAllowedResourceIds = new ArrayList<>();
-        for (Resources resources : getAllowedResourcesResponse.getResourcesList()) {
-          getSelfDirectlyAllowedResourceIds.addAll(resources.getResourceIdsList());
-        }
-        return getSelfDirectlyAllowedResourceIds;
-      } else {
-        return Collections.emptyList();
-      }
-    } catch (StatusRuntimeException ex) {
-      return (List<String>)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<List<String>>)
-                  retry1 ->
-                      getSelfDirectlyAllowedResources(
-                          retry1, modelDBServiceResourceTypes, modelDBServiceActions),
-              timeout);
-    }
-  }
-
-  @Override
   public void isSelfAllowed(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       ModelDBActionEnum.ModelDBServiceActions modelDBServiceActions,
@@ -695,47 +525,6 @@ public class RoleServiceUtils implements RoleService {
 
     // Validate if current user has access to the entity or not
     return getAccessibleResourceIdsFromAllowedResources(requestedResourceIds, accessibleResources);
-  }
-
-  @Override
-  public Map<String, Actions> getSelfAllowedActionsBatch(
-      List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    return getSelfAllowedActionsBatch(true, resourceIds, type);
-  }
-
-  private Map<String, Actions> getSelfAllowedActionsBatch(
-      boolean retry, List<String> resourceIds, ModelDBServiceResourceTypes type) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      var getSelfAllowedActionsBatch =
-          GetSelfAllowedActionsBatch.newBuilder()
-              .setResources(
-                  Resources.newBuilder()
-                      .setService(Service.MODELDB_SERVICE)
-                      .addAllResourceIds(resourceIds)
-                      .setResourceType(
-                          ResourceType.newBuilder().setModeldbServiceResourceType(type))
-                      .build())
-              .build();
-
-      var getSelfAllowedActionsBatchResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub()
-              .getSelfAllowedActionsBatch(getSelfAllowedActionsBatch);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(
-          CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getSelfAllowedActionsBatchResponse);
-      return getSelfAllowedActionsBatchResponse.getActionsMap();
-
-    } catch (StatusRuntimeException ex) {
-      return (Map<String, Actions>)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<Map<String, Actions>>)
-                  retry1 -> getSelfAllowedActionsBatch(retry1, resourceIds, type),
-              timeout);
-    }
   }
 
   @Override
@@ -820,11 +609,6 @@ public class RoleServiceUtils implements RoleService {
     }
   }
 
-  @Override
-  public GeneratedMessageV3 getTeamByName(String orgId, String teamName) {
-    return getTeamByName(true, orgId, teamName);
-  }
-
   private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       var getTeamByName = GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
@@ -840,11 +624,6 @@ public class RoleServiceUtils implements RoleService {
                   retry1 -> getTeamByName(retry1, orgId, teamName),
               timeout);
     }
-  }
-
-  @Override
-  public GeneratedMessageV3 getOrgByName(String name) {
-    return getOrgByName(true, name);
   }
 
   private GeneratedMessageV3 getOrgByName(boolean retry, String name) {

@@ -5,8 +5,9 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.exceptions.UnimplementedException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
@@ -54,7 +55,8 @@ public class FindRepositoriesQuery {
         LogManager.getLogger(FindRepositoriesHQLQueryBuilder.class);
 
     final Session session;
-    final AuthService authService;
+    final UACApisUtil uacApisUtil;
+    final boolean isPermissionV2;
     final MDBRoleService mdbRoleService;
     String countQueryString;
     Map<String, Object> parametersMap = new HashMap<>();
@@ -66,10 +68,14 @@ public class FindRepositoriesQuery {
     private Integer pageLimit = 0;
 
     public FindRepositoriesHQLQueryBuilder(
-        Session session, AuthService authService, MDBRoleService mdbRoleService) {
+        Session session,
+        UACApisUtil uacApisUtil,
+        MDBRoleService mdbRoleService,
+        boolean isPermissionV2) {
       this.session = session;
-      this.authService = authService;
+      this.uacApisUtil = uacApisUtil;
       this.mdbRoleService = mdbRoleService;
+      this.isPermissionV2 = isPermissionV2;
     }
 
     public FindRepositoriesHQLQueryBuilder setRepoIds(List<Long> repoIds) {
@@ -254,13 +260,22 @@ public class FindRepositoriesQuery {
     private void setOwnerPredicate(
         int index, KeyValueQuery keyValueQuery, StringBuilder predicateStringBuilder)
         throws ModelDBException {
+      if (isPermissionV2) {
+        throw new UnimplementedException("Filter by owner is not supported");
+      }
       var operator = keyValueQuery.getOperator();
       List<UserInfo> userInfoList;
       if (operator.equals(OperatorEnum.Operator.CONTAIN)
           || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-        var userInfoPaginationDTO =
-            authService.getFuzzyUserInfoList(keyValueQuery.getValue().getStringValue());
-        userInfoList = userInfoPaginationDTO.getUserInfoList();
+        try {
+          var userInfoPaginationDTO =
+              uacApisUtil
+                  .getFuzzyUserInfoList(keyValueQuery.getValue().getStringValue())
+                  .blockAndGet();
+          userInfoList = userInfoPaginationDTO.getUserInfoList();
+        } catch (Exception e) {
+          throw new ModelDBException(e);
+        }
       } else {
         var ownerIdsArrString = keyValueQuery.getValue().getStringValue();
         List<String> ownerIds = new ArrayList<>();
@@ -269,16 +284,25 @@ public class FindRepositoriesQuery {
         } else {
           ownerIds.add(ownerIdsArrString);
         }
-        Map<String, UserInfo> userInfoMap =
-            authService.getUserInfoFromAuthServer(
-                new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList(), false);
-        userInfoList = new ArrayList<>(userInfoMap.values());
+        try {
+          var userInfoMap =
+              uacApisUtil
+                  .getUserInfoFromAuthServer(
+                      new HashSet<>(ownerIds),
+                      Collections.emptySet(),
+                      Collections.emptyList(),
+                      false)
+                  .blockAndGet();
+          userInfoList = new ArrayList<>(userInfoMap.values());
+        } catch (Exception e) {
+          throw new RuntimeException(e);
+        }
       }
 
       if (userInfoList != null && !userInfoList.isEmpty()) {
         Set<String> repositoryIdSet =
             RdbmsUtils.getResourceIdsFromUserWorkspaces(
-                authService,
+                uacApisUtil,
                 mdbRoleService,
                 ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
                 userInfoList);

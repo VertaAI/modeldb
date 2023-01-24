@@ -14,6 +14,7 @@ import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.ResourceVisibility;
+import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.Struct;
 import com.google.protobuf.Value;
 import io.grpc.Status;
@@ -42,18 +43,18 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
   private static final Logger LOGGER = LogManager.getLogger(FindDatasetEntitiesTest.class);
 
   // Dataset Entities
-  private static Dataset dataset1;
-  private static Dataset dataset2;
-  private static Dataset dataset3;
-  private static Dataset dataset4;
-  private static Map<String, Dataset> datasetMap = new HashMap<>();
+  private Dataset dataset1;
+  private Dataset dataset2;
+  private Dataset dataset3;
+  private Dataset dataset4;
+  private final Map<String, Dataset> datasetMap = new HashMap<>();
 
   // DatasetVersion Entities
-  private static DatasetVersion datasetVersion1;
-  private static DatasetVersion datasetVersion2;
-  private static DatasetVersion datasetVersion3;
-  private static DatasetVersion datasetVersion4;
-  private static Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
+  private DatasetVersion datasetVersion1;
+  private DatasetVersion datasetVersion2;
+  private DatasetVersion datasetVersion3;
+  private DatasetVersion datasetVersion4;
+  private final Map<String, DatasetVersion> datasetVersionMap = new HashMap<>();
 
   @BeforeEach
   @Override
@@ -97,13 +98,15 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
     dataset2 = null;
     dataset3 = null;
     dataset4 = null;
-    datasetMap = new HashMap<>();
+    datasetMap.clear();
 
     datasetVersion1 = null;
     datasetVersion2 = null;
     datasetVersion3 = null;
     datasetVersion4 = null;
-    datasetVersionMap = new HashMap<>();
+    datasetVersionMap.clear();
+
+    cleanUpResources();
     super.tearDown();
   }
 
@@ -1551,8 +1554,8 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .build();
 
     if (isRunningIsolated()) {
-      when(uacBlockingMock.getUsersFuzzy(any()))
-          .thenReturn(GetUsersFuzzy.Response.newBuilder().build());
+      when(uac.getUACService().getUsersFuzzy(any()))
+          .thenReturn(Futures.immediateFuture(GetUsersFuzzy.Response.newBuilder().build()));
     }
 
     response = datasetVersionServiceStub.findDatasetVersions(findDatasetVersions);

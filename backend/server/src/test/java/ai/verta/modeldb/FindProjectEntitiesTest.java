@@ -46,28 +46,29 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
   private static final Logger LOGGER = LogManager.getLogger(FindProjectEntitiesTest.class);
 
   // Project Entities
-  private static Project project1;
-  private static Project project2;
-  private static Project project3;
-  private static Project project4;
-  private static Map<String, Project> projectMap = new HashMap<>();
+  private Project project1;
+  private Project project2;
+  private Project project3;
+  private Project project4;
+  private final Map<String, Project> projectMap = new HashMap<>();
 
   // Experiment Entities
-  private static Experiment experiment1;
-  private static Experiment experiment2;
-  private static Experiment experiment3;
-  private static Experiment experiment4;
-  private static Map<String, Experiment> experimentMap = new HashMap<>();
+  private Experiment experiment1;
+  private Experiment experiment2;
+  private Experiment experiment3;
+  private Experiment experiment4;
+  private final Map<String, Experiment> experimentMap = new HashMap<>();
 
   // ExperimentRun Entities
-  private static ExperimentRun experimentRun11;
-  private static ExperimentRun experimentRun12;
-  private static ExperimentRun experimentRun21;
-  private static ExperimentRun experimentRun22;
-  private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
+  private ExperimentRun experimentRun11;
+  private ExperimentRun experimentRun12;
+  private ExperimentRun experimentRun21;
+  private ExperimentRun experimentRun22;
+  private final Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
     super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -82,7 +83,8 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     if (isRunningIsolated()) {
       when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
       mockGetSelfAllowedResources(
@@ -97,9 +99,9 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
     LOGGER.info(deleteProjectsResponse.toString());
     assertTrue(deleteProjectsResponse.getStatus());
 
-    projectMap = new HashMap<>();
-    experimentMap = new HashMap<>();
-    experimentRunMap = new HashMap<>();
+    projectMap.clear();
+    experimentMap.clear();
+    experimentRunMap.clear();
 
     cleanUpResources();
     super.tearDown();

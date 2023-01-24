@@ -92,22 +92,23 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunTest.class);
 
   // Project Entities
-  private static Project project;
-  private static Project project2;
-  private static Project project3;
-  private static Map<String, Project> projectMap = new HashMap<>();
+  private Project project;
+  private Project project2;
+  private Project project3;
+  private Map<String, Project> projectMap = new HashMap<>();
 
   // Experiment Entities
-  private static Experiment experiment;
-  private static Experiment experiment2;
+  private Experiment experiment;
+  private Experiment experiment2;
 
   // ExperimentRun Entities
-  private static ExperimentRun experimentRun;
-  private static ExperimentRun experimentRun2;
-  private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
+  private ExperimentRun experimentRun;
+  private ExperimentRun experimentRun2;
+  private final Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
     super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
@@ -122,7 +123,8 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     DeleteExperimentRuns deleteExperimentRun =
         DeleteExperimentRuns.newBuilder().addAllIds(experimentRunMap.keySet()).build();
     DeleteExperimentRuns.Response deleteExperimentRunResponse =
@@ -146,7 +148,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     project = null;
     project2 = null;
     project3 = null;
-    projectMap = new HashMap<>();
+    projectMap.clear();
 
     // Experiment Entities
     experiment = null;
@@ -156,7 +158,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRun = null;
     experimentRun2 = null;
 
-    experimentRunMap = new HashMap<>();
+    experimentRunMap.clear();
 
     cleanUpResources();
     super.tearDown();
@@ -6900,6 +6902,16 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             organizationId,
             Optional.of(roleIdUser1),
             Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET));
+      }
+
+      if (testConfig.isPermissionV2Enabled() && isRunningIsolated()) {
+        when(uac.getWorkspaceService().getWorkspaceById(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    Workspace.newBuilder()
+                        .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .setUsername(testUser1.getVertaInfo().getUsername())
+                        .build()));
       }
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()

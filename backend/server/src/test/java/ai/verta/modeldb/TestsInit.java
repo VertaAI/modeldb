@@ -5,7 +5,7 @@ import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
 import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.authservice.AuthInterceptor;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.ArtifactStoreInitBeans;
 import ai.verta.modeldb.common.connections.UAC;
@@ -47,7 +47,7 @@ public class TestsInit {
   protected static AuthClientInterceptor authClientInterceptor;
 
   protected static TestConfig testConfig;
-  protected static AuthService authService;
+  protected static UACApisUtil uacApisUtil;
   protected static FutureExecutor handleExecutor;
   protected static ServiceSet services;
   protected static DAOSet daos;
@@ -114,8 +114,11 @@ public class TestsInit {
     //  Initialize services that we depend on
     services =
         ServiceSet.fromConfig(
-            testConfig, artifactStoreService, UAC.fromConfig(testConfig, Optional.empty()));
-    authService = services.getAuthService();
+            testConfig,
+            artifactStoreService,
+            UAC.fromConfig(testConfig, Optional.empty()),
+            handleExecutor);
+    uacApisUtil = services.getUacApisUtil();
 
     DataSource dataSource =
         JdbiUtils.initializeDataSource(testConfig.getDatabase(), "modeldb-test");

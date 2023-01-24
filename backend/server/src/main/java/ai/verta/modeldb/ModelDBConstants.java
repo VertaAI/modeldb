@@ -132,7 +132,6 @@ public abstract class ModelDBConstants {
   public static final String ROLE_REPOSITORY_READ_ONLY = "REPOSITORY_READ_ONLY";
   public static final String SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION =
       "SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION";
-  public static final String DATASET_VERSIONING_MIGRATION = "DATASET_VERSIONING_MIGRATION";
   public static final String DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE =
       "Can't add new versioning entry, because an existing one has different repository or commit";
   public static final String REPOSITORY_ENTITY = "repositoryEntity";

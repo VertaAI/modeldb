@@ -27,7 +27,7 @@
         <grpc.version>1.49.0</grpc.version>
         <liquibase.version>4.9.1</liquibase.version>
         <prometheus.version>0.16.0</prometheus.version>
-        <protobuf.version>3.21.10</protobuf.version>
+        <protobuf.version>3.21.12</protobuf.version>
         <aws.version>1.12.302</aws.version>
         <jackson.version>2.14.0</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
@@ -37,7 +37,7 @@
         <springframework.version>5.3.23</springframework.version>
         <lombok.version>1.18.24</lombok.version>
 
-        <junit-jupiter.version>5.9.1</junit-jupiter.version>
+        <junit-jupiter.version>5.9.2</junit-jupiter.version>
         <jacoco.version>0.8.8</jacoco.version>
         <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
         <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
@@ -207,7 +207,7 @@
             <dependency>
                 <groupId>org.jdbi</groupId>
                 <artifactId>jdbi3-core</artifactId>
-                <version>3.32.0</version>
+                <version>3.36.0</version>
             </dependency>
 
             <!-- https://mvnrepository.com/artifact/com.amazonaws/aws-java-sdk-s3 -->

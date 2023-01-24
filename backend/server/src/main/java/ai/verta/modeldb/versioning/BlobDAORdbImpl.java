@@ -8,7 +8,7 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -77,11 +77,11 @@ public class BlobDAORdbImpl implements BlobDAO {
   private static final String FOLDER_HASH_QUERY_PARAM = "folderHash";
   private static final String INTERNAL_PATH_QUERY_PARAM = "internalPath";
   private static final String COMPUTE_SHA_QUERY_PARAM = "computeSha";
-  private final AuthService authService;
+  private final UACApisUtil uacApisUtil;
   private final MDBRoleService mdbRoleService;
 
-  public BlobDAORdbImpl(AuthService authService, MDBRoleService mdbRoleService) {
-    this.authService = authService;
+  public BlobDAORdbImpl(UACApisUtil uacApisUtil, MDBRoleService mdbRoleService) {
+    this.uacApisUtil = uacApisUtil;
     this.mdbRoleService = mdbRoleService;
   }
 
@@ -1228,20 +1228,25 @@ public class BlobDAORdbImpl implements BlobDAO {
     }
     long timeCreated = new Date().getTime();
 
-    var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
-    String author = authService.getVertaIdFromUserInfo(currentLoginUserInfo);
-    final String commitSha =
-        VersioningUtils.generateCommitSHA(parentSHAs, commitMessage, timeCreated, author, rootSha);
+    try {
+      var currentLoginUserInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
+      String author = uacApisUtil.getVertaIdFromUserInfo(currentLoginUserInfo);
+      final String commitSha =
+          VersioningUtils.generateCommitSHA(
+              parentSHAs, commitMessage, timeCreated, author, rootSha);
 
-    var internalCommit =
-        Commit.newBuilder()
-            .setDateCreated(timeCreated)
-            .setDateUpdated(timeCreated)
-            .setAuthor(author)
-            .setMessage(commitMessage)
-            .setCommitSha(commitSha)
-            .build();
-    return new CommitEntity(repositoryEntity, parentCommits, internalCommit, rootSha);
+      var internalCommit =
+          Commit.newBuilder()
+              .setDateCreated(timeCreated)
+              .setDateUpdated(timeCreated)
+              .setAuthor(author)
+              .setMessage(commitMessage)
+              .setCommitSha(commitSha)
+              .build();
+      return new CommitEntity(repositoryEntity, parentCommits, internalCommit, rootSha);
+    } catch (Exception e) {
+      throw new RuntimeException(e);
+    }
   }
 
   @Override
@@ -1642,7 +1647,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       throws ModelDBException {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
 
-      var currentLoginUserInfo = authService.getCurrentLoginUserInfo();
+      var currentLoginUserInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       var commitPaginationDTO =
           commitDAO.findCommits(
               session,
@@ -1673,7 +1678,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       Function<RepositoryEntity, Repository> toProto =
           (repositoryEntity) ->
               repositoryEntity.toProto(
-                  mdbRoleService, authService, cacheWorkspaceMap, new HashMap<>());
+                  mdbRoleService, uacApisUtil, cacheWorkspaceMap, new HashMap<>());
       repositories.addAll(
           commitPaginationDTO.getCommitEntities().stream()
               .flatMap(commitEntity -> commitEntity.getRepository().stream())
@@ -1688,7 +1693,7 @@ public class BlobDAORdbImpl implements BlobDAO {
       if (ModelDBUtils.needToRetry(ex)) {
         return findRepositoriesBlobs(commitDAO, request, repositories);
       } else {
-        throw ex;
+        throw new ModelDBException(ex);
       }
     }
   }
