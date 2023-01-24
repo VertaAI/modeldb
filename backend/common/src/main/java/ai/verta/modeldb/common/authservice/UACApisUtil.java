@@ -1,11 +1,14 @@
 package ai.verta.modeldb.common.authservice;
 
+import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
+import ai.verta.common.OperatorEnum;
 import ai.verta.modeldb.common.CommonConstants.UserIdentifier;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureUtil;
@@ -27,8 +30,10 @@ import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.UserInfo;
 import ai.verta.uac.Workspace;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,10 +47,12 @@ public class UACApisUtil {
   private static final Logger LOGGER = LogManager.getLogger(UACApisUtil.class);
   protected final FutureExecutor executor;
   protected final UAC uac;
+  protected final boolean isPermissionV2;
 
-  public UACApisUtil(FutureExecutor executor, UAC uac) {
+  public UACApisUtil(FutureExecutor executor, UAC uac, boolean isPermissionV2) {
     this.executor = executor;
     this.uac = uac;
+    this.isPermissionV2 = isPermissionV2;
   }
 
   public InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
@@ -85,15 +92,9 @@ public class UACApisUtil {
       resources.addAllResourceIds(resourceIds.get());
     }
 
-    return FutureUtil.clientRequest(
-            uac.getCollaboratorService()
-                .getResources(
-                    GetResources.newBuilder()
-                        .setResources(resources.build())
-                        .setWorkspaceId(workspaceId)
-                        .build()),
-            executor)
-        .thenApply(GetResources.Response::getItemList, executor);
+    var builder =
+        GetResources.newBuilder().setResources(resources.build()).setWorkspaceId(workspaceId);
+    return getResources(builder);
   }
 
   public InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
@@ -182,6 +183,11 @@ public class UACApisUtil {
     var builder = GetResources.newBuilder().setResources(resources.build());
     workspaceName.ifPresent(builder::setWorkspaceName);
     resourceName.ifPresent(builder::setResourceName);
+    return getResources(builder);
+  }
+
+  private InternalFuture<List<GetResourcesResponseItem>> getResources(
+      GetResources.Builder builder) {
     return FutureUtil.clientRequest(
             uac.getCollaboratorService().getResources(builder.build()), executor)
         .thenApply(GetResources.Response::getItemList, executor);
@@ -324,5 +330,103 @@ public class UACApisUtil {
       return Long.parseLong(userInfo.getVertaInfo().getWorkspaceId());
     }
     throw new NotFoundException("WorkspaceId not found in userInfo");
+  }
+
+  public String getOwnerFilterClauseByPredicate(
+      String alias,
+      KeyValueQuery predicate,
+      Map<String, Object> parametersMap,
+      ModelDBServiceResourceTypes resourceTypes,
+      boolean isHQL,
+      boolean isResourceIdNumber) {
+    var operator = predicate.getOperator();
+    InternalFuture<List<String>> ownerIdsFuture;
+    if (operator.equals(OperatorEnum.Operator.CONTAIN)
+        || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+      ownerIdsFuture =
+          getFuzzyUserInfoList(predicate.getValue().getStringValue())
+              .thenApply(
+                  userInfoPaginationDTO ->
+                      userInfoPaginationDTO.getUserInfoList().stream()
+                          .map(userInfo -> userInfo.getVertaInfo().getUserId())
+                          .collect(Collectors.toList()),
+                  executor);
+    } else {
+      var ownerIdsArrString = predicate.getValue().getStringValue();
+      List<String> ownerIds = new ArrayList<>();
+      if (operator.equals(OperatorEnum.Operator.IN)) {
+        ownerIds = Arrays.asList(ownerIdsArrString.split(","));
+      } else {
+        ownerIds.add(ownerIdsArrString);
+      }
+      ownerIdsFuture = InternalFuture.completedInternalFuture(ownerIds);
+    }
+
+    var sqlFuture =
+        ownerIdsFuture
+            .thenCompose(
+                userInfoList -> {
+                  if (userInfoList != null && !userInfoList.isEmpty()) {
+                    var resourceType =
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(resourceTypes)
+                            .build();
+                    Resources.Builder resources =
+                        Resources.newBuilder()
+                            .setResourceType(resourceType)
+                            .setService(ServiceEnum.Service.MODELDB_SERVICE);
+
+                    var getResourcesBuilder =
+                        GetResources.newBuilder().setResources(resources.build());
+                    getResourcesBuilder.addAllOwnerIds(
+                        userInfoList.stream().map(Long::parseLong).collect(Collectors.toSet()));
+                    return getResources(getResourcesBuilder)
+                        .thenApply(
+                            accessibleAllWorkspaceItems ->
+                                accessibleAllWorkspaceItems.stream()
+                                    .map(GetResourcesResponseItem::getResourceId)
+                                    .collect(Collectors.toSet()),
+                            executor)
+                        .thenCompose(
+                            resourceIds -> {
+                              final var valueBindingName =
+                                  String.format("fuzzy_id_%d", new Date().getTime());
+                              String inClause;
+                              if (isHQL) {
+                                inClause = ":" + valueBindingName;
+                              } else {
+                                inClause = "<" + valueBindingName + ">";
+                              }
+
+                              parametersMap.put(
+                                  valueBindingName,
+                                  isResourceIdNumber
+                                      ? resourceIds.stream()
+                                          .map(Long::parseLong)
+                                          .collect(Collectors.toSet())
+                                      : resourceIds);
+                              String finalSql;
+                              if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                                  || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+                                finalSql = String.format("%s.id NOT IN (%s)", alias, inClause);
+                              } else {
+                                finalSql = String.format("%s.id IN (%s)", alias, inClause);
+                              }
+                              return InternalFuture.completedInternalFuture(finalSql);
+                            },
+                            executor);
+                  } else {
+                    return InternalFuture.completedInternalFuture(
+                        String.format("%s.id = '-1'", alias));
+                  }
+                },
+                executor)
+            .thenApply(sql -> sql, executor);
+
+    try {
+      return sqlFuture.blockAndGet();
+    } catch (Exception ex) {
+      throw new ModelDBException(ex);
+    }
   }
 }

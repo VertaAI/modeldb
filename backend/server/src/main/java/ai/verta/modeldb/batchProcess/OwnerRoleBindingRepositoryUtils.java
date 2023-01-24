@@ -39,7 +39,7 @@ public class OwnerRoleBindingRepositoryUtils {
     if (config.hasAuth()) {
       uac = UAC.fromConfig(config, Optional.empty());
       var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
-      uacApisUtil = new UACApisUtil(executor, uac);
+      uacApisUtil = new UACApisUtil(executor, uac, config.isPermissionV2Enabled());
       mdbRoleService = MDBRoleServiceUtils.FromConfig(config, uacApisUtil, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
