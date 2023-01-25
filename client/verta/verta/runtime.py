@@ -70,9 +70,8 @@ def _validate_json(value: Any) -> str:
     """
     try:
         return json.dumps(value)
-    except TypeError as type_err:
-        print("provided data type cannot be converted to JSON for logging.")
-        raise type_err
+    except TypeError:
+        raise
 
 
 def _validate_s3(
