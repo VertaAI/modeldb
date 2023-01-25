@@ -17,17 +17,15 @@ pytestmark = pytest.mark.not_oss  # skip if run in oss setup. Applied to entire 
 
 class TestCRUD:
     def test_create(self, registered_model):
-        name = verta._internal_utils._utils.generate_default_name()
-        assert registered_model.create_version(name)
-        with pytest.raises(requests.HTTPError) as excinfo:
-            assert registered_model.create_version(name)
-        excinfo_value = str(excinfo.value).strip()
-        assert "409" in excinfo_value
-        assert "already exists" in excinfo_value
+        version = registered_model.create_version()
+        assert version
+
+        with pytest.raises(requests.HTTPError, match="409.*already exists") as excinfo:
+            assert registered_model.create_version(version.name)
 
     def test_set(self, registered_model):
-        name = verta._internal_utils._utils.generate_default_name()
-        version = registered_model.set_version(name=name)
+        version = registered_model.set_version()
+        assert version
 
         assert registered_model.set_version(name=version.name).id == version.id
 

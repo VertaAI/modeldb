@@ -91,15 +91,16 @@ class TestCreateGet:
         assert dataset
         created_entities.append(dataset)
 
-        name = verta._internal_utils._utils.generate_default_name()
-        dataset = client.create_dataset(name)
+        dataset = client.create_dataset()
         assert dataset
         created_entities.append(dataset)
 
-        with pytest.raises(requests.HTTPError, match="already exists"):
+        name = dataset.name
+        with pytest.raises(requests.HTTPError, match="409.*already exists"):
             assert client.create_dataset(name)
+
         with pytest.warns(UserWarning, match="already exists"):
-            client.set_dataset(name=dataset.name, time_created=123)
+            client.set_dataset(name=name, time_created=123)
 
     def test_get(self, client, created_entities):
         name = verta._internal_utils._utils.generate_default_name()
@@ -107,7 +108,7 @@ class TestCreateGet:
         with pytest.raises(ValueError):
             client.get_dataset(name)
 
-        dataset = client.set_dataset(name)
+        dataset = client.create_dataset(name)
         created_entities.append(dataset)
 
         assert dataset.id == client.get_dataset(dataset.name).id
