@@ -12,38 +12,43 @@ import time
 import random
 
 
-class TestThreadSafety(unittest.TestCase):
+@pytest.fixture(autouse=True)
+def clean_thread():
+    """
+    Ensure thread-local logs are empty before and after each test.
+    This is located here instead of conftest.py so the use of the
+    autouse flag is limited to this module only.
+    """
+    runtime._set_thread_logs({})  # clean-up any existing logs.
+    yield
+    runtime._set_thread_logs({})  # clean-up any existing logs.
+
+
+def test_logging_in_thread():
     """
     Validate that the logs being logged are thread local.
-    100 threads are completed by 5 workers, which each thread verifying
+    100 threads are completed by 10 workers, which each thread verifying
     that it only holds it own thread-local value for logs.
     """
-    def setUp(self) -> None:
-        runtime._set_thread_logs({})  # clean-up logs left by test.
+    def log_in_thread(value):
+        runtime.log('test_key', value)
+        time.sleep(random.uniform(0, 1))
+        assert runtime._get_thread_logs() == {'test_key': value}
 
-    def tearDown(self) -> None:
-        runtime._set_thread_logs({})  # clean-up logs left by test.
-
-    def test_logging_in_thread(self):
-
-        def log_in_thread(value):
-            runtime.log('test_key', value)
-            time.sleep(random.uniform(0, 1))
-            assert runtime._get_thread_logs() == {'test_key': value}
-
-        with futures.ThreadPoolExecutor(max_workers=10) as executor:
-            list(
-                executor.map(
-                    log_in_thread,
-                    [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
-                )
+    with futures.ThreadPoolExecutor(max_workers=10) as executor:
+        list(
+            executor.map(
+                log_in_thread,
+                [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
             )
+        )
 
 
 def test_thread_safe_context_manager() -> None:
     """
     Validate that multiple threads running a context manager simultaneously
-    will stay thread-safe.
+    will stay thread-safe. 100 threads are completed by 10 workers, which
+    each thread verifying that it only holds it own thread-local value for logs.
     """
     def log_in_context(value):
         with runtime.context() as test_ctx:
@@ -61,94 +66,92 @@ def test_thread_safe_context_manager() -> None:
         )
 
 
-class TestThreadLocalFunctions(unittest.TestCase):
-    """ Unit tests for the functions that handle thread local variables """
-
-    def test_init_thread_logs(self):
-        """
-        The logs stored in the thread local variable are blank on init.
-        """
-        assert runtime._get_thread_logs() == {}
-
-    def test_set_thread_logs(self):
-        runtime._set_thread_logs({'test_set': 'test_set'})
-        assert runtime._THREAD.logs ==  {'test_set': 'test_set'}
-
-    def test_get_thread_logs(self):
-        runtime._set_thread_logs({'test_get': 'test_get'})
-        assert runtime._get_thread_logs() ==  {'test_get': 'test_get'}
-        runtime._set_thread_logs({})
-
-    def test_init_thread_validate(self):
-        """
-        The logs stored in the thread local variable are blank on init.
-        """
-        assert runtime._get_validate_flag() == False
-
-    def test_set_thread_validate(self):
-        runtime._set_validate_flag(True)
-        assert runtime._THREAD.validate == True
-
-    def test_get_thread_validate(self):
-        runtime._set_validate_flag(True)
-        assert runtime._get_validate_flag() == True
-        runtime._set_validate_flag(False)
+def test_init_thread_logs():
+    """
+    The logs stored in the thread local variable are blank on init.
+    """
+    assert runtime._get_thread_logs() == {}
 
 
-class TestContext(unittest.TestCase):
-    """ Unit tests for the verta.runtime.context (context manager) class. """
+def test_set_thread_logs():
+    runtime._set_thread_logs({'test_set': 'test_set'})
+    assert runtime._THREAD.logs ==  {'test_set': 'test_set'}
 
-    def test_logs_are_clean_on_entry(self):
-        """ Thread local var for logs is a blank dict when entering context. """
-        with runtime.context() as ctx:
-            assert ctx.logs() == {}
 
-    def test_logs_are_clean_on_exit(self):
-        """ Thread local var for logs is a blank dict after exiting context. """
-        with runtime.context() as ctx:
-            runtime.log('fake_log', 'fake_value')
-        assert runtime._get_thread_logs() == {}  # outside the context
+def test_get_thread_logs():
+    runtime._set_thread_logs({'test_get': 'test_get'})
+    assert runtime._get_thread_logs() ==  {'test_get': 'test_get'}
+    runtime._set_thread_logs({})
 
-    def test_final_log_entry_instance_variable(self):
-        """ The instance of the context manager maintains the final log entry in logs(). """
-        with runtime.context() as ctx:
-            runtime.log('fake_log', 'fake_value')
-        assert ctx.logs() == {'fake_log': 'fake_value'}  # outside the context
 
-    def test_validate_flag_true(self):
-        """ The validate argument triggers json validation as expected. """
+def test_init_thread_validate():
+    """
+    The logs stored in the thread local variable are blank on init.
+    """
+    assert runtime._get_validate_flag() == False
+
+
+def test_set_thread_validate():
+    runtime._set_validate_flag(True)
+    assert runtime._THREAD.validate == True
+
+
+def test_get_thread_validate():
+    runtime._set_validate_flag(True)
+    assert runtime._get_validate_flag() == True
+    runtime._set_validate_flag(False)
+
+
+def test_logs_are_clean_on_entry():
+    """ Thread local var for logs is a blank dict when entering context. """
+    with runtime.context() as ctx:
+        assert ctx.logs() == {}
+
+
+def test_logs_are_clean_on_exit():
+    """ Thread local var for logs is a blank dict after exiting context. """
+    with runtime.context() as ctx:
+        runtime.log('fake_log', 'fake_value')
+    assert runtime._get_thread_logs() == {}  # outside the context
+
+
+def test_final_log_entry_instance_variable():
+    """ The instance of the context manager maintains the final log entry in logs(). """
+    with runtime.context() as ctx:
+        runtime.log('fake_log', 'fake_value')
+    assert ctx.logs() == {'fake_log': 'fake_value'}  # outside the context
+
+
+def test_validate_flag_true():
+    """ The validate argument triggers json validation as expected. """
+    with runtime.context(validate=True):
         with pytest.raises(TypeError):
-            with runtime.context(validate=True):
-                runtime.log('obviously_not_jsonable', unittest.TestCase)
-
-    def test_validate_flag_false(self):
-        """ The validate argument defaults to False and does not trigger json validation. """
-        with runtime.context():
             runtime.log('obviously_not_jsonable', unittest.TestCase)
 
-    def test_validate_reset_on_exit(self):
-        """ Thread local var for validate is reset to default (False) after exiting context. """
-        with runtime.context(validate=True):
-            runtime.log('test', {'test_key': 'test_val'})
-        assert runtime._get_validate_flag() == False  # outside the context
+
+def test_validate_flag_false():
+    """ The validate argument defaults to False and does not trigger json validation. """
+    with runtime.context():
+        runtime.log('obviously_not_jsonable', unittest.TestCase)
 
 
-class TestLog(unittest.TestCase):
-    """ Unit tests for the verta.runtime.log() function for logging prediction context """
+def test_validate_reset_on_exit():
+    """ Thread local var for validate is reset to default (False) after exiting context. """
+    with runtime.context(validate=True):
+        runtime.log('test', {'test_key': 'test_val'})
+    assert runtime._get_validate_flag() == False  # outside the context
 
-    def setUp(self) -> None:
-        """ Some useful logging bits """
-        self.log1 = dict(test_1_key=['list', 'of', 'things'])
-        self.log2 = dict(test_2_key=dict(this='that'))
-        self.log3 = dict(test1=self.log1, test2=self.log2)
 
-    def test_log_function_updates_logs(self):
-        """ The log function updates the log entry dictionary each time it is called. """
-        with runtime.context() as ctx:
-            runtime.log('test1', self.log1)
-            assert ctx.logs() == dict(test1=self.log1)
-            runtime.log('test2', self.log2)
-            assert ctx.logs() == self.log3
+def test_log_function_updates_logs():
+    """ The log function updates the log entry dictionary each time it is called. """
+    with runtime.context() as ctx:
+        runtime.log('test1', {'test_1_key': ['list', 'of', 'things']})
+        assert ctx.logs() == {'test1': {'test_1_key': ['list', 'of', 'things']}}
+        runtime.log('test2', {'test_2_key': {'this': 'that'}})
+        assert ctx.logs() == {
+            'test1': {'test_1_key': ['list', 'of', 'things']},
+            'test2': {'test_2_key': {'this': 'that'}}
+        }
 
 
 def test_exception_on_prior_logs() -> None:
