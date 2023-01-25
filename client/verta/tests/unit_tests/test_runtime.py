@@ -68,7 +68,6 @@ class TestThreadLocalFunctions(unittest.TestCase):
         """
         The logs stored in the thread local variable are blank on init.
         """
-        local_dict: Dict[str, Any] = runtime._THREAD.__dict__
         assert runtime._get_thread_logs() == {}
 
     def test_set_thread_logs(self):

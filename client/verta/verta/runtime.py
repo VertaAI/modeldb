@@ -135,13 +135,14 @@ def log(key: str, value: Any) -> None:
                 pass
 
             @verify.io
-            def predict(self, data):
-                logs = {'some_stuff': 'I_care_about'}
-                runtime.log('my_logging_key', logs)
-                prediction_output = 'some_output'
-                more_logs = ['a', 'list', 'of', 'things']
-                runtime.log('things', more_logs)
-                return prediction_output
+            def predict(self, x):
+                embeddings = self.get_embeddings(x)
+                return self.nn(embeddings)
+
+            def get_embeddings(x):
+                embedding = self.embedding[x]
+                client.runtime.log("embedding", embedding)
+                return embedding
 
     """
     if _get_validate_flag():
@@ -183,11 +184,9 @@ class context:
         import json
         from verta import runtime
 
-        with runtime.context() as ctx:
-            runtime.log('labels', {'model_type': 'scikit_learn'})
-            output = 'this_is_output'
-            runtime.log('output', output)
-            print json.dumps(ctx.logs())
+        with client.runtime.context() as ctx:
+            client.runtime.log("key", {"value": ...})
+            print(json.dumps(ctx.logs()))
 
         # After exiting the context manager:
         final_log_entry = json.dumps(ctx.logs())
