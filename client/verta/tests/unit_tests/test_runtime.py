@@ -139,6 +139,7 @@ def test_validate_reset_on_exit():
     """ Thread local var for validate is reset to default (False) after exiting context. """
     with runtime.context(validate=True):
         runtime.log('test', {'test_key': 'test_val'})
+        assert runtime._get_validate_flag() == True  # inside the context
     assert runtime._get_validate_flag() == False  # outside the context
 
 
