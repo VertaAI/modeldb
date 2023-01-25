@@ -12,25 +12,32 @@ import time
 import random
 
 
-def test_thread_safety() -> None:
+class TestThreadSafety(unittest.TestCase):
     """
     Validate that the logs being logged are thread local.
     100 threads are completed by 5 workers, which each thread verifying
     that it only holds it own thread-local value for logs.
     """
-    def log_in_thread(value):
-        runtime.log('test_key', value)
-        time.sleep(random.uniform(0, 1))
-        assert runtime._get_thread_logs() == {'test_key': value}
+    def setUp(self) -> None:
+        runtime._set_thread_logs({})  # clean-up logs left by test.
 
-    with futures.ThreadPoolExecutor(max_workers=10) as executor:
-        list(
-            executor.map(
-                log_in_thread,
-                [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
+    def tearDown(self) -> None:
+        runtime._set_thread_logs({})  # clean-up logs left by test.
+
+    def test_logging_in_thread(self):
+
+        def log_in_thread(value):
+            runtime.log('test_key', value)
+            time.sleep(random.uniform(0, 1))
+            assert runtime._get_thread_logs() == {'test_key': value}
+
+        with futures.ThreadPoolExecutor(max_workers=10) as executor:
+            list(
+                executor.map(
+                    log_in_thread,
+                    [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
+                )
             )
-        )
-    runtime._set_thread_logs({})  # clean-up logs left by test.
 
 
 def test_thread_safe_context_manager() -> None:
