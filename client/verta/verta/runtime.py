@@ -154,10 +154,8 @@ def log(key: str, value: Any) -> None:
 class context:
     """
     Context manager for aggregating key-value pairs into a custom log entry.
-    It should not be necessary to instantiate this class directly unless you
-    wish to export log entries manually to a resource other than Amazon S3.
-
-    For all models deployed in Verta with active endpoints, the :meth:`~verta.registry.VertaModelBase.predict`
+    It should not be necessary to instantiate this class directly. For all
+    models deployed in Verta with active endpoints, the :meth:`~verta.registry.VertaModelBase.predict`
     function of the model is wrapped inside an object of this class by default.
     Logs collected inside the `predict()` function are exported to S3.
 
@@ -225,7 +223,7 @@ class context:
         """
         Return the currently stored, thread-local logs from inside this
         context manager. If called after exiting the context manager, the
-        final complete log entry is returned.
+        final collection of logs captured at the time of exit is returned.
 
         Returns
         -------
