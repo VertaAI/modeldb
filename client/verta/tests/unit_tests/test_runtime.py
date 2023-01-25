@@ -14,7 +14,7 @@ import random
 
 def test_thread_safety() -> None:
     """
-    Validate that the logging context being logged is thread local.
+    Validate that the logs being logged are thread local.
     100 threads are completed by 5 workers, which each thread verifying
     that it only holds it own thread-local value for logs.
     """
@@ -33,7 +33,7 @@ def test_thread_safety() -> None:
     runtime._set_thread_logs({})  # clean-up logs left by test.
 
 
-def test_thread_safe_context() -> None:
+def test_thread_safe_context_manager() -> None:
     """
     Validate that multiple threads running a context manager simultaneously
     will stay thread-safe.
@@ -145,9 +145,9 @@ class TestLog(unittest.TestCase):
             assert ctx.logs() == self.log3
 
 
-def test_exception_on_prior_logging_context() -> None:
+def test_exception_on_prior_logs() -> None:
     """
-    A Runtime error is thrown if logging context is added outside the context
+    A Runtime error is thrown if logs are added outside the context
     manager's scope that would otherwise be overwritten.
     """
     with pytest.raises(RuntimeError):

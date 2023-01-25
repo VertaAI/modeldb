@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Classes and functions to enable context logging within a model's predict() function.
+"""Classes and functions to enable logging within a model's predict() function.
 .. versionadded:: 0.22.0
 
 """
@@ -16,7 +16,7 @@ _S3_REGEX = re.compile("[0-9a-zA-Z_-]+$")
 
 def _init_thread_logs() -> None:
     """
-    Initialize our thread-local variable for storing logging context.
+    Initialize our thread-local variable for storing logs.
     """
     if not hasattr(_THREAD, 'logs'):
         _THREAD.logs = dict()
@@ -93,9 +93,9 @@ def _validate_s3(
 
 def log(key: str, value: Any) -> None:
     """
-    Updates current logging context dict with provided key and value.
+    Updates current logging dict with provided key and value.
     For use within a model's :meth:`~verta.registry.VertaModelBase.predict`
-    method to collect logging context.
+    method to collect logs.
 
     .. note::
         Multithreading of calls to log() within a model's predict() method is not
@@ -104,11 +104,11 @@ def log(key: str, value: Any) -> None:
     Parameters
     ----------
     key : str
-        String value to use as data label (key) in logging context, with a limit of
+        String value to use as data label (key) in logs, with a limit of
         100 characters or less.
     value : Any
         Any `JSON serializable <https://docs.python.org/3/library/json.html#json.JSONEncoder>`__
-        value you wish to include in the context logs.
+        value you wish to include in the logs.
     Returns
     -------
     None
@@ -170,8 +170,8 @@ class context:
     Raises
     ------
     RuntimeError
-        If logging context has been added via :meth:`~verta.runtime.log()`
-        outside the scope of the model's :meth:`~verta.registry.VertaModelBase.predict`
+        If logs has been added via :meth:`~verta.runtime.log()` outside the
+        scope of the model's :meth:`~verta.registry.VertaModelBase.predict`
         method, or outside the scope of this context manager.
 
     Examples
@@ -201,12 +201,12 @@ class context:
 
     def __enter__(self):
         """
-        Ensure an empty logging context to start and set validation flag.
+        Ensure empty logs to start and set validation flag.
         """
         if bool(_get_thread_logs()):  # If not an empty dict.
             raise RuntimeError(
-                " cannot overwrite prior logging context. Please ensure all calls"
-                " to runtime.log() are made within the predict() method of your"
+                " cannot overwrite prior logging. Please ensure all calls to"
+                " runtime.log() are made within the predict() method of your"
                 " model, or inside the scope of an instance of verta.runtime.context()."
             )
         _set_thread_logs(dict())
@@ -217,7 +217,7 @@ class context:
     def __exit__(self, *args):
         """
         Capture the final complete log entry in an instance variable, ensure
-        an empty logging context, and reset the validation flag upon exit.
+        empty logs, and reset the validation flag upon exit.
         """
         self._logs_dict = _get_thread_logs()
         _set_thread_logs(dict())
@@ -232,6 +232,6 @@ class context:
         Returns
         -------
         logs : Dict[str, Any]
-            Dictionary of logging context collected within this context manager.
+            Dictionary of logs collected within this context manager.
         """
         return  self._logs_dict or _get_thread_logs()
