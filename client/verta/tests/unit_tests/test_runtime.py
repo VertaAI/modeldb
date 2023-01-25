@@ -85,11 +85,11 @@ class TestThreadLocalFunctions(unittest.TestCase):
         """
         assert runtime._get_validate_flag() == False
 
-    def test_set_thread_logs(self):
+    def test_set_thread_validate(self):
         runtime._set_validate_flag(True)
         assert runtime._THREAD.validate == True
 
-    def test_get_thread_logs(self):
+    def test_get_thread_validate(self):
         runtime._set_validate_flag(True)
         assert runtime._get_validate_flag() == True
         runtime._set_validate_flag(False)
