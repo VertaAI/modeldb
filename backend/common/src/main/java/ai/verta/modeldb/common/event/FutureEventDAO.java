@@ -46,7 +46,7 @@ public class FutureEventDAO {
   private InternalFuture<Void> addLocalEvent(
       String resourceType, String eventType, long workspaceId, JsonObject eventMetadata) {
     if (!config.isEvent_system_enabled()) {
-      LOGGER.info("Event system is not enabled");
+      LOGGER.debug("Event system is not enabled");
       return InternalFuture.completedInternalFuture(null);
     }
 
