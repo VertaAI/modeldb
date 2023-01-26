@@ -37,6 +37,7 @@ message UserDetails {
 enum UserSearchOptions {
     SEARCH_OPTION_UNKNOWN = 0;
     ONLY_SERVICE_ACCOUNTS = 1;
+    ONLY_ADMINS = 2;
 }
 
 message SearchUsersInput {
