@@ -93,7 +93,7 @@ def _validate_s3(
 def log(key: str, value: Any) -> None:
     """
     Updates current logging dict with provided key and value.
-    For use within a model's :meth:`~verta.registry.VertaModelBase.predict`
+    For use within the scope of a model's :meth:`~verta.registry.VertaModelBase.predict`
     method to collect logs.
 
     .. note::
@@ -124,7 +124,7 @@ def log(key: str, value: Any) -> None:
     Examples
     --------
     .. code-block:: python
-       :emphasize-lines: 11,14
+       :emphasize-lines: 15
 
         from verta import runtime
 
