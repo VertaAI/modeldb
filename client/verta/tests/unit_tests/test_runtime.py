@@ -34,7 +34,7 @@ def test_thread_safe_context_manager() -> None:
     def log_in_context(value):
         with runtime.context() as test_ctx:
             runtime.log('test_key', value)
-            time.sleep(random.uniform(0, 1))
+            # time.sleep(random.uniform(0, 1))
         assert hasattr(runtime._THREAD, 'logs') == False
         assert hasattr(runtime._THREAD, 'validate') == False
         assert test_ctx.logs() == {'test_key': value}
