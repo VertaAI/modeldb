@@ -49,7 +49,6 @@ THREAD_LOCALS.active_experiment_run = None
 
 class Connection(object):
     _OSS_DEFAULT_WORKSPACE = "personal"
-    _PERMISSION_V2 = True
 
     def __init__(
         self,
