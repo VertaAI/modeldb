@@ -14,36 +14,28 @@ _THREAD = threading.local()
 _S3_REGEX = re.compile("[0-9a-zA-Z_-]+$")
 
 
-def _init_thread_logs() -> None:
-    """
-    Initialize our thread-local variable for storing logs.
-    """
-    if not hasattr(_THREAD, 'logs'):
-        _THREAD.logs = dict()
-
-
 def _get_thread_logs() -> Dict[str, Any]:
     """
-    Return the current thread-local logs or initialize a new dict.
+    Return the current thread-local logs or initialize an empty dict.
     """
-    _init_thread_logs()
+    if not hasattr(_THREAD, 'logs'):
+        _set_thread_logs(dict())
     return _THREAD.logs
 
 
 def _set_thread_logs(logs: Dict[str, Any]) -> Dict[str, Any]:
     """
-    Sets the thread-local logs, overwriting any existing values.
+    Set the thread-local logs, overwriting values for existing keys.
     """
     _THREAD.logs = logs
     return _THREAD.logs
 
 
-def _init_validate_flag() -> None:
+def _delete_thread_logs() -> None:
     """
-    Initialize our thread-local variable for the validation flag.
+    Drop the `log` attribute from the thread local variable.
     """
-    if not hasattr(_THREAD, 'validate'):
-        _THREAD.validate = False
+    _THREAD.__delattr__('logs')
 
 
 def _get_validate_flag() -> bool:
@@ -51,7 +43,8 @@ def _get_validate_flag() -> bool:
     Return the current thread-local variable for validate or initialize a
     new boolean.
     """
-    _init_validate_flag()
+    if not hasattr(_THREAD, 'validate'):
+        _set_validate_flag(False)
     return _THREAD.validate
 
 
@@ -61,6 +54,13 @@ def _set_validate_flag(flag: bool) -> bool:
     """
     _THREAD.validate = flag
     return _THREAD.validate
+
+
+def _delete_validate_flag() -> None:
+    """
+    Drop the `validate` attribute from the thread local variable.
+    """
+    _THREAD.__delattr__('validate')
 
 
 def _validate_json(value: Any) -> str:
@@ -144,6 +144,11 @@ def log(key: str, value: Any) -> None:
                 return embedding
 
     """
+    if not hasattr(_THREAD, 'logs'):
+        raise RuntimeError(
+            " calls to verta.runtime.log() must be made within the scope of"
+            " a model's predict() method."
+        )
     if _get_validate_flag():
         _validate_json(value)
     _validate_s3(key)
@@ -154,10 +159,14 @@ def log(key: str, value: Any) -> None:
 class context:
     """
     Context manager for aggregating key-value pairs into a custom log entry.
-    It should not be necessary to instantiate this class directly. For all
-    models deployed in Verta with active endpoints, the :meth:`~verta.registry.VertaModelBase.predict`
-    function of the model is wrapped inside an object of this class by default.
-    Logs collected inside the `predict()` function are exported to S3.
+
+    This class should not be instantiated directly in your model
+    code. For all models deployed in Verta with active endpoints, the
+    :meth:`~verta.registry.VertaModelBase.predict` function of the model is
+    wrapped inside an object of this class by default.
+
+    A single instance can be instantiated for local testing as in the
+    provided example.
 
     Parameters
     ----------
@@ -176,19 +185,19 @@ class context:
     --------
 
     .. code-block:: python
-       :emphasize-lines: 4,8,11
+       :emphasize-lines: 4,6,9
 
         import json
         from verta import runtime
 
-        with client.runtime.context() as ctx:
-            client.runtime.log("key", {"value": ...})
+        with runtime.context() as ctx:
+            runtime.log("key", {"value": ...})
             print(json.dumps(ctx.logs()))
 
         # After exiting the context manager:
-        final_log_entry = json.dumps(ctx.logs())
+        print(json.dumps(ctx.logs()))
 
-        # Output (both) = {"labels": {"model_type": "scikit_learn"}, "output": "this_is_output"}
+        # Output (both) = '{"key": {"value": ...}}'
 
     """
     def __init__(self, validate: Optional[bool] = False):
@@ -199,25 +208,23 @@ class context:
         """
         Ensure empty logs to start and set validation flag.
         """
-        if _get_thread_logs():  # If not an empty dict.
+        if hasattr(_THREAD, 'logs'):  # If logs attribute exists already.
             raise RuntimeError(
-                " cannot overwrite prior logs. Please ensure all calls to"
-                " runtime.log() are made within the predict() method of your"
-                " model, or inside the scope of an instance of verta.runtime.context()."
+                " Nesting an instance of verta.runtime.context() inside"
+                " an existing instance is not supported."
             )
         _set_thread_logs(dict())
-        if self._validate:
-            _set_validate_flag(True)
+        _set_validate_flag(self._validate)
         return self
 
     def __exit__(self, *args):
         """
-        Capture the final complete log entry in an instance variable, ensure
-        empty logs, and reset the validation flag upon exit.
+        Capture the final collection of logs in an instance variable, and
+        wipe the thread local variable clean.
         """
         self._logs_dict = _get_thread_logs()
-        _set_thread_logs(dict())
-        _set_validate_flag(False)
+        _delete_thread_logs()
+        _delete_validate_flag()
 
     def logs(self) -> Dict[str, Any]:
         """

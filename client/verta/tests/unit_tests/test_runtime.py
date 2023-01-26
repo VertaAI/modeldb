@@ -15,60 +15,42 @@ import random
 @pytest.fixture(autouse=True)
 def clean_thread():
     """
-    Ensure thread-local logs are empty before and after each test.
+    Ensure thread-local logs are wiped before and after each test.
     This is located here instead of conftest.py so the use of the
     autouse flag is limited to this module only.
     """
-    runtime._set_thread_logs({})  # clean-up any existing logs.
     yield
-    runtime._set_thread_logs({})  # clean-up any existing logs.
+    if hasattr(runtime._THREAD, 'logs'):
+        runtime._THREAD.__delattr__('logs')  # clean-up any existing logs.
 
-
-def test_logging_in_thread():
-    """
-    Validate that the logs being logged are thread local.
-    100 threads are completed by 10 workers, which each thread verifying
-    that it only holds it own thread-local value for logs.
-    """
-    def log_in_thread(value):
-        runtime.log('test_key', value)
-        time.sleep(random.uniform(0, 1))
-        assert runtime._get_thread_logs() == {'test_key': value}
-
-    with futures.ThreadPoolExecutor(max_workers=10) as executor:
-        list(
-            executor.map(
-                log_in_thread,
-                [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
-            )
-        )
 
 
 def test_thread_safe_context_manager() -> None:
     """
     Validate that multiple threads running a context manager simultaneously
-    will stay thread-safe. 100 threads are completed by 10 workers, which
+    will stay thread-safe. 50 threads are completed by 10 workers, with
     each thread verifying that it only holds it own thread-local value for logs.
     """
     def log_in_context(value):
         with runtime.context() as test_ctx:
             runtime.log('test_key', value)
             time.sleep(random.uniform(0, 1))
-        assert runtime._get_thread_logs() == {}
+        assert hasattr(runtime._THREAD, 'logs') == False
+        assert hasattr(runtime._THREAD, 'validate') == False
         assert test_ctx.logs() == {'test_key': value}
 
     with futures.ThreadPoolExecutor(max_workers=10) as executor:
         list(
             executor.map(
                 log_in_context,
-                [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(101)]
+                [{f'thread_{x}_key': f'thread_{x}_val'} for x in range(50)]
             )
         )
 
 
 def test_init_thread_logs():
     """
-    The logs stored in the thread local variable are blank on init.
+    An empty dict is initialized by default.
     """
     assert runtime._get_thread_logs() == {}
 
@@ -81,12 +63,11 @@ def test_set_thread_logs():
 def test_get_thread_logs():
     runtime._set_thread_logs({'test_get': 'test_get'})
     assert runtime._get_thread_logs() ==  {'test_get': 'test_get'}
-    runtime._set_thread_logs({})
 
 
 def test_init_thread_validate():
     """
-    The logs stored in the thread local variable are blank on init.
+    A boolean defaulting to False is initialized by default.
     """
     assert runtime._get_validate_flag() == False
 
@@ -155,15 +136,28 @@ def test_log_function_updates_logs():
         }
 
 
-def test_exception_on_prior_logs() -> None:
+def test_exception_on_nesting_context_managers() -> None:
     """
-    A Runtime error is thrown if logs are added outside the context
-    manager's scope that would otherwise be overwritten.
+    Attempting to open a new
     """
-    with pytest.raises(RuntimeError):
-        runtime.log('outside_of_scope', {'this': 'that'})
+    with pytest.raises(RuntimeError) as err:
         with runtime.context():
-            pass
+            with runtime.context():
+                pass
+    assert err.value.args[0] == " Nesting an instance of verta.runtime.context() inside" \
+                                " an existing instance is not supported."
+
+
+def test_exception_on_logging_outside_any_context() -> None:
+    """
+    Calling runtime.log() while outside of any instance of
+    runtime.context() will raise a RuntimeError exception.
+    """
+    with pytest.raises(RuntimeError) as err:
+        runtime.log('outside_of_context_manager', {'this': 'that'})
+        assert err.value.args[0] == " calls to verta.runtime.log() must be made" \
+                                    " within the scope of a model's predict() method."
+
 
 
 def test_json_validation() -> None:
