@@ -418,7 +418,12 @@ public class Future<T> {
         .orElse(Future.of(Optional.empty()));
   }
 
+  @Deprecated(forRemoval = true)
   public T get() throws Exception {
+    return blockAndGet();
+  }
+
+  public T blockAndGet() throws Exception {
     try {
       return stage.toCompletableFuture().get();
     } catch (ExecutionException ex) {

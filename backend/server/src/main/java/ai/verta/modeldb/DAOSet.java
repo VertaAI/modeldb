@@ -18,7 +18,6 @@ import ai.verta.modeldb.lineage.LineageDAORdbImpl;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataDAORdbImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.BlobDAORdbImpl;
 import ai.verta.modeldb.versioning.CommitDAO;
@@ -51,7 +50,6 @@ public class DAOSet {
   @JsonProperty private MetadataDAO metadataDAO;
   @JsonProperty private RepositoryDAO repositoryDAO;
   @JsonProperty private FutureEventDAO futureEventDAO;
-  @JsonProperty private UACApisUtil uacApisUtil;
 
   public static DAOSet fromServices(
       ServiceSet services,
@@ -60,17 +58,17 @@ public class DAOSet {
       MDBConfig mdbConfig,
       ReconcilerInitializer reconcilerInitializer) {
     var set = new DAOSet();
-    set.uacApisUtil = new UACApisUtil(executor, services.getUac());
 
     set.metadataDAO = new MetadataDAORdbImpl();
-    set.commitDAO = new CommitDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
+    set.commitDAO = new CommitDAORdbImpl(services.getUacApisUtil(), services.getMdbRoleService());
     set.repositoryDAO =
         new RepositoryDAORdbImpl(
-            services.getAuthService(),
+            services.getUacApisUtil(),
             services.getMdbRoleService(),
             set.commitDAO,
-            set.metadataDAO);
-    set.blobDAO = new BlobDAORdbImpl(services.getAuthService(), services.getMdbRoleService());
+            set.metadataDAO,
+            mdbConfig);
+    set.blobDAO = new BlobDAORdbImpl(services.getUacApisUtil(), services.getMdbRoleService());
 
     if (services.getArtifactStoreService() == null
         || services.getArtifactStoreService() instanceof NoopArtifactStoreService) {
@@ -81,7 +79,7 @@ public class DAOSet {
               services.getArtifactStoreService(), mdbConfig.getArtifactStoreConfig());
     }
 
-    set.commentDAO = new CommentDAORdbImpl(services.getAuthService());
+    set.commentDAO = new CommentDAORdbImpl(services.getUacApisUtil());
     set.lineageDAO = new LineageDAORdbImpl();
     set.futureExperimentRunDAO =
         new FutureExperimentRunDAO(
@@ -93,7 +91,7 @@ public class DAOSet {
             set.repositoryDAO,
             set.commitDAO,
             set.blobDAO,
-            set.uacApisUtil);
+            services.getUacApisUtil());
     set.futureProjectDAO =
         new FutureProjectDAO(
             executor,
@@ -102,12 +100,12 @@ public class DAOSet {
             set.artifactStoreDAO,
             mdbConfig,
             set.futureExperimentRunDAO,
-            set.uacApisUtil,
+            services.getUacApisUtil(),
             reconcilerInitializer);
     set.futureEventDAO =
         new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
     set.futureExperimentDAO =
-        new FutureExperimentDAO(executor, jdbi, services.getUac(), mdbConfig, set);
+        new FutureExperimentDAO(executor, jdbi, services.getUac(), mdbConfig, set, services);
 
     return set;
   }

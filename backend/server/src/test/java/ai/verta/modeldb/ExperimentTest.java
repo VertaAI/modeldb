@@ -53,7 +53,9 @@ public class ExperimentTest extends ModeldbTestSetup {
   private static Experiment experiment;
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -65,7 +67,8 @@ public class ExperimentTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     if (isRunningIsolated()) {
       when(uacBlockingMock.getCurrentUser(any())).thenReturn(testUser1);
       mockGetSelfAllowedResources(
@@ -83,6 +86,9 @@ public class ExperimentTest extends ModeldbTestSetup {
 
     // Experiment Entities
     experiment = null;
+
+    cleanUpResources();
+    super.tearDown();
   }
 
   private void createProjectEntities() {
@@ -557,13 +563,30 @@ public class ExperimentTest extends ModeldbTestSetup {
     getExperiment = GetExperimentsInProject.newBuilder().setProjectId("hjhfdkshjfhdsk").build();
     try {
       if (isRunningIsolated()) {
-        when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
-            .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        if (testConfig.isPermissionV2Enabled()) {
+          when(uac.getCollaboratorService().getResources(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        } else {
+          when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        }
       }
       experimentServiceStub.getExperimentsInProject(getExperiment);
       fail();
     } catch (StatusRuntimeException ex) {
       checkEqualsAssert(ex);
+    } finally {
+      if (isRunningIsolated() && testConfig.isPermissionV2Enabled()) {
+        when(uac.getCollaboratorService().getResources(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    GetResources.Response.newBuilder()
+                        .addItem(
+                            GetResourcesResponseItem.newBuilder()
+                                .setResourceId(project.getId())
+                                .build())
+                        .build()));
+      }
     }
 
     LOGGER.info("Get Experiment of project Negative test stop................................");

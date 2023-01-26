@@ -376,7 +376,7 @@ class Client(object):
             Name of the Project.
         workspace : str, optional
             Workspace under which the Project with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         id : str, optional
             ID of the Project. This parameter cannot be provided alongside `name`.
 
@@ -441,7 +441,7 @@ class Client(object):
             Attributes of the Project.
         workspace : str, optional
             Workspace under which the Project with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         public_within_org : bool, optional
             If creating a Project in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
@@ -796,7 +796,7 @@ class Client(object):
             Labels of the registered_model.
         workspace : str, optional
             Workspace under which the registered_model with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         public_within_org : bool, optional
             If creating a registered_model in an organization's workspace:
             ``True`` for public, ``False`` for private. In older backends,
@@ -963,7 +963,7 @@ class Client(object):
             Description of the endpoint.
         workspace : str, optional
             Workspace under which the endpoint with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         public_within_org : bool, optional
             If creating an endpoint in an organization's workspace: ``True``
             for public, ``False`` for private. In older backends, default is
@@ -1094,7 +1094,7 @@ class Client(object):
             Attributes of the Project.
         workspace : str, optional
             Workspace under which the Project with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         public_within_org : bool, optional
             If creating a Project in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
@@ -1264,7 +1264,7 @@ class Client(object):
             Labels of the registered_model.
         workspace : str, optional
             Workspace under which the registered_model with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         public_within_org : bool, optional
             If creating a registered_model in an organization's workspace:
             ``True`` for public, ``False`` for private. In older backends,
@@ -1337,7 +1337,7 @@ class Client(object):
             Description of the endpoint.
         workspace : str, optional
             Workspace under which the endpoint with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         public_within_org : bool, optional
             If creating an endpoint in an organization's workspace: ``True``
             for public, ``False`` for private. In older backends, default is
@@ -1412,7 +1412,7 @@ class Client(object):
             Environment variables.
         workspace : str, optional
             Workspace for the endpoint. If not provided, the current user's
-            personal workspace will be used.
+            default workspace will be used.
 
         Returns
         -------
@@ -1486,7 +1486,7 @@ class Client(object):
             Attributes of the dataset.
         workspace : str, optional
             Workspace under which the dataset with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         public_within_org : bool, optional
             If creating a dataset in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
@@ -1593,7 +1593,7 @@ class Client(object):
             Attributes of the dataset.
         workspace : str, optional
             Workspace under which the dataset with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         public_within_org : bool, optional
             If creating a dataset in an organization's workspace: ``True`` for
             public, ``False`` for private. In older backends, default is
@@ -1647,7 +1647,7 @@ class Client(object):
             Name of the dataset. This parameter cannot be provided alongside `id`.
         workspace : str, optional
             Workspace under which the dataset with name `name` exists. If not provided, the current
-            user's personal workspace will be used.
+            user's default workspace will be used.
         id : str, optional
             ID of the dataset. This parameter cannot be provided alongside `name`.
 

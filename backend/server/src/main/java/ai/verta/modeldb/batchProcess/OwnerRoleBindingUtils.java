@@ -3,12 +3,13 @@ package ai.verta.modeldb.batchProcess;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.authservice.MDBAuthServiceUtils;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.authservice.MDBRoleServiceUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.connections.UAC;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.entities.DatasetVersionEntity;
 import ai.verta.modeldb.entities.ExperimentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
@@ -29,7 +30,7 @@ public class OwnerRoleBindingUtils {
   private static final Logger LOGGER = LogManager.getLogger(OwnerRoleBindingUtils.class);
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
-  private static AuthService authService;
+  private static UACApisUtil uacApisUtil;
   private static UAC uac;
   private static MDBRoleService mdbRoleService;
 
@@ -37,8 +38,9 @@ public class OwnerRoleBindingUtils {
     var config = App.getInstance().mdbConfig;
     if (config.hasAuth()) {
       uac = UAC.fromConfig(config, Optional.empty());
-      authService = MDBAuthServiceUtils.FromConfig(config, uac);
-      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, authService, uac);
+      var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
+      uacApisUtil = new UACApisUtil(executor, uac);
+      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, uacApisUtil, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;
@@ -98,14 +100,14 @@ public class OwnerRoleBindingUtils {
 
           // Fetch the experiment owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null, true);
+              uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
           for (ExperimentEntity experimentEntity : experimentEntities) {
             var userInfoValue = userInfoMap.get(experimentEntity.getOwner());
             if (userInfoValue != null) {
               try {
                 mdbRoleService.createRoleBinding(
                     ModelDBConstants.ROLE_EXPERIMENT_OWNER,
-                    new CollaboratorUser(authService, userInfoValue),
+                    new CollaboratorUser(uacApisUtil, userInfoValue),
                     experimentEntity.getId(),
                     ModelDBServiceResourceTypes.EXPERIMENT);
               } catch (Exception e) {
@@ -127,7 +129,7 @@ public class OwnerRoleBindingUtils {
         if (ModelDBUtils.needToRetry(ex)) {
           migrateExperiments();
         } else {
-          throw ex;
+          throw new ModelDBException(ex);
         }
       }
     }
@@ -174,14 +176,14 @@ public class OwnerRoleBindingUtils {
           continue;
         }
         Map<String, UserInfo> userInfoMap =
-            authService.getUserInfoFromAuthServer(userIds, null, null, true);
+            uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
         for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
           var userInfoValue = userInfoMap.get(experimentRunEntity.getOwner());
           if (userInfoValue != null) {
             try {
               mdbRoleService.createRoleBinding(
                   ModelDBConstants.ROLE_EXPERIMENT_RUN_OWNER,
-                  new CollaboratorUser(authService, userInfoValue),
+                  new CollaboratorUser(uacApisUtil, userInfoValue),
                   experimentRunEntity.getId(),
                   ModelDBServiceResourceTypes.EXPERIMENT_RUN);
             } catch (Exception e) {
@@ -201,7 +203,7 @@ public class OwnerRoleBindingUtils {
         if (ModelDBUtils.needToRetry(ex)) {
           migrateExperimentRuns();
         } else {
-          throw ex;
+          throw new ModelDBException(ex);
         }
       }
     }
@@ -249,14 +251,14 @@ public class OwnerRoleBindingUtils {
           }
           // Fetch the DatasetVersion owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null, true);
+              uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
           for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
             var userInfoValue = userInfoMap.get(datasetVersionEntity.getOwner());
             if (userInfoValue != null) {
               try {
                 mdbRoleService.createRoleBinding(
                     ModelDBConstants.ROLE_DATASET_VERSION_OWNER,
-                    new CollaboratorUser(authService, userInfoValue),
+                    new CollaboratorUser(uacApisUtil, userInfoValue),
                     datasetVersionEntity.getId(),
                     ModelDBServiceResourceTypes.DATASET_VERSION);
               } catch (Exception e) {
@@ -279,7 +281,7 @@ public class OwnerRoleBindingUtils {
         if (ModelDBUtils.needToRetry(ex)) {
           migrateDatasetVersions();
         } else {
-          throw ex;
+          throw new ModelDBException(ex);
         }
       }
     }
@@ -327,7 +329,7 @@ public class OwnerRoleBindingUtils {
           }
           // Fetch the Repository owners userInfo
           Map<String, UserInfo> userInfoMap =
-              authService.getUserInfoFromAuthServer(userIds, null, null, true);
+              uacApisUtil.getUserInfoFromAuthServer(userIds, null, null, true).blockAndGet();
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
             var userInfoValue = userInfoMap.get(repositoryEntity.getOwner());
             if (userInfoValue != null) {
@@ -336,7 +338,7 @@ public class OwnerRoleBindingUtils {
                     ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repositoryEntity);
                 mdbRoleService.createRoleBinding(
                     ModelDBConstants.ROLE_REPOSITORY_OWNER,
-                    new CollaboratorUser(authService, userInfoValue),
+                    new CollaboratorUser(uacApisUtil, userInfoValue),
                     String.valueOf(repositoryEntity.getId()),
                     modelDBServiceResourceTypes);
               } catch (Exception e) {
@@ -359,7 +361,7 @@ public class OwnerRoleBindingUtils {
         if (ModelDBUtils.needToRetry(ex)) {
           migrateRepositories();
         } else {
-          throw ex;
+          throw new ModelDBException(ex);
         }
       }
     }

@@ -30,7 +30,6 @@ import org.junit.runners.Suite;
   BlobProtoEquality.class,
   DiffAndMerge.class,
   ValidatorBlobTest.class,
-  ValidatorBlobDiffTest.class,
-  GlobalSharingTest.class
+  ValidatorBlobDiffTest.class
 })
 public class TestSequenceSuite {}

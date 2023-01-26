@@ -30,7 +30,6 @@ import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
 import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResources.Response;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetWorkspaceById;
@@ -102,9 +101,8 @@ public class NFSArtifactStoreTest {
 
   @BeforeEach
   public void createEntities() {
+    initializedChannelBuilderAndExternalServiceStubs();
     if (testConfig.getDatabase().getRdbConfiguration().isH2()) {
-      initializedChannelBuilderAndExternalServiceStubs();
-
       setupMockUacEndpoints(uac);
     }
     createProjectEntities();
@@ -155,23 +153,26 @@ public class NFSArtifactStoreTest {
             .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName("").build()))
         .thenReturn(Futures.immediateFuture(Workspace.newBuilder().setId(1L).build()));
 
-    when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                Response.newBuilder()
-                    .addItem(
-                        GetResourcesResponseItem.newBuilder()
-                            .setVisibility(ResourceVisibility.PRIVATE)
-                            .setResourceType(
-                                ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(
-                                        ModelDBServiceResourceTypes.PROJECT)
-                                    .build())
-                            .setOwnerId(1L)
-                            .setWorkspaceId(1L)
+    var getResources =
+        GetResources.Response.newBuilder()
+            .addItem(
+                GetResourcesResponseItem.newBuilder()
+                    .setVisibility(ResourceVisibility.PRIVATE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
                             .build())
-                    .build()));
-
+                    .setOwnerId(1L)
+                    .setWorkspaceId(1L)
+                    .build())
+            .build();
+    if (testConfig.isPermissionV2Enabled()) {
+      when(uac.getCollaboratorService().getResources(any()))
+          .thenReturn(Futures.immediateFuture(getResources));
+    } else {
+      when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+          .thenReturn(Futures.immediateFuture(getResources));
+    }
     when(uac.getServiceAccountRoleServiceFutureStub().setRoleBinding(any()))
         .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
     when(uac.getAuthzService().getSelfAllowedResources(any()))

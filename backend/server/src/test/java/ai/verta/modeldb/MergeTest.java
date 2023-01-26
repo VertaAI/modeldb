@@ -45,30 +45,30 @@ import org.apache.logging.log4j.Logger;
 import org.junit.Assert;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
-import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Tests diffs after commit creation with diff or blob description and checks resulting diff. Tests
  * 2 modified cases: same type and different type.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 class MergeTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(MergeTest.class);
-  private static final String FIRST_NAME = "train.json";
-  private static final String OTHER_NAME = "environment.json";
-  private static final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
-  private static final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
+  private final String FIRST_NAME = "train.json";
+  private final String OTHER_NAME = "environment.json";
+  private final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
+  private final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
 
-  private static Repository repository;
-  private static Commit parentCommit;
+  private Repository repository;
+  private Commit parentCommit;
 
   private static final long time = Calendar.getInstance().getTimeInMillis();
 
@@ -79,7 +79,9 @@ class MergeTest extends ModeldbTestSetup {
   }
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -91,7 +93,8 @@ class MergeTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     for (Repository repo : new Repository[] {repository}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -103,6 +106,8 @@ class MergeTest extends ModeldbTestSetup {
     }
 
     repository = null;
+    cleanUpResources();
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {
@@ -303,14 +308,12 @@ class MergeTest extends ModeldbTestSetup {
     LOGGER.info("Compute repository diff test end................................");
   }
 
-  private static final List<String> LOCATION1 =
+  private final List<String> LOCATION1 =
       Arrays.asList("modeldb", "march", "environment", FIRST_NAME);
-  private static final List<String> LOCATION2 =
-      Arrays.asList("modeldb", "environment", SECOND_NAME);
-  private static final List<String> LOCATION3 =
-      Arrays.asList("modeldb", "blob", "march", "blob.json");
-  private static final List<String> LOCATION4 = Collections.singletonList("modeldb.json");
-  private static final List<String> LOCATION5 = Collections.singletonList("maths/algebra");
+  private final List<String> LOCATION2 = Arrays.asList("modeldb", "environment", SECOND_NAME);
+  private final List<String> LOCATION3 = Arrays.asList("modeldb", "blob", "march", "blob.json");
+  private final List<String> LOCATION4 = Collections.singletonList("modeldb.json");
+  private final List<String> LOCATION5 = Collections.singletonList("maths/algebra");
 
   static Blob getDatasetBlobFromPath(String path, long size) {
     return Blob.newBuilder()

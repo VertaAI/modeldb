@@ -7,6 +7,7 @@ import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -14,7 +15,6 @@ import ai.verta.modeldb.common.exceptions.UnimplementedException;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
@@ -39,13 +39,19 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private final String alias;
   private final FutureExecutor executor;
   private final UACApisUtil uacApisUtil;
+  private final boolean isPermissionV2;
 
   public PredicatesHandler(
-      FutureExecutor executor, String tableName, String alias, UACApisUtil uacApisUtil) {
+      FutureExecutor executor,
+      String tableName,
+      String alias,
+      UACApisUtil uacApisUtil,
+      boolean isPermissionV2) {
     this.executor = executor;
     this.tableName = tableName;
     this.alias = alias;
     this.uacApisUtil = uacApisUtil;
+    this.isPermissionV2 = isPermissionV2;
 
     if ("experiment_run".equals(tableName)) {
       this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler();
@@ -628,7 +634,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       userInfoListFuture =
           uacApisUtil
               .getUserInfoFromAuthServer(
-                  new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList())
+                  new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList(), false)
               .thenApply(userInfoMap -> new ArrayList<>(userInfoMap.values()), executor);
     }
 
@@ -640,7 +646,10 @@ public class PredicatesHandler extends PredicateHandlerUtils {
               resourceItemsFutures.add(
                   uacApisUtil
                       .getResourceItemsForLoginUserWorkspace(
-                          userInfo.getVertaInfo().getUsername(),
+                          isPermissionV2
+                              ? Optional.empty()
+                              : Optional.of(userInfo.getVertaInfo().getUsername()),
+                          userInfo.getVertaInfo().getDefaultWorkspaceId(),
                           Optional.empty(),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
                       .thenApply(

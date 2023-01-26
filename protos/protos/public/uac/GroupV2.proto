@@ -84,21 +84,21 @@ service GroupService {
   // Gets information from a given group
   rpc getGroupById (GetGroupById) returns (GetGroupById.Response){
     option (google.api.http) = {
-      get: "/v1/organization/{org_id}/groups/{group_id}"
+      get: "/v2/organization/{org_id}/groups/{group_id}"
     };
   };
 
   // Lists the groups that the provided user is a member of, or all groups if user isn't specified
   rpc searchGroups (SearchGroups) returns (SearchGroups.Response){
     option (google.api.http) = {
-      get: "/v1/organization/{org_id}/groups"
+      get: "/v2/organization/{org_id}/groups"
     };
   };
 
   // Create or update a group
   rpc setGroup (SetGroup) returns (SetGroup.Response){
     option (google.api.http) = {
-      post: "/v1/organization/{group.org_id}/groups"
+      post: "/v2/organization/{group.org_id}/groups"
       body: "*"
     };
   };
@@ -106,14 +106,14 @@ service GroupService {
   // Delete an existing group
   rpc deleteGroup (DeleteGroup) returns (DeleteGroup.Response){
     option (google.api.http) = {
-      delete: "/v1/organization/{org_id}/groups/{group_id}"
+      delete: "/v2/organization/{org_id}/groups/{group_id}"
     };
   };
 
   // Adds the given user to the group
   rpc addUsers (AddGroupUsers) returns (AddGroupUsers.Response){
     option (google.api.http) = {
-      post: "/v1/organization/{org_id}/groups/{group_id}/users"
+      post: "/v2/organization/{org_id}/groups/{group_id}/users"
       body: "*"
     };
   };
@@ -121,7 +121,7 @@ service GroupService {
   // Removes the given user from the group
   rpc removeUsers (RemoveGroupUsers) returns (RemoveGroupUsers.Response){
     option (google.api.http) = {
-      post: "/v1/organization/{org_id}/groups/{group_id}/removeUsers"
+      post: "/v2/organization/{org_id}/groups/{group_id}/removeUsers"
       body: "*"
     };
   };

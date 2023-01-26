@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -73,7 +74,9 @@ public class ProjectTest extends ModeldbTestSetup {
   private Dataset dataset;
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -87,7 +90,8 @@ public class ProjectTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     if (!projectMap.isEmpty()) {
       if (isRunningIsolated()) {
         mockGetResourcesForAllProjects(projectMap, testUser1);
@@ -104,17 +108,23 @@ public class ProjectTest extends ModeldbTestSetup {
       assertTrue(deleteProjectsResponse.getStatus());
     }
 
-    if (isRunningIsolated()) {
-      mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+    if (dataset != null) {
+      if (isRunningIsolated()) {
+        mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
+      }
+
+      DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
+      DeleteDataset.Response deleteDatasetResponse =
+          datasetServiceStub.deleteDataset(deleteDataset);
+      LOGGER.info("Dataset deleted successfully");
+      LOGGER.info(deleteDatasetResponse.toString());
+      assertTrue(deleteDatasetResponse.getStatus());
     }
 
-    DeleteDataset deleteDataset = DeleteDataset.newBuilder().setId(dataset.getId()).build();
-    DeleteDataset.Response deleteDatasetResponse = datasetServiceStub.deleteDataset(deleteDataset);
-    LOGGER.info("Dataset deleted successfully");
-    LOGGER.info(deleteDatasetResponse.toString());
-    assertTrue(deleteDatasetResponse.getStatus());
-
     projectMap.clear();
+
+    cleanUpResources();
+    super.tearDown();
   }
 
   private void createProjectEntities() {
@@ -580,10 +590,10 @@ public class ProjectTest extends ModeldbTestSetup {
 
     CreateProject createProjectRequest = getCreateProjectRequest(project.getName());
 
-    CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorService =
-        uac.getCollaboratorService();
     try {
       if (isRunningIsolated()) {
+        CollaboratorServiceGrpc.CollaboratorServiceFutureStub collaboratorService =
+            uac.getCollaboratorService();
         when(collaboratorService.setResource(any()))
             .thenThrow(new AlreadyExistsException("Already exists"))
             // reset it back for any following calls
@@ -1511,8 +1521,15 @@ public class ProjectTest extends ModeldbTestSetup {
     }
 
     try {
-      when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
-          .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+      if (isRunningIsolated()) {
+        if (testConfig.isPermissionV2Enabled()) {
+          when(uac.getCollaboratorService().getResources(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        } else {
+          when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+              .thenReturn(Futures.immediateFuture(GetResources.Response.newBuilder().build()));
+        }
+      }
       GetProjectById getProject = GetProjectById.newBuilder().setId("xyz").build();
       projectServiceStub.getProjectById(getProject);
       fail();
@@ -1550,22 +1567,27 @@ public class ProjectTest extends ModeldbTestSetup {
                   Workspace.newBuilder()
                       .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                       .build()));
-      when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
-          .thenReturn(
-              Futures.immediateFuture(
-                  GetResources.Response.newBuilder()
-                      .addItem(
-                          GetResourcesResponseItem.newBuilder()
-                              .setVisibility(ResourceVisibility.PRIVATE)
-                              .setResourceType(
-                                  ResourceType.newBuilder()
-                                      .setModeldbServiceResourceType(
-                                          ModelDBServiceResourceTypes.PROJECT)
-                                      .build())
-                              .setOwnerId(testUser2.getVertaInfo().getDefaultWorkspaceId())
-                              .setWorkspaceId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+
+      var getResources =
+          GetResources.Response.newBuilder()
+              .addItem(
+                  GetResourcesResponseItem.newBuilder()
+                      .setVisibility(ResourceVisibility.PRIVATE)
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
                               .build())
-                      .build()));
+                      .setOwnerId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .setWorkspaceId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                      .build())
+              .build();
+      if (testConfig.isPermissionV2Enabled()) {
+        when(uac.getCollaboratorService().getResources(any()))
+            .thenReturn(Futures.immediateFuture(getResources));
+      } else {
+        when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+            .thenReturn(Futures.immediateFuture(getResources));
+      }
     }
 
     Project project = null;
@@ -1602,31 +1624,43 @@ public class ProjectTest extends ModeldbTestSetup {
           when(uac.getUACService().getCurrentUser(any()))
               .thenReturn(Futures.immediateFuture(testUser1));
           mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
-          when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
-              .thenReturn(
-                  Futures.immediateFuture(
-                      GetResources.Response.newBuilder()
-                          .addItem(
-                              GetResourcesResponseItem.newBuilder()
-                                  .setVisibility(ResourceVisibility.PRIVATE)
-                                  .setResourceType(
-                                      ResourceType.newBuilder()
-                                          .setModeldbServiceResourceType(
-                                              ModelDBServiceResourceTypes.PROJECT)
-                                          .build())
-                                  .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                                  .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+          var getResources =
+              GetResources.Response.newBuilder()
+                  .addItem(
+                      GetResourcesResponseItem.newBuilder()
+                          .setVisibility(ResourceVisibility.PRIVATE)
+                          .setResourceType(
+                              ResourceType.newBuilder()
+                                  .setModeldbServiceResourceType(
+                                      ModelDBServiceResourceTypes.PROJECT)
                                   .build())
-                          .build()));
-        } else {
+                          .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                          .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                          .build())
+                  .build();
+          if (testConfig.isPermissionV2Enabled()) {
+            when(uac.getCollaboratorService().getResources(any()))
+                .thenReturn(Futures.immediateFuture(getResources));
+          } else {
+            when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+                .thenReturn(Futures.immediateFuture(getResources));
+          }
+        } else if (!testConfig.isPermissionV2Enabled()) {
           AddCollaboratorRequest addCollaboratorRequest =
               CollaboratorUtils.addCollaboratorRequestProject(
                   project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
 
-          AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse =
-              uac.getCollaboratorService()
-                  .addOrUpdateProjectCollaborator(addCollaboratorRequest)
-                  .get();
+          AddCollaboratorRequest.Response addOrUpdateProjectCollaboratorResponse;
+          if (isRunningIsolated()) {
+            addOrUpdateProjectCollaboratorResponse =
+                uac.getCollaboratorService()
+                    .addOrUpdateProjectCollaborator(addCollaboratorRequest)
+                    .get();
+          } else {
+            addOrUpdateProjectCollaboratorResponse =
+                collaboratorServiceStubClient2.addOrUpdateProjectCollaborator(
+                    addCollaboratorRequest);
+          }
           LOGGER.info(
               "Collaborator added in server : "
                   + addOrUpdateProjectCollaboratorResponse.getStatus());
@@ -1730,28 +1764,35 @@ public class ProjectTest extends ModeldbTestSetup {
     Project selfProject = null;
     Project project = null;
     try {
+      var workspaceName = testUser2.getVertaInfo().getUsername();
+      if (testConfig.isPermissionV2Enabled()) {
+        workspaceName = getWorkspaceNameUser1();
+      }
 
       if (isRunningIsolated()) {
         when(uac.getUACService().getCurrentUser(any()))
             .thenReturn(Futures.immediateFuture(testUser2));
         when(uac.getWorkspaceService()
-                .getWorkspaceByName(
-                    GetWorkspaceByName.newBuilder()
-                        .setName(testUser2.getVertaInfo().getUsername())
-                        .build()))
+                .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()))
             .thenReturn(
                 Futures.immediateFuture(
                     Workspace.newBuilder()
                         .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
                         .build()));
+      } else if (testConfig.isPermissionV2Enabled()) {
+        var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+        groupStub.addUsers(
+            AddGroupUsers.newBuilder()
+                .addUserId(testUser2.getVertaInfo().getUserId())
+                .setGroupId(groupIdUser1)
+                .setOrgId(organizationId)
+                .build());
       }
+
       // Create project
       CreateProject createProjectRequest = getCreateProjectRequest();
       createProjectRequest =
-          createProjectRequest
-              .toBuilder()
-              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
-              .build();
+          createProjectRequest.toBuilder().setWorkspaceName(workspaceName).build();
       CreateProject.Response createProjectResponse =
           client2ProjectServiceStub.createProject(createProjectRequest);
       project = createProjectResponse.getProject();
@@ -1765,7 +1806,27 @@ public class ProjectTest extends ModeldbTestSetup {
       if (isRunningIsolated()) {
         projectMap.put(project.getId(), project);
         mockGetResourcesForAllProjects(projectMap, testUser1);
-      } else {
+        if (testConfig.isPermissionV2Enabled()) {
+          when(uac.getWorkspaceService()
+                  .getWorkspaceById(
+                      GetWorkspaceById.newBuilder()
+                          .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                          .build()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      Workspace.newBuilder()
+                          .setId(testUser2.getVertaInfo().getDefaultWorkspaceId())
+                          .build()));
+        } else {
+          when(uac.getWorkspaceService().getWorkspaceByName(any()))
+              .thenReturn(
+                  Futures.immediateFuture(
+                      Workspace.newBuilder()
+                          .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                          .setUsername(testUser1.getVertaInfo().getUsername())
+                          .build()));
+        }
+      } else if (!testConfig.isPermissionV2Enabled()) {
         AddCollaboratorRequest addCollaboratorRequest =
             CollaboratorUtils.addCollaboratorRequestProject(
                 project, authClientInterceptor.getClient1Email(), CollaboratorType.READ_WRITE);
@@ -1779,6 +1840,33 @@ public class ProjectTest extends ModeldbTestSetup {
 
       // Create project
       createProjectRequest = getCreateProjectRequest(project.getName());
+      if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
+        var groupIdUser =
+            createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
+
+        var roleIdUser =
+            createAndGetRole(
+                    authServiceChannelServiceUser,
+                    organizationId,
+                    Optional.empty(),
+                    Set.of(ResourceTypeV2.PROJECT))
+                .getRole()
+                .getId();
+
+        var testUserWorkspace =
+            createWorkspaceAndRoleForUser(
+                authServiceChannelServiceUser,
+                organizationId,
+                groupIdUser,
+                roleIdUser,
+                testUser2.getVertaInfo().getUsername(),
+                Optional.empty());
+        createProjectRequest =
+            createProjectRequest
+                .toBuilder()
+                .setWorkspaceName(organizationId + "/" + testUserWorkspace.getName())
+                .build();
+      }
       createProjectResponse = projectServiceStub.createProject(createProjectRequest);
       selfProject = createProjectResponse.getProject();
       LOGGER.info("Project created successfully");
@@ -1793,10 +1881,11 @@ public class ProjectTest extends ModeldbTestSetup {
       }
 
       GetProjectByName getProject =
-          GetProjectByName.newBuilder()
-              .setName(selfProject.getName())
-              .setWorkspaceName(testUser2.getVertaInfo().getUsername())
-              .build();
+          GetProjectByName.newBuilder().setName(selfProject.getName()).build();
+
+      if (testConfig.isPermissionV2Enabled()) {
+        getProject = getProject.toBuilder().setWorkspaceName(getWorkspaceNameUser1()).build();
+      }
       GetProjectByName.Response getProjectByNameResponse =
           projectServiceStub.getProjectByName(getProject);
       LOGGER.info(

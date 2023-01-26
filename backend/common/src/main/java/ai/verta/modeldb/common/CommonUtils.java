@@ -18,15 +18,12 @@ import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileReader;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.CompletionException;
-import java.util.concurrent.ExecutionException;
+import java.util.TimerTask;
+import java.util.concurrent.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
@@ -78,6 +75,42 @@ public class CommonUtils {
     return envVarVal != null && !envVarVal.isEmpty();
   }
 
+  public static void scheduleTask(
+      TimerTask task, long initialDelay, long frequency, TimeUnit timeUnit) {
+    // scheduling the timer instance
+    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
+  }
+
+  public static ModelDBException getInvalidFieldException(Exception ex) {
+    String invalidFieldName;
+    if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Unknown column ")) {
+      var invalidFieldNameArr = ex.getMessage().split("'");
+      invalidFieldName = invalidFieldNameArr[1].substring(3);
+      return new ModelDBException(
+          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+    } else if (ex != null
+        && ex.getMessage() != null
+        && ex.getMessage().contains("Invalid column ")) {
+      // Logic for MSSQL
+      invalidFieldName = ex.getMessage();
+      invalidFieldName = invalidFieldName.substring("Invalid column name '".length());
+      invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("'"));
+      return new ModelDBException(
+          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+    } else if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Column ")) {
+      // Logic for H2 Database
+      invalidFieldName = ex.getMessage();
+      invalidFieldName = invalidFieldName.substring("Column '*..".length());
+      invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("\""));
+      return new ModelDBException(
+          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
+    } else if (ex instanceof IllegalArgumentException) {
+      throw (IllegalArgumentException) ex;
+    }
+    throw new ModelDBException(ex);
+  }
+
   public interface RetryCallInterface<T> {
     T retryCall(boolean retry);
   }
@@ -108,12 +141,7 @@ public class CommonUtils {
     throw ex;
   }
 
-  public static StatusRuntimeException logError(Throwable e) {
-    return logError(e, null);
-  }
-
-  public static <T extends GeneratedMessageV3> StatusRuntimeException logError(
-      Throwable e, T defaultInstance) {
+  public static <T extends GeneratedMessageV3> StatusRuntimeException logError(Throwable e) {
     Status status;
     StatusRuntimeException statusRuntimeException;
     boolean isClientError = false;
@@ -121,7 +149,7 @@ public class CommonUtils {
       statusRuntimeException = (StatusRuntimeException) e;
     } else if (e instanceof CompletionException) {
       CompletionException ex = (CompletionException) e;
-      return logError(ex.getCause(), defaultInstance);
+      return logError(ex.getCause());
     } else {
       if (e == null) {
         var status1 =
@@ -260,8 +288,8 @@ public class CommonUtils {
   }
 
   public static <T extends GeneratedMessageV3> void observeError(
-      StreamObserver<T> responseObserver, Exception e, T defaultInstance) {
-    responseObserver.onError(logError(e, defaultInstance));
+      StreamObserver<T> responseObserver, Exception e) {
+    responseObserver.onError(logError(e));
   }
 
   public static void logBasedOnTheErrorCode(boolean isClientError, Throwable e) {
@@ -382,25 +410,6 @@ public class CommonUtils {
     var query = handle.createQuery(queryStr);
     queryContext.getBinds().forEach(b -> b.accept(query));
     return query;
-  }
-
-  public static void resolvePortCollisionIfExists(String pathToPidFile) throws Exception {
-    File pidFile = new File(pathToPidFile);
-    if (pidFile.exists()) {
-      try (BufferedReader reader = new BufferedReader(new FileReader(pidFile))) {
-        String pidString = reader.readLine();
-        var pid = Long.parseLong(pidString);
-        var process = ProcessHandle.of(pid);
-        if (process.isPresent()) {
-          var processHandle = process.get();
-          LOGGER.warn("Port is already used by backend PID: {}", pid);
-          boolean destroyed = processHandle.destroy();
-          LOGGER.warn("Process kill completed `{}` for PID: {}", destroyed, pid);
-          processHandle = processHandle.onExit().get();
-          LOGGER.warn("Process is alive after kill: `{}`", processHandle.isAlive());
-        }
-      }
-    }
   }
 
   public static void cleanUpPIDFile() {

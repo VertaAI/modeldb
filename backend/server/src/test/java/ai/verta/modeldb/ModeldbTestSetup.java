@@ -7,7 +7,6 @@ import static org.mockito.Mockito.*;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceBlockingStub;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceBlockingStub;
-import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.interceptors.MetadataForwarder;
 import ai.verta.modeldb.config.TestConfig;
@@ -19,9 +18,12 @@ import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
 import ai.verta.uac.Action;
+import ai.verta.uac.ActionTypeV2;
 import ai.verta.uac.Actions;
+import ai.verta.uac.AddUserV2;
 import ai.verta.uac.AuthzServiceGrpc;
 import ai.verta.uac.CollaboratorServiceGrpc;
+import ai.verta.uac.DeleteOrganizationV2;
 import ai.verta.uac.DeleteResources;
 import ai.verta.uac.Entities;
 import ai.verta.uac.GetAllowedEntities;
@@ -34,35 +36,55 @@ import ai.verta.uac.GetUsers;
 import ai.verta.uac.GetUsersFuzzy;
 import ai.verta.uac.GetWorkspaceById;
 import ai.verta.uac.GetWorkspaceByName;
+import ai.verta.uac.GroupServiceGrpc;
+import ai.verta.uac.GroupV2;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ListMyOrganizations;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.OrgAdminV2;
 import ai.verta.uac.OrganizationServiceGrpc;
+import ai.verta.uac.OrganizationServiceV2Grpc;
+import ai.verta.uac.OrganizationV2;
+import ai.verta.uac.Permission;
 import ai.verta.uac.ResourceType;
+import ai.verta.uac.ResourceTypeV2;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
+import ai.verta.uac.RoleResourceActions;
 import ai.verta.uac.RoleServiceGrpc;
+import ai.verta.uac.RoleServiceV2Grpc;
+import ai.verta.uac.RoleV2;
 import ai.verta.uac.ServiceEnum.Service;
+import ai.verta.uac.SetGroup;
+import ai.verta.uac.SetOrganizationV2;
 import ai.verta.uac.SetResource;
 import ai.verta.uac.SetRoleBinding;
+import ai.verta.uac.SetRoleV2;
+import ai.verta.uac.SetWorkspaceV2;
 import ai.verta.uac.UACServiceGrpc;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.UserServiceV2Grpc;
 import ai.verta.uac.VertaUserInfo;
 import ai.verta.uac.Workspace;
 import ai.verta.uac.WorkspaceServiceGrpc;
+import ai.verta.uac.WorkspaceServiceV2Grpc;
+import ai.verta.uac.WorkspaceV2;
 import com.google.common.util.concurrent.Futures;
 import io.grpc.Context;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.Metadata;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -80,6 +102,13 @@ public abstract class ModeldbTestSetup {
 
   protected UserInfo testUser1;
   protected UserInfo testUser2;
+  protected UserInfo serviceAccountUser;
+
+  protected WorkspaceV2 testUser1Workspace;
+
+  protected String organizationId;
+  protected String groupIdUser1;
+  protected String roleIdUser1;
 
   protected ProjectServiceGrpc.ProjectServiceBlockingStub projectServiceStub;
   protected ProjectServiceGrpc.ProjectServiceBlockingStub client2ProjectServiceStub;
@@ -104,23 +133,20 @@ public abstract class ModeldbTestSetup {
   protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStubClient1;
   protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorServiceStubClient2;
   protected OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationServiceBlockingStub;
+  private OrganizationServiceV2Grpc.OrganizationServiceV2BlockingStub
+      organizationServiceV2BlockingStub;
 
   protected AuthClientInterceptor authClientInterceptor;
   protected final String random = String.valueOf((long) (Math.random() * 1_000_000));
   private static boolean runningIsolated;
+  protected ManagedChannel authServiceChannelServiceUser;
 
-  protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorBlockingMock =
-      mock(CollaboratorServiceGrpc.CollaboratorServiceBlockingStub.class);
-  protected AuthzServiceGrpc.AuthzServiceBlockingStub authzBlockingMock =
-      mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
-  protected UACServiceGrpc.UACServiceBlockingStub uacBlockingMock =
-      mock(UACServiceGrpc.UACServiceBlockingStub.class);
-  protected WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceBlockingMock =
-      mock(WorkspaceServiceGrpc.WorkspaceServiceBlockingStub.class);
-  protected RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingMock =
-      mock(RoleServiceGrpc.RoleServiceBlockingStub.class);
-  protected OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationBlockingMock =
-      mock(OrganizationServiceGrpc.OrganizationServiceBlockingStub.class);
+  protected CollaboratorServiceGrpc.CollaboratorServiceBlockingStub collaboratorBlockingMock;
+  protected AuthzServiceGrpc.AuthzServiceBlockingStub authzBlockingMock;
+  protected UACServiceGrpc.UACServiceBlockingStub uacBlockingMock;
+  protected WorkspaceServiceGrpc.WorkspaceServiceBlockingStub workspaceBlockingMock;
+  protected RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingMock;
+  protected OrganizationServiceGrpc.OrganizationServiceBlockingStub organizationBlockingMock;
   private ManagedChannel channel;
   private ManagedChannel channelUser2;
   private ManagedChannel channelServiceUser;
@@ -135,6 +161,23 @@ public abstract class ModeldbTestSetup {
     return runningIsolated;
   }
 
+  @BeforeEach
+  void setUp() {
+    runningIsolated = testConfig.testsShouldRunIsolatedFromDependencies();
+
+    if (runningIsolated) {
+      ModeldbTestConfigurationBeans.resetUacMocks(uac);
+      collaboratorBlockingMock =
+          uac.getBlockingAuthServiceChannel().getCollaboratorServiceBlockingStub();
+      authzBlockingMock = uac.getBlockingAuthServiceChannel().getAuthzServiceBlockingStub();
+      uacBlockingMock = uac.getBlockingAuthServiceChannel().getUacServiceBlockingStub();
+      workspaceBlockingMock = uac.getBlockingAuthServiceChannel().getWorkspaceServiceBlockingStub();
+      roleServiceBlockingMock = uac.getBlockingAuthServiceChannel().getRoleServiceBlockingStub();
+      organizationBlockingMock =
+          uac.getBlockingAuthServiceChannel().getOrganizationServiceBlockingStub();
+    }
+  }
+
   @AfterEach
   public void tearDown() {
     channel.shutdown();
@@ -143,7 +186,6 @@ public abstract class ModeldbTestSetup {
   }
 
   public void initializeChannelBuilderAndExternalServiceStubs() {
-    runningIsolated = testConfig.testsShouldRunIsolatedFromDependencies();
     authClientInterceptor = new AuthClientInterceptor(testConfig);
     channel =
         ManagedChannelBuilder.forAddress("localhost", testConfig.getGrpcServer().getPort())
@@ -217,7 +259,61 @@ public abstract class ModeldbTestSetup {
       getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
       testUser2 = uacServiceStub.getUser(getUserRequest);
+      getUserRequest =
+          GetUser.newBuilder().setEmail(testConfig.getService_user().getEmail()).build();
+      serviceAccountUser = uacServiceStub.getUser(getUserRequest);
+
+      if (testConfig.isPermissionV2Enabled()) {
+        authServiceChannelServiceUser =
+            ManagedChannelBuilder.forTarget(
+                    testConfig.getAuthService().getHost()
+                        + ":"
+                        + testConfig.getAuthService().getPort())
+                .usePlaintext()
+                .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
+                .intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor())
+                .usePlaintext()
+                .executor(executor)
+                .build();
+        organizationServiceV2BlockingStub =
+            OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+        organizationId = createAndGetOrganization();
+
+        addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
+
+        groupIdUser1 = createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
+
+        roleIdUser1 =
+            createAndGetRole(
+                    authServiceChannelServiceUser,
+                    organizationId,
+                    Optional.empty(),
+                    Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET))
+                .getRole()
+                .getId();
+
+        testUser1Workspace =
+            createWorkspaceAndRoleForUser(
+                authServiceChannelServiceUser,
+                organizationId,
+                groupIdUser1,
+                roleIdUser1,
+                testUser1.getVertaInfo().getUsername(),
+                Optional.empty());
+      }
     } else {
+      serviceAccountUser =
+          UserInfo.newBuilder()
+              .setEmail(testConfig.getService_user().getEmail())
+              .setVertaInfo(
+                  VertaUserInfo.newBuilder()
+                      .setUserId("-111")
+                      .setUsername(testConfig.getService_user().getEmail())
+                      .setDefaultWorkspaceId(-111)
+                      .setWorkspaceId("-111")
+                      .build())
+              .build();
+
       testUser1 =
           UserInfo.newBuilder()
               .setEmail(authClientInterceptor.getClient1Email())
@@ -241,23 +337,126 @@ public abstract class ModeldbTestSetup {
                       .setWorkspaceId(String.valueOf(authClientInterceptor.getClient2WorkspaceId()))
                       .build())
               .build();
+      testUser1Workspace =
+          WorkspaceV2.newBuilder()
+              .setId(Long.parseLong(testUser1.getVertaInfo().getWorkspaceId()))
+              .setName(testUser1.getVertaInfo().getUsername())
+              .setOrgId("-1")
+              .setNamespace("namespace")
+              .addPermissions(Permission.newBuilder().setGroupId("-1").setRoleId("-1").build())
+              .build();
     }
 
     LOGGER.trace("Test service infrastructure config complete.");
   }
 
+  protected String createAndGetOrganization() {
+    var organizationResponse =
+        organizationServiceV2BlockingStub.setOrganization(
+            SetOrganizationV2.newBuilder()
+                .setOrganization(
+                    OrganizationV2.newBuilder()
+                        .setName("modeldb-test-org" + new Date().getTime())
+                        .addAdmins(
+                            OrgAdminV2.newBuilder()
+                                .setEmail(authClientInterceptor.getClient1Email())
+                                .build())
+                        .build())
+                .build());
+    return organizationResponse.getOrganization().getId();
+  }
+
+  private void removeOrganizationFromUAC() {
+    organizationServiceV2BlockingStub.deleteOrganization(
+        DeleteOrganizationV2.newBuilder().setOrgId(organizationId).build());
+  }
+
+  private void addTestUsersInOrganization(
+      ManagedChannel authServiceChannelServiceUser, String organizationId) {
+    var userStub = UserServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+    userStub.addUser(
+        AddUserV2.newBuilder()
+            .setOrgId(organizationId)
+            .setUserId(testUser1.getVertaInfo().getUserId())
+            .build());
+    userStub.addUser(
+        AddUserV2.newBuilder()
+            .setOrgId(organizationId)
+            .setUserId(testUser2.getVertaInfo().getUserId())
+            .build());
+  }
+
+  protected String createAndGetGroup(
+      ManagedChannel authServiceChannelServiceUser, String organizationId, UserInfo userInfo) {
+    var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+    return groupStub
+        .setGroup(
+            SetGroup.newBuilder()
+                .setGroup(
+                    GroupV2.newBuilder()
+                        .setName("Test-Group-" + new Date().getTime())
+                        .setOrgId(organizationId)
+                        .addMemberIds(userInfo.getVertaInfo().getUserId()))
+                .build())
+        .getGroup()
+        .getId();
+  }
+
+  protected SetRoleV2.Response createAndGetRole(
+      ManagedChannel authServiceChannelServiceUser,
+      String organizationId,
+      Optional<String> roleId,
+      Set<ResourceTypeV2> resourceTypeV2s) {
+
+    var roleBuilder =
+        RoleV2.newBuilder().setName("Test-Role-" + new Date().getTime()).setOrgId(organizationId);
+
+    roleId.ifPresent(roleBuilder::setId);
+    resourceTypeV2s.forEach(
+        resourceTypeV2 ->
+            roleBuilder.addResourceActions(
+                RoleResourceActions.newBuilder()
+                    .setResourceType(resourceTypeV2)
+                    .addAllowedActions(ActionTypeV2.UPDATE)
+                    .addAllowedActions(ActionTypeV2.READ)
+                    .addAllowedActions(ActionTypeV2.CREATE)
+                    .addAllowedActions(ActionTypeV2.DELETE)
+                    .build()));
+
+    var roleStub = RoleServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+    return roleStub.setRole(SetRoleV2.newBuilder().setRole(roleBuilder.build()).build());
+  }
+
+  protected WorkspaceV2 createWorkspaceAndRoleForUser(
+      ManagedChannel authServiceChannelServiceUser,
+      String organizationId,
+      String groupId,
+      String roleId,
+      String username,
+      Optional<Long> workspaceId) {
+    WorkspaceV2.Builder workspaceBuilder =
+        WorkspaceV2.newBuilder()
+            .setName(username)
+            .setOrgId(organizationId)
+            .setNamespace("namespace")
+            .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build());
+    workspaceId.ifPresent(workspaceBuilder::setId);
+    var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+    var testUserWorkspace =
+        workspaceStub
+            .setWorkspace(
+                SetWorkspaceV2.newBuilder().setWorkspace(workspaceBuilder.build()).build())
+            .getWorkspace();
+    LOGGER.debug("WorkspaceResult: {}", testUserWorkspace);
+    return testUserWorkspace;
+  }
+
+  public String getWorkspaceNameUser1() {
+    return testUser1Workspace.getOrgId() + "/" + testUser1Workspace.getName();
+  }
+
   protected void setupMockUacEndpoints(UAC uac) {
     Context.current().withValue(MetadataForwarder.METADATA_INFO, new Metadata()).attach();
-    AuthServiceChannel authChannelMock = uac.getBlockingAuthServiceChannel();
-    when(authChannelMock.getAuthzServiceBlockingStub()).thenReturn(authzBlockingMock);
-    when(authChannelMock.getUacServiceBlockingStub()).thenReturn(uacBlockingMock);
-    when(authChannelMock.getWorkspaceServiceBlockingStub()).thenReturn(workspaceBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStub()).thenReturn(collaboratorBlockingMock);
-    when(authChannelMock.getRoleServiceBlockingStubForServiceUser())
-        .thenReturn(roleServiceBlockingMock);
-    when(authChannelMock.getOrganizationServiceBlockingStub()).thenReturn(organizationBlockingMock);
-    when(authChannelMock.getCollaboratorServiceBlockingStubForServiceUser())
-        .thenReturn(collaboratorBlockingMock);
 
     UACServiceGrpc.UACServiceFutureStub uacMock = uac.getUACService();
     when(uacMock.getCurrentUser(any())).thenReturn(Futures.immediateFuture(testUser1));
@@ -271,7 +470,7 @@ public abstract class ModeldbTestSetup {
     when(uac.getAuthzService().isSelfAllowed(any()))
         .thenReturn(
             Futures.immediateFuture(IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
-    when(authzBlockingMock.isSelfAllowed(any()))
+    when(authzBlockingMock.isSelfAllowed(any(IsSelfAllowed.class)))
         .thenReturn(IsSelfAllowed.Response.newBuilder().setAllowed(true).build());
     when(authzBlockingMock.getSelfAllowedActionsBatch(any()))
         .thenReturn(
@@ -329,22 +528,23 @@ public abstract class ModeldbTestSetup {
                 Workspace.newBuilder()
                     .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                     .build()));
-    when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
-        .thenReturn(
-            Futures.immediateFuture(
-                GetResources.Response.newBuilder()
-                    .addItem(
-                        GetResourcesResponseItem.newBuilder()
-                            .setVisibility(ResourceVisibility.PRIVATE)
-                            .setResourceType(
-                                ResourceType.newBuilder()
-                                    .setModeldbServiceResourceType(
-                                        ModelDBServiceResourceTypes.PROJECT)
-                                    .build())
-                            .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                            .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+    var getResources =
+        GetResources.Response.newBuilder()
+            .addItem(
+                GetResourcesResponseItem.newBuilder()
+                    .setVisibility(ResourceVisibility.PRIVATE)
+                    .setResourceType(
+                        ResourceType.newBuilder()
+                            .setModeldbServiceResourceType(ModelDBServiceResourceTypes.PROJECT)
                             .build())
-                    .build()));
+                    .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .setWorkspaceId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                    .build())
+            .build();
+    when(uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(any()))
+        .thenReturn(Futures.immediateFuture(getResources));
+    when(uac.getCollaboratorService().getResources(any()))
+        .thenReturn(Futures.immediateFuture(getResources));
     when(uac.getServiceAccountRoleServiceFutureStub().setRoleBinding(any()))
         .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
     when(organizationBlockingMock.listMyOrganizations(any()))
@@ -369,6 +569,10 @@ public abstract class ModeldbTestSetup {
 
     reconcilerInitializer.getSoftDeleteDatasets().resync();
     reconcilerInitializer.getSoftDeleteRepositories().resync();
+
+    if (!runningIsolated && testConfig.isPermissionV2Enabled()) {
+      removeOrganizationFromUAC();
+    }
   }
 
   protected void updateTimestampOfResources() throws Exception {
@@ -476,6 +680,7 @@ public abstract class ModeldbTestSetup {
                                 .setResourceName(resourceIdNameEntry.getValue())
                                 .setWorkspaceId(userInfo.getVertaInfo().getDefaultWorkspaceId())
                                 .setOwnerId(userInfo.getVertaInfo().getDefaultWorkspaceId())
+                                .setVisibility(ResourceVisibility.PRIVATE)
                                 .build())
                     .collect(Collectors.toList()))
             .build();

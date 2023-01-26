@@ -105,9 +105,7 @@ def delete_builds(clients):
     """
     logger.info("deleting builds")
     for client in clients:
-        workspaces = client._conn._get_visible_workspaces() + [
-            client._conn.get_personal_workspace()
-        ]
+        workspaces = client._conn._get_visible_workspaces()
         for workspace in workspaces:
             # get builds
             response = requests.get(
@@ -147,9 +145,7 @@ def delete_endpoints(clients):
     """
     logger.info("deleting endpoints")
     for client in clients:
-        workspaces = client._conn._get_visible_workspaces() + [
-            client._conn.get_personal_workspace()
-        ]
+        workspaces = client._conn._get_visible_workspaces()
         for workspace in workspaces:
             for endpoint in client.endpoints.with_workspace(workspace):
                 path = endpoint.path  # need to get from obj before deletion

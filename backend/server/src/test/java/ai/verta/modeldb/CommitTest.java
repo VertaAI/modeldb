@@ -97,28 +97,30 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
 public class CommitTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(CommitTest.class);
   private static final long time = Calendar.getInstance().getTimeInMillis();
-  private static Repository repository;
-  private static Commit initialCommit;
+  private Repository repository;
+  private Commit initialCommit;
 
-  @Before
-  public void createEntities() {
+  @BeforeEach
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -204,8 +206,9 @@ public class CommitTest extends ModeldbTestSetup {
         repoIdNameMap.keySet(), ModelDBServiceResourceTypes.REPOSITORY, ModelDBServiceActions.READ);
   }
 
-  @After
-  public void removeEntities() {
+  @AfterEach
+  @Override
+  public void tearDown() {
     for (Repository repo : new Repository[] {repository}) {
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
@@ -217,6 +220,9 @@ public class CommitTest extends ModeldbTestSetup {
     }
     repository = null;
     initialCommit = null;
+
+    cleanUpResources();
+    super.tearDown();
   }
 
   private static PathDatasetComponentBlob getPathDatasetComponentBlob(String blobLocation) {
@@ -2366,7 +2372,7 @@ public class CommitTest extends ModeldbTestSetup {
   }
 
   @Test
-  @Ignore
+  @Disabled
   public void getURLForVersionedBlob() throws IOException {
     LOGGER.info("Get Url for VersionedBlob test start................................");
 

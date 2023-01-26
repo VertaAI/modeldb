@@ -1,7 +1,7 @@
 package ai.verta.modeldb.common.collaborator;
 
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.uac.AddCollaboratorRequest.Response.Builder;
 import ai.verta.uac.Entities;
 import ai.verta.uac.UserInfo;
@@ -10,19 +10,19 @@ import com.google.protobuf.GeneratedMessageV3;
 import java.util.Objects;
 
 public class CollaboratorUser extends CollaboratorBase {
-  private AuthService authService;
+  private UACApisUtil uacApisUtil;
 
-  public CollaboratorUser(AuthService authService, GeneratedMessageV3 shareWith) {
+  public CollaboratorUser(UACApisUtil uacApisUtil, GeneratedMessageV3 shareWith) {
     super(shareWith);
-    this.authService = authService;
+    this.uacApisUtil = uacApisUtil;
   }
 
-  public CollaboratorUser(AuthService authService, String vertaId) {
+  public CollaboratorUser(UACApisUtil uacApisUtil, String vertaId) {
     super(
         UserInfo.newBuilder()
             .setVertaInfo(VertaUserInfo.newBuilder().setUserId(vertaId).build())
             .build());
-    this.authService = authService;
+    this.uacApisUtil = uacApisUtil;
   }
 
   @Override
@@ -32,7 +32,7 @@ public class CollaboratorUser extends CollaboratorBase {
 
   @Override
   public String getVertaId() {
-    return authService.getVertaIdFromUserInfo(getCollaborator());
+    return uacApisUtil.getVertaIdFromUserInfo(getCollaborator());
   }
 
   @Override
@@ -71,11 +71,11 @@ public class CollaboratorUser extends CollaboratorBase {
     if (!(o instanceof CollaboratorUser)) return false;
     if (!super.equals(o)) return false;
     CollaboratorUser that = (CollaboratorUser) o;
-    return Objects.equals(authService, that.authService);
+    return Objects.equals(uacApisUtil, that.uacApisUtil);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), authService);
+    return Objects.hash(super.hashCode(), uacApisUtil);
   }
 }

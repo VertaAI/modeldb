@@ -5,7 +5,8 @@ import ai.verta.common.WorkspaceTypeEnum;
 import ai.verta.modeldb.DatasetVisibilityEnum.DatasetVisibility;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.entities.AttributeEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryModifierEnum;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
@@ -206,7 +207,7 @@ public class RepositoryEntity implements Serializable {
 
   public Repository toProto(
       MDBRoleService mdbRoleService,
-      AuthService authService,
+      UACApisUtil uacApisUtil,
       Map<Long, Workspace> cacheWorkspaceMap,
       Map<String, GetResourcesResponseItem> getResourcesMap) {
     final var builder = Repository.newBuilder().setId(this.id);
@@ -266,8 +267,12 @@ public class RepositoryEntity implements Serializable {
     if (cacheWorkspaceMap.containsKey(responseItem.getWorkspaceId())) {
       workspace = cacheWorkspaceMap.get(responseItem.getWorkspaceId());
     } else {
-      workspace = authService.workspaceById(false, responseItem.getWorkspaceId());
-      cacheWorkspaceMap.put(workspace.getId(), workspace);
+      try {
+        workspace = uacApisUtil.getWorkspaceById(responseItem.getWorkspaceId()).blockAndGet();
+        cacheWorkspaceMap.put(workspace.getId(), workspace);
+      } catch (Exception e) {
+        throw new ModelDBException(e);
+      }
     }
 
     switch (workspace.getInternalIdCase()) {

@@ -37,6 +37,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hamcrest.CoreMatchers;
 import org.junit.Assert;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -50,18 +51,27 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class LineageTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(LineageTest.class);
-  private static final LineageEntry.Builder NOT_EXISTENT_DATASET =
+  private final LineageEntry.Builder NOT_EXISTENT_DATASET =
       LineageEntry.newBuilder()
           .setType(LineageEntryType.DATASET_VERSION)
           .setExternalId("id_not_existent_dataset");
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
       setupMockUacEndpoints(uac);
     }
+  }
+
+  @AfterEach
+  @Override
+  public void tearDown() {
+    cleanUpResources();
+    super.tearDown();
   }
 
   @Test

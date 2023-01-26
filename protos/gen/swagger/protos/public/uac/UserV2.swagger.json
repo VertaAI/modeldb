@@ -132,7 +132,8 @@
               "type": "string",
               "enum": [
                 "SEARCH_OPTION_UNKNOWN",
-                "ONLY_SERVICE_ACCOUNTS"
+                "ONLY_SERVICE_ACCOUNTS",
+                "ONLY_ADMINS"
               ]
             },
             "collectionFormat": "multi"
@@ -534,7 +535,8 @@
       "type": "string",
       "enum": [
         "SEARCH_OPTION_UNKNOWN",
-        "ONLY_SERVICE_ACCOUNTS"
+        "ONLY_SERVICE_ACCOUNTS",
+        "ONLY_ADMINS"
       ],
       "default": "SEARCH_OPTION_UNKNOWN"
     }

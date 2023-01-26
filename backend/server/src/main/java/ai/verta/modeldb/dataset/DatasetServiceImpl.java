@@ -14,7 +14,7 @@ import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
 import ai.verta.modeldb.GetAllDatasets.Response;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.authservice.AuthService;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -66,7 +66,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
   private final MetadataDAO metadataDAO;
-  private final AuthService authService;
+  private final UACApisUtil uacApisUtil;
   private final MDBRoleService mdbRoleService;
   private final FutureProjectDAO futureProjectDAO;
   private final FutureExperimentDAO futureExperimentDAO;
@@ -75,7 +75,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final boolean isEventSystemEnabled;
 
   public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
-    this.authService = serviceSet.getAuthService();
+    this.uacApisUtil = serviceSet.getUacApisUtil();
     this.mdbRoleService = serviceSet.getMdbRoleService();
     this.futureProjectDAO = daoSet.getFutureProjectDAO();
     this.futureExperimentDAO = daoSet.getFutureExperimentDAO();
@@ -144,7 +144,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           ModelDBServiceResourceTypes.DATASET, null, ModelDBServiceActions.CREATE);
 
       var dataset = getDatasetFromRequest(request);
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       var createdDataset =
           repositoryDAO.createOrUpdateDataset(dataset, request.getWorkspaceName(), true, userInfo);
 
@@ -163,7 +163,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, CreateDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -206,7 +206,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       GetAllDatasets request, StreamObserver<GetAllDatasets.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
 
       FindDatasets.Builder findDatasets =
           FindDatasets.newBuilder()
@@ -238,7 +238,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetAllDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -261,7 +261,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, DeleteDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -287,7 +287,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetDatasetById.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -296,7 +296,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       FindDatasets request, StreamObserver<FindDatasets.Response> responseObserver) {
     try {
       // Get the user info from the Context
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       var datasetPaginationDTO =
           repositoryDAO.findDatasets(metadataDAO, request, userInfo, ResourceVisibility.PRIVATE);
       final var response =
@@ -308,7 +308,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, FindDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -322,7 +322,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
 
       // Get the user info from the Context
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
 
       FindDatasets.Builder findDatasets =
           FindDatasets.newBuilder()
@@ -333,10 +333,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                       .setOperator(OperatorEnum.Operator.EQ)
                       .setValueType(ValueTypeEnum.ValueType.STRING)
                       .build())
-              .setWorkspaceName(
-                  request.getWorkspaceName().isEmpty()
-                      ? authService.getUsernameFromUserInfo(userInfo)
-                      : request.getWorkspaceName());
+              .setWorkspaceName(request.getWorkspaceName());
 
       var datasetPaginationDTO =
           repositoryDAO.findDatasets(
@@ -351,7 +348,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       for (Dataset dataset : datasetPaginationDTO.getDatasets()) {
         if (userInfo == null
-            || dataset.getOwner().equals(authService.getVertaIdFromUserInfo(userInfo))) {
+            || dataset.getOwner().equals(uacApisUtil.getVertaIdFromUserInfo(userInfo))) {
           selfOwnerdataset = dataset;
         } else {
           sharedDatasets.add(dataset);
@@ -368,7 +365,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetDatasetByName.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -397,7 +394,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
       var updatedDataset =
           getDatasetResponse.getDataset().toBuilder().setName(request.getName()).build();
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
 
       var response = UpdateDatasetName.Response.newBuilder().setDataset(updatedDataset).build();
@@ -415,8 +412,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, UpdateDatasetName.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -442,7 +438,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .toBuilder()
               .setDescription(request.getDescription())
               .build();
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
       var response =
           UpdateDatasetDescription.Response.newBuilder().setDataset(updatedDataset).build();
@@ -460,8 +456,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, UpdateDatasetDescription.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -510,7 +505,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, AddDatasetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -522,7 +517,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       throw new ModelDBException("Not supported", Code.UNIMPLEMENTED);
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, GetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -576,8 +571,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteDatasetTags.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -611,7 +605,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
               .toBuilder()
               .addAllAttributes(request.getAttributesList())
               .build();
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
       var response = AddDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build();
 
@@ -634,8 +628,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, AddDatasetAttributes.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -665,7 +658,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
       var updatedDataset =
           getDatasetResponse.getDataset().toBuilder().addAttributes(request.getAttribute()).build();
-      var userInfo = authService.getCurrentLoginUserInfo();
+      var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
       updatedDataset = repositoryDAO.createOrUpdateDataset(updatedDataset, null, false, userInfo);
       var response =
           UpdateDatasetAttributes.Response.newBuilder().setDataset(updatedDataset).build();
@@ -689,8 +682,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, UpdateDatasetAttributes.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -756,8 +748,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, DeleteDatasetAttributes.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -785,7 +776,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(responseObserver, e, DeleteDatasets.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -865,7 +856,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         var findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         var experimentRunPaginationDTO =
-            futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).get();
+            futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).blockAndGet();
         if (experimentRunPaginationDTO != null
             && !experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
           List<ExperimentRun> experimentRuns = experimentRunPaginationDTO.getExperimentRunsList();
@@ -881,7 +872,8 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
                   .setSortKey(ModelDBConstants.DATE_UPDATED)
                   .setAscending(false)
                   .build();
-          var findExperimentResponse = futureExperimentDAO.findExperiments(findExperiments).get();
+          var findExperimentResponse =
+              futureExperimentDAO.findExperiments(findExperiments).blockAndGet();
           if (!findExperimentResponse.getExperimentsList().isEmpty()) {
             lastUpdatedExperiment = findExperimentResponse.getExperiments(0);
           }
@@ -902,8 +894,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, LastExperimentByDatasetId.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 
@@ -959,7 +950,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         var findExperimentRuns =
             FindExperimentRuns.newBuilder().addPredicates(keyValueQuery).build();
         var experimentRunPaginationDTO =
-            futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).get();
+            futureExperimentRunDAO.findExperimentRuns(findExperimentRuns).blockAndGet();
         if (experimentRunPaginationDTO != null
             && !experimentRunPaginationDTO.getExperimentRunsList().isEmpty()) {
           experimentRuns.addAll(experimentRunPaginationDTO.getExperimentRunsList());
@@ -974,8 +965,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       responseObserver.onCompleted();
 
     } catch (Exception e) {
-      CommonUtils.observeError(
-          responseObserver, e, GetExperimentRunByDataset.Response.getDefaultInstance());
+      CommonUtils.observeError(responseObserver, e);
     }
   }
 }

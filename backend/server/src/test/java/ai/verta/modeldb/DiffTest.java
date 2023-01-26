@@ -75,13 +75,13 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class DiffTest extends ModeldbTestSetup {
 
   private static final Logger LOGGER = LogManager.getLogger(DiffTest.class);
-  private static final String FIRST_NAME = "train.json";
-  private static final String OTHER_NAME = "environment.json";
-  private static final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
-  private static final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
+  private final String FIRST_NAME = "train.json";
+  private final String OTHER_NAME = "environment.json";
+  private final boolean USE_SAME_NAMES = false; // TODO: set to true after fixing VR-3688
+  private final String SECOND_NAME = USE_SAME_NAMES ? FIRST_NAME : OTHER_NAME;
 
   private Repository repository;
-  private static Commit parentCommit;
+  private Commit parentCommit;
 
   // 1. blob type: 0 -- dataset path, 1 -- config, 2 -- python environment, 3 -- Git Notebook Code
   // 2. commit type -- 0 -- blob, 1 -- diff
@@ -90,7 +90,9 @@ public class DiffTest extends ModeldbTestSetup {
   }
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -101,6 +103,7 @@ public class DiffTest extends ModeldbTestSetup {
   }
 
   @AfterEach
+  @Override
   public void tearDown() {
     if (repository == null) {
       return;
@@ -112,6 +115,11 @@ public class DiffTest extends ModeldbTestSetup {
     DeleteRepositoryRequest.Response response =
         versioningServiceBlockingStub.deleteRepository(deleteRepository);
     assertTrue("Repository not deleted", response.getStatus());
+
+    repository = null;
+
+    cleanUpResources();
+    super.tearDown();
   }
 
   private void createRepositoryEntities() {
@@ -917,14 +925,12 @@ public class DiffTest extends ModeldbTestSetup {
         .build();
   }
 
-  private static final List<String> LOCATION1 =
+  private final List<String> LOCATION1 =
       Arrays.asList("modeldb", "march", "environment", FIRST_NAME);
-  private static final List<String> LOCATION2 =
-      Arrays.asList("modeldb", "environment", SECOND_NAME);
-  private static final List<String> LOCATION3 =
-      Arrays.asList("modeldb", "blob", "march", "blob.json");
-  private static final List<String> LOCATION4 = Collections.singletonList("modeldb.json");
-  private static final List<String> LOCATION5 = Collections.singletonList("maths/algebra");
+  private final List<String> LOCATION2 = Arrays.asList("modeldb", "environment", SECOND_NAME);
+  private final List<String> LOCATION3 = Arrays.asList("modeldb", "blob", "march", "blob.json");
+  private final List<String> LOCATION4 = Collections.singletonList("modeldb.json");
+  private final List<String> LOCATION5 = Collections.singletonList("maths/algebra");
 
   private BlobDiff deleteBlobDiff1(int blobType) {
     switch (blobType) {

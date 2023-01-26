@@ -37,19 +37,24 @@ import ai.verta.modeldb.versioning.RepositoryNamedIdentification;
 import ai.verta.modeldb.versioning.VersionEnvironmentBlob;
 import ai.verta.uac.Action;
 import ai.verta.uac.AddCollaboratorRequest;
+import ai.verta.uac.AddGroupUsers;
 import ai.verta.uac.CollaboratorPermissions;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
 import ai.verta.uac.GetSelfAllowedResources;
 import ai.verta.uac.GetUser;
+import ai.verta.uac.GroupServiceGrpc;
 import ai.verta.uac.IsSelfAllowed;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.RemoveGroupUsers;
 import ai.verta.uac.ResourceType;
+import ai.verta.uac.ResourceTypeV2;
 import ai.verta.uac.ResourceVisibility;
 import ai.verta.uac.Resources;
 import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.ServiceEnum.Service;
 import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.common.util.concurrent.Futures;
 import com.google.protobuf.ListValue;
 import com.google.protobuf.Value;
@@ -63,6 +68,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -86,22 +92,24 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   private static final Logger LOGGER = LogManager.getLogger(ExperimentRunTest.class);
 
   // Project Entities
-  private static Project project;
-  private static Project project2;
-  private static Project project3;
-  private static Map<String, Project> projectMap = new HashMap<>();
+  private Project project;
+  private Project project2;
+  private Project project3;
+  private Map<String, Project> projectMap = new HashMap<>();
 
   // Experiment Entities
-  private static Experiment experiment;
-  private static Experiment experiment2;
+  private Experiment experiment;
+  private Experiment experiment2;
 
   // ExperimentRun Entities
-  private static ExperimentRun experimentRun;
-  private static ExperimentRun experimentRun2;
-  private static Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
+  private ExperimentRun experimentRun;
+  private ExperimentRun experimentRun2;
+  private final Map<String, ExperimentRun> experimentRunMap = new HashMap<>();
 
   @BeforeEach
-  public void createEntities() {
+  @Override
+  public void setUp() {
+    super.setUp();
     initializeChannelBuilderAndExternalServiceStubs();
 
     if (isRunningIsolated()) {
@@ -115,7 +123,8 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   @AfterEach
-  public void removeEntities() {
+  @Override
+  public void tearDown() {
     DeleteExperimentRuns deleteExperimentRun =
         DeleteExperimentRuns.newBuilder().addAllIds(experimentRunMap.keySet()).build();
     DeleteExperimentRuns.Response deleteExperimentRunResponse =
@@ -139,7 +148,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     project = null;
     project2 = null;
     project3 = null;
-    projectMap = new HashMap<>();
+    projectMap.clear();
 
     // Experiment Entities
     experiment = null;
@@ -149,7 +158,10 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     experimentRun = null;
     experimentRun2 = null;
 
-    experimentRunMap = new HashMap<>();
+    experimentRunMap.clear();
+
+    cleanUpResources();
+    super.tearDown();
   }
 
   private void createProjectEntities() {
@@ -163,11 +175,25 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                       .build())
               .build();
       when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+
+      if (testConfig.isPermissionV2Enabled()) {
+        when(uac.getWorkspaceService().getWorkspaceByName(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    Workspace.newBuilder()
+                        .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .setUsername(testUser1.getVertaInfo().getUsername())
+                        .build()));
+      }
     }
 
     // Create two project of above project
     CreateProject createProjectRequest =
         ProjectTest.getCreateProjectRequest("project-" + new Date().getTime());
+    if (testConfig.isPermissionV2Enabled()) {
+      createProjectRequest =
+          createProjectRequest.toBuilder().setWorkspaceName(getWorkspaceNameUser1()).build();
+    }
     CreateProject.Response createProjectResponse =
         projectServiceStub.createProject(createProjectRequest);
     project = createProjectResponse.getProject();
@@ -5376,9 +5402,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         "Delete ExperimentRun by parent entities owner test start.........................");
 
     if (testConfig.hasAuth()) {
-      if (isRunningIsolated()) {
-
-      } else {
+      if (!isRunningIsolated() && !testConfig.isPermissionV2Enabled()) {
         AddCollaboratorRequest addCollaboratorRequest =
             addCollaboratorRequestProjectInterceptor(
                 project, CollaboratorType.READ_ONLY, authClientInterceptor);
@@ -5440,6 +5464,14 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .thenReturn(
                 Futures.immediateFuture(
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
+      } else if (testConfig.isPermissionV2Enabled()) {
+        var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+        groupStub.addUsers(
+            AddGroupUsers.newBuilder()
+                .addUserId(testUser2.getVertaInfo().getUserId())
+                .setGroupId(groupIdUser1)
+                .setOrgId(organizationId)
+                .build());
       } else {
         AddCollaboratorRequest addCollaboratorRequest =
             addCollaboratorRequestProjectInterceptor(
@@ -5669,7 +5701,18 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("Log and Get Versioning ExperimentRun test start................................");
 
-    long repoId = createRepository(versioningServiceBlockingStub, "Repo-" + new Date().getTime());
+    long repoId;
+    if (testConfig.isPermissionV2Enabled() && testConfig.isPopulateConnectionsBasedOnPrivileges()) {
+      repoId =
+          RepositoryTest.createRepositoryWithWorkspace(
+              versioningServiceBlockingStub,
+              "Repo-" + new Date().getTime(),
+              testUser1Workspace.getOrgId() + "/" + testUser1Workspace.getName());
+    } else {
+      repoId =
+          RepositoryTest.createRepository(
+              versioningServiceBlockingStub, "Repo-" + new Date().getTime());
+    }
     try {
       GetBranchRequest getBranchRequest =
           GetBranchRequest.newBuilder()
@@ -6469,9 +6512,18 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       throws ModelDBException, NoSuchAlgorithmException {
     LOGGER.info("FindExperimentRuns test start................................");
 
-    long repoId =
-        RepositoryTest.createRepository(
-            versioningServiceBlockingStub, "Repo-" + new Date().getTime());
+    long repoId;
+    if (testConfig.isPermissionV2Enabled()) {
+      repoId =
+          RepositoryTest.createRepositoryWithWorkspace(
+              versioningServiceBlockingStub,
+              "Repo-" + new Date().getTime(),
+              getWorkspaceNameUser1());
+    } else {
+      repoId =
+          RepositoryTest.createRepository(
+              versioningServiceBlockingStub, "Repo-" + new Date().getTime());
+    }
     GetBranchRequest getBranchRequest =
         GetBranchRequest.newBuilder()
             .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId).build())
@@ -6680,6 +6732,34 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                           .build()))
               .thenReturn(
                   Futures.immediateFuture(GetSelfAllowedResources.Response.newBuilder().build()));
+        } else if (testConfig.isPermissionV2Enabled()) {
+          if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
+            createAndGetRole(
+                authServiceChannelServiceUser,
+                organizationId,
+                Optional.of(roleIdUser1),
+                Set.of(ResourceTypeV2.PROJECT));
+            var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+            groupStub.addUsers(
+                AddGroupUsers.newBuilder()
+                    .addUserId(testUser2.getVertaInfo().getUserId())
+                    .setGroupId(groupIdUser1)
+                    .setOrgId(organizationId)
+                    .build());
+          } else {
+            createAndGetRole(
+                authServiceChannelServiceUser,
+                organizationId,
+                Optional.of(roleIdUser1),
+                Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET));
+            var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+            groupStub.addUsers(
+                AddGroupUsers.newBuilder()
+                    .addUserId(testUser2.getVertaInfo().getUserId())
+                    .setGroupId(groupIdUser1)
+                    .setOrgId(organizationId)
+                    .build());
+          }
         } else {
           addCollaboratorRequest =
               AddCollaboratorRequest.newBuilder()
@@ -6723,7 +6803,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         } else {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
-              3,
+              1,
               response.getExperimentRuns(0).getHyperparametersCount());
         }
 
@@ -6755,6 +6835,19 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                                   .setService(Service.MODELDB_SERVICE)
                                   .build())
                           .build()));
+        } else if (testConfig.isPermissionV2Enabled()) {
+          createAndGetRole(
+              authServiceChannelServiceUser,
+              organizationId,
+              Optional.of(roleIdUser1),
+              Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET));
+          var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+          groupStub.addUsers(
+              AddGroupUsers.newBuilder()
+                  .addUserId(testUser2.getVertaInfo().getUserId())
+                  .setGroupId(groupIdUser1)
+                  .setOrgId(organizationId)
+                  .build());
         } else {
           addCollaboratorRequest =
               AddCollaboratorRequest.newBuilder()
@@ -6798,11 +6891,28 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         } else {
           assertEquals(
               "ExperimentRun hyperparameters count not match with expected experimentRun hyperparameters count",
-              3,
+              1,
               response.getExperimentRuns(0).getHyperparametersCount());
         }
       }
     } finally {
+      if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
+        createAndGetRole(
+            authServiceChannelServiceUser,
+            organizationId,
+            Optional.of(roleIdUser1),
+            Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET));
+      }
+
+      if (testConfig.isPermissionV2Enabled() && isRunningIsolated()) {
+        when(uac.getWorkspaceService().getWorkspaceById(any()))
+            .thenReturn(
+                Futures.immediateFuture(
+                    Workspace.newBuilder()
+                        .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                        .setUsername(testUser1.getVertaInfo().getUsername())
+                        .build()));
+      }
       DeleteRepositoryRequest deleteRepository =
           DeleteRepositoryRequest.newBuilder()
               .setRepositoryId(RepositoryIdentification.newBuilder().setRepoId(repoId))
@@ -7873,6 +7983,10 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     List<Dataset> datasetList = new ArrayList<>();
     CreateDataset createDatasetRequest =
         DatasetTest.getDatasetRequestForOtherTests("Dataset-" + new Date().getTime());
+    if (testConfig.isPermissionV2Enabled()) {
+      createDatasetRequest =
+          createDatasetRequest.toBuilder().setWorkspaceName(getWorkspaceNameUser1()).build();
+    }
     CreateDataset.Response createDatasetResponse =
         datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset1 = createDatasetResponse.getDataset();
@@ -7885,6 +7999,10 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     createDatasetRequest =
         DatasetTest.getDatasetRequestForOtherTests("rental_TEXT_train_data_1.csv");
+    if (testConfig.isPermissionV2Enabled()) {
+      createDatasetRequest =
+          createDatasetRequest.toBuilder().setWorkspaceName(getWorkspaceNameUser1()).build();
+    }
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     Dataset dataset2 = createDatasetResponse.getDataset();
     datasetList.add(dataset2);
@@ -8040,6 +8158,21 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .thenReturn(
                   Futures.immediateFuture(
                       IsSelfAllowed.Response.newBuilder().setAllowed(false).build()));
+        } else if (testConfig.isPermissionV2Enabled()) {
+          if (testConfig.isPopulateConnectionsBasedOnPrivileges()) {
+            createAndGetRole(
+                authServiceChannelServiceUser,
+                organizationId,
+                Optional.of(roleIdUser1),
+                Set.of(ResourceTypeV2.PROJECT));
+          }
+          var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+          groupStub.addUsers(
+              AddGroupUsers.newBuilder()
+                  .addUserId(testUser2.getVertaInfo().getUserId())
+                  .setGroupId(groupIdUser1)
+                  .setOrgId(organizationId)
+                  .build());
         } else {
           AddCollaboratorRequest addCollaboratorRequest =
               addCollaboratorRequestProjectInterceptor(
@@ -8076,6 +8209,13 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         }
       }
     } finally {
+      if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
+        createAndGetRole(
+            authServiceChannelServiceUser,
+            organizationId,
+            Optional.of(roleIdUser1),
+            Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET));
+      }
       for (String datasetVersionId : datasetVersionIds) {
         DeleteDatasetVersion deleteDatasetVersion =
             DeleteDatasetVersion.newBuilder().setId(datasetVersionId).build();
@@ -8117,6 +8257,16 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         DeleteExperimentRun.Response deleteExperimentRunResponse =
             experimentRunServiceStub.deleteExperimentRun(deleteExperimentRun);
         assertTrue(deleteExperimentRunResponse.getStatus());
+      }
+
+      if (!isRunningIsolated() && testConfig.isPermissionV2Enabled()) {
+        var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+        groupStub.removeUsers(
+            RemoveGroupUsers.newBuilder()
+                .addUserId(testUser2.getVertaInfo().getUserId())
+                .setGroupId(groupIdUser1)
+                .setOrgId(organizationId)
+                .build());
       }
     }
 

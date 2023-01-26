@@ -53,6 +53,7 @@ import ai.verta.modeldb.VersioningEntry;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.authservice.RoleServiceUtils;
+import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
@@ -87,7 +88,6 @@ import ai.verta.modeldb.experimentRun.subtypes.SortingHandler;
 import ai.verta.modeldb.experimentRun.subtypes.TagsHandler;
 import ai.verta.modeldb.experimentRun.subtypes.VersionInputHandler;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.modeldb.utils.UACApisUtil;
 import ai.verta.modeldb.versioning.BlobDAO;
 import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.EnvironmentBlob;
@@ -185,7 +185,12 @@ public class FutureExperimentRunDAO {
             artifactStoreDAO,
             config);
     predicatesHandler =
-        new PredicatesHandler(executor, "experiment_run", "experiment_run", uacApisUtil);
+        new PredicatesHandler(
+            executor,
+            "experiment_run",
+            "experiment_run",
+            uacApisUtil,
+            config.isPermissionV2Enabled());
     sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
     environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);

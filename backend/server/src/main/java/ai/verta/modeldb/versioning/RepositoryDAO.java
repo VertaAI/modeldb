@@ -98,7 +98,7 @@ public interface RepositoryDAO {
   ListCommitsLogRequest.Response listCommitsLog(ListCommitsLogRequest request)
       throws ModelDBException;
 
-  FindRepositories.Response findRepositories(FindRepositories request) throws ModelDBException;
+  FindRepositories.Response findRepositories(FindRepositories request) throws Exception;
 
   AddDatasetTags.Response addDatasetTags(MetadataDAO metadataDAO, String id, List<String> tags)
       throws ModelDBException;
