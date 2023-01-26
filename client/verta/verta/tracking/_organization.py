@@ -41,7 +41,7 @@ class Organization(object):
             "/api/v1/uac-proxy/organization/setOrganization",
             body=Message(organization=msg),
         )
-        org = conn.must_proto_response(response, Message.Response).organization
+        org = conn.must_proto_response(response, Message.Response).workspace
 
         print("created new Organization: {}".format(org.name))
         return cls(conn, org)
@@ -81,7 +81,7 @@ class Organization(object):
         response = conn.make_proto_request(
             "GET", "/api/v1/uac-proxy/organization/getOrganizationByName", params=msg
         )
-        org = conn.must_proto_response(response, Message.Response).organization
+        org = conn.must_proto_response(response, Message.Response).workspace
         return cls(conn, org)
 
     """

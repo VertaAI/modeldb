@@ -193,10 +193,9 @@ class TestLockLevels:
         assert model_ver._msg.lock_level == lock_level._as_proto()
         assert isinstance(model_ver.get_lock_level(), lock_level.__class__)
 
-    def test_transition_levels(self, client, client_2, organization, created_entities):
-        organization.add_member(client_2._conn.email)
+    def test_transition_levels(self, client, client_2, workspace, created_entities):
         reg_model = client.create_registered_model(
-            workspace=organization.name,
+            workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),
         )
         created_entities.append(reg_model)
@@ -221,13 +220,12 @@ class TestLockLevels:
         admin_model_ver.set_lock_level(lock.redact)
         admin_model_ver.set_lock_level(lock.closed)
 
-    def test_closed(self, client, client_2, organization, created_entities):
+    def test_closed(self, client, client_2, workspace, created_entities):
         description = "My model version"
         label = "mine"
 
-        organization.add_member(client_2._conn.email)
         reg_model = client.create_registered_model(
-            workspace=organization.name,
+            workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),
         )
         created_entities.append(reg_model)
@@ -248,13 +246,12 @@ class TestLockLevels:
             with pytest.raises(requests.HTTPError, match="locked for changes"):
                 model_ver.delete()
 
-    def test_redact(self, client, client_2, organization, created_entities):
+    def test_redact(self, client, client_2, workspace, created_entities):
         description = "My model version"
         label = "mine"
 
-        organization.add_member(client_2._conn.email)
         reg_model = client.create_registered_model(
-            workspace=organization.name,
+            workspace=workspace.name,
             visibility=visibility.OrgCustom(write=True),
         )
         created_entities.append(reg_model)
