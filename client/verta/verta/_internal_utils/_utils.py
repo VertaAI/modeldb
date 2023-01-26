@@ -344,7 +344,7 @@ class Connection(object):
         if workspace_id:
             return self.get_workspace_name_from_id(workspace_id)
         else:
-            raise ValueError("default_workspace_id is not set")
+            raise RuntimeError("default workspace is not set")
 
 
 class NoneProtoResponse(object):
