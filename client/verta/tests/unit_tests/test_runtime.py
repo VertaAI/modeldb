@@ -79,7 +79,6 @@ def test_set_thread_validate():
 def test_get_thread_validate():
     runtime._set_validate_flag(True)
     assert runtime._get_validate_flag() == True
-    runtime._set_validate_flag(False)
 
 
 def test_logs_are_clean_on_entry():
