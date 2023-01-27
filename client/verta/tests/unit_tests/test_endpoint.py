@@ -108,3 +108,33 @@ def test_get_deployed_model_missing_full_url(mock_get_access_token, # pass in pa
     """
     deployed_model = mock_endpoint.get_deployed_model()
     assert deployed_model.prediction_url == 'https://test_socket/api/v1/predict/test_path'
+
+
+FETCH_LOGS_RESPONSE: Dict[str, Any] = {
+    "prediction_id": {
+        "key_1": ['list', 'of', 'things'],
+        "key_2": {
+            "dict_key_1": "dict_val_1"
+            }
+        }
+    }
+
+@patch(f'{VERTA_CLASS}._get_or_create_stage', return_value='789')
+def test_fetch_logs(
+        mock_stage,  # pass in the patch.
+        mock_endpoint,
+        mocked_responses,
+    ) -> None:
+    """
+    Verify the endpoint.fetch_log() function makes the correct API call
+    """
+    fetch_url = f'https://test_socket/api/v1/deployment/workspace/456' \
+                f'/endpoints/123/stages/789/prediction/prediction_id'
+    mocked_responses.get(
+        fetch_url,
+        json=FETCH_LOGS_RESPONSE,
+        status=200
+    )
+    log = mock_endpoint.fetch_log('prediction_id')
+    mocked_responses.assert_call_count(url=fetch_url, count=1)
+    assert log == FETCH_LOGS_RESPONSE['prediction_id']
