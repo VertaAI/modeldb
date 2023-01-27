@@ -35,7 +35,7 @@ def _delete_thread_logs() -> None:
     """
     Drop the `log` attribute from the thread local variable.
     """
-    _THREAD.__delattr__('logs')
+    delattr(_THREAD, 'logs')
 
 
 def _get_validate_flag() -> bool:
@@ -60,7 +60,7 @@ def _delete_validate_flag() -> None:
     """
     Drop the `validate` attribute from the thread local variable.
     """
-    _THREAD.__delattr__('validate')
+    delattr(_THREAD, 'validate')
 
 
 def _validate_json(value: Any) -> str:
