@@ -22,6 +22,8 @@ def clean_thread():
     yield
     if hasattr(runtime._THREAD, 'logs'):
         runtime._THREAD.__delattr__('logs')  # clean-up any existing logs.
+    if hasattr(runtime._THREAD, 'validate'):
+        runtime._THREAD.__delattr__('validate')  # clean-up any existing flag.
 
 
 
