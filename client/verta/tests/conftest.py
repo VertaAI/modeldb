@@ -109,13 +109,13 @@ def dev_key_2():
 
 
 @pytest.fixture(scope="session")
-def email_3():
-    return constants.EMAIL_3
+def email_sys_admin():
+    return constants.EMAIL_SYS_ADMIN
 
 
 @pytest.fixture(scope="session")
-def dev_key_3():
-    return constants.DEV_KEY_3
+def dev_key_sys_admin():
+    return constants.DEV_KEY_SYS_ADMIN
 
 
 @pytest.fixture
@@ -375,12 +375,12 @@ def client_2(host, port, email_2, dev_key_2, created_entities):
 
 
 @pytest.fixture
-def client_3(host, port, email_3, dev_key_3, created_entities):
+def client_sys_admin(host, port, email_sys_admin, dev_key_sys_admin, created_entities):
     """For collaboration tests."""
-    if not (email_3 and dev_key_3):
-        pytest.skip("second account credentials not present")
+    if not (email_sys_admin and dev_key_sys_admin):
+        pytest.skip("sys admin account credentials not present")
 
-    client = Client(host, port, email_3, dev_key_3, debug=True)
+    client = Client(host, port, email_sys_admin, dev_key_sys_admin, debug=True)
 
     return client
 
@@ -532,7 +532,7 @@ def class_endpoint_updated(
 
 
 @pytest.fixture
-def workspace(client, created_entities):
+def workspace(client_sys_admin, created_entities):
     return create_workspace(
         client,
         created_entities,
@@ -551,7 +551,7 @@ def workspace(client, created_entities):
 
 
 @pytest.fixture
-def workspace2(client, created_entities):
+def workspace2(client_sys_admin, created_entities):
     return create_workspace(client, created_entities, [
     RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
                                    allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
@@ -562,7 +562,7 @@ def workspace2(client, created_entities):
 
 
 @pytest.fixture
-def workspace3(client, created_entities):
+def workspace3(client_sys_admin, created_entities):
     return create_workspace(client, created_entities, [
     RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
                                    allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
@@ -572,7 +572,7 @@ def workspace3(client, created_entities):
 ])
 
 
-def create_workspace(client, created_entities, roles):
+def create_workspace(client_sys_admin, created_entities, roles):
     workspace = client._create_workspace(client._conn._get_organization_id(), generate_default_name(), roles)
     created_entities.append(workspace)
     return workspace
