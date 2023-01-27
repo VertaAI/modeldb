@@ -121,7 +121,7 @@ def test_validate_reset_on_exit():
     with runtime.context(validate=True):
         runtime.log('test', {'test_key': 'test_val'})
         assert runtime._get_validate_flag() == True  # inside the context
-    assert runtime._get_validate_flag() == False  # outside the context
+    assert hasattr(runtime._THREAD, 'validate') == False  # outside the context
 
 
 def test_log_function_updates_logs():
