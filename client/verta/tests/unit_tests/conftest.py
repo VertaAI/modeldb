@@ -29,7 +29,7 @@ def mock_config() -> Configuration:
     """ Return a mocked object of the _internal_utils._utils.Configuration class for use in tests """
     return Configuration(use_git=False, debug=False)
 
-@pytest.fixture
-def mocked_responses(scope="session"):
+@pytest.fixture(scope="session")
+def mocked_responses():
     with responses.RequestsMock() as rsps:
         yield rsps
