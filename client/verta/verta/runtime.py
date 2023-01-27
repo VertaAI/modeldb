@@ -120,6 +120,9 @@ def log(key: str, value: Any) -> None:
     ValueError
         If `key` provided contains non-alphanumeric characters.  Dashes `-`
         and underscores `_` are permitted.
+    RuntimeError
+        If this function is called outside the scope of any instance of
+        :class:`~verta.runtime.context`.
 
     Examples
     --------
@@ -177,9 +180,8 @@ class context:
     Raises
     ------
     RuntimeError
-        If logs has been added via :meth:`~verta.runtime.log()` outside the
-        scope of the model's :meth:`~verta.registry.VertaModelBase.predict`
-        method, or outside the scope of this context manager.
+        If this context manager instance is nested inside the context of an
+        existing instance.
 
     Examples
     --------
