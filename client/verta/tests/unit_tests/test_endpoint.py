@@ -111,7 +111,7 @@ def test_get_deployed_model_missing_full_url(mock_get_access_token, # pass in pa
 
 
 FETCH_LOGS_RESPONSE: Dict[str, Any] = {
-    "prediction_id": {
+    "example_prediction_id": {
         "key_1": ['list', 'of', 'things'],
         "key_2": {
             "dict_key_1": "dict_val_1"
@@ -129,12 +129,12 @@ def test_fetch_logs(
     Verify the endpoint.fetch_log() function makes the correct API call
     """
     fetch_url = f'https://test_socket/api/v1/deployment/workspace/456' \
-                f'/endpoints/123/stages/789/prediction/prediction_id'
+                f'/endpoints/123/stages/789/prediction/example_prediction_id'
     mocked_responses.get(
         fetch_url,
         json=FETCH_LOGS_RESPONSE,
         status=200
     )
-    log = mock_endpoint.fetch_log('prediction_id')
+    log = mock_endpoint.fetch_log('example_prediction_id')
     mocked_responses.assert_call_count(url=fetch_url, count=1)
-    assert log == FETCH_LOGS_RESPONSE['prediction_id']
+    assert log == FETCH_LOGS_RESPONSE['example_prediction_id']
