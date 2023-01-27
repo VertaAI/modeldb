@@ -36,6 +36,8 @@ from .env_fixtures import (
     mock_env_jwt_auth,
     mock_env_authn_missing,
 )
+from verta._internal_utils._utils import generate_default_name
+from verta._protos.public.uac import RoleV2_pb2
 
 
 RANDOM_SEED = 0
@@ -75,50 +77,6 @@ def mark_time():
     )
 
 
-@pytest.fixture(scope="session", autouse=True)
-def create_dummy_workspace(tmp_path_factory, worker_id):
-    """Prevent tests from uncontrollably changing accounts' default workspace.
-
-    When an account creates its first organization, or is added to its first
-    organization, UAC sets that organization as the account's default
-    workspace. This is undesired during test runs, because several tests
-    rely on new arbitrary orgs *not* being the active client's default
-    workspace.
-
-    This fixture creates a dummy "first" organization for each account, so
-    that organizations created for individual tests won't trigger this behavior
-    from UAC.
-
-    """
-    dummy_orgs = []
-
-    def _create_dummy_workspaces():
-        for client in clean_test_accounts.get_clients():
-            current_default_workspace = client._conn.get_default_workspace()
-
-            name = _utils.generate_default_name()
-            dummy_orgs.append(client._create_organization(name))
-
-            client._conn._set_default_workspace(current_default_workspace)
-
-    # adapted from https://pytest-xdist.readthedocs.io/en/latest/how-to.html#making-session-scoped-fixtures-execute-only-once
-    if worker_id == "master":
-        # when not in parallel, simply create dummy workspaces
-        _create_dummy_workspaces()
-    else:
-        # when running in parallel, ensure dummy workspaces are only created once
-        path = tmp_path_factory.getbasetemp().parent / "dummy-workspaces"
-        with filelock.FileLock(str(path) + ".lock", timeout=30):
-            if not path.is_file():
-                _create_dummy_workspaces()
-                path.touch(exist_ok=False)
-
-    yield
-
-    for org in dummy_orgs:
-        org.delete()
-
-
 @pytest.fixture(scope="session")
 def host():
     return constants.HOST
@@ -151,13 +109,13 @@ def dev_key_2():
 
 
 @pytest.fixture(scope="session")
-def email_3():
-    return constants.EMAIL_3
+def email_sys_admin():
+    return constants.EMAIL_SYS_ADMIN
 
 
 @pytest.fixture(scope="session")
-def dev_key_3():
-    return constants.DEV_KEY_3
+def dev_key_sys_admin():
+    return constants.DEV_KEY_SYS_ADMIN
 
 
 @pytest.fixture
@@ -417,12 +375,12 @@ def client_2(host, port, email_2, dev_key_2, created_entities):
 
 
 @pytest.fixture
-def client_3(host, port, email_3, dev_key_3, created_entities):
+def client_sys_admin(host, port, email_sys_admin, dev_key_sys_admin, created_entities):
     """For collaboration tests."""
-    if not (email_3 and dev_key_3):
-        pytest.skip("second account credentials not present")
+    if not (email_sys_admin and dev_key_sys_admin):
+        pytest.skip("sys admin account credentials not present")
 
-    client = Client(host, port, email_3, dev_key_3, debug=True)
+    client = Client(host, port, email_sys_admin, dev_key_sys_admin, debug=True)
 
     return client
 
@@ -513,13 +471,13 @@ def created_entities():
 
     yield to_delete
 
-    # move orgs to the end
-    from verta.tracking._organization import Organization
+    # move workspaces to the end
+    from verta._uac._workspace import Workspace
 
-    is_org = lambda entity: entity.__class__ is Organization
+    is_workspace = lambda entity: entity.__class__ is Workspace
     to_delete = itertools.chain(
-        filterfalse(is_org, to_delete),
-        filter(is_org, to_delete),
+        filterfalse(is_workspace, to_delete),
+        filter(is_workspace, to_delete),
     )
 
     # TODO: avoid duplicates
@@ -533,15 +491,6 @@ def class_created_entities():
     to_delete = []
 
     yield to_delete
-
-    # move orgs to the end
-    from verta.tracking._organization import Organization
-
-    is_org = lambda entity: entity.__class__ is Organization
-    to_delete = itertools.chain(
-        filterfalse(is_org, to_delete),
-        filter(is_org, to_delete),
-    )
 
     # TODO: avoid duplicates
     for entity in to_delete:
@@ -583,12 +532,50 @@ def class_endpoint_updated(
 
 
 @pytest.fixture
-def organization(client, created_entities):
-    workspace_name = _utils.generate_default_name()
-    org = client._create_organization(workspace_name)
-    created_entities.append(org)
+def workspace(client_sys_admin, created_entities):
+    return create_workspace(
+        client,
+        created_entities,
+        [
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                allowed_actions=[RoleV2_pb2.ActionTypeV2.READ],
+            ),
+            RoleV2_pb2.RoleResourceActions(
+                resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
+                                 RoleV2_pb2.ActionTypeV2.UPDATE],
+            ),
+        ],
+    )
 
-    return org
+
+@pytest.fixture
+def workspace2(client_sys_admin, created_entities):
+    return create_workspace(client, created_entities, [
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.CREATE, RoleV2_pb2.ActionTypeV2.READ,
+                                                    RoleV2_pb2.ActionTypeV2.UPDATE, RoleV2_pb2.ActionTypeV2.DELETE]),
+])
+
+
+@pytest.fixture
+def workspace3(client_sys_admin, created_entities):
+    return create_workspace(client, created_entities, [
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
+                                                    RoleV2_pb2.ActionTypeV2.UPDATE]),
+])
+
+
+def create_workspace(client_sys_admin, created_entities, roles):
+    workspace = client._create_workspace(client._conn._get_organization_id(), generate_default_name(), roles)
+    created_entities.append(workspace)
+    return workspace
 
 
 @pytest.fixture

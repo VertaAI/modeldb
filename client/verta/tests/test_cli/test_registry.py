@@ -277,12 +277,12 @@ class TestCreate:
         assert error_message in result.output
 
     def test_create_workspace_config(
-        self, client, organization, in_tempdir, created_entities
+        self, client, workspace, in_tempdir, created_entities
     ):
         model_name = _utils.generate_default_name()
         version_name = _utils.generate_default_name()
 
-        client_config = {"workspace": organization.name}
+        client_config = {"workspace": workspace.name}
 
         filepath = "verta_config.json"
         with open(filepath, "w") as f:
@@ -297,7 +297,7 @@ class TestCreate:
         client = Client()
         model = client.get_registered_model(model_name)
         created_entities.append(model)
-        assert model.workspace == organization.name
+        assert model.workspace == workspace.name
 
     @pytest.mark.deployment
     def test_create_version_with_custom_modules(

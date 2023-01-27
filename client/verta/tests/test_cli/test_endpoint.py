@@ -18,18 +18,18 @@ pytestmark = [pytest.mark.deployment, pytest.mark.not_oss]
 
 
 class TestList:
-    def test_list_endpoint(self, organization, created_entities):
+    def test_list_endpoint(self, workspace, created_entities):
         client = Client()
         path = _utils.generate_default_name()
         path2 = _utils.generate_default_name()
-        endpoint1 = client.get_or_create_endpoint(path, workspace=organization.name)
-        endpoint2 = client.get_or_create_endpoint(path2, workspace=organization.name)
+        endpoint1 = client.get_or_create_endpoint(path, workspace=workspace.name)
+        endpoint2 = client.get_or_create_endpoint(path2, workspace=workspace.name)
         created_entities.append(endpoint1)
         created_entities.append(endpoint2)
         runner = CliRunner()
         result = runner.invoke(
             cli,
-            ["deployment", "list", "endpoint", "--workspace", organization.name],
+            ["deployment", "list", "endpoint", "--workspace", workspace.name],
         )
 
         assert not result.exception
@@ -55,9 +55,9 @@ class TestCreate:
         created_entities.append(endpoint)
 
     def test_create_workspace_config(
-        self, client, organization, in_tempdir, created_entities
+        self, client, workspace, in_tempdir, created_entities
     ):
-        client_config = {"workspace": organization.name}
+        client_config = {"workspace": workspace.name}
 
         filepath = "verta_config.json"
         with open(filepath, "w") as f:
@@ -75,7 +75,7 @@ class TestCreate:
 
         client = Client()
         endpoint = client.get_endpoint(endpoint_name)
-        assert endpoint.workspace == organization.name
+        assert endpoint.workspace == workspace.name
 
         created_entities.append(endpoint)
 
