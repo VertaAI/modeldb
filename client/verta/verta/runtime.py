@@ -143,7 +143,7 @@ def log(key: str, value: Any) -> None:
 
             def get_embeddings(x):
                 embedding = self.embedding[x]
-                client.runtime.log("embedding", embedding)
+                runtime.log("embedding", embedding)
                 return embedding
 
     """
