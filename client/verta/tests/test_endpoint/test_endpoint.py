@@ -102,12 +102,12 @@ class TestEndpoint:
 
         assert endpoint.id == client.set_endpoint(id=endpoint.id).id
 
-    def test_list(self, client, organization, created_entities):
+    def test_list(self, client, workspace, created_entities):
         name = _utils.generate_default_name()
-        endpoint = client.set_endpoint(name, workspace=organization.name)
+        endpoint = client.set_endpoint(name, workspace=workspace.name)
         created_entities.append(endpoint)
 
-        endpoints = client.endpoints.with_workspace(organization.name)
+        endpoints = client.endpoints.with_workspace(workspace.name)
         assert len(endpoints) >= 1
         has_new_id = False
         for item in endpoints:
@@ -747,7 +747,7 @@ class TestEndpoint:
     def test_update_from_run_diff_workspace(
         self,
         client,
-        organization,
+        workspace,
         created_entities,
         experiment_run,
         model_for_deployment,
@@ -756,14 +756,14 @@ class TestEndpoint:
         experiment_run.log_environment(Python(["scikit-learn"]))
 
         path = verta._internal_utils._utils.generate_default_name()
-        endpoint = client.create_endpoint(path, workspace=organization.name)
+        endpoint = client.create_endpoint(path, workspace=workspace.name)
         created_entities.append(endpoint)
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), wait=True)
         assert endpoint.workspace != experiment_run.workspace
 
     def test_update_from_version_diff_workspace(
-        self, client, model_version, organization, created_entities
+        self, client, model_version, workspace, created_entities
     ):
         np = pytest.importorskip("numpy")
         sklearn = pytest.importorskip("sklearn")
@@ -777,7 +777,7 @@ class TestEndpoint:
         model_version.log_environment(env)
 
         path = verta._internal_utils._utils.generate_default_name()
-        endpoint = client.create_endpoint(path, workspace=organization.name)
+        endpoint = client.create_endpoint(path, workspace=workspace.name)
         created_entities.append(endpoint)
 
         endpoint.update(model_version, DirectUpdateStrategy(), wait=True)

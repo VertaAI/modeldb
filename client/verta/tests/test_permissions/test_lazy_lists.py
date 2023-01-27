@@ -13,8 +13,8 @@ from verta._internal_utils import _utils
 class TestClient:
     """Attributes on client."""
 
-    def test_projects(self, client, organization, created_entities):
-        client.set_workspace(organization.name)
+    def test_projects(self, client, workspace, created_entities):
+        client.set_workspace(workspace.name)
 
         proj_ids = set()
         for _ in range(2):
@@ -24,8 +24,8 @@ class TestClient:
 
         assert set(proj.id for proj in client.projects) == proj_ids
 
-    def test_experiments(self, client, organization, created_entities):
-        client.set_workspace(organization.name)
+    def test_experiments(self, client, workspace, created_entities):
+        client.set_workspace(workspace.name)
 
         expt_ids = set()
         for _ in range(2):
@@ -36,8 +36,8 @@ class TestClient:
 
         assert set(expt.id for expt in client.experiments) == expt_ids
 
-    def test_expt_runs(self, client, organization, created_entities):
-        client.set_workspace(organization.name)
+    def test_expt_runs(self, client, workspace, created_entities):
+        client.set_workspace(workspace.name)
 
         run_ids = set()
         for _ in range(2):
@@ -50,8 +50,8 @@ class TestClient:
 
         assert set(run.id for run in client.expt_runs) == run_ids
 
-    def test_registered_models(self, client, organization, created_entities):
-        client.set_workspace(organization.name)
+    def test_registered_models(self, client, workspace, created_entities):
+        client.set_workspace(workspace.name)
 
         reg_model_ids = set()
         for _ in range(2):
@@ -63,8 +63,8 @@ class TestClient:
             set(reg_model.id for reg_model in client.registered_models) == reg_model_ids
         )
 
-    def test_registered_model_versions(self, client, organization, created_entities):
-        client.set_workspace(organization.name)
+    def test_registered_model_versions(self, client, workspace, created_entities):
+        client.set_workspace(workspace.name)
 
         model_ver_ids = set()
         for _ in range(2):
@@ -79,8 +79,8 @@ class TestClient:
         )
 
     @pytest.mark.deployment
-    def test_endpoints(self, client, organization, created_entities):
-        client.set_workspace(organization.name)
+    def test_endpoints(self, client, workspace, created_entities):
+        client.set_workspace(workspace.name)
 
         endpoint_ids = set()
         for _ in range(2):
@@ -90,8 +90,8 @@ class TestClient:
 
         assert set(endpoint.id for endpoint in client.endpoints) == endpoint_ids
 
-    def test_datasets(self, client, organization, created_entities):
-        client.set_workspace(organization.name)
+    def test_datasets(self, client, workspace, created_entities):
+        client.set_workspace(workspace.name)
 
         dataset_ids = set()
         for _ in range(2):
@@ -102,27 +102,27 @@ class TestClient:
         assert set(dataset.id for dataset in client.datasets) == dataset_ids
 
     @pytest.mark.skip(reason="`client.dataset_versions` does not exist")
-    def test_dataset_versions(self, client, organization, created_entities):
+    def test_dataset_versions(self, client, workspace, created_entities):
         raise NotImplementedError
 
     @pytest.mark.skip(reason="`client.repositories` does not exist")
-    def test_repositories(self, client, organization, created_entities):
+    def test_repositories(self, client, workspace, created_entities):
         raise NotImplementedError
 
 
 class TestEntitites:
     """Attributes on entity objects."""
 
-    def test_proj_expts(self, client, organization, created_entities):
-        proj = client.create_project(workspace=organization.name)
+    def test_proj_expts(self, client, workspace, created_entities):
+        proj = client.create_project(workspace=workspace.name)
         created_entities.append(proj)
 
         expt_ids = {client.create_experiment().id for _ in range(2)}
 
         assert set(expt.id for expt in proj.experiments) == expt_ids
 
-    def test_proj_runs(self, client, organization, created_entities):
-        proj = client.create_project(workspace=organization.name)
+    def test_proj_runs(self, client, workspace, created_entities):
+        proj = client.create_project(workspace=workspace.name)
         created_entities.append(proj)
 
         run_ids = set()
@@ -132,8 +132,8 @@ class TestEntitites:
 
         assert set(run.id for run in proj.expt_runs) == run_ids
 
-    def test_expt_runs(self, client, organization, created_entities):
-        proj = client.create_project(workspace=organization.name)
+    def test_expt_runs(self, client, workspace, created_entities):
+        proj = client.create_project(workspace=workspace.name)
         created_entities.append(proj)
         expt = client.create_experiment()
 
@@ -141,8 +141,8 @@ class TestEntitites:
 
         assert set(run.id for run in expt.expt_runs) == run_ids
 
-    def test_dataset_versions(self, client, organization, created_entities):
-        dataset = client.create_dataset(workspace=organization.name)
+    def test_dataset_versions(self, client, workspace, created_entities):
+        dataset = client.create_dataset(workspace=workspace.name)
         created_entities.append(dataset)
 
         version_ids = {
@@ -152,8 +152,8 @@ class TestEntitites:
 
         assert set(version.id for version in dataset.versions) == version_ids
 
-    def test_model_versions(self, client, organization, created_entities):
-        model = client.create_registered_model(workspace=organization.name)
+    def test_model_versions(self, client, workspace, created_entities):
+        model = client.create_registered_model(workspace=workspace.name)
         created_entities.append(model)
 
         version_ids = {model.create_version().id for filename in os.listdir(".")[:2]}

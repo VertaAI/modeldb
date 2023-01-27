@@ -16,7 +16,7 @@ import warnings
 import requests
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._protos.public.modeldb import CommonService_pb2 as _CommonService
+from verta._protos.public.modeldb import CommonService_pb2 as _CommonService, ProjectService_pb2
 from verta._protos.public.modeldb import (
     ExperimentRunService_pb2 as _ExperimentRunService,
 )
@@ -116,25 +116,17 @@ class ExperimentRun(_DeployableEntity):
     @property
     def workspace(self):
         self._refresh_cache()
-        proj_id = self._msg.project_id
-        response = _utils.make_request(
-            "GET",
-            "{}://{}/api/v1/modeldb/project/getProjectById".format(
-                self._conn.scheme, self._conn.socket
-            ),
-            self._conn,
-            params={"id": proj_id},
-        )
-        _utils.raise_for_http_error(response)
+        
+        msg = ProjectService_pb2.GetProjectById(id=self._msg.project_id)
+        url = "/api/v1/modeldb/project/getProjectById"
+        response = self._conn.make_proto_request("GET", url, params=msg)
+        response = self._conn.must_proto_response(response, msg.Response)
+        proj_proto = response.project
 
-        project_json = _utils.body_to_json(response)["project"]
-        if "workspace_id" not in project_json:
-            # workspace is OSS default
-            return self._conn._OSS_DEFAULT_WORKSPACE
+        if proj_proto.workspace_service_id:
+            return self._conn.get_workspace_name_from_id(proj_proto.workspace_service_id)
         else:
-            return self._conn.get_workspace_name_from_legacy_id(
-                project_json["workspace_id"]
-            )
+            return self._conn._OSS_DEFAULT_WORKSPACE
 
     @property
     def name(self):

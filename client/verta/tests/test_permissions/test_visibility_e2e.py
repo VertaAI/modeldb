@@ -17,6 +17,7 @@ from verta.environment import Python
 
 pytestmark = pytest.mark.not_oss
 
+pytest.skip("visibility deprecated; tests disabled for permissions v2", allow_module_level=True)
 
 class TestAccess:
     @pytest.mark.parametrize(
