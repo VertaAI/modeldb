@@ -94,11 +94,13 @@ def log(key: str, value: Any) -> None:
     """
     Updates current logging dict with provided key and value.
     For use within the scope of a model's :meth:`~verta.registry.VertaModelBase.predict`
-    method to collect logs.
+    method to collect logs.  All logs passed to this function are aggregated into a
+    single dictionary within the context of one prediction, which is processed into
+    storage after the prediction result is returned, to minimize added latency.
 
     .. note::
-        Multithreading of calls to log() within a model's predict() method is not
-        currently supported.
+        Existing keys cannot be overwritten.  Multithreading of calls to log() within a
+        model's predict() method is notcurrently supported.
 
     Parameters
     ----------
@@ -123,6 +125,8 @@ def log(key: str, value: Any) -> None:
     RuntimeError
         If this function is called outside the scope of any instance of
         :class:`~verta.runtime.context`.
+    KeyError
+        If the value provided for `key` already exists as a key in the current logs.
 
     Examples
     --------
@@ -156,6 +160,8 @@ def log(key: str, value: Any) -> None:
         _validate_json(value)
     _validate_s3(key)
     local_logs: Dict[str, Any] = _get_thread_logs()
+    if key in local_logs.keys():
+        raise KeyError(f" cannot overwrite existing value for \"{key}\"")
     local_logs.update({key: value})
 
 
