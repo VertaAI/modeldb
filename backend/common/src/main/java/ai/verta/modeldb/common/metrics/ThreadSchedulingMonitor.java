@@ -16,7 +16,8 @@ public class ThreadSchedulingMonitor {
             .setUnit("ms")
             .build();
 
-    new Thread(
+    Thread monitoringThread =
+        new Thread(
             () -> {
               while (true) {
                 try {
@@ -32,7 +33,8 @@ public class ThreadSchedulingMonitor {
                   break;
                 }
               }
-            })
-        .start();
+            });
+    monitoringThread.setDaemon(true);
+    monitoringThread.start();
   }
 }
