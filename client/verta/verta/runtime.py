@@ -120,13 +120,12 @@ def log(key: str, value: Any) -> None:
         If `validate` was set to ``True`` on the active :class:`context`, and
         `value` is not a JSON-serializable type.
     ValueError
-        If `key` provided contains non-alphanumeric characters.  Dashes `-`
-        and underscores `_` are permitted.
+        If `key` provided contains non-alphanumeric characters (Dashes `-`
+        and underscores `_` are permitted) or the key already exists and the
+        existing log cannot be overwritten.
     RuntimeError
         If this function is called outside the scope of any instance of
         :class:`~verta.runtime.context`.
-    KeyError
-        If the value provided for `key` already exists as a key in the current logs.
 
     Examples
     --------
@@ -161,7 +160,7 @@ def log(key: str, value: Any) -> None:
     _validate_s3(key)
     local_logs: Dict[str, Any] = _get_thread_logs()
     if key in local_logs.keys():
-        raise KeyError(f" cannot overwrite existing value for \"{key}\"")
+        raise ValueError(f" cannot overwrite existing value for \"{key}\"")
     local_logs.update({key: value})
 
 
