@@ -105,9 +105,7 @@ def delete_builds(clients):
     """
     logger.info("deleting builds")
     for client in clients:
-        workspaces = client._conn._get_visible_orgs() + [
-            client._conn.get_personal_workspace()
-        ]
+        workspaces = client._conn._get_visible_workspaces()
         for workspace in workspaces:
             # get builds
             response = requests.get(
@@ -147,9 +145,7 @@ def delete_endpoints(clients):
     """
     logger.info("deleting endpoints")
     for client in clients:
-        workspaces = client._conn._get_visible_orgs() + [
-            client._conn.get_personal_workspace()
-        ]
+        workspaces = client._conn._get_visible_workspaces()
         for workspace in workspaces:
             for endpoint in client.endpoints.with_workspace(workspace):
                 path = endpoint.path  # need to get from obj before deletion
@@ -172,41 +168,11 @@ def delete_endpoints(clients):
                     )
 
 
-def delete_orgs(clients):
-    """Delete all organizations of `clients`.
-
-    Parameters
-    ----------
-    clients : list of :class:`~verta.Client`
-
-    """
-    logger.info("deleting orgs")
-    for client in clients:
-        for org_name in client._conn._get_visible_orgs():
-            try:
-                client._get_organization(org_name).delete()
-            except requests.HTTPError as e:
-                logger.warning(
-                    "%s failed to delete %s (%s)",
-                    client._conn.email,
-                    org_name,
-                    e.response.status_code,
-                )
-            else:
-                logger.info(
-                    "%s deleted %s",
-                    client._conn.email,
-                    org_name,
-                )
-
-
 def main():
     clients = get_clients()
 
     delete_builds(clients)
     delete_endpoints(clients)
-
-    delete_orgs(clients)
 
 
 configure_logger()

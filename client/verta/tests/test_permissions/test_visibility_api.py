@@ -61,22 +61,22 @@ class TestCreate:
             ("registered_model", OrgCustom(write=True, deploy=True)),
         ],
     )
-    def test_mdb_entity(self, client, organization, entity_name, visibility):
+    def test_mdb_entity(self, client, workspace, entity_name, visibility):
         create_entity = getattr(client, "create_{}".format(entity_name))
 
-        entity = create_entity(workspace=organization.name, visibility=visibility)
+        entity = create_entity(workspace=workspace.name, visibility=visibility)
         try:
             assert_visibility(entity, visibility, entity_name)
         finally:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
 
-    def test_endpoint(self, client, organization, created_entities):
+    def test_endpoint(self, client, workspace, created_entities):
         visibility = OrgCustom(write=True)
 
         endpoint = client.create_endpoint(
             path=_utils.generate_default_name(),
-            workspace=organization.name,
+            workspace=workspace.name,
             visibility=visibility,
         )
         created_entities.append(endpoint)
@@ -92,17 +92,17 @@ class TestSet:
             ("registered_model", OrgCustom(write=True, deploy=True)),
         ],
     )
-    def test_mdb_entity(self, client, organization, entity_name, visibility):
+    def test_mdb_entity(self, client, workspace, entity_name, visibility):
         set_entity = getattr(client, "set_{}".format(entity_name))
 
-        entity = set_entity(workspace=organization.name, visibility=visibility)
+        entity = set_entity(workspace=workspace.name, visibility=visibility)
         try:
             assert_visibility(entity, visibility, entity_name)
 
             # second set ignores visibility
             with pytest.warns(UserWarning, match="cannot set"):
                 entity = set_entity(
-                    entity.name, workspace=organization.name, visibility=Private()
+                    entity.name, workspace=workspace.name, visibility=Private()
                 )
             assert_visibility(entity, visibility, entity_name)
         finally:
@@ -110,12 +110,12 @@ class TestSet:
             client._ctx.proj = None  # otherwise client teardown tries to delete
 
     @pytest.mark.deployment
-    def test_endpoint(self, client, organization, created_entities):
+    def test_endpoint(self, client, workspace, created_entities):
         visibility = OrgCustom(write=True)
 
         endpoint = client.set_endpoint(
             path=_utils.generate_default_name(),
-            workspace=organization.name,
+            workspace=workspace.name,
             visibility=visibility,
         )
         created_entities.append(endpoint)
@@ -125,7 +125,7 @@ class TestSet:
         # second set ignores visibility
         with pytest.warns(UserWarning, match="cannot set"):
             endpoint = client.set_endpoint(
-                path=endpoint.path, workspace=organization.name, visibility=Private()
+                path=endpoint.path, workspace=workspace.name, visibility=Private()
             )
         assert_endpoint_visibility(endpoint, visibility)
 
@@ -137,9 +137,9 @@ class TestPublicWithinOrg:
 
     """
 
-    def test_dataset(self, client, organization, created_entities):
+    def test_dataset(self, client, workspace, created_entities):
         visibility = OrgCustom(write=True)
-        dataset = client.set_dataset(workspace=organization.name, visibility=visibility)
+        dataset = client.set_dataset(workspace=workspace.name, visibility=visibility)
         created_entities.append(dataset)
 
         if visibility._to_public_within_org():
@@ -154,11 +154,11 @@ class TestPublicWithinOrg:
             )
 
     @pytest.mark.deployment
-    def test_endpoint(self, client, organization, created_entities):
+    def test_endpoint(self, client, workspace, created_entities):
         visibility = OrgCustom(write=True)
         endpoint = client.set_endpoint(
             path=_utils.generate_default_name(),
-            workspace=organization.name,
+            workspace=workspace.name,
             visibility=visibility,
         )
         created_entities.append(endpoint)
@@ -171,9 +171,9 @@ class TestPublicWithinOrg:
         else:
             assert endpoint_json["creator_request"]["visibility"] == "PRIVATE"
 
-    def test_project(self, client, organization):
+    def test_project(self, client, workspace):
         visibility = OrgCustom(write=True)
-        entity = client.set_project(workspace=organization.name, visibility=visibility)
+        entity = client.set_project(workspace=workspace.name, visibility=visibility)
         try:
             if visibility._to_public_within_org():
                 assert (
@@ -185,10 +185,10 @@ class TestPublicWithinOrg:
             entity.delete()
             client._ctx.proj = None  # otherwise client teardown tries to delete
 
-    def test_registered_model(self, client, organization, created_entities):
+    def test_registered_model(self, client, workspace, created_entities):
         visibility = OrgCustom(write=True)
         entity = client.set_registered_model(
-            workspace=organization.name, visibility=visibility
+            workspace=workspace.name, visibility=visibility
         )
         created_entities.append(entity)
 

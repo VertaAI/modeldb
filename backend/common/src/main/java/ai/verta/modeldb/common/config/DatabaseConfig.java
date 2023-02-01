@@ -2,16 +2,12 @@ package ai.verta.modeldb.common.config;
 
 import ai.verta.modeldb.common.CommonMessages;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder(toBuilder = true)
 @Getter
 @Setter(AccessLevel.NONE)
 @SuppressWarnings({"squid:S116", "squid:S100"})

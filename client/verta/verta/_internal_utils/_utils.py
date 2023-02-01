@@ -31,10 +31,9 @@ from ..external import six
 from verta.credentials import EmailCredentials
 
 from .._protos.public.common import CommonService_pb2 as _CommonCommonService
-from .._protos.public.uac import Organization_pb2, UACService_pb2, Workspace_pb2
+from .._protos.public.uac import UACService_pb2, Workspace_pb2
 
 from . import importer
-
 
 logger = logging.getLogger(__name__)
 
@@ -260,7 +259,7 @@ class Connection(object):
         else:
             return None
 
-    def _get_visible_orgs(self):
+    def _get_visible_workspaces(self):
         response = self.make_proto_request(
             "GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces"
         )
@@ -269,6 +268,16 @@ class Connection(object):
         org_names = map(lambda workspace: workspace.org_name, response.workspace)
         org_names = filter(None, org_names)
         return list(org_names)
+
+    def _get_organization_id(self):
+        response = self.make_proto_request(
+            "GET", "/api/v1/uac-proxy/workspace/getVisibleWorkspaces"
+        )
+        response = self.must_proto_response(response, Workspace_pb2.Workspaces)
+
+        workspace_names = map(lambda workspace: workspace.org_id, response.workspace)
+        workspace_names = filter(None, workspace_names)
+        return list(workspace_names)[0]
 
     def _set_default_workspace(self, name):
         msg = Workspace_pb2.GetWorkspaceByName(name=name)
@@ -298,27 +307,6 @@ class Connection(object):
 
         return response.ok
 
-    def get_workspace_name_from_legacy_id(self, workspace_id):
-        """For project, dataset, and repository, which were pre-workspace service."""
-        # try getting organization
-        msg = Organization_pb2.GetOrganizationById(org_id=workspace_id)
-        response = self.make_proto_request(
-            "GET", "/api/v1/uac-proxy/organization/getOrganizationById", params=msg
-        )
-        if not response.ok:
-            # try getting user
-            msg = UACService_pb2.GetUser(user_id=workspace_id)
-            response = self.make_proto_request(
-                "GET", "/api/v1/uac-proxy/uac/getUser", params=msg
-            )
-            # workspace is user
-            return self.must_proto_response(
-                response, UACService_pb2.UserInfo
-            ).verta_info.username
-        else:
-            # workspace is organization
-            return self.must_proto_response(response, msg.Response).organization.name
-
     def get_workspace_name_from_id(self, workspace_id):
         """For registry, which uses workspace service."""
         msg = Workspace_pb2.GetWorkspaceById(id=int(workspace_id))
@@ -328,24 +316,6 @@ class Connection(object):
 
         workspace = self.must_proto_response(response, Workspace_pb2.Workspace)
         return workspace.username or workspace.org_name
-
-    def get_personal_workspace(self):
-        email = self.auth.get("Grpc-Metadata-email")
-        if email is not None:
-            msg = UACService_pb2.GetUser(email=email)
-            response = self.make_proto_request(
-                "GET", "/api/v1/uac-proxy/uac/getUser", params=msg
-            )
-
-            if (
-                response.ok and self.is_html_response(response)
-            ) or response.status_code == requests.codes.not_found:  # fetched webapp  # UAC not found
-                pass  # fall through to OSS default workspace
-            else:
-                return self.must_proto_response(
-                    response, UACService_pb2.UserInfo
-                ).verta_info.username
-        return self._OSS_DEFAULT_WORKSPACE
 
     def get_default_workspace(self):
         response = self.make_proto_request(
@@ -361,8 +331,8 @@ class Connection(object):
         workspace_id = user_info.verta_info.default_workspace_id
         if workspace_id:
             return self.get_workspace_name_from_id(workspace_id)
-        else:  # old backend
-            return self.get_personal_workspace()
+        else:
+            raise RuntimeError("default workspace is not set")
 
 
 class NoneProtoResponse(object):

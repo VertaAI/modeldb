@@ -81,8 +81,8 @@ class Project(_ModelDBEntity):
     def workspace(self):
         self._refresh_cache()
 
-        if self._msg.workspace_id:
-            return self._conn.get_workspace_name_from_legacy_id(self._msg.workspace_id)
+        if self._msg.workspace_service_id:
+            return self._conn.get_workspace_name_from_id(self._msg.workspace_service_id)
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
@@ -156,82 +156,6 @@ class Project(_ModelDBEntity):
 
         print("created new Project: {} in {}".format(proj.name, WORKSPACE_PRINT_MSG))
         return proj
-
-    def _add_collaborator(
-        self,
-        email=None,
-        username=None,
-        collaborator_type=None,
-        can_deploy=False,
-        authz_entity_type=None,
-    ):
-        if not email and not username:
-            error_message = "`email` or `username` must be provided"
-            raise ValueError(error_message)
-
-        if email:
-            self._validate_email(email)
-            share_with = email
-        else:
-            self._validate_username(username)
-            share_with = username
-
-        try:
-            if collaborator_type:
-                collaborator_type_value = (
-                    _CommonCommonService.CollaboratorTypeEnum.CollaboratorType.Value(
-                        collaborator_type
-                    )
-                )
-            else:
-                collaborator_type_value = (
-                    _CommonCommonService.CollaboratorTypeEnum.CollaboratorType.READ_ONLY
-                )
-        except ValueError:
-            unknown_value_error = (
-                "Unknown value {} specified for collaborator_type. Possible values are READ_ONLY, "
-                "READ_WRITE. "
-            )
-            raise ValueError(unknown_value_error.format(collaborator_type))
-        if can_deploy:
-            can_deploy_value = _CommonCommonService.TernaryEnum.Ternary.TRUE
-        else:
-            can_deploy_value = _CommonCommonService.TernaryEnum.Ternary.FALSE
-        try:
-            if authz_entity_type:
-                authz_entity_type_value = (
-                    _CommonCommonService.EntitiesEnum.EntitiesTypes.Value(
-                        authz_entity_type
-                    )
-                )
-            else:
-                authz_entity_type_value = (
-                    _CommonCommonService.EntitiesEnum.EntitiesTypes.USER
-                )
-        except ValueError:
-            unknown_value_error = (
-                "Unknown value {} specified for authz_entity_type. Possible values are USER, "
-                "ORGANIZATION, TEAM. "
-            )
-            raise ValueError(unknown_value_error.format(authz_entity_type))
-
-        Message = _Collaborator.AddCollaboratorRequest
-
-        msg = Message(
-            entity_ids=[self.id],
-            share_with=share_with,
-            collaborator_type=collaborator_type_value,
-            can_deploy=can_deploy_value,
-            authz_entity_type=authz_entity_type_value,
-        )
-
-        response = self._conn.make_proto_request(
-            "POST",
-            "/api/v1/uac-proxy/collaborator/addOrUpdateProjectCollaborator",
-            body=msg,
-        )
-        # no need to return anything
-        self._conn.must_proto_response(response, Message.Response)
 
     def _validate_email(self, email):
         if not isinstance(email, six.string_types):

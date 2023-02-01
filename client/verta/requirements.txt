@@ -4,4 +4,5 @@ googleapis-common-protos >= 1.5, < 2.0
 protobuf >= 3.8, < 4.0
 pytimeparse >= 1.1.8, < 2.0
 pyyaml >= 5.1, < 7.0
-requests >= 2.21, < 3.0
+requests >= 2.25, < 3.0
+urllib3 >= 1.26.0
