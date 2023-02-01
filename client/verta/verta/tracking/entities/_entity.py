@@ -361,6 +361,8 @@ class _ModelDBEntity(object):
         elif isinstance(self, ExperimentRun):
             Message = self._service.LogExperimentRunCodeVersion
             endpoint = "logExperimentRunCodeVersion"
+        else:
+            raise TypeError("unsupported ModelDB entity")
         msg = Message(id=self.id)
 
         if overwrite:
