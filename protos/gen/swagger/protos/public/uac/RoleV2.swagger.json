@@ -11,6 +11,36 @@
     "application/json"
   ],
   "paths": {
+    "/v2/organization/{org_id}/getEnabledActions": {
+      "get": {
+        "operationId": "RoleServiceV2_getEnabledActions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetEnabledActionsResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "org_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "RoleServiceV2"
+        ]
+      }
+    },
     "/v2/organization/{org_id}/roles": {
       "get": {
         "operationId": "RoleServiceV2_searchRoles",
@@ -233,6 +263,17 @@
     "uacDeleteRoleV2Response": {
       "type": "object"
     },
+    "uacGetEnabledActionsResponse": {
+      "type": "object",
+      "properties": {
+        "enabled_actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacRoleResourceActions"
+          }
+        }
+      }
+    },
     "uacGetRoleV2Response": {
       "type": "object",
       "properties": {
@@ -249,7 +290,8 @@
         "PROJECT",
         "REGISTERED_MODEL",
         "ENDPOINT",
-        "MONITORED_ENTITY"
+        "MONITORED_ENTITY",
+        "NOTIFICATION_CHANNEL"
       ],
       "default": "RESOURCE_TYPE_UNKNOWN"
     },
