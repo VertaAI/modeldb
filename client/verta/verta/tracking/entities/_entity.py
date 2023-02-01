@@ -507,6 +507,8 @@ class _ModelDBEntity(object):
         elif isinstance(self, ExperimentRun):
             Message = self._service.GetExperimentRunCodeVersion
             endpoint = "getExperimentRunCodeVersion"
+        else:
+            raise TypeError("unsupported ModelDB entity")
         msg = Message(id=self.id)
         data = _utils.proto_to_json(msg)
         response = _utils.make_request(
