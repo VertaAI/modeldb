@@ -1,30 +1,21 @@
 package ai.verta.modeldb.versioning;
 
 import ai.verta.common.KeyValueQuery;
-import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.common.OperatorEnum;
+import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.exceptions.UnimplementedException;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.RdbmsUtils;
-import ai.verta.uac.UserInfo;
-import io.grpc.Status;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
@@ -185,10 +176,14 @@ public class FindRepositoriesQuery {
                 index, joinStringBuilder, keyValueQuery, parametersMap);
             whereClauseList.add(joinStringBuilder.toString());
           } else if (keyValueQuery.getKey().contains(ModelDBConstants.OWNER)) {
-            var predicateStringBuilder =
-                new StringBuilder(alias).append(".").append(ModelDBConstants.ID);
-            setOwnerPredicate(index, keyValueQuery, predicateStringBuilder);
-            whereClauseList.add(predicateStringBuilder.toString());
+            whereClauseList.add(
+                uacApisUtil.getOwnerFilterClauseByPredicate(
+                    alias,
+                    keyValueQuery,
+                    parametersMap,
+                    ModelDBServiceResourceTypes.REPOSITORY,
+                    true,
+                    true));
           } else {
             var predicateStringBuilder = new StringBuilder();
             predicateStringBuilder
@@ -255,72 +250,6 @@ public class FindRepositoriesQuery {
 
       LOGGER.trace("Creating HQL query");
       return finalQueryBuilder.toString();
-    }
-
-    private void setOwnerPredicate(
-        int index, KeyValueQuery keyValueQuery, StringBuilder predicateStringBuilder)
-        throws ModelDBException {
-      if (isPermissionV2) {
-        throw new UnimplementedException("Filter by owner is not supported");
-      }
-      var operator = keyValueQuery.getOperator();
-      List<UserInfo> userInfoList;
-      if (operator.equals(OperatorEnum.Operator.CONTAIN)
-          || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-        try {
-          var userInfoPaginationDTO =
-              uacApisUtil
-                  .getFuzzyUserInfoList(keyValueQuery.getValue().getStringValue())
-                  .blockAndGet();
-          userInfoList = userInfoPaginationDTO.getUserInfoList();
-        } catch (Exception e) {
-          throw new ModelDBException(e);
-        }
-      } else {
-        var ownerIdsArrString = keyValueQuery.getValue().getStringValue();
-        List<String> ownerIds = new ArrayList<>();
-        if (operator.equals(OperatorEnum.Operator.IN)) {
-          ownerIds = Arrays.asList(ownerIdsArrString.split(","));
-        } else {
-          ownerIds.add(ownerIdsArrString);
-        }
-        try {
-          var userInfoMap =
-              uacApisUtil
-                  .getUserInfoFromAuthServer(
-                      new HashSet<>(ownerIds),
-                      Collections.emptySet(),
-                      Collections.emptyList(),
-                      false)
-                  .blockAndGet();
-          userInfoList = new ArrayList<>(userInfoMap.values());
-        } catch (Exception e) {
-          throw new RuntimeException(e);
-        }
-      }
-
-      if (userInfoList != null && !userInfoList.isEmpty()) {
-        Set<String> repositoryIdSet =
-            RdbmsUtils.getResourceIdsFromUserWorkspaces(
-                uacApisUtil,
-                mdbRoleService,
-                ModelDBResourceEnum.ModelDBServiceResourceTypes.REPOSITORY,
-                userInfoList);
-        List<Long> resourcesIds =
-            repositoryIdSet.stream().map(Long::parseLong).collect(Collectors.toList());
-        if (operator.equals(OperatorEnum.Operator.NOT_CONTAIN)
-            || operator.equals(OperatorEnum.Operator.NE)) {
-          String mapKey = "IN_VALUE_" + index;
-          predicateStringBuilder.append(" NOT IN (:").append(mapKey).append(")");
-          parametersMap.put(mapKey, resourcesIds);
-        } else {
-          RdbmsUtils.setValueWithOperatorInQuery(
-              index, predicateStringBuilder, OperatorEnum.Operator.IN, resourcesIds, parametersMap);
-        }
-      } else {
-        throw new ModelDBException(
-            ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Status.Code.FAILED_PRECONDITION);
-      }
     }
   }
 }
