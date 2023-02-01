@@ -104,7 +104,9 @@ public class TestsInit {
     testConfig = TestConfig.getInstance();
     var app = App.getInstance();
     app.mdbConfig = testConfig;
-    handleExecutor = FutureExecutor.initializeExecutor(testConfig.getGrpcServer().getThreadCount());
+    handleExecutor =
+        FutureExecutor.initializeExecutor(
+            testConfig.getGrpcServer().getThreadCount(), "int_testing");
 
     // TODO: FIXME: fix init flow as per spring bean initialization
 
