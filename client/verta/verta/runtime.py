@@ -100,7 +100,7 @@ def log(key: str, value: Any) -> None:
 
     .. note::
         Existing keys cannot be overwritten.  Multithreading of calls to log() within a
-        model's predict() method is notcurrently supported.
+        model's predict() method is not currently supported.
 
     Parameters
     ----------
@@ -121,7 +121,7 @@ def log(key: str, value: Any) -> None:
         `value` is not a JSON-serializable type.
     ValueError
         If `key` provided contains non-alphanumeric characters (Dashes `-`
-        and underscores `_` are permitted) or the key already exists and the
+        and underscores `_` are permitted), or the key already exists and the
         existing log cannot be overwritten.
     RuntimeError
         If this function is called outside the scope of any instance of
