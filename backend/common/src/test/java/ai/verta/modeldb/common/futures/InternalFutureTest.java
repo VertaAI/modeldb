@@ -168,7 +168,7 @@ class InternalFutureTest {
 
   @Test
   void trace() throws Exception {
-    FutureExecutor executor = FutureExecutor.initializeExecutor(2);
+    FutureExecutor executor = FutureExecutor.initializeExecutor(2, "testing");
 
     Tracer tracer = otelTesting.getOpenTelemetry().getTracer("testTracer");
     Span outside = tracer.spanBuilder("outer").startSpan();
@@ -216,7 +216,7 @@ class InternalFutureTest {
   @Test
   public void context() throws Exception {
     final var rootContext = Context.ROOT;
-    final var executor = FutureExecutor.initializeExecutor(10);
+    final var executor = FutureExecutor.initializeExecutor(10, "testing");
     final Context.Key<String> key = Context.key("key");
     rootContext.call(
         () -> {

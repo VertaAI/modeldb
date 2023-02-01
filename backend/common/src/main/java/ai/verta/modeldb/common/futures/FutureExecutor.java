@@ -1,7 +1,11 @@
 package ai.verta.modeldb.common.futures;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.common.Attributes;
 import io.opentelemetry.api.metrics.LongHistogram;
+import io.opentelemetry.api.metrics.LongUpDownCounter;
+import io.opentelemetry.api.metrics.Meter;
 import io.opentelemetry.context.Context;
 import io.opentelemetry.context.ContextKey;
 import java.util.concurrent.Executor;
@@ -16,9 +20,21 @@ import org.springframework.lang.NonNull;
 public class FutureExecutor implements Executor {
   private static final ContextKey<Long> EXECUTION_TIMER_KEY = ContextKey.named("execution timer");
   private static volatile LongHistogram schedulingDelayHistogram;
+  private static volatile LongUpDownCounter activeFutureCounter;
   private final Executor delegate;
+  private final String name;
   @With private final io.opentelemetry.context.Context otelContext;
   @With private final io.grpc.Context grpcContext;
+  private final Attributes metricAttributes;
+
+  public FutureExecutor(
+      Executor delegate, String name, Context otelContext, io.grpc.Context grpcContext) {
+    this.delegate = delegate;
+    this.name = name;
+    this.otelContext = otelContext;
+    this.grpcContext = grpcContext;
+    metricAttributes = Attributes.of(AttributeKey.stringKey("executor_name"), this.name);
+  }
 
   public FutureExecutor captureContext() {
     io.opentelemetry.context.Context otelContext = Context.current();
@@ -32,31 +48,57 @@ public class FutureExecutor implements Executor {
   public static void setOpenTelemetry(OpenTelemetry openTelemetry) {
     // it's ok to do this more than once, since creation of meters/instruments is idempotent in the
     // OTel SDK.
+    Meter meter = openTelemetry.getMeter("verta.future");
     schedulingDelayHistogram =
-        openTelemetry
-            .getMeter("verta.future")
+        meter
             .histogramBuilder("future_exec_delay")
             .setDescription("The number of microseconds between creating and executing a Future")
             .ofLongs()
             .build();
+
+    activeFutureCounter =
+        meter
+            .upDownCounterBuilder("active_futures")
+            .setDescription("The number of currently active Futures")
+            .build();
   }
 
-  // Wraps an Executor and make it compatible with grpc's context
+  /**
+   * Wraps an Executor and make it compatible with grpc's context
+   *
+   * @deprecated Please use {@link #makeCompatibleExecutor(Executor, String)} to provide better
+   *     metrics.
+   */
+  @Deprecated(forRemoval = true)
   public static FutureExecutor makeCompatibleExecutor(Executor ex) {
-    return new FutureExecutor(ex, null, null);
+    return makeCompatibleExecutor(ex, "unknown");
   }
 
+  /** Wraps an Executor and make it compatible with grpc's context */
+  public static FutureExecutor makeCompatibleExecutor(Executor ex, String name) {
+    return new FutureExecutor(ex, name, null, null);
+  }
+
+  /**
+   * @deprecated Please use {@link #initializeExecutor(Integer, String)} to provide better metrics.
+   */
+  @Deprecated(forRemoval = true)
   public static FutureExecutor initializeExecutor(Integer threadCount) {
+    return initializeExecutor(threadCount, "unknown");
+  }
+
+  public static FutureExecutor initializeExecutor(Integer threadCount, String name) {
     return makeCompatibleExecutor(
         new ForkJoinPool(
             threadCount,
             ForkJoinPool.defaultForkJoinWorkerThreadFactory,
             Thread.getDefaultUncaughtExceptionHandler(),
-            true));
+            true),
+        name);
   }
 
   public static FutureExecutor newSingleThreadExecutor() {
-    return makeCompatibleExecutor(Executors.newSingleThreadExecutor());
+    return makeCompatibleExecutor(Executors.newSingleThreadExecutor(), "unknown");
   }
 
   private Runnable wrapWithTimer(Runnable r) {
@@ -67,15 +109,24 @@ public class FutureExecutor implements Executor {
         if (startTime != null) {
           long endTime = System.nanoTime();
           long microsDelay = (endTime - startTime) / 1_000L;
-          schedulingDelayHistogram.record(microsDelay);
+          schedulingDelayHistogram.record(microsDelay, metricAttributes);
         }
       }
-      r.run();
+      try {
+        r.run();
+      } finally {
+        if (activeFutureCounter != null) {
+          activeFutureCounter.add(-1, metricAttributes);
+        }
+      }
     };
   }
 
   @Override
   public void execute(@NonNull Runnable r) {
+    if (activeFutureCounter != null) {
+      activeFutureCounter.add(1);
+    }
     r = wrapWithTimer(r);
 
     if (otelContext != null) {
@@ -88,5 +139,9 @@ public class FutureExecutor implements Executor {
     }
 
     delegate.execute(r);
+  }
+
+  public String getName() {
+    return name;
   }
 }
