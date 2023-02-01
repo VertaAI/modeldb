@@ -54,6 +54,10 @@ from ._uac._workspace import Workspace
 VERTA_DISABLE_CLIENT_CONFIG_ENV_VAR = "VERTA_DISABLE_CLIENT_CONFIG"
 
 
+def format_workspace(workspace):
+    return workspace.replace("/", ":")
+
+
 class Client(object):
     """
     Object for interfacing with the Verta backend.
@@ -254,16 +258,16 @@ class Client(object):
 
     @property
     def projects(self):
-        return Projects(self._conn, self._conf).with_workspace(self.get_workspace())
+        return Projects(self._conn, self._conf).with_workspace(self.get_workspace_and_format())
 
     @property
     def experiments(self):
-        return Experiments(self._conn, self._conf).with_workspace(self.get_workspace())
+        return Experiments(self._conn, self._conf).with_workspace(self.get_workspace_and_format())
 
     @property
     def expt_runs(self):
         return ExperimentRuns(self._conn, self._conf).with_workspace(
-            self.get_workspace()
+            self.get_workspace_and_format()
         )
 
     def _load_config(self):
@@ -391,8 +395,7 @@ class Client(object):
         name = self._set_from_config_if_none(name, "project")
         if name is None and id is None:
             raise ValueError("must specify either `name` or `id`")
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
@@ -408,6 +411,11 @@ class Client(object):
         if self._ctx.proj is None:
             raise ValueError("Project not found")
         return self._ctx.proj
+
+    def get_workspace_and_format(self, workspace=None):
+        if workspace is None:
+            workspace = self.get_workspace()
+        return format_workspace(workspace)
 
     def set_project(
         self,
@@ -469,8 +477,7 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "project")
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
@@ -829,8 +836,7 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "registered_model")
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -890,8 +896,7 @@ class Client(object):
         name = self._set_from_config_if_none(name, "registered_model")
         if name is None and id is None:
             raise ValueError("must specify either `name` or `id`")
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         if id is not None:
             registered_model = RegisteredModel._get_by_id(self._conn, self._conf, id)
@@ -930,13 +935,13 @@ class Client(object):
     @property
     def registered_models(self):
         return RegisteredModels(self._conn, self._conf).with_workspace(
-            self.get_workspace()
+            self.get_workspace_and_format()
         )
 
     @property
     def registered_model_versions(self):
         return RegisteredModelVersions(self._conn, self._conf).with_workspace(
-            self.get_workspace()
+            self.get_workspace_and_format()
         )
 
     def get_or_create_endpoint(
@@ -992,8 +997,7 @@ class Client(object):
             raise ValueError("must specify either `path` or `id`")
         self._validate_visibility(visibility)
 
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
         resource_name = "Endpoint"
         param_names = "`description`, `public_within_org`, or `visibility`"
         params = [description, public_within_org, visibility]
@@ -1046,8 +1050,7 @@ class Client(object):
         if path is None and id is None:
             raise ValueError("must specify either `path` or `id`")
 
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         if id is not None:
             endpoint = Endpoint._get_by_id(self._conn, self._conf, workspace, id)
@@ -1117,8 +1120,7 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "project")
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         self._ctx = _Context(self._conn, self._conf)
         self._ctx.workspace_name = workspace
@@ -1293,8 +1295,7 @@ class Client(object):
 
         name = self._set_from_config_if_none(name, "registered_model")
 
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -1363,8 +1364,7 @@ class Client(object):
             raise ValueError("Must specify `path`")
         self._validate_visibility(visibility)
 
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
         return Endpoint._create(
             self._conn,
             self._conf,
@@ -1378,7 +1378,7 @@ class Client(object):
 
     @property
     def endpoints(self):
-        return Endpoints(self._conn, self._conf, self.get_workspace())
+        return Endpoints(self._conn, self._conf, self.get_workspace_and_format())
 
     def download_endpoint_manifest(
         self,
@@ -1425,8 +1425,8 @@ class Client(object):
 
         if not strategy:
             strategy = DirectUpdateStrategy()
-        if not workspace:
-            workspace = self.get_workspace()
+
+        workspace = self.get_workspace_and_format(workspace)
 
         data = {
             "endpoint": {"path": path},
@@ -1514,8 +1514,7 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "dataset")
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -1616,8 +1615,7 @@ class Client(object):
         self._validate_visibility(visibility)
 
         name = self._set_from_config_if_none(name, "dataset")
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         ctx = _Context(self._conn, self._conf)
         ctx.workspace_name = workspace
@@ -1662,8 +1660,7 @@ class Client(object):
         name = self._set_from_config_if_none(name, "dataset")
         if name is None and id is None:
             raise ValueError("must specify either `name` or `id`")
-        if workspace is None:
-            workspace = self.get_workspace()
+        workspace = self.get_workspace_and_format(workspace)
 
         if id is not None:
             dataset = Dataset._get_by_id(self._conn, self._conf, id)
@@ -1676,7 +1673,7 @@ class Client(object):
 
     @property
     def datasets(self):
-        return Datasets(self._conn, self._conf).with_workspace(self.get_workspace())
+        return Datasets(self._conn, self._conf).with_workspace(self.get_workspace_and_format())
 
     def get_dataset_version(self, id):
         """
