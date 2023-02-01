@@ -125,7 +125,7 @@ public class FutureExecutor implements Executor {
   @Override
   public void execute(@NonNull Runnable r) {
     if (activeFutureCounter != null) {
-      activeFutureCounter.add(1);
+      activeFutureCounter.add(1, metricAttributes);
     }
     r = wrapWithTimer(r);
 
