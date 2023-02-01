@@ -387,7 +387,7 @@ public class UACApisUtil {
                             executor)
                         .thenCompose(
                             resourceIds -> {
-                              if (resourceIds.isEmpty()){
+                              if (resourceIds.isEmpty()) {
                                 return InternalFuture.completedInternalFuture(
                                     String.format("%s.id = '-1'", alias));
                               }
