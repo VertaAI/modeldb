@@ -208,8 +208,8 @@ def test_overwrite_existing_key_throws_error() -> None:
     context, a KeyError exception is raised.
     """
     with runtime.context() as ctx:
+        runtime.log('key_123', 'value_1')
         with pytest.raises(ValueError)as err:
-                runtime.log('key_123', 'value_1')
-                runtime.log('key_123', 'value_2')
+            runtime.log('key_123', 'value_2')
         assert err.value.args[0] == " cannot overwrite existing value for \"key_123\""
         assert ctx.logs() == {'key_123': 'value_1'}
