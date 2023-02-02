@@ -361,6 +361,8 @@ class _ModelDBEntity(object):
         elif isinstance(self, ExperimentRun):
             Message = self._service.LogExperimentRunCodeVersion
             endpoint = "logExperimentRunCodeVersion"
+        else:
+            raise TypeError(f"log_code() not supported for {type(self).__name__}")
         msg = Message(id=self.id)
 
         if overwrite:
@@ -505,6 +507,8 @@ class _ModelDBEntity(object):
         elif isinstance(self, ExperimentRun):
             Message = self._service.GetExperimentRunCodeVersion
             endpoint = "getExperimentRunCodeVersion"
+        else:
+            raise TypeError(f"get_code() not supported for {type(self).__name__}")
         msg = Message(id=self.id)
         data = _utils.proto_to_json(msg)
         response = _utils.make_request(
