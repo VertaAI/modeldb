@@ -32,6 +32,7 @@ public class JdbiUtils {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
     hikariDataSource.setLeakDetectionThreshold(databaseConfig.getLeakDetectionThresholdMs());
+    hikariDataSource.setConnectionTimeout(databaseConfig.getConnectionTimeoutMillis());
     return hikariDataSource;
   }
 }

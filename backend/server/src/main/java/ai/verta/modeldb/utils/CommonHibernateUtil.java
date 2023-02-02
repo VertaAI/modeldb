@@ -62,9 +62,9 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
 
       final var rdb = config.getRdbConfiguration();
       final var connectionString = RdbConfig.buildDatabaseConnectionString(rdb);
-      final var idleTimeoutMillis = Integer.parseInt(config.getConnectionTimeout()) * 1000;
-      final var connectionTimeoutMillis = 30000;
-      final var connectionMaxLifetimeMillis = idleTimeoutMillis - 5000;
+      final var idleTimeoutMillis = 90_000L;
+      final var connectionTimeoutMillis = config.getConnectionTimeoutMillis();
+      final var connectionMaxLifetimeMillis = 300_000L;
       final var url = RdbConfig.buildDatabaseConnectionString(rdb);
       final var connectionProviderClass = HikariCPConnectionProvider.class.getName();
       final var datasourceClass = getDatasourceClass(rdb);
