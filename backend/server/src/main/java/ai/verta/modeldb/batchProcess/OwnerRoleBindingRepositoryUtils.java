@@ -38,7 +38,9 @@ public class OwnerRoleBindingRepositoryUtils {
     var config = App.getInstance().mdbConfig;
     if (config.hasAuth()) {
       uac = UAC.fromConfig(config, Optional.empty());
-      var executor = FutureExecutor.initializeExecutor(config.getGrpcServer().getThreadCount());
+      var executor =
+          FutureExecutor.initializeExecutor(
+              config.getGrpcServer().getThreadCount(), "OwnerRoleBindingRepositoryUtils");
       uacApisUtil = new UACApisUtil(executor, uac);
       mdbRoleService = MDBRoleServiceUtils.FromConfig(config, uacApisUtil, uac);
     } else {
