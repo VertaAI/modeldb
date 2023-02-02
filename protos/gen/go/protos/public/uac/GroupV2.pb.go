@@ -195,7 +195,8 @@ type SearchGroupCriteria struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	UserId string `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	UserId     string                  `protobuf:"bytes,1,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	Predicates []*common.KeyValueQuery `protobuf:"bytes,2,rep,name=predicates,proto3" json:"predicates,omitempty"`
 }
 
 func (x *SearchGroupCriteria) Reset() {
@@ -235,6 +236,13 @@ func (x *SearchGroupCriteria) GetUserId() string {
 		return x.UserId
 	}
 	return ""
+}
+
+func (x *SearchGroupCriteria) GetPredicates() []*common.KeyValueQuery {
+	if x != nil {
+		return x.Predicates
+	}
+	return nil
 }
 
 type SearchGroups struct {
@@ -832,10 +840,14 @@ var file_uac_GroupV2_proto_rawDesc = []byte{
 	0x1a, 0x37, 0x0a, 0x08, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x2b, 0x0a, 0x05,
 	0x67, 0x72, 0x6f, 0x75, 0x70, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x15, 0x2e, 0x61, 0x69,
 	0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x75, 0x61, 0x63, 0x2e, 0x47, 0x72, 0x6f, 0x75, 0x70,
-	0x56, 0x32, 0x52, 0x05, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x22, 0x2e, 0x0a, 0x13, 0x53, 0x65, 0x61,
+	0x56, 0x32, 0x52, 0x05, 0x67, 0x72, 0x6f, 0x75, 0x70, 0x22, 0x6e, 0x0a, 0x13, 0x53, 0x65, 0x61,
 	0x72, 0x63, 0x68, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x43, 0x72, 0x69, 0x74, 0x65, 0x72, 0x69, 0x61,
 	0x12, 0x17, 0x0a, 0x07, 0x75, 0x73, 0x65, 0x72, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28,
-	0x09, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x22, 0xcc, 0x02, 0x0a, 0x0c, 0x53, 0x65,
+	0x09, 0x52, 0x06, 0x75, 0x73, 0x65, 0x72, 0x49, 0x64, 0x12, 0x3e, 0x0a, 0x0a, 0x70, 0x72, 0x65,
+	0x64, 0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x18, 0x02, 0x20, 0x03, 0x28, 0x0b, 0x32, 0x1e, 0x2e,
+	0x61, 0x69, 0x2e, 0x76, 0x65, 0x72, 0x74, 0x61, 0x2e, 0x63, 0x6f, 0x6d, 0x6d, 0x6f, 0x6e, 0x2e,
+	0x4b, 0x65, 0x79, 0x56, 0x61, 0x6c, 0x75, 0x65, 0x51, 0x75, 0x65, 0x72, 0x79, 0x52, 0x0a, 0x70,
+	0x72, 0x65, 0x64, 0x69, 0x63, 0x61, 0x74, 0x65, 0x73, 0x22, 0xcc, 0x02, 0x0a, 0x0c, 0x53, 0x65,
 	0x61, 0x72, 0x63, 0x68, 0x47, 0x72, 0x6f, 0x75, 0x70, 0x73, 0x12, 0x15, 0x0a, 0x06, 0x6f, 0x72,
 	0x67, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x6f, 0x72, 0x67, 0x49,
 	0x64, 0x12, 0x4a, 0x0a, 0x0f, 0x73, 0x65, 0x61, 0x72, 0x63, 0x68, 0x5f, 0x63, 0x72, 0x69, 0x74,
@@ -968,33 +980,35 @@ var file_uac_GroupV2_proto_goTypes = []interface{}{
 	(*DeleteGroup_Response)(nil),      // 11: ai.verta.uac.DeleteGroup.Response
 	(*AddGroupUsers_Response)(nil),    // 12: ai.verta.uac.AddGroupUsers.Response
 	(*RemoveGroupUsers_Response)(nil), // 13: ai.verta.uac.RemoveGroupUsers.Response
-	(*common.Pagination)(nil),         // 14: ai.verta.common.Pagination
+	(*common.KeyValueQuery)(nil),      // 14: ai.verta.common.KeyValueQuery
+	(*common.Pagination)(nil),         // 15: ai.verta.common.Pagination
 }
 var file_uac_GroupV2_proto_depIdxs = []int32{
-	2,  // 0: ai.verta.uac.SearchGroups.search_criteria:type_name -> ai.verta.uac.SearchGroupCriteria
-	14, // 1: ai.verta.uac.SearchGroups.pagination:type_name -> ai.verta.common.Pagination
-	0,  // 2: ai.verta.uac.SetGroup.group:type_name -> ai.verta.uac.GroupV2
-	0,  // 3: ai.verta.uac.GetGroupById.Response.group:type_name -> ai.verta.uac.GroupV2
-	0,  // 4: ai.verta.uac.SearchGroups.Response.groups:type_name -> ai.verta.uac.GroupV2
-	14, // 5: ai.verta.uac.SearchGroups.Response.pagination:type_name -> ai.verta.common.Pagination
-	0,  // 6: ai.verta.uac.SetGroup.Response.group:type_name -> ai.verta.uac.GroupV2
-	1,  // 7: ai.verta.uac.GroupService.getGroupById:input_type -> ai.verta.uac.GetGroupById
-	3,  // 8: ai.verta.uac.GroupService.searchGroups:input_type -> ai.verta.uac.SearchGroups
-	4,  // 9: ai.verta.uac.GroupService.setGroup:input_type -> ai.verta.uac.SetGroup
-	5,  // 10: ai.verta.uac.GroupService.deleteGroup:input_type -> ai.verta.uac.DeleteGroup
-	6,  // 11: ai.verta.uac.GroupService.addUsers:input_type -> ai.verta.uac.AddGroupUsers
-	7,  // 12: ai.verta.uac.GroupService.removeUsers:input_type -> ai.verta.uac.RemoveGroupUsers
-	8,  // 13: ai.verta.uac.GroupService.getGroupById:output_type -> ai.verta.uac.GetGroupById.Response
-	9,  // 14: ai.verta.uac.GroupService.searchGroups:output_type -> ai.verta.uac.SearchGroups.Response
-	10, // 15: ai.verta.uac.GroupService.setGroup:output_type -> ai.verta.uac.SetGroup.Response
-	11, // 16: ai.verta.uac.GroupService.deleteGroup:output_type -> ai.verta.uac.DeleteGroup.Response
-	12, // 17: ai.verta.uac.GroupService.addUsers:output_type -> ai.verta.uac.AddGroupUsers.Response
-	13, // 18: ai.verta.uac.GroupService.removeUsers:output_type -> ai.verta.uac.RemoveGroupUsers.Response
-	13, // [13:19] is the sub-list for method output_type
-	7,  // [7:13] is the sub-list for method input_type
-	7,  // [7:7] is the sub-list for extension type_name
-	7,  // [7:7] is the sub-list for extension extendee
-	0,  // [0:7] is the sub-list for field type_name
+	14, // 0: ai.verta.uac.SearchGroupCriteria.predicates:type_name -> ai.verta.common.KeyValueQuery
+	2,  // 1: ai.verta.uac.SearchGroups.search_criteria:type_name -> ai.verta.uac.SearchGroupCriteria
+	15, // 2: ai.verta.uac.SearchGroups.pagination:type_name -> ai.verta.common.Pagination
+	0,  // 3: ai.verta.uac.SetGroup.group:type_name -> ai.verta.uac.GroupV2
+	0,  // 4: ai.verta.uac.GetGroupById.Response.group:type_name -> ai.verta.uac.GroupV2
+	0,  // 5: ai.verta.uac.SearchGroups.Response.groups:type_name -> ai.verta.uac.GroupV2
+	15, // 6: ai.verta.uac.SearchGroups.Response.pagination:type_name -> ai.verta.common.Pagination
+	0,  // 7: ai.verta.uac.SetGroup.Response.group:type_name -> ai.verta.uac.GroupV2
+	1,  // 8: ai.verta.uac.GroupService.getGroupById:input_type -> ai.verta.uac.GetGroupById
+	3,  // 9: ai.verta.uac.GroupService.searchGroups:input_type -> ai.verta.uac.SearchGroups
+	4,  // 10: ai.verta.uac.GroupService.setGroup:input_type -> ai.verta.uac.SetGroup
+	5,  // 11: ai.verta.uac.GroupService.deleteGroup:input_type -> ai.verta.uac.DeleteGroup
+	6,  // 12: ai.verta.uac.GroupService.addUsers:input_type -> ai.verta.uac.AddGroupUsers
+	7,  // 13: ai.verta.uac.GroupService.removeUsers:input_type -> ai.verta.uac.RemoveGroupUsers
+	8,  // 14: ai.verta.uac.GroupService.getGroupById:output_type -> ai.verta.uac.GetGroupById.Response
+	9,  // 15: ai.verta.uac.GroupService.searchGroups:output_type -> ai.verta.uac.SearchGroups.Response
+	10, // 16: ai.verta.uac.GroupService.setGroup:output_type -> ai.verta.uac.SetGroup.Response
+	11, // 17: ai.verta.uac.GroupService.deleteGroup:output_type -> ai.verta.uac.DeleteGroup.Response
+	12, // 18: ai.verta.uac.GroupService.addUsers:output_type -> ai.verta.uac.AddGroupUsers.Response
+	13, // 19: ai.verta.uac.GroupService.removeUsers:output_type -> ai.verta.uac.RemoveGroupUsers.Response
+	14, // [14:20] is the sub-list for method output_type
+	8,  // [8:14] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_uac_GroupV2_proto_init() }
