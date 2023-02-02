@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x10uac/RoleV2.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x14uac/UACService.proto\"\x8b\x01\n\x13RoleResourceActions\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\rresource_type\x18\x02 \x01(\x0e\x32\x1c.ai.verta.uac.ResourceTypeV2\x12\x33\n\x0f\x61llowed_actions\x18\x03 \x03(\x0e\x32\x1a.ai.verta.uac.ActionTypeV2\"\x96\x01\n\x06RoleV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x10\n\x08\x62uilt_in\x18\x04 \x01(\x08\x12;\n\x10resource_actions\x18\x05 \x03(\x0b\x32!.ai.verta.uac.RoleResourceActions\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\"_\n\tSetRoleV2\x12\"\n\x04role\x18\x01 \x01(\x0b\x32\x14.ai.verta.uac.RoleV2\x1a.\n\x08Response\x12\"\n\x04role\x18\x01 \x01(\x0b\x32\x14.ai.verta.uac.RoleV2\";\n\x0c\x44\x65leteRoleV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x0f\n\x07role_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"\xc9\x01\n\rSearchRolesV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aw\n\x08Response\x12#\n\x05roles\x18\x01 \x03(\x0b\x32\x14.ai.verta.uac.RoleV2\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\"\\\n\tGetRoleV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x0f\n\x07role_id\x18\x02 \x01(\t\x1a.\n\x08Response\x12\"\n\x04role\x18\x01 \x01(\x0b\x32\x14.ai.verta.uac.RoleV2*\x99\x01\n\x0eResourceTypeV2\x12\x19\n\x15RESOURCE_TYPE_UNKNOWN\x10\x00\x12\x0b\n\x07\x44\x41TASET\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x14\n\x10REGISTERED_MODEL\x10\x03\x12\x0c\n\x08\x45NDPOINT\x10\x04\x12\x14\n\x10MONITORED_ENTITY\x10\x05\x12\x18\n\x14NOTIFICATION_CHANNEL\x10\x06*\x90\x01\n\x0c\x41\x63tionTypeV2\x12\x17\n\x13\x41\x43TION_TYPE_UNKNOWN\x10\x00\x12\x08\n\x04READ\x10\x01\x12\n\n\x06UPDATE\x10\x02\x12\n\n\x06\x43REATE\x10\x03\x12\n\n\x06\x44\x45LETE\x10\x04\x12\x12\n\x0e\x41PPROVE_REJECT\x10\x05\x12\x0c\n\x08REGISTER\x10\x06\x12\n\n\x06\x44\x45PLOY\x10\x07\x12\x0b\n\x07PREDICT\x10\x08\x32\xfd\x03\n\rRoleServiceV2\x12u\n\x07setRole\x12\x17.ai.verta.uac.SetRoleV2\x1a .ai.verta.uac.SetRoleV2.Response\"/\x82\xd3\xe4\x93\x02)\"$/v2/organization/{role.org_id}/roles:\x01*\x12\x80\x01\n\ndeleteRole\x12\x1a.ai.verta.uac.DeleteRoleV2\x1a#.ai.verta.uac.DeleteRoleV2.Response\"1\x82\xd3\xe4\x93\x02+*)/v2/organization/{org_id}/roles/{role_id}\x12y\n\x0bsearchRoles\x12\x1b.ai.verta.uac.SearchRolesV2\x1a$.ai.verta.uac.SearchRolesV2.Response\"\'\x82\xd3\xe4\x93\x02!\x12\x1f/v2/organization/{org_id}/roles\x12w\n\x07getRole\x12\x17.ai.verta.uac.GetRoleV2\x1a .ai.verta.uac.GetRoleV2.Response\"1\x82\xd3\xe4\x93\x02+\x12)/v2/organization/{org_id}/roles/{role_id}B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x10uac/RoleV2.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\x1a\x14uac/UACService.proto\"\x8b\x01\n\x13RoleResourceActions\x12\n\n\x02id\x18\x01 \x01(\t\x12\x33\n\rresource_type\x18\x02 \x01(\x0e\x32\x1c.ai.verta.uac.ResourceTypeV2\x12\x33\n\x0f\x61llowed_actions\x18\x03 \x03(\x0e\x32\x1a.ai.verta.uac.ActionTypeV2\"\x96\x01\n\x06RoleV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x10\n\x08\x62uilt_in\x18\x04 \x01(\x08\x12;\n\x10resource_actions\x18\x05 \x03(\x0b\x32!.ai.verta.uac.RoleResourceActions\x12\x13\n\x0b\x64\x65scription\x18\x06 \x01(\t\"_\n\tSetRoleV2\x12\"\n\x04role\x18\x01 \x01(\x0b\x32\x14.ai.verta.uac.RoleV2\x1a.\n\x08Response\x12\"\n\x04role\x18\x01 \x01(\x0b\x32\x14.ai.verta.uac.RoleV2\";\n\x0c\x44\x65leteRoleV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x0f\n\x07role_id\x18\x02 \x01(\t\x1a\n\n\x08Response\"\xc9\x01\n\rSearchRolesV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1aw\n\x08Response\x12#\n\x05roles\x18\x01 \x03(\x0b\x32\x14.ai.verta.uac.RoleV2\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\"\\\n\tGetRoleV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x0f\n\x07role_id\x18\x02 \x01(\t\x1a.\n\x08Response\x12\"\n\x04role\x18\x01 \x01(\x0b\x32\x14.ai.verta.uac.RoleV2*\x7f\n\x0eResourceTypeV2\x12\x19\n\x15RESOURCE_TYPE_UNKNOWN\x10\x00\x12\x0b\n\x07\x44\x41TASET\x10\x01\x12\x0b\n\x07PROJECT\x10\x02\x12\x14\n\x10REGISTERED_MODEL\x10\x03\x12\x0c\n\x08\x45NDPOINT\x10\x04\x12\x14\n\x10MONITORED_ENTITY\x10\x05*\x90\x01\n\x0c\x41\x63tionTypeV2\x12\x17\n\x13\x41\x43TION_TYPE_UNKNOWN\x10\x00\x12\x08\n\x04READ\x10\x01\x12\n\n\x06UPDATE\x10\x02\x12\n\n\x06\x43REATE\x10\x03\x12\n\n\x06\x44\x45LETE\x10\x04\x12\x12\n\x0e\x41PPROVE_REJECT\x10\x05\x12\x0c\n\x08REGISTER\x10\x06\x12\n\n\x06\x44\x45PLOY\x10\x07\x12\x0b\n\x07PREDICT\x10\x08\x32\xfd\x03\n\rRoleServiceV2\x12u\n\x07setRole\x12\x17.ai.verta.uac.SetRoleV2\x1a .ai.verta.uac.SetRoleV2.Response\"/\x82\xd3\xe4\x93\x02)\"$/v2/organization/{role.org_id}/roles:\x01*\x12\x80\x01\n\ndeleteRole\x12\x1a.ai.verta.uac.DeleteRoleV2\x1a#.ai.verta.uac.DeleteRoleV2.Response\"1\x82\xd3\xe4\x93\x02+*)/v2/organization/{org_id}/roles/{role_id}\x12y\n\x0bsearchRoles\x12\x1b.ai.verta.uac.SearchRolesV2\x1a$.ai.verta.uac.SearchRolesV2.Response\"\'\x82\xd3\xe4\x93\x02!\x12\x1f/v2/organization/{org_id}/roles\x12w\n\x07getRole\x12\x17.ai.verta.uac.GetRoleV2\x1a .ai.verta.uac.GetRoleV2.Response\"1\x82\xd3\xe4\x93\x02+\x12)/v2/organization/{org_id}/roles/{role_id}B>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,uac_dot_UACService__pb2.DESCRIPTOR,])
 
@@ -56,15 +56,11 @@ _RESOURCETYPEV2 = _descriptor.EnumDescriptor(
       name='MONITORED_ENTITY', index=5, number=5,
       serialized_options=None,
       type=None),
-    _descriptor.EnumValueDescriptor(
-      name='NOTIFICATION_CHANNEL', index=6, number=6,
-      serialized_options=None,
-      type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=866,
-  serialized_end=1019,
+  serialized_start=865,
+  serialized_end=992,
 )
 _sym_db.RegisterEnumDescriptor(_RESOURCETYPEV2)
 
@@ -114,8 +110,8 @@ _ACTIONTYPEV2 = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=1022,
-  serialized_end=1166,
+  serialized_start=995,
+  serialized_end=1139,
 )
 _sym_db.RegisterEnumDescriptor(_ACTIONTYPEV2)
 
@@ -126,7 +122,6 @@ PROJECT = 2
 REGISTERED_MODEL = 3
 ENDPOINT = 4
 MONITORED_ENTITY = 5
-NOTIFICATION_CHANNEL = 6
 ACTION_TYPE_UNKNOWN = 0
 READ = 1
 UPDATE = 2
@@ -627,8 +622,8 @@ _ROLESERVICEV2 = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=1169,
-  serialized_end=1678,
+  serialized_start=1142,
+  serialized_end=1651,
   methods=[
   _descriptor.MethodDescriptor(
     name='setRole',

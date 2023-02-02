@@ -249,8 +249,7 @@
         "PROJECT",
         "REGISTERED_MODEL",
         "ENDPOINT",
-        "MONITORED_ENTITY",
-        "NOTIFICATION_CHANNEL"
+        "MONITORED_ENTITY"
       ],
       "default": "RESOURCE_TYPE_UNKNOWN"
     },

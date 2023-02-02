@@ -16,7 +16,6 @@ enum ResourceTypeV2 {
     REGISTERED_MODEL = 3;
     ENDPOINT = 4;
     MONITORED_ENTITY = 5;
-    NOTIFICATION_CHANNEL = 6;
 }
 
 enum ActionTypeV2 {

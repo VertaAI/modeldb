@@ -32,6 +32,7 @@ message GetGroupById {
 
 message SearchGroupCriteria {
   string user_id = 1;
+  repeated common.KeyValueQuery predicates = 2;
 }
 
 message SearchGroups {
