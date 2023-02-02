@@ -94,6 +94,19 @@
             "required": false,
             "type": "integer",
             "format": "int32"
+          },
+          {
+            "name": "ascending",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
+            "format": "boolean"
+          },
+          {
+            "name": "sort_key",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
