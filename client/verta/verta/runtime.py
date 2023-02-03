@@ -18,7 +18,9 @@ def _get_thread_logs() -> Dict[str, Any]:
     """
     Return the 'logs' attribute of the thread-local variable.
     """
-    return _THREAD.logs
+    if hasattr(_THREAD, 'logs'):
+        return _THREAD.logs
+    return {}
 
 
 def _set_thread_logs(logs: Dict[str, Any]) -> Dict[str, Any]:
@@ -40,7 +42,9 @@ def _get_validate_flag() -> bool:
     """
     Return the 'validate' attribute of the thread local variable.
     """
-    return _THREAD.validate
+    if hasattr(_THREAD, 'validate'):
+        return _THREAD.validate
+    return False
 
 
 def _set_validate_flag(flag: bool) -> bool:
@@ -204,7 +208,7 @@ class context:
     """
     def __init__(self, validate: Optional[bool] = False):
         self._validate = validate
-        self._logs_dict = {}
+        self._logs_dict = dict()
 
     def __enter__(self):
         """

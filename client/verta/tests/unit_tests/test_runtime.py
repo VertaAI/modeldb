@@ -90,6 +90,14 @@ def test_final_log_entry_instance_variable():
     assert ctx.logs() == {'fake_log': 'fake_value'}  # outside the context
 
 
+def test_empty_dict_returned_when_no_logs_added():
+    """ If no calls are made to runtime.log() within the context, calling for
+    context.logs() returns an empty dict."""
+    with runtime.context() as ctx:
+        pass
+    assert ctx.logs() == {}
+
+
 def test_validate_flag_true():
     """ The validate argument triggers json validation as expected. """
     with runtime.context(validate=True):
