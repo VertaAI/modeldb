@@ -376,7 +376,8 @@ public class Future<T> {
                 delayedExecutor =
                     FutureExecutor.makeCompatibleExecutor(
                         CompletableFuture.delayedExecutor(
-                            retry.getAmountToDelay(), retry.getTimeUnit(), futureExecutor));
+                            retry.getAmountToDelay(), retry.getTimeUnit(), futureExecutor),
+                        futureExecutor.getName());
               }
 
               retrying(

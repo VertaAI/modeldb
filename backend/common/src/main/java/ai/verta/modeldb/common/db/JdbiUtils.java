@@ -14,7 +14,8 @@ public class JdbiUtils {
   public static FutureJdbi initializeFutureJdbi(
       DatabaseConfig databaseConfig, DataSource dataSource) {
     final var jdbi = new InternalJdbi(Jdbi.create(dataSource));
-    final var dbExecutor = FutureExecutor.initializeExecutor(databaseConfig.getThreadCount());
+    final var dbExecutor =
+        FutureExecutor.initializeExecutor(databaseConfig.getThreadCount(), "jdbi");
     return new FutureJdbi(jdbi, dbExecutor);
   }
 
@@ -31,6 +32,7 @@ public class JdbiUtils {
     hikariDataSource.setMetricsTrackerFactory(new PrometheusMetricsTrackerFactory());
     hikariDataSource.setPoolName(poolName);
     hikariDataSource.setLeakDetectionThreshold(databaseConfig.getLeakDetectionThresholdMs());
+    hikariDataSource.setConnectionTimeout(databaseConfig.getConnectionTimeoutMillis());
     return hikariDataSource;
   }
 }

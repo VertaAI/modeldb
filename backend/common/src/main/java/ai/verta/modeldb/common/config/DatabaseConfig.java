@@ -21,7 +21,7 @@ public class DatabaseConfig {
   @JsonProperty private String minConnectionPoolSize = "0";
   @JsonProperty private String maxConnectionPoolSize = "20";
   @JsonProperty private int threadCount = 8;
-  @JsonProperty private String connectionTimeout = "300";
+  @JsonProperty private String connectionTimeout = "5000"; // note: milliseconds
   @JsonProperty private Long leakDetectionThresholdMs = 3000L;
 
   @JsonProperty private RdbConfig RdbConfiguration;
@@ -38,5 +38,9 @@ public class DatabaseConfig {
     } else {
       throw new InvalidConfigException(base + ".DBType", "unknown type " + DBType);
     }
+  }
+
+  public long getConnectionTimeoutMillis() {
+    return Long.parseLong(connectionTimeout);
   }
 }
