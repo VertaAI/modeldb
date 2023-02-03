@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
-"""Classes and functions to enable logging within a model's predict() function.
+"""
+Classes and functions to enable logging within a model's predict() function.
+
 .. versionadded:: 0.22.0
 
 """
@@ -93,6 +95,7 @@ def _validate_s3(
 def log(key: str, value: Any) -> None:
     """
     Updates current logging dict with provided key and value.
+
     For use within the scope of a model's :meth:`~verta.registry.VertaModelBase.predict`
     method to collect logs.
 
@@ -108,6 +111,7 @@ def log(key: str, value: Any) -> None:
     value : Any
         Any `JSON serializable <https://docs.python.org/3/library/json.html#json.JSONEncoder>`__
         value you wish to include in the logs.
+
     Returns
     -------
     None
@@ -149,8 +153,9 @@ def log(key: str, value: Any) -> None:
     """
     if not hasattr(_THREAD, 'logs'):
         raise RuntimeError(
-            " calls to verta.runtime.log() must be made within the scope of"
-            " a model's predict() method."
+            "no active verta.runtime.context() found; please ensure calls to"
+            " verta.runtime.log() are made within your model's predict()"
+            " method, or create a verta.runtime.context() for local testing"
         )
     if _get_validate_flag():
         _validate_json(value)
@@ -164,17 +169,17 @@ class context:
     Context manager for aggregating key-value pairs into a custom log entry.
 
     This class should not be instantiated directly in your model
-    code. For all models deployed in Verta with active endpoints, the
-    :meth:`~verta.registry.VertaModelBase.predict` function of the model is
-    wrapped inside an object of this class by default.
+    code. For all models deployed in Verta, the
+    :meth:`~verta.registry.VertaModelBase.predict` method is wrapped inside a
+    :class:`context` by default.
 
-    A single instance can be instantiated for local testing as in the
+    For local testing, a single instance can be instantiated as in the
     provided example.
 
     Parameters
     ----------
     validate : bool, default False
-        If true, each individual call to :meth:`~verta.runtime.log`  will
+        If ``True``, each individual call to :meth:`~verta.runtime.log`  will
         verify that the value provided is JSON serializable.
 
     Raises
@@ -192,14 +197,12 @@ class context:
         import json
         from verta import runtime
 
-        with runtime.context() as ctx:
-            runtime.log("key", {"value": ...})
+        with runtime.context(validate=True) as ctx:  # validate values are JSON-serializable
+            my_model.predict(x)  # your model, with your calls to runtime.log()
             print(json.dumps(ctx.logs()))
 
-        # After exiting the context manager:
+        # Same output after exiting the context manager:
         print(json.dumps(ctx.logs()))
-
-        # Output (both) = '{"key": {"value": ...}}'
 
     """
     def __init__(self, validate: Optional[bool] = False):
@@ -212,7 +215,7 @@ class context:
         """
         if hasattr(_THREAD, 'logs'):  # If logs attribute exists already.
             raise RuntimeError(
-                " Nesting an instance of verta.runtime.context() inside"
+                "nesting an instance of verta.runtime.context() inside"
                 " an existing instance is not supported."
             )
         _set_thread_logs(dict())
