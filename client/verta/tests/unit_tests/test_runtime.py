@@ -49,13 +49,6 @@ def test_thread_safe_context_manager() -> None:
         )
 
 
-def test_init_thread_logs():
-    """
-    An empty dict is initialized by default.
-    """
-    assert runtime._get_thread_logs() == {}
-
-
 def test_set_thread_logs():
     runtime._set_thread_logs({'test_set': 'test_set'})
     assert runtime._THREAD.logs ==  {'test_set': 'test_set'}
@@ -64,13 +57,6 @@ def test_set_thread_logs():
 def test_get_thread_logs():
     runtime._set_thread_logs({'test_get': 'test_get'})
     assert runtime._get_thread_logs() ==  {'test_get': 'test_get'}
-
-
-def test_init_thread_validate():
-    """
-    A boolean defaulting to False is initialized by default.
-    """
-    assert runtime._get_validate_flag() == False
 
 
 def test_set_thread_validate():
@@ -89,15 +75,16 @@ def test_logs_are_clean_on_entry():
         assert ctx.logs() == {}
 
 
-def test_logs_are_clean_on_exit():
-    """ Thread local var for logs is a blank dict after exiting context. """
-    with runtime.context() as ctx:
+def test_logs_attribute_removed_on_exit():
+    """ Thread local var for logs is removed after exiting the context. """
+    with runtime.context():
         runtime.log('fake_log', 'fake_value')
-    assert runtime._get_thread_logs() == {}  # outside the context
+    assert not hasattr(runtime._THREAD, 'logs')  # outside the context
 
 
 def test_final_log_entry_instance_variable():
-    """ The instance of the context manager maintains the final log entry in logs(). """
+    """ The instance of the context manager maintains the final log entry in the
+    logs_dict instance attribute. """
     with runtime.context() as ctx:
         runtime.log('fake_log', 'fake_value')
     assert ctx.logs() == {'fake_log': 'fake_value'}  # outside the context
@@ -116,8 +103,8 @@ def test_validate_flag_false():
         runtime.log('obviously_not_jsonable', unittest.TestCase)
 
 
-def test_validate_reset_on_exit():
-    """ Thread local var for validate is reset to default (False) after exiting context. """
+def test_validate_variable_removed_on_exit():
+    """ Thread local attribute for validate is removed after exiting the context. """
     with runtime.context(validate=True):
         runtime.log('test', {'test_key': 'test_val'})
         assert runtime._get_validate_flag() == True  # inside the context
