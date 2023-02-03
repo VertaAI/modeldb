@@ -77,8 +77,9 @@ def test_logs_are_clean_on_entry():
 
 def test_logs_attribute_removed_on_exit():
     """ Thread local var for logs is removed after exiting the context. """
-    with runtime.context():
+    with runtime.context() as ctx:
         runtime.log('fake_log', 'fake_value')
+        assert ctx.logs()
     assert not hasattr(runtime._THREAD, 'logs')  # outside the context
 
 
