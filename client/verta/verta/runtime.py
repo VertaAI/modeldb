@@ -38,8 +38,7 @@ def _delete_thread_logs() -> None:
 
 def _get_validate_flag() -> bool:
     """
-    Return the current thread-local variable for validate or initialize a
-    new boolean.
+    Return the current thread-local variable for validate.
     """
     return _THREAD.validate
 
