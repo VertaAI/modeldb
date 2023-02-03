@@ -16,10 +16,8 @@ _S3_REGEX = re.compile("[0-9a-zA-Z_-]+$")
 
 def _get_thread_logs() -> Dict[str, Any]:
     """
-    Return the current thread-local logs or initialize an empty dict.
+    Return the current thread-local logs.
     """
-    if not hasattr(_THREAD, 'logs'):
-        _set_thread_logs(dict())
     return _THREAD.logs
 
 
@@ -43,8 +41,6 @@ def _get_validate_flag() -> bool:
     Return the current thread-local variable for validate or initialize a
     new boolean.
     """
-    if not hasattr(_THREAD, 'validate'):
-        _set_validate_flag(False)
     return _THREAD.validate
 
 
@@ -209,7 +205,7 @@ class context:
     """
     def __init__(self, validate: Optional[bool] = False):
         self._validate = validate
-        self._logs_dict = dict()
+        self._logs_dict = {}
 
     def __enter__(self):
         """
