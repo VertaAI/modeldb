@@ -16,7 +16,7 @@ _S3_REGEX = re.compile("[0-9a-zA-Z_-]+$")
 
 def _get_thread_logs() -> Dict[str, Any]:
     """
-    Return the current thread-local logs.
+    Return the 'logs' attribute of the thread-local variable.
     """
     return _THREAD.logs
 
@@ -38,7 +38,7 @@ def _delete_thread_logs() -> None:
 
 def _get_validate_flag() -> bool:
     """
-    Return the current thread-local variable for validate.
+    Return the 'validate' attribute of the thread local variable.
     """
     return _THREAD.validate
 
