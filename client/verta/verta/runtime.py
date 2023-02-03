@@ -18,11 +18,11 @@ _S3_REGEX = re.compile("[0-9a-zA-Z_-]+$")
 
 def _get_thread_logs() -> Dict[str, Any]:
     """
-    Return the current thread-local logs or initialize an empty dict.
+    Return the 'logs' attribute of the thread-local variable.
     """
-    if not hasattr(_THREAD, 'logs'):
-        _set_thread_logs(dict())
-    return _THREAD.logs
+    if hasattr(_THREAD, 'logs'):
+        return _THREAD.logs
+    return {}
 
 
 def _set_thread_logs(logs: Dict[str, Any]) -> Dict[str, Any]:
@@ -42,12 +42,11 @@ def _delete_thread_logs() -> None:
 
 def _get_validate_flag() -> bool:
     """
-    Return the current thread-local variable for validate or initialize a
-    new boolean.
+    Return the 'validate' attribute of the thread local variable.
     """
-    if not hasattr(_THREAD, 'validate'):
-        _set_validate_flag(False)
-    return _THREAD.validate
+    if hasattr(_THREAD, 'validate'):
+        return _THREAD.validate
+    return False
 
 
 def _set_validate_flag(flag: bool) -> bool:
