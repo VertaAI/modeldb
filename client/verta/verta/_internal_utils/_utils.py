@@ -58,6 +58,7 @@ class Connection(object):
         max_retries=0,
         ignore_conn_err=False,
         credentials=None,
+        request_parameters=None,
         headers=None,
     ):
         """
@@ -100,6 +101,7 @@ class Connection(object):
         )  # return Response instead of raising after max retries
         self.ignore_conn_err = ignore_conn_err
         self.credentials = credentials
+        self.request_parameters = request_parameters
         self.headers = headers
 
     @property
@@ -133,11 +135,16 @@ class Connection(object):
         headers = self._headers or dict()
         headers = headers.copy()
         headers[_GRPC_PREFIX + "scheme"] = self.scheme
-        headers.update(self.prefixed_headers_for_credentials(self.credentials))
+        headers_source = []
+        if self.credentials:
+            headers_source.extend(self.credentials)
+        if self.request_parameters:
+            headers_source.extend(self.request_parameters)
+        headers.update(self.prefixed_headers_format(headers_source))
         self._computed_headers = headers
 
     @staticmethod
-    def prefixed_headers_for_credentials(credentials):
+    def prefixed_headers_format(credentials):
         if credentials:
             return {(_GRPC_PREFIX + k): v for (k, v) in credentials.headers().items()}
         return {}

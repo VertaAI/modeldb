@@ -86,7 +86,7 @@ class DeployedModel(object):
 
         if self._credentials:
             session.headers.update(
-                Connection.prefixed_headers_for_credentials(self._credentials)
+                Connection.prefixed_headers_format(self._credentials)
                 )
         if self._access_token:
             session.headers.update(

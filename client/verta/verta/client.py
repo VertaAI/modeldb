@@ -21,6 +21,7 @@ from ._internal_utils import (
 
 from verta import credentials
 from verta.credentials import EmailCredentials, JWTCredentials
+from .request_parameters import RequestParameters
 
 from .tracking import _Context
 from .tracking.entities import (
@@ -140,6 +141,7 @@ class Client(object):
         extra_auth_headers={},
         jwt_token=None,
         jwt_token_sig=None,
+        org_id=None,
         _connect=True,
     ):
         self._load_config()
@@ -162,6 +164,11 @@ class Client(object):
             env_var=JWTCredentials.JWT_TOKEN_SIG_ENV,
             config_var="jwt_token_sig",
         )
+        org_id = self._get_with_fallback(
+            org_id, env_var=RequestParameters.ORG_ID, config_var="org_id"
+        )
+
+        self.request_parameters = RequestParameters(org_id)
 
         self.auth_credentials = credentials._build(
             email=email,
@@ -200,6 +207,7 @@ class Client(object):
             max_retries=max_retries,
             ignore_conn_err=ignore_conn_err,
             credentials=self.auth_credentials,
+            request_parameters=self.request_parameters,
             headers=extra_auth_headers,
         )
 
