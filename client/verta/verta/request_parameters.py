@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""Classes and functions related to request parametersused with the Verta Platform.
+"""Classes and functions related to request parameters used with the Verta Platform.
 
 .. versionadded:: 0.20.0
 
