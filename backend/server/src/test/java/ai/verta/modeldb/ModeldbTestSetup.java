@@ -85,6 +85,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
+import org.mockito.exceptions.misusing.WrongTypeOfReturnValue;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 
@@ -501,10 +502,15 @@ public abstract class ModeldbTestSetup {
                 .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                 .setUsername(testUser1.getVertaInfo().getUsername())
                 .build());
-    when(collaboratorBlockingMock.setResource(any()))
-        .thenReturn(SetResource.Response.newBuilder().build());
-    when(collaboratorBlockingMock.deleteResources(any()))
-        .thenReturn(DeleteResources.Response.newBuilder().build());
+    hackToWorkAroundMockitoMultithreadingIssues(
+        () ->
+            when(collaboratorBlockingMock.setResource(any()))
+                .thenReturn(SetResource.Response.newBuilder().build()));
+
+    hackToWorkAroundMockitoMultithreadingIssues(
+        () ->
+            when(collaboratorBlockingMock.deleteResources(any()))
+                .thenReturn(DeleteResources.Response.newBuilder().build()));
     // allow any SetResource call
     when(uac.getCollaboratorService().setResource(any()))
         .thenReturn(Futures.immediateFuture(SetResource.Response.newBuilder().build()));
@@ -549,6 +555,14 @@ public abstract class ModeldbTestSetup {
         .thenReturn(Futures.immediateFuture(SetRoleBinding.Response.newBuilder().build()));
     when(organizationBlockingMock.listMyOrganizations(any()))
         .thenReturn(ListMyOrganizations.Response.newBuilder().build());
+  }
+
+  public static void hackToWorkAroundMockitoMultithreadingIssues(Runnable mockCall) {
+    try {
+      mockCall.run();
+    } catch (WrongTypeOfReturnValue e) {
+      mockCall.run();
+    }
   }
 
   protected void cleanUpResources() {

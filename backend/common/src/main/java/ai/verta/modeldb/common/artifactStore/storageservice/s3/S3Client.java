@@ -14,6 +14,7 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest;
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityResult;
+import com.amazonaws.services.securitytoken.model.Credentials;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -100,114 +101,27 @@ public class S3Client {
 
   private void initializeWithTemporaryCredentials(Regions awsRegion)
       throws IOException, ModelDBException {
-    String roleSessionName = "modelDB" + UUID.randomUUID().toString();
+    String roleSessionName = "modelDB" + UUID.randomUUID();
 
     AWSSecurityTokenService stsClient = null;
     AmazonS3 newS3Client = null;
     try {
-      final var stsClientBuilder =
-          AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion);
-      if (!CommonUtils.appendOptionalTelepresencePath("foo").equals("foo")) {
-        stsClientBuilder.setCredentials(
-            WebIdentityTokenCredentialsProvider.builder()
-                .webIdentityTokenFile(
-                    CommonUtils.appendOptionalTelepresencePath(
-                        System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
-                .build());
-      }
-      stsClient = stsClientBuilder.build();
+      stsClient = createStsClient(awsRegion, stsClient);
 
-      String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
+      Credentials credentials = getCredentials(roleSessionName, stsClient);
 
-      var token =
-          new String(
-              Files.readAllBytes(
-                  Paths.get(
-                      CommonUtils.appendOptionalTelepresencePath(
-                          System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
+      newS3Client = createNewS3Client(awsRegion, newS3Client, credentials);
 
-      // Obtain credentials for the IAM role. Note that you cannot assume the role of
-      // an AWS root account;
-      // Amazon S3 will deny access. You must use credentials for an IAM user or an
-      // IAM role.
-      AssumeRoleWithWebIdentityRequest roleRequest =
-          new AssumeRoleWithWebIdentityRequest()
-              .withDurationSeconds(900)
-              .withRoleArn(roleArn)
-              .withWebIdentityToken(token)
-              .withRoleSessionName(roleSessionName);
-
-      LOGGER.debug("assuming role");
-      // Call STS to assume the role
-      AssumeRoleWithWebIdentityResult roleResponse =
-          stsClient.assumeRoleWithWebIdentity(roleRequest);
-
-      var credentials = roleResponse.getCredentials();
-
-      // Extract the session credentials
-      awsCredentials =
-          new BasicSessionCredentials(
-              credentials.getAccessKeyId(),
-              credentials.getSecretAccessKey(),
-              credentials.getSessionToken());
-
-      LOGGER.debug("creating new client");
-
-      newS3Client =
-          AmazonS3ClientBuilder.standard()
-              .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
-              .withRegion(awsRegion)
-              .build();
-
+      // this call will fail with an exception if the credentials are out of date, causing us not to
+      // start the refresh thread below.
       newS3Client.doesBucketExistV2(bucketName);
 
-      // Start a thread that will refresh the token. It will just retry for as long as we get an
-      // exception and die right after.
-      LOGGER.debug("scheduling refresh");
-      var thread =
-          new Thread(
-              () -> {
-                Long now = System.currentTimeMillis();
-                Long expiration = credentials.getExpiration().getTime();
-                // Wait for half of the duration of the credentials
-                Long waitPeriod = (expiration - now) / 2;
-
-                LOGGER.debug(String.format("sleeping for %d ms", waitPeriod));
-
-                try {
-                  Thread.sleep(waitPeriod);
-                } catch (InterruptedException e) {
-                  // Continue as this just refreshes the session earlier
-                  // Restore interrupted state...
-                  Thread.currentThread().interrupt();
-                }
-
-                LOGGER.debug("starting refresh");
-
-                // Loop forever until we get to refresh without an exception
-                while (true) {
-                  try {
-                    // Sleep for a second to avoid overwhelming the service
-                    Thread.sleep(1000);
-                    initializeWithTemporaryCredentials(awsRegion);
-                    return;
-                  } catch (Exception ex) {
-                    if (ex instanceof InterruptedException) {
-                      // Restore interrupted state...
-                      Thread.currentThread().interrupt();
-                    }
-                    LOGGER.warn("Failed to refresh S3 session: " + ex.getMessage());
-                    continue;
-                  }
-                }
-              });
-      thread.setDaemon(true);
-      thread.start();
+      startRefreshThread(awsRegion, credentials);
 
       // Once we get to this point, we know that we have a good new s3 client, so it's time to swap
       // it. No fail can happen now
       LOGGER.debug("replacing client");
-      try (RefCountedS3Client client = getRefCountedClient()) {
+      try (RefCountedS3Client ignored = getRefCountedClient()) {
         // Decrement the current reference counter represented by this object pointing to it
         referenceCounter.decrementAndGet();
 
@@ -216,15 +130,126 @@ public class S3Client {
         s3Client = newS3Client;
 
         // At the end of the try, the reference counter will be decremented again and shutdown will
-        // be
-        // called
+        // be called
       }
 
     } finally {
-      if (stsClient != null) stsClient.shutdown();
+      if (stsClient != null) {
+        stsClient.shutdown();
+      }
       // Cleanup in case we couldn't perform the switch
-      if (newS3Client != null && newS3Client != s3Client) newS3Client.shutdown();
+      if (newS3Client != null && newS3Client != s3Client) {
+        newS3Client.shutdown();
+      }
     }
+  }
+
+  private AmazonS3 createNewS3Client(
+      Regions awsRegion, AmazonS3 newS3Client, Credentials credentials) {
+    // Extract the session credentials
+    awsCredentials =
+        new BasicSessionCredentials(
+            credentials.getAccessKeyId(),
+            credentials.getSecretAccessKey(),
+            credentials.getSessionToken());
+
+    LOGGER.debug("creating new client");
+
+    newS3Client =
+        AmazonS3ClientBuilder.standard()
+            .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
+            .withRegion(awsRegion)
+            .build();
+    return newS3Client;
+  }
+
+  private static Credentials getCredentials(
+      String roleSessionName, AWSSecurityTokenService stsClient) throws IOException {
+    String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
+
+    var token =
+        new String(
+            Files.readAllBytes(
+                Paths.get(
+                    CommonUtils.appendOptionalTelepresencePath(
+                        System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
+
+    // Obtain credentials for the IAM role. Note that you cannot assume the role of
+    // an AWS root account;
+    // Amazon S3 will deny access. You must use credentials for an IAM user or an
+    // IAM role.
+    AssumeRoleWithWebIdentityRequest roleRequest =
+        new AssumeRoleWithWebIdentityRequest()
+            .withDurationSeconds(900)
+            .withRoleArn(roleArn)
+            .withWebIdentityToken(token)
+            .withRoleSessionName(roleSessionName);
+
+    LOGGER.debug("assuming role");
+    // Call STS to assume the role
+    AssumeRoleWithWebIdentityResult roleResponse = stsClient.assumeRoleWithWebIdentity(roleRequest);
+
+    return roleResponse.getCredentials();
+  }
+
+  private static AWSSecurityTokenService createStsClient(
+      Regions awsRegion, AWSSecurityTokenService stsClient) {
+    final var stsClientBuilder =
+        AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion);
+    if (!CommonUtils.appendOptionalTelepresencePath("foo").equals("foo")) {
+      stsClientBuilder.setCredentials(
+          WebIdentityTokenCredentialsProvider.builder()
+              .webIdentityTokenFile(
+                  CommonUtils.appendOptionalTelepresencePath(
+                      System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
+              .build());
+    }
+    stsClient = stsClientBuilder.build();
+    return stsClient;
+  }
+
+  private void startRefreshThread(Regions awsRegion, Credentials credentials) {
+    // Start a thread that will refresh the token. It will just retry for as long as we get an
+    // exception and die right after.
+    LOGGER.debug("scheduling refresh");
+    var thread =
+        new Thread(
+            () -> {
+              Long now = System.currentTimeMillis();
+              Long expiration = credentials.getExpiration().getTime();
+              // Wait for half of the duration of the credentials
+              long waitPeriod = (expiration - now) / 2;
+
+              LOGGER.debug(String.format("sleeping for %d ms", waitPeriod));
+
+              try {
+                Thread.sleep(waitPeriod);
+              } catch (InterruptedException e) {
+                // Restore interrupted state and return.
+                Thread.currentThread().interrupt();
+                return;
+              }
+
+              LOGGER.debug("starting refresh");
+
+              // Loop forever until we get to refresh without an exception
+              while (true) {
+                try {
+                  // Sleep for a second to avoid overwhelming the service
+                  Thread.sleep(1000);
+                  initializeWithTemporaryCredentials(awsRegion);
+                  return;
+                } catch (InterruptedException e) {
+                  // Restore interrupted state and break out of the loop
+                  Thread.currentThread().interrupt();
+                  break;
+                } catch (Exception ex) {
+                  LOGGER.warn("Failed to refresh S3 session: " + ex.getMessage());
+                }
+              }
+            });
+    thread.setDaemon(true);
+    thread.start();
   }
 
   public RefCountedS3Client getRefCountedClient() {

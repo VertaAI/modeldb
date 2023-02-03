@@ -124,7 +124,8 @@ public class RepositoryTest extends ModeldbTestSetup {
                       .setOwnerId(testUser1.getVertaInfo().getDefaultWorkspaceId())
                       .build())
               .build();
-      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      ModeldbTestSetup.hackToWorkAroundMockitoMultithreadingIssues(
+          () -> when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse));
     }
 
     String repoName = "Repo-" + new Date().getTime();
