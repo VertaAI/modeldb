@@ -156,7 +156,7 @@ class TestToBuiltin:
 
         int_array = np.random.randint(-36, 36, size=(12, 24))
         float_array = np.random.uniform(-36, 36, size=(12, 24))
-        str_array = np.array([list("banana"), list("coconut"), list("date")])
+        str_array = np.array(["banana", "coconut", "date"])
 
         builtin_int_array = _utils.to_builtin(int_array)
         assert type(builtin_int_array) is list
