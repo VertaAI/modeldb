@@ -49,6 +49,7 @@ def fit_api(api, value):
 
 
 # Verify that the value generation system actually creates something that fits the api
+@hypothesis.settings(deadline=None)  # client to_builtin() needs to load TensorFlow
 @hypothesis.given(api_and_values)
 def test_value_from_api(api_and_values):
     api, values = api_and_values
@@ -56,6 +57,7 @@ def test_value_from_api(api_and_values):
         assert fit_api(api, v)
 
 
+@hypothesis.settings(deadline=None)  # client to_builtin() needs to load TensorFlow
 @hypothesis.given(series_api_and_values)
 def test_series_from_api(api_and_values):
     api, values = api_and_values
@@ -64,6 +66,7 @@ def test_series_from_api(api_and_values):
         assert fit_api(api, v)
 
 
+@hypothesis.settings(deadline=None)  # client to_builtin() needs to load TensorFlow
 @hypothesis.given(dataframe_api_and_values)
 def test_dataframe_from_api(api_and_values):
     api, values = api_and_values

@@ -17,6 +17,7 @@ from value_generator import (
 
 
 # Verify that, given a sample created from an api, the same api can be inferred
+@hypothesis.settings(deadline=None)  # client to_builtin() needs to load TensorFlow
 @hypothesis.given(api_and_values)
 @pytest.mark.skipif(sys.version_info.major == 2, reason="test is flaky")
 def test_modelapi_and_values(api_and_values):
@@ -29,6 +30,7 @@ def test_modelapi_and_values(api_and_values):
     )
 
 
+@hypothesis.settings(deadline=None)  # client to_builtin() needs to load TensorFlow
 @hypothesis.given(series_api_and_values)
 def test_series_modelapi_and_values(series_api_and_values):
     api, values = series_api_and_values
@@ -39,6 +41,7 @@ def test_series_modelapi_and_values(series_api_and_values):
     )
 
 
+@hypothesis.settings(deadline=None)  # client to_builtin() needs to load TensorFlow
 @hypothesis.given(dataframe_api_and_values)
 def test_dataframe_modelapi_and_values(dataframe_api_and_values):
     api, values = dataframe_api_and_values

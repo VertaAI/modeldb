@@ -43,9 +43,9 @@ def value_from_api(api):
 
 def verta_type_to_dtype(name):
     map = {
-        "VertaBool": np.bool,
-        "VertaFloat": np.float,
-        "VertaString": str,
+        "VertaBool": np.bool_,
+        "VertaFloat": np.float_,
+        "VertaString": np.str_,
     }
     return map[name]
 
