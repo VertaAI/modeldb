@@ -37,6 +37,74 @@ Changelog
      (`# <>`__)
 
 
+v0.22.0 (2023-02-07)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- remove ``DeployedModel.credentials``, ``DeployedModel.access_token``
+  (`#3332 <https://github.com/VertaAI/modeldb/pull/3332>`__)
+- effectively replace :meth:`DeployedModel.predict() <verta.deployment.DeployedModel.predict>`
+  and :meth:`DeployedModel.predict_with_id() <verta.deployment.DeployedModel.predict_with_id>`'s
+  ``always_retry_404`` and ``always_retry_429`` parameters (which no longer
+  have any effect) with ``retry_status``, and remove support for indefinite retries
+  (`#3332 <https://github.com/VertaAI/modeldb/pull/3332>`__)
+- extend :meth:`DeployedModel.predict() <verta.deployment.DeployedModel.predict>`
+  and :meth:`DeployedModel.predict_with_id() <verta.deployment.DeployedModel.predict_with_id>`'s
+  default retry loop from about 20 seconds to 10 minutes
+  (`#3332 <https://github.com/VertaAI/modeldb/pull/3332>`__)
+- tighten ``requests`` dependency version lower constraint from ``>=2.21`` to ``>=2.25``
+  (`#3540 <https://github.com/VertaAI/modeldb/pull/3540>`__)
+- add ``urllib3>=1.26.0`` dependency
+  (`#3549 <https://github.com/VertaAI/modeldb/pull/3549>`__)
+
+Deprecations
+^^^^^^^^^^^^
+- ``DeployedModel.from_url()``, in favor of directly instantiating
+  :class:`~verta.deployment.DeployedModel`
+  (`#3332 <https://github.com/VertaAI/modeldb/pull/3332>`__)
+
+New Features
+^^^^^^^^^^^^
+- allow :meth:`DeployedModel.predict() <verta.deployment.DeployedModel.predict>`
+  and :meth:`DeployedModel.predict_with_id() <verta.deployment.DeployedModel.predict_with_id>`
+  to take a custom user-defined ``prediction_id``
+  (`#3332 <https://github.com/VertaAI/modeldb/pull/3332>`__)
+- add ``backoff_factor`` parameter to
+  :meth:`DeployedModel.predict() <verta.deployment.DeployedModel.predict>`
+  and :meth:`DeployedModel.predict_with_id() <verta.deployment.DeployedModel.predict_with_id>`
+  (`#3332 <https://github.com/VertaAI/modeldb/pull/3332>`__)
+- add model data logging via :func:`verta.runtime.log`, plus
+  :class:`verta.runtime.context` for local testing
+  (`#3500 <https://github.com/VertaAI/modeldb/pull/3500>`__,
+  `#3544 <https://github.com/VertaAI/modeldb/pull/3544>`__,
+  `#3550 <https://github.com/VertaAI/modeldb/pull/3550>`__,
+  `#3567 <https://github.com/VertaAI/modeldb/pull/3567>`__,
+  `#3569 <https://github.com/VertaAI/modeldb/pull/3569>`__)
+
+Bug Fixes
+^^^^^^^^^
+- update optimizer name field in Keras integration for ``tensorflow>=2.11.0``
+  (`#3424 <https://github.com/VertaAI/modeldb/pull/3424>`__)
+- raise more informative error when ``log_code()`` is called for unsupported
+  objects
+  (`#3557 <https://github.com/VertaAI/modeldb/pull/3557>`__)
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- refactor :class:`~verta.deployment.DeployedModel`'s HTTP session management
+  (`#3332 <https://github.com/VertaAI/modeldb/pull/3332>`__)
+- remove ``Connection.get_personal_workspace()`` which was a fallback we no longer need
+  (`#3404 <https://github.com/VertaAI/modeldb/pull/3404>`__)
+- remove ``Connection.get_workspace_name_from_legacy_id()`` which was a fallback we no longer need
+  (`#3407 <https://github.com/VertaAI/modeldb/pull/3407>`__)
+- refactor client test utilities for permission V2
+  (`#3407 <https://github.com/VertaAI/modeldb/pull/3407>`__,
+  `#3538 <https://github.com/VertaAI/modeldb/pull/3538>`__,
+  `#3539 <https://github.com/VertaAI/modeldb/pull/3539>`__,
+  `#3556 <https://github.com/VertaAI/modeldb/pull/3556>`__)
+
+
 v0.21.1 (2022-11-29)
 --------------------
 
