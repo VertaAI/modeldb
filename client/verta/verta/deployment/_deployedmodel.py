@@ -44,10 +44,6 @@ class DeployedModel(object):
     ----------
     prediction_url : str
         Full prediction endpoint URL. Can be copy and pasted directly from the Verta Web App.
-    access_token : str, optional
-        Prediction token. Can be copy and pasted directly from the Verta Web App.
-    credentials : :class:`~verta.credentials.Credentials`, optional
-        Authentication credentials to attach to each prediction request.
 
     Examples
     --------
@@ -236,7 +232,7 @@ class DeployedModel(object):
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
             120 seconds.
         prediction_id: str, default None
-            A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
+            A custom string to use as the ID for the prediction request.  Defaults to a randomly generated UUID.
         Returns
         -------
         prediction : list
