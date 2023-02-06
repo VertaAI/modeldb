@@ -140,7 +140,7 @@ def test_exception_on_nesting_context_managers() -> None:
         with runtime.context():
             with runtime.context():
                 pass
-    assert err.value.args[0] == " Nesting an instance of verta.runtime.context() inside" \
+    assert err.value.args[0] == "nesting an instance of verta.runtime.context() inside" \
                                 " an existing instance is not supported."
 
 
