@@ -302,7 +302,7 @@ class DeployedModel(object):
             ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
             120 seconds.
         prediction_id: str, optional
-            A custom str to use as the ID for the prediction request.  Defaults to a randomly generated numeric id.
+            A custom string to use as the ID for the prediction request.  Defaults to a randomly generated UUID.
         Returns
         -------
         id : str
