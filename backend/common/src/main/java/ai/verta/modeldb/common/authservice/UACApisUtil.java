@@ -147,8 +147,10 @@ public class UACApisUtil {
             .setResourceType(resourceType)
             .setService(ServiceEnum.Service.MODELDB_SERVICE);
 
-    resourceIdsOptional.ifPresent(strings -> resources.addAllResourceIds(
-        strings.stream().map(String::valueOf).collect(Collectors.toSet())));
+    resourceIdsOptional.ifPresent(
+        strings ->
+            resources.addAllResourceIds(
+                strings.stream().map(String::valueOf).collect(Collectors.toSet())));
 
     var builder = GetResources.newBuilder().setResources(resources.build());
     workspaceName.ifPresent(builder::setWorkspaceName);
