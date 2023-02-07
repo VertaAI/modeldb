@@ -154,7 +154,9 @@ public class UACApisUtil {
 
     var builder = GetResources.newBuilder().setResources(resources.build());
     workspaceName.ifPresent(builder::setWorkspaceName);
-    builder.setWorkspaceId(workspaceId);
+    if (workspaceId != null) {
+      builder.setWorkspaceId(workspaceId);
+    }
     return FutureUtil.clientRequest(
             uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
             executor)
