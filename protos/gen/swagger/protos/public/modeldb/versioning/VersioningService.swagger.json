@@ -4,6 +4,11 @@
     "title": "modeldb/versioning/VersioningService.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "VersioningService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,9 +27,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -54,9 +59,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -86,9 +91,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -152,9 +157,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -196,9 +201,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -237,9 +242,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -252,12 +257,24 @@
             "format": "uint64"
           },
           {
-            "name": "body",
+            "name": "repository",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/versioningRepository"
             }
+          },
+          {
+            "name": "id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -276,9 +293,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -320,9 +337,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -363,9 +380,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -410,9 +427,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -458,9 +475,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -479,12 +496,24 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "commit_sha",
             "in": "body",
             "required": true,
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -503,9 +532,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -538,6 +567,7 @@
           },
           {
             "name": "commit_sha",
+            "description": "List of folder names (with the last element potentially representing the blob name)\n This will be used to limit the search to scope just this location, like `git log /my/path` would do\n repeated string location_prefix = 4;",
             "in": "query",
             "required": false,
             "type": "string"
@@ -560,9 +590,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -602,12 +632,14 @@
           },
           {
             "name": "commit_base",
+            "description": "If empty, consider commits from the beginning",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "commit_head",
+            "description": "If empty, consider commits from the base to the latest",
             "in": "query",
             "required": false,
             "type": "string"
@@ -627,9 +659,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -646,7 +678,37 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningCreateCommitRequest"
+              "type": "object",
+              "properties": {
+                "repository_id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "$ref": "#/definitions/versioningRepositoryNamedIdentification"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "commit": {
+                  "$ref": "#/definitions/versioningCommit"
+                },
+                "blobs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/versioningBlobExpanded"
+                  }
+                },
+                "commit_base": {
+                  "type": "string",
+                  "title": "Apply the diffs on top of commit_base\nIf a blob was added in the diff, add it on top of commit_base (doesn't matter if it was present already or not)\nIf a blob was deleted, delete if from commit_base if present\nIf a blob was modified, then:\n1) check that the type of the diff is consistent with the type of the blob. If they are different, raise an error saying so\n2) apply the diff to the blob as per the following logic:\n2a) if the field is atomic (e.g. python version, git repository), use the newer version (B) from the diff and overwrite what the commit_base has\n2b) if the field is not atomic (e.g. list of python requirements, dataset components), merge the lists by a) copying new values, b) deleting removed values, c) updating values that are already present based on some reasonable key"
+                },
+                "diffs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/versioningBlobDiff"
+                  }
+                }
+              }
             }
           }
         ],
@@ -666,9 +728,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -713,9 +775,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -763,9 +825,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -798,7 +860,7 @@
           },
           {
             "name": "location_prefix",
-            "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
+            "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do",
             "in": "query",
             "required": false,
             "type": "array",
@@ -824,9 +886,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -849,7 +911,36 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningGetUrlForBlobVersioned"
+              "type": "object",
+              "properties": {
+                "repository_id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "$ref": "#/definitions/versioningRepositoryNamedIdentification"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "location": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "path_dataset_component_blob_path": {
+                  "type": "string"
+                },
+                "method": {
+                  "type": "string",
+                  "title": "This is either GET or PUT"
+                },
+                "part_number": {
+                  "type": "string",
+                  "format": "uint64",
+                  "title": "if 0, don’t do multipart"
+                }
+              }
             }
           }
         ],
@@ -869,9 +960,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -885,6 +976,7 @@
           },
           {
             "name": "commit_sha",
+            "description": "List of folder names (with the last element potentially representing the blob name)\n This will be used to limit the search to scope just this location, like `git log /my/path` would do\n repeated string location_prefix = 4;",
             "in": "path",
             "required": true,
             "type": "string"
@@ -903,7 +995,7 @@
           },
           {
             "name": "branch",
-            "description": "Pagination pagination = 2;.",
+            "description": "Pagination pagination = 2;",
             "in": "query",
             "required": false,
             "type": "string"
@@ -925,9 +1017,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -959,7 +1051,7 @@
           },
           {
             "name": "location",
-            "description": "List of folder names, with the last element being the name of the blob or tree\nthe last element determines if the response to be returned is Folder or Blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar.",
+            "description": "List of folder names, with the last element being the name of the blob or tree\nthe last element determines if the response to be returned is Folder or Blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar",
             "in": "query",
             "required": false,
             "type": "array",
@@ -985,9 +1077,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1001,6 +1093,7 @@
           },
           {
             "name": "commit_to_revert_sha",
+            "description": "commit to revert",
             "in": "path",
             "required": true,
             "type": "string"
@@ -1010,7 +1103,25 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningRevertRepositoryCommitsRequest"
+              "type": "object",
+              "properties": {
+                "repository_id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "$ref": "#/definitions/versioningRepositoryNamedIdentification"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "base_commit_sha": {
+                  "type": "string",
+                  "title": "commit to apply reverted commit on"
+                },
+                "content": {
+                  "$ref": "#/definitions/versioningCommit"
+                }
+              }
             }
           }
         ],
@@ -1031,9 +1142,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1065,21 +1176,21 @@
           },
           {
             "name": "commit_b",
+            "description": "List of folder names (with the last element potentially representing the blob name)\n This will be used to limit the search to scope just this location, like `git log /my/path` would do\nrepeated string location_prefix = 4;",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "replace_a_with_common_ancestor",
-            "description": "Replace commit_a with the nearest common ancestor of commit_a and commit_b.",
+            "description": "Replace commit_a with the nearest common ancestor of commit_a and commit_b",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           {
             "name": "branch_a",
-            "description": "for a or b only one of commit or branch should be populated.",
+            "description": "for a or b only one of commit or branch should be populated",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1107,9 +1218,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1126,7 +1237,38 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequest"
+              "type": "object",
+              "properties": {
+                "repository_id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "$ref": "#/definitions/versioningRepositoryNamedIdentification"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "commit_sha_a": {
+                  "type": "string"
+                },
+                "commit_sha_b": {
+                  "type": "string"
+                },
+                "content": {
+                  "$ref": "#/definitions/versioningCommit",
+                  "title": "repeated BlobExpanded conflict_resolution_blobs = 5; // Set of blobs that must resolve any conflict encountered\nbool force_manual_conflict_resolution = 6;"
+                },
+                "branch_a": {
+                  "type": "string",
+                  "title": "for a or b only one of commit or branch should be populated"
+                },
+                "branch_b": {
+                  "type": "string"
+                },
+                "is_dry_run": {
+                  "type": "boolean"
+                }
+              }
             }
           }
         ],
@@ -1147,9 +1289,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1190,9 +1332,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1237,9 +1379,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1285,9 +1427,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1306,12 +1448,24 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "commit_sha",
             "in": "body",
             "required": true,
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1330,9 +1484,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1344,12 +1498,25 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "repository",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/versioningRepository"
             }
+          },
+          {
+            "name": "id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
           }
         ],
         "tags": [
@@ -1368,9 +1535,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1409,9 +1576,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1429,12 +1596,19 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "repository",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/versioningRepository"
             }
+          },
+          {
+            "name": "id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
           }
         ],
         "tags": [
@@ -1453,9 +1627,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1497,9 +1671,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1540,9 +1714,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1587,9 +1761,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1635,9 +1809,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1661,12 +1835,19 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "commit_sha",
             "in": "body",
             "required": true,
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
           }
         ],
         "tags": [
@@ -1685,9 +1866,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1720,6 +1901,7 @@
           },
           {
             "name": "commit_sha",
+            "description": "List of folder names (with the last element potentially representing the blob name)\n This will be used to limit the search to scope just this location, like `git log /my/path` would do\n repeated string location_prefix = 4;",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1742,9 +1924,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1784,12 +1966,14 @@
           },
           {
             "name": "commit_base",
+            "description": "If empty, consider commits from the beginning",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "commit_head",
+            "description": "If empty, consider commits from the base to the latest",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1809,9 +1993,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1833,7 +2017,42 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningCreateCommitRequest"
+              "type": "object",
+              "properties": {
+                "repository_id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "type": "object",
+                      "title": "CRUD for repositories"
+                    },
+                    "repo_id": {
+                      "type": "string",
+                      "format": "uint64"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "commit": {
+                  "$ref": "#/definitions/versioningCommit"
+                },
+                "blobs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/versioningBlobExpanded"
+                  }
+                },
+                "commit_base": {
+                  "type": "string",
+                  "title": "Apply the diffs on top of commit_base\nIf a blob was added in the diff, add it on top of commit_base (doesn't matter if it was present already or not)\nIf a blob was deleted, delete if from commit_base if present\nIf a blob was modified, then:\n1) check that the type of the diff is consistent with the type of the blob. If they are different, raise an error saying so\n2) apply the diff to the blob as per the following logic:\n2a) if the field is atomic (e.g. python version, git repository), use the newer version (B) from the diff and overwrite what the commit_base has\n2b) if the field is not atomic (e.g. list of python requirements, dataset components), merge the lists by a) copying new values, b) deleting removed values, c) updating values that are already present based on some reasonable key"
+                },
+                "diffs": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/versioningBlobDiff"
+                  }
+                }
+              }
             }
           }
         ],
@@ -1853,9 +2072,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1900,9 +2119,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1950,9 +2169,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1985,7 +2204,7 @@
           },
           {
             "name": "location_prefix",
-            "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
+            "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do",
             "in": "query",
             "required": false,
             "type": "array",
@@ -2011,9 +2230,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2041,7 +2260,41 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningGetUrlForBlobVersioned"
+              "type": "object",
+              "properties": {
+                "repository_id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "type": "object",
+                      "title": "CRUD for repositories"
+                    },
+                    "repo_id": {
+                      "type": "string",
+                      "format": "uint64"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "location": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "path_dataset_component_blob_path": {
+                  "type": "string"
+                },
+                "method": {
+                  "type": "string",
+                  "title": "This is either GET or PUT"
+                },
+                "part_number": {
+                  "type": "string",
+                  "format": "uint64",
+                  "title": "if 0, don’t do multipart"
+                }
+              }
             }
           }
         ],
@@ -2061,9 +2314,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2082,6 +2335,7 @@
           },
           {
             "name": "commit_sha",
+            "description": "List of folder names (with the last element potentially representing the blob name)\n This will be used to limit the search to scope just this location, like `git log /my/path` would do\n repeated string location_prefix = 4;",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2095,7 +2349,7 @@
           },
           {
             "name": "branch",
-            "description": "Pagination pagination = 2;.",
+            "description": "Pagination pagination = 2;",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2117,9 +2371,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2151,7 +2405,7 @@
           },
           {
             "name": "location",
-            "description": "List of folder names, with the last element being the name of the blob or tree\nthe last element determines if the response to be returned is Folder or Blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar.",
+            "description": "List of folder names, with the last element being the name of the blob or tree\nthe last element determines if the response to be returned is Folder or Blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar",
             "in": "query",
             "required": false,
             "type": "array",
@@ -2177,9 +2431,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2198,6 +2452,7 @@
           },
           {
             "name": "commit_to_revert_sha",
+            "description": "commit to revert",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2207,7 +2462,30 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningRevertRepositoryCommitsRequest"
+              "type": "object",
+              "properties": {
+                "repository_id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "type": "object",
+                      "title": "CRUD for repositories"
+                    },
+                    "repo_id": {
+                      "type": "string",
+                      "format": "uint64"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "base_commit_sha": {
+                  "type": "string",
+                  "title": "commit to apply reverted commit on"
+                },
+                "content": {
+                  "$ref": "#/definitions/versioningCommit"
+                }
+              }
             }
           }
         ],
@@ -2228,9 +2506,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2262,21 +2540,21 @@
           },
           {
             "name": "commit_b",
+            "description": "List of folder names (with the last element potentially representing the blob name)\n This will be used to limit the search to scope just this location, like `git log /my/path` would do\nrepeated string location_prefix = 4;",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "replace_a_with_common_ancestor",
-            "description": "Replace commit_a with the nearest common ancestor of commit_a and commit_b.",
+            "description": "Replace commit_a with the nearest common ancestor of commit_a and commit_b",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           {
             "name": "branch_a",
-            "description": "for a or b only one of commit or branch should be populated.",
+            "description": "for a or b only one of commit or branch should be populated",
             "in": "query",
             "required": false,
             "type": "string"
@@ -2304,9 +2582,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2328,7 +2606,43 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningMergeRepositoryCommitsRequest"
+              "type": "object",
+              "properties": {
+                "repository_id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "type": "object",
+                      "title": "CRUD for repositories"
+                    },
+                    "repo_id": {
+                      "type": "string",
+                      "format": "uint64"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "commit_sha_a": {
+                  "type": "string"
+                },
+                "commit_sha_b": {
+                  "type": "string"
+                },
+                "content": {
+                  "$ref": "#/definitions/versioningCommit",
+                  "title": "repeated BlobExpanded conflict_resolution_blobs = 5; // Set of blobs that must resolve any conflict encountered\nbool force_manual_conflict_resolution = 6;"
+                },
+                "branch_a": {
+                  "type": "string",
+                  "title": "for a or b only one of commit or branch should be populated"
+                },
+                "branch_b": {
+                  "type": "string"
+                },
+                "is_dry_run": {
+                  "type": "boolean"
+                }
+              }
             }
           }
         ],
@@ -2349,9 +2663,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2392,9 +2706,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2439,9 +2753,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2487,9 +2801,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2513,12 +2827,19 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "commit_sha",
             "in": "body",
             "required": true,
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
           }
         ],
         "tags": [
@@ -2537,15 +2858,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "workspace_name",
+            "description": "If auth service is configured will default to Personal workspace, if authservice is not configured then parameter is ignored",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2555,7 +2877,36 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningFindRepositories"
+              "type": "object",
+              "properties": {
+                "repo_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uint64"
+                  },
+                  "title": "if repo_ids not present in request then the backend returns all the matching repositories, else returns a subsetfrom the list that are in the parameter repo_ids"
+                },
+                "predicates": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/commonKeyValueQuery"
+                  },
+                  "description": "predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}, if absent all the accessible repositories are returned."
+                },
+                "page_number": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "If not present no pagination is applied.",
+                  "title": "For pagination"
+                },
+                "page_limit": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "If not present no pagination is applied."
+                }
+              },
+              "title": "If any of the request parameters are not set then backend will return all the repositories.\nthe query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC"
             }
           }
         ],
@@ -2575,15 +2926,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "workspace_name",
+            "description": "If auth service is configured will default to Personal workspace, if authservice is not configured then parameter is ignored",
             "in": "path",
             "required": true,
             "type": "string"
@@ -2593,7 +2945,56 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/versioningFindRepositoriesBlobs"
+              "type": "object",
+              "properties": {
+                "repo_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uint64"
+                  },
+                  "title": "if repo_ids not present in request then the backend returns all the matching repositories blobs, else returns a subsetfrom the list that are in the parameter repo_ids and return those repositories blobs"
+                },
+                "location_prefix": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "location like: [\"dataset\",\"train\"], If location_prefix not found in request then backend returns all the blobs from root folder else return matching location_prefix blobs"
+                },
+                "blob_type": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/versioningBlobType"
+                  },
+                  "title": "Backend consider this field with 'OR' operator in query and if it not present then ignore type and return all blob_type results"
+                },
+                "commits": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "title": "if commits not present in request then the backend returns all the matching commits blobs, else returns a subsetfrom the list that are in the parameter commits and return those commits blobs"
+                },
+                "page_number": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "If not present no pagination is applied.",
+                  "title": "For pagination"
+                },
+                "page_limit": {
+                  "type": "integer",
+                  "format": "int32",
+                  "description": "If not present no pagination is applied."
+                },
+                "predicates": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/commonKeyValueQuery"
+                  },
+                  "title": "In future requirement\nbool ascending = 8;\nstring sort_key = 9;"
+                }
+              }
             }
           }
         ],
@@ -2614,9 +3015,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -2682,7 +3083,8 @@
         "IN",
         "NOT_IN"
       ],
-      "default": "EQ"
+      "default": "EQ",
+      "description": " - IN: This is not fully supported by backend."
     },
     "RepositoryVisibilityEnumRepositoryVisibility": {
       "type": "string",
@@ -2691,7 +3093,8 @@
         "PUBLIC",
         "ORG_SCOPED_PUBLIC"
       ],
-      "default": "PRIVATE"
+      "default": "PRIVATE",
+      "title": "- PRIVATE: default"
     },
     "TernaryEnumTernary": {
       "type": "string",
@@ -2729,7 +3132,8 @@
           "format": "uint64"
         },
         "etag": {
-          "type": "string"
+          "type": "string",
+          "title": "checksum returned by S3"
         }
       }
     },
@@ -2750,9 +3154,7 @@
         "key": {
           "type": "string"
         },
-        "value": {
-          "type": "object"
-        },
+        "value": {},
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
@@ -2763,16 +3165,19 @@
       "type": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "type": "string",
+          "title": "entity field key"
         },
         "value": {
-          "type": "object"
+          "title": "entity field value"
         },
         "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "title": "Default = STRING"
         },
         "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
+          "$ref": "#/definitions/OperatorEnumOperator",
+          "title": "Default = EQ"
         }
       }
     },
@@ -2793,14 +3198,11 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
     "protobufNullValue": {
       "type": "string",
@@ -2810,12 +3212,9 @@
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"
@@ -2871,7 +3270,8 @@
       "type": "object",
       "properties": {
         "dataset": {
-          "$ref": "#/definitions/versioningDatasetBlob"
+          "$ref": "#/definitions/versioningDatasetBlob",
+          "title": "Blob of the type dataset"
         },
         "environment": {
           "$ref": "#/definitions/versioningEnvironmentBlob"
@@ -3138,33 +3538,6 @@
         }
       }
     },
-    "versioningCreateCommitRequest": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "$ref": "#/definitions/versioningRepositoryIdentification"
-        },
-        "commit": {
-          "$ref": "#/definitions/versioningCommit"
-        },
-        "blobs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningBlobExpanded"
-          }
-        },
-        "commit_base": {
-          "type": "string",
-          "title": "Apply the diffs on top of commit_base\nIf a blob was added in the diff, add it on top of commit_base (doesn't matter if it was present already or not)\nIf a blob was deleted, delete if from commit_base if present\nIf a blob was modified, then:\n1) check that the type of the diff is consistent with the type of the blob. If they are different, raise an error saying so\n2) apply the diff to the blob as per the following logic:\n2a) if the field is atomic (e.g. python version, git repository), use the newer version (B) from the diff and overwrite what the commit_base has\n2b) if the field is not atomic (e.g. list of python requirements, dataset components), merge the lists by a) copying new values, b) deleting removed values, c) updating values that are already present based on some reasonable key"
-        },
-        "diffs": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningBlobDiff"
-          }
-        }
-      }
-    },
     "versioningCreateCommitRequestResponse": {
       "type": "object",
       "properties": {
@@ -3177,13 +3550,16 @@
       "type": "object",
       "properties": {
         "s3": {
-          "$ref": "#/definitions/versioningS3DatasetBlob"
+          "$ref": "#/definitions/versioningS3DatasetBlob",
+          "title": "Blob of the type S3 dataset"
         },
         "path": {
-          "$ref": "#/definitions/versioningPathDatasetBlob"
+          "$ref": "#/definitions/versioningPathDatasetBlob",
+          "title": "Blob of the type path dataset"
         },
         "query": {
-          "$ref": "#/definitions/versioningQueryDatasetBlob"
+          "$ref": "#/definitions/versioningQueryDatasetBlob",
+          "title": "Blob of the type Query dataset"
         }
       }
     },
@@ -3211,8 +3587,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -3336,86 +3711,6 @@
         }
       }
     },
-    "versioningFindRepositories": {
-      "type": "object",
-      "properties": {
-        "repo_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "workspace_name": {
-          "type": "string"
-        },
-        "predicates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValueQuery"
-          }
-        },
-        "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "For pagination"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        }
-      },
-      "title": "If any of the request parameters are not set then backend will return all the repositories.\nthe query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC"
-    },
-    "versioningFindRepositoriesBlobs": {
-      "type": "object",
-      "properties": {
-        "repo_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
-            "format": "uint64"
-          }
-        },
-        "workspace_name": {
-          "type": "string"
-        },
-        "location_prefix": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "blob_type": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/versioningBlobType"
-          }
-        },
-        "commits": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "For pagination"
-        },
-        "page_limit": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "predicates": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValueQuery"
-          },
-          "title": "In future requirement\nbool ascending = 8;\nstring sort_key = 9;"
-        }
-      }
-    },
     "versioningFindRepositoriesBlobsResponse": {
       "type": "object",
       "properties": {
@@ -3536,33 +3831,6 @@
         }
       }
     },
-    "versioningGetUrlForBlobVersioned": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "$ref": "#/definitions/versioningRepositoryIdentification"
-        },
-        "commit_sha": {
-          "type": "string"
-        },
-        "location": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "path_dataset_component_blob_path": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
     "versioningGetUrlForBlobVersionedResponse": {
       "type": "object",
       "properties": {
@@ -3571,7 +3839,7 @@
         },
         "multipart_upload_ok": {
           "type": "boolean",
-          "format": "boolean"
+          "title": "for backcompat: new Client, old Backend"
         }
       }
     },
@@ -3591,8 +3859,7 @@
           "type": "string"
         },
         "is_dirty": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -3778,34 +4045,6 @@
         }
       }
     },
-    "versioningMergeRepositoryCommitsRequest": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "$ref": "#/definitions/versioningRepositoryIdentification"
-        },
-        "commit_sha_a": {
-          "type": "string"
-        },
-        "commit_sha_b": {
-          "type": "string"
-        },
-        "content": {
-          "$ref": "#/definitions/versioningCommit"
-        },
-        "branch_a": {
-          "type": "string",
-          "title": "for a or b only one of commit or branch should be populated"
-        },
-        "branch_b": {
-          "type": "string"
-        },
-        "is_dry_run": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
-    },
     "versioningMergeRepositoryCommitsRequestResponse": {
       "type": "object",
       "properties": {
@@ -3820,6 +4059,7 @@
         },
         "common_base": {
           "$ref": "#/definitions/versioningCommit",
+          "description": "Common base shared between the two commits",
           "title": "In case of a conflict, stop at the first such conflict and return it"
         }
       }
@@ -3861,7 +4101,8 @@
       "type": "object",
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "title": "Full path to the file"
         },
         "size": {
           "type": "string",
@@ -4058,7 +4299,8 @@
           "format": "uint64"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "title": "Name that can be used in URL, like in GitHub"
         },
         "date_created": {
           "type": "string",
@@ -4139,23 +4381,6 @@
       },
       "title": "CRUD for repositories"
     },
-    "versioningRevertRepositoryCommitsRequest": {
-      "type": "object",
-      "properties": {
-        "repository_id": {
-          "$ref": "#/definitions/versioningRepositoryIdentification"
-        },
-        "commit_to_revert_sha": {
-          "type": "string"
-        },
-        "base_commit_sha": {
-          "type": "string"
-        },
-        "content": {
-          "$ref": "#/definitions/versioningCommit"
-        }
-      }
-    },
     "versioningRevertRepositoryCommitsRequestResponse": {
       "type": "object",
       "properties": {
@@ -4182,7 +4407,8 @@
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
         "s3_version_id": {
-          "type": "string"
+          "type": "string",
+          "title": "if s3 bucket versioning is enabled, this captures the version id"
         }
       }
     },

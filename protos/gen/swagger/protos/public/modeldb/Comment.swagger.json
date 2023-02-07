@@ -4,6 +4,11 @@
     "title": "modeldb/Comment.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "CommentService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,9 +27,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -54,9 +59,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -69,6 +74,7 @@
           },
           {
             "name": "entity_id",
+            "description": "entity.id like experimentRun.id, project.id etc.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -90,15 +96,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "entity_id",
+            "description": "entity.id like experimentRun.id, project.id etc.",
             "in": "query",
             "required": false,
             "type": "string"
@@ -120,9 +127,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -158,20 +165,24 @@
         "AD_SCIM",
         "SCIM"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- OKTA_SCIM: Not currently used as there is no way to tell SCIM sources apart\n - AD_SCIM: Not currently used as there is no way to tell SCIM sources apart"
     },
     "modeldbAddComment": {
       "type": "object",
       "properties": {
         "entity_id": {
-          "type": "string"
+          "type": "string",
+          "description": "entity.id like experimentRun.id, project.id etc."
         },
         "date_time": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "Comment added time"
         },
         "message": {
-          "type": "string"
+          "type": "string",
+          "title": "comment message text"
         }
       }
     },
@@ -194,7 +205,8 @@
         },
         "date_time": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "Comment added/updated time"
         },
         "message": {
           "type": "string"
@@ -205,14 +217,14 @@
         "verta_id": {
           "type": "string"
         }
-      }
+      },
+      "title": "User comment"
     },
     "modeldbDeleteCommentResponse": {
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -223,7 +235,8 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/modeldbComment"
-          }
+          },
+          "title": "return list of user comments from Entity Comment message"
         }
       }
     },
@@ -234,11 +247,13 @@
           "type": "string"
         },
         "entity_id": {
-          "type": "string"
+          "type": "string",
+          "description": "entity.id like experimentRun.id, project.id etc."
         },
         "date_time": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "Comment updated time"
         },
         "message": {
           "type": "string"
@@ -256,21 +271,15 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"
@@ -335,8 +344,7 @@
           "type": "string"
         },
         "disabled": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -344,8 +352,7 @@
       "type": "object",
       "properties": {
         "individual_user": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "username": {
           "type": "string"

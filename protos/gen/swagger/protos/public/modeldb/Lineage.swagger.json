@@ -4,6 +4,11 @@
     "title": "modeldb/Lineage.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "LineageService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,15 +27,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "body",
+            "description": "Add every item of \"input\" as a parent of every item on \"output\".",
             "in": "body",
             "required": true,
             "schema": {
@@ -54,15 +60,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "body",
+            "description": "Delete every item of \"input\" as a parent of every item on \"output\".",
             "in": "body",
             "required": true,
             "schema": {
@@ -86,15 +93,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "body",
+            "description": "For each item provided, list its inputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.inputs will contain N elements, where each element\nis the set of inputs for the corresponding i-th item provided in the\nrequest.",
             "in": "body",
             "required": true,
             "schema": {
@@ -118,15 +126,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "body",
+            "description": "For each item provided, list its inputs and outputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.inputs and Response.outputs will contain N elements each, where each element\nis the set of inputs and outputs for the corresponding i-th item provided in the\nrequest.",
             "in": "body",
             "required": true,
             "schema": {
@@ -150,15 +159,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "body",
+            "description": "For each item provided, list its outputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.outputs will contain N elements, where each element\nis the set of outputs for the corresponding i-th item provided in the\nrequest.",
             "in": "body",
             "required": true,
             "schema": {
@@ -180,7 +190,8 @@
         "EXPERIMENT_RUN",
         "DATASET_VERSION"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Type 0 should always cause an error"
     },
     "modeldbAddLineage": {
       "type": "object",
@@ -204,8 +215,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -231,8 +241,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -338,21 +347,15 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"

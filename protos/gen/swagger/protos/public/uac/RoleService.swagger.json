@@ -4,6 +4,11 @@
     "title": "uac/RoleService.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "RoleService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,15 +27,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "resource_ids",
+            "description": "project.id, experiment.id etc.",
             "in": "query",
             "required": false,
             "type": "array",
@@ -41,7 +47,7 @@
           },
           {
             "name": "resource_type.role_service_resource_type",
-            "description": "Separate based on the service itself.",
+            "description": "Separate based on the service itself\n\n - UNKNOWN: Resource 0 should always cause an error",
             "in": "query",
             "required": false,
             "type": "string",
@@ -55,6 +61,7 @@
           },
           {
             "name": "resource_type.authz_service_resource_type",
+            "description": " - UNKNOWN: Resource 0 should always cause an error",
             "in": "query",
             "required": false,
             "type": "string",
@@ -79,6 +86,7 @@
           },
           {
             "name": "resource_type.modeldb_service_resource_type",
+            "description": " - UNKNOWN: Resource 0 should always cause an error",
             "in": "query",
             "required": false,
             "type": "string",
@@ -111,6 +119,7 @@
           },
           {
             "name": "resource_type.deployment_service_resource_type",
+            "description": " - UNKNOWN: Resource 0 should always cause an error",
             "in": "query",
             "required": false,
             "type": "string",
@@ -139,9 +148,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -171,9 +180,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -203,9 +212,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -235,9 +244,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -265,9 +274,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -307,9 +316,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -337,9 +346,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -379,9 +388,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -435,9 +444,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -485,9 +494,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -517,9 +526,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -557,7 +566,8 @@
         "CREATE_WEBHOOK",
         "CREATE_GROUP"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Action 0 should always cause an error"
     },
     "AuthzResourceEnumAuthzServiceResourceTypes": {
       "type": "string",
@@ -578,7 +588,8 @@
         "SCIM_CONFIGURATION",
         "GROUP"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Resource 0 should always cause an error"
     },
     "DeploymentActionEnumDeploymentServiceActions": {
       "type": "string",
@@ -593,7 +604,8 @@
         "PREDICT",
         "CONTROL"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Action 0 should always cause an error"
     },
     "DeploymentResourceEnumDeploymentServiceResourceTypes": {
       "type": "string",
@@ -603,7 +615,8 @@
         "ENDPOINT",
         "BUILD"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Resource 0 should always cause an error"
     },
     "ModelDBActionEnumModelDBServiceActions": {
       "type": "string",
@@ -630,7 +643,8 @@
         "CREATE_CONTAINER_REGISTRY",
         "PROMOTE"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Action 0 should always cause an error"
     },
     "ModelDBResourceEnumModelDBServiceResourceTypes": {
       "type": "string",
@@ -659,7 +673,8 @@
         "STAGE",
         "PROFILER"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Resource 0 should always cause an error"
     },
     "RoleActionEnumRoleServiceActions": {
       "type": "string",
@@ -673,7 +688,8 @@
         "LIST",
         "DELETE"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Action 0 should always cause an error"
     },
     "RoleResourceEnumRoleServiceResourceTypes": {
       "type": "string",
@@ -683,7 +699,8 @@
         "ROLE",
         "ROLE_BINDING"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Resource 0 should always cause an error"
     },
     "ServiceEnumService": {
       "type": "string",
@@ -697,7 +714,8 @@
         "REGISTRY_SERVICE",
         "MONITORING_SERVICE"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Service 0 should always cause an error"
     },
     "commonPagination": {
       "type": "object",
@@ -713,27 +731,9 @@
       },
       "title": "For pagination"
     },
-    "protobufAny": {
+    "googlerpcStatus": {
       "type": "object",
       "properties": {
-        "type_url": {
-          "type": "string",
-          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
-        },
-        "value": {
-          "type": "string",
-          "format": "byte",
-          "description": "Must be a valid serialized protocol buffer of the above specified type."
-        }
-      },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
-    },
-    "runtimeError": {
-      "type": "object",
-      "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"
@@ -748,6 +748,17 @@
           }
         }
       }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string",
+          "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
+        }
+      },
+      "additionalProperties": {},
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\nExample 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\nExample 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := anypb.New(foo)\n     if err != nil {\n       ...\n     }\n     ...\n     foo := &pb.Foo{}\n     if err := any.UnmarshalTo(foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
     "uacAction": {
       "type": "object",
@@ -790,8 +801,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -810,8 +820,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -819,8 +828,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -914,8 +922,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -969,8 +976,7 @@
           "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
         },
         "all_resource_ids": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "resource_type": {
           "$ref": "#/definitions/uacResourceType"
@@ -985,7 +991,8 @@
           "type": "string"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "title": "Unique within a scope"
         },
         "scope": {
           "$ref": "#/definitions/uacRoleScope"
@@ -1007,10 +1014,12 @@
           "type": "string"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "title": "Unique within a scope"
         },
         "scope": {
-          "$ref": "#/definitions/uacRoleScope"
+          "$ref": "#/definitions/uacRoleScope",
+          "title": "Was unused before introducing role_name in RoleBinding"
         },
         "entities": {
           "type": "array",
@@ -1033,8 +1042,7 @@
           "type": "string"
         },
         "public": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       },
       "title": "Binds a set of roles to a set of entities"

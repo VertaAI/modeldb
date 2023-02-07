@@ -4,6 +4,11 @@
     "title": "monitoring/Ingest.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "IngestService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,9 +27,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -103,7 +108,8 @@
         "GROUND_TRUTH",
         "PREDICTION"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Error"
     },
     "monitoringBatchIngestRequest": {
       "type": "object",
@@ -171,21 +177,15 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"
@@ -205,13 +205,16 @@
       "type": "object",
       "properties": {
         "s3": {
-          "$ref": "#/definitions/versioningS3DatasetBlob"
+          "$ref": "#/definitions/versioningS3DatasetBlob",
+          "title": "Blob of the type S3 dataset"
         },
         "path": {
-          "$ref": "#/definitions/versioningPathDatasetBlob"
+          "$ref": "#/definitions/versioningPathDatasetBlob",
+          "title": "Blob of the type path dataset"
         },
         "query": {
-          "$ref": "#/definitions/versioningQueryDatasetBlob"
+          "$ref": "#/definitions/versioningQueryDatasetBlob",
+          "title": "Blob of the type Query dataset"
         }
       }
     },
@@ -230,7 +233,8 @@
       "type": "object",
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "title": "Full path to the file"
         },
         "size": {
           "type": "string",
@@ -303,7 +307,8 @@
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
         "s3_version_id": {
-          "type": "string"
+          "type": "string",
+          "title": "if s3 bucket versioning is enabled, this captures the version id"
         }
       }
     }

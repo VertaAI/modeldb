@@ -4,6 +4,11 @@
     "title": "monitoring/Alert.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "AlertService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,9 +27,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -54,9 +59,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -86,9 +91,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -118,9 +123,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -150,9 +155,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -182,9 +187,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -214,9 +219,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -246,9 +251,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -278,9 +283,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -310,9 +315,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -396,7 +401,8 @@
         "IN",
         "NOT_IN"
       ],
-      "default": "EQ"
+      "default": "EQ",
+      "description": " - IN: This is not fully supported by backend."
     },
     "monitoringAlert": {
       "type": "object",
@@ -406,7 +412,8 @@
           "format": "uint64"
         },
         "name": {
-          "type": "string"
+          "type": "string",
+          "title": "Names are unique within a monitored entity"
         },
         "monitored_entity_id": {
           "type": "string",
@@ -428,8 +435,7 @@
         "notification_channels": {
           "type": "object",
           "additionalProperties": {
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           "title": "Use a map instead of a list to represent that this is a set"
         },
@@ -470,8 +476,7 @@
           "type": "string"
         },
         "enabled": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -484,7 +489,8 @@
           "title": "Alert is fired if value is $operator $threshold"
         },
         "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
+          "$ref": "#/definitions/OperatorEnumOperator",
+          "title": "Default = GTE"
         }
       }
     },
@@ -501,7 +507,7 @@
         },
         "alert_if_outside_range": {
           "type": "boolean",
-          "format": "boolean"
+          "description": "if true, alert when value is outside the range.  If false, alert when value is inside the range."
         }
       }
     },
@@ -514,7 +520,8 @@
           "title": "Alert is fired if value $operator $threshold"
         },
         "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
+          "$ref": "#/definitions/OperatorEnumOperator",
+          "title": "Default = GTE"
         }
       }
     },
@@ -522,7 +529,8 @@
       "type": "object",
       "properties": {
         "alert": {
-          "$ref": "#/definitions/monitoringAlert"
+          "$ref": "#/definitions/monitoringAlert",
+          "title": "ID must be empty"
         }
       }
     },
@@ -530,7 +538,8 @@
       "type": "object",
       "properties": {
         "channel": {
-          "$ref": "#/definitions/monitoringNotificationChannel"
+          "$ref": "#/definitions/monitoringNotificationChannel",
+          "title": "Deprecated. But keeping for now for compatibility"
         },
         "name": {
           "type": "string"
@@ -627,8 +636,7 @@
           "title": "Allow filtering to see only failing alerts"
         },
         "includeIfNoData": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "page_number": {
           "type": "integer",
@@ -727,7 +735,8 @@
           "title": "Optional. ID of this item. Doesn't need to be output on the response"
         },
         "alert": {
-          "$ref": "#/definitions/monitoringAlert"
+          "$ref": "#/definitions/monitoringAlert",
+          "title": "Deep copy of the original alert to preserve history"
         }
       },
       "title": "Tracks previous calls to (UpdateAlertStatusRequest) based on its arguments"
@@ -813,7 +822,8 @@
         },
         "event_time_millis": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "Optional field that the alerter can set to provide past events (backfill)"
         },
         "status": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus"
@@ -833,21 +843,15 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"

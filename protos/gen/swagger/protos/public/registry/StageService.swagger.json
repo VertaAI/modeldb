@@ -4,6 +4,11 @@
     "title": "registry/StageService.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "StageService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,9 +27,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -54,9 +59,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -87,9 +92,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -119,9 +124,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -152,9 +157,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -185,9 +190,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -218,9 +223,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -250,9 +255,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -283,9 +288,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -316,7 +321,8 @@
         "ARCHIVED",
         "UNASSIGNED"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Error"
     },
     "TransitionStateEnumTransitionState": {
       "type": "string",
@@ -329,19 +335,17 @@
         "COMMITTED"
       ],
       "default": "UNKNOWN",
-      "title": "- APPROVED: It is approved only if it has one approval and no rejections\n - REJECTED: It is rejected if it has any rejection\n - PENDING: It is pending if there are no approvals or rejections\n - CLOSED: It is closed if the user has explicitly requested it to be closed\n - COMMITTED: It has been committed and people can't close, approve or reject anymore"
+      "description": "NOTE: only the last behavior from the user counts. For example, if I approve and then reject, it counts as a rejection.",
+      "title": "- UNKNOWN: Error\n - APPROVED: It is approved only if it has one approval and no rejections\n - REJECTED: It is rejected if it has any rejection\n - PENDING: It is pending if there are no approvals or rejections\n - CLOSED: It is closed if the user has explicitly requested it to be closed\n - COMMITTED: It has been committed and people can't close, approve or reject anymore"
     },
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
     "registryActivity": {
       "type": "object",
@@ -576,12 +580,9 @@
         }
       }
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"

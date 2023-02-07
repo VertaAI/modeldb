@@ -4,6 +4,11 @@
     "title": "registry/RegistryService.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "RegistryService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -23,9 +28,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -55,9 +60,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -72,21 +77,21 @@
           },
           {
             "name": "id.model_id.named_id.name",
-            "description": "Model Name.",
+            "description": "Model Name",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName.",
+            "description": "WorkspaceName",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "id.model_id.registered_model_id",
-            "description": "Model refered to by id.",
+            "description": "Model refered to by id",
             "in": "query",
             "required": false,
             "type": "string",
@@ -107,9 +112,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -124,21 +129,21 @@
           },
           {
             "name": "id.model_id.named_id.name",
-            "description": "Model Name.",
+            "description": "Model Name",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName.",
+            "description": "WorkspaceName",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "id.model_id.registered_model_id",
-            "description": "Model refered to by id.",
+            "description": "Model refered to by id",
             "in": "query",
             "required": false,
             "type": "string",
@@ -161,9 +166,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -181,7 +186,23 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registrySetLockModelVersionRequest"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "object",
+                  "properties": {
+                    "model_id": {
+                      "$ref": "#/definitions/registryRegisteredModelIdentification",
+                      "description": "Compulsory",
+                      "title": "Registered Model referred to by id"
+                    }
+                  },
+                  "title": "User or organization name"
+                },
+                "lock_level": {
+                  "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel"
+                }
+              }
             }
           }
         ],
@@ -201,9 +222,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -221,7 +242,16 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryCommitArtifactPart"
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "title": "artifact key"
+                },
+                "artifact_part": {
+                  "$ref": "#/definitions/commonArtifactPart"
+                }
+              }
             }
           }
         ],
@@ -241,9 +271,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -261,7 +291,13 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryCommitMultipartArtifact"
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "title": "artifact key"
+                }
+              }
             }
           }
         ],
@@ -281,9 +317,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -298,7 +334,7 @@
           },
           {
             "name": "key",
-            "description": "artifact key.",
+            "description": "artifact key",
             "in": "query",
             "required": false,
             "type": "string"
@@ -320,9 +356,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -340,7 +376,26 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryGetUrlForArtifact"
+              "type": "object",
+              "properties": {
+                "key": {
+                  "type": "string",
+                  "title": "artifact key"
+                },
+                "method": {
+                  "type": "string",
+                  "title": "GET or PUT"
+                },
+                "artifact_type": {
+                  "$ref": "#/definitions/ArtifactTypeEnumArtifactType",
+                  "title": "type of artifact"
+                },
+                "part_number": {
+                  "type": "string",
+                  "format": "uint64",
+                  "title": "0 if the url is not required to be multi part"
+                }
+              }
             }
           }
         ],
@@ -360,9 +415,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -379,7 +434,15 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryLogAttributesInModelVersion"
+              "type": "object",
+              "properties": {
+                "attributes": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/commonKeyValue"
+                  }
+                }
+              }
             }
           }
         ],
@@ -399,9 +462,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -418,7 +481,15 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryLogCodeBlobInModelVersion"
+              "type": "object",
+              "properties": {
+                "code_blob_map": {
+                  "type": "object",
+                  "additionalProperties": {
+                    "$ref": "#/definitions/versioningCodeBlob"
+                  }
+                }
+              }
             }
           }
         ],
@@ -438,9 +509,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -457,7 +528,15 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryLogDatasetsInModelVersion"
+              "type": "object",
+              "properties": {
+                "datasets": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/commonArtifact"
+                  }
+                }
+              }
             }
           }
         ],
@@ -477,9 +556,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -496,7 +575,12 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryLogDockerMetadataInModelVersion"
+              "type": "object",
+              "properties": {
+                "docker_metadata": {
+                  "$ref": "#/definitions/registryDockerMetadata"
+                }
+              }
             }
           }
         ],
@@ -516,9 +600,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -547,9 +631,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -579,9 +663,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -609,9 +693,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -641,9 +725,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -670,9 +754,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -701,9 +785,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -717,12 +801,40 @@
             "format": "uint64"
           },
           {
-            "name": "body",
+            "name": "model_version",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryModelVersion"
             }
+          },
+          {
+            "name": "id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_id.named_id.name",
+            "description": "Model Name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -741,9 +853,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -766,14 +878,14 @@
           },
           {
             "name": "id.model_id.named_id.name",
-            "description": "Model Name.",
+            "description": "Model Name",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "id.model_id.named_id.workspace_name",
-            "description": "WorkspaceName.",
+            "description": "WorkspaceName",
             "in": "query",
             "required": false,
             "type": "string"
@@ -793,9 +905,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -817,12 +929,32 @@
             "format": "uint64"
           },
           {
-            "name": "body",
+            "name": "model_version",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryModelVersion"
             }
+          },
+          {
+            "name": "id.model_id.named_id.name",
+            "description": "Model Name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -839,9 +971,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -863,12 +995,32 @@
             "format": "uint64"
           },
           {
-            "name": "body",
+            "name": "model_version",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryModelVersion"
             }
+          },
+          {
+            "name": "id.model_id.named_id.name",
+            "description": "Model Name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.model_id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -887,9 +1039,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -915,7 +1067,31 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registrySetModelVersion"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "object",
+                  "properties": {
+                    "model_id": {
+                      "type": "object",
+                      "properties": {
+                        "named_id": {
+                          "$ref": "#/definitions/registryRegisteredModelNamedIdentification",
+                          "title": "Model refered to by workspace name , model nmae combination"
+                        }
+                      },
+                      "description": "Compulsory",
+                      "title": "Registered Model referred to by id"
+                    }
+                  }
+                },
+                "model_version": {
+                  "$ref": "#/definitions/registryModelVersion"
+                },
+                "update_mask": {
+                  "type": "string"
+                }
+              }
             }
           }
         ],
@@ -935,9 +1111,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -952,14 +1128,14 @@
           },
           {
             "name": "id.named_id.name",
-            "description": "Model Name.",
+            "description": "Model Name",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "id.named_id.workspace_name",
-            "description": "WorkspaceName.",
+            "description": "WorkspaceName",
             "in": "query",
             "required": false,
             "type": "string"
@@ -979,9 +1155,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -996,14 +1172,14 @@
           },
           {
             "name": "id.named_id.name",
-            "description": "Model Name.",
+            "description": "Model Name",
             "in": "query",
             "required": false,
             "type": "string"
           },
           {
             "name": "id.named_id.workspace_name",
-            "description": "WorkspaceName.",
+            "description": "WorkspaceName",
             "in": "query",
             "required": false,
             "type": "string"
@@ -1023,9 +1199,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1039,12 +1215,32 @@
             "format": "uint64"
           },
           {
-            "name": "body",
+            "name": "registered_model",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
+          },
+          {
+            "name": "id.named_id.name",
+            "description": "Model Name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1061,9 +1257,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1077,12 +1273,32 @@
             "format": "uint64"
           },
           {
-            "name": "body",
+            "name": "registered_model",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
+          },
+          {
+            "name": "id.named_id.name",
+            "description": "Model Name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.named_id.workspace_name",
+            "description": "WorkspaceName",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1101,9 +1317,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1121,7 +1337,25 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registrySetRegisteredModel"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "$ref": "#/definitions/registryRegisteredModelNamedIdentification",
+                      "title": "Model refered to by workspace name , model nmae combination"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "registered_model": {
+                  "$ref": "#/definitions/registryRegisteredModel"
+                },
+                "update_mask": {
+                  "type": "string"
+                }
+              }
             }
           }
         ],
@@ -1142,9 +1376,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1162,7 +1396,43 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryFindModelVersionRequest"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "$ref": "#/definitions/registryRegisteredModelNamedIdentification",
+                      "title": "Model refered to by workspace name , model nmae combination"
+                    }
+                  },
+                  "title": "identity of parent registered model"
+                },
+                "predicates": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/commonKeyValueQuery"
+                  },
+                  "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
+                },
+                "pagination": {
+                  "$ref": "#/definitions/commonPagination",
+                  "title": "If not present will default to page 1 page_size 10"
+                },
+                "ascending": {
+                  "type": "boolean"
+                },
+                "sort_key": {
+                  "type": "string"
+                },
+                "ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uint64"
+                  }
+                }
+              }
             }
           }
         ],
@@ -1182,9 +1452,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1204,12 +1474,34 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "model_version",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryModelVersion"
             }
+          },
+          {
+            "name": "id.model_version_id",
+            "description": "ModelVersion referred to by id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1228,9 +1520,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1259,7 +1551,7 @@
           },
           {
             "name": "id.model_id.registered_model_id",
-            "description": "Model refered to by id.",
+            "description": "Model refered to by id",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1280,9 +1572,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1311,7 +1603,7 @@
           },
           {
             "name": "id.model_id.registered_model_id",
-            "description": "Model refered to by id.",
+            "description": "Model refered to by id",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1332,9 +1624,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1362,12 +1654,26 @@
             "format": "uint64"
           },
           {
-            "name": "body",
+            "name": "model_version",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryModelVersion"
             }
+          },
+          {
+            "name": "id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1384,9 +1690,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1414,12 +1720,26 @@
             "format": "uint64"
           },
           {
-            "name": "body",
+            "name": "model_version",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryModelVersion"
             }
+          },
+          {
+            "name": "id.model_id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1438,9 +1758,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1472,7 +1792,36 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registrySetModelVersion"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "object",
+                  "properties": {
+                    "model_id": {
+                      "type": "object",
+                      "properties": {
+                        "named_id": {
+                          "type": "object",
+                          "title": "Model refered to by workspace name , model nmae combination"
+                        },
+                        "registered_model_id": {
+                          "type": "string",
+                          "format": "uint64",
+                          "title": "Model refered to by id"
+                        }
+                      },
+                      "description": "Compulsory",
+                      "title": "Registered Model referred to by id"
+                    }
+                  }
+                },
+                "model_version": {
+                  "$ref": "#/definitions/registryModelVersion"
+                },
+                "update_mask": {
+                  "type": "string"
+                }
+              }
             }
           }
         ],
@@ -1493,9 +1842,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1512,7 +1861,54 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryFindModelVersionRequest"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "type": "object",
+                      "properties": {
+                        "name": {
+                          "type": "string",
+                          "title": "Model Name"
+                        }
+                      },
+                      "title": "Model refered to by workspace name , model nmae combination"
+                    },
+                    "registered_model_id": {
+                      "type": "string",
+                      "format": "uint64",
+                      "title": "Model refered to by id"
+                    }
+                  },
+                  "title": "identity of parent registered model"
+                },
+                "predicates": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/commonKeyValueQuery"
+                  },
+                  "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
+                },
+                "pagination": {
+                  "$ref": "#/definitions/commonPagination",
+                  "title": "If not present will default to page 1 page_size 10"
+                },
+                "ascending": {
+                  "type": "boolean"
+                },
+                "sort_key": {
+                  "type": "string"
+                },
+                "ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uint64"
+                  }
+                }
+              }
             }
           }
         ],
@@ -1532,9 +1928,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1547,12 +1943,33 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "registered_model",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
+          },
+          {
+            "name": "id.named_id.name",
+            "description": "Model Name",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          },
+          {
+            "name": "id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1571,9 +1988,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1594,7 +2011,7 @@
           },
           {
             "name": "id.registered_model_id",
-            "description": "Model refered to by id.",
+            "description": "Model refered to by id",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1615,9 +2032,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1638,7 +2055,7 @@
           },
           {
             "name": "id.registered_model_id",
-            "description": "Model refered to by id.",
+            "description": "Model refered to by id",
             "in": "query",
             "required": false,
             "type": "string",
@@ -1659,9 +2076,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1681,12 +2098,26 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "registered_model",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
+          },
+          {
+            "name": "id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1703,9 +2134,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1725,12 +2156,26 @@
             "type": "string"
           },
           {
-            "name": "body",
+            "name": "registered_model",
             "in": "body",
             "required": true,
             "schema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
+          },
+          {
+            "name": "id.registered_model_id",
+            "description": "Model refered to by id",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "uint64"
+          },
+          {
+            "name": "update_mask",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
         "tags": [
@@ -1749,9 +2194,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1775,7 +2220,30 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registrySetRegisteredModel"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "type": "object",
+                      "title": "Model refered to by workspace name , model nmae combination"
+                    },
+                    "registered_model_id": {
+                      "type": "string",
+                      "format": "uint64",
+                      "title": "Model refered to by id"
+                    }
+                  },
+                  "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+                },
+                "registered_model": {
+                  "$ref": "#/definitions/registryRegisteredModel"
+                },
+                "update_mask": {
+                  "type": "string"
+                }
+              }
             }
           }
         ],
@@ -1796,9 +2264,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1822,7 +2290,48 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryFindModelVersionRequest"
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "object",
+                  "properties": {
+                    "named_id": {
+                      "type": "object",
+                      "title": "Model refered to by workspace name , model nmae combination"
+                    },
+                    "registered_model_id": {
+                      "type": "string",
+                      "format": "uint64",
+                      "title": "Model refered to by id"
+                    }
+                  },
+                  "title": "identity of parent registered model"
+                },
+                "predicates": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/commonKeyValueQuery"
+                  },
+                  "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
+                },
+                "pagination": {
+                  "$ref": "#/definitions/commonPagination",
+                  "title": "If not present will default to page 1 page_size 10"
+                },
+                "ascending": {
+                  "type": "boolean"
+                },
+                "sort_key": {
+                  "type": "string"
+                },
+                "ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uint64"
+                  }
+                }
+              }
             }
           }
         ],
@@ -1843,9 +2352,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -1862,7 +2371,34 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/registryFindRegisteredModelRequest"
+              "type": "object",
+              "properties": {
+                "predicates": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/commonKeyValueQuery"
+                  },
+                  "title": "Filtering supported on\n1. name\n2. labels\n3. description"
+                },
+                "pagination": {
+                  "$ref": "#/definitions/commonPagination",
+                  "title": "If not present will default to page 1 page_size 10"
+                },
+                "ascending": {
+                  "type": "boolean"
+                },
+                "sort_key": {
+                  "type": "string"
+                },
+                "ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "format": "uint64"
+                  }
+                }
+              },
+              "title": "CRUD for Registred Models"
             }
           }
         ],
@@ -1946,7 +2482,8 @@
         "IN",
         "NOT_IN"
       ],
-      "default": "EQ"
+      "default": "EQ",
+      "description": " - IN: This is not fully supported by backend."
     },
     "StageEnumStage": {
       "type": "string",
@@ -1958,7 +2495,8 @@
         "ARCHIVED",
         "UNASSIGNED"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: Error"
     },
     "TaskTypeEnumTaskType": {
       "type": "string",
@@ -2014,8 +2552,7 @@
           "type": "string"
         },
         "path_only": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
@@ -2033,8 +2570,7 @@
           "type": "string"
         },
         "upload_completed": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -2046,7 +2582,8 @@
           "format": "uint64"
         },
         "etag": {
-          "type": "string"
+          "type": "string",
+          "title": "checksum returned by S3"
         }
       }
     },
@@ -2056,9 +2593,7 @@
         "key": {
           "type": "string"
         },
-        "value": {
-          "type": "object"
-        },
+        "value": {},
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
@@ -2069,16 +2604,19 @@
       "type": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "type": "string",
+          "title": "entity field key"
         },
         "value": {
-          "type": "object"
+          "title": "entity field value"
         },
         "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "title": "Default = STRING"
         },
         "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
+          "$ref": "#/definitions/OperatorEnumOperator",
+          "title": "Default = EQ"
         }
       }
     },
@@ -2099,28 +2637,11 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "protobufFieldMask": {
-      "type": "object",
-      "properties": {
-        "paths": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "description": "The set of field mask paths."
         }
       },
-      "description": "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nIn order to reset a field's value to the default, the field must\nbe in the mask and set to the default value in the provided resource.\nHence, in order to reset all fields of a resource, provide a default\ninstance of the resource and set all fields in the mask, or do\nnot provide a mask as described below.\n\nIf a field mask is not present on update, the operation applies to\nall fields (as if a field mask of all fields has been specified).\nNote that in the presence of schema evolution, this may mean that\nfields the client does not know and has therefore not filled into\nthe request will be reset to their default. If this is unwanted\nbehavior, a specific service may require a client to always specify\na field mask, producing an error if not.\n\nAs with get operations, the location of the resource which\ndescribes the updated values in the request message depends on the\noperation kind. In any case, the effect of the field mask is\nrequired to be honored by the API.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"sub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable.",
-      "title": "`FieldMask` represents a set of symbolic field paths, for example:"
+      "additionalProperties": {}
     },
     "protobufNullValue": {
       "type": "string",
@@ -2130,39 +2651,8 @@
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "registryCommitArtifactPart": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        },
-        "artifact_part": {
-          "$ref": "#/definitions/commonArtifactPart"
-        }
-      }
-    },
     "registryCommitArtifactPartResponse": {
       "type": "object"
-    },
-    "registryCommitMultipartArtifact": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        }
-      }
     },
     "registryCommitMultipartArtifactResponse": {
       "type": "object"
@@ -2252,8 +2742,7 @@
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "sort_key": {
           "type": "string"
@@ -2301,8 +2790,7 @@
           "title": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "sort_key": {
           "type": "string"
@@ -2368,33 +2856,6 @@
         }
       }
     },
-    "registryGetUrlForArtifact": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of model version"
-        },
-        "key": {
-          "type": "string",
-          "title": "artifact key"
-        },
-        "method": {
-          "type": "string",
-          "title": "GET or PUT"
-        },
-        "artifact_type": {
-          "$ref": "#/definitions/ArtifactTypeEnumArtifactType",
-          "title": "type of artifact"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64",
-          "title": "0 if the url is not required to be multi part"
-        }
-      }
-    },
     "registryGetUrlForArtifactResponse": {
       "type": "object",
       "properties": {
@@ -2403,8 +2864,7 @@
           "title": "URL based on action"
         },
         "multipart_upload_ok": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "fields": {
           "type": "object",
@@ -2414,71 +2874,14 @@
         }
       }
     },
-    "registryLogAttributesInModelVersion": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "attributes": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonKeyValue"
-          }
-        }
-      }
-    },
     "registryLogAttributesInModelVersionResponse": {
       "type": "object"
-    },
-    "registryLogCodeBlobInModelVersion": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "code_blob_map": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/versioningCodeBlob"
-          }
-        }
-      }
     },
     "registryLogCodeBlobInModelVersionResponse": {
       "type": "object"
     },
-    "registryLogDatasetsInModelVersion": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "datasets": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/commonArtifact"
-          }
-        }
-      }
-    },
     "registryLogDatasetsInModelVersionResponse": {
       "type": "object"
-    },
-    "registryLogDockerMetadataInModelVersion": {
-      "type": "object",
-      "properties": {
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "docker_metadata": {
-          "$ref": "#/definitions/registryDockerMetadata"
-        }
-      }
     },
     "registryLogDockerMetadataInModelVersionResponse": {
       "type": "object"
@@ -2515,7 +2918,8 @@
           "description": "Description of this ``model_version``."
         },
         "experiment_run_id": {
-          "type": "string"
+          "type": "string",
+          "title": "string model_url = 15; NOT SUPPORTED YET"
         },
         "labels": {
           "type": "array",
@@ -2590,7 +2994,6 @@
         },
         "readme_text_updated": {
           "type": "boolean",
-          "format": "boolean",
           "title": "Is true if the readme text has been updated at least once"
         },
         "version_number": {
@@ -2608,7 +3011,6 @@
         },
         "hide_input_label": {
           "type": "boolean",
-          "format": "boolean",
           "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
         "output_description": {
@@ -2617,7 +3019,6 @@
         },
         "hide_output_label": {
           "type": "boolean",
-          "format": "boolean",
           "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
         "external_deployments": {
@@ -2638,6 +3039,7 @@
         },
         "model_id": {
           "$ref": "#/definitions/registryRegisteredModelIdentification",
+          "description": "Compulsory",
           "title": "Registered Model referred to by id"
         }
       }
@@ -2718,7 +3120,6 @@
         },
         "readme_text_updated": {
           "type": "boolean",
-          "format": "boolean",
           "title": "Is true if the readme text has been updated at least once"
         },
         "version_number": {
@@ -2766,54 +3167,14 @@
         }
       }
     },
-    "registrySetLockModelVersionRequest": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/registryModelVersionIdentification",
-          "title": "User or organization name"
-        },
-        "lock_level": {
-          "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel"
-        }
-      }
-    },
     "registrySetLockModelVersionRequestResponse": {
       "type": "object"
-    },
-    "registrySetModelVersion": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/registryModelVersionIdentification"
-        },
-        "model_version": {
-          "$ref": "#/definitions/registryModelVersion"
-        },
-        "update_mask": {
-          "$ref": "#/definitions/protobufFieldMask"
-        }
-      }
     },
     "registrySetModelVersionResponse": {
       "type": "object",
       "properties": {
         "model_version": {
           "$ref": "#/definitions/registryModelVersion"
-        }
-      }
-    },
-    "registrySetRegisteredModel": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "$ref": "#/definitions/registryRegisteredModelIdentification"
-        },
-        "registered_model": {
-          "$ref": "#/definitions/registryRegisteredModel"
-        },
-        "update_mask": {
-          "$ref": "#/definitions/protobufFieldMask"
         }
       }
     },
@@ -2825,12 +3186,9 @@
         }
       }
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"
@@ -2960,8 +3318,7 @@
           "type": "string"
         },
         "is_dirty": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -2980,7 +3337,8 @@
       "type": "object",
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "title": "Full path to the file"
         },
         "size": {
           "type": "string",

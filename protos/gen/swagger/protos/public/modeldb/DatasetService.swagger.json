@@ -4,6 +4,11 @@
     "title": "modeldb/DatasetService.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "DatasetService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,9 +27,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -54,9 +59,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -86,9 +91,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -118,9 +123,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -150,9 +155,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -182,9 +187,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -214,9 +219,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -247,9 +252,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -279,16 +284,16 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
         "parameters": [
           {
             "name": "page_number",
-            "description": "For pagination.",
+            "description": "For pagination",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -305,8 +310,7 @@
             "name": "ascending",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           {
             "name": "sort_key",
@@ -337,9 +341,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -367,9 +371,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -403,9 +407,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -433,9 +437,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -465,9 +469,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -495,9 +499,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -527,9 +531,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -559,9 +563,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -611,7 +615,8 @@
         "PATH",
         "QUERY"
       ],
-      "default": "RAW"
+      "default": "RAW",
+      "title": "- RAW: default"
     },
     "DatasetVisibilityEnumDatasetVisibility": {
       "type": "string",
@@ -620,7 +625,8 @@
         "PUBLIC",
         "ORG_SCOPED_PUBLIC"
       ],
-      "default": "PRIVATE"
+      "default": "PRIVATE",
+      "title": "- PRIVATE: default"
     },
     "OperatorEnumOperator": {
       "type": "string",
@@ -636,7 +642,8 @@
         "IN",
         "NOT_IN"
       ],
-      "default": "EQ"
+      "default": "EQ",
+      "description": " - IN: This is not fully supported by backend."
     },
     "TernaryEnumTernary": {
       "type": "string",
@@ -676,8 +683,7 @@
           "type": "string"
         },
         "path_only": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
@@ -695,8 +701,7 @@
           "type": "string"
         },
         "upload_completed": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -707,7 +712,8 @@
           "$ref": "#/definitions/commonGitSnapshot"
         },
         "code_archive": {
-          "$ref": "#/definitions/commonArtifact"
+          "$ref": "#/definitions/commonArtifact",
+          "title": "ZIP archive of source code"
         },
         "date_logged": {
           "type": "string",
@@ -723,13 +729,16 @@
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "title": "paths to relevant source code"
         },
         "repo": {
-          "type": "string"
+          "type": "string",
+          "title": "URL to remote repository"
         },
         "hash": {
-          "type": "string"
+          "type": "string",
+          "title": "commit hash"
         },
         "is_dirty": {
           "$ref": "#/definitions/TernaryEnumTernary"
@@ -753,9 +762,7 @@
         "key": {
           "type": "string"
         },
-        "value": {
-          "type": "object"
-        },
+        "value": {},
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
@@ -766,16 +773,19 @@
       "type": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "type": "string",
+          "title": "entity field key"
         },
         "value": {
-          "type": "object"
+          "title": "entity field value"
         },
         "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "title": "Default = STRING"
         },
         "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
+          "$ref": "#/definitions/OperatorEnumOperator",
+          "title": "Default = EQ"
         }
       }
     },
@@ -878,7 +888,8 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "title": "For backend reference"
         },
         "name": {
           "type": "string"
@@ -967,8 +978,7 @@
           }
         },
         "delete_all": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -984,8 +994,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -1002,8 +1011,7 @@
           }
         },
         "delete_all": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -1030,8 +1038,7 @@
       "type": "object",
       "properties": {
         "status": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         }
       }
     },
@@ -1246,7 +1253,7 @@
         },
         "ids_only": {
           "type": "boolean",
-          "format": "boolean"
+          "title": "whether to return full experiment runs or ids only"
         },
         "workspace_name": {
           "type": "string"
@@ -1261,8 +1268,7 @@
           "format": "int32"
         },
         "ascending": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "sort_key": {
           "type": "string"
@@ -1317,7 +1323,8 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/modeldbDataset"
-          }
+          },
+          "title": "because of collaboration, this might be multiple datasets w/same name"
         }
       }
     },
@@ -1372,9 +1379,7 @@
           "type": "string",
           "format": "int64"
         },
-        "epoch_number": {
-          "type": "object"
-        }
+        "epoch_number": {}
       },
       "title": "observations with the same key are not overwritten, the are appended to a list"
     },
@@ -1456,14 +1461,11 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
     "protobufNullValue": {
       "type": "string",
@@ -1473,12 +1475,9 @@
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"

@@ -4,6 +4,11 @@
     "title": "modeldb/DatasetVersionService.proto",
     "version": "version not set"
   },
+  "tags": [
+    {
+      "name": "DatasetVersionService"
+    }
+  ],
   "consumes": [
     "application/json"
   ],
@@ -22,9 +27,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -54,9 +59,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -86,9 +91,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -118,9 +123,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -150,9 +155,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -182,9 +187,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -206,7 +211,24 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/modeldbGetUrlForDatasetBlobVersioned"
+              "type": "object",
+              "properties": {
+                "path_dataset_component_blob_path": {
+                  "type": "string"
+                },
+                "method": {
+                  "type": "string",
+                  "title": "This is either GET or PUT"
+                },
+                "part_number": {
+                  "type": "string",
+                  "format": "uint64",
+                  "title": "if 0, don’t do multipart"
+                },
+                "workspace_name": {
+                  "type": "string"
+                }
+              }
             }
           }
         ],
@@ -226,9 +248,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -258,9 +280,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -290,9 +312,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -322,9 +344,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -355,9 +377,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -387,9 +409,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -402,7 +424,7 @@
           },
           {
             "name": "page_number",
-            "description": "For pagination.",
+            "description": "For pagination",
             "in": "query",
             "required": false,
             "type": "integer",
@@ -419,8 +441,7 @@
             "name": "ascending",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           {
             "name": "sort_key",
@@ -445,9 +466,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -487,9 +508,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -514,8 +535,7 @@
             "name": "get_all",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           {
             "name": "dataset_id",
@@ -540,9 +560,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -570,9 +590,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -587,8 +607,7 @@
             "name": "ascending",
             "in": "query",
             "required": false,
-            "type": "boolean",
-            "format": "boolean"
+            "type": "boolean"
           },
           {
             "name": "sort_key",
@@ -613,9 +632,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -645,9 +664,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -677,9 +696,9 @@
             }
           },
           "default": {
-            "description": "An unexpected error response",
+            "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/runtimeError"
+              "$ref": "#/definitions/rpcStatus"
             }
           }
         },
@@ -707,7 +726,21 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/modeldbGetUrlForDatasetBlobVersioned"
+              "type": "object",
+              "properties": {
+                "path_dataset_component_blob_path": {
+                  "type": "string"
+                },
+                "method": {
+                  "type": "string",
+                  "title": "This is either GET or PUT"
+                },
+                "part_number": {
+                  "type": "string",
+                  "format": "uint64",
+                  "title": "if 0, don’t do multipart"
+                }
+              }
             }
           }
         ],
@@ -725,7 +758,8 @@
         "PATH",
         "QUERY"
       ],
-      "default": "RAW"
+      "default": "RAW",
+      "title": "- RAW: default"
     },
     "OperatorEnumOperator": {
       "type": "string",
@@ -741,7 +775,8 @@
         "IN",
         "NOT_IN"
       ],
-      "default": "EQ"
+      "default": "EQ",
+      "description": " - IN: This is not fully supported by backend."
     },
     "PathLocationTypeEnumPathLocationType": {
       "type": "string",
@@ -751,7 +786,8 @@
         "HADOOP_FILE_SYSTEM",
         "S3_FILE_SYSTEM"
       ],
-      "default": "LOCAL_FILE_SYSTEM"
+      "default": "LOCAL_FILE_SYSTEM",
+      "title": "- LOCAL_FILE_SYSTEM: default"
     },
     "ValueTypeEnumValueType": {
       "type": "string",
@@ -771,7 +807,8 @@
           "format": "uint64"
         },
         "etag": {
-          "type": "string"
+          "type": "string",
+          "title": "checksum returned by S3"
         }
       }
     },
@@ -792,9 +829,7 @@
         "key": {
           "type": "string"
         },
-        "value": {
-          "type": "object"
-        },
+        "value": {},
         "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
@@ -805,16 +840,19 @@
       "type": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "type": "string",
+          "title": "entity field key"
         },
         "value": {
-          "type": "object"
+          "title": "entity field value"
         },
         "value_type": {
-          "$ref": "#/definitions/ValueTypeEnumValueType"
+          "$ref": "#/definitions/ValueTypeEnumValueType",
+          "title": "Default = STRING"
         },
         "operator": {
-          "$ref": "#/definitions/OperatorEnumOperator"
+          "$ref": "#/definitions/OperatorEnumOperator",
+          "title": "Default = EQ"
         }
       }
     },
@@ -924,7 +962,8 @@
           }
         },
         "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
+          "$ref": "#/definitions/DatasetTypeEnumDatasetType",
+          "description": "this acts as a quick check on which type of DataSetInfo to look at for more details."
         },
         "attributes": {
           "type": "array",
@@ -985,7 +1024,8 @@
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
+          "type": "string",
+          "title": "For backend reference"
         },
         "parent_id": {
           "type": "string"
@@ -1007,7 +1047,8 @@
           }
         },
         "dataset_type": {
-          "$ref": "#/definitions/DatasetTypeEnumDatasetType"
+          "$ref": "#/definitions/DatasetTypeEnumDatasetType",
+          "description": "this acts as a quick check on which type of DataSetInfo to look at for more details."
         },
         "attributes": {
           "type": "array",
@@ -1076,8 +1117,7 @@
           }
         },
         "delete_all": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "dataset_id": {
           "type": "string"
@@ -1108,8 +1148,7 @@
           }
         },
         "delete_all": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "dataset_id": {
           "type": "string"
@@ -1161,7 +1200,7 @@
         },
         "ids_only": {
           "type": "boolean",
-          "format": "boolean"
+          "title": "whether to return full experiment runs or ids only"
         },
         "page_number": {
           "type": "integer",
@@ -1173,8 +1212,7 @@
           "format": "int32"
         },
         "ascending": {
-          "type": "boolean",
-          "format": "boolean"
+          "type": "boolean"
         },
         "sort_key": {
           "type": "string"
@@ -1252,30 +1290,6 @@
         }
       }
     },
-    "modeldbGetUrlForDatasetBlobVersioned": {
-      "type": "object",
-      "properties": {
-        "dataset_id": {
-          "type": "string"
-        },
-        "dataset_version_id": {
-          "type": "string"
-        },
-        "path_dataset_component_blob_path": {
-          "type": "string"
-        },
-        "method": {
-          "type": "string"
-        },
-        "part_number": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "workspace_name": {
-          "type": "string"
-        }
-      }
-    },
     "modeldbGetUrlForDatasetBlobVersionedResponse": {
       "type": "object",
       "properties": {
@@ -1284,7 +1298,7 @@
         },
         "multipart_upload_ok": {
           "type": "boolean",
-          "format": "boolean"
+          "title": "for backcompat: new Client, old Backend"
         }
       }
     },
@@ -1346,9 +1360,7 @@
         "parameter_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType"
         },
-        "value": {
-          "type": "object"
-        }
+        "value": {}
       }
     },
     "modeldbRawDatasetVersionInfo": {
@@ -1423,14 +1435,11 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "type_url": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
     "protobufNullValue": {
       "type": "string",
@@ -1440,12 +1449,9 @@
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "runtimeError": {
+    "rpcStatus": {
       "type": "object",
       "properties": {
-        "error": {
-          "type": "string"
-        },
         "code": {
           "type": "integer",
           "format": "int32"
@@ -1465,13 +1471,16 @@
       "type": "object",
       "properties": {
         "s3": {
-          "$ref": "#/definitions/versioningS3DatasetBlob"
+          "$ref": "#/definitions/versioningS3DatasetBlob",
+          "title": "Blob of the type S3 dataset"
         },
         "path": {
-          "$ref": "#/definitions/versioningPathDatasetBlob"
+          "$ref": "#/definitions/versioningPathDatasetBlob",
+          "title": "Blob of the type path dataset"
         },
         "query": {
-          "$ref": "#/definitions/versioningQueryDatasetBlob"
+          "$ref": "#/definitions/versioningQueryDatasetBlob",
+          "title": "Blob of the type Query dataset"
         }
       }
     },
@@ -1490,7 +1499,8 @@
       "type": "object",
       "properties": {
         "path": {
-          "type": "string"
+          "type": "string",
+          "title": "Full path to the file"
         },
         "size": {
           "type": "string",
@@ -1563,7 +1573,8 @@
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
         "s3_version_id": {
-          "type": "string"
+          "type": "string",
+          "title": "if s3 bucket versioning is enabled, this captures the version id"
         }
       }
     }
