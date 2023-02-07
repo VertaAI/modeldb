@@ -166,7 +166,7 @@ class TestEndpoint:
             min_replicas=1, max_replicas=10, min_scale=0.1, max_scale=2
         )
         autoscaling.add_metric(CpuUtilizationTarget(0.75))
-        env_vars = {"env1": "var1", "env2": "var2"}
+        env_vars = {"ENV1": "var1", "ENV2": "var2"}
 
         filepath = client.download_endpoint_manifest(
             download_to_path=download_to_path,
