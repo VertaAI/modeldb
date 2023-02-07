@@ -147,14 +147,16 @@ public class UACApisUtil {
             .setResourceType(resourceType)
             .setService(ServiceEnum.Service.MODELDB_SERVICE);
 
-    if (!resourceIdsOptional.isEmpty() && resourceIdsOptional.isPresent()) {
-      resources.addAllResourceIds(
-          resourceIdsOptional.get().stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
+    resourceIdsOptional.ifPresent(
+        strings ->
+            resources.addAllResourceIds(
+                strings.stream().map(String::valueOf).collect(Collectors.toSet())));
 
     var builder = GetResources.newBuilder().setResources(resources.build());
     workspaceName.ifPresent(builder::setWorkspaceName);
-    builder.setWorkspaceId(workspaceId);
+    if (workspaceId != null) {
+      builder.setWorkspaceId(workspaceId);
+    }
     return FutureUtil.clientRequest(
             uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
             executor)
