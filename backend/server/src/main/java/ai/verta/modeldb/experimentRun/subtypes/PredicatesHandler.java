@@ -649,7 +649,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                           isPermissionV2
                               ? Optional.empty()
                               : Optional.of(userInfo.getVertaInfo().getUsername()),
-                          userInfo.getVertaInfo().getDefaultWorkspaceId(),
+                          isPermissionV2 ?
+                          userInfo.getVertaInfo().getDefaultWorkspaceId() : null,
                           Optional.empty(),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
                       .thenApply(
