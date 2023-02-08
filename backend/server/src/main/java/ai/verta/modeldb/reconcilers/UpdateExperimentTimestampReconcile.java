@@ -5,24 +5,22 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcileResult;
 import ai.verta.modeldb.common.reconcilers.Reconciler;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.AbstractMap;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
 
 public class UpdateExperimentTimestampReconcile
     extends Reconciler<AbstractMap.SimpleEntry<String, Long>> {
 
   public UpdateExperimentTimestampReconcile(
-      ReconcilerConfig config, FutureJdbi futureJdbi, FutureExecutor executor) {
-    super(
-        config,
-        LogManager.getLogger(UpdateExperimentTimestampReconcile.class),
-        futureJdbi,
-        executor,
-        false);
+      ReconcilerConfig config,
+      FutureJdbi futureJdbi,
+      FutureExecutor executor,
+      OpenTelemetry openTelemetry) {
+    super(config, futureJdbi, executor, openTelemetry, false);
   }
 
   @Override

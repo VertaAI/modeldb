@@ -5,7 +5,7 @@ public class ReconcilerConfig {
   private int batchSize = 10;
   private int workerCount = 10;
   private int maxSync = 10000;
-  private boolean isTestReconciler;
+  private final boolean isTestReconciler;
 
   public ReconcilerConfig(
       long resyncPeriodSeconds,

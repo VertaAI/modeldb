@@ -33,6 +33,7 @@ import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.inprocess.InProcessChannelBuilder;
 import io.grpc.inprocess.InProcessServerBuilder;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.sql.DataSource;
@@ -142,7 +143,8 @@ public class TestsInit {
     new CronJobUtils().initializeCronJobs(testConfig, services);
     reconcilerInitializer =
         new ReconcilerInitializer()
-            .initialize(testConfig, services, daos, handleExecutor, futureJdbi);
+            .initialize(
+                testConfig, services, daos, handleExecutor, futureJdbi, OpenTelemetry.noop());
 
     if (testConfig.getTestUsers() != null && !testConfig.getTestUsers().isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig);

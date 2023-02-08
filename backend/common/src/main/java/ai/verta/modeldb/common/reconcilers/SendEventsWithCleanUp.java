@@ -10,10 +10,10 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.CreateEventRequest;
 import com.google.protobuf.Any;
 import com.google.protobuf.Value;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
 
 public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
   private final UAC uac;
@@ -24,8 +24,9 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
       UAC uac,
       FutureEventDAO futureEventDAO,
       FutureJdbi futureJdbi,
-      FutureExecutor executor) {
-    super(config, LogManager.getLogger(SendEventsWithCleanUp.class), futureJdbi, executor, false);
+      FutureExecutor executor,
+      OpenTelemetry openTelemetry) {
+    super(config, futureJdbi, executor, openTelemetry, false);
     this.uac = uac;
     this.futureEventDAO = futureEventDAO;
   }
