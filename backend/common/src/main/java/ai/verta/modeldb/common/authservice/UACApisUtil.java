@@ -389,6 +389,11 @@ public class UACApisUtil {
                             executor)
                         .thenCompose(
                             resourceIds -> {
+                              if (resourceIds.isEmpty()) {
+                                return InternalFuture.completedInternalFuture(
+                                    String.format("%s.id = '-1'", alias));
+                              }
+
                               final var valueBindingName =
                                   String.format("fuzzy_id_%d", new Date().getTime());
                               String inClause;
