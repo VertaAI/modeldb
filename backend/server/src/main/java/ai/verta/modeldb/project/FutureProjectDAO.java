@@ -476,7 +476,7 @@ public class FutureProjectDAO {
                   resourcesFuture =
                       uacApisUtil.getResourceItemsForLoginUserWorkspace(
                           Optional.of(request.getWorkspaceName()),
-                          userInfo.getVertaInfo().getDefaultWorkspaceId(),
+                          null,
                           Optional.of(request.getProjectIdsList()),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
                 } else {
@@ -1641,7 +1641,7 @@ public class FutureProjectDAO {
       getResourcesFuture =
           uacApisUtil.getResourceItemsForLoginUserWorkspace(
               workspaceName,
-              workspace.getId(),
+              null,
               Optional.of(Collections.singletonList(createdProject.getId())),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
     }
