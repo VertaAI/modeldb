@@ -32,7 +32,6 @@ message GetGroupById {
 
 message SearchGroupCriteria {
   string user_id = 1;
-  repeated common.KeyValueQuery predicates = 2;
 }
 
 message SearchGroups {
@@ -40,8 +39,6 @@ message SearchGroups {
   SearchGroupCriteria search_criteria = 2;
 
   common.Pagination pagination = 3;
-  bool ascending = 4;
-  string sort_key = 5;
   message Response {
     repeated GroupV2 groups = 1;
     int64 total_records = 2;
