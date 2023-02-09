@@ -11,10 +11,10 @@ import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
 import ai.verta.modeldb.entities.CommentEntity;
 import ai.verta.modeldb.entities.ExperimentRunEntity;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
-import org.apache.logging.log4j.LogManager;
 import org.hibernate.query.Query;
 
 public class SoftDeleteExperimentRuns extends Reconciler<String> {
@@ -26,8 +26,9 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
       ReconcilerConfig config,
       MDBRoleService mdbRoleService,
       FutureJdbi futureJdbi,
-      FutureExecutor executor) {
-    super(config, LogManager.getLogger(SoftDeleteExperimentRuns.class), futureJdbi, executor, true);
+      FutureExecutor executor,
+      OpenTelemetry openTelemetry) {
+    super(config, futureJdbi, executor, openTelemetry, true);
     this.mdbRoleService = mdbRoleService;
   }
 

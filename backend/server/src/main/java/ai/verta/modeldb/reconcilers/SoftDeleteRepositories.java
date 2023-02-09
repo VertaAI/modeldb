@@ -16,13 +16,13 @@ import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.VersioningUtils;
+import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import javax.persistence.OptimisticLockException;
-import org.apache.logging.log4j.LogManager;
 import org.hibernate.LockMode;
 import org.hibernate.LockOptions;
 import org.hibernate.Session;
@@ -40,8 +40,9 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       MDBRoleService mdbRoleService,
       boolean isDataset,
       FutureJdbi futureJdbi,
-      FutureExecutor executor) {
-    super(config, LogManager.getLogger(SoftDeleteRepositories.class), futureJdbi, executor, true);
+      FutureExecutor executor,
+      OpenTelemetry openTelemetry) {
+    super(config, futureJdbi, executor, openTelemetry, true);
     this.mdbRoleService = mdbRoleService;
     this.isDataset = isDataset;
   }

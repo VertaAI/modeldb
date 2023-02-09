@@ -17,6 +17,7 @@ import ai.verta.modeldb.reconcilers.UpdateExperimentTimestampReconcile;
 import ai.verta.modeldb.reconcilers.UpdateProjectTimestampReconcile;
 import ai.verta.modeldb.reconcilers.UpdateRepositoryTimestampReconcile;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import io.opentelemetry.api.OpenTelemetry;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.LogManager;
@@ -47,37 +48,56 @@ public class ReconcilerInitializer {
       ServiceSet services,
       DAOSet daos,
       FutureExecutor executor,
-      FutureJdbi futureJdbi) {
+      FutureJdbi futureJdbi,
+      OpenTelemetry openTelemetry) {
     LOGGER.info("Enter in ReconcilerUtils: initialize()");
 
-    ReconcilerConfig reconcilerConfig = new ReconcilerConfig(config instanceof TestConfig);
+    ReconcilerConfig reconcilerConfig =
+        ReconcilerConfig.builder().isTestReconciler(config instanceof TestConfig).build();
 
     softDeleteProjects =
         new SoftDeleteProjects(
-            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor);
+            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor, openTelemetry);
     softDeleteExperiments =
         new SoftDeleteExperiments(
-            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor);
+            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor, openTelemetry);
     softDeleteExperimentRuns =
         new SoftDeleteExperimentRuns(
-            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor);
+            reconcilerConfig, services.getMdbRoleService(), futureJdbi, executor, openTelemetry);
     softDeleteRepositories =
         new SoftDeleteRepositories(
-            reconcilerConfig, services.getMdbRoleService(), false, futureJdbi, executor);
+            reconcilerConfig,
+            services.getMdbRoleService(),
+            false,
+            futureJdbi,
+            executor,
+            openTelemetry);
     softDeleteDatasets =
         new SoftDeleteRepositories(
-            reconcilerConfig, services.getMdbRoleService(), true, futureJdbi, executor);
+            reconcilerConfig,
+            services.getMdbRoleService(),
+            true,
+            futureJdbi,
+            executor,
+            openTelemetry);
     updateRepositoryTimestampReconcile =
-        new UpdateRepositoryTimestampReconcile(reconcilerConfig, futureJdbi, executor, config);
+        new UpdateRepositoryTimestampReconcile(
+            reconcilerConfig, futureJdbi, executor, config, openTelemetry);
     updateExperimentTimestampReconcile =
-        new UpdateExperimentTimestampReconcile(reconcilerConfig, futureJdbi, executor);
+        new UpdateExperimentTimestampReconcile(
+            reconcilerConfig, futureJdbi, executor, openTelemetry);
     updateProjectTimestampReconcile =
-        new UpdateProjectTimestampReconcile(reconcilerConfig, futureJdbi, executor);
+        new UpdateProjectTimestampReconcile(reconcilerConfig, futureJdbi, executor, openTelemetry);
 
     if (config.isEvent_system_enabled()) {
       sendEventsWithCleanUp =
           new SendEventsWithCleanUp(
-              reconcilerConfig, services.getUac(), daos.getFutureEventDAO(), futureJdbi, executor);
+              reconcilerConfig,
+              services.getUac(),
+              daos.getFutureEventDAO(),
+              futureJdbi,
+              executor,
+              openTelemetry);
     }
 
     LOGGER.info("Exit from ReconcilerUtils: initialize()");

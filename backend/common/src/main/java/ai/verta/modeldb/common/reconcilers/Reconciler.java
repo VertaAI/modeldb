@@ -2,6 +2,11 @@ package ai.verta.modeldb.common.reconcilers;
 
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
+import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
+import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.Tracer;
+import io.opentelemetry.context.Scope;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
@@ -12,9 +17,12 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public abstract class Reconciler<T> {
+  private static final AttributeKey<String> RECONCILER_NAME_ATTRIBUTE_KEY =
+      AttributeKey.stringKey("reconciler");
   protected final Logger logger;
   protected final HashSet<T> elements = new HashSet<>();
   protected final LinkedList<T> order = new LinkedList<>();
@@ -27,18 +35,30 @@ public abstract class Reconciler<T> {
   protected final ReconcilerConfig config;
   protected final FutureJdbi futureJdbi;
   protected final FutureExecutor executor;
+  private final Tracer tracer;
 
+  @Deprecated(forRemoval = true)
   protected Reconciler(
       ReconcilerConfig config,
       Logger logger,
       FutureJdbi futureJdbi,
       FutureExecutor executor,
       boolean deduplicate) {
-    this.logger = logger;
+    this(config, futureJdbi, executor, OpenTelemetry.noop(), deduplicate);
+  }
+
+  protected Reconciler(
+      ReconcilerConfig config,
+      FutureJdbi futureJdbi,
+      FutureExecutor executor,
+      OpenTelemetry openTelemetry,
+      boolean deduplicate) {
     this.config = config;
     this.futureJdbi = futureJdbi;
     this.executor = executor;
     this.deduplicate = deduplicate;
+    this.logger = LogManager.getLogger(this.getClass());
+    this.tracer = openTelemetry.getTracer("ai.verta.reconciler");
 
     if (!config.isTestReconciler()) {
       startResync();
@@ -49,10 +69,17 @@ public abstract class Reconciler<T> {
   private void startResync() {
     Runnable runnable =
         () -> {
-          try {
+          Span span =
+              tracer
+                  .spanBuilder("resync")
+                  .setAttribute(RECONCILER_NAME_ATTRIBUTE_KEY, this.getClass().getName())
+                  .startSpan();
+          try (Scope ignored = span.makeCurrent()) {
             this.resync();
           } catch (Exception ex) {
             logger.error("Resync: ", ex);
+          } finally {
+            span.end();
           }
         };
 
@@ -89,7 +116,7 @@ public abstract class Reconciler<T> {
 
                   if (!idsToProcess.isEmpty()) {
                     try {
-                      reconcile(idsToProcess);
+                      traceReconcile(idsToProcess);
                     } finally {
                       lock.lock();
                       try {
@@ -100,14 +127,27 @@ public abstract class Reconciler<T> {
                     }
                   }
                 } else {
-                  reconcile(pop());
+                  traceReconcile(pop());
                 }
               } catch (Exception ex) {
-                logger.error("Worker reconcile: ", ex);
+                logger.error("Worker for " + getClass().getSimpleName() + " reconcile error: ", ex);
               }
             }
           };
       executorService.execute(runnable);
+    }
+  }
+
+  private ReconcileResult traceReconcile(Set<T> idsToProcess) throws Exception {
+    Span span =
+        tracer
+            .spanBuilder("reconcile")
+            .setAttribute(RECONCILER_NAME_ATTRIBUTE_KEY, this.getClass().getName())
+            .startSpan();
+    try (Scope ignored = span.makeCurrent()) {
+      return reconcile(idsToProcess);
+    } finally {
+      span.end();
     }
   }
 
