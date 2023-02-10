@@ -7,6 +7,7 @@ import ai.verta.modeldb.common.futures.FutureJdbi;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.util.HashSet;
@@ -81,6 +82,8 @@ public abstract class Reconciler<T> {
             this.resync();
           } catch (Exception ex) {
             logger.error("Resync: ", ex);
+            span.recordException(ex);
+            span.setStatus(StatusCode.ERROR);
           } finally {
             span.end();
           }
@@ -150,6 +153,10 @@ public abstract class Reconciler<T> {
             .startSpan();
     try (Scope ignored = span.makeCurrent()) {
       return reconcile(idsToProcess);
+    } catch (Exception e) {
+      span.recordException(e);
+      span.setStatus(StatusCode.ERROR, e.getMessage());
+      throw e;
     } finally {
       span.end();
     }
