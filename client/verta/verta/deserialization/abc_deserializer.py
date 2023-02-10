@@ -1,6 +1,6 @@
 import abc
 
-from app.api import _six
+from verta.deserialization.six import _six
 
 
 @_six.add_metaclass(abc.ABCMeta)
