@@ -146,24 +146,9 @@ public class S3Client {
   private Credentials getCredentialFromWebIdentity(Regions awsRegion) throws IOException {
     AWSSecurityTokenService stsClient = null;
     try {
-      final var stsClientBuilder =
-          AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion);
-      if (!CommonUtils.appendOptionalTelepresencePath("foo").equals("foo")) {
-        stsClientBuilder.setCredentials(
-            WebIdentityTokenCredentialsProvider.builder()
-                .webIdentityTokenFile(
-                    CommonUtils.appendOptionalTelepresencePath(
-                        System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
-                .build());
-      }
-      stsClient = stsClientBuilder.build();
+      stsClient = createStsClient(awsRegion);
       String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
-      var token =
-          new String(
-              Files.readAllBytes(
-                  Paths.get(
-                      CommonUtils.appendOptionalTelepresencePath(
-                          System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
+      String token = getWebIdentityToken();
 
       // Obtain credentials for the IAM role. Note that you cannot assume the role of
       // an AWS root account;
@@ -183,7 +168,31 @@ public class S3Client {
       LOGGER.debug("assumed role with web identity");
       return roleResponse.getCredentials();
     } finally {
-      if (stsClient != null) stsClient.shutdown();
+      if (stsClient != null) {
+        stsClient.shutdown();
+      }
     }
+  }
+
+  private static String getWebIdentityToken() throws IOException {
+    return new String(
+        Files.readAllBytes(
+            Paths.get(
+                CommonUtils.appendOptionalTelepresencePath(
+                    System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
+  }
+
+  private static AWSSecurityTokenService createStsClient(Regions awsRegion) {
+    final var stsClientBuilder =
+        AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion);
+    if (!CommonUtils.appendOptionalTelepresencePath("foo").equals("foo")) {
+      stsClientBuilder.setCredentials(
+          WebIdentityTokenCredentialsProvider.builder()
+              .webIdentityTokenFile(
+                  CommonUtils.appendOptionalTelepresencePath(
+                      System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
+              .build());
+    }
+    return stsClientBuilder.build();
   }
 }
