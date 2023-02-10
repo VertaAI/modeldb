@@ -22,7 +22,6 @@ import java.io.File;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.TimerTask;
 import java.util.concurrent.*;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -76,8 +75,7 @@ public class CommonUtils {
   }
 
   public static void scheduleTask(
-      TimerTask task, long initialDelay, long frequency, TimeUnit timeUnit) {
-    // scheduling the timer instance
+      Runnable task, long initialDelay, long frequency, TimeUnit timeUnit) {
     ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
     executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
   }
