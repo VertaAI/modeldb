@@ -1,10 +1,13 @@
 package ai.verta.modeldb.common.reconcilers;
 
+import static io.opentelemetry.api.common.AttributeKey.longKey;
+
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import io.opentelemetry.api.OpenTelemetry;
 import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
+import io.opentelemetry.api.trace.StatusCode;
 import io.opentelemetry.api.trace.Tracer;
 import io.opentelemetry.context.Scope;
 import java.util.HashSet;
@@ -23,11 +26,12 @@ import org.apache.logging.log4j.Logger;
 public abstract class Reconciler<T> {
   private static final AttributeKey<String> RECONCILER_NAME_ATTRIBUTE_KEY =
       AttributeKey.stringKey("reconciler");
+  private static final AttributeKey<Long> NUMBER_OF_ITEMS_ATTRIBUTE_KEY = longKey("numberOfItems");
   protected final Logger logger;
   protected final HashSet<T> elements = new HashSet<>();
   protected final LinkedList<T> order = new LinkedList<>();
-  final Lock lock = new ReentrantLock();
-  final Condition notEmpty = lock.newCondition();
+  private final Lock lock = new ReentrantLock();
+  private final Condition notEmpty = lock.newCondition();
   // To prevent OptimisticLockException
   private final Set<T> processingIdSet = ConcurrentHashMap.newKeySet();
   private final boolean deduplicate;
@@ -71,13 +75,15 @@ public abstract class Reconciler<T> {
         () -> {
           Span span =
               tracer
-                  .spanBuilder("resync")
-                  .setAttribute(RECONCILER_NAME_ATTRIBUTE_KEY, this.getClass().getName())
+                  .spanBuilder(getClass().getSimpleName() + " resync")
+                  .setAttribute(RECONCILER_NAME_ATTRIBUTE_KEY, this.getClass().getSimpleName())
                   .startSpan();
           try (Scope ignored = span.makeCurrent()) {
             this.resync();
           } catch (Exception ex) {
             logger.error("Resync: ", ex);
+            span.recordException(ex);
+            span.setStatus(StatusCode.ERROR);
           } finally {
             span.end();
           }
@@ -141,11 +147,16 @@ public abstract class Reconciler<T> {
   private ReconcileResult traceReconcile(Set<T> idsToProcess) throws Exception {
     Span span =
         tracer
-            .spanBuilder("reconcile")
+            .spanBuilder(getClass().getSimpleName() + " reconcile")
             .setAttribute(RECONCILER_NAME_ATTRIBUTE_KEY, this.getClass().getName())
+            .setAttribute(NUMBER_OF_ITEMS_ATTRIBUTE_KEY, (long) idsToProcess.size())
             .startSpan();
     try (Scope ignored = span.makeCurrent()) {
       return reconcile(idsToProcess);
+    } catch (Exception e) {
+      span.recordException(e);
+      span.setStatus(StatusCode.ERROR, e.getMessage());
+      throw e;
     } finally {
       span.end();
     }
@@ -164,8 +175,8 @@ public abstract class Reconciler<T> {
     }
   }
 
-  private HashSet<T> pop() {
-    HashSet<T> ret = new HashSet<>();
+  private Set<T> pop() {
+    Set<T> ret = new HashSet<>();
     lock.lock();
     try {
       while (elements.isEmpty()) notEmpty.await();
