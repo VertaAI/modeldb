@@ -19,8 +19,8 @@ class VertaModelBase(object):
     artifacts : dict of str to str
         A mapping of artifact keys to filepaths. This will be provided to the
         deployed model based on artifact keys specified through
-        :meth:`RegisteredModelVersion.log_model()
-        <verta.registry.entities.RegisteredModelVersion.log_model>`.
+        :meth:`RegisteredModel.create_standard_model()
+        <verta.registry.entities.RegisteredModel.create_standard_model>`.
 
     Examples
     --------
@@ -28,25 +28,25 @@ class VertaModelBase(object):
 
         import pickle
         import numpy as np
-        from verta.registry import VertaModelBase
+        from verta.registry import VertaModelBase, verify_io
+        from verta.environment import Python
 
         class Model(VertaModelBase):
             def __init__(self, artifacts):
                 with open(artifacts["np_matrix"], "rb") as f:
                     self._transform = pickle.load(f)
 
+            @verify_io
             def predict(self, input):
                 input = np.array(input)
 
                 return np.matmul(input, self._transform)
 
-        # iterate locally
-        model = Model(
-            artifacts=model_ver.fetch_artifacts(["np_matrix"]),
+        model_ver = reg_model.create_standard_model(
+            Model,
+            environment=Python(["numpy"]),
+            artifacts={"np_matrix": arr},
         )
-
-        # persist to model version
-        model_ver.log_model(Model, artifacts=["np_matrix"])
 
     """
 
@@ -67,14 +67,13 @@ class VertaModelBase(object):
             will be fully compatible with the Verta platform as you iterate
             locally.
 
-            Specifically, this method should be written in a way that expects
-            the parameter `input` to be a type returned from ``json.loads()``,
-            i.e. a basic Python type. `input` would then need to be manually
-            cast to a NumPy array, pandas DataFrame, etc. in order to be used
-            as such.
+            :meth:`predict` must be written to both recieve [1]_ and return
+            [2]_ JSON-serializable objects (i.e. mostly basic Python types).
 
-            Similarly, the return value should also be a type that can be
-            passed to ``json.dumps()``
+            For example to work with NumPy arrays, the `input` argument should
+            be a Python :class:`list` that would then be passed to
+            ``np.array()`` inside this function. The result must then be cast
+            back to a :class:`list` before ``return``\ ing.
 
         Parameters
         ----------
@@ -85,6 +84,11 @@ class VertaModelBase(object):
         -------
         any JSON-compatible Python type
             Model output.
+
+        References
+        ----------
+        .. [1] https://docs.python.org/3/library/json.html#json-to-py-table
+        .. [2] https://docs.python.org/3/library/json.html#py-to-json-table
 
         """
         raise NotImplementedError
