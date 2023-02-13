@@ -119,7 +119,7 @@ public class S3Client {
 
     CommonUtils.scheduleTask(
         new RefreshS3ClientCron(bucketName, awsRegion, roleCredentials, this),
-        refreshTokenFrequency /*initialDelay*/,
+        0L /*initialDelay*/,
         refreshTokenFrequency /*periodic refresh frequency*/,
         TimeUnit.MILLISECONDS);
   }
@@ -127,7 +127,7 @@ public class S3Client {
   void refreshS3Client(AWSCredentials awsCredentials, AmazonS3 s3Client) {
     // Once we get to this point, we know that we have a good new s3 client, so it's time to swap
     // it. No fail can happen now
-    LOGGER.debug("replacing S3 Client");
+    LOGGER.info("replacing S3 Client");
     try (RefCountedS3Client client = getRefCountedClient()) {
       // Decrement the current reference counter represented by this object pointing to it
       this.referenceCounter.decrementAndGet();
@@ -136,7 +136,7 @@ public class S3Client {
       this.referenceCounter = new AtomicInteger(1);
       this.awsCredentials = awsCredentials;
       this.s3Client = s3Client;
-      LOGGER.debug("S3 Client replaced");
+      LOGGER.info("S3 Client replaced");
       // At the end of the try, the reference counter will be decremented again and shutdown will
       // be
       // called
