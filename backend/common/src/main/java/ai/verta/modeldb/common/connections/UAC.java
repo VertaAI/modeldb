@@ -158,7 +158,7 @@ public class UAC extends Connection {
     return attachInterceptors(organizationServiceV2FutureStub);
   }
 
-  public WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub getWorkspaceServiceV2FutureStub() {
+  public WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub getWorkspaceServiceV2() {
     return attachInterceptors(workspaceServiceV2FutureStub);
   }
 }
