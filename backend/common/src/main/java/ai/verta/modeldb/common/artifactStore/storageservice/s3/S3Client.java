@@ -54,18 +54,18 @@ public class S3Client {
 
     if (cloudAccessKey != null && cloudSecretKey != null) {
       if (minioEndpoint == null) {
-        LOGGER.debug("config based credentials based s3 client");
+        LOGGER.info("config based credentials based s3 client");
         initializeS3ClientWithAccessKey(cloudAccessKey, cloudSecretKey, awsRegion);
       } else {
-        LOGGER.debug("minio client");
+        LOGGER.info("minio client");
         initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
       }
     } else if (CommonUtils.isEnvSet(CommonConstants.AWS_ROLE_ARN)
         && CommonUtils.isEnvSet(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-      LOGGER.debug("temporary token based s3 client");
+      LOGGER.info("temporary token based s3 client");
       initializeWithWebIdentity(awsRegion);
     } else {
-      LOGGER.debug("environment credentials based s3 client");
+      LOGGER.info("environment credentials based s3 client");
       // reads credential from OS Environment
       initializeWithEnvironment(awsRegion);
     }
@@ -115,7 +115,7 @@ public class S3Client {
     var expiration = roleCredentials.getExpiration().getTime();
     // set cron to half of the duration of the credentials which will be ~(450 Second (7.5 minutes))
     var refreshTokenFrequency = (expiration - now) / 2;
-    LOGGER.debug(String.format("S3 Client refresh frequency %d ms", refreshTokenFrequency));
+    LOGGER.info(String.format("S3 Client refresh frequency %d ms", refreshTokenFrequency));
 
     CommonUtils.scheduleTask(
         new RefreshS3ClientCron(bucketName, awsRegion, roleCredentials, this),
@@ -161,11 +161,11 @@ public class S3Client {
               .withWebIdentityToken(token)
               .withRoleSessionName("model_db_" + UUID.randomUUID());
 
-      LOGGER.debug("assuming role with web identity");
+      LOGGER.info("assuming role with web identity");
       // Call STS to assume the role
       AssumeRoleWithWebIdentityResult roleResponse =
           stsClient.assumeRoleWithWebIdentity(roleRequest);
-      LOGGER.debug("assumed role with web identity");
+      LOGGER.info("assumed role with web identity");
       return roleResponse.getCredentials();
     } finally {
       if (stsClient != null) {
