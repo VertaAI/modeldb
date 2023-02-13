@@ -5,11 +5,10 @@ import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.securitytoken.model.Credentials;
-import java.util.TimerTask;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-public class RefreshS3ClientCron extends TimerTask {
+public class RefreshS3ClientCron implements Runnable {
   private static final Logger LOGGER = LogManager.getLogger(RefreshS3ClientCron.class);
   private final String bucketName;
   private final Regions awsRegion;
