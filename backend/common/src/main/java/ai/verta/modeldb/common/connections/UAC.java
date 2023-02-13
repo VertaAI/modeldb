@@ -28,6 +28,10 @@ public class UAC extends Connection {
   private final RoleServiceGrpc.RoleServiceFutureStub serviceAccountRoleServiceFutureStub;
   private final OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub;
   private final EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub;
+  private final OrganizationServiceV2Grpc.OrganizationServiceV2FutureStub
+      organizationServiceV2FutureStub;
+
+  private final WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub workspaceServiceV2FutureStub;
 
   public static UAC fromConfig(
       Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
@@ -49,7 +53,9 @@ public class UAC extends Connection {
       RoleServiceGrpc.RoleServiceFutureStub roleServiceFutureStub,
       RoleServiceGrpc.RoleServiceFutureStub serviceAccountRoleServiceFutureStub,
       OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub,
-      EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub) {
+      EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub,
+      OrganizationServiceV2Grpc.OrganizationServiceV2FutureStub organizationServiceV2FutureStub,
+      WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub workspaceServiceV2FutureStub) {
     super(Optional.empty());
     this.config = config;
     this.collaboratorServiceFutureStub = collaboratorServiceFutureStub;
@@ -61,6 +67,8 @@ public class UAC extends Connection {
     this.serviceAccountRoleServiceFutureStub = serviceAccountRoleServiceFutureStub;
     this.organizationServiceFutureStub = organizationServiceFutureStub;
     this.eventServiceFutureStub = eventServiceFutureStub;
+    this.organizationServiceV2FutureStub = organizationServiceV2FutureStub;
+    this.workspaceServiceV2FutureStub = workspaceServiceV2FutureStub;
   }
 
   private UAC(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
@@ -101,6 +109,8 @@ public class UAC extends Connection {
             .withInterceptors(
                 MetadataUtils.newAttachHeadersInterceptor(
                     getServiceUserMetadata(config.getService_user())));
+    organizationServiceV2FutureStub = OrganizationServiceV2Grpc.newFutureStub(authServiceChannel);
+    workspaceServiceV2FutureStub = WorkspaceServiceV2Grpc.newFutureStub(authServiceChannel);
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
@@ -142,5 +152,13 @@ public class UAC extends Connection {
 
   public EventServiceGrpc.EventServiceFutureStub getEventService() {
     return attachInterceptors(eventServiceFutureStub);
+  }
+
+  public OrganizationServiceV2Grpc.OrganizationServiceV2FutureStub getOrganizationServiceV2() {
+    return attachInterceptors(organizationServiceV2FutureStub);
+  }
+
+  public WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub getWorkspaceServiceV2() {
+    return attachInterceptors(workspaceServiceV2FutureStub);
   }
 }
