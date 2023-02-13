@@ -13,13 +13,9 @@ import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest;
-import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityResult;
-import com.amazonaws.services.securitytoken.model.Credentials;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.time.Instant;
-import java.util.Date;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -107,27 +103,26 @@ public class S3Client {
   }
 
   private void initializeWithWebIdentity(Regions awsRegion) throws IOException {
-    var roleCredentials = getCredentialFromWebIdentity(awsRegion);
+    var roleRequest = getCredentialFromWebIdentity();
 
-    var now = Date.from(Instant.now()).getTime();
     /* While creating RoleCredentials we have set time (900 seconds (15 minutes))
-    in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds */
-    var expiration = roleCredentials.getExpiration().getTime();
-    // set cron to half of the duration of the credentials which will be ~(450 Second (7.5 minutes))
-    var refreshTokenFrequency = (expiration - now) / 2;
+    in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds
+    so set cron to half of the duration of the credentials which will be ~(450 Second (7.5 minutes))
+     */
+    var refreshTokenFrequency = roleRequest.getDurationSeconds() / 2;
     LOGGER.info(String.format("S3 Client refresh frequency %d ms", refreshTokenFrequency));
 
     CommonUtils.scheduleTask(
-        new RefreshS3ClientCron(bucketName, awsRegion, roleCredentials, this),
+        new RefreshS3ClientCron(bucketName, awsRegion, roleRequest, this),
         0L /*initialDelay*/,
         refreshTokenFrequency /*periodic refresh frequency*/,
-        TimeUnit.MILLISECONDS);
+        TimeUnit.SECONDS);
   }
 
   void refreshS3Client(AWSCredentials awsCredentials, AmazonS3 s3Client) {
     // Once we get to this point, we know that we have a good new s3 client, so it's time to swap
     // it. No fail can happen now
-    LOGGER.info("replacing S3 Client");
+    LOGGER.info("Replacing S3 Client");
     try (RefCountedS3Client client = getRefCountedClient()) {
       // Decrement the current reference counter represented by this object pointing to it
       this.referenceCounter.decrementAndGet();
@@ -143,35 +138,19 @@ public class S3Client {
     }
   }
 
-  private Credentials getCredentialFromWebIdentity(Regions awsRegion) throws IOException {
-    AWSSecurityTokenService stsClient = null;
-    try {
-      stsClient = createStsClient(awsRegion);
-      String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
-      String token = getWebIdentityToken();
+  private AssumeRoleWithWebIdentityRequest getCredentialFromWebIdentity() throws IOException {
+    String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
+    String token = getWebIdentityToken();
 
-      // Obtain credentials for the IAM role. Note that you cannot assume the role of
-      // an AWS root account;
-      // Amazon S3 will deny access. You must use credentials for an IAM user or an
-      // IAM role.
-      AssumeRoleWithWebIdentityRequest roleRequest =
-          new AssumeRoleWithWebIdentityRequest()
-              .withDurationSeconds(900) /*900 seconds (15 minutes)*/
-              .withRoleArn(roleArn)
-              .withWebIdentityToken(token)
-              .withRoleSessionName("model_db_" + UUID.randomUUID());
-
-      LOGGER.info("assuming role with web identity");
-      // Call STS to assume the role
-      AssumeRoleWithWebIdentityResult roleResponse =
-          stsClient.assumeRoleWithWebIdentity(roleRequest);
-      LOGGER.info("assumed role with web identity");
-      return roleResponse.getCredentials();
-    } finally {
-      if (stsClient != null) {
-        stsClient.shutdown();
-      }
-    }
+    // Obtain credentials for the IAM role. Note that you cannot assume the role of
+    // an AWS root account;
+    // Amazon S3 will deny access. You must use credentials for an IAM user or an
+    // IAM role.
+    return new AssumeRoleWithWebIdentityRequest()
+        .withDurationSeconds(900) /*900 seconds (15 minutes)*/
+        .withRoleArn(roleArn)
+        .withWebIdentityToken(token)
+        .withRoleSessionName("model_db_" + UUID.randomUUID());
   }
 
   private static String getWebIdentityToken() throws IOException {
