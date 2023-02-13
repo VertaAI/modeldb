@@ -1,6 +1,7 @@
 package ai.verta.modeldb.common.httpclient;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.Span;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.api.trace.StatusCode;
@@ -27,6 +28,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
 
 public class TracingHttpClient extends HttpClient {
+  private static final AttributeKey<String> REQUEST_PATH_KEY =
+      AttributeKey.stringKey("http.request.path");
   private final HttpClient delegate;
   private final Tracer tracer;
   private final ContextPropagators contextPropagators;
@@ -104,8 +107,10 @@ public class TracingHttpClient extends HttpClient {
         .setAttribute(SemanticAttributes.HTTP_METHOD, request.method())
         .setSpanKind(SpanKind.CLIENT)
         .setAttribute(SemanticAttributes.NET_PEER_NAME, requestUri.getHost())
-        //                .setAttribute(SemanticAttributes.HTTP_URL, requestUri.toString()) TODO:
-        // figure out how to sanitize this
+        .setAttribute(SemanticAttributes.PEER_SERVICE, requestUri.getHost())
+        .setAttribute(REQUEST_PATH_KEY, requestUri.getPath())
+        // .setAttribute(SemanticAttributes.HTTP_URL, requestUri.toString()) TODO: figure out how to
+        // sanitize this
         .startSpan();
   }
 

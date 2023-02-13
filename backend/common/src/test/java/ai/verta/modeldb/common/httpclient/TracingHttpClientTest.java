@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockserver.model.HttpRequest.request;
 
 import io.opentelemetry.api.OpenTelemetry;
+import io.opentelemetry.api.common.AttributeKey;
 import io.opentelemetry.api.trace.SpanKind;
 import io.opentelemetry.sdk.testing.junit5.OpenTelemetryExtension;
 import io.opentelemetry.sdk.trace.data.StatusData;
@@ -35,7 +36,7 @@ class TracingHttpClientTest {
     mockServer = ClientAndServer.startClientAndServer(port);
     mockServer.when(request().withPath("/error")).error(new HttpError().withDropConnection(true));
     mockServer
-        .when(request().withPath("/").withHeader("traceparent", ".*"))
+        .when(request().withPath("/requestPath").withHeader("traceparent", ".*"))
         .respond(new org.mockserver.model.HttpResponse().withStatusCode(420).withBody("foo"));
   }
 
@@ -56,7 +57,10 @@ class TracingHttpClientTest {
     TracingHttpClient httpClient = new TracingHttpClient(HttpClient.newHttpClient(), openTelemetry);
 
     HttpRequest request =
-        HttpRequest.newBuilder().GET().uri(URI.create("http://localhost:" + port)).build();
+        HttpRequest.newBuilder()
+            .GET()
+            .uri(URI.create("http://localhost:" + port + "/requestPath"))
+            .build();
     HttpResponse<String> result = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
 
     assertThat(result.body()).isEqualTo("foo");
@@ -72,6 +76,9 @@ class TracingHttpClientTest {
                                 .hasAttribute(SemanticAttributes.HTTP_METHOD, "GET")
                                 .hasAttribute(SemanticAttributes.NET_PEER_NAME, "localhost")
                                 .hasAttribute(SemanticAttributes.HTTP_STATUS_CODE, 420L)
+                                .hasAttribute(SemanticAttributes.PEER_SERVICE, "localhost")
+                                .hasAttribute(
+                                    AttributeKey.stringKey("http.request.path"), "/requestPath")
                                 .hasStatus(StatusData.unset())
                                 .hasKind(SpanKind.CLIENT)));
   }
@@ -86,7 +93,10 @@ class TracingHttpClientTest {
     TracingHttpClient httpClient = new TracingHttpClient(HttpClient.newHttpClient(), openTelemetry);
 
     HttpRequest request =
-        HttpRequest.newBuilder().GET().uri(URI.create("http://localhost:" + port)).build();
+        HttpRequest.newBuilder()
+            .GET()
+            .uri(URI.create("http://localhost:" + port + "/requestPath"))
+            .build();
     CompletableFuture<HttpResponse<String>> responseFuture =
         httpClient.sendAsync(request, HttpResponse.BodyHandlers.ofString());
     HttpResponse<String> result = responseFuture.get();
@@ -105,6 +115,9 @@ class TracingHttpClientTest {
                                 .hasAttribute(SemanticAttributes.HTTP_METHOD, "GET")
                                 .hasAttribute(SemanticAttributes.NET_PEER_NAME, "localhost")
                                 .hasAttribute(SemanticAttributes.HTTP_STATUS_CODE, 420L)
+                                .hasAttribute(SemanticAttributes.PEER_SERVICE, "localhost")
+                                .hasAttribute(
+                                    AttributeKey.stringKey("http.request.path"), "/requestPath")
                                 .hasStatus(StatusData.unset())
                                 .hasKind(SpanKind.CLIENT)));
   }
@@ -135,6 +148,8 @@ class TracingHttpClientTest {
                             spanDataAssert
                                 .hasAttribute(SemanticAttributes.HTTP_METHOD, "GET")
                                 .hasAttribute(SemanticAttributes.NET_PEER_NAME, "localhost")
+                                .hasAttribute(SemanticAttributes.PEER_SERVICE, "localhost")
+                                .hasAttribute(AttributeKey.stringKey("http.request.path"), "/error")
                                 .hasStatus(StatusData.error())
                                 .hasKind(SpanKind.CLIENT)));
   }
