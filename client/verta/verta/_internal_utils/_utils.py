@@ -339,6 +339,14 @@ class Connection(object):
             return self.get_personal_workspace()
 
     def get_personal_workspace(self):
+        """
+        Return username, for use as one's personal workspace in permission v1.
+
+        This has been irrelevant for normal users since 2021, but is still
+        necessary for bootstrapped internal accounts in permission v1 as they
+        are not assigned a ``default_workspace_id`` on creation (VUMM-872).
+
+        """
         email = self.auth.get("Grpc-Metadata-email")
         if email is not None:
             msg = UACService_pb2.GetUser(email=email)
