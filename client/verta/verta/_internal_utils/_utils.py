@@ -331,8 +331,30 @@ class Connection(object):
         workspace_id = user_info.verta_info.default_workspace_id
         if workspace_id:
             return self.get_workspace_name_from_id(workspace_id)
-        else:
-            raise RuntimeError("default workspace is not set")
+        else:  # workaround; see get_personal_workspace()
+            warnings.warn(
+                "default_workspace_id not set for user;"
+                " falling back to username (as personal workspace)"
+            )
+            return self.get_personal_workspace()
+
+    def get_personal_workspace(self):
+        email = self.auth.get("Grpc-Metadata-email")
+        if email is not None:
+            msg = UACService_pb2.GetUser(email=email)
+            response = self.make_proto_request(
+                "GET", "/api/v1/uac-proxy/uac/getUser", params=msg
+            )
+
+            if (
+                response.ok and self.is_html_response(response)
+            ) or response.status_code == requests.codes.not_found:  # fetched webapp  # UAC not found
+                pass  # fall through to OSS default workspace
+            else:
+                return self.must_proto_response(
+                    response, UACService_pb2.UserInfo
+                ).verta_info.username
+        return self._OSS_DEFAULT_WORKSPACE
 
 
 class NoneProtoResponse(object):
