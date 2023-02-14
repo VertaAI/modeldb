@@ -50,18 +50,18 @@ public class S3Client {
 
     if (cloudAccessKey != null && cloudSecretKey != null) {
       if (minioEndpoint == null) {
-        LOGGER.info("config based credentials based s3 client");
+        LOGGER.debug("config based credentials based s3 client");
         initializeS3ClientWithAccessKey(cloudAccessKey, cloudSecretKey, awsRegion);
       } else {
-        LOGGER.info("minio client");
+        LOGGER.debug("minio client");
         initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
       }
     } else if (CommonUtils.isEnvSet(CommonConstants.AWS_ROLE_ARN)
         && CommonUtils.isEnvSet(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
-      LOGGER.info("temporary token based s3 client");
+      LOGGER.debug("temporary token based s3 client");
       initializeWithWebIdentity(awsRegion);
     } else {
-      LOGGER.info("environment credentials based s3 client");
+      LOGGER.debug("environment credentials based s3 client");
       // reads credential from OS Environment
       initializeWithEnvironment(awsRegion);
     }
@@ -110,7 +110,7 @@ public class S3Client {
     so set cron to half of the duration of the credentials which will be ~(450 Second (7.5 minutes))
      */
     var refreshTokenFrequency = roleRequest.getDurationSeconds() / 2;
-    LOGGER.info(String.format("S3 Client refresh frequency %d ms", refreshTokenFrequency));
+    LOGGER.trace(String.format("S3 Client refresh frequency %d seconds", refreshTokenFrequency));
 
     CommonUtils.scheduleTask(
         new RefreshS3ClientCron(bucketName, awsRegion, roleRequest, this),
@@ -122,7 +122,7 @@ public class S3Client {
   void refreshS3Client(AWSCredentials awsCredentials, AmazonS3 s3Client) {
     // Once we get to this point, we know that we have a good new s3 client, so it's time to swap
     // it. No fail can happen now
-    LOGGER.info("Replacing S3 Client");
+    LOGGER.debug("Replacing S3 Client");
     try (RefCountedS3Client client = getRefCountedClient()) {
       // Decrement the current reference counter represented by this object pointing to it
       this.referenceCounter.decrementAndGet();
@@ -131,7 +131,7 @@ public class S3Client {
       this.referenceCounter = new AtomicInteger(1);
       this.awsCredentials = awsCredentials;
       this.s3Client = s3Client;
-      LOGGER.info("S3 Client replaced");
+      LOGGER.debug("S3 Client replaced");
       // At the end of the try, the reference counter will be decremented again and shutdown will
       // be
       // called

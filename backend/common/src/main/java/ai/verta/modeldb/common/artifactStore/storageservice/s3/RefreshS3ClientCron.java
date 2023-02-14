@@ -35,7 +35,7 @@ public class RefreshS3ClientCron implements Runnable {
   /** The action to be performed by this timer task. */
   @Override
   public void run() {
-    LOGGER.info("Refreshing S3Client cron wakeup");
+    LOGGER.debug("Refreshing S3Client cron wakeup");
     try {
       var awsCredentials = getBasicSessionCredentials();
       createAndRefreshNewClient(awsCredentials);
@@ -43,11 +43,11 @@ public class RefreshS3ClientCron implements Runnable {
       LOGGER.error("Failed to refresh S3 Client: " + ex.getMessage(), ex);
       throw ex;
     }
-    LOGGER.info("Refreshing S3Client finish tasks and reschedule");
+    LOGGER.debug("Refreshing S3Client finish tasks and reschedule");
   }
 
   private void createAndRefreshNewClient(BasicSessionCredentials awsCredentials) {
-    LOGGER.info("Creating new S3 Client");
+    LOGGER.trace("Creating new S3 Client");
     var newS3Client =
         AmazonS3ClientBuilder.standard()
             .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
@@ -55,7 +55,7 @@ public class RefreshS3ClientCron implements Runnable {
             .build();
 
     newS3Client.doesBucketExistV2(bucketName);
-    LOGGER.info("New S3 Client created");
+    LOGGER.trace("New S3 Client created");
 
     s3Client.refreshS3Client(awsCredentials, newS3Client);
   }
@@ -63,15 +63,15 @@ public class RefreshS3ClientCron implements Runnable {
   private BasicSessionCredentials getBasicSessionCredentials() {
     AWSSecurityTokenService stsClient = null;
     try {
-      LOGGER.info("Creating sts client");
+      LOGGER.trace("Creating sts client");
       stsClient = createStsClient(awsRegion);
-      LOGGER.info("Sts client created");
+      LOGGER.trace("Sts client created");
 
-      LOGGER.info("assuming role with web identity");
+      LOGGER.trace("assuming role with web identity");
       // Call STS to assume the role
       AssumeRoleWithWebIdentityResult roleResponse =
           stsClient.assumeRoleWithWebIdentity(roleRequest);
-      LOGGER.info("Assumed role with web identity");
+      LOGGER.trace("Assumed role with web identity");
       var credentials = roleResponse.getCredentials();
 
       // Extract the session credentials
