@@ -220,7 +220,6 @@ type SearchUsersInput struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	//
 	// query options:
 	// name -- fullname
 	// name_fuzzy -- fuzzy search fullname
@@ -365,6 +364,7 @@ type AddUserV2 struct {
 
 	OrgId string `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	// Types that are assignable to UserIdentifier:
+	//
 	//	*AddUserV2_Email
 	//	*AddUserV2_UserId
 	UserIdentifier isAddUserV2_UserIdentifier `protobuf_oneof:"user_identifier"`
@@ -697,6 +697,7 @@ type GetUserV2 struct {
 
 	OrgId string `protobuf:"bytes,1,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	// Types that are assignable to UserIdentifier:
+	//
 	//	*GetUserV2_Email
 	//	*GetUserV2_UserId
 	UserIdentifier isGetUserV2_UserIdentifier `protobuf_oneof:"user_identifier"`

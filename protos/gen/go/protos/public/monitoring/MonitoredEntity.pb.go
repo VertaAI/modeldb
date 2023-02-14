@@ -129,9 +129,8 @@ type KeyValue struct {
 
 	Key   string         `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	Value *_struct.Value `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	//
-	//   As per documentation of proto buffer 3.
-	//   For enums, the default value is the first defined enum value, which must be 0.
+	// As per documentation of proto buffer 3.
+	// For enums, the default value is the first defined enum value, which must be 0.
 	ValueType ValueTypeEnum_ValueType `protobuf:"varint,3,opt,name=value_type,json=valueType,proto3,enum=ai.verta.monitoring.ValueTypeEnum_ValueType" json:"value_type,omitempty"`
 }
 
@@ -237,7 +236,7 @@ type MonitoredEntity struct {
 	CreatedAtTimestampMillis uint64            `protobuf:"varint,6,opt,name=created_at_timestamp_millis,json=createdAtTimestampMillis,proto3" json:"created_at_timestamp_millis,omitempty"`
 	UpdatedAtTimestampMillis uint64            `protobuf:"varint,7,opt,name=updated_at_timestamp_millis,json=updatedAtTimestampMillis,proto3" json:"updated_at_timestamp_millis,omitempty"`
 	Attributes               map[string]string `protobuf:"bytes,8,rep,name=attributes,proto3" json:"attributes,omitempty" protobuf_key:"bytes,1,opt,name=key,proto3" protobuf_val:"bytes,2,opt,name=value,proto3"`
-	//owner's verta_id
+	// owner's verta_id
 	Owner              string                 `protobuf:"bytes,9,opt,name=owner,proto3" json:"owner,omitempty"`
 	ResourceVisibility uac.ResourceVisibility `protobuf:"varint,10,opt,name=resource_visibility,json=resourceVisibility,proto3,enum=ai.verta.uac.ResourceVisibility" json:"resource_visibility,omitempty"`
 	// The next field only makes sense when visibility == ORG_CUSTOM
@@ -363,6 +362,7 @@ type CreateMonitoredEntityRequest struct {
 
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Types that are assignable to WorkspaceIdentifier:
+	//
 	//	*CreateMonitoredEntityRequest_WorkspaceId
 	//	*CreateMonitoredEntityRequest_WorkspaceName
 	WorkspaceIdentifier isCreateMonitoredEntityRequest_WorkspaceIdentifier `protobuf_oneof:"workspace_identifier"`
@@ -573,6 +573,7 @@ type FindMonitoredEntityRequest struct {
 	EndpointIds     []uint64 `protobuf:"varint,8,rep,packed,name=endpoint_ids,json=endpointIds,proto3" json:"endpoint_ids,omitempty"`
 	ModelVersionIds []string `protobuf:"bytes,9,rep,name=model_version_ids,json=modelVersionIds,proto3" json:"model_version_ids,omitempty"`
 	// Types that are assignable to WorkspaceIdentifier:
+	//
 	//	*FindMonitoredEntityRequest_WorkspaceId
 	//	*FindMonitoredEntityRequest_WorkspaceName
 	WorkspaceIdentifier isFindMonitoredEntityRequest_WorkspaceIdentifier `protobuf_oneof:"workspace_identifier"`

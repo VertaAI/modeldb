@@ -40,7 +40,7 @@ type GroupV2 struct {
 	OrgId       string `protobuf:"bytes,2,opt,name=org_id,json=orgId,proto3" json:"org_id,omitempty"`
 	Name        string `protobuf:"bytes,3,opt,name=name,proto3" json:"name,omitempty"`
 	Description string `protobuf:"bytes,4,opt,name=description,proto3" json:"description,omitempty"`
-	//whether this group is one of the "built-in" and hence non-removable groups.
+	// whether this group is one of the "built-in" and hence non-removable groups.
 	BuiltIn          bool     `protobuf:"varint,5,opt,name=built_in,json=builtIn,proto3" json:"built_in,omitempty"`
 	MemberIds        []string `protobuf:"bytes,6,rep,name=member_ids,json=memberIds,proto3" json:"member_ids,omitempty"`
 	CreatedTimestamp int64    `protobuf:"varint,7,opt,name=created_timestamp,json=createdTimestamp,proto3" json:"created_timestamp,omitempty"`

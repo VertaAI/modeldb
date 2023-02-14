@@ -248,6 +248,7 @@ type BatchIngestRequest struct {
 	// Timestamp associated with the samples in the batch. If not provided, the current timestamp will be used.
 	//
 	// Types that are assignable to Timestamp:
+	//
 	//	*BatchIngestRequest_ColumnName
 	//	*BatchIngestRequest_Rfc3339Nano
 	//	*BatchIngestRequest_UnixUtcNano
@@ -255,6 +256,7 @@ type BatchIngestRequest struct {
 	// Only datasets saved in buckets owned by Verta are supported to start.
 	//
 	// Types that are assignable to Dataset:
+	//
 	//	*BatchIngestRequest_DatasetVersionId
 	//	*BatchIngestRequest_Config
 	Dataset isBatchIngestRequest_Dataset `protobuf_oneof:"dataset"`

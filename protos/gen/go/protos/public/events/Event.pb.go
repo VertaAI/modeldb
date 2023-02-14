@@ -13,7 +13,7 @@ import (
 	registry "github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry"
 	uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 	proto "github.com/golang/protobuf/proto"
-	any "github.com/golang/protobuf/ptypes/any"
+	any1 "github.com/golang/protobuf/ptypes/any"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -247,6 +247,7 @@ type EventEntity struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Entity:
+	//
 	//	*EventEntity_RegisteredModel
 	//	*EventEntity_ModelVersion
 	//	*EventEntity_ScanRequest
@@ -772,7 +773,7 @@ type WebhookCall struct {
 	WebhookId uint64             `protobuf:"varint,2,opt,name=webhook_id,json=webhookId,proto3" json:"webhook_id,omitempty"`
 	EventUuid string             `protobuf:"bytes,3,opt,name=event_uuid,json=eventUuid,proto3" json:"event_uuid,omitempty"`
 	Status    WebhookCall_Status `protobuf:"varint,4,opt,name=status,proto3,enum=ai.verta.events.WebhookCall_Status" json:"status,omitempty"`
-	Response  *any.Any           `protobuf:"bytes,5,opt,name=response,proto3" json:"response,omitempty"`
+	Response  *any1.Any          `protobuf:"bytes,5,opt,name=response,proto3" json:"response,omitempty"`
 }
 
 func (x *WebhookCall) Reset() {
@@ -835,7 +836,7 @@ func (x *WebhookCall) GetStatus() WebhookCall_Status {
 	return WebhookCall_UNKNOWN
 }
 
-func (x *WebhookCall) GetResponse() *any.Any {
+func (x *WebhookCall) GetResponse() *any1.Any {
 	if x != nil {
 		return x.Response
 	}
@@ -1443,7 +1444,7 @@ var file_events_Event_proto_goTypes = []interface{}{
 	(*registry.RegisteredModel)(nil),            // 17: ai.verta.registry.RegisteredModel
 	(*registry.ModelVersion)(nil),               // 18: ai.verta.registry.ModelVersion
 	(*deployment.BuildExternalScanRequest)(nil), // 19: ai.verta.deployment.BuildExternalScanRequest
-	(*any.Any)(nil),                             // 20: google.protobuf.Any
+	(*any1.Any)(nil),                            // 20: google.protobuf.Any
 	(*common.Empty)(nil),                        // 21: ai.verta.common.Empty
 }
 var file_events_Event_proto_depIdxs = []int32{

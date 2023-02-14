@@ -464,6 +464,7 @@ type Blob struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Content:
+	//
 	//	*Blob_Dataset
 	//	*Blob_Environment
 	//	*Blob_Code
@@ -644,6 +645,7 @@ type BlobDiff struct {
 	// instead of trying to figure out inter-types diff
 	//
 	// Types that are assignable to Content:
+	//
 	//	*BlobDiff_Dataset
 	//	*BlobDiff_Environment
 	//	*BlobDiff_Code
@@ -813,6 +815,7 @@ type Repository struct {
 	RepositoryVisibility RepositoryVisibilityEnum_RepositoryVisibility `protobuf:"varint,7,opt,name=repository_visibility,json=repositoryVisibility,proto3,enum=ai.verta.modeldb.versioning.RepositoryVisibilityEnum_RepositoryVisibility" json:"repository_visibility,omitempty"`
 	Owner                string                                        `protobuf:"bytes,10,opt,name=owner,proto3" json:"owner,omitempty"`
 	// Types that are assignable to OwnerTracking:
+	//
 	//	*Repository_OwnerId
 	//	*Repository_GroupOwnerId
 	OwnerTracking isRepository_OwnerTracking `protobuf_oneof:"owner_tracking"`
@@ -1720,9 +1723,9 @@ type ComputeRepositoryDiffRequest struct {
 	RepositoryId *RepositoryIdentification `protobuf:"bytes,1,opt,name=repository_id,json=repositoryId,proto3" json:"repository_id,omitempty"`
 	CommitA      string                    `protobuf:"bytes,2,opt,name=commit_a,json=commitA,proto3" json:"commit_a,omitempty"`
 	CommitB      string                    `protobuf:"bytes,3,opt,name=commit_b,json=commitB,proto3" json:"commit_b,omitempty"`
-	//Replace commit_a with the nearest common ancestor of commit_a and commit_b
+	// Replace commit_a with the nearest common ancestor of commit_a and commit_b
 	ReplaceAWithCommonAncestor bool `protobuf:"varint,5,opt,name=replace_a_with_common_ancestor,json=replaceAWithCommonAncestor,proto3" json:"replace_a_with_common_ancestor,omitempty"`
-	//for a or b only one of commit or branch should be populated
+	// for a or b only one of commit or branch should be populated
 	BranchA string `protobuf:"bytes,6,opt,name=branch_a,json=branchA,proto3" json:"branch_a,omitempty"`
 	BranchB string `protobuf:"bytes,7,opt,name=branch_b,json=branchB,proto3" json:"branch_b,omitempty"`
 }
@@ -2318,7 +2321,7 @@ type MergeRepositoryCommitsRequest struct {
 	CommitShaA   string                    `protobuf:"bytes,2,opt,name=commit_sha_a,json=commitShaA,proto3" json:"commit_sha_a,omitempty"`
 	CommitShaB   string                    `protobuf:"bytes,3,opt,name=commit_sha_b,json=commitShaB,proto3" json:"commit_sha_b,omitempty"`
 	Content      *Commit                   `protobuf:"bytes,4,opt,name=content,proto3" json:"content,omitempty"`
-	//for a or b only one of commit or branch should be populated
+	// for a or b only one of commit or branch should be populated
 	BranchA  string `protobuf:"bytes,5,opt,name=branch_a,json=branchA,proto3" json:"branch_a,omitempty"`
 	BranchB  string `protobuf:"bytes,6,opt,name=branch_b,json=branchB,proto3" json:"branch_b,omitempty"`
 	IsDryRun bool   `protobuf:"varint,7,opt,name=is_dry_run,json=isDryRun,proto3" json:"is_dry_run,omitempty"`
@@ -2476,8 +2479,8 @@ func (x *RevertRepositoryCommitsRequest) GetContent() *Commit {
 	return nil
 }
 
-//If any of the request parameters are not set then backend will return all the repositories.
-//the query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC
+// If any of the request parameters are not set then backend will return all the repositories.
+// the query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC
 type FindRepositories struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -2486,7 +2489,7 @@ type FindRepositories struct {
 	RepoIds       []uint64                `protobuf:"varint,1,rep,packed,name=repo_ids,json=repoIds,proto3" json:"repo_ids,omitempty"`           //if repo_ids not present in request then the backend returns all the matching repositories, else returns a subsetfrom the list that are in the parameter repo_ids
 	WorkspaceName string                  `protobuf:"bytes,2,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"` //If auth service is configured will default to Personal workspace, if authservice is not configured then parameter is ignored
 	Predicates    []*common.KeyValueQuery `protobuf:"bytes,3,rep,name=predicates,proto3" json:"predicates,omitempty"`                            //predicates like: {key:labels, value:Backend}, {key:name, value:repo_name}, if absent all the accessible repositories are returned.
-	//For pagination
+	// For pagination
 	PageNumber int32 `protobuf:"varint,6,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"` //If not present no pagination is applied.
 	PageLimit  int32 `protobuf:"varint,7,opt,name=page_limit,json=pageLimit,proto3" json:"page_limit,omitempty"`    //If not present no pagination is applied.
 }
@@ -2568,12 +2571,12 @@ type FindRepositoriesBlobs struct {
 	LocationPrefix []string   `protobuf:"bytes,3,rep,name=location_prefix,json=locationPrefix,proto3" json:"location_prefix,omitempty"`                                 //location like: ["dataset","train"], If location_prefix not found in request then backend returns all the blobs from root folder else return matching location_prefix blobs
 	BlobType       []BlobType `protobuf:"varint,4,rep,packed,name=blob_type,json=blobType,proto3,enum=ai.verta.modeldb.versioning.BlobType" json:"blob_type,omitempty"` //Backend consider this field with 'OR' operator in query and if it not present then ignore type and return all blob_type results
 	Commits        []string   `protobuf:"bytes,5,rep,name=commits,proto3" json:"commits,omitempty"`                                                                     //if commits not present in request then the backend returns all the matching commits blobs, else returns a subsetfrom the list that are in the parameter commits and return those commits blobs
-	//For pagination
+	// For pagination
 	PageNumber int32 `protobuf:"varint,6,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"` //If not present no pagination is applied.
 	PageLimit  int32 `protobuf:"varint,7,opt,name=page_limit,json=pageLimit,proto3" json:"page_limit,omitempty"`    //If not present no pagination is applied.
-	//In future requirement
-	//bool ascending = 8;
-	//string sort_key = 9;
+	// In future requirement
+	// bool ascending = 8;
+	// string sort_key = 9;
 	Predicates []*common.KeyValueQuery `protobuf:"bytes,10,rep,name=predicates,proto3" json:"predicates,omitempty"`
 }
 
@@ -3417,6 +3420,7 @@ type GetCommitComponentRequest_Response struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Component:
+	//
 	//	*GetCommitComponentRequest_Response_Folder
 	//	*GetCommitComponentRequest_Response_Blob
 	Component  isGetCommitComponentRequest_Response_Component `protobuf_oneof:"component"`

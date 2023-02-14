@@ -339,6 +339,7 @@ type NotificationChannel struct {
 	UpdatedAtMillis uint64                                              `protobuf:"varint,4,opt,name=updated_at_millis,json=updatedAtMillis,proto3" json:"updated_at_millis,omitempty"`
 	Type            NotificationChannelTypeEnum_NotificationChannelType `protobuf:"varint,5,opt,name=type,proto3,enum=ai.verta.monitoring.NotificationChannelTypeEnum_NotificationChannelType" json:"type,omitempty"`
 	// Types that are assignable to Channel:
+	//
 	//	*NotificationChannel_SlackWebhook
 	Channel     isNotificationChannel_Channel `protobuf_oneof:"channel"`
 	WorkspaceId uint64                        `protobuf:"varint,7,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`
@@ -501,11 +502,13 @@ type CreateNotificationChannelRequest struct {
 	CreatedAtMillis uint64               `protobuf:"varint,3,opt,name=created_at_millis,json=createdAtMillis,proto3" json:"created_at_millis,omitempty"`
 	UpdatedAtMillis uint64               `protobuf:"varint,4,opt,name=updated_at_millis,json=updatedAtMillis,proto3" json:"updated_at_millis,omitempty"`
 	// Types that are assignable to WorkspaceIdentifier:
+	//
 	//	*CreateNotificationChannelRequest_WorkspaceId
 	//	*CreateNotificationChannelRequest_WorkspaceName
 	WorkspaceIdentifier isCreateNotificationChannelRequest_WorkspaceIdentifier `protobuf_oneof:"workspace_identifier"`
 	Type                NotificationChannelTypeEnum_NotificationChannelType    `protobuf:"varint,5,opt,name=type,proto3,enum=ai.verta.monitoring.NotificationChannelTypeEnum_NotificationChannelType" json:"type,omitempty"`
 	// Types that are assignable to NotificationChannel:
+	//
 	//	*CreateNotificationChannelRequest_SlackWebhook
 	NotificationChannel isCreateNotificationChannelRequest_NotificationChannel `protobuf_oneof:"notification_channel"`
 }
@@ -702,6 +705,7 @@ type FindNotificationChannelRequest struct {
 	PageNumber int32 `protobuf:"varint,4,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"`
 	PageLimit  int32 `protobuf:"varint,5,opt,name=page_limit,json=pageLimit,proto3" json:"page_limit,omitempty"`
 	// Types that are assignable to WorkspaceIdentifier:
+	//
 	//	*FindNotificationChannelRequest_WorkspaceId
 	//	*FindNotificationChannelRequest_WorkspaceName
 	WorkspaceIdentifier isFindNotificationChannelRequest_WorkspaceIdentifier `protobuf_oneof:"workspace_identifier"`
@@ -1032,6 +1036,7 @@ type Alert struct {
 	// Information about the alerter that should be used to evaluate this alert
 	AlerterType AlerterTypeEnum_AlerterType `protobuf:"varint,11,opt,name=alerter_type,json=alerterType,proto3,enum=ai.verta.monitoring.AlerterTypeEnum_AlerterType" json:"alerter_type,omitempty"`
 	// Types that are assignable to Alerter:
+	//
 	//	*Alert_AlerterFixed
 	//	*Alert_AlerterReference
 	//	*Alert_AlerterRange

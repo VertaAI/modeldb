@@ -31,6 +31,7 @@ type DatasetBlob struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Content:
+	//
 	//	*DatasetBlob_S3
 	//	*DatasetBlob_Path
 	//	*DatasetBlob_Query
@@ -489,6 +490,7 @@ type DatasetDiff struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Content:
+	//
 	//	*DatasetDiff_S3
 	//	*DatasetDiff_Path
 	//	*DatasetDiff_Query

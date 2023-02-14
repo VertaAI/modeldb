@@ -31,7 +31,7 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-//a Permission is a group + a role, assigned to a workspace
+// a Permission is a group + a role, assigned to a workspace
 type Permission struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

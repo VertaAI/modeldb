@@ -9,7 +9,7 @@ package uac
 import (
 	context "context"
 	proto "github.com/golang/protobuf/proto"
-	any "github.com/golang/protobuf/ptypes/any"
+	any1 "github.com/golang/protobuf/ptypes/any"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -88,10 +88,10 @@ type CreateEventRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	EventUuid     string   `protobuf:"bytes,1,opt,name=event_uuid,json=eventUuid,proto3" json:"event_uuid,omitempty"`             // uuid for this event to handle deduplication
-	EventType     string   `protobuf:"bytes,2,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`             // Service-specific name for this type of event
-	WorkspaceId   uint64   `protobuf:"varint,3,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`      // Required
-	EventMetadata *any.Any `protobuf:"bytes,4,opt,name=event_metadata,json=eventMetadata,proto3" json:"event_metadata,omitempty"` // An arbitrary structure corresponding to this event. It will be used as the body of the event sent to the external system (e.g. webhook body)
+	EventUuid     string    `protobuf:"bytes,1,opt,name=event_uuid,json=eventUuid,proto3" json:"event_uuid,omitempty"`             // uuid for this event to handle deduplication
+	EventType     string    `protobuf:"bytes,2,opt,name=event_type,json=eventType,proto3" json:"event_type,omitempty"`             // Service-specific name for this type of event
+	WorkspaceId   uint64    `protobuf:"varint,3,opt,name=workspace_id,json=workspaceId,proto3" json:"workspace_id,omitempty"`      // Required
+	EventMetadata *any1.Any `protobuf:"bytes,4,opt,name=event_metadata,json=eventMetadata,proto3" json:"event_metadata,omitempty"` // An arbitrary structure corresponding to this event. It will be used as the body of the event sent to the external system (e.g. webhook body)
 }
 
 func (x *CreateEventRequest) Reset() {
@@ -147,7 +147,7 @@ func (x *CreateEventRequest) GetWorkspaceId() uint64 {
 	return 0
 }
 
-func (x *CreateEventRequest) GetEventMetadata() *any.Any {
+func (x *CreateEventRequest) GetEventMetadata() *any1.Any {
 	if x != nil {
 		return x.EventMetadata
 	}
@@ -1013,7 +1013,7 @@ var file_uac_Event_proto_goTypes = []interface{}{
 	(*RetriggerWebhookCallRequest)(nil),     // 9: ai.verta.uac.RetriggerWebhookCallRequest
 	(*FindWebhookRequest_Response)(nil),     // 10: ai.verta.uac.FindWebhookRequest.Response
 	(*FindWebhookCallRequest_Response)(nil), // 11: ai.verta.uac.FindWebhookCallRequest.Response
-	(*any.Any)(nil),                         // 12: google.protobuf.Any
+	(*any1.Any)(nil),                        // 12: google.protobuf.Any
 	(*Empty)(nil),                           // 13: ai.verta.uac.Empty
 }
 var file_uac_Event_proto_depIdxs = []int32{

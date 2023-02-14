@@ -558,6 +558,7 @@ type GetResources struct {
 	// Optional. If empty, will assume we want to get across all workspaces
 	//
 	// Types that are assignable to Workspace:
+	//
 	//	*GetResources_WorkspaceId
 	//	*GetResources_WorkspaceName
 	Workspace isGetResources_Workspace `protobuf_oneof:"workspace"`
@@ -677,6 +678,7 @@ type GetResourcesResponseItem struct {
 	// Owner of the resource
 	//
 	// Types that are assignable to OwnerTracking:
+	//
 	//	*GetResourcesResponseItem_OwnerId
 	//	*GetResourcesResponseItem_GroupOwnerId
 	OwnerTracking isGetResourcesResponseItem_OwnerTracking `protobuf_oneof:"owner_tracking"`
@@ -821,12 +823,14 @@ type SetResource struct {
 	// Workspace where the resources belong
 	//
 	// Types that are assignable to Workspace:
+	//
 	//	*SetResource_WorkspaceId
 	//	*SetResource_WorkspaceName
 	Workspace isSetResource_Workspace `protobuf_oneof:"workspace"`
 	// Owner of the resource
 	//
 	// Types that are assignable to OwnerTracking:
+	//
 	//	*SetResource_OwnerId
 	//	*SetResource_GroupOwnerId
 	OwnerTracking isSetResource_OwnerTracking `protobuf_oneof:"owner_tracking"`
@@ -1270,6 +1274,7 @@ type AddCollaboratorRequest_Response struct {
 	SelfAllowedActions []*Action `protobuf:"bytes,5,rep,name=self_allowed_actions,json=selfAllowedActions,proto3" json:"self_allowed_actions,omitempty"`
 	Status             bool      `protobuf:"varint,1,opt,name=status,proto3" json:"status,omitempty"`
 	// Types that are assignable to Collaborator:
+	//
 	//	*AddCollaboratorRequest_Response_CollaboratorUserInfo
 	//	*AddCollaboratorRequest_Response_CollaboratorOrganization
 	//	*AddCollaboratorRequest_Response_CollaboratorTeam

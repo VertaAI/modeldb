@@ -31,6 +31,7 @@ type CodeBlob struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Content:
+	//
 	//	*CodeBlob_Git
 	//	*CodeBlob_Notebook
 	Content isCodeBlob_Content `protobuf_oneof:"content"`
@@ -245,6 +246,7 @@ type CodeDiff struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Content:
+	//
 	//	*CodeDiff_Git
 	//	*CodeDiff_Notebook
 	Content isCodeDiff_Content `protobuf_oneof:"content"`
