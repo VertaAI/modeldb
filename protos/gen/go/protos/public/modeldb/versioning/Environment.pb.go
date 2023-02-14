@@ -31,6 +31,7 @@ type EnvironmentBlob struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Content:
+	//
 	//	*EnvironmentBlob_Python
 	//	*EnvironmentBlob_Docker
 	Content              isEnvironmentBlob_Content   `protobuf_oneof:"content"`
@@ -514,6 +515,7 @@ type EnvironmentDiff struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Content:
+	//
 	//	*EnvironmentDiff_Python
 	//	*EnvironmentDiff_Docker
 	Content isEnvironmentDiff_Content `protobuf_oneof:"content"`

@@ -247,6 +247,7 @@ type EventEntity struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Entity:
+	//
 	//	*EventEntity_RegisteredModel
 	//	*EventEntity_ModelVersion
 	//	*EventEntity_ScanRequest

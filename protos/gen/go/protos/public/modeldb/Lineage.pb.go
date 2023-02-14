@@ -125,6 +125,7 @@ type LineageEntry struct {
 
 	Type LineageEntryEnum_LineageEntryType `protobuf:"varint,1,opt,name=type,proto3,enum=ai.verta.modeldb.LineageEntryEnum_LineageEntryType" json:"type,omitempty"`
 	// Types that are assignable to Description:
+	//
 	//	*LineageEntry_ExternalId
 	Description isLineageEntry_Description `protobuf_oneof:"description"`
 }

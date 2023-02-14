@@ -187,10 +187,12 @@ type Workspace struct {
 
 	Id uint64 `protobuf:"varint,1,opt,name=id,proto3" json:"id,omitempty"`
 	// Types that are assignable to InternalId:
+	//
 	//	*Workspace_UserId
 	//	*Workspace_OrgId
 	InternalId isWorkspace_InternalId `protobuf_oneof:"internal_id"`
 	// Types that are assignable to Name:
+	//
 	//	*Workspace_Username
 	//	*Workspace_OrgName
 	Name                isWorkspace_Name                           `protobuf_oneof:"name"`

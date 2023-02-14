@@ -798,6 +798,7 @@ type Action struct {
 
 	Service ServiceEnum_Service `protobuf:"varint,1,opt,name=service,proto3,enum=ai.verta.uac.ServiceEnum_Service" json:"service,omitempty"`
 	// Types that are assignable to Action:
+	//
 	//	*Action_RoleServiceAction
 	//	*Action_AuthzServiceAction
 	//	*Action_ModeldbServiceAction
@@ -1027,6 +1028,7 @@ type ResourceType struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Resource:
+	//
 	//	*ResourceType_RoleServiceResourceType
 	//	*ResourceType_AuthzServiceResourceType
 	//	*ResourceType_ModeldbServiceResourceType

@@ -192,6 +192,7 @@ type APISyncRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Request:
+	//
 	//	*APISyncRequest_CommitObjectUpdate
 	//	*APISyncRequest_UpdateStatus
 	//	*APISyncRequest_DeleteStatus
@@ -404,6 +405,7 @@ type APISyncResponse struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Response:
+	//
 	//	*APISyncResponse_ObjectUpdated
 	//	*APISyncResponse_ObjectDeleted
 	Response    isAPISyncResponse_Response `protobuf_oneof:"response"`

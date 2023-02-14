@@ -213,6 +213,7 @@ type Job struct {
 	JobType     JobTypeEnum_JobType     `protobuf:"varint,7,opt,name=job_type,json=jobType,proto3,enum=ai.verta.modeldb.JobTypeEnum_JobType" json:"job_type,omitempty"`
 	Owner       string                  `protobuf:"bytes,8,opt,name=owner,proto3" json:"owner,omitempty"`
 	// Types that are assignable to OwnerTracking:
+	//
 	//	*Job_OwnerId
 	//	*Job_GroupOwnerId
 	OwnerTracking isJob_OwnerTracking `protobuf_oneof:"owner_tracking"`

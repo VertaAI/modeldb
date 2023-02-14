@@ -105,6 +105,7 @@ type Project struct {
 	Tags             []string                     `protobuf:"bytes,21,rep,name=tags,proto3" json:"tags,omitempty"`
 	Owner            string                       `protobuf:"bytes,22,opt,name=owner,proto3" json:"owner,omitempty"`
 	// Types that are assignable to OwnerTracking:
+	//
 	//	*Project_OwnerId
 	//	*Project_GroupOwnerId
 	OwnerTracking       isProject_OwnerTracking `protobuf_oneof:"owner_tracking"`
@@ -1946,7 +1947,7 @@ type FindProjects struct {
 	Predicates    []*common.KeyValueQuery `protobuf:"bytes,2,rep,name=predicates,proto3" json:"predicates,omitempty"`
 	IdsOnly       bool                    `protobuf:"varint,3,opt,name=ids_only,json=idsOnly,proto3" json:"ids_only,omitempty"` // whether to return full experiment runs or ids only
 	WorkspaceName string                  `protobuf:"bytes,8,opt,name=workspace_name,json=workspaceName,proto3" json:"workspace_name,omitempty"`
-	//For pagination
+	// For pagination
 	PageNumber int32  `protobuf:"varint,4,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"`
 	PageLimit  int32  `protobuf:"varint,5,opt,name=page_limit,json=pageLimit,proto3" json:"page_limit,omitempty"`
 	Ascending  bool   `protobuf:"varint,6,opt,name=ascending,proto3" json:"ascending,omitempty"`

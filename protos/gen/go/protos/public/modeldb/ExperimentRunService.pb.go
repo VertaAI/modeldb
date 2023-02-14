@@ -33,7 +33,6 @@ const (
 // of the legacy proto package is being used.
 const _ = proto.ProtoPackageIsVersion4
 
-//
 // ExperimentRun Entity
 type ExperimentRun struct {
 	state         protoimpl.MessageState
@@ -52,7 +51,7 @@ type ExperimentRun struct {
 	CodeVersion         string              `protobuf:"bytes,10,opt,name=code_version,json=codeVersion,proto3" json:"code_version,omitempty"`
 	CodeVersionSnapshot *common.CodeVersion `protobuf:"bytes,11,opt,name=code_version_snapshot,json=codeVersionSnapshot,proto3" json:"code_version_snapshot,omitempty"`
 	ParentId            string              `protobuf:"bytes,12,opt,name=parent_id,json=parentId,proto3" json:"parent_id,omitempty"`
-	//Requirement
+	// Requirement
 	Environment     *versioning.EnvironmentBlob `protobuf:"bytes,13,opt,name=environment,proto3" json:"environment,omitempty"`
 	Tags            []string                    `protobuf:"bytes,20,rep,name=tags,proto3" json:"tags,omitempty"`
 	Attributes      []*common.KeyValue          `protobuf:"bytes,21,rep,name=attributes,proto3" json:"attributes,omitempty"`
@@ -65,6 +64,7 @@ type ExperimentRun struct {
 	JobId           string                      `protobuf:"bytes,28,opt,name=job_id,json=jobId,proto3" json:"job_id,omitempty"`
 	Owner           string                      `protobuf:"bytes,29,opt,name=owner,proto3" json:"owner,omitempty"`
 	// Types that are assignable to OwnerTracking:
+	//
 	//	*ExperimentRun_OwnerId
 	//	*ExperimentRun_GroupOwnerId
 	OwnerTracking       isExperimentRun_OwnerTracking  `protobuf_oneof:"owner_tracking"`
@@ -544,6 +544,7 @@ type Observation struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to OneOf:
+	//
 	//	*Observation_Attribute
 	//	*Observation_Artifact
 	OneOf       isObservation_OneOf `protobuf_oneof:"oneOf"`
@@ -2913,13 +2914,14 @@ type FindExperimentRuns struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to EntityIdOneof:
+	//
 	//	*FindExperimentRuns_ProjectId
 	//	*FindExperimentRuns_ExperimentId
 	EntityIdOneof    isFindExperimentRuns_EntityIdOneof `protobuf_oneof:"entity_id_oneof"`
 	ExperimentRunIds []string                           `protobuf:"bytes,3,rep,name=experiment_run_ids,json=experimentRunIds,proto3" json:"experiment_run_ids,omitempty"`
 	Predicates       []*common.KeyValueQuery            `protobuf:"bytes,4,rep,name=predicates,proto3" json:"predicates,omitempty"`
 	IdsOnly          bool                               `protobuf:"varint,5,opt,name=ids_only,json=idsOnly,proto3" json:"ids_only,omitempty"` // whether to return full experiment runs or ids only
-	//For pagination
+	// For pagination
 	PageNumber    int32  `protobuf:"varint,6,opt,name=page_number,json=pageNumber,proto3" json:"page_number,omitempty"`
 	PageLimit     int32  `protobuf:"varint,7,opt,name=page_limit,json=pageLimit,proto3" json:"page_limit,omitempty"`
 	Ascending     bool   `protobuf:"varint,9,opt,name=ascending,proto3" json:"ascending,omitempty"`

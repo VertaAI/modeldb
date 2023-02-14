@@ -569,13 +569,13 @@ func (OperatorEnum_Operator) EnumDescriptor() ([]byte, []int) {
 type VisibilityEnum_Visibility int32
 
 const (
-	//Default to private
+	// Default to private
 	VisibilityEnum_PRIVATE VisibilityEnum_Visibility = 0
-	//Not supported
+	// Not supported
 	VisibilityEnum_PUBLIC VisibilityEnum_Visibility = 1
-	//Public to organization
+	// Public to organization
 	VisibilityEnum_ORG_SCOPED_PUBLIC VisibilityEnum_Visibility = 2
-	//Default access for organization
+	// Default access for organization
 	VisibilityEnum_ORG_DEFAULT VisibilityEnum_Visibility = 3
 )
 
@@ -667,9 +667,8 @@ type KeyValue struct {
 
 	Key   string         `protobuf:"bytes,1,opt,name=key,proto3" json:"key,omitempty"`
 	Value *_struct.Value `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
-	//
-	//   As per documentation of proto buffer 3.
-	//   For enums, the default value is the first defined enum value, which must be 0.
+	// As per documentation of proto buffer 3.
+	// For enums, the default value is the first defined enum value, which must be 0.
 	ValueType ValueTypeEnum_ValueType `protobuf:"varint,3,opt,name=value_type,json=valueType,proto3,enum=ai.verta.common.ValueTypeEnum_ValueType" json:"value_type,omitempty"`
 }
 
@@ -1368,6 +1367,7 @@ type CodeVersion struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Code:
+	//
 	//	*CodeVersion_GitSnapshot
 	//	*CodeVersion_CodeArchive
 	Code       isCodeVersion_Code `protobuf_oneof:"code"`
