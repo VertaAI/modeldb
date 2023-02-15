@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.query.OrderColumn;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import com.amazonaws.AmazonServiceException;
-import com.amazonaws.endpointdiscovery.DaemonThreadFactory;
 import com.google.protobuf.GeneratedMessageV3;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.Message;
@@ -77,12 +76,14 @@ public class CommonUtils {
 
   public static void scheduleTask(
       Runnable task, long initialDelay, long frequency, TimeUnit timeUnit) {
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor(r -> {
-      Thread t = new Thread(r);
-      t.setName(task.getClass().getSimpleName());
-      t.setDaemon(true);
-      return t;
-    });
+    ScheduledExecutorService executor =
+        Executors.newSingleThreadScheduledExecutor(
+            r -> {
+              Thread t = new Thread(r);
+              t.setName(task.getClass().getSimpleName());
+              t.setDaemon(true);
+              return t;
+            });
     executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
   }
 
