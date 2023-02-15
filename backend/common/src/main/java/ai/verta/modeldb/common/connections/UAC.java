@@ -32,6 +32,7 @@ public class UAC extends Connection {
       organizationServiceV2FutureStub;
 
   private final WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub workspaceServiceV2FutureStub;
+  private final UserServiceV2Grpc.UserServiceV2FutureStub userServiceV2FutureStub;
 
   public static UAC fromConfig(
       Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
@@ -55,7 +56,8 @@ public class UAC extends Connection {
       OrganizationServiceGrpc.OrganizationServiceFutureStub organizationServiceFutureStub,
       EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub,
       OrganizationServiceV2Grpc.OrganizationServiceV2FutureStub organizationServiceV2FutureStub,
-      WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub workspaceServiceV2FutureStub) {
+      WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub workspaceServiceV2FutureStub,
+      UserServiceV2Grpc.UserServiceV2FutureStub userServiceV2FutureStub) {
     super(Optional.empty());
     this.config = config;
     this.collaboratorServiceFutureStub = collaboratorServiceFutureStub;
@@ -69,6 +71,7 @@ public class UAC extends Connection {
     this.eventServiceFutureStub = eventServiceFutureStub;
     this.organizationServiceV2FutureStub = organizationServiceV2FutureStub;
     this.workspaceServiceV2FutureStub = workspaceServiceV2FutureStub;
+    this.userServiceV2FutureStub = userServiceV2FutureStub;
   }
 
   private UAC(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
@@ -111,6 +114,7 @@ public class UAC extends Connection {
                     getServiceUserMetadata(config.getService_user())));
     organizationServiceV2FutureStub = OrganizationServiceV2Grpc.newFutureStub(authServiceChannel);
     workspaceServiceV2FutureStub = WorkspaceServiceV2Grpc.newFutureStub(authServiceChannel);
+    userServiceV2FutureStub = UserServiceV2Grpc.newFutureStub(authServiceChannel);
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
@@ -160,5 +164,9 @@ public class UAC extends Connection {
 
   public WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub getWorkspaceServiceV2() {
     return attachInterceptors(workspaceServiceV2FutureStub);
+  }
+
+  public UserServiceV2Grpc.UserServiceV2FutureStub getUserServiceV2() {
+    return attachInterceptors(userServiceV2FutureStub);
   }
 }

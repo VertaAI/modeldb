@@ -71,6 +71,9 @@ public class ModeldbTestConfigurationBeans {
     WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub workspaceV2 =
         mock(WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub.class);
 
+    UserServiceV2Grpc.UserServiceV2FutureStub userV2 =
+        mock(UserServiceV2Grpc.UserServiceV2FutureStub.class);
+
     AuthServiceChannel authServiceChannel = new TestAuthServiceChannel(config);
     return new UAC(
         config,
@@ -84,7 +87,8 @@ public class ModeldbTestConfigurationBeans {
         org,
         event,
         orgV2,
-        workspaceV2) {
+        workspaceV2,
+        userV2) {
       @Override
       public AuthServiceChannel getBlockingAuthServiceChannel() {
         return authServiceChannel;
@@ -115,6 +119,9 @@ public class ModeldbTestConfigurationBeans {
     reset(uac.getAuthzService());
     reset(uac.getWorkspaceService());
     reset(uac.getServiceAccountCollaboratorServiceForServiceUser());
+    reset(uac.getWorkspaceServiceV2());
+    reset(uac.getOrganizationServiceV2());
+    reset(uac.getUserServiceV2());
   }
 
   @Bean
