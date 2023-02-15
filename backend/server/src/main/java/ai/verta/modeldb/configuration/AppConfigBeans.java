@@ -15,6 +15,7 @@ import ai.verta.modeldb.common.configuration.AppContext;
 import ai.verta.modeldb.common.configuration.EnabledMigration;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
+import ai.verta.modeldb.common.configuration.ServerEnabled;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.db.JdbiUtils;
 import ai.verta.modeldb.common.exceptions.ExceptionInterceptor;
@@ -181,6 +182,7 @@ public class AppConfigBeans {
   }
 
   @Bean
+  @Conditional(ServerEnabled.class)
   public ServerBuilder<?> serverBuilder(
       MDBConfig config,
       Executor grpcExecutor,
@@ -224,7 +226,8 @@ public class AppConfigBeans {
   }
 
   @Bean
-  public CommandLineRunner commandLineRunner(
+  @Conditional(ServerEnabled.class)
+  public CommandLineRunner serverCommandLineRunner(
       ServerBuilder<?> serverBuilder,
       HealthStatusManager healthStatusManager,
       MDBConfig config,
@@ -264,7 +267,7 @@ public class AppConfigBeans {
 
   @Bean
   @Conditional({RunLiquibaseSeparately.class})
-  public CommandLineRunner commandLineRunner() {
+  public CommandLineRunner migrationCommandLineRunner() {
     return args -> {
       LOGGER.trace("Liquibase run separate: done");
       LOGGER.info("System exiting");
@@ -331,7 +334,5 @@ public class AppConfigBeans {
     }
 
     appContext.initiateShutdown(0);
-
-    CommonUtils.cleanUpPIDFile();
   }
 }

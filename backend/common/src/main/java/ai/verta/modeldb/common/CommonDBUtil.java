@@ -75,8 +75,12 @@ public abstract class CommonDBUtil {
   }
 
   protected static boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
+    LOGGER.info("Checking DB connection with timeout [" + timeout + "]...");
     try (var con = getDBConnection(rdb)) {
-      return con.isValid(timeout);
+      LOGGER.info("Got connection: " + con);
+      boolean valid = con.isValid(timeout);
+      LOGGER.info("DB Connection valid? " + valid);
+      return valid;
     } catch (Exception ex) {
       LOGGER.error("JdbiUtil checkDBConnection() got error ", ex);
       return false;
@@ -476,7 +480,7 @@ public abstract class CommonDBUtil {
   public static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
     final var databaseName = RdbConfig.buildDatabaseName(rdbConfiguration);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
-    LOGGER.debug("Connecting to DB URL " + dbUrl);
+    LOGGER.info("Connecting to DB URL " + dbUrl);
     Connection connection =
         DriverManager.getConnection(
             dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());

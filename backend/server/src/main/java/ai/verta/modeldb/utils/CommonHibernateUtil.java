@@ -97,7 +97,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
                   String.valueOf(20))
               .setProperty(
                   "hibernate.hikari.leakDetectionThreshold",
-                  String.valueOf(config.getLiquibaseLockThreshold()));
+                  String.valueOf(config.getLeakDetectionThresholdMs()));
 
       LOGGER.trace("connectionString {}", connectionString);
       // Create registry builder
@@ -109,7 +109,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
         metaDataSrc.addAnnotatedClass(entity);
       }
 
-      // Check DB is up or not
+      LOGGER.info("Checking DB Connection");
       boolean dbConnectionStatus = checkDBConnection(rdb, config.getTimeout());
       if (!dbConnectionStatus) {
         checkDBConnectionInLoop(config, true);

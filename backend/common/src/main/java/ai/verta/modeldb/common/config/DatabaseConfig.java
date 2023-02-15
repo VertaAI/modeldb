@@ -22,7 +22,7 @@ public class DatabaseConfig {
   @JsonProperty private String maxConnectionPoolSize = "20";
   @JsonProperty private int threadCount = 8;
   @JsonProperty private String connectionTimeout = "5000"; // note: milliseconds
-  @JsonProperty private Long leakDetectionThresholdMs = 3000L;
+  @JsonProperty private Long leakDetectionThresholdMs = 10000L;
 
   @JsonProperty private RdbConfig RdbConfiguration;
 
