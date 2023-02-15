@@ -115,8 +115,7 @@ class DeployedModel(object):
             compress: bool=False,
             prediction_id: Optional[str]=None,
             ):
-        """This is like ``DeployedModel.predict()``, but returns the raw ``Response``
-         for debugging."""
+        """Make prediction, handling compression and error propagation."""
         request_headers = dict()
         if prediction_id:
             request_headers.update({'verta-request-id': prediction_id})
