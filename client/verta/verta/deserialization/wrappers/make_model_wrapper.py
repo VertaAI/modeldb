@@ -6,7 +6,7 @@ from verta.deserialization.wrappers.model.xgboost_model_wrapper import XgboostMo
 from verta.deserialization.wrappers.model.custom_model import CustomModelWrapper
 from verta.deserialization.wrappers.model.callable_model import CallableModelWrapper
 from verta.deserialization.wrappers.model.class_model import ClassModelWrapper
-from verta.deserialization.wrappers.wrapper_config import WrapperConfig
+from verta.deserialization.wrappers.config.wrapper_config import WrapperConfig
 from verta.deserialization.deserializer_factory import make_deserializer
 
 
