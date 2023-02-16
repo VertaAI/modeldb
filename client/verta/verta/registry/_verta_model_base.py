@@ -92,3 +92,35 @@ class VertaModelBase(object):
 
         """
         raise NotImplementedError
+
+    def test(self):
+        """Test a model's behavior for correctness.
+
+        :meth:`test` does nothing by default. Implement this method—with any
+        assertions you wish—to validate your model.
+
+        This method is called
+
+        - in :func:`verta.registry.test_model_build`
+        - when a model build is completed in the Verta platform
+        - when an endpoint is initializing in the Verta platform
+
+        .. note::
+
+            If using model data logging (e.g. :func:`verta.runtime.log`), any
+            calls here to the model's :meth:`predict` method must be wrapped
+            in a :class:`verta.runtime.context`. This incidentally also
+            enables assertions for expected logs.
+
+        Returns
+        -------
+        None
+            Returned values will be unused and discarded.
+
+        Raises
+        ------
+        Any
+            Raised exceptions will be propagated.
+
+        """
+        pass
