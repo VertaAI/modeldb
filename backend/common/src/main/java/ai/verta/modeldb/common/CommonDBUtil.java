@@ -77,7 +77,7 @@ public abstract class CommonDBUtil {
   protected static boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
     LOGGER.info("Checking DB connection with timeout [" + timeout + "]...");
     try (var con = getDBConnection(rdb)) {
-      LOGGER.info("Got connection: " + con);
+      LOGGER.debug("Got connection: " + con);
       boolean valid = con.isValid(timeout);
       LOGGER.info("DB Connection valid? " + valid);
       return valid;
