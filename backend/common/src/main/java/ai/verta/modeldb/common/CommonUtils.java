@@ -76,7 +76,14 @@ public class CommonUtils {
 
   public static void scheduleTask(
       Runnable task, long initialDelay, long frequency, TimeUnit timeUnit) {
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    ScheduledExecutorService executor =
+        Executors.newSingleThreadScheduledExecutor(
+            r -> {
+              Thread t = new Thread(r);
+              t.setName(task.getClass().getSimpleName());
+              t.setDaemon(true);
+              return t;
+            });
     executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
   }
 

@@ -5,6 +5,7 @@ import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.config.CronJobConfig;
+import ai.verta.modeldb.common.configuration.ServerEnabled;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.cron_jobs.CleanUpEntitiesCron;
 import ai.verta.modeldb.cron_jobs.DeleteEntitiesCron;
@@ -16,6 +17,7 @@ import lombok.NoArgsConstructor;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 @NoArgsConstructor
@@ -24,6 +26,7 @@ public class CronJobUtils {
   private static final Logger LOGGER = LogManager.getLogger(CronJobUtils.class);
 
   @Bean
+  @Conditional(ServerEnabled.class)
   public CronJobUtils initializeCronJobs(MDBConfig mdbConfig, ServiceSet services) {
     LOGGER.info("Enter in CronJobUtils: initializeBasedOnConfig()");
     if (mdbConfig.getCron_job() != null) {
