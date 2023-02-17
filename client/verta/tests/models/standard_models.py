@@ -18,9 +18,6 @@ class VertaModel(VertaModelBase):
     def predict(self, input):
         return self.artifact
 
-    def model_test(self):
-        assert self.predict(None) == self.artifact
-
 
 class VertaModelDecorated(VertaModelBase):
     def __init__(self, artifacts):
@@ -46,9 +43,16 @@ class VertaModelOnlyPredict(VertaModelBase):
 
 
 def verta_models():
+    """Return valid Verta standard models."""
     models = []
 
     models.append(VertaModel)
+
+    class VertaModelWithTest(VertaModel):
+        def model_test(self):
+            assert self.predict(None) == self.artifact
+
+    models.append(VertaModelWithTest)
 
     return models
 
