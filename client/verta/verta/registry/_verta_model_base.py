@@ -102,7 +102,7 @@ class VertaModelBase(object):
         This method is called
 
         - in :func:`verta.registry.test_model_build`
-        - when a model build is completed in the Verta platform
+        - when a self-contained model build is completed in the Verta platform
         - when an endpoint is initializing in the Verta platform
 
         .. note::
