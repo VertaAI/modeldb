@@ -117,7 +117,7 @@ class TestModelValidator:
     def test_bad_init_verta(self, model):
         """Verify VertaModelBase.__init__() is overridden with correct parameters."""
         msg_match = "^" + re.escape(
-            "model __init__() parameters must be ('self', 'artifacts'), not "
+            "model __init__() parameters must be ['self', 'artifacts'], not "
         )
         with pytest.raises(TypeError, match=msg_match):
             model_validator.must_verta(model)

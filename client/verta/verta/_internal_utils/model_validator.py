@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import inspect
-from inspect import getfullargspec
 import warnings
 
 from verta.registry import VertaModelBase
@@ -82,8 +81,12 @@ def must_verta(model):
         )
 
     # model service passes __init__(artifacts) by keyword, so params must match
-    expected_init_params = tuple(getfullargspec(VertaModelBase.__init__).args)
-    init_params = tuple(getfullargspec(model.__init__).args)
+    expected_init_params = list(
+        inspect.signature(VertaModelBase.__init__).parameters.keys()
+    )
+    init_params = list(
+        inspect.signature(model.__init__).parameters.keys()
+    )
     if init_params != expected_init_params:
         raise TypeError(
             "model __init__() parameters must be {},"
