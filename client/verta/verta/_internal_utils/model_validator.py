@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import inspect
 from inspect import getfullargspec
 import warnings
 
@@ -85,7 +86,7 @@ def must_verta(model):
     init_params = tuple(getfullargspec(model.__init__).args)
     if init_params != expected_init_params:
         raise TypeError(
-            "model __init__() parameters must be named {},"
+            "model __init__() parameters must be {},"
             " not {}".format(expected_init_params, init_params)
         )
 
@@ -93,6 +94,18 @@ def must_verta(model):
         warnings.warn(
             "model predict() is not decorated with verta.registry.verify_io;"
             " argument and return types may change unintuitively when deployed"
+        )
+
+    expected_test_params = list(
+        inspect.signature(VertaModelBase.test).parameters.keys()
+    )
+    test_params = list(
+        inspect.signature(model.test).parameters.keys()
+    )
+    if test_params != expected_test_params:
+        raise TypeError(
+            "model test() parameters must be {},"
+            " not {}".format(expected_test_params, test_params)
         )
 
     return True

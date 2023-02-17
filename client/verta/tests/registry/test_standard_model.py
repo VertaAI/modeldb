@@ -22,6 +22,7 @@ verta_models = standard_models.verta_models()
 decorated_verta_models = standard_models.decorated_verta_models()
 incomplete_verta_models = standard_models.incomplete_verta_models()
 bad_init_verta_models = standard_models.bad_init_verta_models()
+bad_test_verta_models = standard_models.bad_test_verta_models()
 keras_models = standard_models.keras_models()
 unsupported_keras_models = standard_models.unsupported_keras_models()
 sklearn_models = standard_models.sklearn_models()
@@ -114,8 +115,21 @@ class TestModelValidator:
         bad_init_verta_models,
     )
     def test_bad_init_verta(self, model):
+        """Verify VertaModelBase.__init__() is overridden with correct parameters."""
         msg_match = "^" + re.escape(
-            "model __init__() parameters must be named ('self', 'artifacts'), not "
+            "model __init__() parameters must be ('self', 'artifacts'), not "
+        )
+        with pytest.raises(TypeError, match=msg_match):
+            model_validator.must_verta(model)
+
+    @pytest.mark.parametrize(
+        "model",
+        bad_test_verta_models,
+    )
+    def test_bad_test_verta(self, model):
+        """Verify VertaModelBase.test() is overridden with correct parameters."""
+        msg_match = "^" + re.escape(
+            "model test() parameters must be ['self'], not "
         )
         with pytest.raises(TypeError, match=msg_match):
             model_validator.must_verta(model)

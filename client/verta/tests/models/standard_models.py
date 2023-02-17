@@ -18,6 +18,9 @@ class VertaModel(VertaModelBase):
     def predict(self, input):
         return self.artifact
 
+    def test(self):
+        assert self.predict(None) == self.artifact
+
 
 class VertaModelDecorated(VertaModelBase):
     def __init__(self, artifacts):
@@ -92,6 +95,25 @@ def bad_init_verta_models():
             pass
 
     models.append(MisnamedInit)
+
+    return models
+
+
+def bad_test_verta_models():
+    """Return Verta standard models with incorrect test() signatures."""
+    models = []
+
+    class ExtraParamsTest(VertaModelBase):
+        def __init__(self, artifacts):
+            pass
+
+        def predict(self, input):
+            pass
+
+        def test(self, input):  # not just `self`
+            pass
+
+    models.append(ExtraParamsTest)
 
     return models
 
