@@ -18,7 +18,7 @@ class VertaModel(VertaModelBase):
     def predict(self, input):
         return self.artifact
 
-    def test(self):
+    def model_test(self):
         assert self.predict(None) == self.artifact
 
 
@@ -110,7 +110,7 @@ def bad_test_verta_models():
         def predict(self, input):
             pass
 
-        def test(self, input):  # not just `self`
+        def model_test(self, input):  # not just `self`
             pass
 
     models.append(ExtraParamsTest)

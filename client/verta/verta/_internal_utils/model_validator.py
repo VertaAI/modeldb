@@ -100,14 +100,14 @@ def must_verta(model):
         )
 
     expected_test_params = list(
-        inspect.signature(VertaModelBase.test).parameters.keys()
+        inspect.signature(VertaModelBase.model_test).parameters.keys()
     )
     test_params = list(
-        inspect.signature(model.test).parameters.keys()
+        inspect.signature(model.model_test).parameters.keys()
     )
     if test_params != expected_test_params:
         raise TypeError(
-            "model test() parameters must be {},"
+            "model model_test() parameters must be {},"
             " not {}".format(expected_test_params, test_params)
         )
 
