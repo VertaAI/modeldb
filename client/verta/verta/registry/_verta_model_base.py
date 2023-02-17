@@ -96,8 +96,8 @@ class VertaModelBase(object):
     def model_test(self):
         """Test a model's behavior for correctness.
 
-        :meth:`test` does nothing by default. Implement this method—with any
-        assertions you wish—to validate your model.
+        :meth:`model_test` does nothing by default. Implement this method—with
+        any assertions you wish—to validate your model.
 
         This method is called
 
