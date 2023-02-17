@@ -93,7 +93,7 @@ class VertaModelBase(object):
         """
         raise NotImplementedError
 
-    def test(self):
+    def model_test(self):
         """Test a model's behavior for correctness.
 
         :meth:`test` does nothing by default. Implement this method—with any
