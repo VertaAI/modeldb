@@ -104,7 +104,7 @@ def bad_init_verta_models():
 
 
 def bad_test_verta_models():
-    """Return Verta standard models with incorrect test() signatures."""
+    """Return Verta standard models with incorrect model_test() signatures."""
     models = []
 
     class ExtraParamsTest(VertaModelBase):
