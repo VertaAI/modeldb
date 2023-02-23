@@ -5,7 +5,6 @@ import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
-import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -58,9 +57,7 @@ import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
-import java.sql.SQLException;
 import java.util.List;
-import liquibase.exception.DatabaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -141,98 +138,11 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
     databaseConfig = dbConfig;
   }
 
-  // TODO: this will removed after merging of the PR: https://github.com/VertaAI/modeldb/pull/1846
-  /*public static void checkIfEntityAlreadyExists(
-      Session session,
-      String shortName,
-      String command,
-      String entityName,
-      String fieldName,
-      String name,
-      String workspaceColumnName,
-      String workspaceId,
-      WorkspaceType workspaceType,
-      Logger logger) {
-    Query query =
-        getWorkspaceEntityQuery(
-            session,
-            shortName,
-            command,
-            fieldName,
-            name,
-            workspaceColumnName,
-            workspaceId,
-            workspaceType,
-            true,
-            null);
-    Long count = (Long) query.uniqueResult();
-
-    if (count > 0) {
-      // Throw error if it is an insert request and project with same name already exists
-      logger.info(entityName + " with name {} already exists", name);
-      throw new AlreadyExistsException(entityName + " already exists in database");
-    }
-  }
-
-  public static Query getWorkspaceEntityQuery(
-      Session session,
-      String shortName,
-      String command,
-      String fieldName,
-      String name,
-      String workspaceColumnName,
-      String workspaceId,
-      WorkspaceType workspaceType,
-      boolean shouldSetName,
-      List<String> ordering) {
-    StringBuilder stringQueryBuilder = new StringBuilder(command);
-    stringQueryBuilder
-        .append(" AND ")
-        .append(shortName)
-        .append(".")
-        .append(ModelDBConstants.DELETED)
-        .append(" = false ");
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      if (shouldSetName) {
-        stringQueryBuilder.append(" AND ");
-      }
-      stringQueryBuilder
-          .append(shortName)
-          .append(".")
-          .append(workspaceColumnName)
-          .append(" =: ")
-          .append(workspaceColumnName)
-          .append(" AND ")
-          .append(shortName)
-          .append(".")
-          .append(ModelDBConstants.WORKSPACE_TYPE)
-          .append(" =: ")
-          .append(ModelDBConstants.WORKSPACE_TYPE);
-    }
-
-    if (ordering != null && !ordering.isEmpty()) {
-      stringQueryBuilder.append(" order by ");
-      Joiner joiner = Joiner.on(",");
-      stringQueryBuilder.append(joiner.join(ordering));
-    }
-    Query query = session.createQuery(stringQueryBuilder.toString());
-    if (shouldSetName) {
-      query.setParameter(fieldName, name);
-    }
-    if (workspaceId != null && !workspaceId.isEmpty()) {
-      query.setParameter(workspaceColumnName, workspaceId);
-      query.setParameter(ModelDBConstants.WORKSPACE_TYPE, workspaceType.getNumber());
-    }
-    return query;
-  }*/
-
   /**
    * If you want to define new migration then add new if check for your migration in `if (migration)
    * {` condition.
    */
-  public void runMigration(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
-      throws ModelDBException, DatabaseException, SQLException {
-    RdbConfig rdb = databaseConfig.getRdbConfiguration();
+  public void runMigration(List<MigrationConfig> migrations) throws ModelDBException {
     if (migrations != null) {
       LOGGER.debug("Running code migrations.");
       for (MigrationConfig migrationConfig : migrations) {

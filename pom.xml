@@ -25,7 +25,6 @@
         <hibernate.version>5.6.15.Final</hibernate.version>
         <log4j.version>2.20.0</log4j.version>
         <grpc.version>1.54.0</grpc.version>
-        <liquibase.version>4.9.1</liquibase.version>
         <prometheus.version>0.16.0</prometheus.version>
         <protobuf.version>3.22.2</protobuf.version>
         <aws.version>1.12.444</aws.version>
@@ -236,13 +235,6 @@
                 <artifactId>google-oauth-client</artifactId>
                 <version>1.34.1</version>
             </dependency>
-            <!-- https://mvnrepository.com/artifact/org.liquibase/liquibase-core -->
-            <dependency>
-                <groupId>org.liquibase</groupId>
-                <artifactId>liquibase-core</artifactId>
-                <version>${liquibase.version}</version>
-            </dependency>
-
             <!-- https://mvnrepository.com/artifact/io.prometheus/simpleclient_servlet -->
             <dependency>
                 <groupId>io.prometheus</groupId>
