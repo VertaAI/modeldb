@@ -1,7 +1,6 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.batchProcess.OwnerRoleBindingRepositoryUtils;
 import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.common.config.Config;
@@ -243,9 +242,6 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
         switch (migrationConfig.name) {
           case ModelDBConstants.SUB_ENTITIES_OWNERS_RBAC_MIGRATION:
             OwnerRoleBindingUtils.execute();
-            break;
-          case ModelDBConstants.SUB_ENTITIES_REPOSITORY_OWNERS_RBAC_MIGRATION:
-            OwnerRoleBindingRepositoryUtils.execute();
             break;
           case ModelDBConstants.POPULATE_VERSION_MIGRATION:
             PopulateVersionMigration.execute(migrationConfig.record_update_limit);
