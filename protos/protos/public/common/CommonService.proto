@@ -49,6 +49,14 @@ message CollaboratorTypeEnum {
     }
 }
 
+message CollaboratorTypeEnumWithDefaultEnum {
+    enum CollaboratorTypeEnumWithDefault {
+        UNKNOWN = 0;
+        READ_WRITE = 1;
+        READ_ONLY = 2;
+    }
+}
+
 message EntitiesEnum {
     enum EntitiesTypes {
         UNKNOWN = 0; // Resource 0 should always cause an error
@@ -70,6 +78,19 @@ message ModelDBResourceEnum {
         DASHBOARD = 7;
         REPOSITORY = 8;
         REGISTERED_MODEL = 9;
+        REGISTERED_MODEL_VERSION = 10;
+        MONITORED_ENTITY = 11;
+        NOTIFICATION_CHANNEL = 12;
+        ENDPOINT = 13;
+        BUILD = 14;
+        ORGANIZATION = 15;
+        TEAM = 16;
+        WORKSPACE = 17;
+        USER = 18;
+        SERVICE_ACCOUNT = 19;
+        CONTAINER_REGISTRY_CONFIGURATION = 20;
+        STAGE = 21;
+        PROFILER = 22;
     }
 };
 
@@ -106,6 +127,9 @@ message Artifact {
     ArtifactTypeEnum.ArtifactType artifact_type = 4;
     string linked_artifact_id = 5;
     string filename_extension = 6;
+    string serialization = 7;
+    string artifact_subtype = 8;
+    bool upload_completed = 9;
 }
 
 message KeyValueQuery {
@@ -131,6 +155,7 @@ message OperatorEnum {
         CONTAIN = 6;
         NOT_CONTAIN = 7;
         IN = 8; // This is not fully supported by backend.
+        NOT_IN = 9;
     }
 }
 
@@ -145,4 +170,29 @@ message VisibilityEnum {
         //Default access for organization
         ORG_DEFAULT = 3;
     }
+}
+
+// code version
+message CodeVersion {
+    oneof code {
+        GitSnapshot git_snapshot = 1;
+        common.Artifact code_archive = 2; // ZIP archive of source code
+    }
+    uint64 date_logged = 3;
+}
+
+message GitSnapshot {
+    repeated string filepaths = 1; // paths to relevant source code
+    string repo = 2; // URL to remote repository
+    string hash = 3; // commit hash
+    common.TernaryEnum.Ternary is_dirty = 4;
+}
+
+message Empty {
+
+}
+
+message GroupId {
+    string org_id = 1;
+    string group_id = 2;
 }

@@ -1,0 +1,602 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "registry/StageService.proto",
+    "version": "version not set"
+  },
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/registry/stage/approveTransition": {
+      "post": {
+        "operationId": "StageService_ApproveTransition",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryActivity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryApproveTransitionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    },
+    "/registry/stage/closeTransition": {
+      "post": {
+        "operationId": "StageService_CloseTransition",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryActivity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryCloseTransitionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    },
+    "/registry/stage/commitTransition": {
+      "post": {
+        "summary": "Only a transition that has been approved can be commited. The user must have RW permission\nSimilar to merging a PR",
+        "operationId": "StageService_CommitTransition",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryActivity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryCommitTransitionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    },
+    "/registry/stage/createComment": {
+      "post": {
+        "operationId": "StageService_CreateComment",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryActivity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryCreateCommentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    },
+    "/registry/stage/createTransition": {
+      "post": {
+        "summary": "Anyone with RW permission on the model version can do any of these\nNote that the author of the transition cannot approve or reject it themselves (like in github)",
+        "operationId": "StageService_CreateTransition",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryActivity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryCreateTransitionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    },
+    "/registry/stage/findActivities": {
+      "post": {
+        "summary": "List objects from the db. Similar to the PR history",
+        "operationId": "StageService_FindActivities",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryFindActivitiesRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryFindActivitiesRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    },
+    "/registry/stage/findTransitions": {
+      "post": {
+        "summary": "Similar to listing PRs by state",
+        "operationId": "StageService_FindTransitions",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryFindTransitionsRequestResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryFindTransitionsRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    },
+    "/registry/stage/rejectTransition": {
+      "post": {
+        "operationId": "StageService_RejectTransition",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryActivity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryRejectTransitionRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    },
+    "/registry/stage/updateStage": {
+      "post": {
+        "summary": "Directly update the stage without going through approval. The user must have RW permission\nSimilar to merging to master directly",
+        "operationId": "StageService_UpdateStage",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/registryActivity"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/registryUpdateStageRequest"
+            }
+          }
+        ],
+        "tags": [
+          "StageService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "StageEnumStage": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "DEVELOPMENT",
+        "STAGING",
+        "PRODUCTION",
+        "ARCHIVED",
+        "UNASSIGNED"
+      ],
+      "default": "UNKNOWN"
+    },
+    "TransitionStateEnumTransitionState": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "APPROVED",
+        "REJECTED",
+        "PENDING",
+        "CLOSED",
+        "COMMITTED"
+      ],
+      "default": "UNKNOWN",
+      "title": "- APPROVED: It is approved only if it has one approval and no rejections\n - REJECTED: It is rejected if it has any rejection\n - PENDING: It is pending if there are no approvals or rejections\n - CLOSED: It is closed if the user has explicitly requested it to be closed\n - COMMITTED: It has been committed and people can't close, approve or reject anymore"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "type_url": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "registryActivity": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "author_id": {
+          "type": "string"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64",
+          "title": "Track time"
+        },
+        "comment": {
+          "type": "string",
+          "title": "Text provided by the user"
+        },
+        "transition": {
+          "$ref": "#/definitions/registryTransition",
+          "title": "Effective oneof for the following fields (all might be missing and that's fine too)"
+        },
+        "approval": {
+          "$ref": "#/definitions/registryApprovalOfTransition"
+        },
+        "rejection": {
+          "$ref": "#/definitions/registryRejectionOfTransition"
+        },
+        "close": {
+          "$ref": "#/definitions/registryCloseOfTransition"
+        },
+        "update": {
+          "$ref": "#/definitions/registryStageUpdate"
+        },
+        "activity_state": {
+          "$ref": "#/definitions/TransitionStateEnumTransitionState",
+          "title": "Activity state while the transition happen"
+        }
+      }
+    },
+    "registryApprovalOfTransition": {
+      "type": "object"
+    },
+    "registryApproveTransitionRequest": {
+      "type": "object",
+      "properties": {
+        "transition_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "registryCloseOfTransition": {
+      "type": "object"
+    },
+    "registryCloseTransitionRequest": {
+      "type": "object",
+      "properties": {
+        "transition_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "registryCommitTransitionRequest": {
+      "type": "object",
+      "properties": {
+        "transition_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "registryCreateCommentRequest": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "registryCreateTransitionRequest": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "desired_stage": {
+          "$ref": "#/definitions/StageEnumStage"
+        },
+        "comment": {
+          "type": "string"
+        }
+      },
+      "title": "Actions"
+    },
+    "registryFindActivitiesRequest": {
+      "type": "object",
+      "properties": {
+        "registered_model_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "At least one of the following needs to be provided"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "registryFindActivitiesRequestResponse": {
+      "type": "object",
+      "properties": {
+        "activities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryActivity"
+          }
+        }
+      }
+    },
+    "registryFindTransitionsRequest": {
+      "type": "object",
+      "properties": {
+        "registered_model_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "At least one of the following needs to be provided"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "state": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/TransitionStateEnumTransitionState"
+          },
+          "title": "Current state. If empty, return in any state"
+        }
+      }
+    },
+    "registryFindTransitionsRequestResponse": {
+      "type": "object",
+      "properties": {
+        "activities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryActivity"
+          },
+          "title": "Only things of type transition can be returned"
+        }
+      }
+    },
+    "registryRejectTransitionRequest": {
+      "type": "object",
+      "properties": {
+        "transition_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "registryRejectionOfTransition": {
+      "type": "object"
+    },
+    "registryStageUpdate": {
+      "type": "object",
+      "properties": {
+        "stage": {
+          "$ref": "#/definitions/StageEnumStage"
+        }
+      }
+    },
+    "registryTransition": {
+      "type": "object",
+      "properties": {
+        "source_stage": {
+          "$ref": "#/definitions/StageEnumStage",
+          "title": "Current stage. Automatically populated from the backend"
+        },
+        "desired_stage": {
+          "$ref": "#/definitions/StageEnumStage",
+          "title": "Desired stage sent as part of the transition request"
+        },
+        "state": {
+          "$ref": "#/definitions/TransitionStateEnumTransitionState",
+          "title": "Current state of the transition"
+        },
+        "id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "Transition Id, Automatically populated from the backend"
+        }
+      }
+    },
+    "registryUpdateStageRequest": {
+      "type": "object",
+      "properties": {
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "stage": {
+          "$ref": "#/definitions/StageEnumStage"
+        },
+        "comment": {
+          "type": "string"
+        }
+      }
+    },
+    "runtimeError": {
+      "type": "object",
+      "properties": {
+        "error": {
+          "type": "string"
+        },
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  },
+  "basePath": "/v1"
+}

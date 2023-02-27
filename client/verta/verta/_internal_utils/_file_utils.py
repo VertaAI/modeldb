@@ -41,8 +41,8 @@ def increment_path(path):
     base, ext = os.path.splitext(path)
 
     # check if name already has number
-    if ' ' in base:
-        original_base, number_str = base.rsplit(' ', 1)
+    if " " in base:
+        original_base, number_str = base.rsplit(" ", 1)
         if number_str.isdigit():
             # increment number
             number = int(number_str) + 1
@@ -99,17 +99,23 @@ def remove_prefix_dir(path, prefix_dir):
     #     But this should:
     #         path       = "data/census/train.csv"
     #         prefix_dir = "data/census"
-    if not prefix_dir.endswith('/'):
-        prefix_dir += '/'
+    if not prefix_dir.endswith("/"):
+        prefix_dir += "/"
 
     if path.startswith(prefix_dir):
-        path = path[len(prefix_dir):]
-        path = path.lstrip('/')  # remove leading slashes, e.g. for "s3:"
+        path = remove_prefix(path, prefix_dir)
+        path = path.lstrip("/")  # remove leading slashes, e.g. for "s3:"
 
     return path
 
 
-def walk_files(dirpath):
+def remove_prefix(s, prefix):
+    if s.startswith(prefix):
+        return s[len(prefix) :]
+    return s
+
+
+def walk_files(dirpath, followlinks=True):
     """
     Yields paths to the files within `dirpath`'s directory tree.
 
@@ -124,7 +130,7 @@ def walk_files(dirpath):
         Filepath (relative to cwd).
 
     """
-    for root, _, filenames in os.walk(dirpath):
+    for root, _, filenames in os.walk(dirpath, followlinks=followlinks):
         for filename in filenames:
             yield os.path.join(root, filename)
 

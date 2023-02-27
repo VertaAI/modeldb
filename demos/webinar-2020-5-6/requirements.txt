@@ -1,7 +1,0 @@
-boto3
-flask
-jupyter
-numpy
-pandas
-spacy>=2
-verta>=0.14.4

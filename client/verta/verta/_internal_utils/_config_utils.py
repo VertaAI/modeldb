@@ -2,6 +2,7 @@
 
 import contextlib
 import json
+import logging
 import os
 
 import yaml
@@ -9,6 +10,9 @@ import yaml
 from .._protos.public.client import Config_pb2 as _ConfigProtos
 
 from . import _utils
+
+
+logger = logging.getLogger(__name__)
 
 
 # TODO: make this a named tuple, if it would help readability
@@ -19,7 +23,7 @@ CONFIG_FILENAMES = {
     CONFIG_JSON_FILENAME,
 }
 
-HOME_VERTA_DIR = os.path.expanduser(os.path.join('~', ".verta"))
+HOME_VERTA_DIR = os.path.expanduser(os.path.join("~", ".verta"))
 
 
 @contextlib.contextmanager
@@ -39,6 +43,7 @@ def read_merged_config():
     """
     config = {}
     for filepath in reversed(find_config_files()):
+        # TODO: gracefully handle config files that can't be opened
         merge(config, load(filepath))
 
     yield config
@@ -59,8 +64,7 @@ def write_local_config():
 
     """
     config_filepath = find_closest_config_file()
-    if (config_filepath is None
-            or config_filepath.startswith(HOME_VERTA_DIR)):
+    if config_filepath is None or config_filepath.startswith(HOME_VERTA_DIR):
         config_filepath = create_empty_config_file(".")
 
     config = load(config_filepath)
@@ -73,8 +77,8 @@ def write_local_config():
 def load(config_filepath):
     config_filepath = os.path.expanduser(config_filepath)
 
-    with open(config_filepath, 'r') as f:
-        if config_filepath.endswith('.yaml'):
+    with open(config_filepath, "r") as f:
+        if config_filepath.endswith(".yaml"):
             config = yaml.safe_load(f)
         else:  # JSON
             config = json.load(f)
@@ -90,8 +94,8 @@ def load(config_filepath):
 def dump(config, config_filepath):
     config_filepath = os.path.expanduser(config_filepath)
 
-    with open(config_filepath, 'w') as f:
-        if config_filepath.endswith('.yaml'):
+    with open(config_filepath, "w") as f:
+        if config_filepath.endswith(".yaml"):
             yaml.safe_dump(config, f)
         else:  # JSON
             json.dump(config, f)
@@ -116,7 +120,7 @@ def create_empty_config_file(dirpath):
     config_filepath = os.path.expanduser(config_filepath)
     config_filepath = os.path.abspath(config_filepath)
 
-    with open(config_filepath, 'w') as f:
+    with open(config_filepath, "w") as f:
         yaml.dump({}, f)
 
     return config_filepath
@@ -132,6 +136,10 @@ def get_possible_config_file_dirs():
     * parent directories until the root
     * ``$HOME/.verta/``
 
+    .. versionchanged:: 0.20.4
+        Directories for which ``os.listdir()`` fails (e.g. permission denied,
+        doesn't exist for some reason) are gracefully skipped.
+
     Returns
     -------
     dirpaths : list of str
@@ -139,21 +147,32 @@ def get_possible_config_file_dirs():
         being first.
 
     """
-    dirpaths = []
+    candidates = []
 
     # current dir
     curr_dir = os.getcwd()
-    dirpaths.append(curr_dir)
+    candidates.append(curr_dir)
 
     # parent dirs
     parent_dir = os.path.dirname(curr_dir)
-    while parent_dir != dirpaths[-1]:
-        dirpaths.append(parent_dir)
+    while parent_dir != candidates[-1]:
+        candidates.append(parent_dir)
         parent_dir = os.path.dirname(parent_dir)
 
     # home verta dir
     if os.path.isdir(HOME_VERTA_DIR):
-        dirpaths.append(HOME_VERTA_DIR)
+        candidates.append(HOME_VERTA_DIR)
+
+    # filter out directories that can't be listed
+    dirpaths = []
+    for dirpath in candidates:
+        try:
+            os.listdir(dirpath)
+        except Exception as e:
+            logger.debug("skipping directory for client config:\n    %s", str(e))
+            continue
+        else:
+            dirpaths.append(dirpath)
 
     return dirpaths
 
@@ -176,6 +195,7 @@ def find_closest_config_file():
     else:
         return None
 
+
 def find_config_files():
     """
     Returns the locations of accessible Verta config files.
@@ -191,8 +211,7 @@ def find_config_files():
         # TODO: raise error if YAML and JSON in same dir
         filepaths.extend(
             os.path.join(dirpath, config_filename)
-            for config_filename
-            in CONFIG_FILENAMES.intersection(os.listdir(dirpath))
+            for config_filename in CONFIG_FILENAMES.intersection(os.listdir(dirpath))
         )
 
     return filepaths
@@ -201,7 +220,8 @@ def find_config_files():
 def validate(config):
     """Validates `config` against the protobuf spec."""
     _utils.json_to_proto(
-        config, _ConfigProtos.Config,
+        config,
+        _ConfigProtos.Config,
         ignore_unknown_fields=True,  # TODO: reset to False when protos are impl
     )
 

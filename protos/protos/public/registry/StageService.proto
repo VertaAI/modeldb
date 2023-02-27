@@ -1,0 +1,216 @@
+syntax = "proto3";
+
+package ai.verta.registry;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "google/protobuf/field_mask.proto";
+
+message StageEnum {
+    enum Stage {
+        UNKNOWN = 0; // Error
+        DEVELOPMENT = 1;
+        STAGING = 2;
+        PRODUCTION = 3;
+        ARCHIVED = 4;
+        UNASSIGNED = 5;
+    }
+}
+
+// Tracks what is the state of a requested transition
+message TransitionStateEnum {
+    enum TransitionState {
+        UNKNOWN = 0; // Error
+        // It is approved only if it has one approval and no rejections
+        APPROVED = 1;
+        // It is rejected if it has any rejection
+        REJECTED = 2;
+        // It is pending if there are no approvals or rejections
+        PENDING = 3;
+        // It is closed if the user has explicitly requested it to be closed
+        CLOSED = 4;
+        // It has been committed and people can't close, approve or reject anymore
+        COMMITTED = 5;
+        // NOTE: only the last behavior from the user counts. For example, if I approve and then reject, it counts as a rejection.
+    }
+}
+
+message Transition {
+    // Current stage. Automatically populated from the backend
+    StageEnum.Stage source_stage = 1;
+    // Desired stage sent as part of the transition request
+    StageEnum.Stage desired_stage = 2;
+
+    // Current state of the transition
+    TransitionStateEnum.TransitionState state = 3;
+
+    // Transition Id, Automatically populated from the backend
+    uint64 id = 4;
+}
+
+message ApprovalOfTransition {
+}
+
+message RejectionOfTransition {
+}
+
+message CloseOfTransition {
+}
+
+message StageUpdate {
+    StageEnum.Stage stage = 1;
+}
+
+message Activity {
+    uint64 id = 1;
+    uint64 model_version_id = 2;
+    string author_id = 3;
+
+    // Track time
+    int64 time_created = 4;
+
+    // Text provided by the user
+    string comment = 5;
+
+    // Effective oneof for the following fields (all might be missing and that's fine too)
+    Transition transition = 6;
+    ApprovalOfTransition approval = 7;
+    RejectionOfTransition rejection = 8;
+    CloseOfTransition close = 9;
+    StageUpdate update = 10;
+
+    // Activity state while the transition happen
+    TransitionStateEnum.TransitionState activity_state = 11;
+}
+
+// Actions
+message CreateTransitionRequest {
+    uint64 model_version_id = 1;
+    StageEnum.Stage desired_stage = 2;
+    string comment = 3;
+}
+
+message ApproveTransitionRequest {
+    uint64 transition_id = 1;
+    string comment = 2;
+}
+
+message RejectTransitionRequest {
+    uint64 transition_id = 1;
+    string comment = 2;
+}
+
+message CloseTransitionRequest {
+    uint64 transition_id = 1;
+    string comment = 2;
+}
+
+message CommitTransitionRequest {
+    uint64 transition_id = 1;
+    string comment = 2;
+}
+
+message CreateCommentRequest {
+    uint64 model_version_id = 1;
+    string comment = 2;
+}
+
+message FindActivitiesRequest {
+    // At least one of the following needs to be provided
+    uint64 registered_model_id = 1;
+    uint64 model_version_id = 2;
+
+    message Response {
+        repeated Activity activities = 1;
+    }
+}
+
+message FindTransitionsRequest {
+    // At least one of the following needs to be provided
+    uint64 registered_model_id = 1;
+    uint64 model_version_id = 2;
+
+    // Current state. If empty, return in any state
+    repeated TransitionStateEnum.TransitionState state = 3;
+
+    message Response {
+        // Only things of type transition can be returned
+        repeated Activity activities = 1;
+    }
+}
+
+message UpdateStageRequest {
+    uint64 model_version_id = 1;
+    StageEnum.Stage stage = 2;
+    string comment = 3;
+}
+
+service StageService {
+    // Anyone with RW permission on the model version can do any of these
+    // Note that the author of the transition cannot approve or reject it themselves (like in github)
+    rpc CreateTransition(CreateTransitionRequest) returns (Activity) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/createTransition"
+            body: "*"
+        };
+    }; // Similar to create PR
+    rpc ApproveTransition(ApproveTransitionRequest) returns (Activity) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/approveTransition"
+            body: "*"
+        };
+    }; // Similar to approving PR
+    rpc RejectTransition(RejectTransitionRequest) returns (Activity) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/rejectTransition"
+            body: "*"
+        };
+    }; // Similar to requesting changes in PR
+    rpc CloseTransition(CloseTransitionRequest) returns (Activity) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/closeTransition"
+            body: "*"
+        };
+    }; // Similar to closing the PR
+    rpc CreateComment(CreateCommentRequest) returns (Activity) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/createComment"
+            body: "*"
+        };
+    }; // Similar to commenting on PR
+
+    // Only a transition that has been approved can be commited. The user must have RW permission
+    // Similar to merging a PR
+    rpc CommitTransition(CommitTransitionRequest) returns (Activity) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/commitTransition"
+            body: "*"
+        };
+    };
+
+    // Directly update the stage without going through approval. The user must have RW permission
+    // Similar to merging to master directly
+    rpc UpdateStage(UpdateStageRequest) returns (Activity) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/updateStage"
+            body: "*"
+        };
+    };
+
+    // List objects from the db. Similar to the PR history
+    rpc FindActivities(FindActivitiesRequest) returns (FindActivitiesRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/findActivities"
+            body: "*"
+        };
+    };
+    // Similar to listing PRs by state
+    rpc FindTransitions(FindTransitionsRequest) returns (FindTransitionsRequest.Response) {
+        option (google.api.http) = {
+            post: "/v1/registry/stage/findTransitions"
+            body: "*"
+        };
+    };
+}

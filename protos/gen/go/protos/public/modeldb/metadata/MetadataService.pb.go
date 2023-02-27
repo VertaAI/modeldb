@@ -131,6 +131,7 @@ type IdentificationType struct {
 
 	IdType IDTypeEnum_IDType `protobuf:"varint,1,opt,name=id_type,json=idType,proto3,enum=ai.verta.modeldb.metadata.IDTypeEnum_IDType" json:"id_type,omitempty"`
 	// Types that are assignable to Id:
+	//
 	//	*IdentificationType_IntId
 	//	*IdentificationType_StringId
 	Id isIdentificationType_Id `protobuf_oneof:"id"`

@@ -13,9 +13,10 @@ services:
             - modeldb_network
         environment:
             - VERTA_MODELDB_CONFIG:/config/config.yaml
+            - LIQUIBASE_MIGRATION:true
         volumes:
             - ./backend/config:/config/
-            - ./artifact-store:/artifact-store/
+            - ./data/artifact-store:/artifact-store/
 
     modeldb-proxy:
         image: vertaaiofficial/modeldb-proxy:2.0.8.1
@@ -49,7 +50,7 @@ services:
             - modeldb_network
 
     modeldb-frontend:
-        image: vertaaiofficial/modeldb-frontend:2.0.8.1
+        image: vertaaiofficial/modeldb-frontend:2.0.8.2
         container_name: "modeldb-frontend"
         expose:
             - "3000"
@@ -78,7 +79,7 @@ services:
         networks:
             - modeldb_network
         volumes:
-            - ./data:/var/lib/postgresql/data/pgdata
+            - ./data/pgdata:/var/lib/postgresql/data/pgdata
 
 networks:
   modeldb_network:

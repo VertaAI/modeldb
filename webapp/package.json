@@ -6,9 +6,9 @@
     "test": "cd ./client && yarn test"
   },
   "dependencies": {
-    "axios": "^0.18.1",
+    "axios": "^0.27.2",
     "body-parser": "^1.18.3",
-    "concurrently": "^5.1.0",
+    "concurrently": "^6.0.0",
     "cookie-parser": "^1.4.4",
     "cookie-session": "^1.3.3",
     "cors": "^2.8.5",
@@ -20,7 +20,7 @@
     "http-proxy-middleware": "^0.19.1",
     "jose-jwe-jws": "^0.1.7",
     "jwt-decode": "^2.2.0",
-    "nodemon": "^1.18.10",
+    "nodemon": "^2.0.3",
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
     "set-value": "2.0.1"

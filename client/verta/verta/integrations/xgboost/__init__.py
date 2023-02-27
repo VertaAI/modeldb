@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+"""XGBoost callback for automatic experiment run logging."""
 
 from ...external import six
 
@@ -14,14 +15,14 @@ def verta_callback(run):
     This callback logs ``eval_metric``\ s passed into ``xgb.train()``.
 
     See our `GitHub repository
-    <https://github.com/VertaAI/modeldb/blob/master/client/workflows/examples/xgboost-integration.ipynb>`__
+    <https://github.com/VertaAI/examples/blob/main/experiment-management/xgboost/xgboost-integration.ipynb>`__
     for an example of this intergation in action.
 
     .. versionadded:: 0.13.20
 
     Parameters
     ----------
-    run : :class:`~verta._tracking.experimentrun.ExperimentRun`
+    run : :class:`~verta.tracking.entities.ExperimentRun`
         Experiment Run tracking this model.
 
     Examples
@@ -38,6 +39,7 @@ def verta_callback(run):
         )
 
     """
+
     def callback(env):
         for metric, val in env.evaluation_result_list:
             try:
@@ -45,4 +47,5 @@ def verta_callback(run):
             except:
                 pass  # don't halt execution
         # TODO: support `xgb.cv()`, which gives `(metric, val, std_dev)` across folds
+
     return callback

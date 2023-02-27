@@ -1,0 +1,131 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+import "google/api/annotations.proto";
+import "uac/UACService.proto";
+import "common/CommonService.proto";
+
+message GroupV2 {
+  string id = 1;
+  string org_id = 2;
+  string name = 3;
+  string description = 4;
+  //whether this group is one of the "built-in" and hence non-removable groups.
+  bool built_in = 5;
+  repeated string member_ids = 6;
+
+  int64 created_timestamp = 7;
+  int64 updated_timestamp = 8;
+}
+
+message GetGroupById {
+  string org_id = 1;
+  string group_id = 2;
+
+  message Response {
+    GroupV2 group = 1;
+  }
+}
+
+message SearchGroupCriteria {
+  string user_id = 1;
+  repeated common.KeyValueQuery predicates = 2;
+}
+
+message SearchGroups {
+  string org_id = 1; // required
+  SearchGroupCriteria search_criteria = 2;
+
+  common.Pagination pagination = 3;
+  bool ascending = 4;
+  string sort_key = 5;
+  message Response {
+    repeated GroupV2 groups = 1;
+    int64 total_records = 2;
+    common.Pagination pagination = 3;
+  }
+}
+
+message SetGroup {
+  GroupV2 group = 1;
+
+  message Response {
+    GroupV2 group = 1;
+  }
+}
+
+message DeleteGroup {
+  string org_id = 1;
+  string group_id = 2;
+
+  message Response {
+  }
+}
+
+message AddGroupUsers {
+  string org_id = 1;
+  string group_id = 2;
+  repeated string user_id = 3;
+
+  message Response {
+  }
+}
+
+message RemoveGroupUsers {
+  string org_id = 1;
+  string group_id = 2;
+  repeated string user_id = 3;
+
+  message Response {
+  }
+}
+
+service GroupService {
+  // Gets information from a given group
+  rpc getGroupById (GetGroupById) returns (GetGroupById.Response){
+    option (google.api.http) = {
+      get: "/v2/organization/{org_id}/groups/{group_id}"
+    };
+  };
+
+  // Lists the groups that the provided user is a member of, or all groups if user isn't specified
+  rpc searchGroups (SearchGroups) returns (SearchGroups.Response){
+    option (google.api.http) = {
+      get: "/v2/organization/{org_id}/groups"
+    };
+  };
+
+  // Create or update a group
+  rpc setGroup (SetGroup) returns (SetGroup.Response){
+    option (google.api.http) = {
+      post: "/v2/organization/{group.org_id}/groups"
+      body: "*"
+    };
+  };
+
+  // Delete an existing group
+  rpc deleteGroup (DeleteGroup) returns (DeleteGroup.Response){
+    option (google.api.http) = {
+      delete: "/v2/organization/{org_id}/groups/{group_id}"
+    };
+  };
+
+  // Adds the given user to the group
+  rpc addUsers (AddGroupUsers) returns (AddGroupUsers.Response){
+    option (google.api.http) = {
+      post: "/v2/organization/{org_id}/groups/{group_id}/users"
+      body: "*"
+    };
+  };
+
+  // Removes the given user from the group
+  rpc removeUsers (RemoveGroupUsers) returns (RemoveGroupUsers.Response){
+    option (google.api.http) = {
+      post: "/v2/organization/{org_id}/groups/{group_id}/removeUsers"
+      body: "*"
+    };
+  };
+}

@@ -1,0 +1,16 @@
+version: 2
+
+formats:
+  - pdf
+
+python:
+  version: 3
+  install:
+  - method: pip
+    path: client/verta
+  - requirements: client/verta/docs/requirements.txt
+
+sphinx:
+  builder: html
+  configuration: client/verta/docs/conf.py
+  fail_on_warning: true

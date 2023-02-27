@@ -140,6 +140,11 @@ class ProjectServiceStub(object):
         request_serializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.SerializeToString,
         response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.Response.FromString,
         )
+    self.getProjectDatasetCount = channel.unary_unary(
+        '/ai.verta.modeldb.ProjectService/getProjectDatasetCount',
+        request_serializer=modeldb_dot_ProjectService__pb2.GetProjectDatasetCount.SerializeToString,
+        response_deserializer=modeldb_dot_ProjectService__pb2.GetProjectDatasetCount.Response.FromString,
+        )
     self.getUrlForArtifact = channel.unary_unary(
         '/ai.verta.modeldb.ProjectService/getUrlForArtifact',
         request_serializer=modeldb_dot_CommonService__pb2.GetUrlForArtifact.SerializeToString,
@@ -351,6 +356,13 @@ class ProjectServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getProjectDatasetCount(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def getUrlForArtifact(self, request, context):
     """artifacts
     """
@@ -520,6 +532,11 @@ def add_ProjectServiceServicer_to_server(servicer, server):
           servicer.getProjectShortName,
           request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.FromString,
           response_serializer=modeldb_dot_ProjectService__pb2.GetProjectShortName.Response.SerializeToString,
+      ),
+      'getProjectDatasetCount': grpc.unary_unary_rpc_method_handler(
+          servicer.getProjectDatasetCount,
+          request_deserializer=modeldb_dot_ProjectService__pb2.GetProjectDatasetCount.FromString,
+          response_serializer=modeldb_dot_ProjectService__pb2.GetProjectDatasetCount.Response.SerializeToString,
       ),
       'getUrlForArtifact': grpc.unary_unary_rpc_method_handler(
           servicer.getUrlForArtifact,

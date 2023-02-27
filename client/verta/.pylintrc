@@ -139,6 +139,7 @@ disable=print-statement,
         exception-escape,
         comprehension-escape,
     # everything below was added by @convoliution
+        bad-continuation,
         invalid-name,
         missing-docstring,
         line-too-long,
@@ -149,7 +150,6 @@ disable=print-statement,
         broad-except,
         bare-except,
         useless-else-on-loop,
-        abstract-method,
         superfluous-parens,
         deprecated-lambda,
 
@@ -257,7 +257,7 @@ contextmanager-decorators=contextlib.contextmanager
 # List of members which are set dynamically and missed by pylint inference
 # system, and so shouldn't trigger E1101 when accessed. Python regular
 # expressions are accepted.
-generated-members=
+generated-members=requests.codes.*
 
 # Tells whether missing members accessed in mixin class should be ignored. A
 # mixin class is detected if its name ends with "mixin" (case insensitive).
@@ -277,15 +277,13 @@ ignore-on-opaque-inference=yes
 ignored-classes=optparse.Values,
                 thread._local,
                 _thread._local,
-            # In Python 2, pylint mistakes pathlib2's Path for PurePath.
-            # The client doesn't use PurePath anyway, so ignore.
-                PurePath,
 
 # List of module names for which member attributes should not be checked
 # (useful for modules/projects where namespaces are manipulated during runtime
 # and thus existing member attributes cannot be deduced by static analysis. It
 # supports qualified module names, as well as Unix pattern matching.
-ignored-modules=verta._protos.*
+ignored-modules=verta._protos.*,
+                google.protobuf.struct_pb2,
 
 # Show a hint with possible names when a member name was not found. The aspect
 # of finding the hint is based on edit distance.
@@ -350,13 +348,6 @@ max-line-length=100
 
 # Maximum number of lines in a module
 max-module-lines=1000
-
-# List of optional constructs for which whitespace checking is disabled. `dict-
-# separator` is used to allow tabulation in dicts, etc.: {1  : 1,\n222: 2}.
-# `trailing-comma` allows a space between comma and closing bracket: (a, ).
-# `empty-line` allows space-only lines.
-no-space-check=trailing-comma,
-               dict-separator
 
 # Allow the body of a class to be on the same line as the declaration if body
 # contains single statement.

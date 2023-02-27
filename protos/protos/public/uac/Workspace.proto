@@ -6,6 +6,7 @@ option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 option java_multiple_files = true;
 import "google/api/annotations.proto";
 import "common/CommonService.proto";
+import "uac/UACService.proto";
 
 message GetWorkspaceById {
     uint64 id = 1;
@@ -30,13 +31,27 @@ message Workspace {
       string username = 4;
       string org_name = 5;
     }
+
+    repeated WorkspaceContainerRegistryConfiguration container_registries = 6;
+
+    string namespace = 7;
+}
+
+message WorkspaceContainerRegistryConfiguration {
+    uint64 id = 1;
+    string base = 2; // Unique per workspace
+    string username = 3;
+    string secret_key = 4; // Should be hidden from non-admins
+    uint64 workspace_id = 5;
 }
 
 message GetVisibleWorkspaces {
+    common.Pagination pagination = 1;
 }
 
 message Workspaces {
     repeated Workspace workspace = 1;
+    int64 total_records = 2;
 }
 
 service WorkspaceService {
@@ -61,6 +76,20 @@ service WorkspaceService {
     rpc getVisibleWorkspaces (GetVisibleWorkspaces) returns (Workspaces){
         option (google.api.http) = {
             get: "/v1/workspace/getVisibleWorkspaces"
+        };
+    };
+
+    rpc createOrUpdateContainerRegistryConfiguration (WorkspaceContainerRegistryConfiguration) returns (WorkspaceContainerRegistryConfiguration) {
+        option (google.api.http) = {
+            post : "/v1/workspace/createOrUpdateContainerRegistryConfiguration"
+            body : "*"
+        };
+    };
+
+    rpc deleteContainerRegistryConfiguration (WorkspaceContainerRegistryConfiguration) returns (Empty) {
+        option (google.api.http) = {
+            post : "/v1/workspace/deleteContainerRegistryConfiguration"
+            body : "*"
         };
     };
 }

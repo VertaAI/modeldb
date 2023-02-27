@@ -141,6 +141,7 @@ type HyperparameterValuesConfigBlob struct {
 	unknownFields protoimpl.UnknownFields
 
 	// Types that are assignable to Value:
+	//
 	//	*HyperparameterValuesConfigBlob_IntValue
 	//	*HyperparameterValuesConfigBlob_FloatValue
 	//	*HyperparameterValuesConfigBlob_StringValue
@@ -236,6 +237,7 @@ type HyperparameterSetConfigBlob struct {
 
 	Name string `protobuf:"bytes,1,opt,name=name,proto3" json:"name,omitempty"`
 	// Types that are assignable to Value:
+	//
 	//	*HyperparameterSetConfigBlob_Continuous
 	//	*HyperparameterSetConfigBlob_Discrete
 	Value isHyperparameterSetConfigBlob_Value `protobuf_oneof:"value"`
