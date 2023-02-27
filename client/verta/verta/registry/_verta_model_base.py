@@ -109,8 +109,8 @@ class VertaModelBase(object):
 
             If using model data logging (e.g. :func:`verta.runtime.log`), any
             calls here to the model's :meth:`predict` method must be wrapped
-            in a :class:`verta.runtime.context`. This incidentally also
-            enables assertions for expected logs.
+            in a :class:`verta.runtime.context`. This also allows testing of
+            expected logs.
 
         Returns
         -------
