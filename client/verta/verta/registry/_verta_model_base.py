@@ -99,10 +99,8 @@ class VertaModelBase(object):
         :meth:`model_test` does nothing by default. Implement this method—with
         any assertions you wish—to validate your model.
 
-        This method is called
+        This method is automatically called
 
-        - in :func:`verta.registry.test_model_build`
-        - when a self-contained model build is completed in the Verta platform
         - when an endpoint is initializing in the Verta platform
 
         .. note::
