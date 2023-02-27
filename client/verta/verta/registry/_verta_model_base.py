@@ -143,7 +143,7 @@ class VertaModelBase(object):
                         [72.84132724180968, 0.0, 0.0, 40.0, 0.0, 0.0, 0.0, 0.0, 1.0],
                     ]
 
-                def test(self):
+                def model_test(self):
                     input = self.example()
                     expected_output = [0, 1, 0]
                     expected_logs = {"num_rows": len(input)}
