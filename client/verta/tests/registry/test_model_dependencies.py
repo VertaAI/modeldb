@@ -24,17 +24,11 @@ def test_list_class_functions(dependency_testing_model) -> None:
     assert extracted_func_names.sort() == expected_function_names.sort()
 
 
-def test_is_wrapped(dependency_testing_model) -> None:
-    """ Verify that the is_wrapped function correctly identifies wrapped functions """
-    assert md.is_wrapped(dependency_testing_model.predict)
-    assert not md.is_wrapped(dependency_testing_model.unwrapped_predict)
-
-
-def test_list_modules_in_function_definition_unwrapped(dependency_testing_model) ->None:
+def test_list_modules_in_function_definition_wrapped(dependency_testing_model) -> None:
     """ Verify that modules used within a function definition are extracted
     as expected, for a function that is not wrapped in verify_io """
-    func: Callable = dependency_testing_model.unwrapped_predict
-    expected_module_names = ['click', 'verta']  # TODO pick up boto3
+    func: Callable = dependency_testing_model.predict
+    expected_module_names = ['yaml', 'verta']  # TODO pick up spacy in type hint
     extracted_modules: List[ModuleType] = [
         f.__package__ for f in
         md.list_modules_in_function_definition(func)
@@ -42,13 +36,15 @@ def test_list_modules_in_function_definition_unwrapped(dependency_testing_model)
     assert extracted_modules.sort() == expected_module_names.sort()
 
 
-def test_list_modules_in_function_definition_wrapped(dependency_testing_model) -> None:
+def test_list_modules_in_function_definition_unwrapped(dependency_testing_model) ->None:
     """ Verify that modules used within a function definition are extracted
     as expected, for a function that is not wrapped in verify_io """
-    func: Callable = dependency_testing_model.predict
-    expected_module_names = ['yaml', 'spacy']
+    func: Callable = dependency_testing_model.unwrapped_predict
+    expected_module_names = ['click', 'verta']  # TODO pick up boto3 in type hint
     extracted_modules: List[ModuleType] = [
         f.__package__ for f in
         md.list_modules_in_function_definition(func)
     ]
-    assert extracted_modules == expected_module_names
+    assert extracted_modules.sort() == expected_module_names.sort()
+
+

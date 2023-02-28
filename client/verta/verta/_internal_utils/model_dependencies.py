@@ -15,17 +15,12 @@ def list_class_functions(model_class: Type[VertaModelBase]) -> List[Tuple[str, C
 
 
 def list_modules_in_function_definition(func: Callable) -> List[ModuleType]:
-    """List all modules called within the body of the provided function"""
-    if is_wrapped(func):
-        pass
-        # unwrap here
+    """List all modules called within the body of the provided function."""
+    try:
+        _func = inspect.unwrap(func)  # returns last object in chain
+    except ValueError:  # if a cycle is encountered
+        _func = func  # give it a shot anyway
     return [
-        value for key, value in inspect.getclosurevars(func).globals.items()
+        value for key, value in inspect.getclosurevars(_func).globals.items()
         if isinstance(value, ModuleType)
     ]
-
-def is_wrapped(func: Callable, **kwargs) -> bool:
-    try:
-        return func.__wrapped__(**kwargs) is not None
-    except AttributeError:
-        return False
