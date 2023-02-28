@@ -43,9 +43,16 @@ class VertaModelOnlyPredict(VertaModelBase):
 
 
 def verta_models():
+    """Return valid Verta standard models."""
     models = []
 
     models.append(VertaModel)
+
+    class VertaModelWithTest(VertaModel):
+        def model_test(self):
+            assert self.predict(None) == self.artifact
+
+    models.append(VertaModelWithTest)
 
     return models
 
@@ -92,6 +99,25 @@ def bad_init_verta_models():
             pass
 
     models.append(MisnamedInit)
+
+    return models
+
+
+def bad_test_verta_models():
+    """Return Verta standard models with incorrect model_test() signatures."""
+    models = []
+
+    class ExtraParamsTest(VertaModelBase):
+        def __init__(self, artifacts):
+            pass
+
+        def predict(self, input):
+            pass
+
+        def model_test(self, input):  # not just `self`
+            pass
+
+    models.append(ExtraParamsTest)
 
     return models
 
