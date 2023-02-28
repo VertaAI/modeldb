@@ -21,7 +21,8 @@ def list_modules_in_function_definition(func: Callable) -> List[ModuleType]:
 
 
 def list_modules_in_function_signature(func: Callable) -> List[ModuleType]:
-    """List all modules used in type hints in the provided function's arguments."""
+    """List all modules used in type hints in the provided function's arguments
+    and return type hint."""
     _func = unwrap(func)
     hints = get_type_hints(_func)
     arg_hints = { k: v for k, v in hints.items() if k != 'return' }
