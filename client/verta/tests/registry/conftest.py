@@ -54,14 +54,39 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             return [
                 '__init__',
                 'expected_function_names',
+                'expected_modules',
                 'make_boto_session',
                 'make_dataframe',
                 'make_spacy_error',
                 'make_timeout',
                 'model_test',
                 'nested_multiple_returns_hint',
+                'nested_type_hint',
                 'predict',
                 'unwrapped_predict',
+            ]
+
+        @staticmethod
+        def expected_modules() -> List[str]:
+            return [
+                'google.protobuf.message',
+                'collections',
+                'requests.exceptions',
+                'urllib3',
+                'PIL',
+                'pandas.core.frame',
+                'urllib3.util.retry',
+                'sklearn.base',
+                'click',
+                'json.encoder',
+                'builtins',
+                'datetime',
+                'requests',
+                'torch',
+                'yaml',
+                'verta.runtime',
+                'calendar',
+                'numpy',
             ]
 
         # Note that wrapping in verify_io may have an impact on how modules are
@@ -117,7 +142,6 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             return urllib3.Retry or PIL.UnidentifiedImageError
 
         # 3rd-party modules nested inside type constructs should still be extracted
-        @property
         def nested_type_hint(self) -> Type[torch.NoneType]:
             return torch.NoneType
 
