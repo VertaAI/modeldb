@@ -17,24 +17,113 @@ def test_list_modules_in_function_definition_wrapped(dependency_testing_model) -
     """ Verify that modules used within a function definition are extracted
     as expected, for a function that is not wrapped in verify_io """
     func: Callable = dependency_testing_model.predict
-    expected_module_names = ['yaml', 'verta']  # TODO pick up spacy in type hint
+    expected_module_names = ['verta', 'yaml']  # TODO pick up spacy in type hint
     extracted_modules: List[ModuleType] = [
-        f.__package__ for f in
-        md.list_modules_in_function_definition(func)
+        f.__package__ for f in md.list_modules_in_function_definition(func)
     ]
-    assert extracted_modules.sort() == expected_module_names.sort()
+    assert extracted_modules == expected_module_names
 
 
 def test_list_modules_in_function_definition_unwrapped(dependency_testing_model) ->None:
     """ Verify that modules used within a function definition are extracted
     as expected, for a function that is not wrapped in verify_io """
     func: Callable = dependency_testing_model.unwrapped_predict
-    expected_module_names = ['click', 'verta']  # TODO pick up boto3 in type hint
+    expected_module_names = ['verta', 'click']  # TODO pick up boto3 in type hint
     extracted_modules: List[ModuleType] = [
-        f.__package__ for f in
-        md.list_modules_in_function_definition(func)
+        f.__package__ for f in md.list_modules_in_function_definition(func)
     ]
-    assert extracted_modules.sort() == expected_module_names.sort()
+    assert extracted_modules == expected_module_names
 
 
+def test_list_modules_in_function_signature_wrapped(dependency_testing_model) -> None:
+    """ Verify that modules used in function arguments are extracted as
+    expected when the function is wrapped in verify_io.
+    """
+    func: Callable = dependency_testing_model.predict
+    expected_module_names = [
+        'calendar',
+        'datetime',
+        'numpy',
+        'google.protobuf.message',
+        'pandas.core.frame',
+    ]
+    extracted_modules: List[str] = [
+        f.__name__ for f in
+        md.list_modules_in_function_signature(func)
+    ]
+    assert extracted_modules == expected_module_names
 
+
+def test_list_modules_in_function_signature_unwrapped(dependency_testing_model) -> None:
+    """ Verify that modules used in function arguments are extracted as
+    expected with no function wrappers.
+    """
+    func: Callable = dependency_testing_model.unwrapped_predict
+    expected_module_names = [
+        'json.encoder',
+        'collections',
+        'sklearn.base',
+        'builtins',
+        'requests.exceptions',
+    ]
+    extracted_modules: List[str] = [
+        f.__name__ for f in
+        md.list_modules_in_function_signature(func)
+    ]
+    assert extracted_modules == expected_module_names
+
+
+def test_list_modules_in_function_return_type_hint_wrapped(dependency_testing_model) -> None:
+    """ Verify that modules used in function return type hints are extracted
+    as expected when the function is wrapped in verify_io.
+    """
+    func: Callable = dependency_testing_model.predict
+    extracted_modules: List[str] = [
+        f.__name__ for f in md.list_modules_in_function_signature(func)
+    ]
+    assert 'pandas.core.frame' in extracted_modules
+
+
+def test_list_modules_in_function_return_type_hint_unwrapped(dependency_testing_model) -> None:
+    """ Verify that modules used in function return type hints are extracted
+    as expected with no function wrappers.
+    """
+    func: Callable = dependency_testing_model.unwrapped_predict
+    extracted_modules: List[str] = [
+        f.__name__ for f in md.list_modules_in_function_signature(func)
+    ]
+    assert 'requests.exceptions' in extracted_modules
+
+
+def test_list_modules_in_function_return_type_hint_nested(dependency_testing_model) -> None:
+    """ Verify that modules used in function return type hints are extracted
+    as expected when nested inside another type construct.
+    """
+    func: Callable = dependency_testing_model.nested_type_hint
+    extracted_modules: List[str] = [
+        f.__name__ for f in md.list_modules_in_function_signature(func)
+    ]
+    assert 'torch' in extracted_modules
+
+
+def test_list_modules_in_function_return_type_hint_multiple(dependency_testing_model) -> None:
+    """ Verify that modules used in function return type hints are extracted
+    as expected when multiple return types are specified.
+    """
+    func: Callable = dependency_testing_model.nested_multiple_returns_hint
+    expected_module_names = ['urllib3.util.retry', 'PIL']
+    extracted_modules: List[str] = [
+        f.__name__ for f in md.list_modules_in_function_signature(func)
+    ]
+    for name in expected_module_names:
+        assert name in extracted_modules
+
+
+def test_modules_in_class(dependency_testing_model) -> None:
+    """ Verify that modules used in class attributes are extracted as
+    expected when the class is wrapped in verify_io.
+    """
+    extracted_modules: List[str] = [
+        f.__name__ for f in md.modules_in_class(dependency_testing_model)
+    ]
+    assert extracted_modules.sort() == dependency_testing_model.expected_modules().sort()
