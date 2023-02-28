@@ -4,7 +4,7 @@ import calendar
 import collections as collecs
 import datetime as dt
 import json
-from typing import Type, Union
+from typing import List, Type, Union
 
 import click
 import cloudpickle as cp
@@ -48,6 +48,21 @@ def dependency_testing_model() -> Type[VertaModelBase]:
         """
         def __init__(self, artifacts):
             pass
+
+        @staticmethod
+        def expected_function_names() -> List[str]:
+            return [
+                '__init__',
+                'expected_function_names',
+                'make_boto_session',
+                'make_dataframe',
+                'make_spacy_error',
+                'make_timeout',
+                'model_test',
+                'nested_multiple_returns_hint',
+                'predict',
+                'unwrapped_predict',
+            ]
 
         # Note that wrapping in verify_io may have an impact on how modules are
         # extracted, thus we explicitly test the same scenarios with and without.
@@ -98,7 +113,7 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             return boto3.DEFAULT_SESSION         # 3rd-party module in function body
 
         # 3rd-party modules nested inside type constructs should still be extracted
-        def nested_mulitple_returns_hint(self) -> Union[urllib3.Retry, PIL.UnidentifiedImageError]:
+        def nested_multiple_returns_hint(self) -> Union[urllib3.Retry, PIL.UnidentifiedImageError]:
             return urllib3.Retry or PIL.UnidentifiedImageError
 
         # 3rd-party modules nested inside type constructs should still be extracted

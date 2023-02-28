@@ -9,19 +9,8 @@ def test_list_class_functions(dependency_testing_model) -> None:
     """ Verify that all the functions in the test class are recognized and
     returned.
     """
-    expected_function_names = [
-        '__init__',
-        'predict',
-        'unwrapped_predict',
-        'make_dataframe',
-        'make_timeout',
-        'make_spacy_error',
-        'make_boto_session',
-        'nested_multiple_returns_hint',
-        'nested_type_hint'
-    ]
     extracted_func_names = [f[0] for f in md.list_class_functions(dependency_testing_model)]
-    assert extracted_func_names.sort() == expected_function_names.sort()
+    assert extracted_func_names == dependency_testing_model.expected_function_names()
 
 
 def test_list_modules_in_function_definition_wrapped(dependency_testing_model) -> None:
@@ -46,5 +35,6 @@ def test_list_modules_in_function_definition_unwrapped(dependency_testing_model)
         md.list_modules_in_function_definition(func)
     ]
     assert extracted_modules.sort() == expected_module_names.sort()
+
 
 
