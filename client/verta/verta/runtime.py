@@ -142,12 +142,12 @@ def log(key: str, value: Any) -> None:
             def __init__(self, artifacts):
                 pass
 
-            @verify.io
+            @verify_io
             def predict(self, x):
                 embeddings = self.get_embeddings(x)
                 return self.nn(embeddings)
 
-            def get_embeddings(x):
+            def get_embeddings(self, x):
                 embedding = self.embedding[x]
                 runtime.log("embedding", embedding)
                 return embedding
