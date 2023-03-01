@@ -66,29 +66,30 @@ def dependency_testing_model() -> Type[VertaModelBase]:
                 'unwrapped_predict',
             ]
 
-        # TODO catch 'boto3' and 'spacy' in type hints within function body.
         @staticmethod
         def expected_modules() -> List[str]:
             return [
-                'google.protobuf.message',
-                'collections',
-                'cloudpickle.cloudpickle_fast',
-                'requests.exceptions',
-                'urllib3',
-                'PIL',
-                'pandas.core.frame',
-                'urllib3.util.retry',
-                'sklearn.base',
-                'click',
-                'json.encoder',
+                'boto3.Session',
                 'builtins',
-                'datetime',
-                'requests',
-                'torch',
-                'yaml',
-                'verta.runtime',
                 'calendar',
+                'click',
+                'cloudpickle.cloudpickle_fast',
+                'collections',
+                'datetime',
+                'google.protobuf.message',
+                'json.encoder',
                 'numpy',
+                'pandas.core.frame',
+                'PIL',
+                'requests',
+                'requests.exceptions',
+                'sklearn.base',
+                'spacy.Errors',
+                'torch',
+                'urllib3',
+                'urllib3.util.retry',
+                'verta.runtime',
+                'yaml',
             ]
 
         # Note that wrapping in verify_io may have an impact on how modules are
