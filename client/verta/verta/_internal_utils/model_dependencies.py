@@ -91,8 +91,17 @@ def module_names_in_class(model_class: Type[VertaModelBase]) -> List[str]:
     modules_found = list()
     for function in funcs:
         _func = function[1]
-        mods_in_def = [ m.__name__ for m in list_modules_in_function_definition(_func) ]
-        mods_in_args = [ m.__name__ for m in list_modules_in_function_signature(_func) ]
-        mods_in_anns = list_function_local_annotation_module_names(_func)
+        mods_in_def = [
+            m.__name__.split('.')[0]
+            for m in list_modules_in_function_definition(_func)
+        ]
+        mods_in_args = [
+            m.__name__.split('.')[0]
+            for m in list_modules_in_function_signature(_func)
+        ]
+        mods_in_anns = [
+            m.split('.')[0]
+            for m in list_function_local_annotation_module_names(_func)
+        ]
         modules_found += mods_in_def + mods_in_args + mods_in_anns
     return modules_found
