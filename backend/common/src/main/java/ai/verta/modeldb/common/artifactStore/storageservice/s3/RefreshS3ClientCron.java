@@ -11,6 +11,10 @@ import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
 import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest;
 import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityResult;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -18,17 +22,14 @@ public class RefreshS3ClientCron implements Runnable {
   private static final Logger LOGGER = LogManager.getLogger(RefreshS3ClientCron.class);
   private final String bucketName;
   private final Regions awsRegion;
-  private final AssumeRoleWithWebIdentityRequest roleRequest;
+  private final Integer durationSeconds;
   private final S3Client s3Client;
 
   public RefreshS3ClientCron(
-      String bucketName,
-      Regions awsRegion,
-      AssumeRoleWithWebIdentityRequest roleRequest,
-      S3Client s3Client) {
+      String bucketName, Regions awsRegion, Integer durationSeconds, S3Client s3Client) {
     this.bucketName = bucketName;
     this.awsRegion = awsRegion;
-    this.roleRequest = roleRequest;
+    this.durationSeconds = durationSeconds;
     this.s3Client = s3Client;
   }
 
@@ -41,7 +42,7 @@ public class RefreshS3ClientCron implements Runnable {
       createAndRefreshNewClient(awsCredentials);
     } catch (Throwable ex) {
       LOGGER.error("Failed to refresh S3 Client: " + ex.getMessage(), ex);
-      throw ex;
+      throw new RuntimeException(ex);
     }
     LOGGER.debug("Refreshing S3Client finish tasks and reschedule");
   }
@@ -60,7 +61,7 @@ public class RefreshS3ClientCron implements Runnable {
     s3Client.refreshS3Client(awsCredentials, newS3Client);
   }
 
-  private BasicSessionCredentials getBasicSessionCredentials() {
+  private BasicSessionCredentials getBasicSessionCredentials() throws IOException {
     AWSSecurityTokenService stsClient = null;
     try {
       LOGGER.trace("Creating sts client");
@@ -69,6 +70,7 @@ public class RefreshS3ClientCron implements Runnable {
 
       LOGGER.trace("assuming role with web identity");
       // Call STS to assume the role
+      var roleRequest = getCredentialFromWebIdentity();
       AssumeRoleWithWebIdentityResult roleResponse =
           stsClient.assumeRoleWithWebIdentity(roleRequest);
       LOGGER.trace("Assumed role with web identity");
@@ -98,5 +100,28 @@ public class RefreshS3ClientCron implements Runnable {
               .build());
     }
     return stsClientBuilder.build();
+  }
+
+  private AssumeRoleWithWebIdentityRequest getCredentialFromWebIdentity() throws IOException {
+    String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
+    String token = getWebIdentityToken();
+
+    // Obtain credentials for the IAM role. Note that you cannot assume the role of
+    // an AWS root account;
+    // Amazon S3 will deny access. You must use credentials for an IAM user or an
+    // IAM role.
+    return new AssumeRoleWithWebIdentityRequest()
+        .withDurationSeconds(durationSeconds) /*900 seconds (15 minutes)*/
+        .withRoleArn(roleArn)
+        .withWebIdentityToken(token)
+        .withRoleSessionName("model_db_" + UUID.randomUUID());
+  }
+
+  private static String getWebIdentityToken() throws IOException {
+    return new String(
+        Files.readAllBytes(
+            Paths.get(
+                CommonUtils.appendOptionalTelepresencePath(
+                    System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
   }
 }
