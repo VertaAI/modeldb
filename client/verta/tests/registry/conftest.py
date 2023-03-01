@@ -66,11 +66,13 @@ def dependency_testing_model() -> Type[VertaModelBase]:
                 'unwrapped_predict',
             ]
 
+        # TODO catch 'boto3' and 'spacy' in type hints within function body.
         @staticmethod
         def expected_modules() -> List[str]:
             return [
                 'google.protobuf.message',
                 'collections',
+                'cloudpickle.cloudpickle_fast',
                 'requests.exceptions',
                 'urllib3',
                 'PIL',
@@ -113,7 +115,7 @@ def dependency_testing_model() -> Type[VertaModelBase]:
                 a: json.JSONEncoder,             # standard library in function arg
                 b: collecs.OrderedDict,          # standard library in function arg via alias
                 c: sklearn.base.BaseEstimator,   # 3rd-party module in function arg
-                d: cp.CellType,                  # 3rd-party module in function arg via alias
+                d: cp.CloudPickler,              # 3rd-party module in function arg via alias
         ) -> requests.Timeout:                   # 3rd-party module in return type hint
             _json = a.encode({'x':'y'})          # standard library usage in function body
             with runtime.context():              # 3rd-party module in function body (VERTA)
