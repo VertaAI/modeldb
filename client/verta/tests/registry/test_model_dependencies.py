@@ -2,6 +2,7 @@
 
 from types import ModuleType
 from typing import Callable, List
+
 from verta._internal_utils import model_dependencies as md
 
 

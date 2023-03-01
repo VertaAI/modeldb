@@ -3,8 +3,8 @@
 import ast
 import inspect
 import textwrap
-from typing import Callable, List, Tuple, Type, get_type_hints
 from types import ModuleType
+from typing import Callable, get_type_hints, List, Tuple, Type
 
 from verta.registry import VertaModelBase
 
