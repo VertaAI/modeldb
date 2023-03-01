@@ -17,7 +17,7 @@ def test_list_modules_in_function_definition_wrapped(dependency_testing_model) -
     """ Verify that modules used within a function definition are extracted
     as expected, for a function that is not wrapped in verify_io """
     func: Callable = dependency_testing_model.predict
-    expected_module_names = ['verta', 'yaml']  # TODO pick up spacy in type hint
+    expected_module_names = ['verta', 'yaml']
     extracted_modules: List[ModuleType] = [
         f.__package__ for f in md.list_modules_in_function_definition(func)
     ]
@@ -28,7 +28,7 @@ def test_list_modules_in_function_definition_unwrapped(dependency_testing_model)
     """ Verify that modules used within a function definition are extracted
     as expected, for a function that is not wrapped in verify_io """
     func: Callable = dependency_testing_model.unwrapped_predict
-    expected_module_names = ['verta', 'click']  # TODO pick up boto3 in type hint
+    expected_module_names = ['verta', 'click']
     extracted_modules: List[ModuleType] = [
         f.__package__ for f in md.list_modules_in_function_definition(func)
     ]
