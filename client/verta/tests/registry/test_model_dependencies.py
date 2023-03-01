@@ -63,7 +63,7 @@ def test_list_modules_in_function_signature_unwrapped(dependency_testing_model) 
         'json.encoder',
         'collections',
         'sklearn.base',
-        'builtins',
+        'cloudpickle.cloudpickle_fast',
         'requests.exceptions',
     ]
     extracted_modules: List[str] = [
@@ -126,4 +126,7 @@ def test_modules_in_class(dependency_testing_model) -> None:
     extracted_modules: List[str] = [
         f.__name__ for f in md.modules_in_class(dependency_testing_model)
     ]
-    assert extracted_modules.sort() == dependency_testing_model.expected_modules().sort()
+    extracted_modules.sort()
+    expected_module_names = dependency_testing_model.expected_modules()
+    expected_module_names.sort()
+    assert extracted_modules == expected_module_names
