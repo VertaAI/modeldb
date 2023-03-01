@@ -119,14 +119,29 @@ def test_list_modules_in_function_return_type_hint_multiple(dependency_testing_m
         assert name in extracted_modules
 
 
-def test_modules_in_class(dependency_testing_model) -> None:
-    """ Verify that modules used in class attributes are extracted as
-    expected when the class is wrapped in verify_io.
+def test_function_local_annotations(dependency_testing_model) -> None:
+    """ Verify that modules used in function local annotations are extracted as
+    expected when the function is wrapped in verify_io.
     """
-    extracted_modules: List[str] = [
-        f.__name__ for f in md.modules_in_class(dependency_testing_model)
-    ]
-    extracted_modules.sort()
+    func: Callable = dependency_testing_model.predict
+    expected_modules = ['spacy.Errors']
+    extracted_modules =  md.list_function_local_annotation_module_names(func)
+    assert extracted_modules == expected_modules
+
+
+def test_function_local_annotations_unwrapped(dependency_testing_model) -> None:
+    """ Verify that modules used in function local annotations are extracted as
+    expected when the function is not wrapped.
+    """
+    func: Callable = dependency_testing_model.unwrapped_predict
+    expected_modules = ['boto3.Session']
+    extracted_modules =  md.list_function_local_annotation_module_names(func)
+    assert extracted_modules == expected_modules
+
+
+def test_module_names_in_class(dependency_testing_model) -> None:
+    """ Verify that all expected module names are extracted as expected.
+    """
+    extracted_module_names: List[str] =  md.module_names_in_class(dependency_testing_model)
     expected_module_names = dependency_testing_model.expected_modules()
-    expected_module_names.sort()
-    assert extracted_modules == expected_module_names
+    assert set(extracted_module_names) == set(expected_module_names)
