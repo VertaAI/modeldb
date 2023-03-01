@@ -1,14 +1,25 @@
 # -*- coding: utf-8 -*-
 
+import ast
 import inspect
+import textwrap
 from typing import Callable, List, Tuple, Type, get_type_hints
 from types import ModuleType
+
 from verta.registry import VertaModelBase
 
 
 def list_class_functions(model_class: Type[VertaModelBase]) -> List[Tuple[str, Callable]]:
     """List all the functions present in the provided class object."""
     return inspect.getmembers(model_class, predicate=inspect.isfunction)
+
+
+def unwrap(func: Callable) -> Callable:
+    """Unwraps a function to get the original function object in a non-blocking manner."""
+    try:
+        return inspect.unwrap(func)  # returns last object in chain
+    except ValueError:  # if a cycle is encountered
+        return func
 
 
 def list_modules_in_function_definition(func: Callable) -> List[ModuleType]:
@@ -43,21 +54,45 @@ def list_modules_in_function_signature(func: Callable) -> List[ModuleType]:
     return modules
 
 
-def unwrap(func: Callable) -> Callable:
-    """Unwraps a function to get the original function object in a non-blocking manner."""
-    try:
-        return inspect.unwrap(func)  # returns last object in chain
-    except ValueError:  # if a cycle is encountered
-        return func
+def list_function_local_annotation_module_names(func: Callable) -> List[str]:
+    """Return a list of modules extracted from type annotations on function
+    locals.
+
+    Variable annotations within a function body do not have a lifetime beyond
+    the local namespace. This function extracts the annotations from the
+    function body when possible.
+
+    """
+    class AnnotationsCollector(ast.NodeVisitor):
+        """Collects AnnAssign nodes for 'simple' annotation assignments"""
+
+        def __init__(self):
+            self.annotations = {}
+
+        def visit_AnnAssign(self, node) -> None:
+            if node.simple:
+                # 'simple' == a single name, not an attribute or subscription, thus
+                # `node.target.id` should exist.
+                self.annotations[node.target.id] = node.annotation
+
+    source = textwrap.dedent(inspect.getsource(func))
+    mod = ast.parse(source)
+    assert mod.body and isinstance(mod.body[0], (ast.FunctionDef, ast.AsyncFunctionDef))
+    collector = AnnotationsCollector()
+    collector.visit(mod.body[0])
+    return [
+        ast.get_source_segment(source, node)
+        for node in collector.annotations.values()
+    ]
 
 
-def modules_in_class(model_class: Type[VertaModelBase]) -> List[ModuleType]:
+def module_names_in_class(model_class: Type[VertaModelBase]) -> List[str]:
     funcs = list_class_functions(model_class)
     modules_found = list()
     for function in funcs:
         _func = function[1]
-        mods_in_def = list_modules_in_function_definition(_func)
-        mods_in_args = list_modules_in_function_signature(_func)
-        total_mods = mods_in_def + mods_in_args
-        modules_found += total_mods
-    return list(set(modules_found))
+        mods_in_def = [ m.__name__ for m in list_modules_in_function_definition(_func) ]
+        mods_in_args = [ m.__name__ for m in list_modules_in_function_signature(_func) ]
+        mods_in_anns = list_function_local_annotation_module_names(_func)
+        modules_found += mods_in_def + mods_in_args + mods_in_anns
+    return modules_found
