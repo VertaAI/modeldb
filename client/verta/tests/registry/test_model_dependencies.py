@@ -16,7 +16,7 @@ def test_list_class_functions(dependency_testing_model) -> None:
 
 def test_list_modules_in_function_definition_wrapped(dependency_testing_model) -> None:
     """ Verify that modules used within a function definition are extracted
-    as expected, for a function that is not wrapped in verify_io """
+    as expected, for a function that is wrapped in verify_io """
     func: Callable = dependency_testing_model.predict
     expected_module_names = ['verta.runtime', 'yaml']
     extracted_modules: List[str] = [
