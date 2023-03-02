@@ -10,8 +10,20 @@ def test_list_class_functions(dependency_testing_model) -> None:
     """ Verify that all the functions in the test class are recognized and
     returned.
     """
+    expected_func_names = [
+                '__init__',
+                'make_boto_session',
+                'make_dataframe',
+                'make_spacy_error',
+                'make_timeout',
+                'model_test',
+                'nested_multiple_returns_hint',
+                'nested_type_hint',
+                'predict',
+                'unwrapped_predict',
+            ]
     extracted_func_names = [f[0] for f in md.list_class_functions(dependency_testing_model)]
-    assert extracted_func_names == dependency_testing_model.expected_function_names()
+    assert extracted_func_names == expected_func_names
 
 
 def test_list_modules_in_function_body_wrapped(dependency_testing_model) -> None:
@@ -157,6 +169,26 @@ def test_function_local_annotations_unwrapped(dependency_testing_model) -> None:
 def test_module_names_in_class(dependency_testing_model) -> None:
     """ Verify that all expected module names are extracted as expected.
     """
+    expected_module_names = [
+        'boto3',
+        'calendar',
+        'click',
+        'cloudpickle',
+        'collections',
+        'datetime',
+        'google',
+        'json',
+        'numpy',
+        'pandas',
+        'PIL',
+        'requests',
+        'requests',
+        'sklearn',
+        'spacy',
+        'torch',
+        'urllib3',
+        'verta',
+        'yaml',
+    ]
     extracted_module_names: List[str] =  md.module_names_in_class(dependency_testing_model)
-    expected_module_names = dependency_testing_model.expected_modules()
     assert set(extracted_module_names) == set(expected_module_names)

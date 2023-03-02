@@ -49,48 +49,6 @@ def dependency_testing_model() -> Type[VertaModelBase]:
         def __init__(self, artifacts):
             pass
 
-        @staticmethod
-        def expected_function_names() -> List[str]:
-            return [
-                '__init__',
-                'expected_function_names',
-                'expected_modules',
-                'make_boto_session',
-                'make_dataframe',
-                'make_spacy_error',
-                'make_timeout',
-                'model_test',
-                'nested_multiple_returns_hint',
-                'nested_type_hint',
-                'predict',
-                'unwrapped_predict',
-            ]
-
-        @staticmethod
-        def expected_modules() -> List[str]:
-            return [
-                'boto3',
-                'builtins',
-                'calendar',
-                'click',
-                'cloudpickle',
-                'collections',
-                'datetime',
-                'google',
-                'json',
-                'numpy',
-                'pandas',
-                'PIL',
-                'requests',
-                'requests',
-                'sklearn',
-                'spacy',
-                'torch',
-                'urllib3',
-                'verta',
-                'yaml',
-            ]
-
         # Note that wrapping in verify_io may have an impact on how modules are
         # extracted, thus we explicitly test the same scenarios with and without.
         @verify_io
@@ -148,3 +106,7 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             return torch.NoneType
 
     return DependencyTestingModel
+
+
+def make_spacy_error():  # No modules in function signature
+    return spacy.Errors
