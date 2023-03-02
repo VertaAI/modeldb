@@ -86,42 +86,6 @@ def test_list_modules_in_function_signature_unwrapped(dependency_testing_model) 
     assert extracted_modules == expected_modules
 
 
-def test_list_modules_in_function_return_type_hint_wrapped(dependency_testing_model) -> None:
-    """ Verify that modules used in function return type hints are extracted
-    as expected when the function is wrapped in verify_io.
-    """
-    func: Callable = dependency_testing_model.predict
-    expected_modules = [
-        'calendar',
-        'datetime',
-        'numpy',
-        'google.protobuf.message',
-        'pandas.core.frame'
-    ]
-    extracted_modules: List[str] = [
-        f.__name__ for f in md.list_modules_in_function_signature(func)
-    ]
-    assert extracted_modules == expected_modules
-
-
-def test_list_modules_in_function_return_type_hint_unwrapped(dependency_testing_model) -> None:
-    """ Verify that modules used in function return type hints are extracted
-    as expected with no function wrappers.
-    """
-    func: Callable = dependency_testing_model.unwrapped_predict
-    expected_modules = [
-        'json.encoder',
-        'collections',
-        'sklearn.base',
-        'cloudpickle.cloudpickle_fast',
-        'requests.exceptions'
-    ]
-    extracted_modules: List[str] = [
-        f.__name__ for f in md.list_modules_in_function_signature(func)
-    ]
-    assert extracted_modules == expected_modules
-
-
 def test_list_modules_in_function_return_type_hint_nested(dependency_testing_model) -> None:
     """ Verify that modules used in function return type hints are extracted
     as expected when nested inside another type construct.
