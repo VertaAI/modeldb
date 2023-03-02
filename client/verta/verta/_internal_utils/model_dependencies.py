@@ -42,7 +42,7 @@ def list_modules_in_function_signature(func: Callable) -> List[ModuleType]:
     modules = [ inspect.getmodule(value) for key, value in arg_hints.items() ]
 
     if return_hint:
-        mod = inspect.getmodule(return_hint['return'])
+        mod = inspect.getmodule(return_hint)
         if mod.__name__ == 'typing':
             ret_ann = inspect.signature(_func).return_annotation
             nested_args = ret_ann.__args__
@@ -50,7 +50,7 @@ def list_modules_in_function_signature(func: Callable) -> List[ModuleType]:
                 if inspect.isclass(a):
                     modules.append(inspect.getmodule(a))
         else:
-            modules.append(inspect.getmodule(return_hint['return']))
+            modules.append(inspect.getmodule(return_hint))
     return modules
 
 
