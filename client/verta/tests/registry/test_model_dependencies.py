@@ -42,6 +42,15 @@ def test_list_modules_in_function_body_unwrapped(dependency_testing_model) ->Non
     assert extracted_modules == expected_modules
 
 
+def test_list_modules_in_function_body_return_line(dependency_testing_model) -> None:
+    """ Verify that modules used only within a functions return line are extracted
+    as expected, including when aliased (which causes them to be stored differently)"""
+    func: Callable = dependency_testing_model.make_dataframe
+    expected_modules = ['pandas']
+    extracted_modules: List[str] = md.list_modules_in_function_body(func)
+    assert extracted_modules == expected_modules
+
+
 def test_list_modules_in_function_signature_wrapped(dependency_testing_model) -> None:
     """ Verify that modules used in function arguments are extracted as
     expected when the function is wrapped in verify_io.
