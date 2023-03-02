@@ -23,7 +23,7 @@ def unwrap(func: Callable) -> Callable:
 
 
 def list_modules_in_function_body(func: Callable) -> List[str]:
-    """List all modules called within the body of the provided function."""
+    """List all base modules called within the body of the provided function."""
     _func = unwrap(func)
     return [
         value.__name__.split('.')[0]  # strip off submodules and classes
@@ -33,7 +33,7 @@ def list_modules_in_function_body(func: Callable) -> List[str]:
 
 
 def list_modules_in_function_signature(func: Callable) -> List[str]:
-    """List all modules used in type hints in the provided function's arguments
+    """List all base modules used in type hints in the provided function's arguments
     and return type hint."""
     _func = unwrap(func)
     hints = get_type_hints(_func)
@@ -56,7 +56,7 @@ def list_modules_in_function_signature(func: Callable) -> List[str]:
 
 
 def list_class_module_names(model_class: Type[VertaModelBase]) -> List[str]:
-    """Attempt to list all modules used in the provided class object."""
+    """Attempt to list all base modules used in the provided class object."""
     funcs = list_class_functions(model_class)
     modules_found = list()
     for function in funcs:
