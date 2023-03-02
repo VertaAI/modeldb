@@ -30,10 +30,8 @@ def test_list_modules_in_function_body_wrapped(dependency_testing_model) -> None
     """ Verify that modules used within a function body are extracted
     as expected, for a function that is wrapped in verify_io """
     func: Callable = dependency_testing_model.predict
-    expected_modules = ['verta.runtime', 'yaml']
-    extracted_modules: List[str] = [
-        f.__name__ for f in md.list_modules_in_function_body(func)
-    ]
+    expected_modules = ['verta', 'yaml']
+    extracted_modules: List[str] = md.list_modules_in_function_body(func)
     assert extracted_modules == expected_modules
 
 
@@ -41,10 +39,8 @@ def test_list_modules_in_function_body_unwrapped(dependency_testing_model) ->Non
     """ Verify that modules used within a function body are extracted
     as expected, for a function that is not wrapped in verify_io """
     func: Callable = dependency_testing_model.unwrapped_predict
-    expected_modules = ['verta.runtime', 'click']
-    extracted_modules: List[str] = [
-        f.__name__ for f in md.list_modules_in_function_body(func)
-    ]
+    expected_modules = ['verta', 'click']
+    extracted_modules: List[str] = md.list_modules_in_function_body(func)
     assert extracted_modules == expected_modules
 
 
@@ -57,13 +53,10 @@ def test_list_modules_in_function_signature_wrapped(dependency_testing_model) ->
         'calendar',
         'datetime',
         'numpy',
-        'google.protobuf.message',
-        'pandas.core.frame',
+        'google',
+        'pandas',
     ]
-    extracted_modules: List[str] = [
-        f.__name__ for f in
-        md.list_modules_in_function_signature(func)
-    ]
+    extracted_modules: List[str] = md.list_modules_in_function_signature(func)
     assert extracted_modules == expected_modules
 
 
@@ -73,16 +66,13 @@ def test_list_modules_in_function_signature_unwrapped(dependency_testing_model) 
     """
     func: Callable = dependency_testing_model.unwrapped_predict
     expected_modules = [
-        'json.encoder',
+        'json',
         'collections',
-        'sklearn.base',
-        'cloudpickle.cloudpickle_fast',
-        'requests.exceptions',
+        'sklearn',
+        'cloudpickle',
+        'requests',
     ]
-    extracted_modules: List[str] = [
-        f.__name__ for f in
-        md.list_modules_in_function_signature(func)
-    ]
+    extracted_modules: List[str] = md.list_modules_in_function_signature(func)
     assert extracted_modules == expected_modules
 
 
@@ -92,9 +82,7 @@ def test_list_modules_in_function_return_type_hint_nested(dependency_testing_mod
     """
     func: Callable = dependency_testing_model.nested_type_hint
     expected_modules = ['torch']
-    extracted_modules: List[str] = [
-        f.__name__ for f in md.list_modules_in_function_signature(func)
-    ]
+    extracted_modules: List[str] = md.list_modules_in_function_signature(func)
     assert extracted_modules == expected_modules
 
 
@@ -103,38 +91,15 @@ def test_list_modules_in_function_return_type_hint_multiple(dependency_testing_m
     as expected when multiple return types are specified.
     """
     func: Callable = dependency_testing_model.nested_multiple_returns_hint
-    expected_modules = ['urllib3.util.retry', 'PIL']
-    extracted_modules: List[str] = [
-        f.__name__ for f in md.list_modules_in_function_signature(func)
-    ]
+    expected_modules = ['urllib3', 'PIL']
+    extracted_modules: List[str] = md.list_modules_in_function_signature(func)
     assert extracted_modules == expected_modules
 
 
-def test_function_local_annotations(dependency_testing_model) -> None:
-    """ Verify that modules used in function local annotations are extracted as
-    expected when the function is wrapped in verify_io.
-    """
-    func: Callable = dependency_testing_model.predict
-    expected_modules = ['spacy.Errors']
-    extracted_modules =  md.list_function_local_annotation_module_names(func)
-    assert extracted_modules == expected_modules
-
-
-def test_function_local_annotations_unwrapped(dependency_testing_model) -> None:
-    """ Verify that modules used in function local annotations are extracted as
-    expected when the function is not wrapped.
-    """
-    func: Callable = dependency_testing_model.unwrapped_predict
-    expected_modules = ['boto3.Session']
-    extracted_modules =  md.list_function_local_annotation_module_names(func)
-    assert extracted_modules == expected_modules
-
-
-def test_module_names_in_class(dependency_testing_model) -> None:
+def test_list_class_module_names(dependency_testing_model) -> None:
     """ Verify that all expected module names are extracted as expected.
     """
     expected_module_names = [
-        'boto3',
         'calendar',
         'click',
         'cloudpickle',
@@ -148,11 +113,10 @@ def test_module_names_in_class(dependency_testing_model) -> None:
         'requests',
         'requests',
         'sklearn',
-        'spacy',
         'torch',
         'urllib3',
         'verta',
         'yaml',
     ]
-    extracted_module_names: List[str] =  md.module_names_in_class(dependency_testing_model)
+    extracted_module_names: List[str] =  md.list_class_module_names(dependency_testing_model)
     assert set(extracted_module_names) == set(expected_module_names)
