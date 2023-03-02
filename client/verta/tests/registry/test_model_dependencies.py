@@ -99,7 +99,7 @@ def test_list_modules_in_function_return_type_hint_multiple(dependency_testing_m
 def test_list_class_module_names(dependency_testing_model) -> None:
     """ Verify that all expected module names are extracted as expected.
     """
-    expected_module_names = [
+    expected_modules = [
         'calendar',
         'click',
         'cloudpickle',
@@ -118,5 +118,5 @@ def test_list_class_module_names(dependency_testing_model) -> None:
         'verta',
         'yaml',
     ]
-    extracted_module_names: List[str] =  md.list_class_module_names(dependency_testing_model)
-    assert set(extracted_module_names) == set(expected_module_names)
+    extracted_modules: List[str] =  md.list_class_module_names(dependency_testing_model)
+    assert set(extracted_modules) == set(expected_modules)
