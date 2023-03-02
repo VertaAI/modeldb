@@ -37,7 +37,7 @@ def list_modules_in_function_signature(func: Callable) -> List[ModuleType]:
     _func = unwrap(func)
     hints = get_type_hints(_func)
     arg_hints = { k: v for k, v in hints.items() if k != 'return' }
-    return_hint = { k: v for k, v in hints.items() if k == 'return' }
+    return_hint = hints.get('return')
 
     modules = [ inspect.getmodule(value) for key, value in arg_hints.items() ]
 
