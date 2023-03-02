@@ -77,7 +77,6 @@ def list_function_local_annotation_module_names(func: Callable) -> List[str]:
 
     source = textwrap.dedent(inspect.getsource(func))
     mod = ast.parse(source)
-    assert mod.body and isinstance(mod.body[0], (ast.FunctionDef, ast.AsyncFunctionDef))
     collector = AnnotationsCollector()
     collector.visit(mod.body[0])
     return [
