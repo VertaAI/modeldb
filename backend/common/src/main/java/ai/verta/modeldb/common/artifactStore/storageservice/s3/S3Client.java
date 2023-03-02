@@ -10,13 +10,7 @@ import com.amazonaws.client.builder.AwsClientBuilder;
 import com.amazonaws.regions.Regions;
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenService;
-import com.amazonaws.services.securitytoken.AWSSecurityTokenServiceClientBuilder;
-import com.amazonaws.services.securitytoken.model.AssumeRoleWithWebIdentityRequest;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.apache.logging.log4j.LogManager;
@@ -103,17 +97,16 @@ public class S3Client {
   }
 
   private void initializeWithWebIdentity(Regions awsRegion) throws IOException {
-    var roleRequest = getCredentialFromWebIdentity();
-
     /* While creating RoleCredentials we have set time (900 seconds (15 minutes))
     in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds
     so set cron to half of the duration of the credentials which will be ~(450 Second (7.5 minutes))
      */
-    var refreshTokenFrequency = roleRequest.getDurationSeconds() / 2;
+    var durationSeconds = 900; /*900 seconds (15 minutes)*/
+    var refreshTokenFrequency = durationSeconds / 2;
     LOGGER.trace(String.format("S3 Client refresh frequency %d seconds", refreshTokenFrequency));
 
     CommonUtils.scheduleTask(
-        new RefreshS3ClientCron(bucketName, awsRegion, roleRequest, this),
+        new RefreshS3ClientCron(bucketName, awsRegion, durationSeconds, this),
         0L /*initialDelay*/,
         refreshTokenFrequency /*periodic refresh frequency*/,
         TimeUnit.SECONDS);
@@ -136,42 +129,5 @@ public class S3Client {
       // be
       // called
     }
-  }
-
-  private AssumeRoleWithWebIdentityRequest getCredentialFromWebIdentity() throws IOException {
-    String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
-    String token = getWebIdentityToken();
-
-    // Obtain credentials for the IAM role. Note that you cannot assume the role of
-    // an AWS root account;
-    // Amazon S3 will deny access. You must use credentials for an IAM user or an
-    // IAM role.
-    return new AssumeRoleWithWebIdentityRequest()
-        .withDurationSeconds(900) /*900 seconds (15 minutes)*/
-        .withRoleArn(roleArn)
-        .withWebIdentityToken(token)
-        .withRoleSessionName("model_db_" + UUID.randomUUID());
-  }
-
-  private static String getWebIdentityToken() throws IOException {
-    return new String(
-        Files.readAllBytes(
-            Paths.get(
-                CommonUtils.appendOptionalTelepresencePath(
-                    System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
-  }
-
-  private static AWSSecurityTokenService createStsClient(Regions awsRegion) {
-    final var stsClientBuilder =
-        AWSSecurityTokenServiceClientBuilder.standard().withRegion(awsRegion);
-    if (!CommonUtils.appendOptionalTelepresencePath("foo").equals("foo")) {
-      stsClientBuilder.setCredentials(
-          WebIdentityTokenCredentialsProvider.builder()
-              .webIdentityTokenFile(
-                  CommonUtils.appendOptionalTelepresencePath(
-                      System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
-              .build());
-    }
-    return stsClientBuilder.build();
   }
 }
