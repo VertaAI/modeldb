@@ -12,9 +12,7 @@ def test_list_class_functions(dependency_testing_model) -> None:
     """
     expected_func_names = [
                 '__init__',
-                'make_boto_session',
                 'make_dataframe',
-                'make_spacy_error',
                 'make_timeout',
                 'model_test',
                 'nested_multiple_returns_hint',

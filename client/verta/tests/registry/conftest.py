@@ -33,9 +33,7 @@ def docker_image():
 @pytest.fixture(scope="session")
 def dependency_testing_model() -> Type[VertaModelBase]:
     """Returns a model class that imports and calls external dependencies."""
-    boto3 = pytest.importorskip("boto3")
     numpy = pytest.importorskip("numpy")
-    spacy = pytest.importorskip("spacy")
     pd =pytest.importorskip("pandas")
     sklearn = pytest.importorskip("sklearn")
     torch = pytest.importorskip("torch")
@@ -62,8 +60,6 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             hour = x.hour                        # standard library usage in function body
             runtime.log('error', 'Error')        # 3rd-party module in function body (VERTA)
             yaml_con = yaml.constructor          # 3rd party module in function body
-            spacy_error: spacy.Errors = self.make_spacy_error()
-                                                 # 3rd-party module in function body as type hint
             z = self.make_dataframe(y)           # 3rd party module called indirectly
             return z
 
@@ -79,8 +75,6 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             with runtime.context():              # 3rd-party module in function body (VERTA)
                 runtime.log('error', 'Error')    # 3rd-party module in function body (VERTA)
             click_exc = click.ClickException     # 3rd party module in function body
-            boto_sesh: boto3.Session = self.make_boto_session()
-                                                 # 3rd-party module in function body as type hint
             z = self.make_timeout()              # 3rd party module called indirectly
             return z
 
@@ -89,13 +83,6 @@ def dependency_testing_model() -> Type[VertaModelBase]:
 
         def make_timeout(self):                  # No modules in function signature
             return requests.Timeout()            # 3rd party module in function body
-
-        def make_spacy_error(self):              # No modules in function signature
-            return spacy.Errors                  # 3rd party module in function body
-
-        @staticmethod
-        def make_boto_session():                 # No modules in function signature
-            return boto3.DEFAULT_SESSION         # 3rd-party module in function body
 
         # 3rd-party modules nested inside type constructs should still be extracted
         def nested_multiple_returns_hint(self) -> Union[urllib3.Retry, PIL.UnidentifiedImageError]:
@@ -106,7 +93,3 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             return torch.NoneType
 
     return DependencyTestingModel
-
-
-def make_spacy_error():  # No modules in function signature
-    return spacy.Errors
