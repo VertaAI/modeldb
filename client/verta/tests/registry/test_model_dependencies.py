@@ -14,24 +14,24 @@ def test_list_class_functions(dependency_testing_model) -> None:
     assert extracted_func_names == dependency_testing_model.expected_function_names()
 
 
-def test_list_modules_in_function_definition_wrapped(dependency_testing_model) -> None:
-    """ Verify that modules used within a function definition are extracted
+def test_list_modules_in_function_body_wrapped(dependency_testing_model) -> None:
+    """ Verify that modules used within a function body are extracted
     as expected, for a function that is wrapped in verify_io """
     func: Callable = dependency_testing_model.predict
     expected_modules = ['verta.runtime', 'yaml']
     extracted_modules: List[str] = [
-        f.__name__ for f in md.list_modules_in_function_definition(func)
+        f.__name__ for f in md.list_modules_in_function_body(func)
     ]
     assert extracted_modules == expected_modules
 
 
-def test_list_modules_in_function_definition_unwrapped(dependency_testing_model) ->None:
-    """ Verify that modules used within a function definition are extracted
+def test_list_modules_in_function_body_unwrapped(dependency_testing_model) ->None:
+    """ Verify that modules used within a function body are extracted
     as expected, for a function that is not wrapped in verify_io """
     func: Callable = dependency_testing_model.unwrapped_predict
     expected_modules = ['verta.runtime', 'click']
     extracted_modules: List[str] = [
-        f.__name__ for f in md.list_modules_in_function_definition(func)
+        f.__name__ for f in md.list_modules_in_function_body(func)
     ]
     assert extracted_modules == expected_modules
 

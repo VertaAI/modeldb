@@ -22,7 +22,7 @@ def unwrap(func: Callable) -> Callable:
         return func
 
 
-def list_modules_in_function_definition(func: Callable) -> List[ModuleType]:
+def list_modules_in_function_body(func: Callable) -> List[ModuleType]:
     """List all modules called within the body of the provided function."""
     _func = unwrap(func)
     return [
@@ -93,7 +93,7 @@ def module_names_in_class(model_class: Type[VertaModelBase]) -> List[str]:
         _func = function[1]
         mods_in_def = [
             m.__name__.split('.')[0]
-            for m in list_modules_in_function_definition(_func)
+            for m in list_modules_in_function_body(_func)
         ]
         mods_in_args = [
             m.__name__.split('.')[0]
