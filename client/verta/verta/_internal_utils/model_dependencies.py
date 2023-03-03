@@ -71,3 +71,14 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
         mods_in_signature = modules_in_function_signature(_func)
         modules_found |= mods_in_body | mods_in_signature
     return modules_found
+
+
+# TODO VRD-682 convert module names to pkg names here
+def package_names(module_names: Set[str]) -> Set[str]:
+    """Return a set of all packages detected in the provided set of base module names."""
+    return module_names
+
+
+def strip_version(pkg_str: str) -> str:
+    """Return the base package name from a package string."""
+    return pkg_str.split('==')[0]
