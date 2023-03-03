@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+"""Utility function for checking model dependencies against an environment
+to identify missing packages."""
 
 from typing import Set, Type
 import warnings
@@ -13,30 +15,55 @@ def check_model_dependencies(
         environment: Python,
         raise_for_missing: bool = False,
         ) -> bool:
-    """
-    Attempt to scan the provided model class for dependencies and verify that
-    the provided environment includes the necessary packages to support them.
+    """Scan for missing or unused dependencies in a model's environment
+    to help avoid deployment failures and reduce time to deploy
 
-    .. version_added:: 0.22.1
+    This function attempts to scan the provided model class for 3rd-party (not
+    python standard library) dependencies and identify any missing or
+    extraneous packages in the provided environment.
+
+    .. note::
+        This function is not guaranteed to detect all dependencies in all cases.
+
+    .. versionadded:: 0.22.1
 
     Parameters
     ----------
-    model: Type[VertaModelBase]
-        Model class, inherited from :class:`~verta.registry.VertaModelBase` to be scanned.
+    model: subclass of :class:`~verta.registry.VertaModelBase`
+        Model class object (not an instance) to be scanned.
     environment:
-        Instance of `~verta.environment.Python` to validate against.
+        Instance of a :class:`~verta.environment.Python` environment against
+        which to validate dependencies.
     raise_for_missing: bool, default False
         If True, raises an exception if any dependencies detected in the model class
-        are missing from the environment. Defaults to printing a warning.
+        are missing from the environment, or if the environment has extraneous
+        packages.  Defaults to printing a warning.
 
     Returns
     -------
-    True if all dependencies detected are found in the environment, False otherwise.
+        True
+            if all 3rd-party dependencies detected in the model class have
+            corresponding packages in the environment, and no extraneous packages
+            exist in the environment.
+        False
+            if any 3rd-party dependencies detected in the model class are missing
+            or extraneous packages are detected in the environment.
 
     Raises
     ------
     RuntimeError
-        If `raise_for_missing` is True and any dependencies are missing.
+        If `raise_for_missing` is True and any dependencies are extraneous or missing.
+
+    Examples
+    --------
+    .. code-block:: python
+       :emphasize-lines: 5
+
+        from verta.registry import check_model_dependencies
+        from verta.environment import Python
+
+        env = Python(["numpy", "pandas"])
+        check_model_dependencies(model=MyModelClass, environment=env)
 
     """
     detected_modules: Set[str] = md.class_module_names(model)
