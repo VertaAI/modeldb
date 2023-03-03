@@ -46,7 +46,7 @@ def modules_in_function_signature(func: Callable) -> Set[str]:
     arg_hints = { k: v for k, v in hints.items() if k != 'return' }
     return_hint = hints.get('return')
 
-    modules = [ inspect.getmodule(value) for key, value in arg_hints.items() ]
+    modules = [ inspect.getmodule(value) for value in arg_hints.values() ]
 
     if return_hint:
         mod = inspect.getmodule(return_hint)
