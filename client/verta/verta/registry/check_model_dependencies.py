@@ -25,7 +25,7 @@ def check_model_dependencies(
     .. note::
         This function is not guaranteed to detect all dependencies in all cases.
 
-    .. versionadded:: 0.22.1
+    .. versionadded:: 0.22.2
 
     Parameters
     ----------
