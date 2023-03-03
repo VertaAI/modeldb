@@ -69,5 +69,5 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
         _func = function
         mods_in_body = modules_in_function_body(_func)
         mods_in_signature = modules_in_function_signature(_func)
-        modules_found.update(mods_in_body | mods_in_signature)
+        modules_found |= mods_in_body | mods_in_signature
     return modules_found

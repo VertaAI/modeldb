@@ -10,15 +10,15 @@ def test_class_functions(dependency_testing_model) -> None:
     returned.
     """
     expected_func_names = [
-                '__init__',
-                'make_dataframe',
-                'make_timeout',
-                'model_test',
-                'nested_multiple_returns_hint',
-                'nested_type_hint',
-                'predict',
-                'unwrapped_predict',
-            ]
+        '__init__',
+        'make_dataframe',
+        'make_timeout',
+        'model_test',
+        'nested_multiple_returns_hint',
+        'nested_type_hint',
+        'predict',
+        'unwrapped_predict',
+    ]
     extracted_func_names = [
         f.__name__ for f in md.class_functions(dependency_testing_model)
     ]
