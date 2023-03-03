@@ -31,9 +31,9 @@ def check_model_dependencies(
     ----------
     model: subclass of :class:`~verta.registry.VertaModelBase`
         Model class object (not an instance) to be scanned.
-    environment:
+    environment: subclass of :class:`~verta.environment.Python`
         Instance of a :class:`~verta.environment.Python` environment against
-        which to validate dependencies.
+        which to validate pip dependencies.
     raise_for_missing: bool, default False
         If True, raises an exception if any dependencies detected in the model class
         are missing from the environment, or if the environment has extraneous
