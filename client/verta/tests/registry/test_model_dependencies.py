@@ -5,7 +5,7 @@ from typing import Callable, Set
 from verta._internal_utils import model_dependencies as md
 
 
-def test_list_class_functions(dependency_testing_model) -> None:
+def test_class_functions(dependency_testing_model) -> None:
     """ Verify that all the functions in the test class are recognized and
     returned.
     """
