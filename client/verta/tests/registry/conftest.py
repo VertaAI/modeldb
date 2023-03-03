@@ -82,7 +82,7 @@ def dependency_testing_model() -> Type[VertaModelBase]:
             return pd.DataFrame(input)           # 3rd party module in function body
 
         @staticmethod
-        def make_timeout():                  # No modules in function signature
+        def make_timeout():                      # No modules in function signature
             return requests.Timeout()            # 3rd party module in function body
 
         # 3rd-party modules nested inside type constructs should still be extracted

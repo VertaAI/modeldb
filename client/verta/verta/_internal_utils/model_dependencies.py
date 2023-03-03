@@ -1,17 +1,17 @@
 # -*- coding: utf-8 -*-
 
-import ast
 import inspect
-import textwrap
 from types import ModuleType
-from typing import Callable, get_type_hints, List, Tuple, Type
+from typing import Callable, get_type_hints, List, Set, Type
 
 from verta.registry import VertaModelBase
 
 
-def list_class_functions(model_class: Type[VertaModelBase]) -> List[Tuple[str, Callable]]:
+def list_class_functions(model_class: Type[VertaModelBase]) -> List[Callable]:
     """List all the functions present in the provided class object."""
-    return inspect.getmembers(model_class, predicate=inspect.isfunction)
+    return [
+        f[1] for f in inspect.getmembers(model_class, predicate=inspect.isfunction)
+    ]
 
 
 def unwrap(func: Callable) -> Callable:
@@ -22,7 +22,7 @@ def unwrap(func: Callable) -> Callable:
         return func
 
 
-def list_modules_in_function_body(func: Callable) -> List[str]:
+def list_modules_in_function_body(func: Callable) -> Set[str]:
     """List all base modules called within the body of the provided function."""
     _func = unwrap(func)
     globals = [
@@ -35,10 +35,10 @@ def list_modules_in_function_body(func: Callable) -> List[str]:
        for key, value in inspect.getclosurevars(_func).nonlocals.items()
        if isinstance(value, ModuleType)
     ]
-    return globals + non_locals
+    return set(globals + non_locals)
 
 
-def list_modules_in_function_signature(func: Callable) -> List[str]:
+def list_modules_in_function_signature(func: Callable) -> Set[str]:
     """List all base modules used in type hints in the provided function's arguments
     and return type hint."""
     _func = unwrap(func)
@@ -58,16 +58,15 @@ def list_modules_in_function_signature(func: Callable) -> List[str]:
                     modules.append(inspect.getmodule(a))
         else:
             modules.append(inspect.getmodule(return_hint))
-    return  [ m.__name__.split('.')[0] for m in modules ]
+    return  set([ m.__name__.split('.')[0] for m in modules ])
 
 
-def list_class_module_names(model_class: Type[VertaModelBase]) -> List[str]:
+def list_class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
     """Attempt to list all base modules used in the provided class object."""
-    funcs = list_class_functions(model_class)
-    modules_found = list()
-    for function in funcs:
-        _func = function[1]
+    modules_found = set()
+    for function in list_class_functions(model_class):
+        _func = function
         mods_in_body = list_modules_in_function_body(_func)
         mods_in_signature = list_modules_in_function_signature(_func)
-        modules_found += mods_in_body + mods_in_signature
-    return list(set(modules_found))
+        modules_found.update(mods_in_body | mods_in_signature)
+    return modules_found
