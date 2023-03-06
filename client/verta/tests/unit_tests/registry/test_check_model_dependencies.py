@@ -50,7 +50,7 @@ def test_check_model_dependencies_complete(dependency_testing_model, complete_en
 
 def test_check_model_dependencies_missing_raise(dependency_testing_model, complete_env) -> None:
     """ Verify that check_model_dependencies raises an exception for missing
-    packages when `raise_for_missing`` is True.
+    packages when `raise_for_missing` is True.
     """
     incomplete_env = Python(
         [ r for r in complete_env.requirements if r != 'click==0.0.1' ]
