@@ -63,18 +63,17 @@ def check_model_dependencies(
     detected_modules: Set[str] = md.class_module_names(model_cls)
     detected_packages: Set[str] = md.package_names(detected_modules)
     env_packages: Set[str] = { parse_req_spec(e)[0] for e in environment.requirements }
-    error_msg = "the following packages are required by the model but missing " \
-                "from the environment: "
 
-    if detected_packages != env_packages:
-        missing_packages = detected_packages - env_packages
-        if missing_packages:
-            if raise_for_missing:
-                raise RuntimeError(error_msg + str(missing_packages))
-            else:
-                warnings.warn(
-                    error_msg + str(missing_packages),
-                    category=RuntimeWarning,
-                )
-                return False
+    missing_packages = detected_packages - env_packages
+    if missing_packages:
+        error_msg = f"the following packages are required by the model but missing " \
+                    f"from the environment: {missing_packages}"
+        if raise_for_missing:
+            raise RuntimeError(error_msg)
+        else:
+            warnings.warn(
+                error_msg,
+                category=RuntimeWarning,
+            )
+            return False
     return True
