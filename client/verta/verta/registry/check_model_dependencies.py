@@ -34,19 +34,14 @@ def check_model_dependencies(
     environment: :class:`~verta.environment.Python`
         Environment against which to validate pip dependencies.
     raise_for_missing: bool, default False
-        If True, raises an exception if any dependencies detected in the model class
-        are missing from the environment, or if the environment has extraneous
-        packages.  Defaults to printing a warning.
+        If `True`, raises an exception if any dependencies detected in the model class
+        are missing from the environment.  Defaults to printing a warning.
 
     Returns
     -------
         bool
-            True
-                if all 3rd-party dependencies detected in the model class have
-                corresponding packages in the environment.
-            False
-                if any 3rd-party dependencies detected in the model class are missing
-                from the environment.
+            `True` if all 3rd-party dependencies detected in the model class have
+            corresponding packages in the environment. `False` if any are missing.
 
     Raises
     ------
