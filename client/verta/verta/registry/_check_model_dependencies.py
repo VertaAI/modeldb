@@ -19,7 +19,7 @@ def _check_model_dependencies(
     """Scan for missing dependencies in a model's environment.
 
     This function attempts to scan the provided model class for 3rd-party (not
-    python standard library) dependencies and identify any packages in the
+    python standard library) dependencies and identify any missing packages in the
     provided environment.
 
     .. note::
