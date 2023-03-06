@@ -77,8 +77,3 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
 def package_names(module_names: Set[str]) -> Set[str]:
     """Return a set of all packages detected in the provided set of base module names."""
     return module_names
-
-
-def strip_version(pkg_str: str) -> str:
-    """Return the base package name from a package string."""
-    return pkg_str.split('==')[0]
