@@ -11,7 +11,7 @@ from verta._internal_utils import model_dependencies as md
 from verta._internal_utils._pip_requirements_utils import parse_req_spec
 
 
-def check_model_dependencies(
+def _check_model_dependencies(
         model_cls: Type[VertaModelBase],
         environment: Python,
         raise_for_missing: bool = False,
