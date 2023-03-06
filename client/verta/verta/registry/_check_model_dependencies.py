@@ -23,7 +23,7 @@ def _check_model_dependencies(
     provided environment.
 
     .. note::
-        This function is not guaranteed to detect all dependencies in all cases.
+        This function is not guaranteed to detect all dependencies in all cases, and should be considered a fast sanity check rather than a test.
 
     .. versionadded:: 0.22.2
 
