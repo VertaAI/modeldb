@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """ Unit tests for verta.registry.check_model_dependencies """
 
-import pytest
 import warnings
 
-from verta.registry import _check_model_dependencies
+import pytest
+
 from verta.environment import Python
+from verta.registry import _check_model_dependencies
 
 
 # TODO VRD-682 convert module names to pkg names and update this
