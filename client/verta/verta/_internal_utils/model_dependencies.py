@@ -4,7 +4,7 @@ import inspect
 from types import ModuleType
 from typing import Callable, get_type_hints, Set, Type
 
-from verta.registry import VertaModelBase
+from ..registry._verta_model_base import VertaModelBase
 
 
 def class_functions(model_class: Type[VertaModelBase]) -> Set[Callable]:

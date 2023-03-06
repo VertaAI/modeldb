@@ -2,13 +2,13 @@
 """Utility function for checking model dependencies against an environment
 to identify missing packages."""
 
-from typing import Set, Type
 import warnings
+from typing import Set, Type
 
-from verta.registry import VertaModelBase
-from verta.environment import Python
 from verta._internal_utils import model_dependencies as md
 from verta._internal_utils._pip_requirements_utils import parse_req_spec
+from verta.environment import Python
+from ._verta_model_base import VertaModelBase
 
 
 def _check_model_dependencies(
@@ -70,10 +70,9 @@ def _check_model_dependencies(
                     f"from the environment: {missing_packages}"
         if raise_for_missing:
             raise RuntimeError(error_msg)
-        else:
-            warnings.warn(
-                error_msg,
-                category=RuntimeWarning,
-            )
-            return False
+        warnings.warn(
+            error_msg,
+            category=RuntimeWarning,
+        )
+        return False
     return True

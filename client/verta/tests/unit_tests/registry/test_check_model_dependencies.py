@@ -2,10 +2,9 @@
 """ Unit tests for verta.registry.check_model_dependencies """
 
 import pytest
-from typing import Set
 import warnings
 
-from verta.registry.check_model_dependencies import _check_model_dependencies
+from verta.registry import _check_model_dependencies
 from verta.environment import Python
 
 
