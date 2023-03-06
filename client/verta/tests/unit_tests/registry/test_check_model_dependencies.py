@@ -66,7 +66,7 @@ def test_check_model_dependencies_missing_raise(dependency_testing_model, comple
 
 def test_check_model_dependencies_missing_warning(dependency_testing_model, complete_env) -> None:
     """ Verify that check_model_dependencies defaults to raising a warning for
-    missing packages when `raise_for_missing`` is False.
+    missing packages when `raise_for_missing` is False.
     """
     incomplete_env = Python(
         [ r for r in complete_env.requirements if r != 'pandas==0.0.1' ]
