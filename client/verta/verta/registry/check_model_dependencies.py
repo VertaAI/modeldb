@@ -8,6 +8,7 @@ import warnings
 from verta.registry import VertaModelBase
 from verta.environment import Python
 from verta._internal_utils import model_dependencies as md
+from verta._internal_utils._pip_requirements_utils import parse_req_spec
 
 
 def check_model_dependencies(
@@ -15,12 +16,11 @@ def check_model_dependencies(
         environment: Python,
         raise_for_missing: bool = False,
         ) -> bool:
-    """Scan for missing or unused dependencies in a model's environment
-    to help avoid deployment failures and reduce time to deploy
+    """Scan for missing dependencies in a model's environment.
 
     This function attempts to scan the provided model class for 3rd-party (not
-    python standard library) dependencies and identify any missing or
-    extraneous packages in the provided environment.
+    python standard library) dependencies and identify any packages in the
+    provided environment.
 
     .. note::
         This function is not guaranteed to detect all dependencies in all cases.
@@ -41,13 +41,9 @@ def check_model_dependencies(
 
     Returns
     -------
-        True
-            if all 3rd-party dependencies detected in the model class have
-            corresponding packages in the environment, and no extraneous packages
-            exist in the environment.
-        False
-            if any 3rd-party dependencies detected in the model class are missing
-            or extraneous packages are detected in the environment.
+        bool
+            True if all 3rd-party dependencies detected in the model class have
+            corresponding packages in the environment. False if any are missing.
 
     Raises
     ------
@@ -68,11 +64,10 @@ def check_model_dependencies(
     """
     detected_modules: Set[str] = md.class_module_names(model)
     detected_packages: Set[str] = md.package_names(detected_modules)
-    env_packages: Set[str] = { md.strip_version(r) for r in environment.requirements }
+    env_packages: Set[str] = { parse_req_spec(e)[0] for e in environment.requirements }
 
-    if detected_packages !=  env_packages:
+    if detected_packages != env_packages:
         missing_packages = detected_packages - env_packages
-        extra_packages = env_packages - detected_packages
         if missing_packages:
             if raise_for_missing:
                 raise RuntimeError(
@@ -83,20 +78,6 @@ def check_model_dependencies(
                 warnings.warn(
                     f"the following packages are required by the model but missing "
                     f"from the environment: {missing_packages}",
-                    category=RuntimeWarning,
-                )
-                return False
-
-        if extra_packages:
-            if raise_for_missing:
-                raise RuntimeError(
-                    f"the following packages are not required by the model but are present "
-                    f"in the environment: {extra_packages}"
-                )
-            else:
-                warnings.warn(
-                    f"the following packages are not required by the model but are present "
-                    f"in the environment: {extra_packages}",
                     category=RuntimeWarning,
                 )
                 return False
