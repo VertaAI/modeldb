@@ -283,9 +283,9 @@ public class AppConfigBeans {
       FutureExecutor grpcExecutor) {
     serverBuilder.addService(new FutureProjectServiceImpl(daos, grpcExecutor));
     LOGGER.trace("Project serviceImpl initialized");
-    serverBuilder.addService(new FutureExperimentServiceImpl(daos, services, grpcExecutor));
+    serverBuilder.addService(new FutureExperimentServiceImpl(daos, grpcExecutor));
     LOGGER.trace("Experiment serviceImpl initialized");
-    serverBuilder.addService(new FutureExperimentRunServiceImpl(daos, services, grpcExecutor));
+    serverBuilder.addService(new FutureExperimentRunServiceImpl(daos, grpcExecutor));
     LOGGER.trace("ExperimentRun serviceImpl initialized");
     serverBuilder.addService(new CommentServiceImpl(services, daos));
     LOGGER.trace("Comment serviceImpl initialized");

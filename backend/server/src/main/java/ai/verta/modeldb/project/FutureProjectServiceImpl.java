@@ -1,112 +1,20 @@
 package ai.verta.modeldb.project;
 
-import ai.verta.common.Artifact;
-import ai.verta.common.KeyValue;
-import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.AddProjectAttributes;
-import ai.verta.modeldb.AddProjectTag;
-import ai.verta.modeldb.AddProjectTags;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CreateProject;
-import ai.verta.modeldb.DAOSet;
-import ai.verta.modeldb.DeepCopyProject;
-import ai.verta.modeldb.DeleteProject;
-import ai.verta.modeldb.DeleteProjectArtifact;
-import ai.verta.modeldb.DeleteProjectAttributes;
-import ai.verta.modeldb.DeleteProjectTag;
-import ai.verta.modeldb.DeleteProjectTags;
-import ai.verta.modeldb.DeleteProjects;
-import ai.verta.modeldb.Empty;
-import ai.verta.modeldb.FindProjects;
-import ai.verta.modeldb.GetArtifacts;
-import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetProjectById;
-import ai.verta.modeldb.GetProjectByName;
-import ai.verta.modeldb.GetProjectCodeVersion;
-import ai.verta.modeldb.GetProjectDatasetCount;
-import ai.verta.modeldb.GetProjectReadme;
-import ai.verta.modeldb.GetProjectShortName;
-import ai.verta.modeldb.GetProjects;
-import ai.verta.modeldb.GetSummary;
-import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.LogAttributes;
-import ai.verta.modeldb.LogProjectArtifacts;
-import ai.verta.modeldb.LogProjectCodeVersion;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
-import ai.verta.modeldb.SetProjectReadme;
-import ai.verta.modeldb.SetProjectShortName;
-import ai.verta.modeldb.UpdateProjectAttributes;
-import ai.verta.modeldb.UpdateProjectDescription;
-import ai.verta.modeldb.VerifyConnectionResponse;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
-import ai.verta.modeldb.common.futures.InternalFuture;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import io.grpc.stub.StreamObserver;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class FutureProjectServiceImpl extends ProjectServiceImplBase {
   private final FutureExecutor executor;
   private final FutureProjectDAO futureProjectDAO;
-  private final FutureEventDAO futureEventDAO;
-
-  private static final String DELETE_PROJECT_EVENT_TYPE =
-      "delete.resource.project.delete_project_succeeded";
-  private static final String UPDATE_PROJECT_EVENT_TYPE =
-      "update.resource.project.update_project_succeeded";
 
   public FutureProjectServiceImpl(DAOSet daoSet, FutureExecutor executor) {
     this.executor = executor;
     this.futureProjectDAO = daoSet.getFutureProjectDAO();
-    this.futureEventDAO = daoSet.getFutureEventDAO();
-  }
-
-  private InternalFuture<Void> addEvent(
-      String entityId,
-      long workspaceId,
-      String eventType,
-      Optional<String> updatedField,
-      Map<String, Object> extraFieldsMap,
-      String eventMessage) {
-
-    if (!App.getInstance().mdbConfig.isEvent_system_enabled()) {
-      return InternalFuture.completedInternalFuture(null);
-    }
-
-    // Add succeeded event in local DB
-    JsonObject eventMetadata = new JsonObject();
-    eventMetadata.addProperty("entity_id", entityId);
-    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
-      eventMetadata.addProperty("updated_field", updatedField.get());
-    }
-    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
-      JsonObject updatedFieldValue = new JsonObject();
-      extraFieldsMap.forEach(
-          (key, value) -> {
-            if (value instanceof JsonElement) {
-              updatedFieldValue.add(key, (JsonElement) value);
-            } else {
-              updatedFieldValue.addProperty(key, String.valueOf(value));
-            }
-          });
-      eventMetadata.add("updated_field_value", updatedFieldValue);
-    }
-    eventMetadata.addProperty("message", eventMessage);
-    return futureEventDAO.addLocalEventWithAsync(
-        ModelDBServiceResourceTypes.PROJECT.name(), eventType, workspaceId, eventMetadata);
   }
 
   @Override
@@ -116,17 +24,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       final var futureResponse =
           futureProjectDAO
               .createProject(request)
-              .thenCompose(
-                  createdProject ->
-                      addEvent(
-                              createdProject.getId(),
-                              createdProject.getWorkspaceServiceId(),
-                              "add.resource.project.add_project_succeeded",
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "project logged successfully")
-                          .thenApply(eventLoggedStatus -> createdProject, executor),
-                  executor)
               .thenApply(
                   createdProject ->
                       CreateProject.Response.newBuilder().setProject(createdProject).build(),
@@ -145,17 +42,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       final var futureResponse =
           futureProjectDAO
               .updateProjectDescription(request)
-              .thenCompose(
-                  updatedProject ->
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("description"),
-                              Collections.emptyMap(),
-                              "project description updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       UpdateProjectDescription.Response.newBuilder()
@@ -181,24 +67,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                       .addAllAttributes(request.getAttributesList())
                       .build())
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("attributes"),
-                              Collections.singletonMap(
-                                  "attribute_keys",
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getAttributesList().stream()
-                                              .map(KeyValue::getKey)
-                                              .collect(Collectors.toSet()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "project attributes added successfully")
-                          .thenApply(eventLoggedStatus -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       AddProjectAttributes.Response.newBuilder().setProject(updatedProject).build(),
@@ -218,24 +86,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .updateProjectAttributes(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("attributes"),
-                              Collections.singletonMap(
-                                  "attribute_keys",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Stream.of(request.getAttribute())
-                                              .map(KeyValue::getKey)
-                                              .collect(Collectors.toSet()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "project attributes updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       UpdateProjectAttributes.Response.newBuilder()
@@ -274,30 +124,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .deleteAttributes(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject -> {
-                    // Add succeeded event in local DB
-                    Map<String, Object> extraFieldValue = new HashMap<>();
-                    if (request.getDeleteAll()) {
-                      extraFieldValue.put("attributes_deleted_all", true);
-                    } else {
-                      extraFieldValue.put(
-                          "attribute_keys",
-                          new Gson()
-                              .toJsonTree(
-                                  request.getAttributeKeysList(),
-                                  new TypeToken<ArrayList<String>>() {}.getType()));
-                    }
-                    return addEvent(
-                            updatedProject.getId(),
-                            updatedProject.getWorkspaceServiceId(),
-                            UPDATE_PROJECT_EVENT_TYPE,
-                            Optional.of("attributes"),
-                            extraFieldValue,
-                            "project attributes deleted successfully")
-                        .thenApply(eventLoggedStatus -> updatedProject, executor);
-                  },
-                  executor)
               .thenApply(
                   updatedProject ->
                       DeleteProjectAttributes.Response.newBuilder()
@@ -318,22 +144,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .addTags(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getTagsList(),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "project tags updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       AddProjectTags.Response.newBuilder().setProject(updatedProject).build(),
@@ -365,30 +175,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .deleteTags(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject -> {
-                    // Add succeeded event in local DB
-                    Map<String, Object> extraFieldValue = new HashMap<>();
-                    if (request.getDeleteAll()) {
-                      extraFieldValue.put("tags_deleted_all", true);
-                    } else {
-                      extraFieldValue.put(
-                          "tags",
-                          new Gson()
-                              .toJsonTree(
-                                  request.getTagsList(),
-                                  new TypeToken<ArrayList<String>>() {}.getType()));
-                    }
-                    return addEvent(
-                            updatedProject.getId(),
-                            updatedProject.getWorkspaceServiceId(),
-                            UPDATE_PROJECT_EVENT_TYPE,
-                            Optional.of("tags"),
-                            extraFieldValue,
-                            "project tags deleted successfully")
-                        .thenApply(eventLoggedStatus -> updatedProject, executor);
-                  },
-                  executor)
               .thenApply(
                   updatedProject ->
                       DeleteProjectTags.Response.newBuilder().setProject(updatedProject).build(),
@@ -411,22 +197,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                       .addTags(request.getTag())
                       .build())
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getTag()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "project tag added successfully")
-                          .thenApply(eventLoggedStatus -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       AddProjectTag.Response.newBuilder().setProject(updatedProject).build(),
@@ -450,22 +220,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                       .setDeleteAll(false)
                       .build())
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getTag()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "project tag deleted successfully")
-                          .thenApply(eventLoggedStatus -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       DeleteProjectTag.Response.newBuilder().setProject(updatedProject).build(),
@@ -483,23 +237,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       final var response =
           futureProjectDAO
               .deleteProjects(Collections.singletonList(request.getId()))
-              .thenCompose(
-                  allowedProjectResources -> {
-                    List<InternalFuture<Void>> eventFuture = new ArrayList<>();
-                    // Add succeeded event in local DB
-                    for (var projectResource : allowedProjectResources) {
-                      eventFuture.add(
-                          addEvent(
-                              projectResource.getResourceId(),
-                              projectResource.getWorkspaceId(),
-                              DELETE_PROJECT_EVENT_TYPE,
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "project deleted successfully"));
-                    }
-                    return InternalFuture.sequence(eventFuture, executor);
-                  },
-                  executor)
               .thenApply(
                   project -> DeleteProject.Response.newBuilder().setStatus(true).build(), executor);
       FutureGrpc.ServerResponse(responseObserver, response, executor);
@@ -597,19 +334,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .setProjectReadme(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("readme_text"),
-                              Collections.singletonMap(
-                                  "readme_text", updatedProject.getReadmeText()),
-                              "project readme_text updated successfully")
-                          .thenApply(unused -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       SetProjectReadme.Response.newBuilder().setProject(updatedProject).build(),
@@ -639,18 +363,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .setProjectShortName(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("short_name"),
-                              Collections.singletonMap("short_name", updatedProject.getShortName()),
-                              "project short_name updated successfully")
-                          .thenApply(unused -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       SetProjectShortName.Response.newBuilder().setProject(updatedProject).build(),
@@ -681,18 +393,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .logProjectCodeVersion(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("code_version"),
-                              Collections.emptyMap(),
-                              "code_version logged successfully")
-                          .thenApply(unused -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       LogProjectCodeVersion.Response.newBuilder()
@@ -747,25 +447,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .logArtifacts(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("artifacts"),
-                              Collections.singletonMap(
-                                  "artifact_keys",
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getArtifactsList().stream()
-                                              .map(Artifact::getKey)
-                                              .collect(Collectors.toSet()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "project artifacts added successfully")
-                          .thenApply(unused -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       LogProjectArtifacts.Response.newBuilder().setProject(updatedProject).build(),
@@ -802,23 +483,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
           futureProjectDAO
               .deleteArtifacts(request)
               .thenCompose(unused -> futureProjectDAO.getProjectById(request.getId()), executor)
-              .thenCompose(
-                  updatedProject ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedProject.getId(),
-                              updatedProject.getWorkspaceServiceId(),
-                              UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("artifacts"),
-                              Collections.singletonMap(
-                                  "artifact_keys",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getKey()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "project artifact deleted successfully")
-                          .thenApply(unused -> updatedProject, executor),
-                  executor)
               .thenApply(
                   updatedProject ->
                       DeleteProjectArtifact.Response.newBuilder()
@@ -838,23 +502,6 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
       final var response =
           futureProjectDAO
               .deleteProjects(request.getIdsList())
-              .thenCompose(
-                  allowedProjectResources -> {
-                    List<InternalFuture<Void>> eventFuture = new ArrayList<>();
-                    // Add succeeded event in local DB
-                    for (var projectResource : allowedProjectResources) {
-                      eventFuture.add(
-                          addEvent(
-                              projectResource.getResourceId(),
-                              projectResource.getWorkspaceId(),
-                              DELETE_PROJECT_EVENT_TYPE,
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "project deleted successfully"));
-                    }
-                    return InternalFuture.sequence(eventFuture, executor);
-                  },
-                  executor)
               .thenApply(
                   project -> DeleteProjects.Response.newBuilder().setStatus(true).build(),
                   executor);

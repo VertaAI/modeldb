@@ -89,17 +89,6 @@ public class ReconcilerInitializer {
     updateProjectTimestampReconcile =
         new UpdateProjectTimestampReconcile(reconcilerConfig, futureJdbi, executor, openTelemetry);
 
-    if (config.isEvent_system_enabled()) {
-      sendEventsWithCleanUp =
-          new SendEventsWithCleanUp(
-              reconcilerConfig,
-              services.getUac(),
-              daos.getFutureEventDAO(),
-              futureJdbi,
-              executor,
-              openTelemetry);
-    }
-
     LOGGER.info("Exit from ReconcilerUtils: initialize()");
     return this;
   }
