@@ -13,7 +13,7 @@ from verta.environment import Python
 @pytest.fixture(scope='session')
 def complete_env() -> Python:
     """ Environment with all expected packages from dependency_testing_model
-    fixture.  For completeness, some are versioned and some are not.
+    fixture.
     """
     return Python([
         'calendar==0.0.1',
