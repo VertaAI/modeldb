@@ -37,8 +37,9 @@ def complete_env() -> Python:
 
 
 def test_check_model_dependencies_complete(dependency_testing_model, complete_env) -> None:
-    """ Verify that check_model_dependencies returns all the expected packages from
-    the test model class (dependency_testing_model fixture).
+    """ Verify that check_model_dependencies extracts all the expected packages from
+    the test model class (dependency_testing_model fixture) and correctly reconciles
+    them against the provided environment (complete_env fixture).
     """
     assert _check_model_dependencies(
         model_cls=dependency_testing_model,
