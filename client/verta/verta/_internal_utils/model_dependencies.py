@@ -4,7 +4,7 @@ import inspect
 from types import ModuleType
 from typing import Callable, get_type_hints, Set, Type
 
-from verta.registry import VertaModelBase
+from ..registry._verta_model_base import VertaModelBase
 
 
 def class_functions(model_class: Type[VertaModelBase]) -> Set[Callable]:
@@ -71,3 +71,9 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
         mods_in_signature = modules_in_function_signature(_func)
         modules_found |= mods_in_body | mods_in_signature
     return modules_found
+
+
+# TODO VRD-682 convert module names to pkg names here
+def package_names(module_names: Set[str]) -> Set[str]:
+    """Return a set of all packages detected in the provided set of base module names."""
+    return module_names
