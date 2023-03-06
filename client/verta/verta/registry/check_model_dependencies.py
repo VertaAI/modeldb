@@ -39,9 +39,9 @@ def _check_model_dependencies(
 
     Returns
     -------
-        bool
-            `True` if all 3rd-party dependencies detected in the model class have
-            corresponding packages in the environment. `False` if any are missing.
+    bool
+        `True` if all 3rd-party dependencies detected in the model class have
+        corresponding packages in the environment. `False` if any are missing.
 
     Raises
     ------
