@@ -12,7 +12,7 @@ from verta._internal_utils._pip_requirements_utils import parse_req_spec
 
 
 def check_model_dependencies(
-        model: Type[VertaModelBase],
+        model_cls: Type[VertaModelBase],
         environment: Python,
         raise_for_missing: bool = False,
         ) -> bool:
@@ -29,11 +29,10 @@ def check_model_dependencies(
 
     Parameters
     ----------
-    model: subclass of :class:`~verta.registry.VertaModelBase`
-        Model class object (not an instance) to be scanned.
-    environment: subclass of :class:`~verta.environment.Python`
-        Instance of a :class:`~verta.environment.Python` environment against
-        which to validate pip dependencies.
+    model_cls: subclass of :class:`~verta.registry.VertaModelBase`
+        Model class (not an instance) to be scanned.
+    environment: :class:`~verta.environment.Python`
+        Environment against which to validate pip dependencies.
     raise_for_missing: bool, default False
         If True, raises an exception if any dependencies detected in the model class
         are missing from the environment, or if the environment has extraneous
@@ -42,8 +41,12 @@ def check_model_dependencies(
     Returns
     -------
         bool
-            True if all 3rd-party dependencies detected in the model class have
-            corresponding packages in the environment. False if any are missing.
+            True
+                if all 3rd-party dependencies detected in the model class have
+                corresponding packages in the environment.
+            False
+                if any 3rd-party dependencies detected in the model class are missing
+                from the environment.
 
     Raises
     ------
@@ -62,7 +65,7 @@ def check_model_dependencies(
         check_model_dependencies(model=MyModelClass, environment=env)
 
     """
-    detected_modules: Set[str] = md.class_module_names(model)
+    detected_modules: Set[str] = md.class_module_names(model_cls)
     detected_packages: Set[str] = md.package_names(detected_modules)
     env_packages: Set[str] = { parse_req_spec(e)[0] for e in environment.requirements }
 

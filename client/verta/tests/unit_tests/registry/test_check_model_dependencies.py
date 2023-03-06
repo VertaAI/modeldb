@@ -41,7 +41,7 @@ def test_check_model_dependencies_complete(dependency_testing_model, complete_en
     the test model class (dependency_testing_model fixture).
     """
     assert check_model_dependencies(
-        model=dependency_testing_model,
+        model_cls=dependency_testing_model,
         environment=complete_env,
         raise_for_missing=False,
     )
@@ -56,7 +56,7 @@ def test_check_model_dependencies_missing_raise(dependency_testing_model, comple
     )  # drop a single dependency to be caught
     with pytest.raises(RuntimeError) as err:
         check_model_dependencies(
-            model=dependency_testing_model,
+            model_cls=dependency_testing_model,
             environment=incomplete_env,
             raise_for_missing=True,
         )
@@ -73,7 +73,7 @@ def test_check_model_dependencies_missing_warning(dependency_testing_model, comp
     )  # drop a single dependency to be caught
     with warnings.catch_warnings(record=True) as caught_warnings:
         assert not check_model_dependencies(
-            model=dependency_testing_model,
+            model_cls=dependency_testing_model,
             environment=incomplete_env,
             raise_for_missing=False,
         )
