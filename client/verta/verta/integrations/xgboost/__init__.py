@@ -12,7 +12,7 @@ class VertaCallback(xgb.callback.TrainingCallback):
     """
     XGBoost callback that automates logging to Verta during booster training.
 
-    This callback logs ``eval_metrics``\ s passed into ``xgb.train()``.
+    This callback logs ``eval_metric``\ s passed into ``xgb.train()``.
 
     See our `GitHub repository
     <https://github.com/VertaAI/examples/blob/main/experiment-management/xgboost/xgboost-integration.ipynb>`__
