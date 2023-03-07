@@ -56,7 +56,7 @@ public class S3Client {
       initializeWithWebIdentity(awsRegion);
     } else {
       LOGGER.debug("environment credentials based s3 client");
-      // reads credential from OS Environment
+      // reads credentials from OS Environment
       initializeWithEnvironment(awsRegion);
     }
   }
