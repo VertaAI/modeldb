@@ -112,7 +112,7 @@ class DeployedModel(object):
 
     def batch_prediction_url(self):
         # Adding the v1/ to make sure we don't accidentally replace the wrong part of the URL
-        return self.prediction_url().replace("v1/predict", "v1/batch-predict")
+        return self.prediction_url.replace("v1/predict", "v1/batch-predict")
 
     # TODO: Implement dynamic compression via separate utility and call it from here
     def _predict(
@@ -173,7 +173,7 @@ class DeployedModel(object):
         if prediction_id:
             request_headers.update({'verta-request-id': prediction_id})
 
-        serialized_batch = batch.to_json(orient="records")
+        serialized_batch = batch.to_dict(orient="records")
 
         response = self._session.post(
             self.batch_prediction_url(),
@@ -368,7 +368,7 @@ class DeployedModel(object):
 
     def batch_predict(
             self,
-            x: pd.DataFrame,
+            df: pd.DataFrame,
             batch_size: int = 100,
             max_retries: int = http_session.DEFAULT_MAX_RETRIES,
             retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
@@ -380,7 +380,7 @@ class DeployedModel(object):
 
         Parameters
         ----------
-        x : pd.DataFrame
+        df : pd.DataFrame
             A batch of inputs for the model.
         compress : bool, default False
             Whether to compress the request body.
@@ -423,16 +423,11 @@ class DeployedModel(object):
         # TODO: add compression
         # Split into batches
         out_df_list = []
-        batches = np.array_split(x, batch_size)
-        for batch in batches:
-            # response = self._single_batch_predict(batch, batch_size, prediction_id)
-            # out_batches.extend(_utils.body_to_json(response))
-
-            # TODO: obviously undo before merging
-            temp = pd.DataFrame.from_dict({'name': ['Alice', 'Bob', 'Charlie'],
-                                           'age': [25, 30, 35],
-                                           'city': ['New York', 'London', 'Paris']})
-            out_df_list.append(temp)
+        for i in range(0, len(df), batch_size):
+            batch = df[i:i+batch_size]
+            response = self._single_batch_predict(batch, prediction_id)
+            out_df = pd.DataFrame.from_dict(response.json())
+            out_df_list.append(out_df)
         out_df = pd.concat(out_df_list, ignore_index=True)
         return out_df
 
