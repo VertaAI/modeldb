@@ -359,10 +359,9 @@ class TestTensorFlow:
 
 
 class TestXGBoost:
-    @pytest.mark.skip(reason="need to update the callback for xgboost>=1.6 (VUMM-629)")
     def test_callback(self, experiment_run):
         verta_integrations_xgboost = pytest.importorskip("verta.integrations.xgboost")
-        verta_callback = verta_integrations_xgboost.verta_callback
+        verta_callback = verta_integrations_xgboost.VertaCallback
 
         xgb = pytest.importorskip("xgboost")
         np = pytest.importorskip("numpy")

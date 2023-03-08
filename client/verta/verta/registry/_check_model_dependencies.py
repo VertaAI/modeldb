@@ -58,7 +58,7 @@ def _check_model_dependencies(
         from verta.environment import Python
 
         env = Python(["numpy", "pandas"])
-        check_model_dependencies(model=MyModelClass, environment=env)
+        check_model_dependencies(model_cls=MyModelClass, environment=env)
 
     """
     detected_modules: Set[str] = md.class_module_names(model_cls)
