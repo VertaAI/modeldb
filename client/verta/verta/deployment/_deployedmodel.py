@@ -393,7 +393,7 @@ class DeployedModel(object):
         # Split into batches
         out_df_list = []
         for i in range(0, len(df), batch_size):
-            batch = df[i:i+batch_size]
+            batch = df.iloc[i:i+batch_size]
             serialized_batch = batch.to_dict(orient="records")
             response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
             out_df = pd.DataFrame.from_dict(response.json())
