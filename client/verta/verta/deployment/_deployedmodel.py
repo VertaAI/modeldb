@@ -364,6 +364,7 @@ class DeployedModel(object):
             120 seconds.
         prediction_id: str, default None
             A custom string to use as the ID for the prediction request.  Defaults to a randomly generated UUID.
+
         Returns
         -------
         prediction : pd.DataFrame
