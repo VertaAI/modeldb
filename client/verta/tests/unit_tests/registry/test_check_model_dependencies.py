@@ -9,31 +9,23 @@ from verta.environment import Python
 from verta.registry import _check_model_dependencies
 
 
-# TODO VRD-682 convert module names to pkg names and update this
 @pytest.fixture(scope='session')
 def complete_env() -> Python:
-    """ Environment with all expected packages from dependency_testing_model
-    fixture.
+    """ Environment with all 3rd-party packages expected to be extracted
+    from the dependency_testing_model fixture.
     """
     return Python([
-        'calendar==0.0.1',
         'click==0.0.1',
-        'cloudpickle==0.0.1',
-        'collections==0.0.1',
-        'datetime==0.0.1',
         'google==0.0.1',
-        'json==0.0.1',
         'numpy==0.0.1',
         'pandas==0.0.1',
-        'PIL==0.0.1',
+        'Pillow==0.0.1',
         'requests==0.0.1',
-        'requests==0.0.1',
-        'sklearn==0.0.1',
+        'scikit-learn==0.0.1',
         'torch==0.0.1',
         'urllib3==0.0.1',
-        'verta==0.0.1',
-        'yaml==0.0.1',
-    ])
+        'PyYAML==0.0.1',
+    ])  # `verta` and `cloudpickle` included by default
 
 
 def test_check_model_dependencies_complete(dependency_testing_model, complete_env) -> None:
