@@ -126,11 +126,11 @@ def test_class_module_names(dependency_testing_model) -> None:
         'verta',
         'yaml',
     }
-    extracted_modules: Set[str] =  md.class_module_names(dependency_testing_model)
+    extracted_modules: Set[str] = md.class_module_names(dependency_testing_model)
     assert set(extracted_modules) == set(expected_modules)
 
 
-def test_package_names(dependency_testing_model) ->None:
+def test_package_names(dependency_testing_model) -> None:
     """Verify that distribution package names are returned correctly for the
     given module names when they differ from the package name.  Test fixture
     ensures packages required for the test are installed or this test will be

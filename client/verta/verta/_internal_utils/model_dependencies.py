@@ -33,9 +33,9 @@ def modules_in_function_body(func: Callable) -> Set[str]:
         if isinstance(value, ModuleType)
     ]
     _non_locals = [
-       value.__name__.split('.')[0]  # strip off submodules and classes
-       for key, value in inspect.getclosurevars(_func).nonlocals.items()
-       if isinstance(value, ModuleType)
+        value.__name__.split('.')[0]  # strip off submodules and classes
+        for key, value in inspect.getclosurevars(_func).nonlocals.items()
+        if isinstance(value, ModuleType)
     ]
     return set(_globals + _non_locals)
 
@@ -45,10 +45,10 @@ def modules_in_function_signature(func: Callable) -> Set[str]:
     function's arguments and return type hint."""
     _func = unwrap(func)
     hints = get_type_hints(_func)
-    arg_hints = { k: v for k, v in hints.items() if k != 'return' }
+    arg_hints = {k: v for k, v in hints.items() if k != 'return'}
     return_hint = hints.get('return')
 
-    modules = [ inspect.getmodule(value) for value in arg_hints.values() ]
+    modules = [inspect.getmodule(value) for value in arg_hints.values()]
 
     if return_hint:
         mod = inspect.getmodule(return_hint)
@@ -60,7 +60,7 @@ def modules_in_function_signature(func: Callable) -> Set[str]:
                     modules.append(inspect.getmodule(a))
         else:
             modules.append(inspect.getmodule(return_hint))
-    return  set([ m.__name__.split('.')[0] for m in modules ])
+    return set([m.__name__.split('.')[0] for m in modules])
 
 
 def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:

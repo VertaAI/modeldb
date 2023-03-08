@@ -15,7 +15,7 @@ def _check_model_dependencies(
         model_cls: Type[VertaModelBase],
         environment: Python,
         raise_for_missing: bool = False,
-        ) -> bool:
+) -> bool:
     """Scan for missing dependencies in a model's environment.
 
     This function attempts to scan the provided model class for 3rd-party (not
@@ -63,7 +63,7 @@ def _check_model_dependencies(
     """
     detected_modules: Set[str] = md.class_module_names(model_cls)
     detected_packages: Set[str] = md.package_names(detected_modules)
-    env_packages: Set[str] = { parse_req_spec(e)[0] for e in environment.requirements }
+    env_packages: Set[str] = {parse_req_spec(e)[0] for e in environment.requirements}
 
     missing_packages = detected_packages - env_packages
     if missing_packages:

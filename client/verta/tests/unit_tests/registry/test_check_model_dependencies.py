@@ -45,7 +45,7 @@ def test_check_model_dependencies_missing_raise(dependency_testing_model, comple
     packages when `raise_for_missing` is True.
     """
     incomplete_env = Python(
-        [ r for r in complete_env.requirements if r != 'click==0.0.1' ]
+        [r for r in complete_env.requirements if r != 'click==0.0.1']
     )  # drop a single dependency to be caught
     with pytest.raises(RuntimeError) as err:
         _check_model_dependencies(
@@ -62,7 +62,7 @@ def test_check_model_dependencies_missing_warning(dependency_testing_model, comp
     missing packages when `raise_for_missing` is False.
     """
     incomplete_env = Python(
-        [ r for r in complete_env.requirements if r != 'pandas==0.0.1' ]
+        [r for r in complete_env.requirements if r != 'pandas==0.0.1']
     )  # drop a single dependency to be caught
     with warnings.catch_warnings(record=True) as caught_warnings:
         assert not _check_model_dependencies(
