@@ -398,7 +398,7 @@ class DeployedModel(object):
             response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
             out_df = pd.DataFrame.from_dict(response.json())
             out_df_list.append(out_df)
-        out_df = pd.concat(out_df_list, ignore_index=True)
+        out_df = pd.concat(out_df_list)
         return out_df
 
     # TODO: Remove this method after release of 0.22.0
