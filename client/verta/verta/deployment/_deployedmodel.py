@@ -117,6 +117,7 @@ class DeployedModel(object):
     def _predict(
             self,
             x: Any,
+            prediction_url: bytes,
             compress: bool = False,
             prediction_id: Optional[str] = None,
     ):
@@ -135,63 +136,15 @@ class DeployedModel(object):
             gzstream.seek(0)
 
             response = self._session.post(
-                self.prediction_url,
+                prediction_url,
                 headers=request_headers,
                 data=gzstream.read(),
             )
         else:
             response = self._session.post(
-                self.prediction_url,
+                prediction_url,
                 headers=request_headers,
                 json=x,
-            )
-        if response.status_code in (
-                400,
-                502,
-        ):  # possibly error from the model back end
-            try:
-                data = _utils.body_to_json(response)
-            except ValueError:  # not JSON response; 502 not from model back end
-                pass
-            else:  # from model back end; contains message (maybe)
-                # try to directly print message, otherwise line breaks appear as '\n'
-                msg = data.get("message") or json.dumps(data)
-                raise RuntimeError(f"deployed model encountered an error: {msg}")
-
-        if not response.ok:
-            _utils.raise_for_http_error(response=response)
-        return response
-
-    def _single_batch_predict(
-            self,
-            batch: pd.DataFrame,
-            compress: bool = False,
-            prediction_id: Optional[str] = None,
-    ):
-        """Make prediction, and error propagation."""
-        request_headers = dict()
-        if prediction_id:
-            request_headers.update({'verta-request-id': prediction_id})
-
-        serialized_batch = batch.to_dict(orient="records")
-        if compress:
-            request_headers.update({'Content-Encoding': 'gzip'})
-            # create gzip
-            gzstream = six.BytesIO()
-            with gzip.GzipFile(fileobj=gzstream, mode="wb") as gzf:
-                gzf.write(six.ensure_binary(json.dumps(serialized_batch)))
-            gzstream.seek(0)
-
-            response = self._session.post(
-                self.batch_prediction_url(),
-                headers=request_headers,
-                data=gzstream.read(),
-            )
-        else:
-            response = self._session.post(
-                self.batch_prediction_url(),
-                headers=request_headers,
-                json=serialized_batch,
             )
         if response.status_code in (
                 400,
@@ -375,7 +328,7 @@ class DeployedModel(object):
             backoff_factor=backoff_factor,
         )
 
-        response = self._predict(x, compress, prediction_id)
+        response = self._predict(x, self.prediction_url, compress, prediction_id)
         id = response.headers.get('verta-request-id', '')
         return (id, _utils.body_to_json(response))
 
@@ -437,7 +390,8 @@ class DeployedModel(object):
         out_df_list = []
         for i in range(0, len(df), batch_size):
             batch = df[i:i+batch_size]
-            response = self._single_batch_predict(batch, compress, prediction_id)
+            serialized_batch = batch.to_dict(orient="records")
+            response = self._predict(serialized_batch, self.batch_prediction_url(), compress, prediction_id)
             out_df = pd.DataFrame.from_dict(response.json())
             out_df_list.append(out_df)
         out_df = pd.concat(out_df_list, ignore_index=True)
