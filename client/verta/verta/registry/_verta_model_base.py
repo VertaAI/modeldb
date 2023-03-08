@@ -142,23 +142,21 @@ class VertaModelBase(object):
                     ]
 
                 def model_test(self):
+                    # call predict(), capturing model data logs
                     input = self.example()
-                    expected_output = [0, 1, 0]
-                    expected_logs = {"num_rows": len(input)}
-
                     with verta.runtime.context() as ctx:
                         output = self.predict(input)
                     logs = ctx.logs()
 
-                    if logs != expected_logs:
-                        raise ValueError(
-                            f"expected logs {expected_logs}, got {logs}",
-                        )
-
+                    # check predict() output
+                    expected_output = [0, 1, 0]
                     if output != expected_output:
-                        raise ValueError(
-                            f"expected output {expected_output}, got {output}",
-                        )
+                        raise ValueError(f"expected output {expected_output}, got {output}")
+
+                    # check model data logs
+                    expected_logs = {"num_rows": len(input)}
+                    if logs != expected_logs:
+                        raise ValueError(f"expected logs {expected_logs}, got {logs}")
 
         """
         pass
