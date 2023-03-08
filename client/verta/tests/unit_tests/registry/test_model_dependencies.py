@@ -128,3 +128,24 @@ def test_class_module_names(dependency_testing_model) -> None:
     }
     extracted_modules: Set[str] =  md.class_module_names(dependency_testing_model)
     assert set(extracted_modules) == set(expected_modules)
+
+
+def test_package_names(dependency_testing_model) ->None:
+    """Verify that distribution package names are returned correctly for the
+    given module names when they differ from the package name.  Test fixture
+    ensures packages required for the test are installed or this test will be
+    skipped.
+    """
+    expected_packages = {
+        'scikit-learn',
+        'Pillow',
+        'PyYAML',
+    }
+    extracted_packages: Set[str] = md.package_names(
+        {
+            'sklearn',
+            'PIL',
+            'yaml'
+        }
+    )
+    assert extracted_packages == expected_packages

@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import inspect
+from importlib.metadata import packages_distributions
 from types import ModuleType
-from typing import Callable, get_type_hints, Set, Type
+from typing import Callable, get_type_hints, List, Set, Type, Union
 
 from ..registry._verta_model_base import VertaModelBase
 
@@ -73,7 +74,17 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
     return modules_found
 
 
-# TODO VRD-682 convert module names to pkg names here
 def package_names(module_names: Set[str]) -> Set[str]:
-    """Return a set of all packages detected in the provided set of base module names."""
-    return module_names
+    """Return a set of package names for all 3rd-party modules in the provided
+    set of base module names.
+    """
+    pkg_dist = packages_distributions()
+    pkgs = set()
+    for mod in module_names:
+        mod_pkgs: Union[List[str], None] = pkg_dist.get(mod)
+        if mod_pkgs:  # None for modules in std-lib
+            if len(mod_pkgs) == 1:
+                pkgs.add(mod_pkgs[0])
+            if len(mod_pkgs) > 1:  # one to many is possible, e.g. `google`
+                pkgs.add(mod)  # use base module name
+    return pkgs
