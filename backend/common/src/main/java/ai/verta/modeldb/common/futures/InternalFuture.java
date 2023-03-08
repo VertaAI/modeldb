@@ -98,6 +98,30 @@ public class InternalFuture<T> {
     return ret;
   }
 
+  public InternalFuture<T> onSuccess(Consumer<T> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return from(
+        stage.whenCompleteAsync(
+            (t, throwable) -> {
+              if (throwable == null) {
+                fn.accept(t);
+              }
+            },
+            executor));
+  }
+
+  public InternalFuture<T> onFailure(Consumer<Throwable> fn, FutureExecutor ex) {
+    final var executor = ex.captureContext();
+    return from(
+        stage.whenCompleteAsync(
+            (t, throwable) -> {
+              if (throwable != null) {
+                fn.accept(throwable);
+              }
+            },
+            executor));
+  }
+
   public <U> InternalFuture<U> thenCompose(
       Function<? super T, InternalFuture<U>> fn, FutureExecutor ex) {
     final var executor = ex.captureContext();
