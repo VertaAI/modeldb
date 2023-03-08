@@ -3,6 +3,7 @@
 import os
 from typing import Any, Dict
 
+import pandas as pd
 import pytest
 from requests import Session, HTTPError
 from requests.exceptions import RetryError
@@ -15,6 +16,7 @@ from verta.deployment import DeployedModel
 from verta._internal_utils import http_session
 
 PREDICTION_URL: str = 'https://test.dev.verta.ai/api/v1/predict/test_path'
+BATCH_PREDICTION_URL: str = 'https://test.dev.verta.ai/api/v1/batch-predict/test_path'
 TOKEN: str = '12345678-xxxx-1a2b-3c4d-e5f6g7h8'
 MOCK_RETRY: Retry = http_session.retry_config(
     max_retries=http_session.DEFAULT_MAX_RETRIES,
@@ -379,3 +381,27 @@ def test_predict_400_error_message_missing(mocked_responses) -> None:
         '400 Client Error: Bad Request for url: '
         'https://test.dev.verta.ai/api/v1/predict/test_path at '
     )
+
+
+def test_batch_predict_with_one_batch(mocked_responses) -> None:
+    """ Calling batch_predict with a small dataset (fits within one batch) and getting a 200 response returns the response as expected. """
+    d = {"CAPSULE":["0"], "RACE":["2"], "PSA":[51.9], "GLEASON":["6"]}
+    df_list = []
+    for i in range(10):
+        df = pd.DataFrame.from_dict(d)
+        df_list.append(df)
+    bigger_df = pd.concat(df_list, ignore_index=True)
+    mocked_responses.post(
+        BATCH_PREDICTION_URL,
+        json=bigger_df.to_dict(orient="records"),
+        status=200,
+        headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
+        )
+    creds = EmailCredentials.load_from_os_env()
+    dm = DeployedModel(
+        prediction_url=PREDICTION_URL,
+        creds=creds,
+        token=TOKEN,
+        )
+    prediction_df = dm.batch_predict(bigger_df, 10)
+    pd.testing.assert_frame_equal(prediction_df, bigger_df)
