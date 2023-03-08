@@ -142,6 +142,30 @@ public class Future<T> {
     return from(promise);
   }
 
+  public Future<T> onSuccess(Consumer<T> fn) {
+    final var executor = getExecutor();
+    return from(
+            stage.whenCompleteAsync(
+                    (t, throwable) -> {
+                      if (throwable == null) {
+                        fn.accept(t);
+                      }
+                    },
+                    executor));
+  }
+
+  public Future<T> onFailure(Consumer<Throwable> fn) {
+    final var executor = getExecutor();
+    return from(
+            stage.whenCompleteAsync(
+                    (t, throwable) -> {
+                      if (throwable != null) {
+                        fn.accept(throwable);
+                      }
+                    },
+                    executor));
+  }
+
   public <U> Future<U> thenCompose(Function<? super T, Future<U>> fn) {
     Preconditions.checkNotNull(
         futureExecutor, "A FutureExecutor is required to be present for this method.");
