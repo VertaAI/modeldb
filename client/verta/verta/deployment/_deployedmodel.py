@@ -108,7 +108,8 @@ class DeployedModel(object):
             raise ValueError("not a valid prediction_url")
         self._prediction_url = parsed.geturl()
 
-    def batch_prediction_url(self):
+    @property
+    def _batch_prediction_url(self):
         # Adding the v1/ to make sure we don't accidentally replace the wrong part of the URL
         return self.prediction_url.replace("v1/predict", "v1/batch-predict")
 
@@ -395,7 +396,7 @@ class DeployedModel(object):
         for i in range(0, len(df), batch_size):
             batch = df[i:i+batch_size]
             serialized_batch = batch.to_dict(orient="records")
-            response = self._predict(serialized_batch, self.batch_prediction_url(), compress, prediction_id)
+            response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
             out_df = pd.DataFrame.from_dict(response.json())
             out_df_list.append(out_df)
         out_df = pd.concat(out_df_list, ignore_index=True)
