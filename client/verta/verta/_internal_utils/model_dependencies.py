@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import inspect
-from importlib.metadata import packages_distributions
+from importlib.metadata import distribution, packages_distributions
 from types import ModuleType
 from typing import Callable, get_type_hints, List, Set, Type, Union
 
@@ -75,16 +75,23 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
 
 
 def package_names(module_names: Set[str]) -> Set[str]:
-    """Return a set of package names for all 3rd-party modules in the provided
-    set of base module names.
+    """Return a set of distribution package names for all 3rd-party import
+    modules in the provided set.
+
+    Package distributions don't exist for modules in the Python standard library.
+    This fact is used to capture only 3rd-party packages.  Modules associated
+    with a single package name are easily captured.  Modules associated with a
+    namespace package (e.g.`google`), may come from a variety of distribution
+    packages.  To avoid making an arbitrary choice in those cases, the main
+    namespace package name is fetched from the distribution metadata.
     """
     pkg_dist = packages_distributions()
     pkgs = set()
     for mod in module_names:
-        mod_pkgs: Union[List[str], None] = pkg_dist.get(mod)
-        if mod_pkgs:  # None for modules in std-lib
-            if len(mod_pkgs) == 1:
-                pkgs.add(mod_pkgs[0])
-            if len(mod_pkgs) > 1:  # one to many is possible, e.g. `google`
-                pkgs.add(mod)  # use base module name
+        dist_pkgs: Union[List[str], None] = pkg_dist.get(mod)
+        if dist_pkgs:
+            if len(dist_pkgs) == 1:
+                pkgs.add(dist_pkgs[0])
+            if len(dist_pkgs) > 1:
+                pkgs.add(distribution(mod).name)
     return pkgs
