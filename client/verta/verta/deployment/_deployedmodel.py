@@ -4,7 +4,6 @@ import gzip
 import json
 import warnings
 
-import numpy as np
 import pandas as pd
 from requests import Session
 from typing import Any, Dict, List, Optional, Set, Tuple
