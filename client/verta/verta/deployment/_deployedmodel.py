@@ -7,12 +7,9 @@ import warnings
 from requests import Session
 from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
-
-from verta._internal_utils import importer
-
 from verta import credentials
 
-from .._internal_utils import _utils, http_session
+from .._internal_utils import _utils, http_session, importer
 from .._internal_utils._utils import Connection
 from .._internal_utils.access_token import AccessToken
 from ..external import six
