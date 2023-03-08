@@ -4,10 +4,12 @@ import gzip
 import json
 import warnings
 
-import pandas as pd
 from requests import Session
 from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
+
+from verta._internal_utils import importer
+
 from verta import credentials
 
 from .._internal_utils import _utils, http_session
@@ -334,16 +336,16 @@ class DeployedModel(object):
 
     def batch_predict(
             self,
-            df: pd.DataFrame,
+            df,
             batch_size: int = 100,
             compress: bool = False,
             max_retries: int = http_session.DEFAULT_MAX_RETRIES,
             retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
             backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
             prediction_id: str = None,
-    ) -> pd.DataFrame:
+    ):
         """
-        Makes a prediction using input `x`.
+        Makes a prediction using input `df`.
 
         Parameters
         ----------
@@ -378,6 +380,11 @@ class DeployedModel(object):
             If the server encounters an error while handing the HTTP request.
 
         """
+
+        pd = importer.maybe_dependency("pandas")
+        if pd is None:
+            raise ImportError("pandas is not installed; try `pip install pandas`")
+
         # Set the retry config if it differs from current config.
         self._session = http_session.set_retry_config(
             self._session,
