@@ -110,8 +110,7 @@ class DeployedModel(object):
 
     @property
     def _batch_prediction_url(self):
-        # Adding the v1/ to make sure we don't accidentally replace the wrong part of the URL
-        return self.prediction_url.replace("v1/predict", "v1/batch-predict")
+        return self.prediction_url.replace("/predict/", "/batch-predict/")
 
     # TODO: Implement dynamic compression via separate utility and call it from here
     def _predict(
