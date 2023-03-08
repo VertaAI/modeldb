@@ -166,6 +166,7 @@ class DeployedModel(object):
     def _single_batch_predict(
             self,
             batch: pd.DataFrame,
+            compress: bool = False,
             prediction_id: Optional[str] = None,
     ):
         """Make prediction, and error propagation."""
@@ -174,12 +175,25 @@ class DeployedModel(object):
             request_headers.update({'verta-request-id': prediction_id})
 
         serialized_batch = batch.to_dict(orient="records")
+        if compress:
+            request_headers.update({'Content-Encoding': 'gzip'})
+            # create gzip
+            gzstream = six.BytesIO()
+            with gzip.GzipFile(fileobj=gzstream, mode="wb") as gzf:
+                gzf.write(six.ensure_binary(json.dumps(serialized_batch)))
+            gzstream.seek(0)
 
-        response = self._session.post(
-            self.batch_prediction_url(),
-            headers=request_headers,
-            json=serialized_batch,
-        )
+            response = self._session.post(
+                self.batch_prediction_url(),
+                headers=request_headers,
+                data=gzstream.read(),
+            )
+        else:
+            response = self._session.post(
+                self.batch_prediction_url(),
+                headers=request_headers,
+                json=serialized_batch,
+            )
         if response.status_code in (
                 400,
                 502,
@@ -370,6 +384,7 @@ class DeployedModel(object):
             self,
             df: pd.DataFrame,
             batch_size: int = 100,
+            compress: bool = False,
             max_retries: int = http_session.DEFAULT_MAX_RETRIES,
             retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
             backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
@@ -411,7 +426,6 @@ class DeployedModel(object):
             If the server encounters an error while handing the HTTP request.
 
         """
-        # TODO: batch prediction with id
         # Set the retry config if it differs from current config.
         self._session = http_session.set_retry_config(
             self._session,
@@ -420,12 +434,11 @@ class DeployedModel(object):
             backoff_factor=backoff_factor,
         )
 
-        # TODO: add compression
         # Split into batches
         out_df_list = []
         for i in range(0, len(df), batch_size):
             batch = df[i:i+batch_size]
-            response = self._single_batch_predict(batch, prediction_id)
+            response = self._single_batch_predict(batch, compress, prediction_id)
             out_df = pd.DataFrame.from_dict(response.json())
             out_df_list.append(out_df)
         out_df = pd.concat(out_df_list, ignore_index=True)
