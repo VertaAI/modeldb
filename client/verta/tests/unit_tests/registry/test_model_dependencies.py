@@ -138,7 +138,7 @@ def test_package_names(dependency_testing_model) -> None:
     """
     expected_packages = {
         'sklearn': ['scikit-learn'],
-        'PIL': ['Pillow', ],
+        'PIL': ['Pillow'],
         'yaml': ['PyYAML'],
     }
     extracted_packages: Dict[str, List[str]] = md.package_names(
