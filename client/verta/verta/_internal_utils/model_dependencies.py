@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import inspect
-from importlib.metadata import distribution, packages_distributions
+from importlib.metadata import packages_distributions
 from types import ModuleType
-from typing import Callable, get_type_hints, List, Set, Type, Union
+from typing import Callable, Dict, get_type_hints, List, Set, Type
 
 from ..registry._verta_model_base import VertaModelBase
 
@@ -74,24 +74,11 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
     return modules_found
 
 
-def package_names(module_names: Set[str]) -> Set[str]:
-    """Return a set of distribution package names for all 3rd-party import
-    modules in the provided set.
-
-    Package distributions don't exist for modules in the Python standard library.
-    This fact is used to capture only 3rd-party packages.  Modules associated
-    with a single package name are easily captured.  Modules associated with a
-    namespace package (e.g.`google`), may come from a variety of distribution
-    packages.  To avoid making an arbitrary choice in those cases, the main
-    namespace package name is fetched from the distribution metadata.
+def package_names(module_names: Set[str]) -> Dict[str, List[str]]:
+    """Return a dictionary where the key is the name of the import module
+    and the value is the list of possible distribution packages for each
+    3rd-party import module in the provided set that can be found in the
+    locally installed package_distributions.
     """
     pkg_dist = packages_distributions()
-    pkgs = set()
-    for mod in module_names:
-        dist_pkgs: Union[List[str], None] = pkg_dist.get(mod)
-        if dist_pkgs:
-            if len(dist_pkgs) == 1:
-                pkgs.add(dist_pkgs[0])
-            if len(dist_pkgs) > 1:
-                pkgs.add(distribution(mod).name)
-    return pkgs
+    return {m: pkg_dist.get(m) for m in module_names if pkg_dist.get(m)}
