@@ -66,11 +66,19 @@ def modules_in_function_signature(func: Callable) -> Set[str]:
 def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
     """Return a set of all base modules detected in the provided class object."""
     modules_found = set()
+
+    # check `model_class`'s methods
     for function in class_functions(model_class):
         _func = function
         mods_in_body = modules_in_function_body(_func)
         mods_in_signature = modules_in_function_signature(_func)
         modules_found |= mods_in_body | mods_in_signature
+
+    # add module where `model_class` is defined
+    model_class_module = inspect.getmodule(model_class).__name__.split(".")[0]
+    if model_class_module != "__main__":
+        modules_found.add(model_class_module)
+
     return modules_found
 
 
