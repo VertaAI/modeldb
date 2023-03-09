@@ -3,7 +3,7 @@
 to identify missing packages."""
 
 import warnings
-from typing import Set, Type
+from typing import Any, Dict, List, Set, Type
 
 from verta._internal_utils import model_dependencies as md
 from verta._internal_utils._pip_requirements_utils import parse_req_spec
@@ -61,14 +61,26 @@ def _check_model_dependencies(
         check_model_dependencies(model_cls=MyModelClass, environment=env)
 
     """
-    detected_modules: Set[str] = md.class_module_names(model_cls)
-    detected_packages: Set[str] = md.package_names(detected_modules)
     env_packages: Set[str] = {parse_req_spec(e)[0] for e in environment.requirements}
+    detected_modules: Set[str] = md.class_module_names(model_cls)
+    detected_packages: Dict[str, List[str]] = md.package_names(detected_modules)
 
-    missing_packages = detected_packages - env_packages
+    missing_packages: Dict[str, List[str]] = {
+        mod: pkgs
+        for mod, pkgs in detected_packages.items()
+        if not env_packages.intersection(set(pkgs))
+           and mod not in env_packages  # namespace package
+    }
+
     if missing_packages:
-        error_msg = f"the following packages are required by the model but missing " \
-                    f"from the environment: {missing_packages}"
+        formatted_missing_packages: List[Dict[str, List[str]]] = [
+            {'import_module': mod, 'distribution_packages': pkgs}
+            for mod, pkgs in missing_packages.items()
+        ]
+        error_msg = f"the following import modules are required by the model but missing " \
+                    f"any corresponding distribution package in the environment:"
+        for m in formatted_missing_packages:
+            error_msg += f"\n{m}"
         if raise_for_missing:
             raise RuntimeError(error_msg)
         warnings.warn(
