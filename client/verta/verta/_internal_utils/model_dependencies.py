@@ -74,6 +74,7 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
         mods_in_signature = modules_in_function_signature(_func)
         modules_found |= mods_in_body | mods_in_signature
 
+    # TODO: maybe put this in another PR?
     # add module where `model_class` is defined
     model_class_module = inspect.getmodule(model_class).__name__.split(".")[0]
     if model_class_module != "__main__":
