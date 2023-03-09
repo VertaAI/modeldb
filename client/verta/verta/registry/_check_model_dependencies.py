@@ -73,14 +73,10 @@ def _check_model_dependencies(
     }
 
     if missing_packages:
-        formatted_missing_packages: List[Dict[str, List[str]]] = [
-            {'import_module': mod, 'distribution_packages': pkgs}
-            for mod, pkgs in missing_packages.items()
-        ]
-        error_msg = f"the following import modules are required by the model but missing " \
-                    f"any corresponding distribution package in the environment:"
-        for m in formatted_missing_packages:
-            error_msg += f"\n{m}"
+        error_msg = f"the following packages are required by the model but missing " \
+                    f"from the environment:"
+        for m, p in missing_packages.items():
+            error_msg += f"\n{m} (installed via {p})"
         if raise_for_missing:
             raise RuntimeError(error_msg)
         warnings.warn(
