@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import inspect
-from importlib.metadata import packages_distributions
+from importlib_metadata import packages_distributions
 from types import ModuleType
 from typing import Callable, Dict, get_type_hints, List, Set, Type
 
