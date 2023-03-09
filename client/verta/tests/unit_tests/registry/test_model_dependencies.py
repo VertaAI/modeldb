@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from typing import Callable, Set
+from typing import Callable, Dict, List, Set
 
 from verta._internal_utils import model_dependencies as md
 
@@ -137,11 +137,11 @@ def test_package_names(dependency_testing_model) -> None:
     skipped.
     """
     expected_packages = {
-        'scikit-learn',
-        'Pillow',
-        'PyYAML',
+        'sklearn': ['scikit-learn'],
+        'PIL': ['Pillow', ],
+        'yaml': ['PyYAML'],
     }
-    extracted_packages: Set[str] = md.package_names(
+    extracted_packages: Dict[str, List[str]] = md.package_names(
         {
             'sklearn',
             'PIL',
