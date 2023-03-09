@@ -2,19 +2,46 @@
 """Utility function for checking model dependencies against an environment
 to identify missing packages."""
 
+import sys
 import warnings
 from typing import Any, Dict, List, Set, Type
 
 from verta._internal_utils import model_dependencies as md
+from verta._internal_utils.custom_modules import CustomModules
 from verta._internal_utils._pip_requirements_utils import parse_req_spec
 from verta.environment import Python
 from ._verta_model_base import VertaModelBase
 
 
+def in_custom_modules(
+    # TODO: this should probably take a list of remaining module names, rather than `model_cls`
+    model_cls: Type[VertaModelBase],
+    custom_modules: List[str],
+) -> bool:
+    # TODO: docstring
+    module_names, filepaths, dirpaths = CustomModules.categorize_custom_modules(
+        custom_modules,
+    )
+
+    for module in map(sys.modules.__getitem__, md.class_module_names(model_cls)):
+        if CustomModules.in_named_custom_modules(module, module_names):
+            continue
+
+        if CustomModules.in_file_custom_modules(module, filepaths):
+            continue
+
+        if CustomModules.in_directory_custom_modules(module, dirpaths):
+            continue
+
+        return False  # TODO: explicitly capture list of missing modules
+    return True
+
+
 def _check_model_dependencies(
-        model_cls: Type[VertaModelBase],
-        environment: Python,
-        raise_for_missing: bool = False,
+    model_cls: Type[VertaModelBase],
+    environment: Python,
+    # TODO: code dependencies
+    raise_for_missing: bool = False,
 ) -> bool:
     """Scan for missing dependencies in a model's environment.
 
@@ -72,8 +99,10 @@ def _check_model_dependencies(
     }
 
     if missing_packages:
-        error_msg = f"the following packages are required by the model but missing " \
-                    f"from the environment:"
+        error_msg = (
+            f"the following packages are required by the model but missing "
+            f"from the environment:"
+        )
         for m, p in sorted(missing_packages.items(), key=lambda item: item[0]):
             error_msg += f"\n{m} (installed via {p})"
         if raise_for_missing:
