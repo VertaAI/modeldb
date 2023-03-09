@@ -388,12 +388,12 @@ def test_batch_predict_with_one_batch(mocked_responses) -> None:
     d = {"CAPSULE":["0"], "RACE":["2"], "PSA":[51.9], "GLEASON":["6"]}
     df_list = []
     for i in range(10):
-        df = pd.DataFrame.from_dict(d)
+        df = pd.DataFrame(d, index=[str(i)])
         df_list.append(df)
-    bigger_df = pd.concat(df_list, ignore_index=True)
+    bigger_df = pd.concat(df_list)
     mocked_responses.post(
         BATCH_PREDICTION_URL,
-        json=bigger_df.to_dict(orient="records"),
+        json=bigger_df.to_dict(orient="index"),
         status=200,
         headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
         )
@@ -404,4 +404,30 @@ def test_batch_predict_with_one_batch(mocked_responses) -> None:
         token=TOKEN,
         )
     prediction_df = dm.batch_predict(bigger_df, 10)
+    pd.testing.assert_frame_equal(prediction_df, bigger_df)
+
+
+def test_batch_predict_with_ten_batches_of_one(mocked_responses) -> None:
+    """ Calling batch_predict with a small dataset (fits within one batch) and getting a 200 response returns the response as expected. """
+    d = {"CAPSULE":["0"], "RACE":["2"], "PSA":[51.9], "GLEASON":["6"]}
+    df_list = []
+    # Build input dataframe and expected response dataframes at the same time
+    for i in range(10):
+        df = pd.DataFrame(d, index=[str(i)])
+        df_list.append(df)
+        mocked_responses.add(
+            responses.POST,
+            BATCH_PREDICTION_URL,
+            json=df.to_dict(orient="index"),
+            status=200,
+            headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
+            )
+    bigger_df = pd.concat(df_list)
+    creds = EmailCredentials.load_from_os_env()
+    dm = DeployedModel(
+        prediction_url=PREDICTION_URL,
+        creds=creds,
+        token=TOKEN,
+        )
+    prediction_df = dm.batch_predict(bigger_df, 1)
     pd.testing.assert_frame_equal(prediction_df, bigger_df)

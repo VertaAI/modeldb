@@ -392,12 +392,13 @@ class DeployedModel(object):
         )
 
         # Split into batches
+        # TODO: handle indexes. Should be able to hold them in memory and reassociate after predicting
         out_df_list = []
         for i in range(0, len(df), batch_size):
             batch = df.iloc[i:i+batch_size]
-            serialized_batch = batch.to_dict(orient="records")
+            serialized_batch = batch.to_dict(orient='index')
             response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
-            out_df = pd.DataFrame.from_dict(_utils.body_to_json(response))
+            out_df = pd.DataFrame.from_dict(_utils.body_to_json(response), orient='index')
             out_df_list.append(out_df)
         out_df = pd.concat(out_df_list)
         return out_df
