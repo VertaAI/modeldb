@@ -74,7 +74,7 @@ def _check_model_dependencies(
     if missing_packages:
         error_msg = f"the following packages are required by the model but missing " \
                     f"from the environment:"
-        for m, p in missing_packages.items():
+        for m, p in sorted(missing_packages.items(), key=lambda item: item[0]):
             error_msg += f"\n{m} (installed via {p})"
         if raise_for_missing:
             raise RuntimeError(error_msg)
