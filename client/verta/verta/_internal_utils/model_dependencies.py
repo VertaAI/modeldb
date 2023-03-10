@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import inspect
+from importlib_metadata import packages_distributions
 from types import ModuleType
-from typing import Callable, get_type_hints, Set, Type
+from typing import Callable, Dict, get_type_hints, List, Set, Type
 
 from ..registry._verta_model_base import VertaModelBase
 
@@ -32,9 +33,9 @@ def modules_in_function_body(func: Callable) -> Set[str]:
         if isinstance(value, ModuleType)
     ]
     _non_locals = [
-       value.__name__.split('.')[0]  # strip off submodules and classes
-       for key, value in inspect.getclosurevars(_func).nonlocals.items()
-       if isinstance(value, ModuleType)
+        value.__name__.split('.')[0]  # strip off submodules and classes
+        for key, value in inspect.getclosurevars(_func).nonlocals.items()
+        if isinstance(value, ModuleType)
     ]
     return set(_globals + _non_locals)
 
@@ -44,10 +45,10 @@ def modules_in_function_signature(func: Callable) -> Set[str]:
     function's arguments and return type hint."""
     _func = unwrap(func)
     hints = get_type_hints(_func)
-    arg_hints = { k: v for k, v in hints.items() if k != 'return' }
+    arg_hints = {k: v for k, v in hints.items() if k != 'return'}
     return_hint = hints.get('return')
 
-    modules = [ inspect.getmodule(value) for value in arg_hints.values() ]
+    modules = [inspect.getmodule(value) for value in arg_hints.values()]
 
     if return_hint:
         mod = inspect.getmodule(return_hint)
@@ -59,7 +60,7 @@ def modules_in_function_signature(func: Callable) -> Set[str]:
                     modules.append(inspect.getmodule(a))
         else:
             modules.append(inspect.getmodule(return_hint))
-    return  set([ m.__name__.split('.')[0] for m in modules ])
+    return set([m.__name__.split('.')[0] for m in modules])
 
 
 def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
@@ -73,7 +74,12 @@ def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:
     return modules_found
 
 
-# TODO VRD-682 convert module names to pkg names here
-def package_names(module_names: Set[str]) -> Set[str]:
-    """Return a set of all packages detected in the provided set of base module names."""
-    return module_names
+def package_names(module_names: Set[str]) -> Dict[str, List[str]]:
+    """Return a dictionary where the key is the name of the import module
+    and the value is the list of possible distribution packages for each
+    3rd-party import module in the provided set that can be found in the
+    locally installed package_distributions.
+    """
+    pkg_dist = packages_distributions()
+    return {m: pkg_dist.get(m) for m in module_names if pkg_dist.get(m)}
+    # TODO: handle cases where 3rd-party module is not found in pkg_dist
