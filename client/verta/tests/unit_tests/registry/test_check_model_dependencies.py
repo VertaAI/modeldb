@@ -62,7 +62,7 @@ def test_check_model_dependencies_missing_warning(dependency_testing_model, comp
     the correct message, for missing packages when `raise_for_missing` is False.
     """
     incomplete_env = Python(
-        [r for r in complete_env.requirements if r not in ['PyYAML==0.0.1']]
+        [r for r in complete_env.requirements if r not in ['PyYAML==0.0.1', 'pandas==0.0.1']]
     )  # drop a single dependency to be caught
     with warnings.catch_warnings(record=True) as caught_warnings:
         assert not _check_model_dependencies(
@@ -72,4 +72,5 @@ def test_check_model_dependencies_missing_warning(dependency_testing_model, comp
         )
     warn_msg = caught_warnings[0].message.args[0]
     assert warn_msg == "the following packages are required by the model but missing " \
-                       "from the environment:\nyaml (installed via ['PyYAML'])"
+                       "from the environment:\npandas (installed via ['pandas'])" \
+                       "\nyaml (installed via ['PyYAML'])"
