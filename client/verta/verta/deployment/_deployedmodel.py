@@ -343,12 +343,13 @@ class DeployedModel(object):
             prediction_id: str = None,
     ):
         """
-        Makes a prediction using input `df`.
+        Makes a prediction using input `df` of type pandas.DataFrame.
 
         Parameters
         ----------
         df : pd.DataFrame
-            A batch of inputs for the model.
+            A batch of inputs for the model. The dataframe must have an index (note that most pandas dataframes are
+            created with an automatically-generated index).
         compress : bool, default False
             Whether to compress the request body.
         batch_size : int, default 100
@@ -369,7 +370,7 @@ class DeployedModel(object):
         Returns
         -------
         prediction : pd.DataFrame
-            Output returned by the deployed model for `x`.
+            Output returned by the deployed model for input `df`.
 
         Raises
         ------
@@ -397,7 +398,7 @@ class DeployedModel(object):
         for i in range(0, len(df), batch_size):
             batch = df.iloc[i:i+batch_size]
             serialized_batch = batch.to_dict(orient="index")
-            # Predict with one batch
+            # Predict with one batch at a time
             response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
             re = _utils.body_to_json(response)
             out_df = pd.DataFrame.from_dict(re, orient="index")
