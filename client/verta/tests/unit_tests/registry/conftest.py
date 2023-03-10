@@ -12,7 +12,7 @@ import pytest
 import requests
 import urllib3
 import yaml
-from google.protobuf import message as msg
+from google.protobuf.message import Message
 
 from verta import runtime
 from verta.registry import verify_io, VertaModelBase
@@ -43,7 +43,7 @@ def dependency_testing_model() -> Type[VertaModelBase]:
                 w: calendar.Calendar,            # standard library in function arg
                 x: dt.datetime,                  # standard library in function arg via alias
                 y: numpy.ndarray,                # 3rd-party module in function arg
-                z: msg.Message,                  # 3rd-party module in function arg via alias
+                z: Message,                      # 3rd-party module in function arg via class
         ) -> pd.DataFrame:                       # 3rd-party module in return type hint
             hour = x.hour                        # standard library usage in function body
             runtime.log('error', 'Error')        # 3rd-party module in function body (VERTA)
@@ -68,6 +68,10 @@ def dependency_testing_model() -> Type[VertaModelBase]:
 
         def make_dataframe(self, input):         # No modules in function signature
             return pd.DataFrame(input)           # 3rd party module in function body
+
+        def make_message(self, input: str):
+            msg = Message(input)
+            return msg
 
         @staticmethod
         def make_timeout():                      # No modules in function signature
