@@ -68,7 +68,7 @@ def _check_model_dependencies(
     missing_packages: Dict[str, List[str]] = {
         mod: pkgs
         for mod, pkgs in detected_packages.items()
-        if not env_packages.intersection(set(pkgs))
+        if not env_packages.intersection(pkgs)
            and mod not in env_packages  # namespace package
     }
 
