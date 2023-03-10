@@ -397,10 +397,12 @@ class DeployedModel(object):
         for i in range(0, len(df), batch_size):
             batch = df.iloc[i:i+batch_size]
             serialized_batch = batch.to_dict(orient="index")
+            # Predict with one batch
             response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
             re = _utils.body_to_json(response)
             out_df = pd.DataFrame.from_dict(re, orient="index")
             out_df_list.append(out_df)
+        # Reassemble output before returning to user
         out_df = pd.concat(out_df_list)
         return out_df
 
