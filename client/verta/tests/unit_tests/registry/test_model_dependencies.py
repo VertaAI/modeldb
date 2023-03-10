@@ -12,6 +12,7 @@ def test_class_functions(dependency_testing_model) -> None:
     expected_func_names = [
         '__init__',
         'make_dataframe',
+        'make_message',
         'make_timeout',
         'model_test',
         'nested_multiple_returns_hint',
@@ -48,6 +49,16 @@ def test_modules_in_function_body_return_line(dependency_testing_model) -> None:
     as expected, including when aliased (which causes them to be stored differently)"""
     func: Callable = dependency_testing_model.make_dataframe
     expected_modules = {'pandas'}
+    extracted_modules: Set[str] = md.modules_in_function_body(func)
+    assert extracted_modules == expected_modules
+
+
+def test_modules_in_function_body_as_class_instance(dependency_testing_model) -> None:
+    """ Verify that modules introduced only via class instance are extracted
+    as expected.
+    """
+    func: Callable = dependency_testing_model.make_message
+    expected_modules = {'google'}
     extracted_modules: Set[str] = md.modules_in_function_body(func)
     assert extracted_modules == expected_modules
 
@@ -108,6 +119,7 @@ def test_class_module_names(dependency_testing_model) -> None:
     """ Verify that all expected module names are extracted as expected.
     """
     expected_modules = {
+        'builtins',
         'calendar',
         'click',
         'cloudpickle',
