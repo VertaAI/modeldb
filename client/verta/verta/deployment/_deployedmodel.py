@@ -117,7 +117,7 @@ class DeployedModel(object):
     def _predict(
             self,
             x: Any,
-            prediction_url: bytes,
+            prediction_url,
             compress: bool = False,
             prediction_id: Optional[str] = None,
     ):
