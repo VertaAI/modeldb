@@ -401,7 +401,7 @@ class DeployedModel(object):
             re = _utils.body_to_json(response)
             out_df = pd.DataFrame.from_dict(re, orient="index")
             out_df_list.append(out_df)
-        out_df = pd.concat(out_df_list, axis=1) #TODO: this axis probably needs to be exposed to the user, since it depends on the model
+        out_df = pd.concat(out_df_list)
         return out_df
 
     # TODO: Remove this method after release of 0.22.0
