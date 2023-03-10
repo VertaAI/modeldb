@@ -27,17 +27,22 @@ def unwrap(func: Callable) -> Callable:
 def modules_in_function_body(func: Callable) -> Set[str]:
     """Return a set of all base modules called within the body of the provided function."""
     _func = unwrap(func)
-    _globals = [
+    _global_modules = {
         value.__name__.split('.')[0]  # strip off submodules and classes
         for key, value in inspect.getclosurevars(_func).globals.items()
         if isinstance(value, ModuleType)
-    ]
-    _non_locals = [
-        value.__name__.split('.')[0]  # strip off submodules and classes
-        for key, value in inspect.getclosurevars(_func).nonlocals.items()
-        if isinstance(value, ModuleType)
-    ]
-    return set(_globals + _non_locals)
+    }
+    _global_classes = {
+        inspect.getmodule(value).__name__.split('.')[0]  # strip off submodules
+        for key, value in inspect.getclosurevars(_func).globals.items()
+        if inspect.isclass(value)
+    }
+    _non_locals = {
+       value.__name__.split('.')[0]  # strip off submodules and classes
+       for key, value in inspect.getclosurevars(_func).nonlocals.items()
+       if isinstance(value, ModuleType)
+    }
+    return _global_modules | _global_classes | _non_locals
 
 
 def modules_in_function_signature(func: Callable) -> Set[str]:
