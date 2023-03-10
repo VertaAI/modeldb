@@ -16,7 +16,7 @@ def complete_env() -> Python:
     """
     return Python([
         'click==0.0.1',
-        'google==0.0.1',
+        'googleapis-common-protos==0.0.1',
         'numpy==0.0.1',
         'pandas==0.0.1',
         'Pillow==0.0.1',

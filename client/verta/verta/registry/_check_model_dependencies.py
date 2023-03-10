@@ -69,7 +69,6 @@ def _check_model_dependencies(
         mod: pkgs
         for mod, pkgs in detected_packages.items()
         if not env_packages.intersection(pkgs)
-           and mod not in env_packages  # namespace package
     }
 
     if missing_packages:
