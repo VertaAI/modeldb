@@ -397,12 +397,11 @@ class DeployedModel(object):
         for i in range(0, len(df), batch_size):
             batch = df.iloc[i:i+batch_size]
             serialized_batch = batch.to_dict(orient="index")
-            print(serialized_batch)
             response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
             re = _utils.body_to_json(response)
             out_df = pd.DataFrame.from_dict(re, orient="index")
             out_df_list.append(out_df)
-        out_df = pd.concat(out_df_list)
+        out_df = pd.concat(out_df_list, axis=1) #TODO: this axis probably needs to be exposed to the user, since it depends on the model
         return out_df
 
     # TODO: Remove this method after release of 0.22.0
