@@ -141,10 +141,15 @@ class DeployedModel(object):
                 data=gzstream.read(),
             )
         else:
+            # when passing json=x, requests sets `allow_nan=False` by default (as of 2.26.0), which we don't want
+            # so we're going to dump ourselves
+            body = json.dumps(x, allow_nan=True)
+            if not isinstance(body, bytes):
+                body = body.encode("utf-8")
             response = self._session.post(
                 prediction_url,
                 headers=request_headers,
-                json=x,
+                data=body,
             )
         if response.status_code in (
                 400,
