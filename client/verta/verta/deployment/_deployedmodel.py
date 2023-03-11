@@ -408,9 +408,8 @@ class DeployedModel(object):
             re = _utils.body_to_json(response)
             out_df = pd.DataFrame.from_dict(re, orient="index")
             out_df_list.append(out_df)
-        # Reassemble output before returning to user
-        out_df = pd.concat(out_df_list)
-        return out_df
+        # Reassemble output and return to user
+        return pd.concat(out_df_list)
 
     # TODO: Remove this method after release of 0.22.0
     @classmethod
