@@ -3,9 +3,9 @@
 import os
 from typing import Any, Dict
 
-import numpy as np
-import pandas as pd
 import pytest
+np = pytest.importorskip("numpy")
+pd = pytest.importorskip("pandas")
 from requests import Session, HTTPError
 from requests.exceptions import RetryError
 import responses
@@ -392,7 +392,6 @@ def test_batch_predict_with_one_batch_with_no_output_index(mocked_responses) -> 
         BATCH_PREDICTION_URL,
         json=expected_df_json,
         status=200,
-        headers={"verta-request-id": "hereISaTESTidFROMtheUSER"},
         )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
@@ -414,7 +413,6 @@ def test_batch_predict_with_one_batch_with_output_index(mocked_responses) -> Non
         BATCH_PREDICTION_URL,
         json=expected_df_json,
         status=200,
-        headers={"verta-request-id": "hereISaTESTidFROMtheUSER"},
         )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
@@ -428,21 +426,26 @@ def test_batch_predict_with_one_batch_with_output_index(mocked_responses) -> Non
     pd.testing.assert_frame_equal(expected_df, prediction_df)
 
 
+<<<<<<< Updated upstream
 def test_batch_predict_with_batches_with_no_indexes(mocked_responses) -> None:
     """ Call batch_predict with batches. """
     expected_d_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}),
+=======
+def test_batch_predict_with_five_batches_of_one_with_no_indexes(mocked_responses) -> None:
+    """ Call batch_predict with five batches. """
+    expected_df_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}),
+>>>>>>> Stashed changes
                        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}),
                        pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]}),
                        pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]}),
                        pd.DataFrame({"E": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]}),
                        ]
-    for expected_d in expected_d_list:
+    for expected_d in expected_df_list:
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
             json=expected_d.to_dict(orient="index"),
             status=200,
-            headers={"verta-request-id": "hereISaTESTidFROMtheUSER"},
             )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
@@ -452,26 +455,30 @@ def test_batch_predict_with_batches_with_no_indexes(mocked_responses) -> None:
         )
     input_df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [11, 12, 13, 14, 15]})
     prediction_df = dm.batch_predict(input_df, 1)
-    expected_final_df = pd.concat(expected_d_list)
+    expected_final_df = pd.concat(expected_df_list)
     # Since no index was provided, we can"t guarantee the index type for assertions
     pd.testing.assert_frame_equal(expected_final_df.reset_index(drop=True), prediction_df.reset_index(drop=True))
 
 
 def test_batch_predict_with_five_batches_of_one_with_indexes(mocked_responses) -> None:
+<<<<<<< Updated upstream
     """ Call batch_predict with five batches, where each dataframe has an explicitly defined index. """
     expected_d_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+=======
+    """ CCall batch_predict with five batches, where each dataframe has an explicitly defined index. """
+    expected_df_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+>>>>>>> Stashed changes
                        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"E": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        ]
-    for expected_d in expected_d_list:
+    for expected_d in expected_df_list:
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
             json=expected_d.to_dict(orient="index"),
             status=200,
-            headers={"verta-request-id": "hereISaTESTidFROMtheUSER"},
             )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
@@ -481,7 +488,7 @@ def test_batch_predict_with_five_batches_of_one_with_indexes(mocked_responses) -
         )
     input_df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [11, 12, 13, 14, 15]}, index=["A", "B", "C", "D", "E"])
     prediction_df = dm.batch_predict(input_df, 1)
-    expected_final_df = pd.concat(expected_d_list)
+    expected_final_df = pd.concat(expected_df_list)
     pd.testing.assert_frame_equal(expected_final_df, prediction_df)
 
 
@@ -489,19 +496,18 @@ def test_batch_predict_with_five_batches_of_one_with_indexes(mocked_responses) -
 
 def test_batch_predict_with_five_batches_with_nans(mocked_responses) -> None:
     """ CCall batch_predict with five batches, where each dataframe has an explicitly defined index. """
-    expected_d_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, np.nan, 7, 8, 9, 10]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+    expected_df_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, np.nan, 7, 8, 9, 10]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"C": [21, 22, np.nan, 24, 25, 26, 27, 28, 29, 30]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, np.nan, 39, 40]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"E": [41, 42, 43, 44, np.nan, 46, 47, 48, 49, 50]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        ]
-    for expected_d in expected_d_list:
+    for expected_d in expected_df_list:
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
             json=expected_d.to_dict(orient="index"),
             status=200,
-            headers={"verta-request-id": "hereISaTESTidFROMtheUSER"},
             )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
@@ -511,5 +517,5 @@ def test_batch_predict_with_five_batches_with_nans(mocked_responses) -> None:
         )
     input_df = pd.DataFrame({"a": [1, 2, np.nan, 4, 5], "b": [11, np.nan, 13, 14, 15]}, index=["A", "B", "C", "D", "E"])
     prediction_df = dm.batch_predict(input_df, 1)
-    expected_final_df = pd.concat(expected_d_list)
+    expected_final_df = pd.concat(expected_df_list)
     pd.testing.assert_frame_equal(expected_final_df, prediction_df)
