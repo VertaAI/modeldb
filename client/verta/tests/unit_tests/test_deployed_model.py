@@ -449,7 +449,7 @@ def test_batch_predict_with_five_batches_of_one_with_no_indexes(mocked_responses
         )
     input_df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [11, 12, 13, 14, 15]})
     prediction_df = dm.batch_predict(input_df, 1)
-    expected_final_df = pd.concat(expected_df_list)
+    expected_df = pd.concat(expected_df_list)
     # Since no index was provided, we can"t guarantee the index type for assertions
     pd.testing.assert_frame_equal(expected_df, prediction_df, check_index_type=False)
 
