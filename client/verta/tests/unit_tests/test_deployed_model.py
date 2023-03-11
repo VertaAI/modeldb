@@ -428,8 +428,8 @@ def test_batch_predict_with_one_batch_with_output_index(mocked_responses) -> Non
     pd.testing.assert_frame_equal(expected_df, prediction_df)
 
 
-def test_batch_predict_with_five_batches_of_one_with_no_indexes(mocked_responses) -> None:
-    """ Call batch_predict with five batches. """
+def test_batch_predict_with_batches_with_no_indexes(mocked_responses) -> None:
+    """ Call batch_predict with batches. """
     expected_d_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}),
                        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}),
                        pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]}),
