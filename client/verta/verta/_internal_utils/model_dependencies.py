@@ -30,37 +30,6 @@ def modules_in_function_body(func: Callable) -> Set[str]:
     referenced in the function that could not be resolved.
     """
     _func = unwrap(func)
-<<<<<<< Updated upstream
-    _global_modules = {
-        value.__name__.split('.')[0]  # strip off submodules and classes
-        for key, value in inspect.getclosurevars(_func).globals.items()
-        if isinstance(value, ModuleType)
-    }
-    _global_classes = {
-        inspect.getmodule(value).__name__.split('.')[0]  # strip off submodules
-        for key, value in inspect.getclosurevars(_func).globals.items()
-        if inspect.isclass(value)
-    }
-    _non_locals = {
-       value.__name__.split('.')[0]  # strip off submodules and classes
-       for key, value in inspect.getclosurevars(_func).nonlocals.items()
-       if isinstance(value, ModuleType)
-    }
-    return _global_modules | _global_classes | _non_locals
-=======
-<<<<<<< Updated upstream
-    _globals = [
-        value.__name__.split('.')[0]  # strip off submodules and classes
-        for key, value in inspect.getclosurevars(_func).globals.items()
-        if isinstance(value, ModuleType)
-    ]
-    _non_locals = [
-        value.__name__.split('.')[0]  # strip off submodules and classes
-        for key, value in inspect.getclosurevars(_func).nonlocals.items()
-        if isinstance(value, ModuleType)
-    ]
-    return set(_globals + _non_locals)
-=======
     closure_vars: List[Dict[str, Any]] = [
         val
         for key, val in inspect.getclosurevars(_func)._asdict().items()
@@ -71,8 +40,6 @@ def modules_in_function_body(func: Callable) -> Set[str]:
         for var in closure_vars
         for val in var.values()
     }
->>>>>>> Stashed changes
->>>>>>> Stashed changes
 
 
 def modules_in_function_signature(func: Callable) -> Set[str]:
