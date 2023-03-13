@@ -3,7 +3,7 @@
 import inspect
 from importlib_metadata import packages_distributions
 from types import ModuleType
-from typing import Callable, Dict, get_type_hints, List, Set, Type
+from typing import Any, Callable, Dict, get_type_hints, List, Set, Type
 
 from ..registry._verta_model_base import VertaModelBase
 
@@ -25,8 +25,12 @@ def unwrap(func: Callable) -> Callable:
 
 
 def modules_in_function_body(func: Callable) -> Set[str]:
-    """Return a set of all base modules called within the body of the provided function."""
+    """Return a set of all base modules called within the body of the provided function.
+    The `unbound` value returned by `inspect.getclosurevars` returns a set of names
+    referenced in the function that could not be resolved.
+    """
     _func = unwrap(func)
+<<<<<<< Updated upstream
     _global_modules = {
         value.__name__.split('.')[0]  # strip off submodules and classes
         for key, value in inspect.getclosurevars(_func).globals.items()
@@ -43,6 +47,32 @@ def modules_in_function_body(func: Callable) -> Set[str]:
        if isinstance(value, ModuleType)
     }
     return _global_modules | _global_classes | _non_locals
+=======
+<<<<<<< Updated upstream
+    _globals = [
+        value.__name__.split('.')[0]  # strip off submodules and classes
+        for key, value in inspect.getclosurevars(_func).globals.items()
+        if isinstance(value, ModuleType)
+    ]
+    _non_locals = [
+        value.__name__.split('.')[0]  # strip off submodules and classes
+        for key, value in inspect.getclosurevars(_func).nonlocals.items()
+        if isinstance(value, ModuleType)
+    ]
+    return set(_globals + _non_locals)
+=======
+    closure_vars: List[Dict[str, Any]] = [
+        val
+        for key, val in inspect.getclosurevars(_func)._asdict().items()
+        if key != "unbound"
+    ]
+    return {
+        inspect.getmodule(val).__name__.split(".")[0]
+        for var in closure_vars
+        for val in var.values()
+    }
+>>>>>>> Stashed changes
+>>>>>>> Stashed changes
 
 
 def modules_in_function_signature(func: Callable) -> Set[str]:

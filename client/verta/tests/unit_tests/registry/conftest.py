@@ -10,6 +10,7 @@ import click
 import cloudpickle as cp
 import pytest
 import requests
+from requests import post
 import urllib3
 import yaml
 from google.protobuf.message import Message
@@ -76,6 +77,9 @@ def dependency_testing_model() -> Type[VertaModelBase]:
         @staticmethod
         def make_timeout():                      # No modules in function signature
             return requests.Timeout()            # 3rd party module in function body
+
+        def post_request(self) -> None:
+            post("https://www.verta.ai")
 
         # 3rd-party modules nested inside type constructs should still be extracted
         def nested_multiple_returns_hint(self) -> Union[urllib3.Retry, PIL.UnidentifiedImageError]:
