@@ -388,7 +388,7 @@ def test_predict_400_error_message_missing(mocked_responses) -> None:
 def test_batch_predict_with_one_batch_with_no_index(mocked_responses) -> None:
     """ Call batch_predict with a single batch. """
     expected_df = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]})
-    expected_df_body = json.dumps(expected_df.to_dict(orient="split")).encode("utf-8")
+    expected_df_body = json.dumps(expected_df.to_dict(orient="split"))
     mocked_responses.post(
         BATCH_PREDICTION_URL,
         body=expected_df_body,
@@ -408,7 +408,7 @@ def test_batch_predict_with_one_batch_with_no_index(mocked_responses) -> None:
 def test_batch_predict_with_one_batch_with_index(mocked_responses) -> None:
     """ Call batch_predict with a single batch, where the output has an index. """
     expected_df = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"])
-    expected_df_body = json.dumps(expected_df.to_dict(orient="split")).encode("utf-8")
+    expected_df_body = json.dumps(expected_df.to_dict(orient="split"))
     mocked_responses.post(
         BATCH_PREDICTION_URL,
         body=expected_df_body,
@@ -426,7 +426,7 @@ def test_batch_predict_with_one_batch_with_index(mocked_responses) -> None:
 
 
 def test_batch_predict_with_five_batches_with_no_indexes(mocked_responses) -> None:
-    """ Call batch_predict with five batches. """
+    """ Since the input has 5 rows and we're providing a batch_size of 1, we expect 5 batches."""
     expected_df_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}),
                        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}),
                        pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]}),
@@ -437,7 +437,7 @@ def test_batch_predict_with_five_batches_with_no_indexes(mocked_responses) -> No
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
-            body=json.dumps(expected_df.to_dict(orient="split")).encode("utf-8"),
+            body=json.dumps(expected_df.to_dict(orient="split")),
             status=200,
             )
     creds = EmailCredentials.load_from_os_env()
@@ -447,13 +447,15 @@ def test_batch_predict_with_five_batches_with_no_indexes(mocked_responses) -> No
         token=TOKEN,
         )
     input_df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [11, 12, 13, 14, 15]})
-    prediction_df = dm.batch_predict(input_df, 1)
+    prediction_df = dm.batch_predict(input_df, batch_size=1)
     expected_df = pd.concat(expected_df_list)
     pd.testing.assert_frame_equal(expected_df, prediction_df)
 
 
 def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
-    """ Call batch_predict with five batches, where each dataframe has an explicitly defined index. """
+    """ Since the input has 5 rows and we're providing a batch_size of 1, we expect 5 batches.
+    Include an example of an index.
+    """
     expected_df_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
@@ -464,7 +466,7 @@ def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
-            body=json.dumps(expected_df.to_dict(orient="split")).encode("utf-8"),
+            body=json.dumps(expected_df.to_dict(orient="split")),
             status=200,
             )
     creds = EmailCredentials.load_from_os_env()
