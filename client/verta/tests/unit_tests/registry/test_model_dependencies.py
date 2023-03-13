@@ -14,6 +14,7 @@ def test_class_functions(dependency_testing_model) -> None:
         "make_dataframe",
         "make_message",
         "make_timeout",
+        "post_request",
         "model_test",
         "nested_multiple_returns_hint",
         "nested_type_hint",
@@ -59,6 +60,16 @@ def test_modules_in_function_body_as_class_instance(dependency_testing_model) ->
     """
     func: Callable = dependency_testing_model.make_message
     expected_modules = {"google"}
+    extracted_modules: Set[str] = md.modules_in_function_body(func)
+    assert extracted_modules == expected_modules
+
+
+def tests_modules_in_function_body_as_function(dependency_testing_model) -> None:
+    """Verify that modules introduced only via function directly imported from
+    a 3rd-party module are extracted as expected.
+    """
+    func: Callable = dependency_testing_model.post_request
+    expected_modules = {"requests"}
     extracted_modules: Set[str] = md.modules_in_function_body(func)
     assert extracted_modules == expected_modules
 
