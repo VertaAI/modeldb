@@ -1,4 +1,5 @@
 
+
 # -*- coding: utf-8 -*-
 
 import gzip
@@ -402,11 +403,11 @@ class DeployedModel(object):
         out_df_list = []
         for i in range(0, len(df), batch_size):
             batch = df.iloc[i:i+batch_size]
-            serialized_batch = batch.to_dict(orient="index")
+            serialized_batch = batch.to_dict(orient="split")
             # Predict with one batch at a time
             response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
-            re = _utils.body_to_json(response)
-            out_df = pd.DataFrame.from_dict(re, orient="index")
+            json_response = _utils.body_to_json(response)
+            out_df = pd.DataFrame(data=json_response['data'], index=json_response['index'], columns=json_response['columns'])
             out_df_list.append(out_df)
         # Reassemble output and return to user
         return pd.concat(out_df_list)

@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 """ Unit tests for the verta.deployment.DeployedModel class. """
+import json
 import os
 from typing import Any, Dict
 
@@ -384,13 +385,13 @@ def test_predict_400_error_message_missing(mocked_responses) -> None:
     )
 
 
-def test_batch_predict_with_one_batch_with_no_output_index(mocked_responses) -> None:
+def test_batch_predict_with_one_batch_with_no_index(mocked_responses) -> None:
     """ Call batch_predict with a single batch. """
     expected_df = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]})
-    expected_df_json = expected_df.to_dict(orient="index")
+    expected_df_body = json.dumps(expected_df.to_dict(orient="split")).encode("utf-8")
     mocked_responses.post(
         BATCH_PREDICTION_URL,
-        json=expected_df_json,
+        body=expected_df_body,
         status=200,
         )
     creds = EmailCredentials.load_from_os_env()
@@ -401,17 +402,16 @@ def test_batch_predict_with_one_batch_with_no_output_index(mocked_responses) -> 
         )
     # the input below is entirely irrelevant since it"s smaller than the batch size
     prediction_df = dm.batch_predict(pd.DataFrame({"hi": "bye"}, index=[1]), 10)
-    # Since no index was provided, we can"t guarantee the index type for assertions
-    pd.testing.assert_frame_equal(expected_df, prediction_df, check_index_type=False)
+    pd.testing.assert_frame_equal(expected_df, prediction_df)
 
 
-def test_batch_predict_with_one_batch_with_output_index(mocked_responses) -> None:
+def test_batch_predict_with_one_batch_with_index(mocked_responses) -> None:
     """ Call batch_predict with a single batch, where the output has an index. """
     expected_df = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"])
-    expected_df_json = expected_df.to_dict(orient="index")
+    expected_df_body = json.dumps(expected_df.to_dict(orient="split")).encode("utf-8")
     mocked_responses.post(
         BATCH_PREDICTION_URL,
-        json=expected_df_json,
+        body=expected_df_body,
         status=200,
         )
     creds = EmailCredentials.load_from_os_env()
@@ -420,13 +420,13 @@ def test_batch_predict_with_one_batch_with_output_index(mocked_responses) -> Non
         creds=creds,
         token=TOKEN,
         )
-    # the input below is entirely irrelevant since it"s smaller than the batch size
+    # the input below is entirely irrelevant since it's smaller than the batch size
     prediction_df = dm.batch_predict(pd.DataFrame({"hi": "bye"}, index=[1]), 10)
     # Since an index WAS provided, we should be able to assert with indexes included
     pd.testing.assert_frame_equal(expected_df, prediction_df)
 
 
-def test_batch_predict_with_five_batches_of_one_with_no_indexes(mocked_responses) -> None:
+def test_batch_predict_with_five_batches_with_no_indexes(mocked_responses) -> None:
     """ Call batch_predict with five batches. """
     expected_df_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}),
                        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}),
@@ -434,11 +434,11 @@ def test_batch_predict_with_five_batches_of_one_with_no_indexes(mocked_responses
                        pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]}),
                        pd.DataFrame({"E": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]}),
                        ]
-    for expected_d in expected_df_list:
+    for expected_df in expected_df_list:
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
-            json=expected_d.to_dict(orient="index"),
+            body=json.dumps(expected_df.to_dict(orient="split")).encode("utf-8"),
             status=200,
             )
     creds = EmailCredentials.load_from_os_env()
@@ -450,8 +450,7 @@ def test_batch_predict_with_five_batches_of_one_with_no_indexes(mocked_responses
     input_df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [11, 12, 13, 14, 15]})
     prediction_df = dm.batch_predict(input_df, 1)
     expected_df = pd.concat(expected_df_list)
-    # Since no index was provided, we can"t guarantee the index type for assertions
-    pd.testing.assert_frame_equal(expected_df, prediction_df, check_index_type=False)
+    pd.testing.assert_frame_equal(expected_df, prediction_df)
 
 
 def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
@@ -462,11 +461,11 @@ def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
                        pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        pd.DataFrame({"E": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
                        ]
-    for expected_d in expected_df_list:
+    for expected_df in expected_df_list:
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
-            json=expected_d.to_dict(orient="index"),
+            body=json.dumps(expected_df.to_dict(orient="split")).encode("utf-8"),
             status=200,
             )
     creds = EmailCredentials.load_from_os_env()
