@@ -3,6 +3,7 @@
 """Pytest fixtures for use in client unit tests."""
 
 import os
+import responses
 from unittest.mock import patch
 
 import pytest
@@ -27,3 +28,8 @@ def mock_conn() -> Connection:
 def mock_config() -> Configuration:
     """ Return a mocked object of the _internal_utils._utils.Configuration class for use in tests """
     return Configuration(use_git=False, debug=False)
+
+@pytest.fixture(scope="session")
+def mocked_responses():
+    with responses.RequestsMock() as rsps:
+        yield rsps

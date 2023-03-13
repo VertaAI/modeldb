@@ -24,12 +24,6 @@ MOCK_RETRY: Retry = http_session.retry_config(
 MOCK_SESSION: Session = http_session.init_session(retry=MOCK_RETRY)
 VERTA_CLASS = 'verta.deployment._deployedmodel'
 
-@pytest.fixture
-def mocked_responses():
-    with responses.RequestsMock() as rsps:
-        yield rsps
-
-
 @patch.dict(
     os.environ,
     {'VERTA_EMAIL': 'test_email@verta.ai',

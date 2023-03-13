@@ -5,6 +5,7 @@ import sys
 import time
 from urllib.parse import urlparse
 import json
+from typing import Any, Dict
 import yaml
 
 from verta.external import six
@@ -708,6 +709,45 @@ class Endpoint(object):
         # sort by line number
         logs = sorted(logs.items(), key=lambda item: item[0])
         return [item[1] for item in logs]
+
+    def fetch_log(self, prediction_id: str) -> Dict[str, Any]:
+        """Return the logs for a given prediction ID.
+
+        Logs must be added inside a model's :meth:`~verta.registry.VertaModelBase.predict`
+        function via the :meth:`~verta.runtime.log` function, and are stored on S3 for
+        retrieval.
+
+        Parameters
+        ----------
+        id : str
+            The prediction ID for the logs to return.
+
+        Returns
+        -------
+        logs : Dict[str, Any]
+            Logging context associated with the give prediction id.
+            Empty dict if no logging context is found.
+        """
+        url = (
+            "{}://{}/api/v1/deployment/workspace/{}/endpoints/{}/stages/{}/prediction/{}".format(
+                self._conn.scheme,
+                self._conn.socket,
+                self.workspace,
+                self.id,
+                self._get_or_create_stage(),
+                prediction_id,
+            )
+        )
+        response = _utils.make_request(
+            method="GET",
+            url=url,
+            conn=self._conn,
+            data=json.dumps({'id': prediction_id})
+        )
+        self._conn.must_response(response)
+
+        return response.json().get(prediction_id, {})
+
 
     def get_access_token(self):
         """Get an arbitrary access token of the endpoint.
