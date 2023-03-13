@@ -400,7 +400,7 @@ def test_batch_predict_with_one_batch_with_no_index(mocked_responses) -> None:
         creds=creds,
         token=TOKEN,
         )
-    # the input below is entirely irrelevant since it"s smaller than the batch size
+    # the input below is entirely irrelevant since it's smaller than the batch size
     prediction_df = dm.batch_predict(pd.DataFrame({"hi": "bye"}, index=[1]), 10)
     pd.testing.assert_frame_equal(expected_df, prediction_df)
 
