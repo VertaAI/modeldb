@@ -10,6 +10,7 @@ def test_class_functions(dependency_testing_model) -> None:
     returned.
     """
     expected_func_names = [
+<<<<<<< Updated upstream
         '__init__',
         'make_dataframe',
         'make_timeout',
@@ -18,6 +19,18 @@ def test_class_functions(dependency_testing_model) -> None:
         'nested_type_hint',
         'predict',
         'unwrapped_predict',
+=======
+        "__init__",
+        "make_dataframe",
+        "make_message",
+        "make_timeout",
+        "post_request",
+        "model_test",
+        "nested_multiple_returns_hint",
+        "nested_type_hint",
+        "predict",
+        "unwrapped_predict",
+>>>>>>> Stashed changes
     ]
     extracted_func_names = [
         f.__name__ for f in md.class_functions(dependency_testing_model)
@@ -48,6 +61,16 @@ def test_modules_in_function_body_return_line(dependency_testing_model) -> None:
     as expected, including when aliased (which causes them to be stored differently)"""
     func: Callable = dependency_testing_model.make_dataframe
     expected_modules = {'pandas'}
+    extracted_modules: Set[str] = md.modules_in_function_body(func)
+    assert extracted_modules == expected_modules
+
+
+def tests_modules_in_function_body_as_function(dependency_testing_model) -> None:
+    """Verify that modules introduced only via function directly imported from
+    a 3rd-party module are extracted as expected.
+    """
+    func: Callable = dependency_testing_model.post_request
+    expected_modules = {"requests"}
     extracted_modules: Set[str] = md.modules_in_function_body(func)
     assert extracted_modules == expected_modules
 
