@@ -422,7 +422,6 @@ def test_batch_predict_with_one_batch_with_index(mocked_responses) -> None:
         )
     # the input below is entirely irrelevant since it's smaller than the batch size
     prediction_df = dm.batch_predict(pd.DataFrame({"hi": "bye"}, index=[1]), 10)
-    # Since an index WAS provided, we should be able to assert with indexes included
     pd.testing.assert_frame_equal(expected_df, prediction_df)
 
 
