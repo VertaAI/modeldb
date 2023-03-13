@@ -96,12 +96,12 @@ class VertaModelBase(object):
     def model_test(self):
         """Test a model's behavior for correctness.
 
-        :meth:`model_test` does nothing by default. Implement this method—with
-        any assertions you wish—to validate your model.
+        Implement this method on your model—with any desired calls and
+        assertions—to validate behavior and state.
 
-        This method is automatically called
-
-        - when an endpoint is initializing in the Verta platform
+        See `our product documentation on model verification
+        <https://docs.verta.ai/verta/registry/guides/model-verification-and-testing#vertamodelbase.model_test>`__
+        for more information about how this method is used.
 
         .. note::
 
