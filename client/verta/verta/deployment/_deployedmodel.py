@@ -1,3 +1,5 @@
+
+
 # -*- coding: utf-8 -*-
 
 import gzip
@@ -9,10 +11,11 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 from urllib.parse import urlparse
 from verta import credentials
 
-from .._internal_utils import _utils, http_session
+from .._internal_utils import _utils, http_session, importer
 from .._internal_utils._utils import Connection
 from .._internal_utils.access_token import AccessToken
 from ..external import six
+
 
 # NOTE: DeployedModel's mechanism for making requests is independent from the
 # rest of the client; Client's Connection deliberately instantiates a new
@@ -69,7 +72,7 @@ class DeployedModel(object):
             prediction_url,
             token=None,
             creds=None
-            ):
+    ):
         self.prediction_url: str = prediction_url
         self._credentials: credentials.Credentials = creds or credentials.load_from_os_env()
         self._access_token: str = token
@@ -83,11 +86,11 @@ class DeployedModel(object):
         if self._credentials:
             session.headers.update(
                 Connection.prefixed_headers_for_credentials(self._credentials)
-                )
+            )
         if self._access_token:
             session.headers.update(
                 AccessToken(self._access_token).headers()
-                )
+            )
         self._session = session
 
     def __repr__(self):
@@ -107,14 +110,18 @@ class DeployedModel(object):
             raise ValueError("not a valid prediction_url")
         self._prediction_url = parsed.geturl()
 
+    @property
+    def _batch_prediction_url(self):
+        return self.prediction_url.replace("/predict/", "/batch-predict/")
 
     # TODO: Implement dynamic compression via separate utility and call it from here
     def _predict(
             self,
             x: Any,
-            compress: bool=False,
-            prediction_id: Optional[str]=None,
-            ):
+            prediction_url,
+            compress: bool = False,
+            prediction_id: Optional[str] = None,
+    ):
         """Make prediction, handling compression and error propagation."""
         request_headers = dict()
         if prediction_id:
@@ -130,20 +137,23 @@ class DeployedModel(object):
             gzstream.seek(0)
 
             response = self._session.post(
-                self._prediction_url,
+                prediction_url,
                 headers=request_headers,
                 data=gzstream.read(),
-                )
+            )
         else:
+            # when passing json=x, requests sets `allow_nan=False` by default (as of 2.26.0), which we don't want
+            # so we're going to dump ourselves
+            body = json.dumps(x, allow_nan=True)
             response = self._session.post(
-                self.prediction_url,
+                prediction_url,
                 headers=request_headers,
-                json=x,
-                )
+                data=body,
+            )
         if response.status_code in (
-            400,
-            502,
-            ):  # possibly error from the model back end
+                400,
+                502,
+        ):  # possibly error from the model back end
             try:
                 data = _utils.body_to_json(response)
             except ValueError:  # not JSON response; 502 not from model back end
@@ -157,11 +167,9 @@ class DeployedModel(object):
             _utils.raise_for_http_error(response=response)
         return response
 
-
     def headers(self):
         """Returns a copy of the headers attached to prediction requests."""
         return self._session.headers.copy()
-
 
     def get_curl(self):
         """
@@ -181,16 +189,16 @@ class DeployedModel(object):
 
     # TODO: Removed deprecated `always_retry_404` and `always_retry_429` params
     def predict(
-        self,
-        x: List[Any],
-        compress=False,
-        max_retries: int = http_session.DEFAULT_MAX_RETRIES,
-        always_retry_404=False,
-        always_retry_429=False,
-        retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
-        backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
-        prediction_id: str = None,
-        ) -> Dict[str, Any]:
+            self,
+            x: List[Any],
+            compress=False,
+            max_retries: int = http_session.DEFAULT_MAX_RETRIES,
+            always_retry_404=False,
+            always_retry_429=False,
+            retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
+            backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
+            prediction_id: str = None,
+    ) -> Dict[str, Any]:
         """
         Makes a prediction using input `x`.
 
@@ -260,9 +268,8 @@ class DeployedModel(object):
             max_retries=max_retries,
             retry_status=retry_status,
             backoff_factor=backoff_factor,
-            )
+        )
         return prediction_with_id[1]
-
 
     def predict_with_id(
             self,
@@ -272,7 +279,7 @@ class DeployedModel(object):
             retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
             backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
             prediction_id: str = None,
-            ) -> Tuple[str, List[Any]]:
+    ) -> Tuple[str, List[Any]]:
         """
         Makes a prediction using input `x` the same as `predict`, but returns a tuple including the ID of the
         prediction request along with the prediction results.
@@ -323,12 +330,85 @@ class DeployedModel(object):
             max_retries=max_retries,
             status_forcelist=retry_status,
             backoff_factor=backoff_factor,
-            )
+        )
 
-        response = self._predict(x, compress, prediction_id)
+        response = self._predict(x, self.prediction_url, compress, prediction_id)
         id = response.headers.get('verta-request-id', '')
         return (id, _utils.body_to_json(response))
 
+    def batch_predict(
+            self,
+            df,
+            batch_size: int = 100,
+            compress: bool = False,
+            max_retries: int = http_session.DEFAULT_MAX_RETRIES,
+            retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
+            backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
+            prediction_id: str = None,
+    ):
+        """
+        Makes a prediction using input `df` of type pandas.DataFrame.
+
+        Parameters
+        ----------
+        df : pd.DataFrame
+            A batch of inputs for the model. The dataframe must have an index (note that most pandas dataframes are
+            created with an automatically-generated index).
+        compress : bool, default False
+            Whether to compress the request body.
+        batch_size : int, default 100
+            The number of rows to send in each request.
+        max_retries : int, default 13
+            Maximum number of retries on status codes listed in ``retry_status``.
+        retry_status : set, default {404, 429, 500, 503, 504}
+            Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value.
+            Expand the set to include more. For example, to add status code 409 to the existing set, use:
+            ``retry_status={404, 429, 500, 503, 504, 409}``
+        backoff_factor : float, default 0.3
+            A backoff factor to apply between retry attempts.  Uses standard urllib3 sleep pattern:
+            ``{backoff factor} * (2 ** ({number of total retries} - 1))`` with a maximum sleep time between requests of
+            120 seconds.
+        prediction_id: str, default None
+            A custom string to use as the ID for the prediction request.  Defaults to a randomly generated UUID.
+
+        Returns
+        -------
+        prediction : pd.DataFrame
+            Output returned by the deployed model for input `df`.
+
+        Raises
+        ------
+        RuntimeError
+            If the deployed model encounters an error while running the prediction.
+        requests.HTTPError
+            If the server encounters an error while handing the HTTP request.
+
+        """
+
+        pd = importer.maybe_dependency("pandas")
+        if pd is None:
+            raise ImportError("pandas is not installed; try `pip install pandas`")
+
+        # Set the retry config if it differs from current config.
+        self._session = http_session.set_retry_config(
+            self._session,
+            max_retries=max_retries,
+            status_forcelist=retry_status,
+            backoff_factor=backoff_factor,
+        )
+
+        # Split into batches
+        out_df_list = []
+        for i in range(0, len(df), batch_size):
+            batch = df.iloc[i:i+batch_size]
+            serialized_batch = batch.to_dict(orient="split")
+            # Predict with one batch at a time
+            response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
+            json_response = _utils.body_to_json(response)
+            out_df = pd.DataFrame(data=json_response['data'], index=json_response['index'], columns=json_response['columns'])
+            out_df_list.append(out_df)
+        # Reassemble output and return to user
+        return pd.concat(out_df_list)
 
     # TODO: Remove this method after release of 0.22.0
     @classmethod
@@ -344,12 +424,12 @@ class DeployedModel(object):
             "This method is deprecated and will be removed in an upcoming version;"
             " Drop \".from_url\" and call the DeployedModel class directly with the same parameters.",
             category=FutureWarning,
-            )
+        )
         return cls(
             prediction_url=url,
             token=token,
             creds=creds,
-            )
+        )
 
 
 def prediction_input_unpack(func):
