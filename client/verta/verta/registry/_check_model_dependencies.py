@@ -47,7 +47,7 @@ def _check_model_dependencies(
     Raises
     ------
     RuntimeError
-        If `raise_for_missing` is True and any dependencies are extraneous or missing.
+        If `raise_for_missing` is True and any dependencies are missing.
 
     Examples
     --------
