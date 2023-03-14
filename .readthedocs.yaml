@@ -1,8 +1,5 @@
 version: 2
 
-formats:
-  - pdf
-
 python:
   version: 3
   install:
