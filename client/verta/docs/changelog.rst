@@ -40,6 +40,11 @@ Changelog
 v0.22.1 (2023-03-13)
 --------------------
 
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- add ``importlib-metadata>=3.7.0`` dependency
+  (`#3652 <https://github.com/VertaAI/modeldb/pull/3652>`__)
+
 New Features
 ^^^^^^^^^^^^
 - add ``model_test()`` to ``VertaModelBase`` interface
