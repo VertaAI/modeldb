@@ -5,6 +5,7 @@ import os
 from typing import Any, Dict
 
 import pytest
+
 np = pytest.importorskip("numpy")
 pd = pytest.importorskip("pandas")
 from requests import Session, HTTPError
@@ -12,6 +13,8 @@ from requests.exceptions import RetryError
 import responses
 from unittest.mock import patch
 from urllib3 import Retry
+from hypothesis import strategies as st
+from hypothesis import given
 
 from verta.credentials import EmailCredentials
 from verta.deployment import DeployedModel
@@ -24,9 +27,10 @@ MOCK_RETRY: Retry = http_session.retry_config(
     max_retries=http_session.DEFAULT_MAX_RETRIES,
     status_forcelist=http_session.DEFAULT_STATUS_FORCELIST,
     backoff_factor=http_session.DEFAULT_BACKOFF_FACTOR
-    )
+)
 MOCK_SESSION: Session = http_session.init_session(retry=MOCK_RETRY)
 VERTA_CLASS = 'verta.deployment._deployedmodel'
+
 
 @pytest.fixture
 def mocked_responses():
@@ -37,16 +41,16 @@ def mocked_responses():
 @patch.dict(
     os.environ,
     {'VERTA_EMAIL': 'test_email@verta.ai',
-     'VERTA_DEV_KEY':'123test1232dev1232key123'},
-    )
+     'VERTA_DEV_KEY': '123test1232dev1232key123'},
+)
 @patch(
     f'{VERTA_CLASS}.http_session.retry_config',
     return_value=MOCK_RETRY,
-    )
+)
 @patch(
     f'{VERTA_CLASS}.http_session.init_session',
     return_value=MOCK_SESSION,
-    )
+)
 def test_deployed_model_init(mock_session, mock_retry) -> None:
     """ Validate the creation of an object of deployment.DeployedModel class with desired Session. """
     creds = EmailCredentials.load_from_os_env()
@@ -54,14 +58,14 @@ def test_deployed_model_init(mock_session, mock_retry) -> None:
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        ).__dict__
+    ).__dict__
     expected_dm_details: Dict[str, Any] = {
         '_prediction_url': PREDICTION_URL,
         '_credentials': creds,
         '_access_token': '12345678-xxxx-1a2b-3c4d-e5f6g7h8',
         '_retry_config': mock_retry.return_value,
         '_session': mock_session.return_value
-        }
+    }
     assert created_dm_details['_prediction_url'] == expected_dm_details['_prediction_url']
     assert created_dm_details['_access_token'] == expected_dm_details['_access_token']
     assert created_dm_details['_credentials'] == expected_dm_details['_credentials']
@@ -75,13 +79,13 @@ def test_predict_http_defaults_200(mocked_responses) -> None:
         json={"test_key": "test_val"},
         status=200,
         headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     prediction_response = dm.predict(x=['test_prediction'])
     assert prediction_response == {"test_key": "test_val"}
 
@@ -92,13 +96,13 @@ def test_predict_http_defaults_404_retry_error(mocked_responses) -> None:
         PREDICTION_URL,
         json={},
         status=404,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     with pytest.raises(RetryError):
         dm.predict(x=['test_prediction'])
 
@@ -109,13 +113,13 @@ def test_predict_http_defaults_429_retry_error(mocked_responses) -> None:
         PREDICTION_URL,
         json={},
         status=429,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     with pytest.raises(RetryError):
         dm.predict(x=['test_prediction'])
 
@@ -128,13 +132,13 @@ def test_predict_http_defaults_status_not_in_retry(mocked_responses) -> None:
         headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
         json={},
         status=999,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     dm.predict(x=['test_prediction'])
     mocked_responses.assert_call_count(PREDICTION_URL, 1)
 
@@ -145,13 +149,13 @@ def test_predict_http_default_max_retry_observed(mocked_responses) -> None:
         PREDICTION_URL,
         json={},
         status=429,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     with pytest.raises(RetryError):
         dm.predict(x=['test_prediction'])
     mocked_responses.assert_call_count(PREDICTION_URL, http_session.DEFAULT_MAX_RETRIES + 1)
@@ -164,20 +168,20 @@ def test_predict_with_altered_retry_config(mocked_responses) -> None:
         PREDICTION_URL,
         json={},
         status=888,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     with pytest.raises(RetryError):
         dm.predict(
             x=['test_prediction'],
             max_retries=9,
             retry_status={888},
             backoff_factor=0.1
-            )
+        )
     mocked_responses.assert_call_count(PREDICTION_URL, 10)
 
 
@@ -189,17 +193,17 @@ def test_predict_with_prediction_id_provided(mocked_responses) -> None:
         status=200,
         match=[responses.matchers.header_matcher({'verta-request-id': 'hereISaTESTidFROMtheUSER'})],
         headers={'verta-request-id': 'hereISaTESTidFROMtheUSER'},
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     dm.predict(
         x=['test_prediction'],
         prediction_id='hereISaTESTidFROMtheUSER',
-        )
+    )
     mocked_responses.assert_call_count(PREDICTION_URL, 1)
 
 
@@ -211,13 +215,13 @@ def test_predict_with_id_response_includes_id(mocked_responses) -> None:
         # Adds this header to the mocked http response.
         json={'test2': 'test2'},
         status=200,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     prediction = dm.predict_with_id(x=['test_prediction'])
     assert prediction == ('AutoGeneratedTestId', {'test2': 'test2'})
 
@@ -233,17 +237,17 @@ def test_predict_with_id_prediction_id_provided(mocked_responses) -> None:
         # Adds this header to the mocked http response.
         json={'test2': 'test2'},
         status=200,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     prediction = dm.predict_with_id(
         x=['test_prediction'],
         prediction_id='hereISomeTESTidFROMtheUSER'
-        )
+    )
     assert prediction == ('hereISomeTESTidFROMtheUSER', {'test2': 'test2'})
 
 
@@ -254,13 +258,13 @@ def test_predict_with_id_http_defaults_200(mocked_responses) -> None:
         json={"test_key": "test_val"},
         status=200,
         headers={'verta-request-id': 'hereISthisTESTidFROMtheUSER'},
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     prediction_response = dm.predict_with_id(x=['test_prediction'])
     assert prediction_response == ('hereISthisTESTidFROMtheUSER', {"test_key": "test_val"})
 
@@ -271,13 +275,13 @@ def test_predict_with_id_http_defaults_404_retry_error(mocked_responses) -> None
         PREDICTION_URL,
         json={},
         status=404,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     with pytest.raises(RetryError):
         dm.predict_with_id(x=['test_prediction'])
 
@@ -288,20 +292,20 @@ def test_predict_with_id_altered_retry_config(mocked_responses) -> None:
         PREDICTION_URL,
         json={},
         status=888,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     with pytest.raises(RetryError):
         dm.predict_with_id(
             x=['test_prediction'],
             max_retries=9,
             retry_status={888},
             backoff_factor=0.1
-            )
+        )
     mocked_responses.assert_call_count(PREDICTION_URL, 10)
 
 
@@ -313,20 +317,20 @@ def test_default_retry_after_custom_retry(mocked_responses) -> None:
         PREDICTION_URL,
         json={},
         status=777,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     with pytest.raises(RetryError):
         dm.predict(
             x=['test_prediction'],
             max_retries=1,
             retry_status={777},
             backoff_factor=0.1,
-            )
+        )
     mocked_responses.assert_call_count(PREDICTION_URL, 2)
     # 1 attempt + 1 retry = 2
 
@@ -334,7 +338,7 @@ def test_default_retry_after_custom_retry(mocked_responses) -> None:
         PREDICTION_URL,
         json={},
         status=429,
-        )
+    )
     with pytest.raises(RetryError):
         dm.predict(x=['test_prediction'])  # use defaults
     mocked_responses.assert_call_count(PREDICTION_URL, 16)
@@ -359,7 +363,7 @@ def test_predict_400_error_message_extraction(mocked_responses) -> None:
         dm.predict(x=['test_prediction'])
     assert str(err.value) == (
         'deployed model encountered an error: Here be a message in the response'
-        )
+    )
 
 
 def test_predict_400_error_message_missing(mocked_responses) -> None:
@@ -393,13 +397,13 @@ def test_batch_predict_with_one_batch_with_no_index(mocked_responses) -> None:
         BATCH_PREDICTION_URL,
         body=expected_df_body,
         status=200,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     # the input below is entirely irrelevant since it's smaller than the batch size
     prediction_df = dm.batch_predict(pd.DataFrame({"hi": "bye"}, index=[1]), 10)
     pd.testing.assert_frame_equal(expected_df, prediction_df)
@@ -407,19 +411,20 @@ def test_batch_predict_with_one_batch_with_no_index(mocked_responses) -> None:
 
 def test_batch_predict_with_one_batch_with_index(mocked_responses) -> None:
     """ Call batch_predict with a single batch, where the output has an index. """
-    expected_df = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"])
+    expected_df = pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10], "B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]},
+                               index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"])
     expected_df_body = json.dumps(expected_df.to_dict(orient="split"))
     mocked_responses.post(
         BATCH_PREDICTION_URL,
         body=expected_df_body,
         status=200,
-        )
+    )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     # the input below is entirely irrelevant since it's smaller than the batch size
     prediction_df = dm.batch_predict(pd.DataFrame({"hi": "bye"}, index=[1]), 10)
     pd.testing.assert_frame_equal(expected_df, prediction_df)
@@ -428,24 +433,24 @@ def test_batch_predict_with_one_batch_with_index(mocked_responses) -> None:
 def test_batch_predict_with_five_batches_with_no_indexes(mocked_responses) -> None:
     """ Since the input has 5 rows and we're providing a batch_size of 1, we expect 5 batches."""
     expected_df_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}),
-                       pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}),
-                       pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]}),
-                       pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]}),
-                       pd.DataFrame({"E": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]}),
-                       ]
+                        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}),
+                        pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]}),
+                        pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]}),
+                        pd.DataFrame({"E": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]}),
+                        ]
     for expected_df in expected_df_list:
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
             body=json.dumps(expected_df.to_dict(orient="split")),
             status=200,
-            )
+        )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     input_df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [11, 12, 13, 14, 15]})
     prediction_df = dm.batch_predict(input_df, batch_size=1)
     expected_df = pd.concat(expected_df_list)
@@ -456,26 +461,57 @@ def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
     """ Since the input has 5 rows and we're providing a batch_size of 1, we expect 5 batches.
     Include an example of an index.
     """
-    expected_df_list = [pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
-                       pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
-                       pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
-                       pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
-                       pd.DataFrame({"E": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
-                       ]
+    expected_df_list = [
+        pd.DataFrame({"A": [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]}, index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+        pd.DataFrame({"B": [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]},
+                     index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+        pd.DataFrame({"C": [21, 22, 23, 24, 25, 26, 27, 28, 29, 30]},
+                     index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+        pd.DataFrame({"D": [31, 32, 33, 34, 35, 36, 37, 38, 39, 40]},
+                     index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+        pd.DataFrame({"E": [41, 42, 43, 44, 45, 46, 47, 48, 49, 50]},
+                     index=["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]),
+        ]
     for expected_df in expected_df_list:
         mocked_responses.add(
             responses.POST,
             BATCH_PREDICTION_URL,
             body=json.dumps(expected_df.to_dict(orient="split")),
             status=200,
-            )
+        )
     creds = EmailCredentials.load_from_os_env()
     dm = DeployedModel(
         prediction_url=PREDICTION_URL,
         creds=creds,
         token=TOKEN,
-        )
+    )
     input_df = pd.DataFrame({"a": [1, 2, 3, 4, 5], "b": [11, 12, 13, 14, 15]}, index=["A", "B", "C", "D", "E"])
     prediction_df = dm.batch_predict(input_df, 1)
     expected_final_df = pd.concat(expected_df_list)
     pd.testing.assert_frame_equal(expected_final_df, prediction_df)
+
+
+@st.composite
+def json_dataframe(draw):
+    """ Return a dict that represents a dataframe. """
+    num_rows = draw(st.integers(min_value=1, max_value=10))
+    num_cols = draw(st.integers(min_value=1, max_value=10))
+    rows = []
+    for _ in range(num_rows):
+        rows.append(draw(st.lists(st.integers(), max_size=num_cols, min_size=num_cols)))
+    cols = draw(st.lists(st.text(), max_size=num_cols, min_size=num_cols))
+    index = draw(st.lists(st.text(), max_size=num_rows, min_size=num_rows))
+    return {
+        "columns": cols,
+        "data": rows,
+        "index": index,
+    }
+
+
+@given(json_dataframe())
+def test_batch(json_df):
+    print(json_df)
+    df = pd.DataFrame(columns=json_df["columns"], data=json_df["data"], index=json_df["index"])
+    print(df)
+
+
