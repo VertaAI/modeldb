@@ -280,3 +280,17 @@ def unsupported_xgboost_models():
     )
 
     return models
+
+
+def dependency_models():
+    models = []
+
+    class VertaModelWithDependency(VertaModelBase):
+        def __init__(self, artifacts):
+            pass
+
+        def predict(self, input):
+            test_sesh = pytest.Session()
+
+    models.append(VertaModelWithDependency)
+    return models
