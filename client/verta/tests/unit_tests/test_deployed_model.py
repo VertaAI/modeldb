@@ -501,11 +501,12 @@ def generate_data(draw):
     for name in col_names:
         type_probability = draw(st.floats(min_value=0, max_value=1))
         if type_probability <= 0.3:
-            col = draw(st.lists(st.integers(), max_size=num_rows, min_size=num_rows))
+            col_values = st.integers()
         elif type_probability <= 0.6:
-            col = draw(st.lists(st.floats(), max_size=num_rows, min_size=num_rows))
+            col_values = st.floats()
         else:
-            col = draw(st.lists(st.text(), max_size=num_rows, min_size=num_rows))
+            col_values = st.text()
+        col = draw(st.lists(col_values, max_size=num_rows, min_size=num_rows))
         data[name] = col
 
     out_dict = {"data": data}
