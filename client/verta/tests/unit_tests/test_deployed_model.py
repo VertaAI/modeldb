@@ -516,7 +516,7 @@ def generate_data(draw):
     return out_dict
 
 
-@given(json_df=generate_data(), batch_size=st.integers(min_value=5, max_value=50))
+@given(json_df=generate_data(), batch_size=st.integers(min_value=1, max_value=50))
 def test_batch(json_df, batch_size) -> None:
     """ Test that the batch_predict method works with a variety of inputs. """
     with responses.RequestsMock() as rsps:
