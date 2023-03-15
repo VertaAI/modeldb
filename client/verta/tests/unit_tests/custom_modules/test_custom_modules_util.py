@@ -17,7 +17,6 @@ from verta.registry import VertaModelBase, verify_io
 
 HEALTH_CHECKS = [
     HealthCheck.filter_too_much,
-    # HealthCheck.too_slow,
     HealthCheck.function_scoped_fixture,
 ]
 
@@ -62,7 +61,8 @@ class TestGetModulePath:
         assume("." not in _module_name)
         module = make_custom_module(_module_name)
 
-        assert CustomModules().get_module_path(module.__name__) == module.__file__
+        module_path = CustomModules().get_module_path(module.__name__)
+        assert module_path == module.__file__
 
     @settings(suppress_health_check=HEALTH_CHECKS)
     @given(data=st.data())
@@ -75,4 +75,5 @@ class TestGetModulePath:
             package=make_custom_module(_module_name).__name__,
         )
 
-        assert CustomModules().get_module_path(module.__name__) == module.__path__[0]
+        module_path = CustomModules().get_module_path(module.__name__)
+        assert module_path == list(module.__path__)[0]
