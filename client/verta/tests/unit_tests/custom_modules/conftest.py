@@ -42,7 +42,7 @@ def make_custom_module(monkeypatch, tmp_path_factory) -> FunctionType:
         module_name : str
             Dot-delimited name for the desired module, e.g. ``foo.bar.baz``.
             For uniqueness, the actual custom module will nested in an
-            arbitrary top-level parent, e.g. ``module_1.foo.bar.baz``.
+            arbitrary top-level parent, e.g. ``custom_module_1.foo.bar.baz``.
 
         Returns
         -------
