@@ -2,9 +2,12 @@
 """ Unit tests for the verta.deployment.DeployedModel class. """
 import json
 import os
+import random
 from typing import Any, Dict
 
 import pytest
+
+from tests import utils
 
 np = pytest.importorskip("numpy")
 pd = pytest.importorskip("pandas")
@@ -499,7 +502,8 @@ def generate_data(draw):
     col_names = draw(st.lists(st.text(), max_size=num_cols, min_size=num_cols, unique=True))
     data = {}
     for name in col_names:
-        type_probability = draw(st.floats(min_value=0, max_value=1))
+
+        type_probability = utils.gen_probability()
         if type_probability <= 0.3:
             col_values = st.integers()
         elif type_probability <= 0.6:
@@ -510,7 +514,7 @@ def generate_data(draw):
         data[name] = col
 
     out_dict = {"data": data}
-    index_probability = draw(st.floats(min_value=0, max_value=1))
+    index_probability = utils.gen_probability()
     if index_probability <= 0.5:
         index = draw(st.lists(st.text(), max_size=num_rows, min_size=num_rows))
         out_dict["index"] = index
