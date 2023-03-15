@@ -32,12 +32,14 @@ class TestIsImportable:
     @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
     @given(data=st.data())
     def test_is_importable(self, make_custom_module, data):
+        """Test that we can verify a valid module can be imported."""
         module = make_custom_module(data.draw(custom_module_name()))
         assert CustomModules.is_importable(module.__name__)
 
     @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
     @given(data=st.data())
     def test_is_not_importable(self, make_custom_module, data):
+        """Test that we can verify a nonexistent module cannot be imported."""
         nonexistent_module_name = data.draw(custom_module_name())
         assert not CustomModules.is_importable(nonexistent_module_name)
 
