@@ -38,8 +38,8 @@ class TestIsImportable:
     @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
     @given(data=st.data())
     def test_is_not_importable(self, make_custom_module, data):
-        nonexistant_module_name = data.draw(custom_module_name())
-        assert not CustomModules.is_importable(nonexistant_module_name)
+        nonexistent_module_name = data.draw(custom_module_name())
+        assert not CustomModules.is_importable(nonexistent_module_name)
 
 
 class TestGetModulePath:
