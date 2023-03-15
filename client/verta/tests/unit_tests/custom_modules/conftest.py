@@ -63,8 +63,7 @@ def make_custom_module(monkeypatch, tmp_path_factory) -> FunctionType:
 
         # create custom module on disk
         parent_module_dirpath.mkdir(parents=True, exist_ok=True)
-        with open(str(module_filepath), "w") as f:
-            f.write(MODULE_CONTENTS_TMPL.format(str(uuid.uuid4())))
+        module_filepath.write_text(MODULE_CONTENTS_TMPL.format(str(uuid.uuid4())))
 
         return importlib.import_module(
             name=f".{module_name}",
