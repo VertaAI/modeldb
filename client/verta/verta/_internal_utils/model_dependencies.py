@@ -40,7 +40,7 @@ def modules_in_function_body(func: Callable) -> Set[str]:
         for object in variable.values():
             module: ModuleType = inspect.getmodule(object)
             module_name_with_submodules: str = module.__name__
-            base_module_name = module_name_with_submodules.split(".")[0]
+            base_module_name: str = module_name_with_submodules.split(".")[0]
             modules.add(base_module_name)
     return modules
 
