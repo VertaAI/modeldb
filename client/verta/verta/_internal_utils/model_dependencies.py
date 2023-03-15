@@ -30,16 +30,19 @@ def modules_in_function_body(func: Callable) -> Set[str]:
     referenced in the function that could not be resolved.
     """
     _func = unwrap(func)
-    closure_vars: List[Dict[str, Any]] = [
+    function_variables: List[Dict[str, Any]] = [
         val
         for key, val in inspect.getclosurevars(_func)._asdict().items()
         if key != "unbound"
     ]
-    return {
-        inspect.getmodule(val).__name__.split(".")[0]
-        for var in closure_vars
-        for val in var.values()
-    }
+    modules = set()
+    for variable in function_variables:
+        for object in variable.values():
+            module: ModuleType = inspect.getmodule(object)
+            module_name_with_submodules: str = module.__name__
+            base_module_name = module_name_with_submodules.split(".")[0]
+            modules.add(base_module_name)
+    return modules
 
 
 def modules_in_function_signature(func: Callable) -> Set[str]:
