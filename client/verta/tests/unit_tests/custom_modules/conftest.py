@@ -9,7 +9,12 @@ import pytest
 
 
 @pytest.fixture
-def custom_module_factory(monkeypatch, tmp_path_factory) -> FunctionType:
+def make_custom_module(monkeypatch, tmp_path_factory) -> FunctionType:
+    """Factory fixture for creating custom modules.
+
+    See nested function's docstring for usage details.
+
+    """
     monkeypatch.syspath_prepend(tmp_path_factory.getbasetemp())
     MODULE_BASENAME = "custom_module_"
     MODULE_CONTENTS_TMPL = textwrap.dedent(
@@ -23,7 +28,7 @@ def custom_module_factory(monkeypatch, tmp_path_factory) -> FunctionType:
         """
     )
 
-    def make_custom_module(module_name: str) -> ModuleType:
+    def _make_custom_module(module_name: str) -> ModuleType:
         """Create and return a custom Python module on local disk.
 
         The custom module simply contains two members:
@@ -63,4 +68,4 @@ def custom_module_factory(monkeypatch, tmp_path_factory) -> FunctionType:
             package=root_module_dirpath.name,
         )
 
-    return make_custom_module
+    return _make_custom_module
