@@ -37,6 +37,27 @@ Changelog
      (`# <>`__)
 
 
+v0.22.1 (2023-03-13)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- add ``importlib-metadata>=3.7.0`` dependency
+  (`#3652 <https://github.com/VertaAI/modeldb/pull/3652>`__)
+
+New Features
+^^^^^^^^^^^^
+- add ``model_test()`` to ``VertaModelBase`` interface
+  (`#3610 <https://github.com/VertaAI/modeldb/pull/3610>`__,
+  `#3611 <https://github.com/VertaAI/modeldb/pull/3611>`__)
+
+Bug Fixes
+^^^^^^^^^
+- update ``verta.integrations.xgboost`` to use XGBoost's ``TrainingCallback``
+  interface
+  (`#3649 <https://github.com/VertaAI/modeldb/pull/3649>`__)
+
+
 v0.22.0 (2023-02-07)
 --------------------
 
