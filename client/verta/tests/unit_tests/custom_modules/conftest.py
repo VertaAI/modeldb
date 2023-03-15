@@ -65,6 +65,7 @@ def make_custom_module(monkeypatch, tmp_path_factory) -> FunctionType:
         parent_module_dirpath.mkdir(parents=True, exist_ok=True)
         module_filepath.write_text(MODULE_CONTENTS_TMPL.format(str(uuid.uuid4())))
 
+        importlib.invalidate_caches()
         return importlib.import_module(
             name=f".{module_name}",
             package=root_module_dirpath.name,
