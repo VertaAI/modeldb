@@ -17,6 +17,7 @@ from verta.registry import VertaModelBase, verify_io
 
 HEALTH_CHECKS = [
     HealthCheck.filter_too_much,
+    HealthCheck.too_slow,
     HealthCheck.function_scoped_fixture,
 ]
 
