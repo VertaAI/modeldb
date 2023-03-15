@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import importlib
+from pathlib import Path
 import textwrap
 from types import FunctionType, ModuleType
 import uuid
@@ -51,12 +52,14 @@ def make_custom_module(monkeypatch, tmp_path_factory) -> FunctionType:
 
         """
         # create unique directory for top-level module
-        root_module_dirpath = tmp_path_factory.mktemp(MODULE_BASENAME)
+        root_module_dirpath: Path = tmp_path_factory.mktemp(MODULE_BASENAME)
 
         # determine custom module filepath
         *parent_modules_names, leaf_module_name = module_name.split(".")
-        parent_module_dirpath = root_module_dirpath.joinpath(*parent_modules_names)
-        module_filepath = parent_module_dirpath / f"{leaf_module_name}.py"
+        parent_module_dirpath: Path = root_module_dirpath.joinpath(
+            *parent_modules_names,
+        )
+        module_filepath: Path = parent_module_dirpath / f"{leaf_module_name}.py"
 
         # create custom module on disk
         parent_module_dirpath.mkdir(parents=True, exist_ok=True)
