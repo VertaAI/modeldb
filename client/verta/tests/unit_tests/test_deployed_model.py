@@ -494,7 +494,7 @@ def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
 @st.composite
 def generate_data(draw):
     """ Return a dict that represents a dataframe. Generates ints, floats, and strings."""
-    num_rows = draw(st.integers(min_value=50, max_value=200))
+    num_rows = draw(st.integers(min_value=1, max_value=200))
     num_cols = draw(st.integers(min_value=1, max_value=10))
     col_names = draw(st.lists(st.text(), max_size=num_cols, min_size=num_cols, unique=True))
     data = {}
