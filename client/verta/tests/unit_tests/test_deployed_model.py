@@ -492,26 +492,53 @@ def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
 
 
 @st.composite
-def json_dataframe(draw):
-    """ Return a dict that represents a dataframe. """
-    num_rows = draw(st.integers(min_value=1, max_value=10))
+def generate_data(draw):
+    """ Return a dict that represents a dataframe. Generates ints, floats, and strings."""
+    num_rows = draw(st.integers(min_value=50, max_value=200))
     num_cols = draw(st.integers(min_value=1, max_value=10))
-    rows = []
-    for _ in range(num_rows):
-        rows.append(draw(st.lists(st.integers(), max_size=num_cols, min_size=num_cols)))
-    cols = draw(st.lists(st.text(), max_size=num_cols, min_size=num_cols))
-    index = draw(st.lists(st.text(), max_size=num_rows, min_size=num_rows))
-    return {
-        "columns": cols,
-        "data": rows,
-        "index": index,
-    }
+    col_names = draw(st.lists(st.text(), max_size=num_cols, min_size=num_cols, unique=True))
+    data = {}
+    for name in col_names:
+        type_probability = draw(st.floats(min_value=0, max_value=1))
+        if type_probability <= 0.3:
+            col = draw(st.lists(st.integers(), max_size=num_rows, min_size=num_rows))
+        elif type_probability <= 0.6:
+            col = draw(st.lists(st.floats(), max_size=num_rows, min_size=num_rows))
+        else:
+            col = draw(st.lists(st.text(), max_size=num_rows, min_size=num_rows))
+        data[name] = col
+
+    out_dict = {"data": data}
+    index_probability = draw(st.floats(min_value=0, max_value=1))
+    if index_probability <= 0.5:
+        index = draw(st.lists(st.text(), max_size=num_rows, min_size=num_rows))
+        out_dict["index"] = index
+    return out_dict
 
 
-@given(json_dataframe())
-def test_batch(json_df):
-    print(json_df)
-    df = pd.DataFrame(columns=json_df["columns"], data=json_df["data"], index=json_df["index"])
-    print(df)
-
+@given(json_df=generate_data(), batch_size=st.integers(min_value=5, max_value=50))
+def test_batch(json_df, batch_size) -> None:
+    """ Test that the batch_predict method works with a variety of inputs. """
+    with responses.RequestsMock() as rsps:
+        if "index" in json_df:
+            input_df = pd.DataFrame(json_df["data"], index=json_df["index"])
+        else:
+            input_df = pd.DataFrame(json_df["data"])
+        for i in range(0, len(input_df), batch_size):
+            batch = input_df.iloc[i:i + batch_size]
+            serialized_batch = batch.to_dict(orient="split")
+            rsps.add(
+                responses.POST,
+                BATCH_PREDICTION_URL,
+                body=json.dumps(serialized_batch),
+                status=200,
+            )
+        creds = EmailCredentials.load_from_os_env()
+        dm = DeployedModel(
+            prediction_url=PREDICTION_URL,
+            creds=creds,
+            token=TOKEN,
+        )
+        prediction_df = dm.batch_predict(input_df, batch_size=batch_size)
+        pd.testing.assert_frame_equal(input_df, prediction_df)
 
