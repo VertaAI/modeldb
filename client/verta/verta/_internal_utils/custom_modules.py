@@ -21,7 +21,7 @@ class CustomModules(object):
 
     @staticmethod
     def get_module_path(module_name: str) -> str:
-        """Return root path to `module`."""
+        """Return file/directory path to `module_name`'s top-level module."""
         module_spec = importlib.util.find_spec(module_name)  # pylint: disable=no-member
 
         module_path = module_spec.submodule_search_locations  # module.__path__
