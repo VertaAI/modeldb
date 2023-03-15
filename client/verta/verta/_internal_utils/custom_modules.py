@@ -20,7 +20,7 @@ class CustomModules(object):
 
         module_path = module_spec.submodule_search_locations  # module.__path__
         if module_path:  # directory-based package
-            return module_path[0]  # directory (instead of its __init__.py)
+            return list(module_path)[0]  # directory (instead of its __init__.py)
 
         # single-file module
         return module_spec.origin  # module.__file__
