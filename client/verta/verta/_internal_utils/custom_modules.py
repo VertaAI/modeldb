@@ -5,7 +5,7 @@ import logging
 import os
 import pkgutil
 from types import ModuleType
-from typing import List, Set
+from typing import Container, Iterable, Set, Tuple
 
 logger = logging.getLogger(__name__)
 
@@ -32,8 +32,29 @@ class CustomModules(object):
         return module_spec.origin  # module.__file__
 
     @staticmethod
-    def categorize_custom_modules(custom_modules: List[str]):
-        # TODO: docstring
+    def categorize_custom_modules(
+        custom_modules: Iterable[str],
+    ) -> Tuple[Set[str], Set[str], Set[str]]:
+        """Return `custom_modules` categorized as module names and filesystem paths.
+
+        Parameters
+        ----------
+        custom_modules : iterable of str
+            The ``code_dependencies`` parameter of
+            :meth:`~verta.registry.entities.RegisteredModel.create_standard_model`,
+            or equivalently the ``custom_modules`` parameter of
+            :meth:`~verta.registry.entites.RegisteredModelVersion.log_model`.
+
+        Returns
+        -------
+        module_names : set of str
+            Custom modules that are ``import``able names.
+        filepaths : set of str
+            Custom modules that are paths to files.
+        dirpaths : set of str
+            Custom modules that are paths to directories.
+
+        """
         module_names, filepaths, dirpaths = set(), set(), set()
         for custom_module in custom_modules:
             if CustomModules.is_importable(custom_module):
@@ -48,7 +69,10 @@ class CustomModules(object):
         return module_names, filepaths, dirpaths
 
     @staticmethod
-    def in_named_custom_modules(module: ModuleType, module_names: Set[str]) -> bool:
+    def in_named_custom_modules(
+        module: ModuleType,
+        module_names: Container[str],
+    ) -> bool:
         """Return whether `module` is supplied by a named module."""
         if module.__name__ in module_names:
             logger.debug("found %s in modules", module)
@@ -56,7 +80,7 @@ class CustomModules(object):
         return False
 
     @staticmethod
-    def in_file_custom_modules(module: ModuleType, filepaths: Set[str]) -> bool:
+    def in_file_custom_modules(module: ModuleType, filepaths: Iterable[str]) -> bool:
         """Return whether `module` is potentially supplied by a Python file within it."""
         for filepath in map(os.path.abspath, filepaths):
             if any(
@@ -68,7 +92,10 @@ class CustomModules(object):
         return False
 
     @staticmethod
-    def in_directory_custom_modules(module: ModuleType, dirpaths: Set[str]) -> bool:
+    def in_directory_custom_modules(
+        module: ModuleType,
+        dirpaths: Iterable[str],
+    ) -> bool:
         """Return whether `module` is potentially supplied by a directory that contains it."""
         for dirpath in map(os.path.abspath, dirpaths):
             dirpath = dirpath.rstrip("/")
