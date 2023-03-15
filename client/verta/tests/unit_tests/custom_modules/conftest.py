@@ -1,20 +1,11 @@
 # -*- coding: utf-8 -*-
 
 import importlib
-import string
 import textwrap
 from types import FunctionType, ModuleType
 import uuid
 
-from hypothesis import strategies as st
 import pytest
-
-
-@st.composite
-def custom_module_import_path(draw, max_depth=8):
-    depth = draw(st.integers(min_value=0, max_value=max_depth))
-    st.text(alphabet=string.ascii_lowercase + "_", min_size=1, max_size=32)
-    raise NotImplementedError
 
 
 @pytest.fixture
@@ -26,13 +17,18 @@ def custom_module_factory(monkeypatch, tmp_path_factory) -> FunctionType:
 
         _VALUE = "{}"
 
-        def get_value():
+        def get_value() -> str:
             return _VALUE
         """
     )
 
     def make_custom_module(import_path: str) -> ModuleType:
         """Create and return a custom Python module on local disk.
+
+        The custom module simply contains two members:
+
+        - ``_VALUE``: a string UUID
+        - ``get_value()``: a function that takes no arguments and returns ``_VALUE``
 
         Parameters
         ----------
@@ -47,7 +43,6 @@ def custom_module_factory(monkeypatch, tmp_path_factory) -> FunctionType:
             filepath.
 
         """
-
         # create base directory to contain custom module and add to sys.path
         base_dirpath = tmp_path_factory.mktemp(TMP_PATH_BASENAME)
         monkeypatch.syspath_prepend(str(base_dirpath))
