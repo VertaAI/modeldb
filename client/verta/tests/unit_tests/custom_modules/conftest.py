@@ -10,8 +10,9 @@ import pytest
 
 @pytest.fixture
 def custom_module_factory(monkeypatch, tmp_path_factory) -> FunctionType:
-    TMP_PATH_BASENAME = "custom-module"
-    CUSTOM_MODULE_CONTENTS_TMPL = textwrap.dedent(
+    monkeypatch.syspath_prepend(tmp_path_factory.getbasetemp())
+    MODULE_BASENAME = "custom_module_"
+    MODULE_CONTENTS_TMPL = textwrap.dedent(
         """
         # -*- coding: utf-8 -*-
 
@@ -22,7 +23,7 @@ def custom_module_factory(monkeypatch, tmp_path_factory) -> FunctionType:
         """
     )
 
-    def make_custom_module(import_path: str) -> ModuleType:
+    def make_custom_module(module_name: str) -> ModuleType:
         """Create and return a custom Python module on local disk.
 
         The custom module simply contains two members:
@@ -32,31 +33,34 @@ def custom_module_factory(monkeypatch, tmp_path_factory) -> FunctionType:
 
         Parameters
         ----------
-        import_path : str
-            Dot-delimited path for the desired module, e.g. ``foo.bar.baz``.
+        module_name : str
+            Dot-delimited name for the desired module, e.g. ``foo.bar.baz``.
+            For uniqueness, the actual custom module will nested in an
+            arbitrary top-level parent, e.g. ``module_1.foo.bar.baz``.
 
         Returns
         -------
         ModuleType
-            Module object. As with all modules, its ``__name__`` attribute is
-            its full name (i.e. `import_path`), and ``__file__`` is its
-            filepath.
+            Custom module. As with all modules, its ``__name__`` attribute is
+            its full name, and ``__file__`` is its filepath.
 
         """
-        # create base directory to contain custom module and add to sys.path
-        base_dirpath = tmp_path_factory.mktemp(TMP_PATH_BASENAME)
-        monkeypatch.syspath_prepend(str(base_dirpath))
+        # create unique directory for top-level module
+        root_module_dirpath = tmp_path_factory.mktemp(MODULE_BASENAME)
 
         # determine custom module filepath
-        *parent_modules_names, leaf_module_name = import_path.split(".")
-        parent_module_dirpath = base_dirpath.joinpath(*parent_modules_names)
-        module_filepath = parent_module_dirpath / (leaf_module_name + ".py")
+        *parent_modules_names, leaf_module_name = module_name.split(".")
+        parent_module_dirpath = root_module_dirpath.joinpath(*parent_modules_names)
+        module_filepath = parent_module_dirpath / f"{leaf_module_name}.py"
 
         # create custom module on disk
         parent_module_dirpath.mkdir(parents=True, exist_ok=True)
         with open(str(module_filepath), "w") as f:
-            f.write(CUSTOM_MODULE_CONTENTS_TMPL.format(str(uuid.uuid4())))
+            f.write(MODULE_CONTENTS_TMPL.format(str(uuid.uuid4())))
 
-        return importlib.import_module(import_path)
+        return importlib.import_module(
+            name=f".{module_name}",
+            package=root_module_dirpath.name,
+        )
 
     return make_custom_module
