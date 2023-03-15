@@ -119,6 +119,9 @@ public class ModelDBUtils {
   }
 
   public static boolean needToRetry(Exception ex) {
+    if (ex == null) {
+      return false;
+    }
     Throwable communicationsException = findCommunicationsFailedCause(ex);
     if (communicationsException.getCause() instanceof SocketException) {
       LOGGER.warn(communicationsException.getMessage());
@@ -139,9 +142,6 @@ public class ModelDBUtils {
   }
 
   public static Throwable findCommunicationsFailedCause(Throwable throwable) {
-    if (throwable == null) {
-      return null;
-    }
     var rootCause = throwable;
     while (rootCause.getCause() != null
         && !(rootCause.getCause() instanceof SocketException

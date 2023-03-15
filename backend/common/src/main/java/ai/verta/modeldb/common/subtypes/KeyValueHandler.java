@@ -106,17 +106,20 @@ public abstract class KeyValueHandler<T> {
 
   public InternalFuture<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        String.format(
-                            "select kv_key as k, kv_value as v, value_type as t, %s as entity_id from %s where entity_name=:entity_name and field_type=:field_type and %s in (<entity_ids>)",
-                            entityIdReferenceColumn, getTableName(), entityIdReferenceColumn))
+            handle -> {
+              try (var query =
+                  handle.createQuery(
+                      String.format(
+                          "select kv_key as k, kv_value as v, value_type as t, %s as entity_id from %s where entity_name=:entity_name and field_type=:field_type and %s in (<entity_ids>)",
+                          entityIdReferenceColumn, getTableName(), entityIdReferenceColumn))) {
+                return query
                     .bindList("entity_ids", entityIds)
                     .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
-                    .list())
+                    .list();
+              }
+            })
         .thenApply(
             simpleEntries ->
                 simpleEntries.stream()
@@ -145,21 +148,23 @@ public abstract class KeyValueHandler<T> {
 
     // Check for conflicts
     for (final var kv : kvs) {
-      handle
-          .createQuery(
+      try (var query =
+          handle.createQuery(
               String.format(
                   "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
-                  getTableName(), entityIdReferenceColumn))
-          .bind(KEY_QUERY_PARAM, kv.getKey())
-          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-          .bind(ENTITY_ID_PARAM_QUERY, entityId)
-          .mapTo(Long.class)
-          .findOne()
-          .ifPresent(
-              present -> {
-                throw new AlreadyExistsException("Key " + kv.getKey() + " already exists");
-              });
+                  getTableName(), entityIdReferenceColumn))) {
+        query
+            .bind(KEY_QUERY_PARAM, kv.getKey())
+            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+            .bind(ENTITY_ID_PARAM_QUERY, entityId)
+            .mapTo(Long.class)
+            .findOne()
+            .ifPresent(
+                present -> {
+                  throw new AlreadyExistsException("Key " + kv.getKey() + " already exists");
+                });
+      }
     }
 
     for (final var kv : kvs) {
@@ -197,18 +202,14 @@ public abstract class KeyValueHandler<T> {
       sql += " and kv_key in (<keys>)";
     }
 
-    var query =
-        handle
-            .createUpdate(sql)
-            .bind(ENTITY_ID_PARAM_QUERY, entityId)
-            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-            .bind(ENTITY_NAME_QUERY_PARAM, entityName);
-
-    if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-      query = query.bindList("keys", maybeKeys.get());
+    try (var query = handle.createUpdate(sql)) {
+      query
+          .bind(ENTITY_ID_PARAM_QUERY, entityId)
+          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName);
+      maybeKeys.ifPresent(maybeKeyList -> query.bindList("keys", maybeKeyList));
+      query.execute();
     }
-
-    query.execute();
   }
 
   // TODO: We might end up removing this update since ERs don't have them.
@@ -222,19 +223,21 @@ public abstract class KeyValueHandler<T> {
     boolean exists = keyValueExists(handle, entityId, kv);
 
     if (exists) {
-      handle
-          .createUpdate(
+      try (var updateQuery =
+          handle.createUpdate(
               String.format(
                   "Update %s SET kv_key=:key, kv_value=:value, value_type=:type "
                       + " where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
-                  getTableName(), entityIdReferenceColumn))
-          .bind(KEY_QUERY_PARAM, kv.getKey())
-          .bind(VALUE_QUERY_PARAM, getValueForKeyValueTable(kv))
-          .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
-          .bind(ENTITY_ID_PARAM_QUERY, entityId)
-          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-          .execute();
+                  getTableName(), entityIdReferenceColumn))) {
+        updateQuery
+            .bind(KEY_QUERY_PARAM, kv.getKey())
+            .bind(VALUE_QUERY_PARAM, getValueForKeyValueTable(kv))
+            .bind(TYPE_QUERY_PARAM, kv.getValueTypeValue())
+            .bind(ENTITY_ID_PARAM_QUERY, entityId)
+            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+            .execute();
+      }
     } else {
       insertKeyValue(entityId, handle, kv);
     }
@@ -242,18 +245,20 @@ public abstract class KeyValueHandler<T> {
 
   private boolean keyValueExists(Handle handle, T entityId, KeyValue kv) {
     // Check for conflicts
-    Optional<Long> count =
-        handle
-            .createQuery(
-                String.format(
-                    "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
-                    getTableName(), entityIdReferenceColumn))
-            .bind(KEY_QUERY_PARAM, kv.getKey())
-            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-            .bind(ENTITY_ID_PARAM_QUERY, entityId)
-            .mapTo(Long.class)
-            .findOne();
-    return (count.isPresent() && count.get() > 0);
+    try (var query =
+        handle.createQuery(
+            String.format(
+                "select id from %s where entity_name=:entity_name and field_type=:field_type and kv_key=:key and %s =:entity_id",
+                getTableName(), entityIdReferenceColumn))) {
+      Optional<Long> count =
+          query
+              .bind(KEY_QUERY_PARAM, kv.getKey())
+              .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+              .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+              .bind(ENTITY_ID_PARAM_QUERY, entityId)
+              .mapTo(Long.class)
+              .findOne();
+      return (count.isPresent() && count.get() > 0);
+    }
   }
 }

@@ -233,24 +233,24 @@ public abstract class CommonDBUtil {
         liquibaseRootPath = liquibaseRootPath.substring(1);
       }
 
-      var liquibase =
+      try (var liquibase =
           new Liquibase(
               liquibaseRootPath,
               new CompositeResourceAccessor(resourceAccessor, new ClassLoaderResourceAccessor()),
-              database);
-
-      var liquibaseExecuted = false;
-      while (!liquibaseExecuted) {
-        try {
-          if (changeSetToRevertUntilTag == null || changeSetToRevertUntilTag.isEmpty()) {
-            liquibase.update(new Contexts(), new LabelExpression());
-          } else {
-            liquibase.rollback(changeSetToRevertUntilTag, new Contexts(), new LabelExpression());
+              database)) {
+        var liquibaseExecuted = false;
+        while (!liquibaseExecuted) {
+          try {
+            if (changeSetToRevertUntilTag == null || changeSetToRevertUntilTag.isEmpty()) {
+              liquibase.update(new Contexts(), new LabelExpression());
+            } else {
+              liquibase.rollback(changeSetToRevertUntilTag, new Contexts(), new LabelExpression());
+            }
+            liquibaseExecuted = true;
+          } catch (LockException ex) {
+            LOGGER.warn("CommonDBUtil createTablesLiquibaseMigration() getting LockException ", ex);
+            releaseLiquibaseLock(config);
           }
-          liquibaseExecuted = true;
-        } catch (LockException ex) {
-          LOGGER.warn("CommonDBUtil createTablesLiquibaseMigration() getting LockException ", ex);
-          releaseLiquibaseLock(config);
         }
       }
     }
@@ -481,29 +481,30 @@ public abstract class CommonDBUtil {
     final var databaseName = RdbConfig.buildDatabaseName(rdbConfiguration);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
     LOGGER.info("Connecting to DB URL " + dbUrl);
-    Connection connection =
+    try (Connection connection =
         DriverManager.getConnection(
-            dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword());
-
-    if (rdbConfiguration.isH2()) {
-      LOGGER.debug("database driver is H2...skipping creation");
-      return;
-    }
-    ResultSet resultSet = connection.getMetaData().getCatalogs();
-
-    while (resultSet.next()) {
-      String databaseNameRes = resultSet.getString(1);
-      var dbName = RdbConfig.buildDatabaseName(rdbConfiguration);
-      if (dbName.equals(databaseNameRes)) {
-        LOGGER.debug("the database " + databaseName + " exists");
+            dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword())) {
+      if (rdbConfiguration.isH2()) {
+        LOGGER.debug("database driver is H2...skipping creation");
         return;
       }
-    }
+      ResultSet resultSet = connection.getMetaData().getCatalogs();
 
-    LOGGER.debug("the database " + databaseName + " does not exist");
-    Statement statement = connection.createStatement();
-    statement.executeUpdate("CREATE DATABASE " + databaseName);
-    LOGGER.debug("the database " + databaseName + " was created successfully");
+      while (resultSet.next()) {
+        String databaseNameRes = resultSet.getString(1);
+        var dbName = RdbConfig.buildDatabaseName(rdbConfiguration);
+        if (dbName.equals(databaseNameRes)) {
+          LOGGER.debug("the database " + databaseName + " exists");
+          return;
+        }
+      }
+
+      LOGGER.debug("the database " + databaseName + " does not exist");
+      try (Statement statement = connection.createStatement()) {
+        statement.executeUpdate("CREATE DATABASE " + databaseName);
+        LOGGER.debug("the database " + databaseName + " was created successfully");
+      }
+    }
   }
 
   public static Throwable logError(Throwable e) {

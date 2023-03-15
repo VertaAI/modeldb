@@ -36,7 +36,7 @@ public abstract class Config {
   @JsonProperty private boolean event_system_enabled = false;
   @JsonProperty private ServerInterceptor tracingServerInterceptor = null;
   @JsonProperty private ClientInterceptor tracingClientInterceptor = null;
-  @JsonProperty private volatile OpenTelemetry openTelemetry;
+  @JsonProperty private OpenTelemetry openTelemetry;
   @JsonProperty private ArtifactStoreConfig artifactStoreConfig;
 
   @JsonProperty private boolean permissionV2Enabled = false;
