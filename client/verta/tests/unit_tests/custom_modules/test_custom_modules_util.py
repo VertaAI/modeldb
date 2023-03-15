@@ -15,7 +15,7 @@ from verta._internal_utils.custom_modules import CustomModules
 from verta.registry import VertaModelBase, verify_io
 
 
-HEALTH_CHECKS = [
+SLOW_FILTER_HEALTH_CHECKS = [
     HealthCheck.filter_too_much,
     HealthCheck.too_slow,
     HealthCheck.function_scoped_fixture,
@@ -54,7 +54,7 @@ class TestIsImportable:
 class TestGetModulePath:
     """Test ``CustomModules.get_module_path()``."""
 
-    @settings(suppress_health_check=HEALTH_CHECKS)
+    @settings(suppress_health_check=SLOW_FILTER_HEALTH_CHECKS)
     @given(data=st.data())
     def test_get_single_file_module_path(self, make_custom_module, data):
         """Test that we can find the path to a ``.py`` file module."""
@@ -65,7 +65,7 @@ class TestGetModulePath:
         module_path = CustomModules().get_module_path(module.__name__)
         assert module_path == module.__file__
 
-    @settings(suppress_health_check=HEALTH_CHECKS)
+    @settings(suppress_health_check=SLOW_FILTER_HEALTH_CHECKS)
     @given(data=st.data())
     def test_get_directory_module_path(self, make_custom_module, data):
         """Test that we can find the path to a directory module."""
