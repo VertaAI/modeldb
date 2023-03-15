@@ -47,7 +47,7 @@ def make_custom_module(monkeypatch, tmp_path_factory) -> FunctionType:
         Returns
         -------
         ModuleType
-            Custom module. As with all modules, its ``__name__`` attribute is
+            Python module. As with all modules, its ``__name__`` attribute is
             its full name, and ``__file__`` is its filepath.
 
         """
