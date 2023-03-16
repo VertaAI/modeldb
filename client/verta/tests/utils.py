@@ -29,6 +29,9 @@ def gen_bool():
     return random.random() > 0.5
 
 
+def gen_probability():
+    return random.uniform(0, 1)
+
 def gen_float(start=1, stop=None):
     if stop is None:
         return random.random() * start
