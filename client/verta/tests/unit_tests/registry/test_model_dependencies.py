@@ -60,7 +60,8 @@ def test_modules_in_function_body_as_class_instance(dependency_testing_model) ->
     """
     func: Callable = dependency_testing_model.make_message
     expected_modules = {'google'}
-
+    extracted_modules: Set[str] = md.modules_in_function_body(func)
+    assert extracted_modules == expected_modules
 
 def tests_modules_in_function_body_as_function(dependency_testing_model) -> None:
     """Verify that modules introduced only via function directly imported from
