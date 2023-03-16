@@ -47,13 +47,13 @@ public abstract class HandlerUtil {
 
     LOGGER.trace(
         String.format("updated %s query string: %s", entityName, queryStrBuilder.toString()));
-    var query = handleForTransaction.createUpdate(queryStrBuilder.toString());
+    try (var query = handleForTransaction.createUpdate(queryStrBuilder.toString())) {
+      // Inserting fields arguments based on the keys and value of map
+      for (Map.Entry<String, Object> objectEntry : rmValueMap.entrySet()) {
+        query.bind(objectEntry.getKey(), objectEntry.getValue());
+      }
 
-    // Inserting fields arguments based on the keys and value of map
-    for (Map.Entry<String, Object> objectEntry : rmValueMap.entrySet()) {
-      query.bind(objectEntry.getKey(), objectEntry.getValue());
+      query.bind("id", entityId).execute();
     }
-
-    query.bind("id", entityId).execute();
   }
 }

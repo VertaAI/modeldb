@@ -355,10 +355,10 @@ public class FutureExperimentDAO {
                                             + String.join(" AND ", queryContext.getConditions());
                                   }
 
-                                  var query = handle.createQuery(sql);
-                                  queryContext.getBinds().forEach(b -> b.accept(query));
-
-                                  return query.mapTo(Long.class).one();
+                                  try (var query = handle.createQuery(sql)) {
+                                    queryContext.getBinds().forEach(b -> b.accept(query));
+                                    return query.mapTo(Long.class).one();
+                                  }
                                 }),
                         executor);
               }
@@ -447,43 +447,49 @@ public class FutureExperimentDAO {
   private InternalFuture<Void> updateExperimentField(
       String expId, String fieldName, String fieldValue) {
     return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    String.format(
-                        "update experiment set %s = :fieldValue, date_updated = :updatedTime, version_number=(version_number + 1) where id = :id ",
-                        fieldName))
+        handle -> {
+          try (var updateQuery =
+              handle.createUpdate(
+                  String.format(
+                      "update experiment set %s = :fieldValue, date_updated = :updatedTime, version_number=(version_number + 1) where id = :id ",
+                      fieldName))) {
+            updateQuery
                 .bind("fieldValue", fieldValue)
                 .bind("id", expId)
                 .bind("updatedTime", new Date().getTime())
-                .execute());
+                .execute();
+          }
+        });
   }
 
   private InternalFuture<Map<String, String>> getProjectIdByExperimentId(
       List<String> experimentIds) {
     return jdbi.withHandle(
         handle -> {
-          List<Map<String, String>> experimentEntitiesMap =
-              handle
-                  .createQuery(
-                      "select id, project_id from experiment where id IN (<ids>) AND deleted = :deleted")
-                  .bind("deleted", false)
-                  .bindList("ids", experimentIds)
-                  .map(
-                      (rs, ctx) ->
-                          Collections.singletonMap(rs.getString("id"), rs.getString("project_id")))
-                  .list();
+          try (var query =
+              handle.createQuery(
+                  "select id, project_id from experiment where id IN (<ids>) AND deleted = :deleted")) {
+            List<Map<String, String>> experimentEntitiesMap =
+                query
+                    .bind("deleted", false)
+                    .bindList("ids", experimentIds)
+                    .map(
+                        (rs, ctx) ->
+                            Collections.singletonMap(
+                                rs.getString("id"), rs.getString("project_id")))
+                    .list();
 
-          Map<String, String> projectIdFromExperimentMap = new HashMap<>();
-          for (var result : experimentEntitiesMap) {
-            projectIdFromExperimentMap.putAll(result);
-          }
-          for (var expId : experimentIds) {
-            if (!projectIdFromExperimentMap.containsKey(expId)) {
-              projectIdFromExperimentMap.put(expId, "");
+            Map<String, String> projectIdFromExperimentMap = new HashMap<>();
+            for (var result : experimentEntitiesMap) {
+              projectIdFromExperimentMap.putAll(result);
             }
+            for (var expId : experimentIds) {
+              if (!projectIdFromExperimentMap.containsKey(expId)) {
+                projectIdFromExperimentMap.put(expId, "");
+              }
+            }
+            return projectIdFromExperimentMap;
           }
-          return projectIdFromExperimentMap;
         });
   }
 
@@ -530,19 +536,21 @@ public class FutureExperimentDAO {
     String finalName = name;
     return jdbi.useHandle(
             handle -> {
-              Optional<Long> countOptional =
-                  handle
-                      .createQuery(
-                          "select count(id) from experiment where project_id = :projectId and name = :name and deleted = :deleted")
-                      .bind("projectId", projectId)
-                      .bind("name", finalName)
-                      .bind("deleted", false)
-                      .mapTo(Long.class)
-                      .findOne();
-              if (countOptional.isPresent() && countOptional.get() > 0) {
-                throw new AlreadyExistsException(
-                    String.format(
-                        "Experiment with name '%s' already exists in project", finalName));
+              try (var query =
+                  handle.createQuery(
+                      "select count(id) from experiment where project_id = :projectId and name = :name and deleted = :deleted")) {
+                Optional<Long> countOptional =
+                    query
+                        .bind("projectId", projectId)
+                        .bind("name", finalName)
+                        .bind("deleted", false)
+                        .mapTo(Long.class)
+                        .findOne();
+                if (countOptional.isPresent() && countOptional.get() > 0) {
+                  throw new AlreadyExistsException(
+                      String.format(
+                          "Experiment with name '%s' already exists in project", finalName));
+                }
               }
             })
         .thenCompose(unused -> updateExperimentField(experimentId, "name", finalName), executor);
@@ -586,25 +594,23 @@ public class FutureExperimentDAO {
   }
 
   private void updateModifiedTimestamp(Handle handle, String experimentId, Long now) {
-    final var currentDateUpdated =
-        handle
-            .createQuery("SELECT date_updated FROM experiment WHERE id=:exp_id")
-            .bind("exp_id", experimentId)
-            .mapTo(Long.class)
-            .one();
-    final var dateUpdated = Math.max(currentDateUpdated, now);
-    handle
-        .createUpdate("update experiment set date_updated=:date_updated where id=:exp_id")
-        .bind("exp_id", experimentId)
-        .bind("date_updated", dateUpdated)
-        .execute();
+    try (var query = handle.createQuery("SELECT date_updated FROM experiment WHERE id=:exp_id")) {
+      final var currentDateUpdated = query.bind("exp_id", experimentId).mapTo(Long.class).one();
+      final var dateUpdated = Math.max(currentDateUpdated, now);
+      try (var updatequery =
+          handle.createUpdate(
+              "update experiment set date_updated=:date_updated where id=:exp_id")) {
+        updatequery.bind("exp_id", experimentId).bind("date_updated", dateUpdated).execute();
+      }
+    }
   }
 
   private void updateVersionNumber(Handle handle, String expId) {
-    handle
-        .createUpdate("update experiment set version_number=(version_number + 1) where id=:exp_id")
-        .bind("exp_id", expId)
-        .execute();
+    try (var updateQuery =
+        handle.createUpdate(
+            "update experiment set version_number=(version_number + 1) where id=:exp_id")) {
+      updateQuery.bind("exp_id", expId).execute();
+    }
   }
 
   public InternalFuture<GetTags.Response> getTags(String expId) {
@@ -725,13 +731,16 @@ public class FutureExperimentDAO {
     return InternalFuture.runAsync(
         () ->
             jdbi.withHandle(
-                handle ->
-                    handle
-                        .createUpdate(
-                            "Update experiment SET deleted = :deleted WHERE id IN (<ids>)")
+                handle -> {
+                  try (var updateQuery =
+                      handle.createUpdate(
+                          "Update experiment SET deleted = :deleted WHERE id IN (<ids>)")) {
+                    return updateQuery
                         .bindList("ids", experimentIds)
                         .bind("deleted", true)
-                        .execute()),
+                        .execute();
+                  }
+                }),
         executor);
   }
 

@@ -44,16 +44,18 @@ public class FeatureHandler {
   }
 
   private List<String> getFeatures(Handle handle, String entityId) {
-    return handle
-        .createQuery(
+    try (var findQuery =
+        handle.createQuery(
             "select feature from feature "
                 + "where entity_name=:entity_name and "
                 + entityIdReferenceColumn
-                + "=:entity_id")
-        .bind(ENTITY_ID_QUERY_PARAM, entityId)
-        .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-        .mapTo(String.class)
-        .list();
+                + "=:entity_id")) {
+      return findQuery
+          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+          .mapTo(String.class)
+          .list();
+    }
   }
 
   public void logFeatures(Handle handle, String entityId, List<Feature> features) {
@@ -74,29 +76,32 @@ public class FeatureHandler {
     }
 
     for (final var feature : featuresSet) {
-      handle
-          .createUpdate(
+      try (var updateQuery =
+          handle.createUpdate(
               "insert into feature (entity_name, feature, "
                   + entityIdReferenceColumn
-                  + ") VALUES(:entity_name, :feature, :entity_id)")
-          .bind("feature", feature)
-          .bind(ENTITY_ID_QUERY_PARAM, entityId)
-          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-          .execute();
+                  + ") VALUES(:entity_name, :feature, :entity_id)")) {
+        updateQuery
+            .bind("feature", feature)
+            .bind(ENTITY_ID_QUERY_PARAM, entityId)
+            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+            .execute();
+      }
     }
   }
 
   public InternalFuture<MapSubtypes<String, Feature>> getFeaturesMap(Set<String> entityIds) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        "select feature, "
-                            + entityIdReferenceColumn
-                            + " as entity_id from feature "
-                            + "where entity_name=:entity_name and "
-                            + entityIdReferenceColumn
-                            + " in (<entity_ids>)")
+            handle -> {
+              try (var findQuery =
+                  handle.createQuery(
+                      "select feature, "
+                          + entityIdReferenceColumn
+                          + " as entity_id from feature "
+                          + "where entity_name=:entity_name and "
+                          + entityIdReferenceColumn
+                          + " in (<entity_ids>)")) {
+                return findQuery
                     .bindList("entity_ids", entityIds)
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map(
@@ -104,7 +109,9 @@ public class FeatureHandler {
                             new AbstractMap.SimpleEntry<>(
                                 rs.getString(ENTITY_ID_QUERY_PARAM),
                                 Feature.newBuilder().setName(rs.getString("feature")).build()))
-                    .list())
+                    .list();
+              }
+            })
         .thenApply(MapSubtypes::from, executor);
   }
 }
