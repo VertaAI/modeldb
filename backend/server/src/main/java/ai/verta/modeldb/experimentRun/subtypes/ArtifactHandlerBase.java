@@ -65,14 +65,14 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
       queryStr = queryStr + " AND ar_key=:ar_key ";
     }
 
-    var query =
-        handle
-            .createQuery(queryStr)
-            .bindList("entity_ids", entityIds)
-            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-            .bind(ENTITY_NAME_QUERY_PARAM, entityName);
-    maybeKey.ifPresent(s -> query.bind("ar_key", s));
-    return query;
+    try (var query = handle.createQuery(queryStr)) {
+      query
+          .bindList("entity_ids", entityIds)
+          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName);
+      maybeKey.ifPresent(s -> query.bind("ar_key", s));
+      return query;
+    }
   }
 
   protected InternalFuture<Optional<Long>> getArtifactId(String entityId, String key) {
@@ -86,18 +86,21 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
         .thenCompose(
             unused ->
                 jdbi.withHandle(
-                    handle ->
-                        handle
-                            .createQuery(
-                                String.format(
-                                    "select id from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id and ar_key=:ar_key",
-                                    getTableName(), entityIdReferenceColumn))
+                    handle -> {
+                      var queryStr =
+                          String.format(
+                              "select id from %s where entity_name=:entity_name and field_type=:field_type and %s =:entity_id and ar_key=:ar_key",
+                              getTableName(), entityIdReferenceColumn);
+                      try (var query = handle.createQuery(queryStr)) {
+                        return query
                             .bind(ENTITY_ID_QUERY_PARAM, entityId)
                             .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
                             .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                             .bind("ar_key", key)
                             .mapTo(Long.class)
-                            .findOne()),
+                            .findOne();
+                      }
+                    }),
             executor);
   }
 
@@ -118,39 +121,38 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
       sql += " and ar_key in (<keys>)";
     }
 
-    var query =
-        handle
-            .createUpdate(sql)
-            .bind(ENTITY_ID_QUERY_PARAM, entityId)
-            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-            .bind(ENTITY_NAME_QUERY_PARAM, entityName);
-
-    if (maybeKeys.isPresent() && !maybeKeys.get().isEmpty()) {
-      query = query.bindList("keys", maybeKeys.get());
+    try (var query = handle.createUpdate(sql)) {
+      query
+          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName);
+      maybeKeys.ifPresent(maybeKeyList -> query.bindList("keys", maybeKeyList));
+      query.execute();
     }
-
-    query.execute();
   }
 
   @Override
   protected void validateAndThrowErrorAlreadyExistsArtifacts(
       String entityId, List<Artifact> artifacts, Handle handle) {
     for (final var artifact : artifacts) {
-      handle
-          .createQuery(
+      try (var query =
+          handle.createQuery(
               String.format(
                   "select id from %s where entity_name=:entity_name and field_type=:field_type and ar_key=:key and %s =:entity_id",
-                  getTableName(), entityIdReferenceColumn))
-          .bind("key", artifact.getKey())
-          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-          .bind(ENTITY_ID_QUERY_PARAM, entityId)
-          .mapTo(Long.class)
-          .findOne()
-          .ifPresent(
-              present -> {
-                throw new AlreadyExistsException("Key '" + artifact.getKey() + "' already exists");
-              });
+                  getTableName(), entityIdReferenceColumn))) {
+        query
+            .bind("key", artifact.getKey())
+            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+            .bind(ENTITY_ID_QUERY_PARAM, entityId)
+            .mapTo(Long.class)
+            .findOne()
+            .ifPresent(
+                present -> {
+                  throw new AlreadyExistsException(
+                      "Key '" + artifact.getKey() + "' already exists");
+                });
+      }
     }
   }
 
@@ -166,28 +168,30 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
       Artifact artifact,
       boolean uploadCompleted,
       String storeTypePath) {
-    handle
-        .createUpdate(
-            "insert into "
-                + getTableName()
-                + " (entity_name, field_type, ar_key, ar_path, artifact_type, path_only, linked_artifact_id, filename_extension, store_type_path, serialization, artifact_subtype, upload_completed, "
-                + entityIdReferenceColumn
-                + ") "
-                + "values (:entity_name, :field_type, :key, :path, :type,:path_only,:linked_artifact_id,:filename_extension,:store_type_path, :serialization, :artifact_subtype, :upload_completed, :entity_id)")
-        .bind("key", artifact.getKey())
-        .bind("path", artifact.getPath())
-        .bind("type", artifact.getArtifactTypeValue())
-        .bind("path_only", artifact.getPathOnly())
-        .bind("linked_artifact_id", artifact.getLinkedArtifactId())
-        .bind("filename_extension", artifact.getFilenameExtension())
-        .bind("upload_completed", uploadCompleted)
-        .bind("store_type_path", storeTypePath)
-        .bind("serialization", artifact.getSerialization())
-        .bind("artifact_subtype", artifact.getArtifactSubtype())
-        .bind(ENTITY_ID_QUERY_PARAM, entityId)
-        .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-        .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-        .execute();
+    var updateQueryStr =
+        "insert into "
+            + getTableName()
+            + " (entity_name, field_type, ar_key, ar_path, artifact_type, path_only, linked_artifact_id, filename_extension, store_type_path, serialization, artifact_subtype, upload_completed, "
+            + entityIdReferenceColumn
+            + ") "
+            + "values (:entity_name, :field_type, :key, :path, :type,:path_only,:linked_artifact_id,:filename_extension,:store_type_path, :serialization, :artifact_subtype, :upload_completed, :entity_id)";
+    try (var updateQuery = handle.createUpdate(updateQueryStr)) {
+      updateQuery
+          .bind("key", artifact.getKey())
+          .bind("path", artifact.getPath())
+          .bind("type", artifact.getArtifactTypeValue())
+          .bind("path_only", artifact.getPathOnly())
+          .bind("linked_artifact_id", artifact.getLinkedArtifactId())
+          .bind("filename_extension", artifact.getFilenameExtension())
+          .bind("upload_completed", uploadCompleted)
+          .bind("store_type_path", storeTypePath)
+          .bind("serialization", artifact.getSerialization())
+          .bind("artifact_subtype", artifact.getArtifactSubtype())
+          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+          .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+          .execute();
+    }
   }
 
   @Override
@@ -210,18 +214,20 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
 
   @Override
   protected boolean isExists(String entityId, String key, Handle handle) {
-    return handle
-            .createQuery(
-                String.format(
-                    "select id from %s where entity_name=:entity_name and field_type=:field_type and ar_key=:key and %s =:entity_id",
-                    getTableName(), entityIdReferenceColumn))
-            .bind("key", key)
-            .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
-            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-            .bind(ENTITY_ID_QUERY_PARAM, entityId)
-            .mapTo(Long.class)
-            .one()
-        > 0;
+    var queryStr =
+        String.format(
+            "select id from %s where entity_name=:entity_name and field_type=:field_type and ar_key=:key and %s =:entity_id",
+            getTableName(), entityIdReferenceColumn);
+    try (var query = handle.createQuery(queryStr)) {
+      return query
+              .bind("key", key)
+              .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
+              .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+              .bind(ENTITY_ID_QUERY_PARAM, entityId)
+              .mapTo(Long.class)
+              .one()
+          > 0;
+    }
   }
 
   @Override
@@ -259,13 +265,13 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
     queryStrBuilder.append(
         String.format(" WHERE ar_key = :ar_key and %s =:entity_id  ", entityIdReferenceColumn));
 
-    var query = handle.createUpdate(queryStrBuilder.toString());
+    try (var query = handle.createUpdate(queryStrBuilder.toString())) {
+      // Inserting fields arguments based on the keys and value of map
+      for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+        query.bind(objectEntry.getKey(), objectEntry.getValue());
+      }
 
-    // Inserting fields arguments based on the keys and value of map
-    for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
-      query.bind(objectEntry.getKey(), objectEntry.getValue());
+      query.bind("entity_id", entityId).execute();
     }
-
-    query.bind("entity_id", entityId).execute();
   }
 }

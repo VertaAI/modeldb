@@ -37,15 +37,15 @@ public class CodeVersionHandler {
 
   public InternalFuture<Optional<CodeVersion>> getCodeVersion(String entityId) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        String.format(
-                            "select code_version_snapshot_id from %s where id=:entity_id",
-                            entityTableName))
-                    .bind(ENTITY_ID_QUERY_PARAM, entityId)
-                    .mapTo(Long.class)
-                    .findOne())
+            handle -> {
+              try (var findQuery =
+                  handle.createQuery(
+                      String.format(
+                          "select code_version_snapshot_id from %s where id=:entity_id",
+                          entityTableName))) {
+                return findQuery.bind(ENTITY_ID_QUERY_PARAM, entityId).mapTo(Long.class).findOne();
+              }
+            })
         .thenApply(
             maybeSnapshotId ->
                 maybeSnapshotId.map(
@@ -66,35 +66,33 @@ public class CodeVersionHandler {
       Handle handle, String entityId, boolean overwrite, CodeVersion codeVersion) {
     // TODO: input validation
     // Check if it existed before
-    var maybeSnapshotId =
-        handle
-            .createQuery(
-                String.format(
-                    "select code_version_snapshot_id from %s where id=:entity_id", entityTableName))
-            .bind(ENTITY_ID_QUERY_PARAM, entityId)
-            .mapTo(Long.class)
-            .findOne();
+    try (var query =
+        handle.createQuery(
+            String.format(
+                "select code_version_snapshot_id from %s where id=:entity_id", entityTableName))) {
+      var maybeSnapshotId = query.bind(ENTITY_ID_QUERY_PARAM, entityId).mapTo(Long.class).findOne();
 
-    // Check if we can overwrite
-    if (maybeSnapshotId.isPresent()) {
-      if (overwrite) {
-        try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
-          var transaction = session.beginTransaction();
-          session
-              .createSQLQuery(
-                  String.format(
-                      "UPDATE %s SET code_version_snapshot_id = null WHERE id=:entity_id",
-                      entityTableName))
-              .setParameter(ENTITY_ID_QUERY_PARAM, entityId)
-              .executeUpdate();
-          final CodeVersionEntity entity =
-              session.get(
-                  CodeVersionEntity.class, maybeSnapshotId.get(), LockMode.PESSIMISTIC_WRITE);
-          session.delete(entity);
-          transaction.commit();
+      // Check if we can overwrite
+      if (maybeSnapshotId.isPresent()) {
+        if (overwrite) {
+          try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
+            var transaction = session.beginTransaction();
+            session
+                .createSQLQuery(
+                    String.format(
+                        "UPDATE %s SET code_version_snapshot_id = null WHERE id=:entity_id",
+                        entityTableName))
+                .setParameter(ENTITY_ID_QUERY_PARAM, entityId)
+                .executeUpdate();
+            final CodeVersionEntity entity =
+                session.get(
+                    CodeVersionEntity.class, maybeSnapshotId.get(), LockMode.PESSIMISTIC_WRITE);
+            session.delete(entity);
+            transaction.commit();
+          }
+        } else {
+          throw new AlreadyExistsException("Code version already logged");
         }
-      } else {
-        throw new AlreadyExistsException("Code version already logged");
       }
     }
 
@@ -108,31 +106,33 @@ public class CodeVersionHandler {
       var snapshotId = snapshot.getId();
 
       // Save the snapshot to the ER
-      handle
-          .createUpdate(
+      try (var updateQuery =
+          handle.createUpdate(
               String.format(
                   "update %s set code_version_snapshot_id=:code_id where id=:entity_id",
-                  entityTableName))
-          .bind("code_id", snapshotId)
-          .bind(ENTITY_ID_QUERY_PARAM, entityId)
-          .execute();
+                  entityTableName))) {
+        updateQuery.bind("code_id", snapshotId).bind(ENTITY_ID_QUERY_PARAM, entityId).execute();
+      }
     }
   }
 
   public InternalFuture<Map<String, CodeVersion>> getCodeVersionMap(List<String> entityIds) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        String.format(
-                            "select id, code_version_snapshot_id from %s where id IN (<entity_ids>) ",
-                            entityTableName))
+            handle -> {
+              try (var findQuery =
+                  handle.createQuery(
+                      String.format(
+                          "select id, code_version_snapshot_id from %s where id IN (<entity_ids>) ",
+                          entityTableName))) {
+                return findQuery
                     .bindList("entity_ids", entityIds)
                     .map(
                         (rs, ctx) ->
                             new AbstractMap.SimpleEntry<>(
                                 rs.getString("id"), rs.getLong("code_version_snapshot_id")))
-                    .list())
+                    .list();
+              }
+            })
         .thenCompose(
             maybeSnapshotIds -> {
               Map<String, CodeVersion> codeVersionMap = new HashMap<>();

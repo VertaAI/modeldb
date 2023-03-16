@@ -16,14 +16,16 @@ class MySqlMigrationDatastore implements MigrationDatastore {
   public void lock() throws SQLException {
     String catalog = connection.getCatalog();
     String lockId = MigrationTools.generateLockId(catalog, SCHEMA_MIGRATIONS_TABLE);
-    PreparedStatement ps = connection.prepareStatement("SELECT GET_LOCK(?,?)");
-    ps.setString(1, lockId);
-    ps.setInt(2, 1); // timeout in seconds
-    ResultSet resultSet = ps.executeQuery();
-    if (resultSet.next()) {
-      int result = resultSet.getInt(1);
-      if (result != 1) {
-        throw new SQLException("Failed to lock the database for migration. Result code: " + result);
+    try (PreparedStatement ps = connection.prepareStatement("SELECT GET_LOCK(?,?)")) {
+      ps.setString(1, lockId);
+      ps.setInt(2, 1); // timeout in seconds
+      ResultSet resultSet = ps.executeQuery();
+      if (resultSet.next()) {
+        int result = resultSet.getInt(1);
+        if (result != 1) {
+          throw new SQLException(
+              "Failed to lock the database for migration. Result code: " + result);
+        }
       }
     }
   }
@@ -32,14 +34,15 @@ class MySqlMigrationDatastore implements MigrationDatastore {
   public void unlock() throws SQLException {
     String catalog = connection.getCatalog();
     String lockId = MigrationTools.generateLockId(catalog, SCHEMA_MIGRATIONS_TABLE);
-    PreparedStatement ps = connection.prepareStatement("SELECT RELEASE_LOCK(?)");
-    ps.setString(1, lockId);
-    ResultSet resultSet = ps.executeQuery();
-    if (resultSet.next()) {
-      int result = resultSet.getInt(1);
-      if (result != 1) {
-        throw new SQLException(
-            "Failed to unlock the database post-migration. Result code: " + result);
+    try (PreparedStatement ps = connection.prepareStatement("SELECT RELEASE_LOCK(?)")) {
+      ps.setString(1, lockId);
+      ResultSet resultSet = ps.executeQuery();
+      if (resultSet.next()) {
+        int result = resultSet.getInt(1);
+        if (result != 1) {
+          throw new SQLException(
+              "Failed to unlock the database post-migration. Result code: " + result);
+        }
       }
     }
   }

@@ -141,23 +141,24 @@ public class VersionInputHandler {
                   + " FROM config_blob cb "
                   + " JOIN hyperparameter_element_config_blob hecbs ON cb.hyperparameter_element_config_blob_hash = hecbs.blob_hash"
                   + " WHERE cb.blob_hash = :blobHash";
-          handle
-              .createQuery(configBlobQuery)
-              .bind("blobHash", blobExpandedWithHashMap.getValue())
-              .map(
-                  (rs, ctx) -> {
-                    Map<String, Object> argsMap = new HashMap<>();
-                    argsMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
-                    argsMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
-                    argsMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
-                    argsMap.put(ENTITY_ID_QUERY_PARAM, entityId);
-                    argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
-                    argsMap.put(BLOB_HASH_QUERY_PARAM, rs.getString(BLOB_HASH_QUERY_PARAM));
-                    argsMap.put("config_seq_number", rs.getString("config_seq_number"));
-                    argsMaps.add(argsMap);
-                    return rs;
-                  })
-              .list();
+          try (var findQuery = handle.createQuery(configBlobQuery)) {
+            findQuery
+                .bind("blobHash", blobExpandedWithHashMap.getValue())
+                .map(
+                    (rs, ctx) -> {
+                      Map<String, Object> argsMap = new HashMap<>();
+                      argsMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
+                      argsMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
+                      argsMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
+                      argsMap.put(ENTITY_ID_QUERY_PARAM, entityId);
+                      argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                      argsMap.put(BLOB_HASH_QUERY_PARAM, rs.getString(BLOB_HASH_QUERY_PARAM));
+                      argsMap.put("config_seq_number", rs.getString("config_seq_number"));
+                      argsMaps.add(argsMap);
+                      return rs;
+                    })
+                .list();
+          }
         }
       }
       if (!argsMaps.isEmpty()) {
@@ -173,7 +174,12 @@ public class VersionInputHandler {
                 + " config_blob_entity_blob_hash, "
                 + " config_blob_entity_config_seq_number) "
                 + " VALUES (:repository_id, :commit, :versioning_key, :entityId, :entity_type, :blob_hash, :config_seq_number)";
-        argsMaps.forEach(a -> handle.createUpdate(blobMappingQueryStr).bindMap(a).execute());
+        argsMaps.forEach(
+            a -> {
+              try (var updateQuery = handle.createUpdate(blobMappingQueryStr)) {
+                updateQuery.bindMap(a).execute();
+              }
+            });
       }
     }
   }
@@ -208,27 +214,28 @@ public class VersionInputHandler {
                   + " FROM config_blob cb "
                   + " JOIN hyperparameter_element_config_blob hecbs ON cb.hyperparameter_element_config_blob_hash = hecbs.blob_hash"
                   + " WHERE cb.blob_hash = :blobHash AND cb.hyperparameter_type = :hyperparameter_type";
-          handle
-              .createQuery(configBlobQuery)
-              .bind("blobHash", blobExpandedWithHashMap.getValue())
-              .bind("hyperparameter_type", HYPERPARAMETER)
-              .map(
-                  (rs, ctx) -> {
-                    Map<String, Object> argsMap = new HashMap<>();
-                    argsMap.put("name", rs.getString("name"));
-                    argsMap.put(
-                        INT_VALUE_QUERY_SELECTED_PARAM,
-                        rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM) != 0
-                            ? rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM)
-                            : null);
-                    argsMap.put("float_value", rs.getFloat("float_value"));
-                    argsMap.put("string_value", rs.getString("string_value"));
-                    argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
-                    argsMap.put("entity_id", entityId);
-                    argsMaps.add(argsMap);
-                    return rs;
-                  })
-              .list();
+          try (var findquery = handle.createQuery(configBlobQuery)) {
+            findquery
+                .bind("blobHash", blobExpandedWithHashMap.getValue())
+                .bind("hyperparameter_type", HYPERPARAMETER)
+                .map(
+                    (rs, ctx) -> {
+                      Map<String, Object> argsMap = new HashMap<>();
+                      argsMap.put("name", rs.getString("name"));
+                      argsMap.put(
+                          INT_VALUE_QUERY_SELECTED_PARAM,
+                          rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM) != 0
+                              ? rs.getInt(INT_VALUE_QUERY_SELECTED_PARAM)
+                              : null);
+                      argsMap.put("float_value", rs.getFloat("float_value"));
+                      argsMap.put("string_value", rs.getString("string_value"));
+                      argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                      argsMap.put("entity_id", entityId);
+                      argsMaps.add(argsMap);
+                      return rs;
+                    })
+                .list();
+          }
         }
       }
       if (!argsMaps.isEmpty()) {
@@ -236,7 +243,12 @@ public class VersionInputHandler {
             "INSERT INTO hyperparameter_element_mapping (name, int_value, float_value, string_value, entity_type, "
                 + entityIdReferenceColumn
                 + " ) VALUES (:name, :int_value, :float_value, :string_value, :entity_type, :entity_id )";
-        argsMaps.forEach(a -> handle.createUpdate(hemeStr).bindMap(a).execute());
+        argsMaps.forEach(
+            a -> {
+              try (var updateQuery = handle.createUpdate(hemeStr)) {
+                updateQuery.bindMap(a).execute();
+              }
+            });
       }
     }
   }
@@ -286,13 +298,13 @@ public class VersionInputHandler {
       keysAndParameterMap.put(BLOB_HASH_QUERY_PARAM, null);
 
       LOGGER.trace("insert experiment run query string: " + queryStr);
-      var query = handle.createUpdate(queryStr);
-
-      // Inserting fields arguments based on the keys and value of map
-      for (Map.Entry<String, Object> objectEntry : keysAndParameterMap.entrySet()) {
-        query.bind(objectEntry.getKey(), objectEntry.getValue());
+      try (var query = handle.createUpdate(queryStr)) {
+        // Inserting fields arguments based on the keys and value of map
+        for (Map.Entry<String, Object> objectEntry : keysAndParameterMap.entrySet()) {
+          query.bind(objectEntry.getKey(), objectEntry.getValue());
+        }
+        query.execute();
       }
-      query.execute();
     } else {
       List<Map<String, Object>> argsMaps = new ArrayList<>();
       for (Map.Entry<String, Location> locationEntry :
@@ -322,7 +334,12 @@ public class VersionInputHandler {
       }
 
       if (!argsMaps.isEmpty()) {
-        argsMaps.forEach(a -> handle.createUpdate(queryStr).bindMap(a).execute());
+        argsMaps.forEach(
+            a -> {
+              try (var updateQuery = handle.createUpdate(queryStr)) {
+                updateQuery.bindMap(a).execute();
+              }
+            });
       }
     }
   }
@@ -416,21 +433,18 @@ public class VersionInputHandler {
   // there.
   public InternalFuture<Map<String, VersioningEntry>> getVersionedInputs(Set<String> runIds) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        String.format(
-                            "select vm.experiment_run_id, vm.repository_id, vm.%s, vm.versioning_key, vm.versioning_location  "
-                                + " from versioning_modeldb_entity_mapping as vm "
-                                + " where vm.experiment_run_id in (<run_ids>) "
-                                + " and vm.entity_type = :entityType",
-                            App.getInstance()
-                                    .mdbConfig
-                                    .getDatabase()
-                                    .getRdbConfiguration()
-                                    .isMssql()
-                                ? "\"commit\""
-                                : "commit"))
+            handle -> {
+              try (var findQuery =
+                  handle.createQuery(
+                      String.format(
+                          "select vm.experiment_run_id, vm.repository_id, vm.%s, vm.versioning_key, vm.versioning_location  "
+                              + " from versioning_modeldb_entity_mapping as vm "
+                              + " where vm.experiment_run_id in (<run_ids>) "
+                              + " and vm.entity_type = :entityType",
+                          App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()
+                              ? "\"commit\""
+                              : "commit"))) {
+                return findQuery
                     .bindList("run_ids", runIds)
                     .bind("entityType", entity_type)
                     .map(
@@ -457,7 +471,9 @@ public class VersionInputHandler {
                           return new AbstractMap.SimpleEntry<>(
                               rs.getString("experiment_run_id"), versioningEntryBuilder.build());
                         })
-                    .list())
+                    .list();
+              }
+            })
         .thenCompose(
             simpleEntries -> {
               // Key= experiment_run_id, Value = VersionedInput

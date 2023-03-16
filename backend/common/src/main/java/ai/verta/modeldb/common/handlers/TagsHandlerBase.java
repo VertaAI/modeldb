@@ -62,30 +62,35 @@ public abstract class TagsHandlerBase<T> {
   }
 
   private List<String> getTags(T entityId, Handle handle) {
-    return handle
-        .createQuery(
+    try (var query =
+        handle.createQuery(
             String.format(
                 "select tags from tag_mapping "
                     + "where entity_name=:entity_name and %s =:entity_id ORDER BY tags ASC",
-                entityIdReferenceColumn))
-        .bind(ENTITY_ID_QUERY_PARAM, entityId)
-        .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-        .mapTo(String.class)
-        .list();
+                entityIdReferenceColumn))) {
+      return query
+          .bind(ENTITY_ID_QUERY_PARAM, entityId)
+          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+          .mapTo(String.class)
+          .list();
+    }
   }
 
   public InternalFuture<MapSubtypes<T, String>> getTagsMap(Set<T> entityIds) {
     return jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        String.format(
-                            "select tags, %s as entity_id from tag_mapping where entity_name=:entity_name and %s in (<entity_ids>) ORDER BY tags ASC",
-                            entityIdReferenceColumn, entityIdReferenceColumn))
+            handle -> {
+              try (var query =
+                  handle.createQuery(
+                      String.format(
+                          "select tags, %s as entity_id from tag_mapping where entity_name=:entity_name and %s in (<entity_ids>) ORDER BY tags ASC",
+                          entityIdReferenceColumn, entityIdReferenceColumn))) {
+                return query
                     .bindList("entity_ids", entityIds)
                     .bind(ENTITY_NAME_QUERY_PARAM, entityName)
                     .map((rs, ctx) -> getSimpleEntryFromResultSet(rs))
-                    .list())
+                    .list();
+              }
+            })
         .thenApply(
             simpleEntries ->
                 simpleEntries.stream()
@@ -119,15 +124,17 @@ public abstract class TagsHandlerBase<T> {
     }
 
     for (final var tag : tagsSet) {
-      handle
-          .createUpdate(
+      try (var updateQuery =
+          handle.createUpdate(
               String.format(
                   "insert into tag_mapping (entity_name, tags, %s) VALUES(:entity_name, :tag, :entity_id)",
-                  entityIdReferenceColumn))
-          .bind("tag", tag)
-          .bind(ENTITY_ID_QUERY_PARAM, entityId)
-          .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-          .execute();
+                  entityIdReferenceColumn))) {
+        updateQuery
+            .bind("tag", tag)
+            .bind(ENTITY_ID_QUERY_PARAM, entityId)
+            .bind(ENTITY_NAME_QUERY_PARAM, entityName)
+            .execute();
+      }
     }
   }
 
@@ -141,16 +148,10 @@ public abstract class TagsHandlerBase<T> {
       sql += " and tags in (<tags>)";
     }
 
-    var query =
-        handle
-            .createUpdate(sql)
-            .bind(ENTITY_ID_QUERY_PARAM, entityId)
-            .bind(ENTITY_NAME_QUERY_PARAM, entityName);
-
-    if (maybeTags.isPresent()) {
-      query = query.bindList("tags", maybeTags.get());
+    try (var query = handle.createUpdate(sql)) {
+      query.bind(ENTITY_ID_QUERY_PARAM, entityId).bind(ENTITY_NAME_QUERY_PARAM, entityName);
+      maybeTags.ifPresent(maybeTagList -> query.bindList("tags", maybeTagList));
+      query.execute();
     }
-
-    query.execute();
   }
 }

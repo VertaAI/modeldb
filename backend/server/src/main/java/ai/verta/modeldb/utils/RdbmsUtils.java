@@ -727,9 +727,7 @@ public class RdbmsUtils {
           if (stringColumn) {
             return getOperatorPredicate(
                 builder,
-                builder
-                    .trim(Trimspec.BOTH, Character.valueOf('"'), valueExpression)
-                    .as(Double.class),
+                builder.trim(Trimspec.BOTH, '"', valueExpression).as(Double.class),
                 operator,
                 value.getNumberValue());
           } else {
