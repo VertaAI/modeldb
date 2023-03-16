@@ -36,7 +36,7 @@ public class RefreshS3ClientCron implements Runnable {
   /** The action to be performed by this timer task. */
   @Override
   public void run() {
-    LOGGER.debug("Refreshing S3Client cron wakeup");
+    LOGGER.info("Refreshing S3Client");
     try {
       var awsCredentials = getBasicSessionCredentials();
       createAndRefreshNewClient(awsCredentials);
@@ -44,7 +44,7 @@ public class RefreshS3ClientCron implements Runnable {
       LOGGER.error("Failed to refresh S3 Client: " + ex.getMessage(), ex);
       throw new RuntimeException(ex);
     }
-    LOGGER.debug("Refreshing S3Client finish tasks and reschedule");
+    LOGGER.info("Refreshing S3Client complete");
   }
 
   private void createAndRefreshNewClient(BasicSessionCredentials awsCredentials) {
