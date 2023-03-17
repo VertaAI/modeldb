@@ -402,8 +402,8 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         Raises
         ------
-        Runtime Error
-            If `check_model_dependencies` is `True` and any dependencies detected in
+        RuntimeError
+            If `check_model_dependencies` is ``True`` and any dependencies detected in
             the model class are not specified in the environment.
 
         Returns
