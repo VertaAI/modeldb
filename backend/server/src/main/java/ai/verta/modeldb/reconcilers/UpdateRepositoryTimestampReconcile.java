@@ -53,9 +53,9 @@ public class UpdateRepositoryTimestampReconcile
 
     return futureJdbi
         .withHandle(
-            handle ->
-                handle
-                    .createQuery(fetchUpdatedDatasetIds)
+            handle -> {
+              try (var findQuery = handle.createQuery(fetchUpdatedDatasetIds)) {
+                return findQuery
                     .setFetchSize(config.getMaxSync())
                     .map(
                         (rs, ctx) -> {
@@ -63,8 +63,10 @@ public class UpdateRepositoryTimestampReconcile
                           Long maxUpdatedDate = rs.getLong("max_date");
                           return new SimpleEntry<>(datasetId, maxUpdatedDate);
                         })
-                    .list())
-        .get();
+                    .list();
+              }
+            })
+        .blockAndGet();
   }
 
   @Override
@@ -84,14 +86,12 @@ public class UpdateRepositoryTimestampReconcile
               for (AbstractMap.SimpleEntry<Long, Long> updatedRecord : updatedMaxDateMap) {
                 long id = updatedRecord.getKey();
                 long updatedDate = updatedRecord.getValue();
-                handle
-                    .createUpdate(updateDatasetTimestampQuery)
-                    .bind("id", id)
-                    .bind("updatedDate", updatedDate)
-                    .execute();
+                try (var updateQuery = handle.createUpdate(updateDatasetTimestampQuery)) {
+                  updateQuery.bind("id", id).bind("updatedDate", updatedDate).execute();
+                }
               }
             })
         .thenApply(unused -> new ReconcileResult(), executor)
-        .get();
+        .blockAndGet();
   }
 }

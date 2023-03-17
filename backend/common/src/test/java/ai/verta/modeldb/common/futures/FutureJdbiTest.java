@@ -31,7 +31,7 @@ class FutureJdbiTest {
                           return "foo";
                         }))
             .call()
-            .get();
+            .blockAndGet();
     assertThat(result).isEqualTo("foo");
     assertThat(captured).hasValue("cheddar");
   }
@@ -54,7 +54,7 @@ class FutureJdbiTest {
                       captured.set(testKey.get());
                     }))
         .call()
-        .get();
+        .blockAndGet();
     assertThat(captured).hasValue("cheddar");
   }
 

@@ -723,7 +723,7 @@ public class FutureProjectDAO {
       workspace = cacheWorkspaceMap.get(projectResource.getWorkspaceId());
     } else {
       try {
-        workspace = uacApisUtil.getWorkspaceById(projectResource.getWorkspaceId()).get();
+        workspace = uacApisUtil.getWorkspaceById(projectResource.getWorkspaceId()).blockAndGet();
       } catch (Exception e) {
         throw new ModelDBException(e);
       }
