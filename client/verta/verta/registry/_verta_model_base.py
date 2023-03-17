@@ -109,11 +109,11 @@ class VertaModelBase(object):
 
         Parameters
         ----------
-        df : a pandas.DataFrame
+        df : pandas.DataFrame
 
         Returns
         -------
-        a pandas.DataFrame
+        pandas.DataFrame
 
         References
         ----------
