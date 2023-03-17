@@ -93,7 +93,6 @@ class VertaModelBase(object):
         """
         raise NotImplementedError
 
-    @abc.abstractmethod
     def batch_predict(self, df):
         """Produce an output from `df`.
 
