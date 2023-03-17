@@ -349,6 +349,8 @@ class DeployedModel(object):
         """
         Makes a prediction using input `df` of type pandas.DataFrame.
 
+        .. versionadded:: 0.22.2
+
         Parameters
         ----------
         df : pd.DataFrame
