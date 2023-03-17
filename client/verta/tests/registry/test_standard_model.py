@@ -305,6 +305,18 @@ class TestStandardModels:
                 Python([]),
             )
 
+    @pytest.mark.parametrize("model", dependency_verta_models)
+    def test_dependency_checking(self, registered_model, model):
+        with pytest.raises(RuntimeError) as err:
+            registered_model.create_standard_model(
+                model, Python([]), check_model_dependencies=True
+            )
+        assert (
+            err.value.args[0]
+            == "the following packages are required by the model but missing "
+            "from the environment:\npytest (installed via ['pytest'])"
+        )
+
     @pytest.mark.deployment
     @pytest.mark.tensorflow
     @pytest.mark.parametrize(
@@ -443,15 +455,3 @@ class TestStandardModels:
                 model,
                 Python(["scikit-learn", "xgboost"]),
             )
-
-    @pytest.mark.parametrize("model", dependency_verta_models)
-    def test_dependency_checking(self, registered_model, model):
-        with pytest.raises(RuntimeError) as err:
-            registered_model.create_standard_model(
-                model, Python([]), check_model_dependencies=True
-            )
-        assert (
-            err.value.args[0]
-            == "the following packages are required by the model but missing "
-            "from the environment:\npytest (installed via ['pytest'])"
-        )
