@@ -67,7 +67,7 @@ class VertaModelBase(object):
             will be fully compatible with the Verta platform as you iterate
             locally.
 
-            :meth:`predict` must be written to both recieve [1]_ and return
+            :meth:`predict` must be written to both receive [1]_ and return
             [2]_ JSON-serializable objects (i.e. mostly basic Python types).
 
             For example to work with NumPy arrays, the `input` argument should
@@ -92,6 +92,35 @@ class VertaModelBase(object):
 
         """
         raise NotImplementedError
+
+    @abc.abstractmethod
+    def batch_predict(self, df):
+        """Produce an output from `df`.
+
+        This method is called when batch predictions are made against a Verta endpoint.
+
+        .. note::
+
+            :meth:`batch_predict` must be written to both receive and return
+            pandas.DataFrames [1]_.
+
+            At this time, your subclass must still implement :meth:`predict`, regardless
+            of whether it contains anything meaningful.
+
+        Parameters
+        ----------
+        df : a pandas.DataFrame
+
+        Returns
+        -------
+        a pandas.DataFrame
+
+        References
+        ----------
+        .. [1] https://pandas.pydata.org/docs/reference/frame.html
+
+        """
+        pass
 
     def model_test(self):
         """Test a model's behavior for correctness.
