@@ -40,11 +40,11 @@ def installable_package(name, dir=None):
     divergent character restrictions.
 
     The package is declared using a ``setup.py`` to reflect today's
-    ecosystem; it could be migrated to ``setup.cfg`` in the future [1]_.
+    ecosystem; it could be migrated to ``setup.cfg`` in the future [#]_.
 
     References
     ----------
-    .. [1] https://setuptools.pypa.io/en/latest/userguide/quickstart.html?highlight=setup.py#transitioning-from-setup-py-to-setup-cfg
+    .. [#] https://setuptools.pypa.io/en/latest/userguide/quickstart.html?highlight=setup.py#transitioning-from-setup-py-to-setup-cfg
 
     """
     if not dir:

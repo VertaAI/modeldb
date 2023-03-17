@@ -563,7 +563,7 @@ def global_read_zipinfo(filename):
     """
     Returns a :class:`zipfile.ZipInfo` with ``644`` permissions.
 
-    :meth:`zipfile.ZipFile.writestr` creates files with ``600`` [1]_ [2]_,
+    :meth:`zipfile.ZipFile.writestr` creates files with ``600`` [#]_ [#]_,
     which means non-owners are unable to read the file, which can be
     problematic for custom modules in deployment.
 
@@ -579,9 +579,9 @@ def global_read_zipinfo(filename):
 
     References
     ----------
-    .. [1] https://github.com/python/cpython/blob/3.9/Lib/zipfile.py#L1791
+    .. [#] https://github.com/python/cpython/blob/3.9/Lib/zipfile.py#L1791
 
-    .. [2] https://bugs.python.org/msg69937
+    .. [#] https://bugs.python.org/msg69937
 
     """
     zip_info = zipfile.ZipInfo(filename)
