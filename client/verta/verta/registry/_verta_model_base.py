@@ -102,7 +102,7 @@ class VertaModelBase(object):
         .. note::
 
             :meth:`batch_predict` must be written to both receive and return
-            pandas.DataFrames [1]_.
+            ``pandas.DataFrame``\ s [1]_.
 
             At this time, your subclass must still implement :meth:`predict`, regardless
             of whether it contains anything meaningful.
