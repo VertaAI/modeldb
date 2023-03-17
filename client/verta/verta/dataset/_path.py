@@ -146,7 +146,7 @@ class Path(_dataset._Dataset):
 
         References
         ----------
-        .. [1] https://en.wikipedia.org/wiki/File_URI_scheme
+        .. [#] https://en.wikipedia.org/wiki/File_URI_scheme
 
         """
         path = _file_utils.remove_prefix(path, "file://")

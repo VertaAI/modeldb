@@ -67,8 +67,8 @@ class VertaModelBase(object):
             will be fully compatible with the Verta platform as you iterate
             locally.
 
-            :meth:`predict` must be written to both receive [1]_ and return
-            [2]_ JSON-serializable objects (i.e. mostly basic Python types).
+            :meth:`predict` must be written to both receive [#]_ and return
+            [#]_ JSON-serializable objects (i.e. mostly basic Python types).
 
             For example to work with NumPy arrays, the `input` argument should
             be a Python :class:`list` that would then be passed to
@@ -87,8 +87,8 @@ class VertaModelBase(object):
 
         References
         ----------
-        .. [1] https://docs.python.org/3/library/json.html#json-to-py-table
-        .. [2] https://docs.python.org/3/library/json.html#py-to-json-table
+        .. [#] https://docs.python.org/3/library/json.html#json-to-py-table
+        .. [#] https://docs.python.org/3/library/json.html#py-to-json-table
 
         """
         raise NotImplementedError
@@ -101,7 +101,7 @@ class VertaModelBase(object):
         .. note::
 
             :meth:`batch_predict` must be written to both receive and return
-            ``pandas.DataFrame``\ s [1]_.
+            ``pandas.DataFrame``\ s [#]_.
 
             At this time, your subclass must still implement :meth:`predict`, regardless
             of whether it contains anything meaningful.
@@ -116,7 +116,7 @@ class VertaModelBase(object):
 
         References
         ----------
-        .. [1] https://pandas.pydata.org/docs/reference/frame.html
+        .. [#] https://pandas.pydata.org/docs/reference/frame.html
 
         """
         raise NotImplementedError

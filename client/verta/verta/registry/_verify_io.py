@@ -27,7 +27,7 @@ _DECORATED_FLAG = "_verta_verify_io"
 def verify_io(f):
     """Decorator to typecheck I/O to ensure platform compatibility when deployed.
 
-    Allowed input [1]_ and output [2]_ types are validated by Python's
+    Allowed input [#]_ and output [#]_ types are validated by Python's
     standard ``json`` library.
 
     Examples
@@ -55,8 +55,8 @@ def verify_io(f):
 
     References
     ----------
-    .. [1] https://docs.python.org/3/library/json.html#json-to-py-table
-    .. [2] https://docs.python.org/3/library/json.html#py-to-json-table
+    .. [#] https://docs.python.org/3/library/json.html#json-to-py-table
+    .. [#] https://docs.python.org/3/library/json.html#py-to-json-table
 
     Notes
     -----

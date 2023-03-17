@@ -462,7 +462,7 @@ def remove_local_version_identifier(requirements):
 
     PyTorch in particular adds local build information to its pip environment
     version number during installation. This suffix results in a version
-    specifier that won't be installable from PyPI [1]_ and therefore needs to
+    specifier that won't be installable from PyPI [#]_ and therefore needs to
     be removed for model deployment.
 
     Parameters
@@ -482,7 +482,7 @@ def remove_local_version_identifier(requirements):
 
     References
     ----------
-    .. [1] https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
+    .. [#] https://www.python.org/dev/peps/pep-0440/#local-version-identifiers
 
     """
     for i, req in enumerate(requirements):
