@@ -38,9 +38,9 @@ public class UpdateProjectTimestampReconcile
 
     return futureJdbi
         .withHandle(
-            handle ->
-                handle
-                    .createQuery(fetchUpdatedProjectIds)
+            handle -> {
+              try (var findQuery = handle.createQuery(fetchUpdatedProjectIds)) {
+                return findQuery
                     .setFetchSize(config.getMaxSync())
                     .map(
                         (rs, ctx) -> {
@@ -48,8 +48,10 @@ public class UpdateProjectTimestampReconcile
                           var maxUpdatedDate = rs.getLong("max_date");
                           return new SimpleEntry<>(projectId, maxUpdatedDate);
                         })
-                    .list())
-        .get();
+                    .list();
+              }
+            })
+        .blockAndGet();
   }
 
   @Override
@@ -69,14 +71,12 @@ public class UpdateProjectTimestampReconcile
               for (AbstractMap.SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
                 var id = updatedRecord.getKey();
                 long updatedDate = updatedRecord.getValue();
-                handle
-                    .createUpdate(updateProjectTimestampQuery)
-                    .bind("id", id)
-                    .bind("updatedDate", updatedDate)
-                    .execute();
+                try (var updateQuery = handle.createUpdate(updateProjectTimestampQuery)) {
+                  updateQuery.bind("id", id).bind("updatedDate", updatedDate).execute();
+                }
               }
             })
         .thenApply(unused -> new ReconcileResult(), executor)
-        .get();
+        .blockAndGet();
   }
 }

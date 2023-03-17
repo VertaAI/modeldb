@@ -42,7 +42,9 @@ class InternalFutureTest {
                 },
                 executor);
 
-    assertThatThrownBy(testFuture::get).isInstanceOf(RuntimeException.class).hasMessage("borken");
+    assertThatThrownBy(testFuture::blockAndGet)
+        .isInstanceOf(RuntimeException.class)
+        .hasMessage("borken");
   }
 
   @Test
@@ -58,7 +60,7 @@ class InternalFutureTest {
             executor);
     InternalFuture<String> result =
         testFuture.thenSupply(() -> InternalFuture.completedInternalFuture("cheese"), executor);
-    assertThat(result.get()).isEqualTo("cheese");
+    assertThat(result.blockAndGet()).isEqualTo("cheese");
     assertThat(firstWasCalled).isTrue();
   }
 
@@ -82,7 +84,7 @@ class InternalFutureTest {
                     },
                     executor),
             executor);
-    assertThatThrownBy(result::get)
+    assertThatThrownBy(result::blockAndGet)
         .isInstanceOf(IllegalStateException.class)
         .hasMessageContaining("failed");
     assertThat(secondWasCalled).isFalse();
@@ -101,7 +103,7 @@ class InternalFutureTest {
                           throw new RuntimeException("uh oh!");
                         },
                         executor)
-                    .get())
+                    .blockAndGet())
         .isInstanceOf(ExecutionException.class)
         .hasRootCauseInstanceOf(RuntimeException.class)
         .hasRootCauseMessage("uh oh!");
@@ -115,7 +117,7 @@ class InternalFutureTest {
             () ->
                 InternalFuture.sequence(
                         List.of(InternalFuture.failedStage(new IOException("io failed"))), executor)
-                    .get())
+                    .blockAndGet())
         .isInstanceOf(IOException.class)
         .hasMessage("io failed");
   }
@@ -127,10 +129,10 @@ class InternalFutureTest {
     final var res1 =
         InternalFuture.flipOptional(
                 Optional.of(InternalFuture.completedInternalFuture("123")), executor)
-            .get();
+            .blockAndGet();
     assertThat(res1).isPresent().hasValue("123");
 
-    final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).get();
+    final var res2 = InternalFuture.flipOptional(Optional.empty(), executor).blockAndGet();
     assertThat(res2).isEmpty();
   }
 
@@ -149,7 +151,7 @@ class InternalFutureTest {
                 },
                 executor)
             .recover(t -> 456, executor)
-            .get();
+            .blockAndGet();
 
     assertThat(value).isEqualTo(456);
   }
@@ -195,7 +197,7 @@ class InternalFutureTest {
               },
               executor)
           .thenRun(() -> tracer.spanBuilder("four").startSpan().end(), executor)
-          .get();
+          .blockAndGet();
     } finally {
       outside.end();
     }
@@ -255,7 +257,7 @@ class InternalFutureTest {
                         },
                         executor);
                   });
-          assertEquals("2", future2.get());
+          assertEquals("2", future2.blockAndGet());
           return null;
         });
   }

@@ -264,7 +264,7 @@ public class VersionInputHandler {
           getVersionedInputs(Collections.singleton(entityId))
               .thenApply(
                   existingVersioningEntryMap -> existingVersioningEntryMap.get(entityId), executor)
-              .get();
+              .blockAndGet();
     } catch (Exception e) {
       throw new ModelDBException(e);
     }

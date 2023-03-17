@@ -84,6 +84,6 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
               return new ReconcileResult();
             },
             executor)
-        .get();
+        .blockAndGet();
   }
 }

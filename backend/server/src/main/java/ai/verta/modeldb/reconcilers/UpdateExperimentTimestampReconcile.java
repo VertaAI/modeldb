@@ -38,9 +38,9 @@ public class UpdateExperimentTimestampReconcile
 
     return futureJdbi
         .withHandle(
-            handle ->
-                handle
-                    .createQuery(fetchUpdatedExperimentIds)
+            handle -> {
+              try (var findQuery = handle.createQuery(fetchUpdatedExperimentIds)) {
+                return findQuery
                     .setFetchSize(config.getMaxSync())
                     .map(
                         (rs, ctx) -> {
@@ -48,8 +48,10 @@ public class UpdateExperimentTimestampReconcile
                           var maxUpdatedDate = rs.getLong("max_date");
                           return new SimpleEntry<>(experimentId, maxUpdatedDate);
                         })
-                    .list())
-        .get();
+                    .list();
+              }
+            })
+        .blockAndGet();
   }
 
   @Override
@@ -69,14 +71,12 @@ public class UpdateExperimentTimestampReconcile
               for (AbstractMap.SimpleEntry<String, Long> updatedRecord : updatedMaxDateMap) {
                 var id = updatedRecord.getKey();
                 long updatedDate = updatedRecord.getValue();
-                handle
-                    .createUpdate(updateExperimentTimestampQuery)
-                    .bind("id", id)
-                    .bind("updatedDate", updatedDate)
-                    .execute();
+                try (var updateQuery = handle.createUpdate(updateExperimentTimestampQuery)) {
+                  updateQuery.bind("id", id).bind("updatedDate", updatedDate).execute();
+                }
               }
             })
         .thenApply(unused -> new ReconcileResult(), executor)
-        .get();
+        .blockAndGet();
   }
 }

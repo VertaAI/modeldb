@@ -88,7 +88,7 @@ public class MssqlMigrationUtil {
               LOGGER.debug("all tables indexes recreated successfully");
             });
     try {
-      result.get();
+      result.blockAndGet();
     } catch (Exception e) {
       throw new ModelDBException(e);
     }
