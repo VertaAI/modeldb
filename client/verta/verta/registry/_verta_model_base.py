@@ -119,7 +119,7 @@ class VertaModelBase(object):
         .. [1] https://pandas.pydata.org/docs/reference/frame.html
 
         """
-        pass
+        raise NotImplementedError
 
     def model_test(self):
         """Test a model's behavior for correctness.
