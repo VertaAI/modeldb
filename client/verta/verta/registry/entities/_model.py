@@ -3,6 +3,7 @@
 from __future__ import print_function
 
 from verta._internal_utils._utils import check_unnecessary_params_warning
+from verta.registry import _check_model_dependencies
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
 from verta._internal_utils import _artifact_utils, _utils, arg_handler, model_validator
@@ -333,9 +334,12 @@ class RegisteredModel(_entity._ModelDBEntity):
         hide_input_label=False,
         output_description=None,
         hide_output_label=False,
+        check_model_dependencies=False,
     ):
         """Create a Standard Verta Model version from a Verta Model Specification.
 
+        .. versionadded:: 0.22.2
+            The `check_model_dependencies` parameter.
         .. versionadded:: 0.18.2
 
         .. note::
@@ -392,6 +396,15 @@ class RegisteredModel(_entity._ModelDBEntity):
             Description of the model version's output.
         hide_output_label : bool, default False
             Whether to hide the model version's output label.
+        check_model_dependencies : bool, default False
+            Whether to verify the model's dependencies are specified in the environment
+            and raise an exception if any are missing.
+
+        Raises
+        ------
+        RuntimeError
+            If `check_model_dependencies` is ``True`` and any dependencies detected in
+            the model class are not specified in the environment.
 
         Returns
         -------
@@ -426,6 +439,11 @@ class RegisteredModel(_entity._ModelDBEntity):
 
         """
         model_validator.must_verta(model_cls)
+
+        if check_model_dependencies:
+            _check_model_dependencies(
+                model_cls=model_cls, environment=environment, raise_for_missing=True
+            )
 
         return self._create_standard_model_from_spec(
             model=model_cls,
