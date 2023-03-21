@@ -18,7 +18,6 @@ import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.io.File;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,6 +31,7 @@ import org.springframework.web.server.ResponseStatusException;
 public class CommonUtils {
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
   private static final int STACKTRACE_LENGTH = 4;
+  private static final String LOGGER_PLACE_HOLDER = "{}: {}";
 
   public static String appendOptionalTelepresencePath(String filePath) {
     String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
@@ -62,11 +62,11 @@ public class CommonUtils {
     }
   }
 
-  public static void logAmazonServiceExceptionErrorCodes(Logger LOGGER, AmazonServiceException e) {
-    LOGGER.debug("Amazon Service Status Code: " + e.getStatusCode());
-    LOGGER.debug("Amazon Service Error Code: " + e.getErrorCode());
-    LOGGER.debug("Amazon Service Error Type: " + e.getErrorType());
-    LOGGER.debug("Amazon Service Error Message: " + e.getErrorMessage());
+  public static void logAmazonServiceExceptionErrorCodes(Logger logger, AmazonServiceException e) {
+    logger.debug("Amazon Service Status Code: {}", e.getStatusCode());
+    logger.debug("Amazon Service Error Code: {}", e.getErrorCode());
+    logger.debug("Amazon Service Error Type: {}", e.getErrorType());
+    logger.debug("Amazon Service Error Message: {}", e.getErrorMessage());
   }
 
   public static boolean isEnvSet(String envVar) {
@@ -88,12 +88,14 @@ public class CommonUtils {
   }
 
   public static ModelDBException getInvalidFieldException(Exception ex) {
+    if (ex instanceof IllegalArgumentException) {
+      throw (IllegalArgumentException) ex;
+    }
+
     String invalidFieldName;
     if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Unknown column ")) {
       var invalidFieldNameArr = ex.getMessage().split("'");
       invalidFieldName = invalidFieldNameArr[1].substring(3);
-      return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     } else if (ex != null
         && ex.getMessage() != null
         && ex.getMessage().contains("Invalid column ")) {
@@ -101,19 +103,17 @@ public class CommonUtils {
       invalidFieldName = ex.getMessage();
       invalidFieldName = invalidFieldName.substring("Invalid column name '".length());
       invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("'"));
-      return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     } else if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Column ")) {
       // Logic for H2 Database
       invalidFieldName = ex.getMessage();
       invalidFieldName = invalidFieldName.substring("Column '*..".length());
       invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("\""));
-      return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
-    } else if (ex instanceof IllegalArgumentException) {
-      throw (IllegalArgumentException) ex;
+    } else {
+      throw new ModelDBException(ex);
     }
-    throw new ModelDBException(ex);
+
+    return new ModelDBException(
+        "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
   }
 
   public interface RetryCallInterface<T> {
@@ -208,18 +208,18 @@ public class CommonUtils {
       if (isLongStack) {
         for (; n < STACKTRACE_LENGTH + 1; ++n) {
           if (isClientError) {
-            LOGGER.debug("{}: {}", n, stack[n]);
+            LOGGER.debug(LOGGER_PLACE_HOLDER, n, stack[n]);
           } else {
-            LOGGER.warn("{}: {}", n, stack[n]);
+            LOGGER.warn(LOGGER_PLACE_HOLDER, n, stack[n]);
           }
         }
       }
       for (; n < stack.length; ++n) {
         if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
           if (isClientError) {
-            LOGGER.debug("{}: {}", n, stack[n]);
+            LOGGER.debug(LOGGER_PLACE_HOLDER, n, stack[n]);
           } else {
-            LOGGER.warn("{}: {}", n, stack[n]);
+            LOGGER.warn(LOGGER_PLACE_HOLDER, n, stack[n]);
           }
         }
       }
@@ -348,12 +348,12 @@ public class CommonUtils {
     boolean isLongStack = stack.length > STACKTRACE_LENGTH;
     if (isLongStack) {
       for (; n < STACKTRACE_LENGTH + 1; ++n) {
-        logger.warn("{}: {}", n, stack[n].toString());
+        logger.warn(LOGGER_PLACE_HOLDER, n, stack[n].toString());
       }
     }
     for (; n < stack.length; ++n) {
       if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
-        logger.warn("{}: {}", n, stack[n].toString());
+        logger.warn(LOGGER_PLACE_HOLDER, n, stack[n].toString());
       }
     }
   }
@@ -415,15 +415,5 @@ public class CommonUtils {
     var query = handle.createQuery(queryStr);
     queryContext.getBinds().forEach(b -> b.accept(query));
     return query;
-  }
-
-  public static void cleanUpPIDFile() {
-    var path =
-        System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
-    File pidFile = new File(path);
-    if (pidFile.exists()) {
-      pidFile.deleteOnExit();
-      LOGGER.trace(CommonConstants.BACKEND_PID_FILENAME + " file is deleted: {}", pidFile.exists());
-    }
   }
 }

@@ -26,6 +26,7 @@ public abstract class ModelDBConstants {
   // Column/protos field names
   public static final String ARTIFACTS = "artifacts";
   public static final String ATTRIBUTES = "attributes";
+  public static final String ATTRIBUTE_KEYS = "attribute_keys";
   public static final String DATASETS = "datasets";
   public static final String DATE_CREATED = "date_created";
   public static final String DATE_UPDATED = "date_updated";
@@ -56,6 +57,7 @@ public abstract class ModelDBConstants {
   public static final String WORKSPACE_TYPE = "workspace_type";
   public static final String PROJECTS = "projects";
   public static final String EXPERIMENTS = "experiments";
+  public static final String EXPERIMENT_TABLE_NAME = "experiment";
   public static final String EXPERIMENT_RUNS = "experimentruns";
   public static final String DATASETS_VERSIONS = "datasetversions";
   public static final String COMMENTS = "comments";

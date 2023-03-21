@@ -19,6 +19,7 @@ import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
@@ -85,6 +86,7 @@ public class FutureExperimentDAO {
   private final SortingHandler sortingHandler;
   private final CreateExperimentHandler createExperimentHandler;
   private final UACApisUtil uacApisUtil;
+  private static final String DESCRIPTION_FIELD = "description";
 
   public FutureExperimentDAO(
       FutureExecutor executor,
@@ -103,7 +105,8 @@ public class FutureExperimentDAO {
     var entityName = "ExperimentEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
-    codeVersionHandler = new CodeVersionHandler(executor, jdbi, "experiment");
+    codeVersionHandler =
+        new CodeVersionHandler(executor, jdbi, ModelDBConstants.EXPERIMENT_TABLE_NAME);
     DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName, mdbConfig);
     artifactHandler =
         new ArtifactHandler(
@@ -116,8 +119,12 @@ public class FutureExperimentDAO {
             mdbConfig);
     predicatesHandler =
         new PredicatesHandler(
-            executor, "experiment", "experiment", uacApisUtil, mdbConfig.isPermissionV2Enabled());
-    sortingHandler = new SortingHandler("experiment");
+            executor,
+            ModelDBConstants.EXPERIMENT_TABLE_NAME,
+            ModelDBConstants.EXPERIMENT_TABLE_NAME /*alias*/,
+            uacApisUtil,
+            mdbConfig.isPermissionV2Enabled());
+    sortingHandler = new SortingHandler(ModelDBConstants.EXPERIMENT_TABLE_NAME);
 
     createExperimentHandler =
         new CreateExperimentHandler(
@@ -150,7 +157,7 @@ public class FutureExperimentDAO {
               final var localQueryContext = new QueryFilterContext();
               localQueryContext.getConditions().add("experiment.deleted = :deleted");
               localQueryContext.getConditions().add("p.deleted = :deleted");
-              localQueryContext.getBinds().add(q -> q.bind("deleted", false));
+              localQueryContext.getBinds().add(q -> q.bind(ModelDBConstants.DELETED, false));
 
               if (!request.getProjectId().isEmpty()) {
                 localQueryContext.getConditions().add("experiment.project_id=:request_project_id");
@@ -216,7 +223,7 @@ public class FutureExperimentDAO {
 
                                     Query query =
                                         CommonUtils.buildQueryFromQueryContext(
-                                            "experiment",
+                                            ModelDBConstants.EXPERIMENT_TABLE_NAME,
                                             Pagination.newBuilder()
                                                 .setPageNumber(request.getPageNumber())
                                                 .setPageLimit(request.getPageLimit())
@@ -228,20 +235,16 @@ public class FutureExperimentDAO {
 
                                     return query
                                         .map(
-                                            (rs, ctx) -> {
-                                              var runBuilder =
-                                                  Experiment.newBuilder()
-                                                      .setId(rs.getString("id"))
-                                                      .setProjectId(rs.getString("project_id"))
-                                                      .setName(rs.getString("name"))
-                                                      .setDescription(rs.getString("description"))
-                                                      .setDateUpdated(rs.getLong("date_updated"))
-                                                      .setDateCreated(rs.getLong("date_created"))
-                                                      .setOwner(rs.getString("owner"))
-                                                      .setVersionNumber(
-                                                          rs.getLong("version_number"));
-                                              return runBuilder;
-                                            })
+                                            (rs, ctx) ->
+                                                Experiment.newBuilder()
+                                                    .setId(rs.getString("id"))
+                                                    .setProjectId(rs.getString("project_id"))
+                                                    .setName(rs.getString("name"))
+                                                    .setDescription(rs.getString(DESCRIPTION_FIELD))
+                                                    .setDateUpdated(rs.getLong("date_updated"))
+                                                    .setDateCreated(rs.getLong("date_created"))
+                                                    .setOwner(rs.getString("owner"))
+                                                    .setVersionNumber(rs.getLong("version_number")))
                                         .list();
                                   })
                               .thenCompose(
@@ -436,7 +439,7 @@ public class FutureExperimentDAO {
               // FIXME: this code never allows us to set the description as an empty string
               if (!request.getDescription().isEmpty()) {
                 return updateExperimentField(
-                    request.getId(), "description", request.getDescription());
+                    request.getId(), DESCRIPTION_FIELD, request.getDescription());
               }
               return InternalFuture.completedInternalFuture(null);
             },
@@ -471,7 +474,7 @@ public class FutureExperimentDAO {
                   "select id, project_id from experiment where id IN (<ids>) AND deleted = :deleted")) {
             List<Map<String, String>> experimentEntitiesMap =
                 query
-                    .bind("deleted", false)
+                    .bind(ModelDBConstants.DELETED, false)
                     .bindList("ids", experimentIds)
                     .map(
                         (rs, ctx) ->
@@ -543,7 +546,7 @@ public class FutureExperimentDAO {
                     query
                         .bind("projectId", projectId)
                         .bind("name", finalName)
-                        .bind("deleted", false)
+                        .bind(ModelDBConstants.DELETED, false)
                         .mapTo(Long.class)
                         .findOne();
                 if (countOptional.isPresent() && countOptional.get() > 0) {
@@ -566,7 +569,7 @@ public class FutureExperimentDAO {
             executor)
         .thenCompose(
             unused ->
-                updateExperimentField(request.getId(), "description", request.getDescription()),
+                updateExperimentField(request.getId(), DESCRIPTION_FIELD, request.getDescription()),
             executor)
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
   }
@@ -737,7 +740,7 @@ public class FutureExperimentDAO {
                           "Update experiment SET deleted = :deleted WHERE id IN (<ids>)")) {
                     return updateQuery
                         .bindList("ids", experimentIds)
-                        .bind("deleted", true)
+                        .bind(ModelDBConstants.DELETED, true)
                         .execute();
                   }
                 }),

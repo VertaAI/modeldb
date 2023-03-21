@@ -28,9 +28,9 @@ public class S3Client {
 
   private final String bucketName;
 
-  private volatile AmazonS3 s3Client;
-  private volatile AtomicInteger referenceCounter;
-  private volatile AWSCredentials awsCredentials;
+  private AmazonS3 s3Client;
+  private AtomicInteger referenceCounter;
+  private AWSCredentials awsCredentials;
 
   public S3Client(S3Config s3Config) throws IOException, ModelDBException {
     String cloudAccessKey = s3Config.getCloudAccessKey();

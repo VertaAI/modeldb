@@ -700,9 +700,9 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                           updatedExperiment.getId(),
                           updatedExperiment.getProjectId(),
                           UPDATE_EVENT_TYPE,
-                          Optional.of("attributes"),
+                          Optional.of(ModelDBConstants.ATTRIBUTES),
                           Collections.singletonMap(
-                              "attribute_keys",
+                              ModelDBConstants.ATTRIBUTE_KEYS,
                               new Gson()
                                   .toJsonTree(
                                       Stream.of(request.getAttribute())
@@ -757,9 +757,9 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                               updatedExperiment.getId(),
                               updatedExperiment.getProjectId(),
                               UPDATE_EVENT_TYPE,
-                              Optional.of("attributes"),
+                              Optional.of(ModelDBConstants.ATTRIBUTES),
                               Collections.singletonMap(
-                                  "attribute_keys",
+                                  ModelDBConstants.ATTRIBUTE_KEYS,
                                   new Gson()
                                       .toJsonTree(
                                           request.getAttributesList().stream()
@@ -840,7 +840,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                       extraFieldValue.put("attributes_deleted_all", true);
                     } else {
                       extraFieldValue.put(
-                          "attribute_keys",
+                          ModelDBConstants.ATTRIBUTE_KEYS,
                           new Gson()
                               .toJsonTree(
                                   request.getAttributeKeysList(),
@@ -850,7 +850,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                             updatedExperiment.getId(),
                             updatedExperiment.getProjectId(),
                             UPDATE_EVENT_TYPE,
-                            Optional.of("attributes"),
+                            Optional.of(ModelDBConstants.ATTRIBUTES),
                             extraFieldValue,
                             "Experiment attributes deleted successfully")
                         .thenApply(unused -> updatedExperiment, executor);
@@ -1028,9 +1028,9 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                               updatedExperiment.getId(),
                               updatedExperiment.getProjectId(),
                               UPDATE_EVENT_TYPE,
-                              Optional.of("artifacts"),
+                              Optional.of(ModelDBConstants.ARTIFACTS),
                               Collections.singletonMap(
-                                  "artifacts",
+                                  ModelDBConstants.ARTIFACTS,
                                   new Gson()
                                       .toJsonTree(
                                           request.getArtifactsList().stream()
@@ -1105,7 +1105,7 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                               updatedExperiment.getId(),
                               updatedExperiment.getProjectId(),
                               UPDATE_EVENT_TYPE,
-                              Optional.of("artifacts"),
+                              Optional.of(ModelDBConstants.ARTIFACTS),
                               Collections.singletonMap(
                                   "artifact_keys",
                                   new Gson()

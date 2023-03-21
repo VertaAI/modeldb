@@ -2,7 +2,6 @@ package ai.verta.modeldb.ArtifactStore;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -65,6 +64,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -324,7 +324,7 @@ public class NFSArtifactStoreTest {
 
       int responseCode = httpClient.getResponseCode();
       LOGGER.info("POST Response Code :: {}", responseCode);
-      assumeTrue(responseCode == HttpURLConnection.HTTP_OK);
+      Assertions.assertEquals(responseCode, HttpURLConnection.HTTP_OK);
     }
   }
 
