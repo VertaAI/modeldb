@@ -64,7 +64,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -324,7 +323,7 @@ public class NFSArtifactStoreTest {
 
       int responseCode = httpClient.getResponseCode();
       LOGGER.info("POST Response Code :: {}", responseCode);
-      Assertions.assertEquals(responseCode, HttpURLConnection.HTTP_OK);
+      assertEquals(responseCode, HttpURLConnection.HTTP_OK);
     }
   }
 

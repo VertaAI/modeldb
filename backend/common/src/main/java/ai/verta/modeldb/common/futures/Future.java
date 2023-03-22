@@ -36,8 +36,6 @@ public class Future<T> {
   public static final AttributeKey<String> STACK_ATTRIBUTE_KEY = AttributeKey.stringKey("stack");
   public static final String FUTURE_EXECUTOR_REQUIRED_ERROR =
       "A FutureExecutor is required to create a new Future.";
-  public static final String CALL_WITH_EXECUTOR_FUTURE_EXECUTOR_REQUIRED_ERROR =
-      "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.";
 
   static {
     String internalFutureTracingEnabled = System.getenv("IFUTURE_TRACING_ENABLED");
@@ -225,7 +223,7 @@ public class Future<T> {
   }
 
   public <U> Future<U> handle(BiFunction<? super T, Throwable, ? extends U> fn) {
-    Preconditions.checkNotNull(futureExecutor, CALL_WITH_EXECUTOR_FUTURE_EXECUTOR_REQUIRED_ERROR);
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     final var executor = getExecutor();
     return from(stage.handleAsync(traceBiFunctionThrowable(fn), executor));
   }
@@ -247,7 +245,7 @@ public class Future<T> {
 
   public <U, V> Future<V> thenCombine(
       Future<? extends U> other, BiFunction<? super T, ? super U, ? extends V> fn) {
-    Preconditions.checkNotNull(futureExecutor, CALL_WITH_EXECUTOR_FUTURE_EXECUTOR_REQUIRED_ERROR);
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     final var executor = getExecutor();
     BiFunction<? super T, ? super U, ? extends V> tracedBiFunction = traceBiFunction(fn);
     return from(stage.thenCombineAsync(other.stage, tracedBiFunction, executor));
@@ -269,7 +267,7 @@ public class Future<T> {
   }
 
   public Future<Void> thenAccept(Consumer<? super T> action) {
-    Preconditions.checkNotNull(futureExecutor, CALL_WITH_EXECUTOR_FUTURE_EXECUTOR_REQUIRED_ERROR);
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     final var executor = getExecutor();
     return from(stage.thenAcceptAsync(traceConsumer(action), executor));
   }
@@ -289,7 +287,7 @@ public class Future<T> {
   }
 
   public Future<Void> thenRun(Runnable runnable) {
-    Preconditions.checkNotNull(futureExecutor, CALL_WITH_EXECUTOR_FUTURE_EXECUTOR_REQUIRED_ERROR);
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     final var executor = getExecutor();
     return from(stage.thenRunAsync(traceRunnable(runnable), executor));
   }
@@ -341,7 +339,7 @@ public class Future<T> {
 
   /** Syntactic sugar for {@link #thenCompose(Function)} with the function ignoring the input. */
   public <U> Future<U> thenSupply(Supplier<Future<U>> supplier) {
-    Preconditions.checkNotNull(futureExecutor, CALL_WITH_EXECUTOR_FUTURE_EXECUTOR_REQUIRED_ERROR);
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     return thenCompose(ignored -> supplier.get());
   }
 
