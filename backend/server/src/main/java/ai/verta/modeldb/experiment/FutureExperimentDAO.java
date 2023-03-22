@@ -11,6 +11,7 @@ import ai.verta.modeldb.DeleteExperimentArtifact;
 import ai.verta.modeldb.DeleteExperimentAttributes;
 import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.Experiment;
+import ai.verta.modeldb.Experiment.Builder;
 import ai.verta.modeldb.FindExperiments;
 import ai.verta.modeldb.GetArtifacts;
 import ai.verta.modeldb.GetAttributes;
@@ -128,7 +129,7 @@ public class FutureExperimentDAO {
 
     createExperimentHandler =
         new CreateExperimentHandler(
-            executor, jdbi, mdbConfig, uac, attributeHandler, tagsHandler, artifactHandler);
+            executor, jdbi, uac, attributeHandler, tagsHandler, artifactHandler);
   }
 
   public InternalFuture<Experiment> createExperiment(CreateExperiment request) {
@@ -221,7 +222,7 @@ public class FutureExperimentDAO {
 
                                     sql += " inner join project p ON p.id = experiment.project_id ";
 
-                                    Query query =
+                                    try (Query query =
                                         CommonUtils.buildQueryFromQueryContext(
                                             ModelDBConstants.EXPERIMENT_TABLE_NAME,
                                             Pagination.newBuilder()
@@ -231,21 +232,23 @@ public class FutureExperimentDAO {
                                             queryContext,
                                             handle,
                                             sql,
-                                            isMssql);
-
-                                    return query
-                                        .map(
-                                            (rs, ctx) ->
-                                                Experiment.newBuilder()
-                                                    .setId(rs.getString("id"))
-                                                    .setProjectId(rs.getString("project_id"))
-                                                    .setName(rs.getString("name"))
-                                                    .setDescription(rs.getString(DESCRIPTION_FIELD))
-                                                    .setDateUpdated(rs.getLong("date_updated"))
-                                                    .setDateCreated(rs.getLong("date_created"))
-                                                    .setOwner(rs.getString("owner"))
-                                                    .setVersionNumber(rs.getLong("version_number")))
-                                        .list();
+                                            isMssql)) {
+                                      return query
+                                          .map(
+                                              (rs, ctx) ->
+                                                  Experiment.newBuilder()
+                                                      .setId(rs.getString("id"))
+                                                      .setProjectId(rs.getString("project_id"))
+                                                      .setName(rs.getString("name"))
+                                                      .setDescription(
+                                                          rs.getString(DESCRIPTION_FIELD))
+                                                      .setDateUpdated(rs.getLong("date_updated"))
+                                                      .setDateCreated(rs.getLong("date_created"))
+                                                      .setOwner(rs.getString("owner"))
+                                                      .setVersionNumber(
+                                                          rs.getLong("version_number")))
+                                          .list();
+                                    }
                                   })
                               .thenCompose(
                                   builders -> {
@@ -258,7 +261,7 @@ public class FutureExperimentDAO {
                                         InternalFuture.completedInternalFuture(builders.stream());
                                     final var ids =
                                         builders.stream()
-                                            .map(x -> x.getId())
+                                            .map(Builder::getId)
                                             .collect(Collectors.toSet());
 
                                     // Get tags

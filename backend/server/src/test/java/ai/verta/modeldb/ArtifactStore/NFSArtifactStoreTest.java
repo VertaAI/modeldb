@@ -64,6 +64,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.tomcat.util.http.fileupload.FileUtils;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -241,7 +242,16 @@ public class NFSArtifactStoreTest {
   private void createProjectEntities() {
     var name = "Project" + new Date().getTime();
     CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(CreateProject.newBuilder().setName(name).build());
+        projectServiceStub.createProject(
+            CreateProject.newBuilder()
+                .setName(name)
+                .addArtifacts(
+                    Artifact.newBuilder()
+                        .setKey(artifactKey)
+                        .setPath(artifactKey)
+                        .setArtifactType(ArtifactType.IMAGE)
+                        .build())
+                .build());
     project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
     assertEquals("Project name not match with expected Project name", name, project.getName());
@@ -296,7 +306,7 @@ public class NFSArtifactStoreTest {
   }
 
   @Test
-  public void getUrlForArtifactTest() throws IOException {
+  public void getUrlForArtifactExperimentRunTest() throws IOException {
     GetUrlForArtifact getUrlForArtifactRequest =
         GetUrlForArtifact.newBuilder()
             .setId(experimentRun.getId())
@@ -328,9 +338,41 @@ public class NFSArtifactStoreTest {
   }
 
   @Test
+  public void getUrlForArtifactProjectTest() throws IOException {
+    GetUrlForArtifact getUrlForArtifactRequest =
+        GetUrlForArtifact.newBuilder()
+            .setId(project.getId())
+            .setKey(artifactKey)
+            .setMethod("put")
+            .setArtifactType(ArtifactType.STRING)
+            .build();
+    GetUrlForArtifact.Response getUrlForArtifactResponse =
+        projectServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+
+    try (InputStream inputStream =
+        new FileInputStream("src/test/java/ai/verta/modeldb/updateProjectReadMe.md")) {
+
+      String url = getUrlForArtifactResponse.getUrl();
+      System.out.println("url = " + url);
+      HttpURLConnection httpClient = (HttpURLConnection) new URL(url).openConnection();
+      httpClient.setRequestMethod("PUT");
+      httpClient.setDoOutput(true);
+      httpClient.setRequestProperty("Content-Type", "application/json");
+      try (OutputStream out = httpClient.getOutputStream()) {
+        IOUtils.copy(inputStream, out);
+        out.flush();
+      }
+
+      int responseCode = httpClient.getResponseCode();
+      LOGGER.info("POST Response Code :: {}", responseCode);
+      Assertions.assertEquals(responseCode, HttpURLConnection.HTTP_OK);
+    }
+  }
+
+  @Test
   public void getArtifactTest() throws IOException {
     LOGGER.info("get artifact test start................................");
-    getUrlForArtifactTest();
+    getUrlForArtifactExperimentRunTest();
 
     GetUrlForArtifact getUrlForArtifactRequest =
         GetUrlForArtifact.newBuilder()

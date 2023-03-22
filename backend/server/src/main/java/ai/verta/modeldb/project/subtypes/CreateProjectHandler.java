@@ -5,8 +5,6 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.CreateProject;
 import ai.verta.modeldb.Project;
 import ai.verta.modeldb.common.CommonDBUtil;
-import ai.verta.modeldb.common.config.Config;
-import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
@@ -30,12 +28,10 @@ import org.apache.logging.log4j.Logger;
 
 public class CreateProjectHandler extends HandlerUtil {
 
-  private static Logger LOGGER = LogManager.getLogger(CreateProjectHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(CreateProjectHandler.class);
 
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
-  private final UAC uac;
-  private final Config config;
 
   private final AttributeHandler attributeHandler;
   private final TagsHandler tagsHandler;
@@ -45,15 +41,11 @@ public class CreateProjectHandler extends HandlerUtil {
   public CreateProjectHandler(
       FutureExecutor executor,
       FutureJdbi jdbi,
-      Config config,
-      UAC uac,
       AttributeHandler attributeHandler,
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
-    this.config = config;
-    this.uac = uac;
 
     this.attributeHandler = attributeHandler;
     this.tagsHandler = tagsHandler;
@@ -122,7 +114,6 @@ public class CreateProjectHandler extends HandlerUtil {
   }
 
   public InternalFuture<Project> insertProject(Project newProject) {
-    final var now = Calendar.getInstance().getTimeInMillis();
     Map<String, Object> valueMap = new LinkedHashMap<>();
     valueMap.put("id", newProject.getId());
     valueMap.put("name", newProject.getName());
@@ -146,15 +137,16 @@ public class CreateProjectHandler extends HandlerUtil {
                   String queryString = buildInsertQuery(valueMap, "project");
 
                   LOGGER.trace("insert project query string: " + queryString);
-                  var query = handle.createUpdate(queryString);
+                  try (var query = handle.createUpdate(queryString)) {
 
-                  // Inserting fields arguments based on the keys and value of map
-                  for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
-                    query.bind(objectEntry.getKey(), objectEntry.getValue());
+                    // Inserting fields arguments based on the keys and value of map
+                    for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+                      query.bind(objectEntry.getKey(), objectEntry.getValue());
+                    }
+
+                    int count = query.execute();
+                    LOGGER.trace("Project Inserted : " + (count > 0));
                   }
-
-                  int count = query.execute();
-                  LOGGER.trace("Project Inserted : " + (count > 0));
 
                   if (!builder.getTagsList().isEmpty()) {
                     tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
