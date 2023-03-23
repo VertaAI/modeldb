@@ -4,6 +4,7 @@ import ai.verta.common.ArtifactTypeEnum;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
@@ -25,7 +26,7 @@ import org.hibernate.LockMode;
 import org.hibernate.Session;
 
 public class ArtifactHandler extends ArtifactHandlerBase {
-  private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
   private static final String KEY_S_NOT_LOGGED_ERROR = "Key %s not logged";
 
   private final CodeVersionHandler codeVersionHandler;
@@ -50,14 +51,18 @@ public class ArtifactHandler extends ArtifactHandlerBase {
     this.datasetHandler = datasetHandler;
     this.artifactStoreDAO = artifactStoreDAO;
 
-    if (entityName.equals("ProjectEntity")) {
-      this.artifactEntityType = ArtifactPartEntity.PROJECT_ARTIFACT;
-    } else if (entityName.equals("ExperimentEntity")) {
-      this.artifactEntityType = ArtifactPartEntity.EXPERIMENT_ARTIFACT;
-    } else if (entityName.equals("ExperimentRunEntity")) {
-      this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
-    } else {
-      throw new ModelDBException("Invalid entity type for ArtifactPart", Code.INTERNAL);
+    switch (entityName) {
+      case "ProjectEntity":
+        this.artifactEntityType = ArtifactPartEntity.PROJECT_ARTIFACT;
+        break;
+      case "ExperimentEntity":
+        this.artifactEntityType = ArtifactPartEntity.EXPERIMENT_ARTIFACT;
+        break;
+      case "ExperimentRunEntity":
+        this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
+        break;
+      default:
+        throw new InternalErrorException("Invalid entity type for ArtifactPart");
     }
   }
 
@@ -94,11 +99,8 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               } else {
                 errorMessage =
                     String.format(
-                        "%s ID "
-                            + request.getId()
-                            + " does not have the artifact "
-                            + request.getKey(),
-                        entityName);
+                        "%s ID %s does not have the artifact %s ",
+                        entityName, request.getId(), request.getKey());
 
                 urlInfo =
                     getEntityArtifactS3PathAndMultipartUploadID(

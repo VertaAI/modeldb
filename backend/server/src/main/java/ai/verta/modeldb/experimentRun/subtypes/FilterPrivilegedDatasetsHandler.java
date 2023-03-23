@@ -20,11 +20,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class FilterPrivilegedDatasetsHandler {
-  private static Logger LOGGER = LogManager.getLogger(FilterPrivilegedDatasetsHandler.class);
 
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
@@ -61,15 +58,17 @@ public class FilterPrivilegedDatasetsHandler {
             handle -> {
               // We have dataset version as a commit and dataset as a repository in MDB so added
               // commit_hash filter here
-              return handle
-                  .createQuery(
-                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<linkedDatasetVersionIds>) ")
-                  .bindList("linkedDatasetVersionIds", linkedDatasetVersionIds)
-                  .map(
-                      (rs, ctx) ->
-                          new AbstractMap.SimpleEntry<>(
-                              rs.getString("commit_hash"), rs.getLong("repository_id")))
-                  .list();
+              try (var findQuery =
+                  handle.createQuery(
+                      " SELECT commit_hash, repository_id FROM repository_commit WHERE commit_hash IN (<linkedDatasetVersionIds>) ")) {
+                return findQuery
+                    .bindList("linkedDatasetVersionIds", linkedDatasetVersionIds)
+                    .map(
+                        (rs, ctx) ->
+                            new AbstractMap.SimpleEntry<>(
+                                rs.getString("commit_hash"), rs.getLong("repository_id")))
+                    .list();
+              }
             })
         .thenCompose(
             datasetVersionDatasetList -> {
@@ -114,7 +113,7 @@ public class FilterPrivilegedDatasetsHandler {
                                         ModelDBResourceEnum.ModelDBServiceResourceTypes.DATASET)
                                     .thenApply(
                                         allowed -> {
-                                          /**
+                                          /*
                                            * Point 1:
                                            *
                                            * <p>- While creating ER with dataset which is has

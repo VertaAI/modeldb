@@ -21,7 +21,7 @@ import org.jdbi.v3.core.statement.UnableToExecuteStatementException;
 
 public class CreateExperimentRunHandler extends HandlerUtil {
 
-  private static Logger LOGGER = LogManager.getLogger(CreateExperimentRunHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(CreateExperimentRunHandler.class);
 
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
@@ -29,8 +29,8 @@ public class CreateExperimentRunHandler extends HandlerUtil {
   private final Config config;
 
   private final AttributeHandler attributeHandler;
-  private final KeyValueHandler hyperparametersHandler;
-  private final KeyValueHandler metricsHandler;
+  private final KeyValueHandler<String> hyperparametersHandler;
+  private final KeyValueHandler<String> metricsHandler;
   private final ObservationHandler observationHandler;
   private final TagsHandler tagsHandler;
   private final ArtifactHandler artifactHandler;
@@ -45,8 +45,8 @@ public class CreateExperimentRunHandler extends HandlerUtil {
       Config config,
       UAC uac,
       AttributeHandler attributeHandler,
-      KeyValueHandler hyperparametersHandler,
-      KeyValueHandler metricsHandler,
+      KeyValueHandler<String> hyperparametersHandler,
+      KeyValueHandler<String> metricsHandler,
       ObservationHandler observationHandler,
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler,
@@ -80,29 +80,11 @@ public class CreateExperimentRunHandler extends HandlerUtil {
               return InternalFuture.completedInternalFuture(experimentRun);
             },
             executor);
-    /*.thenCompose(
-    experimentRun -> {
-      // TODO: Fix below logic for checking privileges of linked dataset versions
-      */
-    /*if (experimentRun.getDatasetsCount() > 0 && config.populateConnectionsBasedOnPrivileges) {
-      experimentRun = checkDatasetVersionBasedOnPrivileges(experimentRun, true);
-    }*/
-    /*
-          return InternalFuture.completedInternalFuture(experimentRun);
-        },
-        executor)
-    .thenCompose(
-        experimentRun -> {
-          // TODO: Fix populating logic of setVersioned_inputs,
-          // setHyperparameter_element_mappings here
-          return InternalFuture.completedInternalFuture(experimentRun);
-        },
-        executor)*/
   }
 
   /**
    * Convert CreateExperimentRun request to Experiment object. This method generate the
-   * ExperimentRun Id using UUID and put it in ExperimentRun object.
+   * ExperimentRun id using UUID and put it in ExperimentRun object.
    *
    * @param request : CreateExperimentRun request
    * @param userInfo : current login UserInfo
@@ -154,11 +136,10 @@ public class CreateExperimentRunHandler extends HandlerUtil {
     }
 
     experimentRunBuilder.setCodeVersionSnapshot(request.getCodeVersionSnapshot());
-    if (request.getVersionedInputs() != null && request.hasVersionedInputs()) {
+    if (request.hasVersionedInputs()) {
       experimentRunBuilder.setVersionedInputs(request.getVersionedInputs());
     }
     if (userInfo != null) {
-
       experimentRunBuilder.setOwner(userInfo.getVertaInfo().getUserId());
     }
 
@@ -202,7 +183,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                 jdbi.withTransaction(
                     handle -> {
                       final var builder = newExperimentRun.toBuilder();
-                      Boolean exists = checkInsertedEntityAlreadyExists(handle, newExperimentRun);
+                      boolean exists = checkInsertedEntityAlreadyExists(handle, newExperimentRun);
                       if (exists) {
                         throw new AlreadyExistsException(
                             "ExperimentRun '" + builder.getName() + "' already exists in database");
@@ -210,26 +191,25 @@ public class CreateExperimentRunHandler extends HandlerUtil {
 
                       String queryString = buildInsertQuery(runValueMap, "experiment_run");
 
-                      LOGGER.trace("insert experiment run query string: " + queryString);
-                      var query = handle.createUpdate(queryString);
+                      LOGGER.trace("insert experiment run query string: {}", queryString);
+                      try (var query = handle.createUpdate(queryString)) {
 
-                      // Inserting fields arguments based on the keys and value of map
-                      for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
-                        query.bind(objectEntry.getKey(), objectEntry.getValue());
+                        // Inserting fields arguments based on the keys and value of map
+                        for (Map.Entry<String, Object> objectEntry : runValueMap.entrySet()) {
+                          query.bind(objectEntry.getKey(), objectEntry.getValue());
+                        }
+
+                        try {
+                          int count = query.execute();
+                          LOGGER.trace("ExperimentRun Inserted : {}", (count > 0));
+                        } catch (UnableToExecuteStatementException exception) {
+                          // take a brief pause before resubmitting its query/transaction
+                          Thread.sleep(config.getJdbi_retry_time()); // Time in ms
+                          LOGGER.trace("Retry to insert ExperimentRun");
+                          int count = query.execute();
+                          LOGGER.trace("ExperimentRun Inserted after retry : {}", (count > 0));
+                        }
                       }
-
-                      try {
-                        int count = query.execute();
-                        LOGGER.trace("ExperimentRun Inserted : " + (count > 0));
-                      } catch (UnableToExecuteStatementException exception) {
-                        // take a brief pause before resubmitting its query/transaction
-                        Thread.sleep(config.getJdbi_retry_time()); // Time in ms
-                        LOGGER.trace("Retry to insert ExperimentRun");
-                        int count = query.execute();
-                        LOGGER.trace("ExperimentRun Inserted after retry : " + (count > 0));
-                      }
-
-                      final var futureLogs = new LinkedList<InternalFuture<Void>>();
 
                       if (!builder.getTagsList().isEmpty()) {
                         tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
@@ -290,13 +270,16 @@ public class CreateExperimentRunHandler extends HandlerUtil {
         .thenCompose(
             createdExperimentRun ->
                 jdbi.useHandle(
-                        handle ->
-                            handle
-                                .createUpdate(
-                                    "UPDATE experiment_run SET created=:created WHERE id=:id")
+                        handle -> {
+                          try (var updateQuery =
+                              handle.createUpdate(
+                                  "UPDATE experiment_run SET created=:created WHERE id=:id")) {
+                            updateQuery
                                 .bind("created", true)
                                 .bind("id", newExperimentRun.getId())
-                                .execute())
+                                .execute();
+                          }
+                        })
                     .thenApply(unused -> createdExperimentRun, executor),
             executor);
   }
@@ -361,9 +344,7 @@ public class CreateExperimentRunHandler extends HandlerUtil {
                         .build()),
             executor)
         .thenAccept(
-            response -> {
-              LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response);
-            },
+            response -> LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, response),
             executor);
   }
 }

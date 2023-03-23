@@ -15,12 +15,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.LockMode;
 
 public class CodeVersionHandler {
-  private static Logger LOGGER = LogManager.getLogger(CodeVersionHandler.class);
   private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
 
   private final FutureExecutor executor;

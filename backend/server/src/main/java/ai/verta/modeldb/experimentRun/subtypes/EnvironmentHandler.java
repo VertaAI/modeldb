@@ -8,21 +8,13 @@ import ai.verta.modeldb.versioning.PythonRequirementEnvironmentBlob;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.Executor;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class EnvironmentHandler {
-  private static Logger LOGGER = LogManager.getLogger(EnvironmentHandler.class);
 
-  private final Executor executor;
   private final FutureJdbi jdbi;
-  private final String entityName;
 
-  public EnvironmentHandler(Executor executor, FutureJdbi jdbi, String entityName) {
-    this.executor = executor;
+  public EnvironmentHandler(FutureJdbi jdbi) {
     this.jdbi = jdbi;
-    this.entityName = entityName;
   }
 
   public String getEnvironmentStringFromBlob(EnvironmentBlob runEnvironmentBlob) {
@@ -60,12 +52,15 @@ public class EnvironmentHandler {
 
   public InternalFuture<Void> logEnvironment(String runId, EnvironmentBlob environmentBlob) {
     return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "UPDATE experiment_run SET environment = :environment WHERE id = :runId")
+        handle -> {
+          try (var updateQuery =
+              handle.createUpdate(
+                  "UPDATE experiment_run SET environment = :environment WHERE id = :runId")) {
+            updateQuery
                 .bind("runId", runId)
                 .bind("environment", getEnvironmentStringFromBlob(environmentBlob))
-                .execute());
+                .execute();
+          }
+        });
   }
 }

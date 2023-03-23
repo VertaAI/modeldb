@@ -18,7 +18,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
-  private static Logger LOGGER = LogManager.getLogger(HyperparametersFromConfigHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(HyperparametersFromConfigHandler.class);
   private final FutureJdbi jdbi;
   private final FutureExecutor executor;
 
@@ -33,12 +33,11 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
       List<String> expRunIds,
       Collection<String> selfAllowedRepositoryIds,
       boolean allowedAllRepositories) {
-    if (!allowedAllRepositories) {
-      // If all repositories are not allowed and some one send empty selfAllowedRepositoryIds list
-      // then this will return empty list from here for security
-      if (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty()) {
-        return InternalFuture.completedInternalFuture(MapSubtypes.from(new ArrayList<>()));
-      }
+    // If all repositories are not allowed and some one send empty selfAllowedRepositoryIds list
+    // then this will return empty list from here for security
+    if (!allowedAllRepositories
+        && (selfAllowedRepositoryIds == null || selfAllowedRepositoryIds.isEmpty())) {
+      return InternalFuture.completedInternalFuture(MapSubtypes.from(new ArrayList<>()));
     }
     return jdbi.withHandle(
             handle -> {
@@ -52,49 +51,50 @@ public class HyperparametersFromConfigHandler extends KeyValueBaseHandler {
                 queryStr = queryStr + " AND vme.repository_id IN (<repoIds>)";
               }
 
-              var query = handle.createQuery(queryStr);
-              query.bind("hyperparameterType", HYPERPARAMETER);
-              query.bindList("expRunIds", expRunIds);
-              if (!allowedAllRepositories) {
-                query.bindList(
-                    "repoIds",
-                    selfAllowedRepositoryIds.stream()
-                        .map(Long::parseLong)
-                        .collect(Collectors.toList()));
-              }
-              LOGGER.trace(
-                  "Final experimentRuns hyperparameter config blob final query : {}", queryStr);
-              return query
-                  .map(
-                      (rs, ctx) -> {
-                        var valueBuilder = Value.newBuilder();
-                        var valueCase =
-                            HyperparameterValuesConfigBlob.ValueCase.forNumber(
-                                rs.getInt("value_type"));
-                        switch (valueCase) {
-                          case INT_VALUE:
-                            valueBuilder.setNumberValue(rs.getInt("int_value"));
-                            break;
-                          case FLOAT_VALUE:
-                            valueBuilder.setNumberValue(rs.getDouble("float_value"));
-                            break;
-                          case STRING_VALUE:
-                            valueBuilder.setStringValue(rs.getString("string_value"));
-                            break;
-                          default:
-                            // Do nothing
-                            break;
-                        }
+              try (var query = handle.createQuery(queryStr)) {
+                query.bind("hyperparameterType", HYPERPARAMETER);
+                query.bindList("expRunIds", expRunIds);
+                if (!allowedAllRepositories) {
+                  query.bindList(
+                      "repoIds",
+                      selfAllowedRepositoryIds.stream()
+                          .map(Long::parseLong)
+                          .collect(Collectors.toList()));
+                }
+                LOGGER.trace(
+                    "Final experimentRuns hyperparameter config blob final query : {}", queryStr);
+                return query
+                    .map(
+                        (rs, ctx) -> {
+                          var valueBuilder = Value.newBuilder();
+                          var valueCase =
+                              HyperparameterValuesConfigBlob.ValueCase.forNumber(
+                                  rs.getInt("value_type"));
+                          switch (valueCase) {
+                            case INT_VALUE:
+                              valueBuilder.setNumberValue(rs.getInt("int_value"));
+                              break;
+                            case FLOAT_VALUE:
+                              valueBuilder.setNumberValue(rs.getDouble("float_value"));
+                              break;
+                            case STRING_VALUE:
+                              valueBuilder.setStringValue(rs.getString("string_value"));
+                              break;
+                            default:
+                              // Do nothing
+                              break;
+                          }
 
-                        KeyValue hyperparameter =
-                            KeyValue.newBuilder()
-                                .setKey(rs.getString("name"))
-                                .setValue(valueBuilder.build())
-                                .build();
-                        return new AbstractMap.SimpleEntry<>(
-                            rs.getString("experiment_run_id"), hyperparameter);
-                      })
-                  .list();
+                          KeyValue hyperparameter =
+                              KeyValue.newBuilder()
+                                  .setKey(rs.getString("name"))
+                                  .setValue(valueBuilder.build())
+                                  .build();
+                          return new AbstractMap.SimpleEntry<>(
+                              rs.getString("experiment_run_id"), hyperparameter);
+                        })
+                    .list();
+              }
             })
         .thenApply(MapSubtypes::from, executor);
   }

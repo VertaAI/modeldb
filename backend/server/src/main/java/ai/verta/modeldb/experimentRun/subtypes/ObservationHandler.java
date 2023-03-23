@@ -8,7 +8,6 @@ import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.modeldb.common.subtypes.KeyValueHandler;
 import ai.verta.modeldb.common.subtypes.MapSubtypes;
 import com.google.protobuf.Value;
 import java.util.AbstractMap;
@@ -16,11 +15,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class ObservationHandler {
-  private static Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
+
   private static final String RUN_ID_QUERY_PARAM = "run_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
   private static final String NAME_QUERY_PARAM = "name";

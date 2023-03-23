@@ -29,6 +29,9 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 public class PredicatesHandler extends PredicateHandlerUtils {
+  private static final String PROJECT_TABLE_NAME = "project";
+  private static final String EXPERIMENT_TABLE_NAME = "experiment";
+  private static final String EXPERIMENT_RUN_TABLE_NAME = "experiment_run";
   private static final String ENTITY_ID_NOT_IN_QUERY_CONDITION = "%s.id NOT IN (%s)";
   private static final String ENTITY_ID_IN_QUERY_CONDITION = "%s.id IN (%s)";
   private static final String K_P_D_VALUE_BINDING_KEY = "k_p_%d";
@@ -53,7 +56,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     this.uacApisUtil = uacApisUtil;
     this.isPermissionV2 = isPermissionV2;
 
-    if ("experiment_run".equals(tableName)) {
+    if (tableName.equals(EXPERIMENT_RUN_TABLE_NAME)) {
       this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler();
     }
   }
@@ -61,13 +64,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private String getEntityColumn() {
     String entityColumn = "";
     switch (tableName) {
-      case "project":
+      case PROJECT_TABLE_NAME:
         entityColumn = "project_id";
         break;
-      case "experiment":
+      case EXPERIMENT_TABLE_NAME:
         entityColumn = "experiment_id";
         break;
-      case "experiment_run":
+      case EXPERIMENT_RUN_TABLE_NAME:
         entityColumn = "experiment_run_id";
         break;
       default:
@@ -79,13 +82,13 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private String getEntityName() {
     String entityColumn = "";
     switch (tableName) {
-      case "project":
+      case PROJECT_TABLE_NAME:
         entityColumn = "ProjectEntity";
         break;
-      case "experiment":
+      case EXPERIMENT_TABLE_NAME:
         entityColumn = "ExperimentEntity";
         break;
-      case "experiment_run":
+      case EXPERIMENT_RUN_TABLE_NAME:
         entityColumn = "ExperimentRunEntity";
         break;
       default:
@@ -138,7 +141,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       default:
         InternalFuture<QueryFilterContext> filterContext =
-            processEntityNameBasedPredicates(index, bindingName, predicate);
+            processEntityNameBasedPredicates(bindingName, predicate);
         if (filterContext != null) {
           return filterContext;
         }
@@ -152,7 +155,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       case ModelDBConstants.METRICS:
         return processKeyValuePredicate(index, predicate, names[1], "metrics");
       case ModelDBConstants.HYPERPARAMETERS:
-        if (tableName.equals("experiment_run")) {
+        if (tableName.equals(EXPERIMENT_RUN_TABLE_NAME)) {
           return hyperparameterPredicatesHandler.processHyperparametersPredicate(
               index, predicate, names[1], "hyperparameters");
         }
@@ -200,14 +203,14 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   }
 
   private InternalFuture<QueryFilterContext> processEntityNameBasedPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
+      String bindingName, KeyValueQuery predicate) {
     switch (tableName) {
-      case "project":
-        return processProjectPredicates(index, bindingName, predicate);
-      case "experiment":
-        return processExperimentPredicates(index, bindingName, predicate);
-      case "experiment_run":
-        return processExperimentRunPredicates(index, bindingName, predicate);
+      case PROJECT_TABLE_NAME:
+        return processProjectPredicates();
+      case EXPERIMENT_TABLE_NAME:
+        return processExperimentPredicates();
+      case EXPERIMENT_RUN_TABLE_NAME:
+        return processExperimentRunPredicates(bindingName, predicate);
       default:
         // return null for further process
         return null;
@@ -215,7 +218,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   }
 
   private InternalFuture<QueryFilterContext> processExperimentRunPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
+      String bindingName, KeyValueQuery predicate) {
 
     if (!predicate.getKey().contains(ModelDBConstants.LINKED_ARTIFACT_ID)
         && predicate.getOperator().equals(OperatorEnum.Operator.IN)) {
@@ -266,24 +269,14 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     }
   }
 
-  private InternalFuture<QueryFilterContext> processExperimentPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
-    var value = predicate.getValue();
-    switch (predicate.getKey()) {
-      default:
-        // return null for further process
-        return null;
-    }
+  private InternalFuture<QueryFilterContext> processExperimentPredicates() {
+    // return null for further process
+    return null;
   }
 
-  private InternalFuture<QueryFilterContext> processProjectPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
-    var value = predicate.getValue();
-    switch (predicate.getKey()) {
-      default:
-        // return null for further process
-        return null;
-    }
+  private InternalFuture<QueryFilterContext> processProjectPredicates() {
+    // return null for further process
+    return null;
   }
 
   private InternalFuture<QueryFilterContext> processTagsPredicate(
@@ -381,10 +374,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           String.format(
               "select distinct ob.%s from observation as ob "
                   + " inner join keyvalue as kv ON kv.id = ob.keyvaluemapping_id"
-                  + " where ob.entity_name=:entityName and ob.field_type=:"
-                  + fieldTypeName
-                  + " and kv.field_type = 'attributes' ",
-              getEntityColumn());
+                  + " where ob.entity_name=:entityName and ob.field_type=:%s and kv.field_type = 'attributes' ",
+              getEntityColumn(), fieldTypeName);
     } else {
       sql =
           String.format(

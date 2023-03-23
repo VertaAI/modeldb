@@ -26,10 +26,11 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
 
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
+  private static final String ARTIFACT_KEY_QUERY_PARAM = "ar_key";
   protected final String fieldType;
   protected String entityIdReferenceColumn;
 
-  public ArtifactHandlerBase(
+  protected ArtifactHandlerBase(
       FutureExecutor executor,
       FutureJdbi jdbi,
       String fieldType,
@@ -70,7 +71,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
           .bindList("entity_ids", entityIds)
           .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
           .bind(ENTITY_NAME_QUERY_PARAM, entityName);
-      maybeKey.ifPresent(s -> query.bind("ar_key", s));
+      maybeKey.ifPresent(s -> query.bind(ARTIFACT_KEY_QUERY_PARAM, s));
       return query;
     }
   }
@@ -96,7 +97,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
                             .bind(ENTITY_ID_QUERY_PARAM, entityId)
                             .bind(FIELD_TYPE_QUERY_PARAM, fieldType)
                             .bind(ENTITY_NAME_QUERY_PARAM, entityName)
-                            .bind("ar_key", key)
+                            .bind(ARTIFACT_KEY_QUERY_PARAM, key)
                             .mapTo(Long.class)
                             .findOne();
                       }
@@ -238,7 +239,7 @@ public abstract class ArtifactHandlerBase extends CommonArtifactHandler<String> 
       boolean uploadCompleted,
       String storeTypePath) {
     Map<String, Object> valueMap = new HashMap<>();
-    valueMap.put("ar_key", artifact.getKey());
+    valueMap.put(ARTIFACT_KEY_QUERY_PARAM, artifact.getKey());
     valueMap.put("ar_path", artifact.getPath());
     valueMap.put("artifact_type", artifact.getArtifactTypeValue());
     valueMap.put("path_only", artifact.getPathOnly());

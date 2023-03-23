@@ -21,11 +21,9 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public abstract class KeyValueHandler<T> {
-  private static final Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
+
   protected static final String ENTITY_ID_PARAM_QUERY = "entity_id";
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
@@ -55,7 +53,7 @@ public abstract class KeyValueHandler<T> {
     return CommonUtils.getStringFromProtoObject(kv.getValue());
   }
 
-  public KeyValueHandler(
+  protected KeyValueHandler(
       FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;

@@ -194,12 +194,12 @@ public class FutureExperimentRunDAO {
             config.isPermissionV2Enabled());
     sortingHandler = new SortingHandler("experiment_run");
     featureHandler = new FeatureHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
-    environmentHandler = new EnvironmentHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME);
+    environmentHandler = new EnvironmentHandler(jdbi);
     privilegedDatasetsHandler = new FilterPrivilegedDatasetsHandler(executor, jdbi);
     versionInputHandler =
         new VersionInputHandler(
             executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME, repositoryDAO, commitDAO, blobDAO);
-    privilegedVersionedInputsHandler = new FilterPrivilegedVersionedInputsHandler(executor, jdbi);
+    privilegedVersionedInputsHandler = new FilterPrivilegedVersionedInputsHandler(executor);
     createExperimentRunHandler =
         new CreateExperimentRunHandler(
             executor,
@@ -218,9 +218,7 @@ public class FutureExperimentRunDAO {
     hyperparametersFromConfigHandler =
         new HyperparametersFromConfigHandler(
             executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
-    codeVersionFromBlobHandler =
-        new CodeVersionFromBlobHandler(
-            executor, jdbi, config.isPopulateConnectionsBasedOnPrivileges());
+    codeVersionFromBlobHandler = new CodeVersionFromBlobHandler();
   }
 
   public InternalFuture<ExperimentRun> deleteObservations(DeleteObservations request) {

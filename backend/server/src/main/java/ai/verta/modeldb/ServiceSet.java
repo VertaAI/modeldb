@@ -35,7 +35,7 @@ public class ServiceSet {
     var set = new ServiceSet();
     set.uac = uac;
     set.uacApisUtil = new UACApisUtil(executor, uac);
-    set.mdbRoleService = MDBRoleServiceUtils.FromConfig(mdbConfig, set.uacApisUtil, set.uac);
+    set.mdbRoleService = MDBRoleServiceUtils.fromConfig(mdbConfig, set.uacApisUtil, set.uac);
 
     // Initialize App.java singleton instance
     set.app = App.getInstance();

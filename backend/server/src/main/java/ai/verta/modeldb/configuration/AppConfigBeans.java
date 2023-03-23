@@ -167,7 +167,8 @@ public class AppConfigBeans {
       DatabaseConfig databaseConfig, @SuppressWarnings("unused") OpenTelemetry openTelemetry) {
     // note: the OTel DataSource currently relies on the GlobalOpenTelemetry instance being set, so
     // we inject it here to make sure it's been initialized.
-    return new OpenTelemetryDataSource(JdbiUtils.initializeDataSource(databaseConfig, "modeldb"));
+    return new OpenTelemetryDataSource(
+        JdbiUtils.initializeDataSource(databaseConfig, "modeldb"), openTelemetry);
   }
 
   @Bean
@@ -246,11 +247,11 @@ public class AppConfigBeans {
         initializeBackendServices(serverBuilder, services, daos, grpcExecutor);
 
         // Create the server
-        final var server = serverBuilder.build();
+        final var grpcServer = serverBuilder.build();
 
         // --------------- Start modelDB gRPC server --------------------------
-        server.start();
-        this.server = Optional.of(server);
+        grpcServer.start();
+        this.server = Optional.of(grpcServer);
         healthStatusManager.setStatus("", HealthCheckResponse.ServingStatus.SERVING);
         up.inc();
         LOGGER.info("Current PID: {}", ProcessHandle.current().pid());
@@ -306,25 +307,25 @@ public class AppConfigBeans {
   @PreDestroy
   public void onShutDown() {
     if (this.server.isPresent()) {
-      var server = this.server.get();
+      var grpcServer = this.server.get();
       try {
         // Use stderr here since the logger may have been reset by its JVM shutdown
         // hook.
         LOGGER.info("*** Shutting down gRPC server since JVM is shutting down ***");
-        server.shutdown();
+        grpcServer.shutdown();
 
         var mdbConfig = appContext.getApplicationContext().getBean(MDBConfig.class);
         long pollInterval = 5L;
         long timeoutRemaining = mdbConfig.getGrpcServer().getRequestTimeout();
         while (timeoutRemaining > pollInterval
-            && !server.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
+            && !grpcServer.awaitTermination(pollInterval, TimeUnit.SECONDS)) {
           int activeRequestCount = ActiveCountGrpcInterceptor.activeRequestCount.get();
           LOGGER.info("Active Request Count in while:{} ", activeRequestCount);
 
           timeoutRemaining -= pollInterval;
         }
 
-        server.awaitTermination(pollInterval, TimeUnit.SECONDS);
+        grpcServer.awaitTermination(pollInterval, TimeUnit.SECONDS);
         LOGGER.info("*** Server Shutdown ***");
       } catch (InterruptedException e) {
         LOGGER.error("Getting error while graceful shutdown", e);

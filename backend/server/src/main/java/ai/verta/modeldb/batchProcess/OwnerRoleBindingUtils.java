@@ -42,7 +42,7 @@ public class OwnerRoleBindingUtils {
           FutureExecutor.initializeExecutor(
               config.getGrpcServer().getThreadCount(), "OwnerRoleBindingUtils");
       uacApisUtil = new UACApisUtil(executor, uac);
-      mdbRoleService = MDBRoleServiceUtils.FromConfig(config, uacApisUtil, uac);
+      mdbRoleService = MDBRoleServiceUtils.fromConfig(config, uacApisUtil, uac);
     } else {
       LOGGER.debug("AuthService Host & Port not found");
       return;

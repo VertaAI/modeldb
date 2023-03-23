@@ -45,6 +45,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -61,8 +62,6 @@ public class ProjectTest extends ModeldbTestSetup {
 
   // Project Entities
   private Project project;
-  private Project project2;
-  private Project project3;
   private final Map<String, Project> projectMap = new HashMap<>();
 
   // Experiment Entities
@@ -144,7 +143,7 @@ public class ProjectTest extends ModeldbTestSetup {
     // Create project2
     createProjectRequest = getCreateProjectRequest();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    project2 = createProjectResponse.getProject();
+    Project project2 = createProjectResponse.getProject();
     projectMap.put(project2.getId(), project2);
     LOGGER.info("Project created successfully");
     assertEquals(
@@ -155,7 +154,7 @@ public class ProjectTest extends ModeldbTestSetup {
     // Create project3
     createProjectRequest = getCreateProjectRequest();
     createProjectResponse = projectServiceStub.createProject(createProjectRequest);
-    project3 = createProjectResponse.getProject();
+    Project project3 = createProjectResponse.getProject();
     projectMap.put(project3.getId(), project3);
     LOGGER.info("Project created successfully");
     assertEquals(
@@ -876,6 +875,17 @@ public class ProjectTest extends ModeldbTestSetup {
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
+    addProjectAttributesRequest = AddProjectAttributes.newBuilder().setId(project.getId()).build();
+
+    try {
+      projectServiceStub.addProjectAttributes(addProjectAttributesRequest);
+      Assertions.fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      Assertions.assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
     LOGGER.info("Add Project Attributes Negative test stop................................");
   }
 
@@ -1084,6 +1094,16 @@ public class ProjectTest extends ModeldbTestSetup {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
       assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
+    try {
+      addProjectTagsRequest = AddProjectTags.newBuilder().setId(project.getId()).build();
+      projectServiceStub.addProjectTags(addProjectTagsRequest);
+      Assertions.fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      Assertions.assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     addProjectTagsRequest =
@@ -1411,6 +1431,17 @@ public class ProjectTest extends ModeldbTestSetup {
       fail();
     } catch (StatusRuntimeException ex) {
       checkEqualsAssert(ex);
+    }
+
+    getProjectAttributesRequest =
+        GetAttributes.newBuilder().setId("jfhdsjfhdsfjk").setGetAll(false).build();
+    try {
+      projectServiceStub.getProjectAttributes(getProjectAttributesRequest);
+      Assertions.fail();
+    } catch (StatusRuntimeException ex) {
+      Status status = Status.fromThrowable(ex);
+      LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
     }
 
     LOGGER.info("Get Project Attributes Negative test stop................................");
@@ -2563,6 +2594,16 @@ public class ProjectTest extends ModeldbTestSetup {
     LOGGER.info("Project delete Negative test start................................");
 
     DeleteProject deleteProject = DeleteProject.newBuilder().build();
+    try {
+      projectServiceStub.deleteProject(deleteProject);
+      fail();
+    } catch (StatusRuntimeException e) {
+      Status status = Status.fromThrowable(e);
+      LOGGER.info("Error Code : " + status.getCode() + " Error : " + status.getDescription());
+      assertEquals(Status.INVALID_ARGUMENT.getCode(), status.getCode());
+    }
+
+    deleteProject = DeleteProject.newBuilder().setId(" ").build();
     try {
       projectServiceStub.deleteProject(deleteProject);
       fail();

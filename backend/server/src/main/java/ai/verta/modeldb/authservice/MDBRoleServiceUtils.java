@@ -6,17 +6,15 @@ import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
+import ai.verta.uac.UserInfo;
+import ai.verta.uac.Workspace;
 import com.google.common.base.Strings;
 import io.grpc.StatusRuntimeException;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleService {
-  private static final Logger LOGGER = LogManager.getLogger(MDBRoleServiceUtils.class);
 
-  public static MDBRoleService FromConfig(MDBConfig config, UACApisUtil uacApisUtil, UAC uac) {
+  public static MDBRoleService fromConfig(MDBConfig config, UACApisUtil uacApisUtil, UAC uac) {
     if (!config.hasAuth()) return new PublicMDBRoleServiceUtils(uacApisUtil, config);
     else return new MDBRoleServiceUtils(config, uacApisUtil, uac);
   }

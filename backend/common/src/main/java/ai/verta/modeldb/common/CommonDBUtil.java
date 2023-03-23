@@ -422,7 +422,7 @@ public abstract class CommonDBUtil {
         checkDBConnectionInLoop(config, true);
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        throw new RuntimeException("Interrupted while getting a database connection.");
+        throw new ModelDBException("Interrupted while getting a database connection.");
       }
     }
     return getDBConnection(rdbConfiguration);
@@ -501,7 +501,7 @@ public abstract class CommonDBUtil {
 
       LOGGER.debug("the database {} does not exist", databaseName);
       try (Statement statement = connection.createStatement()) {
-        statement.executeUpdate("CREATE DATABASE " + databaseName);
+        statement.executeUpdate(String.format("CREATE DATABASE %s", databaseName));
         LOGGER.debug("the database {} was created successfully", databaseName);
       }
     }

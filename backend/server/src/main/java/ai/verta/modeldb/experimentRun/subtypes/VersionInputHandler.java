@@ -44,11 +44,11 @@ public class VersionInputHandler {
   private static final String BLOB_HASH_QUERY_PARAM = "blob_hash";
   private static final String INT_VALUE_QUERY_SELECTED_PARAM = "int_value";
   private static final String VERSIONING_LOCATION_QUERY_PARAM = "versioning_location";
-  private static Logger LOGGER = LogManager.getLogger(VersionInputHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(VersionInputHandler.class);
 
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
-  private final String entity_type;
+  private final String entityType;
   private final String entityIdReferenceColumn;
   private final RepositoryDAO repositoryDAO;
   private final CommitDAO commitDAO;
@@ -65,18 +65,16 @@ public class VersionInputHandler {
       BlobDAO blobDAO) {
     this.executor = executor;
     this.jdbi = jdbi;
-    this.entity_type = entityName;
+    this.entityType = entityName;
 
     this.repositoryDAO = repositoryDAO;
     this.commitDAO = commitDAO;
     this.blobDAO = blobDAO;
 
-    switch (entityName) {
-      case "ExperimentRunEntity":
-        this.entityIdReferenceColumn = "experiment_run_id";
-        break;
-      default:
-        throw new InternalErrorException("Invalid entity name: " + entityName);
+    if (entityName.equals("ExperimentRunEntity")) {
+      this.entityIdReferenceColumn = "experiment_run_id";
+    } else {
+      throw new InternalErrorException("Invalid entity name: " + entityName);
     }
   }
 
@@ -151,7 +149,7 @@ public class VersionInputHandler {
                       argsMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
                       argsMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
                       argsMap.put(ENTITY_ID_QUERY_PARAM, entityId);
-                      argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                      argsMap.put(ENTITY_TYPE_QUERY_PARAM, entityType);
                       argsMap.put(BLOB_HASH_QUERY_PARAM, rs.getString(BLOB_HASH_QUERY_PARAM));
                       argsMap.put("config_seq_number", rs.getString("config_seq_number"));
                       argsMaps.add(argsMap);
@@ -229,7 +227,7 @@ public class VersionInputHandler {
                               : null);
                       argsMap.put("float_value", rs.getFloat("float_value"));
                       argsMap.put("string_value", rs.getString("string_value"));
-                      argsMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+                      argsMap.put(ENTITY_TYPE_QUERY_PARAM, entityType);
                       argsMap.put("entity_id", entityId);
                       argsMaps.add(argsMap);
                       return rs;
@@ -269,11 +267,10 @@ public class VersionInputHandler {
       throw new ModelDBException(e);
     }
 
-    if (existingVersioningEntry != null) {
-      if (existingVersioningEntry.getRepositoryId() != versioningEntry.getRepositoryId()
-          || !existingVersioningEntry.getCommit().equals(versioningEntry.getCommit())) {
-        throw new AlreadyExistsException(ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE);
-      }
+    if (existingVersioningEntry != null
+        && (existingVersioningEntry.getRepositoryId() != versioningEntry.getRepositoryId()
+            || !existingVersioningEntry.getCommit().equals(versioningEntry.getCommit()))) {
+      throw new AlreadyExistsException(ModelDBConstants.DIFFERENT_REPOSITORY_OR_COMMIT_MESSAGE);
     }
 
     var queryStr =
@@ -291,13 +288,13 @@ public class VersionInputHandler {
       keysAndParameterMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
       keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
       keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
-      keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+      keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entityType);
       keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, CommonConstants.EMPTY_STRING);
       keysAndParameterMap.put(VERSIONING_LOCATION_QUERY_PARAM, null);
       keysAndParameterMap.put("versioning_blob_type", null);
       keysAndParameterMap.put(BLOB_HASH_QUERY_PARAM, null);
 
-      LOGGER.trace("insert experiment run query string: " + queryStr);
+      LOGGER.trace("insert experiment run query string: {}", queryStr);
       try (var query = handle.createUpdate(queryStr)) {
         // Inserting fields arguments based on the keys and value of map
         for (Map.Entry<String, Object> objectEntry : keysAndParameterMap.entrySet()) {
@@ -321,7 +318,7 @@ public class VersionInputHandler {
           keysAndParameterMap.put(REPOSITORY_ID_QUERY_PARAM, versioningEntry.getRepositoryId());
           keysAndParameterMap.put(COMMIT_QUERY_PARAM, versioningEntry.getCommit());
           keysAndParameterMap.put(ENTITY_ID_QUERY_PARAM, entityId);
-          keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entity_type);
+          keysAndParameterMap.put(ENTITY_TYPE_QUERY_PARAM, entityType);
           keysAndParameterMap.put(VERSIONING_KEY_QUERY_PARAM, locationEntry.getKey());
           keysAndParameterMap.put(
               VERSIONING_LOCATION_QUERY_PARAM,
@@ -389,8 +386,7 @@ public class VersionInputHandler {
                 commitDAO.getCommitEntity(
                     session,
                     versioningEntry.getCommit(),
-                    (session1) ->
-                        repositoryDAO.getRepositoryById(session, repositoryIdentification));
+                    session1 -> repositoryDAO.getRepositoryById(session, repositoryIdentification));
 
             // If key and location mapping exists in the  versioned input request then we will fetch
             // those mapping based location key and validate
@@ -443,10 +439,10 @@ public class VersionInputHandler {
                               + " and vm.entity_type = :entityType",
                           App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()
                               ? "\"commit\""
-                              : "commit"))) {
+                              : COMMIT_QUERY_PARAM))) {
                 return findQuery
                     .bindList("run_ids", runIds)
-                    .bind("entityType", entity_type)
+                    .bind("entityType", entityType)
                     .map(
                         (rs, ctx) -> {
                           // Preparing VersionedInput (VersioningEntry) from the mapping table

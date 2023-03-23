@@ -13,11 +13,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class FeatureHandler {
-  private static Logger LOGGER = LogManager.getLogger(FeatureHandler.class);
+
   private static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
@@ -70,7 +68,7 @@ public class FeatureHandler {
     var existingFeatures = getFeatures(handle, entityId);
     final var featuresSet =
         features.stream().map(Feature::getName).collect(Collectors.toCollection(HashSet::new));
-    featuresSet.removeAll(existingFeatures);
+    existingFeatures.forEach(featuresSet::remove);
     if (featuresSet.isEmpty()) {
       return;
     }
