@@ -35,7 +35,7 @@
         <otel.instrumentation.version>1.23.0-alpha</otel.instrumentation.version>
         <otel.contrib.version>1.23.0-alpha</otel.contrib.version>
         <springframework.version>5.3.26</springframework.version>
-        <lombok.version>1.18.24</lombok.version>
+        <lombok.version>1.18.26</lombok.version>
 
         <junit-jupiter.version>5.9.2</junit-jupiter.version>
         <jacoco.version>0.8.8</jacoco.version>
