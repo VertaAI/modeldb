@@ -31,7 +31,6 @@ import org.springframework.web.server.ResponseStatusException;
 public class CommonUtils {
   private static final Logger LOGGER = LogManager.getLogger(CommonUtils.class);
   private static final int STACKTRACE_LENGTH = 4;
-  private static final String LOGGER_PLACE_HOLDER = "{}: {}";
 
   public static String appendOptionalTelepresencePath(String filePath) {
     String telepresenceRoot = System.getenv("TELEPRESENCE_ROOT");
@@ -208,18 +207,18 @@ public class CommonUtils {
       if (isLongStack) {
         for (; n < STACKTRACE_LENGTH + 1; ++n) {
           if (isClientError) {
-            LOGGER.debug(LOGGER_PLACE_HOLDER, n, stack[n]);
+            LOGGER.debug("{}: {}", n, stack[n]);
           } else {
-            LOGGER.warn(LOGGER_PLACE_HOLDER, n, stack[n]);
+            LOGGER.warn("{}: {}", n, stack[n]);
           }
         }
       }
       for (; n < stack.length; ++n) {
         if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
           if (isClientError) {
-            LOGGER.debug(LOGGER_PLACE_HOLDER, n, stack[n]);
+            LOGGER.debug("{}: {}", n, stack[n]);
           } else {
-            LOGGER.warn(LOGGER_PLACE_HOLDER, n, stack[n]);
+            LOGGER.warn("{}: {}", n, stack[n]);
           }
         }
       }
@@ -348,12 +347,12 @@ public class CommonUtils {
     boolean isLongStack = stack.length > STACKTRACE_LENGTH;
     if (isLongStack) {
       for (; n < STACKTRACE_LENGTH + 1; ++n) {
-        logger.warn(LOGGER_PLACE_HOLDER, n, stack[n].toString());
+        logger.warn("{}: {}", n, stack[n].toString());
       }
     }
     for (; n < stack.length; ++n) {
       if (stack[n].getClassName().startsWith("ai.verta") || !isLongStack) {
-        logger.warn(LOGGER_PLACE_HOLDER, n, stack[n].toString());
+        logger.warn("{}: {}", n, stack[n].toString());
       }
     }
   }
