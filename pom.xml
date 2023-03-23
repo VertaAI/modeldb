@@ -27,7 +27,7 @@
         <grpc.version>1.49.0</grpc.version>
         <liquibase.version>4.9.1</liquibase.version>
         <prometheus.version>0.16.0</prometheus.version>
-        <protobuf.version>3.22.0</protobuf.version>
+        <protobuf.version>3.22.2</protobuf.version>
         <aws.version>1.12.433</aws.version>
         <jackson.version>2.14.2</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
