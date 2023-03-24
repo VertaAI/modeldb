@@ -837,10 +837,12 @@ class Endpoint(object):
                 "model is not currently deployed (status: {})".format(status)
             )
         details: dict = self._get_json_by_id(self._conn, self.workspace, self.id)
-        if 'full_url' in details.keys():
-            url: str = details['full_url']
+        if "full_url" in details.keys():
+            url: str = details["full_url"]
         else:
-            url: str = f"{self._conn.scheme}://{self._conn.socket}/api/v1/predict{self.path}"
+            url: str = (
+                f"{self._conn.scheme}://{self._conn.socket}/api/v1/predict{self.path}"
+            )
         access_token: str = self.get_access_token()
         return DeployedModel(url, access_token, creds=credentials)
 

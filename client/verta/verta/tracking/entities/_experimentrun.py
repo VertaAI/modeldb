@@ -16,7 +16,10 @@ import warnings
 import requests
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._protos.public.modeldb import CommonService_pb2 as _CommonService, ProjectService_pb2
+from verta._protos.public.modeldb import (
+    CommonService_pb2 as _CommonService,
+    ProjectService_pb2,
+)
 from verta._protos.public.modeldb import (
     ExperimentRunService_pb2 as _ExperimentRunService,
 )
@@ -116,7 +119,7 @@ class ExperimentRun(_DeployableEntity):
     @property
     def workspace(self):
         self._refresh_cache()
-        
+
         msg = ProjectService_pb2.GetProjectById(id=self._msg.project_id)
         url = "/api/v1/modeldb/project/getProjectById"
         response = self._conn.make_proto_request("GET", url, params=msg)
@@ -124,7 +127,9 @@ class ExperimentRun(_DeployableEntity):
         proj_proto = response.project
 
         if proj_proto.workspace_service_id:
-            return self._conn.get_workspace_name_from_id(proj_proto.workspace_service_id)
+            return self._conn.get_workspace_name_from_id(
+                proj_proto.workspace_service_id
+            )
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 

@@ -540,7 +540,9 @@ def raise_for_http_error(response: requests.Response):
                 reason = response.text.strip()
 
         if not reason:
-            e.args = (e.args[0] + time_str,) + e.args[1:]  # attach time to error message
+            e.args = (e.args[0] + time_str,) + e.args[
+                1:
+            ]  # attach time to error message
             six.raise_from(e, None)  # use default reason
         else:
             # replicate https://github.com/psf/requests/blob/428f7a/requests/models.py#L954
@@ -550,8 +552,10 @@ def raise_for_http_error(response: requests.Response):
                 cause = "Server"
             else:  # should be impossible here, but sure okay
                 cause = "Unexpected"
-            message = f"{response.status_code} {cause} Error: {reason} " \
-                      f"for url: {response.url}{time_str}"
+            message = (
+                f"{response.status_code} {cause} Error: {reason} "
+                f"for url: {response.url}{time_str}"
+            )
             six.raise_from(requests.HTTPError(message, response=response), None)
 
 
@@ -1412,7 +1416,7 @@ def _multiple_arguments_for_each(argument, name, action, get_keys, overwrite):
                     )
                 )
 
-        for (key, path) in argument:
+        for key, path in argument:
             action(key, path)
 
 

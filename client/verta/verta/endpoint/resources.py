@@ -27,7 +27,7 @@ class Resources(object):
         CPU cores allowed for an endpoint's model.
     memory : str
         Memory allowed for an endpoint's model. Expects the same representation as Kubernetes:
-        
+
             You can express memory as a plain integer or as a fixed-point integer
             using one of these suffixes: **E, P, T, G, M, K**. You can also use the
             power-of-two equivalents: **Ei, Pi, Ti, Gi, Mi, Ki**. For example, the
