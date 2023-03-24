@@ -213,8 +213,8 @@ public class RdbmsUtils {
       Object entity,
       String fieldType,
       Observation observation,
-      String entity_name,
-      String entity_id) {
+      String entityName,
+      String entityId) {
     if (session == null // request came from creating the entire ExperimentRun
         || observation.hasEpochNumber()) {
       if (observation.getEpochNumber().getKindCase() != KindCase.NUMBER_VALUE) {
@@ -224,26 +224,26 @@ public class RdbmsUtils {
       }
       return new ObservationEntity(entity, fieldType, observation);
     } else {
-      if (entity_name.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
-        StringBuilder MAX_EPOCH_NUMBER_SQL =
-            new StringBuilder(MAX_EPOCH_NUMBER_SQL_1)
-                .append(entity_id)
-                .append(MAX_EPOCH_NUMBER_SQL_2)
-                .append(observation.getAttribute().getKey())
-                .append(MAX_EPOCH_NUMBER_SQL_3);
-        Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL.toString());
+      if (entityName.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
+        String maxEpochNumberSql =
+            MAX_EPOCH_NUMBER_SQL_1
+                + entityId
+                + MAX_EPOCH_NUMBER_SQL_2
+                + observation.getAttribute().getKey()
+                + MAX_EPOCH_NUMBER_SQL_3;
+        var sqlQuery = session.createSQLQuery(maxEpochNumberSql);
         BigInteger maxEpochNumber = (BigInteger) sqlQuery.uniqueResult();
-        Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
+        long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
 
-        var new_observation =
+        var newObservation =
             Observation.newBuilder(observation)
                 .setEpochNumber(Value.newBuilder().setNumberValue(newEpochValue))
                 .build();
-        return new ObservationEntity(entity, fieldType, new_observation);
+        return new ObservationEntity(entity, fieldType, newObservation);
       } else {
         String unimplementedErrorMessage =
             "Observations not supported for non ExperimentRun entities, found "
-                + entity_name
+                + entityName
                 + " in "
                 + observation;
         LOGGER.warn(unimplementedErrorMessage);
@@ -257,8 +257,8 @@ public class RdbmsUtils {
       Object entity,
       String fieldType,
       List<Observation> observationList,
-      String entity_name,
-      String entity_id) {
+      String entityName,
+      String entityId) {
     LOGGER.trace("Converting ObservationsFromObservationEntityList");
     LOGGER.trace("fieldType {}", fieldType);
     List<ObservationEntity> observationEntityList = new ArrayList<>();
@@ -267,7 +267,7 @@ public class RdbmsUtils {
       for (Observation observation : observationList) {
         var observationEntity =
             generateObservationEntity(
-                session, entity, fieldType, observation, entity_name, entity_id);
+                session, entity, fieldType, observation, entityName, entityId);
         observationEntityList.add(observationEntity);
       }
     }
@@ -504,9 +504,9 @@ public class RdbmsUtils {
       Map<String, Object[]> whereClauseParam,
       Integer pageNumber,
       Integer pageLimit,
-      Boolean order,
+      boolean order,
       String sortBy,
-      Boolean isNeedTotalCount) {
+      boolean isNeedTotalCount) {
     var alias = "entity";
     var finalQueryBuilder = new StringBuilder();
     StringBuilder countQueryBuilder =
@@ -634,7 +634,7 @@ public class RdbmsUtils {
       Long countResult = (Long) countQuery.uniqueResult();
       dataWithCountMap.put(ModelDBConstants.TOTAL_COUNT, countResult);
     }
-    LOGGER.debug(entityName + " getting successfully, list size : {}", entityList.size());
+    LOGGER.debug(" {} getting successfully, list size : {}", entityName, entityList.size());
     return dataWithCountMap;
   }
 
@@ -793,7 +793,7 @@ public class RdbmsUtils {
    */
   public static Order getOrderBasedOnSortKey(
       String sortBy,
-      Boolean isAscending,
+      boolean isAscending,
       CriteriaBuilder builder,
       Root<?> root,
       String parentFieldName) {
@@ -1004,7 +1004,7 @@ public class RdbmsUtils {
    */
   public static Order[] getOrderArrBasedOnSortKey(
       String sortBy,
-      Boolean isAscending,
+      boolean isAscending,
       CriteriaBuilder builder,
       Root<?> root,
       String parentFieldName) {

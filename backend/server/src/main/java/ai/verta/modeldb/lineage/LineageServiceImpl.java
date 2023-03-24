@@ -14,13 +14,10 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.versioning.CommitDAO;
 import io.grpc.Status.Code;
 import io.grpc.stub.StreamObserver;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
 
 public class LineageServiceImpl extends LineageServiceImplBase {
 
-  private static final Logger LOGGER = LogManager.getLogger(LineageServiceImpl.class);
   private final CommitDAO commitDAO;
   private final LineageDAO lineageDAO;
 

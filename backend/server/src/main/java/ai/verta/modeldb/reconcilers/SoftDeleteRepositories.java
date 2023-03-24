@@ -34,6 +34,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
       ModelDBHibernateUtil.getInstance();
   private final MDBRoleService mdbRoleService;
   private final boolean isDataset;
+  private static final String REPO_ID_QUERY_PARAM = "repoId";
 
   public SoftDeleteRepositories(
       ReconcilerConfig config,
@@ -72,7 +73,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
 
   @Override
   protected ReconcileResult reconcile(Set<String> ids) {
-    logger.debug("Reconciling repositories " + ids.toString());
+    logger.debug(() -> "Reconciling repositories " + ids.toString());
 
     if (isDataset) {
       mdbRoleService.deleteEntityResourcesWithServiceUser(
@@ -113,7 +114,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
 
           var deleteTagsHql = "DELETE TagsEntity te where te.id.repository_id = :repoId ";
           var deleteTagsQuery = session.createQuery(deleteTagsHql);
-          deleteTagsQuery.setParameter("repoId", repository.getId());
+          deleteTagsQuery.setParameter(REPO_ID_QUERY_PARAM, repository.getId());
           deleteTagsQuery.executeUpdate();
 
           deleteLabels(
@@ -122,7 +123,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
           var getRepositoryBranchesHql =
               "From BranchEntity br where br.id.repository_id = :repoId ";
           var query = session.createQuery(getRepositoryBranchesHql);
-          query.setParameter("repoId", repository.getId());
+          query.setParameter(REPO_ID_QUERY_PARAM, repository.getId());
           List<BranchEntity> branchEntities = query.list();
 
           List<String> branches =
@@ -142,7 +143,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
           var commitQueryString =
               "SELECT cm FROM CommitEntity cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ORDER BY cm.date_created DESC ";
           Query<CommitEntity> commitEntityQuery = session.createQuery(commitQueryString);
-          commitEntityQuery.setParameter("repoId", repository.getId());
+          commitEntityQuery.setParameter(REPO_ID_QUERY_PARAM, repository.getId());
           List<CommitEntity> commitEntities = commitEntityQuery.list();
 
           commitEntities.forEach(
@@ -224,7 +225,7 @@ public class SoftDeleteRepositories extends Reconciler<String> {
     String getTagsHql =
         "From TagsEntity te where te.id.repository_id = :repoId AND te.commit_hash = :commitHash";
     Query<TagsEntity> getTagsQuery = session.createQuery(getTagsHql, TagsEntity.class);
-    getTagsQuery.setParameter("repoId", repoId);
+    getTagsQuery.setParameter(REPO_ID_QUERY_PARAM, repoId);
     getTagsQuery.setParameter("commitHash", commitHash);
     List<TagsEntity> tagsEntities = getTagsQuery.list();
     tagsEntities.forEach(session::delete);

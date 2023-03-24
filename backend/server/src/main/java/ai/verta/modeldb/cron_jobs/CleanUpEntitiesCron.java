@@ -41,40 +41,26 @@ public class CleanUpEntitiesCron extends TimerTask {
 
       // Clean up repositories
       cleanRepositories(session);
-    } catch (Exception ex) {
-      if (ex instanceof StatusRuntimeException) {
-        StatusRuntimeException exception = (StatusRuntimeException) ex;
-        if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-          LOGGER.warn("CleanUpEntitiesCron Exception: {}", ex.getMessage());
-        } else {
-          LOGGER.warn("CleanUpEntitiesCron Exception: ", ex);
-        }
+    } catch (StatusRuntimeException ex) {
+      if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+        LOGGER.warn("CleanUpEntitiesCron Exception: {}", ex.getMessage());
       } else {
         LOGGER.warn("CleanUpEntitiesCron Exception: ", ex);
       }
+    } catch (Exception ex) {
+      LOGGER.warn("CleanUpEntitiesCron Exception: ", ex);
     }
     LOGGER.info("CleanUpEntitiesCron finish tasks and reschedule");
   }
 
   private void cleanProjects(Session session) {
     LOGGER.trace("Project cleaning");
-    var alias = "pr";
     var deleteProjectsQueryString =
-        new StringBuilder("FROM ")
-            .append(ProjectEntity.class.getSimpleName())
-            .append(" ")
-            .append(alias)
-            .append(" WHERE ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.CREATED)
-            .append(" = :created ")
-            .append(" AND ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.DATE_CREATED)
-            .append(" < :created_date ")
-            .toString();
+        String.format(
+            "FROM %s pr WHERE pr.%s = :created " + " AND pr.%s < :created_date ",
+            ProjectEntity.class.getSimpleName(),
+            ModelDBConstants.CREATED,
+            ModelDBConstants.DATE_CREATED);
 
     // Time less then a minute because possible to have create project request running when cron job
     // running
@@ -91,22 +77,16 @@ public class CleanUpEntitiesCron extends TimerTask {
         projectIds.add(projectEntity.getId());
       }
 
-      try {
-        mdbRoleService.deleteEntityResourcesWithServiceUser(
-            projectIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
-        for (ProjectEntity projectEntity : projectEntities) {
-          try {
-            var transaction = session.beginTransaction();
-            session.delete(projectEntity);
-            transaction.commit();
-          } catch (OptimisticLockException ex) {
-            LOGGER.info("CleanUpEntitiesCron : cleanProjects : Exception: {}", ex.getMessage());
-          }
+      mdbRoleService.deleteEntityResourcesWithServiceUser(
+          projectIds, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
+      for (ProjectEntity projectEntity : projectEntities) {
+        try {
+          var transaction = session.beginTransaction();
+          session.delete(projectEntity);
+          transaction.commit();
+        } catch (OptimisticLockException ex) {
+          LOGGER.info("CleanUpEntitiesCron : cleanProjects : Exception: {}", ex.getMessage());
         }
-      } catch (OptimisticLockException ex) {
-        LOGGER.info("CleanUpEntitiesCron : cleanProjects : Exception: {}", ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn("CleanUpEntitiesCron : cleanProjects : Exception: ", ex);
       }
     }
 
@@ -115,23 +95,12 @@ public class CleanUpEntitiesCron extends TimerTask {
 
   private void cleanRepositories(Session session) {
     LOGGER.trace("Repository cleaning");
-    var alias = "r";
     var deleteRepositoriesQueryString =
-        new StringBuilder("FROM ")
-            .append(RepositoryEntity.class.getSimpleName())
-            .append(" ")
-            .append(alias)
-            .append(" WHERE ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.CREATED)
-            .append(" = :created ")
-            .append(" AND ")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.DATE_CREATED)
-            .append(" < :created_date ")
-            .toString();
+        String.format(
+            "FROM %s r WHERE r.%s = :created " + " AND r.%s < :created_date ",
+            RepositoryEntity.class.getSimpleName(),
+            ModelDBConstants.CREATED,
+            ModelDBConstants.DATE_CREATED);
 
     // Time less then a minute because possible to have create project request running when cron job
     // running
@@ -178,22 +147,17 @@ public class CleanUpEntitiesCron extends TimerTask {
       List<RepositoryEntity> repositoryEntities,
       Map<String, RepositoryEntity> repositoryEntityMap,
       ModelDBResourceEnum.ModelDBServiceResourceTypes resourceType) {
-    try {
-      mdbRoleService.deleteEntityResourcesWithServiceUser(
-          new ArrayList<>(repositoryEntityMap.keySet()), resourceType);
-      for (RepositoryEntity repositoryEntity : repositoryEntities) {
-        try {
-          var transaction = session.beginTransaction();
-          session.delete(repositoryEntity);
-          transaction.commit();
-        } catch (OptimisticLockException ex) {
-          LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
-        }
+
+    mdbRoleService.deleteEntityResourcesWithServiceUser(
+        new ArrayList<>(repositoryEntityMap.keySet()), resourceType);
+    for (RepositoryEntity repositoryEntity : repositoryEntities) {
+      try {
+        var transaction = session.beginTransaction();
+        session.delete(repositoryEntity);
+        transaction.commit();
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
       }
-    } catch (OptimisticLockException ex) {
-      LOGGER.info("CleanUpEntitiesCron : cleanRepositories : Exception: {}", ex.getMessage());
-    } catch (Exception ex) {
-      LOGGER.warn("CleanUpEntitiesCron : cleanRepositories : Exception: ", ex);
     }
   }
 }

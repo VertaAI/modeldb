@@ -30,11 +30,10 @@ public class UpdateExperimentTimestampReconcile
 
   private List<SimpleEntry<String, Long>> getEntitiesForDateUpdate() throws Exception {
     var fetchUpdatedExperimentIds =
-        new StringBuilder("SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date ")
-            .append(" FROM experiment_run expr INNER JOIN experiment e ")
-            .append(" ON e.id = expr.experiment_id AND e.date_updated < expr.date_updated ")
-            .append(" GROUP BY expr.experiment_id")
-            .toString();
+        "SELECT expr.experiment_id, MAX(expr.date_updated) AS max_date "
+            + " FROM experiment_run expr INNER JOIN experiment e "
+            + " ON e.id = expr.experiment_id AND e.date_updated < expr.date_updated "
+            + " GROUP BY expr.experiment_id";
 
     return futureJdbi
         .withHandle(
@@ -58,10 +57,11 @@ public class UpdateExperimentTimestampReconcile
   protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<String, Long>> updatedMaxDateMap)
       throws Exception {
     logger.debug(
-        "Reconciling update timestamp for experiments: "
-            + updatedMaxDateMap.stream()
-                .map(AbstractMap.SimpleEntry::getKey)
-                .collect(Collectors.toList()));
+        () ->
+            "Reconciling update timestamp for experiments: "
+                + updatedMaxDateMap.stream()
+                    .map(AbstractMap.SimpleEntry::getKey)
+                    .collect(Collectors.toList()));
     return futureJdbi
         .useHandle(
             handle -> {

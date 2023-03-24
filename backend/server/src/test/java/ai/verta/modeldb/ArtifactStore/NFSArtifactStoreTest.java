@@ -274,7 +274,16 @@ public class NFSArtifactStoreTest {
     var name = "Experiment" + new Date().getTime();
     CreateExperiment.Response createExperimentResponse =
         experimentServiceStub.createExperiment(
-            CreateExperiment.newBuilder().setName(name).setProjectId(project.getId()).build());
+            CreateExperiment.newBuilder()
+                .setName(name)
+                .setProjectId(project.getId())
+                .addArtifacts(
+                    Artifact.newBuilder()
+                        .setKey(artifactKey)
+                        .setPath(artifactKey)
+                        .setArtifactType(ArtifactType.IMAGE)
+                        .build())
+                .build());
     experiment = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
@@ -307,20 +316,46 @@ public class NFSArtifactStoreTest {
 
   @Test
   public void loggedArtifactByGetUrlForArtifactExperimentRunTest() throws IOException {
-    loggedArtifactByUrlExperimentRun();
+    loggedArtifactByUrl(getUrlForArtifactForExperimentRun(experimentRun.getId(), "put"));
   }
 
-  private void loggedArtifactByUrlExperimentRun() throws IOException {
+  private GetUrlForArtifact.Response getUrlForArtifactForExperimentRun(
+      String experimentRunId, String method) {
     GetUrlForArtifact getUrlForArtifactRequest =
         GetUrlForArtifact.newBuilder()
-            .setId(experimentRun.getId())
+            .setId(experimentRunId)
             .setKey(artifactKey)
-            .setMethod("put")
+            .setMethod(method)
             .setArtifactType(ArtifactType.STRING)
             .build();
-    GetUrlForArtifact.Response getUrlForArtifactResponse =
-        experimentRunServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+    return experimentRunServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+  }
 
+  private GetUrlForArtifact.Response getUrlForArtifactForExperiment(
+      String experimentId, String method) {
+    GetUrlForArtifact getUrlForArtifactRequest =
+        GetUrlForArtifact.newBuilder()
+            .setId(experimentId)
+            .setKey(artifactKey)
+            .setMethod(method)
+            .setArtifactType(ArtifactType.STRING)
+            .build();
+    return experimentServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+  }
+
+  private GetUrlForArtifact.Response getUrlForArtifactForProject(String projectId, String method) {
+    GetUrlForArtifact getUrlForArtifactRequest =
+        GetUrlForArtifact.newBuilder()
+            .setId(projectId)
+            .setKey(artifactKey)
+            .setMethod(method)
+            .setArtifactType(ArtifactType.STRING)
+            .build();
+    return projectServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+  }
+
+  private void loggedArtifactByUrl(GetUrlForArtifact.Response getUrlForArtifactResponse)
+      throws IOException {
     try (InputStream inputStream =
         new FileInputStream("src/test/java/ai/verta/modeldb/updateProjectReadMe.md")) {
 
@@ -337,60 +372,22 @@ public class NFSArtifactStoreTest {
 
       int responseCode = httpClient.getResponseCode();
       LOGGER.info("POST Response Code :: {}", responseCode);
-      assertEquals(responseCode, HttpURLConnection.HTTP_OK);
+      assertEquals(HttpURLConnection.HTTP_OK, responseCode);
     }
   }
 
   @Test
   public void getUrlForArtifactProjectTest() throws IOException {
-    loggedArtifactByUrlProject();
-  }
-
-  private void loggedArtifactByUrlProject() throws IOException {
-    GetUrlForArtifact getUrlForArtifactRequest =
-        GetUrlForArtifact.newBuilder()
-            .setId(project.getId())
-            .setKey(artifactKey)
-            .setMethod("put")
-            .setArtifactType(ArtifactType.STRING)
-            .build();
-    GetUrlForArtifact.Response getUrlForArtifactResponse =
-        projectServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
-
-    try (InputStream inputStream =
-        new FileInputStream("src/test/java/ai/verta/modeldb/updateProjectReadMe.md")) {
-
-      String url = getUrlForArtifactResponse.getUrl();
-      System.out.println("url = " + url);
-      HttpURLConnection httpClient = (HttpURLConnection) new URL(url).openConnection();
-      httpClient.setRequestMethod("PUT");
-      httpClient.setDoOutput(true);
-      httpClient.setRequestProperty("Content-Type", "application/json");
-      try (OutputStream out = httpClient.getOutputStream()) {
-        IOUtils.copy(inputStream, out);
-        out.flush();
-      }
-
-      int responseCode = httpClient.getResponseCode();
-      LOGGER.info("POST Response Code :: {}", responseCode);
-      assertEquals(responseCode, HttpURLConnection.HTTP_OK);
-    }
+    loggedArtifactByUrl(getUrlForArtifactForProject(project.getId(), "put"));
   }
 
   @Test
   public void getArtifactByUrlExperimentRunTest() throws IOException {
     LOGGER.info("get artifact test start................................");
-    loggedArtifactByUrlExperimentRun();
+    loggedArtifactByUrl(getUrlForArtifactForExperimentRun(experimentRun.getId(), "put"));
 
-    GetUrlForArtifact getUrlForArtifactRequest =
-        GetUrlForArtifact.newBuilder()
-            .setId(experimentRun.getId())
-            .setKey(artifactKey)
-            .setMethod("GET")
-            .setArtifactType(ArtifactType.STRING)
-            .build();
     GetUrlForArtifact.Response getUrlForArtifactResponse =
-        experimentRunServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+        getUrlForArtifactForExperimentRun(experimentRun.getId(), "GET");
 
     URL url = new URL(getUrlForArtifactResponse.getUrl());
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
@@ -417,17 +414,40 @@ public class NFSArtifactStoreTest {
   @Test
   public void getArtifactByUrlProjectTest() throws IOException {
     LOGGER.info("get artifact test start................................");
-    loggedArtifactByUrlProject();
+    loggedArtifactByUrl(getUrlForArtifactForProject(project.getId(), "put"));
 
-    GetUrlForArtifact getUrlForArtifactRequest =
-        GetUrlForArtifact.newBuilder()
-            .setId(project.getId())
-            .setKey(artifactKey)
-            .setMethod("GET")
-            .setArtifactType(ArtifactType.STRING)
-            .build();
     GetUrlForArtifact.Response getUrlForArtifactResponse =
-        projectServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+        getUrlForArtifactForProject(project.getId(), "GET");
+
+    URL url = new URL(getUrlForArtifactResponse.getUrl());
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    connection.setRequestMethod("GET");
+    InputStream inputStream = connection.getInputStream();
+
+    String rootPath = System.getProperty("user.dir");
+    FileOutputStream fileOutputStream =
+        new FileOutputStream(rootPath + File.separator + artifactKey);
+    IOUtils.copy(inputStream, fileOutputStream);
+    fileOutputStream.close();
+    inputStream.close();
+
+    File downloadedFile = new File(rootPath + File.separator + artifactKey);
+    if (!downloadedFile.exists()) {
+      fail("File not fount at download destination");
+    }
+    var fileDeleted = downloadedFile.delete();
+    LOGGER.info("test artifact removed from storage: {}", fileDeleted);
+
+    LOGGER.info("get artifact test stop................................");
+  }
+
+  @Test
+  public void getArtifactByUrlExperimentTest() throws IOException {
+    LOGGER.info("get artifact test start................................");
+    loggedArtifactByUrl(getUrlForArtifactForExperiment(experiment.getId(), "put"));
+
+    GetUrlForArtifact.Response getUrlForArtifactResponse =
+        getUrlForArtifactForExperiment(experiment.getId(), "GET");
 
     URL url = new URL(getUrlForArtifactResponse.getUrl());
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();

@@ -9,12 +9,9 @@ import com.google.rpc.Code;
 import com.oblac.nomen.Nomen;
 import io.grpc.stub.StreamObserver;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class MetadataServiceImpl extends MetadataServiceImplBase {
 
-  private static final Logger LOGGER = LogManager.getLogger(MetadataServiceImpl.class);
   private final MetadataDAO metadataDAO;
 
   public MetadataServiceImpl(DAOSet daoSet) {
@@ -25,8 +22,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   public void getLabels(
       GetLabelsRequest request, StreamObserver<GetLabelsRequest.Response> responseObserver) {
     try {
-      if (request.getId() == null
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+      if (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty()) {
         var errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
         throw new InvalidArgumentException(errorMessage);
       }
@@ -44,8 +40,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       AddLabelsRequest request, StreamObserver<AddLabelsRequest.Response> responseObserver) {
     try {
       String errorMessage = null;
-      if (request.getId() == null
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+      if (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty()) {
         errorMessage = "Invalid parameter set in AddLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty()) {
         errorMessage = "labels not found in AddLabelsRequest request";
@@ -67,8 +62,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
   public void updateLabels(
       AddLabelsRequest request, StreamObserver<AddLabelsRequest.Response> responseObserver) {
     try {
-      if (request.getId() == null
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+      if (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty()) {
         throw new ModelDBException(
             "Invalid parameter set in AddLabelsRequest.Id", Code.INVALID_ARGUMENT);
       }
@@ -103,8 +97,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       DeleteLabelsRequest request, StreamObserver<DeleteLabelsRequest.Response> responseObserver) {
     try {
       String errorMessage = null;
-      if (request.getId() == null
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+      if (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty()) {
         errorMessage = "Invalid parameter set in GetLabelsRequest.Id";
       } else if (request.getLabelsList().isEmpty() && !request.getDeleteAll()) {
         errorMessage = "Labels not found in GetLabelsRequest";
@@ -130,8 +123,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       StreamObserver<AddKeyValuePropertiesRequest.Response> responseObserver) {
     try {
       String errorMessage = null;
-      if (request.getId() == null
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+      if (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty()) {
         errorMessage = "Invalid parameter set in AddKeyValuePropertiesRequest.Id";
       } else if (request.getKeyValuePropertyList().isEmpty()) {
         errorMessage = "KeyValueProperties not found in AddKeyValuePropertiesRequest request";
@@ -157,8 +149,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       StreamObserver<GetKeyValuePropertiesRequest.Response> responseObserver) {
     try {
       String errorMessage = null;
-      if (request.getId() == null
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+      if (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty()) {
         errorMessage = "Invalid parameter set in GetKeyValuePropertiesRequest.Id";
       } else if (request.getKeysList().isEmpty() && !request.getGetAll()) {
         errorMessage =
@@ -188,8 +179,7 @@ public class MetadataServiceImpl extends MetadataServiceImplBase {
       StreamObserver<DeleteKeyValuePropertiesRequest.Response> responseObserver) {
     try {
       String errorMessage = null;
-      if (request.getId() == null
-          || (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty())) {
+      if (request.getId().getIntId() == 0 && request.getId().getStringId().isEmpty()) {
         errorMessage = "Invalid parameter set in DeleteKeyValuePropertiesRequest.Id";
       } else if (request.getKeysList().isEmpty() && !request.getDeleteAll()) {
         errorMessage =

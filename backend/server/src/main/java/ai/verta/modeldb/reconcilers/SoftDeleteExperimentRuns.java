@@ -42,13 +42,13 @@ public class SoftDeleteExperimentRuns extends Reconciler<String> {
       Query<String> deletedQuery = session.createQuery(queryString, String.class);
       deletedQuery.setParameter("deleted", true);
       deletedQuery.setMaxResults(config.getMaxSync());
-      deletedQuery.stream().forEach(id -> this.insert((String) id));
+      deletedQuery.stream().forEach(this::insert);
     }
   }
 
   @Override
   protected ReconcileResult reconcile(Set<String> ids) {
-    logger.debug("Reconciling experiment runs " + ids.toString());
+    logger.debug(() -> "Reconciling experiment runs " + ids.toString());
 
     deleteRoleBindings(ids);
 

@@ -9,7 +9,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Migration {
-  private final Logger LOGGER = LogManager.getLogger(Migration.class);
+  private static final Logger LOGGER = LogManager.getLogger(Migration.class);
 
   public Migration(MDBConfig mdbConfig, FutureJdbi futureJdbi) throws Exception {
     migrate(mdbConfig, futureJdbi);
@@ -28,7 +28,7 @@ public class Migration {
     modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
     LOGGER.info("Code migration starting");
-    modelDBHibernateUtil.runMigration(databaseConfig, config.getMigrations());
+    modelDBHibernateUtil.runMigration(config.getMigrations());
     LOGGER.info("Code migration done");
 
     if (databaseConfig.getRdbConfiguration().isMssql()) {

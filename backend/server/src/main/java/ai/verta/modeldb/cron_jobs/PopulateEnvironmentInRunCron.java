@@ -56,17 +56,14 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
     try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
       // Update experimentRun
       updateExperimentRuns(session);
-    } catch (Exception ex) {
-      if (ex instanceof StatusRuntimeException) {
-        StatusRuntimeException exception = (StatusRuntimeException) ex;
-        if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-          LOGGER.warn("PopulateEnvironmentInRunCron Exception: {}", ex.getMessage());
-        } else {
-          LOGGER.warn("PopulateEnvironmentInRunCron Exception: ", ex);
-        }
+    } catch (StatusRuntimeException ex) {
+      if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+        LOGGER.warn("PopulateEnvironmentInRunCron Exception: {}", ex.getMessage());
       } else {
         LOGGER.warn("PopulateEnvironmentInRunCron Exception: ", ex);
       }
+    } catch (Exception ex) {
+      LOGGER.warn("PopulateEnvironmentInRunCron Exception: ", ex);
     }
     LOGGER.info("PopulateEnvironmentInRunCron finish tasks and reschedule");
   }
@@ -75,17 +72,14 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
     LOGGER.trace("ExperimentRun updating");
 
     var getExperimentRunQueryString =
-        new StringBuilder("SELECT expr FROM ")
-            .append(ExperimentRunEntity.class.getSimpleName())
-            .append(" expr LEFT JOIN ArtifactEntity ar ")
-            .append(" ON expr.id = ar.experimentRunEntity.id ")
-            .append(" WHERE expr.")
-            .append(ModelDBConstants.DELETED)
-            .append(" = :deleted ")
-            .append(" AND ar.field_type = :fieldType")
-            .append(" AND ar.key IN (:keys)")
-            .append(" AND expr.environment IS NULL")
-            .toString();
+        String.format(
+            "SELECT expr FROM %s expr LEFT JOIN ArtifactEntity ar "
+                + " ON expr.id = ar.experimentRunEntity.id "
+                + " WHERE expr.%s = :deleted "
+                + " AND ar.field_type = :fieldType"
+                + " AND ar.key IN (:keys)"
+                + " AND expr.environment IS NULL",
+            ExperimentRunEntity.class.getSimpleName(), ModelDBConstants.DELETED);
 
     var getExperimentRunQuery = session.createQuery(getExperimentRunQueryString);
     getExperimentRunQuery.setParameter("deleted", false);
@@ -96,43 +90,41 @@ public class PopulateEnvironmentInRunCron extends TimerTask {
     List<ExperimentRunEntity> experimentRunEntities = getExperimentRunQuery.list();
 
     List<String> experimentRunIds = new ArrayList<>();
-    if (!experimentRunEntities.isEmpty()) {
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        try {
-          List<ArtifactEntity> experimentRunArtifacts =
-              (experimentRunEntity.getArtifactEntityMap() != null
-                      && experimentRunEntity
-                          .getArtifactEntityMap()
-                          .containsKey(ModelDBConstants.ARTIFACTS))
-                  ? experimentRunEntity.getArtifactEntityMap().get(ModelDBConstants.ARTIFACTS)
-                  : Collections.emptyList();
-          if (!experimentRunArtifacts.isEmpty()) {
-            var pythonEnvironmentBuilder = PythonEnvironmentBlob.newBuilder();
-            createPythonEnvironmentFromArtifacts(
-                artifactStoreDAO, experimentRunArtifacts, pythonEnvironmentBuilder);
+    if (experimentRunEntities.isEmpty()) {
+      LOGGER.debug("ExperimentRuns count is zero");
+      return;
+    }
 
-            if (pythonEnvironmentBuilder.getConstraintsCount() > 0
-                || pythonEnvironmentBuilder.hasVersion()) {
-              var environmentBlobBuilder = EnvironmentBlob.newBuilder();
-              environmentBlobBuilder.setPython(pythonEnvironmentBuilder.build());
-              experimentRunEntity.setEnvironment(
-                  CommonUtils.getStringFromProtoObject(environmentBlobBuilder.build()));
-            }
+    for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+      List<ArtifactEntity> experimentRunArtifacts =
+          (experimentRunEntity.getArtifactEntityMap() != null
+                  && experimentRunEntity
+                      .getArtifactEntityMap()
+                      .containsKey(ModelDBConstants.ARTIFACTS))
+              ? experimentRunEntity.getArtifactEntityMap().get(ModelDBConstants.ARTIFACTS)
+              : Collections.emptyList();
+      if (!experimentRunArtifacts.isEmpty()) {
+        var pythonEnvironmentBuilder = PythonEnvironmentBlob.newBuilder();
+        createPythonEnvironmentFromArtifacts(
+            artifactStoreDAO, experimentRunArtifacts, pythonEnvironmentBuilder);
 
-            try {
-              var transaction = session.beginTransaction();
-              session.update(experimentRunEntity);
-              transaction.commit();
-              experimentRunIds.add(experimentRunEntity.getId());
-            } catch (OptimisticLockException ex) {
-              LOGGER.info(
-                  "PopulateEnvironmentInRunCron : updateExperimentRuns : Exception: {}",
-                  ex.getMessage());
-            }
-          }
-        } catch (Exception ex) {
-          LOGGER.debug("PopulateEnvironmentInRunCron : updateExperimentRuns : Exception:", ex);
+        if (pythonEnvironmentBuilder.getConstraintsCount() > 0
+            || pythonEnvironmentBuilder.hasVersion()) {
+          var environmentBlobBuilder = EnvironmentBlob.newBuilder();
+          environmentBlobBuilder.setPython(pythonEnvironmentBuilder.build());
+          experimentRunEntity.setEnvironment(
+              CommonUtils.getStringFromProtoObject(environmentBlobBuilder.build()));
         }
+      }
+
+      try {
+        var transaction = session.beginTransaction();
+        session.update(experimentRunEntity);
+        transaction.commit();
+        experimentRunIds.add(experimentRunEntity.getId());
+      } catch (OptimisticLockException ex) {
+        LOGGER.info(
+            "PopulateEnvironmentInRunCron : updateExperimentRuns : Exception: {}", ex.getMessage());
       }
     }
 

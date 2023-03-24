@@ -349,13 +349,12 @@ public class MetadataDAORdbImpl implements MetadataDAO {
         List<KeyValuePropertyMappingEntity> kvMappings = query.list();
         if (!kvMappings.isEmpty()) {
           kvMappings.forEach(
-              mappingEntity -> {
-                keyValues.add(
-                    KeyValueStringProperty.newBuilder()
-                        .setKey(mappingEntity.getId().getKey())
-                        .setValue(mappingEntity.getValue())
-                        .build());
-              });
+              mappingEntity ->
+                  keyValues.add(
+                      KeyValueStringProperty.newBuilder()
+                          .setKey(mappingEntity.getId().getKey())
+                          .setValue(mappingEntity.getValue())
+                          .build()));
         }
       } else {
         for (String key : request.getKeysList()) {

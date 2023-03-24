@@ -50,7 +50,7 @@ public class SoftDeleteProjects extends Reconciler<String> {
 
   @Override
   protected ReconcileResult reconcile(Set<String> ids) {
-    logger.debug("Reconciling projects " + ids.toString());
+    logger.debug(() -> "Reconciling projects " + ids.toString());
 
     mdbRoleService.deleteEntityResourcesWithServiceUser(
         new ArrayList<>(ids), ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);

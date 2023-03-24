@@ -66,12 +66,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentDAO {
-  private static final Logger LOGGER = LogManager.getLogger(FutureExperimentDAO.class);
 
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;

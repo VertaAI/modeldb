@@ -4,10 +4,10 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.App;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.config.MDBConfig;
-import ai.verta.modeldb.utils.CommonHibernateUtil;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -43,7 +43,7 @@ public class TelemetryUtils {
       try (var connection = modelDBHibernateUtil.getConnection()) {
         final var database = App.getInstance().mdbConfig.getDatabase();
         final var existStatus =
-            CommonHibernateUtil.tableExists(connection, database, "modeldb_deployment_info");
+            CommonDBUtil.tableExists(connection, database, "modeldb_deployment_info");
         if (!existStatus) {
           LOGGER.warn("modeldb_deployment_info table not found");
           LOGGER.info("Table modeldb_deployment_info creating");
@@ -173,7 +173,7 @@ public class TelemetryUtils {
             e.getMessage(),
             e);
       } finally {
-        if (connection != null && !connection.getAutoCommit()) {
+        if (!connection.getAutoCommit()) {
           connection.commit();
         }
       }

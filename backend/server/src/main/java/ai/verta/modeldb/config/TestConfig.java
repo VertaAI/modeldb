@@ -91,6 +91,7 @@ public class TestConfig extends MDBConfig {
     }
   }
 
+  @Override
   public boolean hasAuth() {
     return getAuthService() != null;
   }

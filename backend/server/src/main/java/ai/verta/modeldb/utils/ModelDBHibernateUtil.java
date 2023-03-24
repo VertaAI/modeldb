@@ -5,7 +5,6 @@ import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
 import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
-import ai.verta.modeldb.common.config.RdbConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MigrationConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;
@@ -58,9 +57,7 @@ import ai.verta.modeldb.entities.versioning.InternalFolderElementEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.TagsEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
-import java.sql.SQLException;
 import java.util.List;
-import liquibase.exception.DatabaseException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -230,9 +227,7 @@ public class ModelDBHibernateUtil extends CommonHibernateUtil {
    * If you want to define new migration then add new if check for your migration in `if (migration)
    * {` condition.
    */
-  public void runMigration(DatabaseConfig databaseConfig, List<MigrationConfig> migrations)
-      throws ModelDBException, DatabaseException, SQLException {
-    RdbConfig rdb = databaseConfig.getRdbConfiguration();
+  public void runMigration(List<MigrationConfig> migrations) throws ModelDBException {
     if (migrations != null) {
       LOGGER.debug("Running code migrations.");
       for (MigrationConfig migrationConfig : migrations) {

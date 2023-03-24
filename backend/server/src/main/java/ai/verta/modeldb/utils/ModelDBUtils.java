@@ -206,7 +206,7 @@ public class ModelDBUtils {
 
   public static ResourceVisibility getResourceVisibility(
       Optional<Workspace> workspace, ProtocolMessageEnum visibility) {
-    if (!workspace.isPresent()) {
+    if (workspace.isEmpty()) {
       return ResourceVisibility.PRIVATE;
     }
     if (workspace.get().getInternalIdCase() == Workspace.InternalIdCase.ORG_ID) {

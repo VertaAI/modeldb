@@ -70,17 +70,14 @@ public class DeleteEntitiesCron extends TimerTask {
 
       // Update experimentRun timestamp
       deleteExperimentRuns(session);
-    } catch (Exception ex) {
-      if (ex instanceof StatusRuntimeException) {
-        StatusRuntimeException exception = (StatusRuntimeException) ex;
-        if (exception.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
-          LOGGER.warn("DeleteEntitiesCron Exception: {}", ex.getMessage());
-        } else {
-          LOGGER.warn("DeleteEntitiesCron Exception: ", ex);
-        }
+    } catch (StatusRuntimeException ex) {
+      if (ex.getStatus().getCode().value() == Code.PERMISSION_DENIED_VALUE) {
+        LOGGER.warn("DeleteEntitiesCron Exception: {}", ex.getMessage());
       } else {
         LOGGER.warn("DeleteEntitiesCron Exception: ", ex);
       }
+    } catch (Exception ex) {
+      LOGGER.warn("DeleteEntitiesCron Exception: ", ex);
     }
     LOGGER.info("DeleteEntitiesCron finish tasks and reschedule");
   }
@@ -93,37 +90,40 @@ public class DeleteEntitiesCron extends TimerTask {
     projectDeleteQuery.setMaxResults(this.recordUpdateLimit);
     List<ProjectEntity> projectEntities = projectDeleteQuery.list();
 
+    if (projectEntities.isEmpty()) {
+      LOGGER.debug("Project count for deletion is zero");
+      return;
+    }
+
     List<String> projectIds = new ArrayList<>();
-    if (!projectEntities.isEmpty()) {
-      for (ProjectEntity projectEntity : projectEntities) {
-        projectIds.add(projectEntity.getId());
-      }
+    for (ProjectEntity projectEntity : projectEntities) {
+      projectIds.add(projectEntity.getId());
+    }
 
+    var transaction = session.beginTransaction();
+    try {
+      mdbRoleService.deleteEntityResourcesWithServiceUser(
+          projectIds, ModelDBServiceResourceTypes.PROJECT);
+      var updateDeletedStatusExperimentQueryString =
+          "UPDATE ExperimentEntity exp SET exp.deleted = :deleted WHERE exp.project_id IN (:projectIds)";
+      var deletedExperimentQuery = session.createQuery(updateDeletedStatusExperimentQueryString);
+      deletedExperimentQuery.setParameter(DELETED_KEY, true);
+      deletedExperimentQuery.setParameter("projectIds", projectIds);
+      deletedExperimentQuery.executeUpdate();
+      transaction.commit();
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("DeleteEntitiesCron : deleteProjects : Exception: {}", ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
+    }
+
+    for (ProjectEntity projectEntity : projectEntities) {
       try {
-        mdbRoleService.deleteEntityResourcesWithServiceUser(
-            projectIds, ModelDBServiceResourceTypes.PROJECT);
-        var transaction = session.beginTransaction();
-        var updateDeletedStatusExperimentQueryString =
-            "UPDATE ExperimentEntity exp SET exp.deleted = :deleted WHERE exp.project_id IN (:projectIds)";
-        var deletedExperimentQuery = session.createQuery(updateDeletedStatusExperimentQueryString);
-        deletedExperimentQuery.setParameter(DELETED_KEY, true);
-        deletedExperimentQuery.setParameter("projectIds", projectIds);
-        deletedExperimentQuery.executeUpdate();
+        transaction = session.beginTransaction();
+        session.delete(projectEntity);
         transaction.commit();
-
-        for (ProjectEntity projectEntity : projectEntities) {
-          try {
-            transaction = session.beginTransaction();
-            session.delete(projectEntity);
-            transaction.commit();
-          } catch (OptimisticLockException ex) {
-            LOGGER.info("DeleteEntitiesCron : deleteProjects : Exception: {}", ex.getMessage());
-          }
-        }
       } catch (OptimisticLockException ex) {
         LOGGER.info("DeleteEntitiesCron : deleteProjects : Exception: {}", ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn("DeleteEntitiesCron : deleteProjects : Exception: ", ex);
       }
     }
 
@@ -139,47 +139,50 @@ public class DeleteEntitiesCron extends TimerTask {
     List<ExperimentEntity> experimentEntities = experimentDeleteQuery.list();
 
     List<String> experimentIds = new ArrayList<>();
-    if (!experimentEntities.isEmpty()) {
-      for (ExperimentEntity experimentEntity : experimentEntities) {
-        experimentIds.add(experimentEntity.getId());
-      }
+    if (experimentEntities.isEmpty()) {
+      LOGGER.debug("Experiment count for deletion is zero");
+      return;
+    }
 
-      try {
-        deleteRoleBindingsForExperiments(experimentEntities);
-      } catch (StatusRuntimeException ex) {
-        LOGGER.debug(
-            "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: {}",
-            ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: ",
-            ex);
-      }
+    for (ExperimentEntity experimentEntity : experimentEntities) {
+      experimentIds.add(experimentEntity.getId());
+    }
 
+    try {
+      deleteRoleBindingsForExperiments(experimentEntities);
+    } catch (StatusRuntimeException ex) {
+      LOGGER.debug(
+          "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: {}",
+          ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn(
+          "DeleteEntitiesCron : deleteExperiments : deleteRoleBindingsForExperiments : Exception: ",
+          ex);
+    }
+
+    var transaction = session.beginTransaction();
+    try {
+      var updateDeletedStatusExperimentRunQueryString =
+          "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.experiment_id IN (:experimentIds)";
+      var deletedExperimentRunQuery =
+          session.createQuery(updateDeletedStatusExperimentRunQueryString);
+      deletedExperimentRunQuery.setParameter(DELETED_KEY, true);
+      deletedExperimentRunQuery.setParameter("experimentIds", experimentIds);
+      deletedExperimentRunQuery.executeUpdate();
+      transaction.commit();
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("DeleteEntitiesCron : deleteExperiments : Exception: {}", ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
+    }
+
+    for (ExperimentEntity experimentEntity : experimentEntities) {
       try {
-        var transaction = session.beginTransaction();
-        var updateDeletedStatusExperimentRunQueryString =
-            "UPDATE ExperimentRunEntity expr SET expr.deleted = :deleted WHERE expr.experiment_id IN (:experimentIds)";
-        var deletedExperimentRunQuery =
-            session.createQuery(updateDeletedStatusExperimentRunQueryString);
-        deletedExperimentRunQuery.setParameter(DELETED_KEY, true);
-        deletedExperimentRunQuery.setParameter("experimentIds", experimentIds);
-        deletedExperimentRunQuery.executeUpdate();
+        transaction = session.beginTransaction();
+        session.delete(experimentEntity);
         transaction.commit();
-
-        for (ExperimentEntity experimentEntity : experimentEntities) {
-          try {
-            transaction = session.beginTransaction();
-            session.delete(experimentEntity);
-            transaction.commit();
-          } catch (OptimisticLockException ex) {
-            LOGGER.info("DeleteEntitiesCron : deleteExperiments : Exception: {}", ex.getMessage());
-          }
-        }
       } catch (OptimisticLockException ex) {
         LOGGER.info("DeleteEntitiesCron : deleteExperiments : Exception: {}", ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn("DeleteEntitiesCron : deleteExperiments : Exception:", ex);
       }
     }
 
@@ -213,46 +216,45 @@ public class DeleteEntitiesCron extends TimerTask {
     experimentRunDeleteQuery.setMaxResults(this.recordUpdateLimit);
     List<ExperimentRunEntity> experimentRunEntities = experimentRunDeleteQuery.list();
 
+    if (experimentRunEntities.isEmpty()) {
+      LOGGER.debug("ExperimentRun count for deletion is zero");
+      return;
+    }
+
     List<String> experimentRunIds = new ArrayList<>();
-    if (!experimentRunEntities.isEmpty()) {
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-        experimentRunIds.add(experimentRunEntity.getId());
-      }
-      try {
-        deleteRoleBindingsForExperimentRuns(experimentRunEntities);
-      } catch (StatusRuntimeException ex) {
-        LOGGER.info(
-            "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: {}",
-            ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn(
-            "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: ",
-            ex);
-      }
+    for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
+      experimentRunIds.add(experimentRunEntity.getId());
+    }
+    try {
+      deleteRoleBindingsForExperimentRuns(experimentRunEntities);
+    } catch (StatusRuntimeException ex) {
+      LOGGER.info(
+          "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: {}",
+          ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn(
+          "DeleteEntitiesCron : deleteExperimentRuns : deleteRoleBindingsForExperimentRuns : Exception: ",
+          ex);
+    }
 
+    var transaction = session.beginTransaction();
+    try {
+      // Delete the ExperimentRun comments
+      removeEntityComments(session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
+      transaction.commit();
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("DeleteEntitiesCron : deleteExperimentRuns : Exception: {}", ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.debug("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
+    }
+
+    for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
       try {
-        // Delete the ExperimentRun comments
-        var transaction = session.beginTransaction();
-        if (!experimentRunIds.isEmpty()) {
-          removeEntityComments(
-              session, experimentRunIds, ExperimentRunEntity.class.getSimpleName());
-        }
+        transaction = session.beginTransaction();
+        session.delete(experimentRunEntity);
         transaction.commit();
-
-        for (ExperimentRunEntity experimentRunEntity : experimentRunEntities) {
-          try {
-            transaction = session.beginTransaction();
-            session.delete(experimentRunEntity);
-            transaction.commit();
-          } catch (OptimisticLockException ex) {
-            LOGGER.info(
-                "DeleteEntitiesCron : deleteExperimentRuns : Exception: {}", ex.getMessage());
-          }
-        }
       } catch (OptimisticLockException ex) {
         LOGGER.info("DeleteEntitiesCron : deleteExperimentRuns : Exception: {}", ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.debug("DeleteEntitiesCron : deleteExperimentRuns : Exception:", ex);
       }
     }
 
@@ -300,38 +302,41 @@ public class DeleteEntitiesCron extends TimerTask {
     datasetDeleteQuery.setMaxResults(this.recordUpdateLimit);
     List<DatasetEntity> datasetEntities = datasetDeleteQuery.list();
 
+    if (datasetEntities.isEmpty()) {
+      LOGGER.debug("Dataset count for deletion is zero");
+      return;
+    }
+
     List<String> datasetIds = new ArrayList<>();
-    if (!datasetEntities.isEmpty()) {
-      for (DatasetEntity datasetEntity : datasetEntities) {
-        datasetIds.add(datasetEntity.getId());
-      }
+    for (DatasetEntity datasetEntity : datasetEntities) {
+      datasetIds.add(datasetEntity.getId());
+    }
 
+    var transaction = session.beginTransaction();
+    try {
+      mdbRoleService.deleteEntityResourcesWithServiceUser(
+          datasetIds, ModelDBServiceResourceTypes.DATASET);
+      var updateDeletedStatusDatasetVersionQueryString =
+          "UPDATE DatasetVersionEntity dv SET dv.deleted = :deleted WHERE dv.dataset_id IN (:datasetIds)";
+      var deletedDatasetVersionQuery =
+          session.createQuery(updateDeletedStatusDatasetVersionQueryString);
+      deletedDatasetVersionQuery.setParameter(DELETED_KEY, true);
+      deletedDatasetVersionQuery.setParameter("datasetIds", datasetIds);
+      deletedDatasetVersionQuery.executeUpdate();
+      transaction.commit();
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("DeleteEntitiesCron : deleteDatasets : Exception: {}", ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
+    }
+
+    for (DatasetEntity datasetEntity : datasetEntities) {
       try {
-        mdbRoleService.deleteEntityResourcesWithServiceUser(
-            datasetIds, ModelDBServiceResourceTypes.DATASET);
-        var transaction = session.beginTransaction();
-        var updateDeletedStatusDatasetVersionQueryString =
-            "UPDATE DatasetVersionEntity dv SET dv.deleted = :deleted WHERE dv.dataset_id IN (:datasetIds)";
-        var deletedDatasetVersionQuery =
-            session.createQuery(updateDeletedStatusDatasetVersionQueryString);
-        deletedDatasetVersionQuery.setParameter(DELETED_KEY, true);
-        deletedDatasetVersionQuery.setParameter("datasetIds", datasetIds);
-        deletedDatasetVersionQuery.executeUpdate();
+        transaction = session.beginTransaction();
+        session.delete(datasetEntity);
         transaction.commit();
-
-        for (DatasetEntity datasetEntity : datasetEntities) {
-          try {
-            transaction = session.beginTransaction();
-            session.delete(datasetEntity);
-            transaction.commit();
-          } catch (OptimisticLockException ex) {
-            LOGGER.info("DeleteEntitiesCron : deleteDatasets : Exception: {}", ex.getMessage());
-          }
-        }
       } catch (OptimisticLockException ex) {
         LOGGER.info("DeleteEntitiesCron : deleteDatasets : Exception: {}", ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn("DeleteEntitiesCron : deleteDatasets : Exception:", ex);
       }
     }
     LOGGER.debug("Dataset Deleted successfully : Deleted datasets count {}", datasetIds.isEmpty());
@@ -344,29 +349,33 @@ public class DeleteEntitiesCron extends TimerTask {
     datasetVersionDeleteQuery.setParameter(DELETED_KEY, true);
     List<DatasetVersionEntity> datasetVersionEntities = datasetVersionDeleteQuery.list();
 
-    if (!datasetVersionEntities.isEmpty()) {
+    if (datasetVersionEntities.isEmpty()) {
+      LOGGER.debug("DatasetVersion count for deletion is zero");
+      return;
+    }
+
+    try {
+      mdbRoleService.deleteEntityResourcesWithServiceUser(
+          datasetVersionEntities.stream()
+              .map(DatasetVersionEntity::getId)
+              .collect(Collectors.toList()),
+          ModelDBServiceResourceTypes.DATASET_VERSION);
+    } catch (OptimisticLockException ex) {
+      LOGGER.info("DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
+    } catch (Exception ex) {
+      LOGGER.warn("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
+    }
+
+    for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
       try {
-        mdbRoleService.deleteEntityResourcesWithServiceUser(
-            datasetVersionEntities.stream()
-                .map(DatasetVersionEntity::getId)
-                .collect(Collectors.toList()),
-            ModelDBServiceResourceTypes.DATASET_VERSION);
-        for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
-          try {
-            var transaction = session.beginTransaction();
-            session.delete(datasetVersionEntity);
-            transaction.commit();
-          } catch (OptimisticLockException ex) {
-            LOGGER.info(
-                "DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
-          }
-        }
+        var transaction = session.beginTransaction();
+        session.delete(datasetVersionEntity);
+        transaction.commit();
       } catch (OptimisticLockException ex) {
         LOGGER.info("DeleteEntitiesCron : deleteDatasetVersions : Exception: {}", ex.getMessage());
-      } catch (Exception ex) {
-        LOGGER.warn("DeleteEntitiesCron : deleteDatasetVersions : Exception:", ex);
       }
     }
+
     LOGGER.debug(
         "DatasetVersion Deleted successfully : Deleted datasetVersions count {}",
         datasetVersionEntities.size());
@@ -379,98 +388,106 @@ public class DeleteEntitiesCron extends TimerTask {
     repositoryDeleteQuery.setParameter(DELETED_KEY, true);
     List<RepositoryEntity> repositoryEntities = repositoryDeleteQuery.list();
 
-    if (!repositoryEntities.isEmpty()) {
-      for (RepositoryEntity repository : repositoryEntities) {
-        Transaction transaction = null;
-        try {
-          var modelDBServiceResourceTypes =
-              ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
-          mdbRoleService.deleteEntityResourcesWithServiceUser(
-              Collections.singletonList(String.valueOf(repository.getId())),
-              modelDBServiceResourceTypes);
+    if (repositoryEntities.isEmpty()) {
+      LOGGER.debug("Repository count for deletion is zero");
+      return;
+    }
 
-          transaction = session.beginTransaction();
+    for (RepositoryEntity repository : repositoryEntities) {
+      Transaction transaction = null;
+      try {
+        var modelDBServiceResourceTypes =
+            ModelDBUtils.getModelDBServiceResourceTypesFromRepository(repository);
+        mdbRoleService.deleteEntityResourcesWithServiceUser(
+            Collections.singletonList(String.valueOf(repository.getId())),
+            modelDBServiceResourceTypes);
 
-          var deleteTagsHql = "DELETE TagsEntity te where te.id.repository_id = :repoId ";
-          var deleteTagsQuery = session.createQuery(deleteTagsHql);
-          deleteTagsQuery.setParameter(REPO_ID_KEY, repository.getId());
-          deleteTagsQuery.executeUpdate();
-
-          deleteLabels(
-              session, String.valueOf(repository.getId()), IDTypeEnum.IDType.VERSIONING_REPOSITORY);
-
-          var getRepositoryBranchesHql =
-              "From BranchEntity br where br.id.repository_id = :repoId ";
-          var query = session.createQuery(getRepositoryBranchesHql);
-          query.setParameter(REPO_ID_KEY, repository.getId());
-          List<BranchEntity> branchEntities = query.list();
-
-          List<String> branches =
-              branchEntities.stream()
-                  .map(branchEntity -> branchEntity.getId().getBranch())
-                  .collect(Collectors.toList());
-
-          if (!branches.isEmpty()) {
-            var deleteBranchesHQL =
-                "DELETE FROM BranchEntity br where br.id.repository_id = :repositoryId AND br.id.branch IN (:branches)";
-            var deleteBranchQuery = session.createQuery(deleteBranchesHQL);
-            deleteBranchQuery.setParameter("repositoryId", repository.getId());
-            deleteBranchQuery.setParameterList("branches", branches);
-            deleteBranchQuery.executeUpdate();
-          }
-
-          var commitQuery =
-              "SELECT cm FROM CommitEntity cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ORDER BY cm.date_created DESC";
-          Query<CommitEntity> commitEntityQuery = session.createQuery(commitQuery);
-          commitEntityQuery.setParameter(REPO_ID_KEY, repository.getId());
-          List<CommitEntity> commitEntities = commitEntityQuery.list();
-
-          commitEntities.forEach(
-              commitEntity -> {
-                if (commitEntity.getRepository().contains(repository)) {
-                  commitEntity.getRepository().remove(repository);
-                  if (commitEntity.getRepository().isEmpty()) {
-                    if (repository.isDataset()) {
-                      String compositeId =
-                          VersioningUtils.getVersioningCompositeId(
-                              repository.getId(),
-                              commitEntity.getCommit_hash(),
-                              Collections.singletonList(
-                                  ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
-                      deleteLabels(
-                          session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
-                      deleteAttribute(session, compositeId);
-                    } else {
-                      deleteLabels(
-                          session,
-                          commitEntity.getCommit_hash(),
-                          IDTypeEnum.IDType.VERSIONING_COMMIT);
-                    }
-                    deleteTagEntities(session, repository.getId(), commitEntity.getCommit_hash());
-                    session.delete(commitEntity);
-                  } else {
-                    session.update(commitEntity);
-                  }
-                }
-              });
-          session.delete(repository);
-          transaction.commit();
-        } catch (OptimisticLockException ex) {
-          LOGGER.info("DeleteEntitiesCron : deleteRepositories : Exception: {}", ex.getMessage());
-          if (transaction != null && transaction.getStatus().canRollback()) {
-            transaction.rollback();
-          }
-        } catch (Exception ex) {
-          LOGGER.warn("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
-          if (transaction != null && transaction.getStatus().canRollback()) {
-            transaction.rollback();
-          }
+        transaction = session.beginTransaction();
+        deleteTagsAndLabels(session, repository);
+        deleteRepositoryBranches(session, repository);
+        deleteRepositoryCommits(session, repository);
+        session.delete(repository);
+        transaction.commit();
+      } catch (OptimisticLockException ex) {
+        LOGGER.info("DeleteEntitiesCron : deleteRepositories : Exception: {}", ex.getMessage());
+        if (transaction != null && transaction.getStatus().canRollback()) {
+          transaction.rollback();
+        }
+      } catch (Exception ex) {
+        LOGGER.warn("DeleteEntitiesCron : deleteRepositories : Exception: ", ex);
+        if (transaction != null && transaction.getStatus().canRollback()) {
+          transaction.rollback();
         }
       }
     }
     LOGGER.debug(
         "Repository Deleted successfully : Deleted repositories count {}",
         repositoryEntities.size());
+  }
+
+  private static void deleteRepositoryCommits(Session session, RepositoryEntity repository) {
+    var commitQuery =
+        "SELECT cm FROM CommitEntity cm LEFT JOIN cm.repository repo WHERE repo.id = :repoId ORDER BY cm.date_created DESC";
+    Query<CommitEntity> commitEntityQuery = session.createQuery(commitQuery);
+    commitEntityQuery.setParameter(REPO_ID_KEY, repository.getId());
+    List<CommitEntity> commitEntities = commitEntityQuery.list();
+
+    commitEntities.forEach(
+        commitEntity -> {
+          if (commitEntity.getRepository().contains(repository)) {
+            commitEntity.getRepository().remove(repository);
+            if (commitEntity.getRepository().isEmpty()) {
+              if (repository.isDataset()) {
+                String compositeId =
+                    VersioningUtils.getVersioningCompositeId(
+                        repository.getId(),
+                        commitEntity.getCommit_hash(),
+                        Collections.singletonList(
+                            ModelDBConstants.DEFAULT_VERSIONING_BLOB_LOCATION));
+                deleteLabels(session, compositeId, IDTypeEnum.IDType.VERSIONING_REPO_COMMIT_BLOB);
+                deleteAttribute(session, compositeId);
+              } else {
+                deleteLabels(
+                    session, commitEntity.getCommit_hash(), IDTypeEnum.IDType.VERSIONING_COMMIT);
+              }
+              deleteTagEntities(session, repository.getId(), commitEntity.getCommit_hash());
+              session.delete(commitEntity);
+            } else {
+              session.update(commitEntity);
+            }
+          }
+        });
+  }
+
+  private static void deleteRepositoryBranches(Session session, RepositoryEntity repository) {
+    var getRepositoryBranchesHql = "From BranchEntity br where br.id.repository_id = :repoId ";
+    var query = session.createQuery(getRepositoryBranchesHql);
+    query.setParameter(REPO_ID_KEY, repository.getId());
+    List<BranchEntity> branchEntities = query.list();
+
+    List<String> branches =
+        branchEntities.stream()
+            .map(branchEntity -> branchEntity.getId().getBranch())
+            .collect(Collectors.toList());
+
+    if (!branches.isEmpty()) {
+      var deleteBranchesHQL =
+          "DELETE FROM BranchEntity br where br.id.repository_id = :repositoryId AND br.id.branch IN (:branches)";
+      var deleteBranchQuery = session.createQuery(deleteBranchesHQL);
+      deleteBranchQuery.setParameter("repositoryId", repository.getId());
+      deleteBranchQuery.setParameterList("branches", branches);
+      deleteBranchQuery.executeUpdate();
+    }
+  }
+
+  private static void deleteTagsAndLabels(Session session, RepositoryEntity repository) {
+    var deleteTagsHql = "DELETE TagsEntity te where te.id.repository_id = :repoId ";
+    var deleteTagsQuery = session.createQuery(deleteTagsHql);
+    deleteTagsQuery.setParameter(REPO_ID_KEY, repository.getId());
+    deleteTagsQuery.executeUpdate();
+
+    deleteLabels(
+        session, String.valueOf(repository.getId()), IDTypeEnum.IDType.VERSIONING_REPOSITORY);
   }
 
   public static void deleteLabels(Session session, Object entityHash, IDTypeEnum.IDType idType) {

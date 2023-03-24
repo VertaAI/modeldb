@@ -39,17 +39,15 @@ public class UpdateRepositoryTimestampReconcile
       tableName = "\"commit\"";
     }
     var fetchUpdatedDatasetIds =
-        new StringBuilder(
-                "SELECT rc.repository_id as repository_id, MAX(cm.date_created) AS max_date ")
-            .append(String.format(" FROM %s cm INNER JOIN repository_commit rc ", tableName))
-            .append(" ON rc.commit_hash = cm.commit_hash ")
-            .append(" INNER JOIN commit_parent cp ")
-            .append(" ON cp.parent_hash IS NOT NULL ")
-            .append(" AND cp.child_hash = cm.commit_hash ")
-            .append(" INNER JOIN repository rp ")
-            .append(" ON rp.id = rc.repository_id AND rp.date_updated < cm.date_created ")
-            .append(" GROUP BY rc.repository_id")
-            .toString();
+        "SELECT rc.repository_id as repository_id, MAX(cm.date_created) AS max_date "
+            + String.format(" FROM %s cm INNER JOIN repository_commit rc ", tableName)
+            + " ON rc.commit_hash = cm.commit_hash "
+            + " INNER JOIN commit_parent cp "
+            + " ON cp.parent_hash IS NOT NULL "
+            + " AND cp.child_hash = cm.commit_hash "
+            + " INNER JOIN repository rp "
+            + " ON rp.id = rc.repository_id AND rp.date_updated < cm.date_created "
+            + " GROUP BY rc.repository_id";
 
     return futureJdbi
         .withHandle(
@@ -73,10 +71,11 @@ public class UpdateRepositoryTimestampReconcile
   protected ReconcileResult reconcile(Set<AbstractMap.SimpleEntry<Long, Long>> updatedMaxDateMap)
       throws Exception {
     logger.debug(
-        "Reconciling update timestamp for repositories: "
-            + updatedMaxDateMap.stream()
-                .map(AbstractMap.SimpleEntry::getKey)
-                .collect(Collectors.toList()));
+        () ->
+            "Reconciling update timestamp for repositories: "
+                + updatedMaxDateMap.stream()
+                    .map(AbstractMap.SimpleEntry::getKey)
+                    .collect(Collectors.toList()));
     return futureJdbi
         .useHandle(
             handle -> {

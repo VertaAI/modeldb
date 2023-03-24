@@ -8,10 +8,34 @@ import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum;
-import ai.verta.modeldb.*;
+import ai.verta.modeldb.AddDatasetAttributes;
+import ai.verta.modeldb.AddDatasetTags;
+import ai.verta.modeldb.CreateDataset;
+import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.DatasetServiceGrpc.DatasetServiceImplBase;
+import ai.verta.modeldb.DeleteDataset;
+import ai.verta.modeldb.DeleteDatasetAttributes;
+import ai.verta.modeldb.DeleteDatasetTags;
+import ai.verta.modeldb.DeleteDatasets;
+import ai.verta.modeldb.Experiment;
+import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.FindDatasets;
+import ai.verta.modeldb.FindExperimentRuns;
+import ai.verta.modeldb.FindExperiments;
+import ai.verta.modeldb.GetAllDatasets;
 import ai.verta.modeldb.GetAllDatasets.Response;
+import ai.verta.modeldb.GetDatasetById;
+import ai.verta.modeldb.GetDatasetByName;
+import ai.verta.modeldb.GetExperimentRunByDataset;
+import ai.verta.modeldb.GetTags;
+import ai.verta.modeldb.LastExperimentByDatasetId;
+import ai.verta.modeldb.ModelDBConstants;
+import ai.verta.modeldb.ModelDBMessages;
+import ai.verta.modeldb.ServiceSet;
+import ai.verta.modeldb.UpdateDatasetAttributes;
+import ai.verta.modeldb.UpdateDatasetDescription;
+import ai.verta.modeldb.UpdateDatasetName;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
@@ -25,7 +49,6 @@ import ai.verta.modeldb.experiment.FutureExperimentDAO;
 import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
-import ai.verta.modeldb.project.FutureProjectDAO;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.CommitDAO;
@@ -52,7 +75,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import org.apache.logging.log4j.LogManager;
@@ -68,7 +90,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   private final MetadataDAO metadataDAO;
   private final UACApisUtil uacApisUtil;
   private final MDBRoleService mdbRoleService;
-  private final FutureProjectDAO futureProjectDAO;
   private final FutureExperimentDAO futureExperimentDAO;
   private final FutureExperimentRunDAO futureExperimentRunDAO;
   private final FutureEventDAO futureEventDAO;
@@ -77,7 +98,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
   public DatasetServiceImpl(ServiceSet serviceSet, DAOSet daoSet) {
     this.uacApisUtil = serviceSet.getUacApisUtil();
     this.mdbRoleService = serviceSet.getMdbRoleService();
-    this.futureProjectDAO = daoSet.getFutureProjectDAO();
     this.futureExperimentDAO = daoSet.getFutureExperimentDAO();
     this.futureExperimentRunDAO = daoSet.getFutureExperimentRunDAO();
     this.repositoryDAO = daoSet.getRepositoryDAO();
@@ -119,7 +139,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
     }
     eventMetadata.addProperty("message", eventMessage);
 
-    if (!workspaceId.isPresent()) {
+    if (workspaceId.isEmpty()) {
       GetResourcesResponseItem datasetResource =
           mdbRoleService.getEntityResource(
               Optional.of(entityId),
@@ -344,7 +364,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
       }
       Dataset selfOwnerdataset = null;
       List<Dataset> sharedDatasets = new ArrayList<>();
-      Set<String> datasetIdSet = new HashSet<>();
 
       for (Dataset dataset : datasetPaginationDTO.getDatasets()) {
         if (userInfo == null
@@ -353,7 +372,6 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         } else {
           sharedDatasets.add(dataset);
         }
-        datasetIdSet.add(dataset.getId());
       }
 
       var responseBuilder = GetDatasetByName.Response.newBuilder();

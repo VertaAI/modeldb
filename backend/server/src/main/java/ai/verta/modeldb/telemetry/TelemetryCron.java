@@ -11,7 +11,6 @@ import ai.verta.uac.CollectTelemetry;
 import com.google.api.client.http.HttpMethods;
 import com.google.protobuf.Value;
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -25,9 +24,9 @@ import org.apache.logging.log4j.Logger;
 public class TelemetryCron extends TimerTask {
   private static final Logger LOGGER = LogManager.getLogger(TelemetryCron.class);
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-  private TelemetryUtils telemetryUtils;
+  private final TelemetryUtils telemetryUtils;
 
-  public TelemetryCron(String consumerURL) throws FileNotFoundException, InvalidConfigException {
+  public TelemetryCron(String consumerURL) throws InvalidConfigException {
     telemetryUtils = new TelemetryUtils(consumerURL);
   }
 
@@ -47,7 +46,7 @@ public class TelemetryCron extends TimerTask {
       telemetryUtils.insertTelemetryInformation(telemetryMetric);
     }
 
-    if (telemetryDataList.size() > 0 && TelemetryUtils.telemetryUniqueIdentifier != null) {
+    if (!telemetryDataList.isEmpty() && TelemetryUtils.telemetryUniqueIdentifier != null) {
       var collectTelemetry =
           CollectTelemetry.newBuilder()
               .setId(TelemetryUtils.telemetryUniqueIdentifier)
@@ -79,7 +78,7 @@ public class TelemetryCron extends TimerTask {
           while ((responseLine = br.readLine()) != null) {
             response.append(responseLine.trim());
           }
-          LOGGER.info(" Telemetry Response : {}", response.toString());
+          LOGGER.info(" Telemetry Response : {}", response);
         }
       } catch (Exception e) {
         LOGGER.error("Error while uploading telemetry data : {}", e.getMessage(), e);
