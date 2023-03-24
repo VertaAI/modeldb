@@ -39,6 +39,7 @@ class VertaCallback(xgb.callback.TrainingCallback):
         )
 
     """
+
     def __init__(self, run):
         self.run = run
 
@@ -46,7 +47,9 @@ class VertaCallback(xgb.callback.TrainingCallback):
         for data, metric in evals_log.items():
             for metric_name, log in metric.items():
                 try:
-                    self.run.log_observation(f"{data}-{metric_name}", log[-1])  # don't halt execution
+                    self.run.log_observation(
+                        f"{data}-{metric_name}", log[-1]
+                    )  # don't halt execution
                 except:
                     pass
         # TODO: support `xgb.cv()`, which gives `(metric, val, std_dev)` across folds

@@ -216,7 +216,7 @@ class _ModelDBEntity(object):
         tags=None,
         attrs=None,
         date_created=None,
-        **kwargs
+        **kwargs,
     ):  # recommended params
         raise NotImplementedError
 

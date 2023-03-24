@@ -1757,13 +1757,28 @@ class Client(object):
         """
         org = OrganizationV2(self._conn, org_id)
         groups = org.get_groups()
-        all_users_group_id = next(iter(set(group.id for group in groups if group.name == "All Users")))
-        admins_group_id = next(iter(set(group.id for group in groups if group.name == "Admins")))
-        super_user_role_id = next(iter(set(role.id for role in org.get_roles() if role.name == "Super User")))
-        custom_role_id: str = org.create_role(workspace_name + "role", resource_action_groups)
+        all_users_group_id = next(
+            iter(set(group.id for group in groups if group.name == "All Users"))
+        )
+        admins_group_id = next(
+            iter(set(group.id for group in groups if group.name == "Admins"))
+        )
+        super_user_role_id = next(
+            iter(set(role.id for role in org.get_roles() if role.name == "Super User"))
+        )
+        custom_role_id: str = org.create_role(
+            workspace_name + "role", resource_action_groups
+        )
         return Workspace._create(
-            self._conn, workspace_name, org_id, [WorkspaceV2_pb2.Permission(group_id = admins_group_id,
-                                                                       role_id = super_user_role_id),
-                                                 WorkspaceV2_pb2.Permission(group_id = all_users_group_id,
-                                                                       role_id = custom_role_id)])
-
+            self._conn,
+            workspace_name,
+            org_id,
+            [
+                WorkspaceV2_pb2.Permission(
+                    group_id=admins_group_id, role_id=super_user_role_id
+                ),
+                WorkspaceV2_pb2.Permission(
+                    group_id=all_users_group_id, role_id=custom_role_id
+                ),
+            ],
+        )

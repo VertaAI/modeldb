@@ -16,9 +16,7 @@ class Role(object):
         self.name = msg.name
 
     @classmethod
-    def _create(
-        cls, conn, name, org_id, resource_actions
-    ):
+    def _create(cls, conn, name, org_id, resource_actions):
         Message = RoleV2_pb2.SetRoleV2
         msg = cls._create_msg(name, org_id, resource_actions)
 
@@ -35,8 +33,7 @@ class Role(object):
     @classmethod
     def _create_msg(cls, name, org_id, resource_actions):
         Message = RoleV2_pb2.RoleV2
-        msg = Message(name=name, org_id=org_id,
-                      resource_actions = resource_actions)
+        msg = Message(name=name, org_id=org_id, resource_actions=resource_actions)
         return msg
 
     def delete(self):
