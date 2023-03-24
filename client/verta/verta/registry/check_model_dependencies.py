@@ -11,7 +11,7 @@ from verta.environment import Python
 from ._verta_model_base import VertaModelBase
 
 
-def _check_model_dependencies(
+def check_model_dependencies(
         model_cls: Type[VertaModelBase],
         environment: Python,
         raise_for_missing: bool = False,
