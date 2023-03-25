@@ -13,6 +13,7 @@ import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import lombok.*;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.Constructor;
 import org.yaml.snakeyaml.introspector.BeanAccess;
@@ -44,7 +45,7 @@ public abstract class Config {
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
     try {
-      var yaml = new Yaml(new Constructor(configType));
+      var yaml = new Yaml(new Constructor(configType, new LoaderOptions()));
       String filePath = System.getenv(configFile);
       filePath = CommonUtils.appendOptionalTelepresencePath(filePath);
       InputStream inputStream = new FileInputStream(filePath);
