@@ -12,9 +12,7 @@ public class MapSubtypes<S, T> {
     for (final var entry : entries) {
       final var key = entry.getKey();
       final var val = entry.getValue();
-      if (!map.containsKey(key)) {
-        map.put(key, new LinkedList<>());
-      }
+      map.computeIfAbsent(key, s -> map.put(key, new LinkedList<>()));
       map.get(key).add(val);
     }
 

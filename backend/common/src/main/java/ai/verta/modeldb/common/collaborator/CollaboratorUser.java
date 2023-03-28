@@ -10,7 +10,7 @@ import com.google.protobuf.GeneratedMessageV3;
 import java.util.Objects;
 
 public class CollaboratorUser extends CollaboratorBase {
-  private UACApisUtil uacApisUtil;
+  private final UACApisUtil uacApisUtil;
 
   public CollaboratorUser(UACApisUtil uacApisUtil, GeneratedMessageV3 shareWith) {
     super(shareWith);

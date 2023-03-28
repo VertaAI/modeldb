@@ -22,7 +22,7 @@ public class S3Config {
   @JsonProperty private String cloudSecretKey;
   @JsonProperty private String minioEndpoint;
   @JsonProperty private String awsRegion = "us-east-1";
-  @JsonProperty private Boolean s3presignedURLEnabled = true;
+  @JsonProperty private boolean s3presignedURLEnabled = true;
 
   public void validate(String base) throws InvalidConfigException {
     if (cloudBucketName == null || cloudBucketName.isEmpty())

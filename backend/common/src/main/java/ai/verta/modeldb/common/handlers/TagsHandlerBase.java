@@ -21,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public abstract class TagsHandlerBase<T> {
-  private static final Logger LOGGER = LogManager.getLogger(TagsHandlerBase.class);
+
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
@@ -30,7 +30,7 @@ public abstract class TagsHandlerBase<T> {
   private final String entityName;
   protected String entityIdReferenceColumn;
 
-  public TagsHandlerBase(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
+  protected TagsHandlerBase(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
     this.executor = executor;
     this.jdbi = jdbi;
     this.entityName = entityName;
@@ -118,7 +118,7 @@ public abstract class TagsHandlerBase<T> {
     // TODO: is there a way to push this to the db?
     var existingTags = getTags(entityId, handle);
     final var tagsSet = new HashSet<>(checkEntityTagsLength(tags));
-    tagsSet.removeAll(existingTags);
+    existingTags.forEach(tagsSet::remove);
     if (tagsSet.isEmpty()) {
       return;
     }

@@ -2,6 +2,7 @@ package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
 import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.WebIdentityTokenCredentialsProvider;
@@ -40,9 +41,9 @@ public class RefreshS3ClientCron implements Runnable {
     try {
       var awsCredentials = getBasicSessionCredentials();
       createAndRefreshNewClient(awsCredentials);
-    } catch (Throwable ex) {
-      LOGGER.error("Failed to refresh S3 Client: " + ex.getMessage(), ex);
-      throw new RuntimeException(ex);
+    } catch (IOException ex) {
+      LOGGER.error("Failed to refresh S3 Client: {}", ex.getMessage(), ex);
+      throw new ModelDBException(ex);
     }
     LOGGER.info("Refreshing S3Client complete");
   }
@@ -107,7 +108,7 @@ public class RefreshS3ClientCron implements Runnable {
     String token = getWebIdentityToken();
 
     // Obtain credentials for the IAM role. Note that you cannot assume the role of
-    // an AWS root account;
+    // an AWS root account
     // Amazon S3 will deny access. You must use credentials for an IAM user or an
     // IAM role.
     return new AssumeRoleWithWebIdentityRequest()

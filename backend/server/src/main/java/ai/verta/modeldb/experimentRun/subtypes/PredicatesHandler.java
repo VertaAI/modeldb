@@ -629,7 +629,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       userInfoListFuture =
           uacApisUtil
               .getUserInfoFromAuthServer(
-                  new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList(), false)
+                  new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList())
               .thenApply(userInfoMap -> new ArrayList<>(userInfoMap.values()), executor);
     }
 

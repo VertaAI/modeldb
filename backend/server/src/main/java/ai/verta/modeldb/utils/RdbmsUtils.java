@@ -1812,8 +1812,8 @@ public class RdbmsUtils {
                 .getUserInfoFromAuthServer(
                     new HashSet<>(Collections.singleton(ownerId)),
                     Collections.emptySet(),
-                    Collections.emptyList(),
-                    false)
+                    Collections.emptyList()
+                )
                 .blockAndGet();
         Set<String> resourceIdSet =
             getResourceIdsFromUserWorkspaces(

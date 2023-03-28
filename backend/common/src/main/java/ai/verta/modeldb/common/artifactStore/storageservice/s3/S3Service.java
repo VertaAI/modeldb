@@ -49,15 +49,15 @@ public class S3Service implements ArtifactStoreService {
   private final String bucketName;
   private final ArtifactStoreConfig artifactStoreConfig;
 
-  public S3Service(ArtifactStoreConfig artifactStoreConfig) throws ModelDBException, IOException {
+  public S3Service(ArtifactStoreConfig artifactStoreConfig) throws ModelDBException {
     this.artifactStoreConfig = artifactStoreConfig;
     s3Client = new S3Client(artifactStoreConfig.getS3());
     this.bucketName = artifactStoreConfig.getS3().getCloudBucketName();
   }
 
-  private Boolean doesBucketExist(String bucketName) throws ModelDBException {
+  private boolean doesBucketExist(String bucketName) throws ModelDBException {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      return client.getClient().doesBucketExistV2(bucketName);
+      return client.getS3Client().doesBucketExistV2(bucketName);
     } catch (AmazonServiceException e) {
       CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
@@ -71,9 +71,9 @@ public class S3Service implements ArtifactStoreService {
     }
   }
 
-  private Boolean doesObjectExist(String bucketName, String path) throws ModelDBException {
+  private boolean doesObjectExist(String bucketName, String path) throws ModelDBException {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      return client.getClient().doesObjectExist(bucketName, path);
+      return client.getS3Client().doesObjectExist(bucketName, path);
     } catch (AmazonServiceException e) {
       CommonUtils.logAmazonServiceExceptionErrorCodes(LOGGER, e);
       throw new UnavailableException(
@@ -93,14 +93,13 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public Optional<String> initiateMultipart(String s3Key) throws ModelDBException {
     // Validate bucket
-    Boolean exist = doesBucketExist(bucketName);
-    if (!exist) {
+    if (!doesBucketExist(bucketName)) {
       throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
     var initiateMultipartUploadRequest = new InitiateMultipartUploadRequest(bucketName, s3Key);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       InitiateMultipartUploadResult result =
-          client.getClient().initiateMultipartUpload(initiateMultipartUploadRequest);
+          client.getS3Client().initiateMultipartUpload(initiateMultipartUploadRequest);
       return Optional.ofNullable(result.getUploadId());
     }
   }
@@ -108,7 +107,7 @@ public class S3Service implements ArtifactStoreService {
   @Override
   public String generatePresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
-    if (artifactStoreConfig.getS3().getS3presignedURLEnabled()) {
+    if (artifactStoreConfig.getS3().isS3presignedURLEnabled()) {
       return getS3PresignedUrl(s3Key, method, partNumber, uploadId);
     } else {
       return getPresignedUrlViaMDB(s3Key, method, partNumber, uploadId);
@@ -118,8 +117,7 @@ public class S3Service implements ArtifactStoreService {
   private String getS3PresignedUrl(String s3Key, String method, long partNumber, String uploadId)
       throws ModelDBException {
     // Validate bucket
-    Boolean exist = doesBucketExist(bucketName);
-    if (!exist) {
+    if (!doesBucketExist(bucketName)) {
       throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
 
@@ -149,7 +147,7 @@ public class S3Service implements ArtifactStoreService {
     }
 
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      return client.getClient().generatePresignedUrl(request).toString();
+      return client.getS3Client().generatePresignedUrl(request).toString();
     }
   }
 
@@ -157,15 +155,14 @@ public class S3Service implements ArtifactStoreService {
   public void commitMultipart(String s3Key, String uploadId, List<PartETag> partETags)
       throws ModelDBException {
     // Validate bucket
-    Boolean exist = doesBucketExist(bucketName);
-    if (!exist) {
+    if (!doesBucketExist(bucketName)) {
       throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
     }
     var completeMultipartUploadRequest =
         new CompleteMultipartUploadRequest(bucketName, s3Key, uploadId, partETags);
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
       CompleteMultipartUploadResult result =
-          client.getClient().completeMultipartUpload(completeMultipartUploadRequest);
+          client.getS3Client().completeMultipartUpload(completeMultipartUploadRequest);
       LOGGER.info("upload result: {}", result);
     } catch (AmazonS3Exception e) {
       if (e.getStatusCode() == HttpStatusCodes.STATUS_CODE_BAD_REQUEST) {
@@ -180,8 +177,7 @@ public class S3Service implements ArtifactStoreService {
       String artifactPath, HttpServletRequest request, Long partNumber, String uploadId)
       throws ModelDBException, IOException {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      Boolean exist = doesBucketExist(bucketName);
-      if (!exist) {
+      if (!doesBucketExist(bucketName)) {
         throw new ModelDBException(CommonMessages.BUCKET_DOES_NOT_EXIST, Code.UNAVAILABLE);
       }
 
@@ -194,7 +190,7 @@ public class S3Service implements ArtifactStoreService {
                 .withPartNumber(partNumber.intValue())
                 .withInputStream(request.getInputStream())
                 .withPartSize(request.getContentLength());
-        var uploadPartResult = client.getClient().uploadPart(uploadRequest);
+        var uploadPartResult = client.getS3Client().uploadPart(uploadRequest);
         return uploadPartResult.getPartETag().getETag();
       } else {
         var metadata = new ObjectMetadata();
@@ -204,7 +200,7 @@ public class S3Service implements ArtifactStoreService {
         var maxUploadThreads = 5;
         var transferManager =
             TransferManagerBuilder.standard()
-                .withS3Client(client.getClient())
+                .withS3Client(client.getS3Client())
                 // TODO: Validate use and if not required then remove below two line
                 .withMultipartUploadThreshold((long) (5 * 1024 * 1024)) // 5 MB
                 .withExecutorFactory(() -> Executors.newFixedThreadPool(maxUploadThreads))
@@ -237,7 +233,7 @@ public class S3Service implements ArtifactStoreService {
       if (doesObjectExist(bucketName, artifactPath)) {
         LOGGER.trace("S3Service - loadFileAsResource - resource exists");
         LOGGER.trace("S3Service - loadFileAsResource returned");
-        S3Object resource = client.getClient().getObject(bucketName, artifactPath);
+        S3Object resource = client.getS3Client().getObject(bucketName, artifactPath);
 
         var responseHeaders = new HttpHeaders();
         for (Map.Entry<String, Object> header :
@@ -278,8 +274,8 @@ public class S3Service implements ArtifactStoreService {
     parameters.put("artifact_path", artifactPath);
 
     if (method.equalsIgnoreCase("put")) {
-      LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
-      LOGGER.debug("part number: " + partNumber);
+      LOGGER.debug("S3Service - generatePresignedUrl - returning {} url", method);
+      LOGGER.debug("part number: {}", partNumber);
       parameters.put("part_number", partNumber);
       parameters.put("upload_id", uploadId);
       final var url =
@@ -289,10 +285,10 @@ public class S3Service implements ArtifactStoreService {
               artifactStoreConfig.getArtifactEndpoint().getStoreArtifact(),
               artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
               artifactStoreConfig.getHost());
-      LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
+      LOGGER.debug("S3Service - generatePresignedUrl - returning URL {}", url);
       return url;
     } else if (method.equalsIgnoreCase("get")) {
-      LOGGER.debug("S3Service - generatePresignedUrl - returning " + method + " url");
+      LOGGER.debug("S3Service - generatePresignedUrl - returning {} url", method);
       var filename = artifactPath.substring(artifactPath.lastIndexOf("/"));
       parameters.put("FileName", filename);
       final var url =
@@ -302,7 +298,7 @@ public class S3Service implements ArtifactStoreService {
               artifactStoreConfig.getArtifactEndpoint().getGetArtifact(),
               artifactStoreConfig.isPickArtifactStoreHostFromConfig(),
               artifactStoreConfig.getHost());
-      LOGGER.debug("S3Service - generatePresignedUrl - returning URL " + url);
+      LOGGER.debug("S3Service - generatePresignedUrl - returning URL : {}", url);
       return url;
     } else {
       var errorMessage = "Unsupported HTTP Method for S3 Presigned URL";
@@ -322,9 +318,9 @@ public class S3Service implements ArtifactStoreService {
   private InputStream downloadFileFromStorage(String bucketName, String key)
       throws ModelDBException {
     try (RefCountedS3Client client = s3Client.getRefCountedClient()) {
-      if (client.getClient().doesObjectExist(bucketName, key)) {
+      if (client.getS3Client().doesObjectExist(bucketName, key)) {
         LOGGER.debug("file exist in storage");
-        var s3object = client.getClient().getObject(bucketName, key);
+        var s3object = client.getS3Client().getObject(bucketName, key);
         S3ObjectInputStream inputStream = s3object.getObjectContent();
         LOGGER.info("file fetched successfully from s3 storage");
         return inputStream;

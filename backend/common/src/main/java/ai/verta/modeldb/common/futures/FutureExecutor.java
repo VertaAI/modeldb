@@ -38,8 +38,7 @@ public class FutureExecutor implements Executor {
   }
 
   public FutureExecutor captureContext() {
-    io.opentelemetry.context.Context otelContext = Context.current();
-    return withOtelContext(otelContext).withGrpcContext(io.grpc.Context.current());
+    return withOtelContext(Context.current()).withGrpcContext(io.grpc.Context.current());
   }
 
   /**

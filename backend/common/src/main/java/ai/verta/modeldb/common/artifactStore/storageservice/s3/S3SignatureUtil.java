@@ -3,10 +3,13 @@ package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static java.time.format.DateTimeFormatter.ofPattern;
 
+import ai.verta.modeldb.common.exceptions.ModelDBException;
 import com.amazonaws.auth.AWS4Signer;
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.AWSSessionCredentials;
 import com.amazonaws.auth.SigningAlgorithm;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
 import java.time.LocalDateTime;
 import java.util.Base64;
 import javax.crypto.Mac;
@@ -30,11 +33,12 @@ public class S3SignatureUtil extends AWS4Signer {
       return Hex.encodeHexString(
           hmacSha256(newSigningKey(credentials, dateStamp, region, awsServiceName), policy));
     } catch (Exception e) {
-      throw new RuntimeException("Error", e);
+      throw new ModelDBException("Error", e);
     }
   }
 
-  private byte[] hmacSha256(byte[] key, String data) throws Exception {
+  private byte[] hmacSha256(byte[] key, String data)
+      throws NoSuchAlgorithmException, InvalidKeyException {
     var mac = Mac.getInstance(SigningAlgorithm.HmacSHA256.name());
     mac.init(new SecretKeySpec(key, SigningAlgorithm.HmacSHA256.name()));
     return mac.doFinal(data.getBytes(UTF_8));

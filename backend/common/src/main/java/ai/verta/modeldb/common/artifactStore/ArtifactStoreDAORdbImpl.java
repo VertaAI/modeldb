@@ -20,7 +20,7 @@ import org.apache.logging.log4j.Logger;
 public class ArtifactStoreDAORdbImpl implements ArtifactStoreDAO {
 
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreDAORdbImpl.class);
-  private ArtifactStoreService artifactStoreService;
+  private final ArtifactStoreService artifactStoreService;
   private final ArtifactStoreConfig artifactStoreConfig;
 
   public ArtifactStoreDAORdbImpl(

@@ -15,8 +15,11 @@ import java.net.MalformedURLException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.*;
-import javax.servlet.http.HttpServletRequest;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.core.io.Resource;
@@ -69,7 +72,7 @@ public class NFSService implements ArtifactStoreService {
    * @throws ModelDBException ModelDBException
    */
   String storeFile(
-      String artifactPath, InputStream uploadedFileInputStream, HttpServletRequest request)
+      String artifactPath, InputStream uploadedFileInputStream)
       throws ModelDBException {
     LOGGER.trace("NFSService - storeFile called");
 
@@ -82,7 +85,7 @@ public class NFSService implements ArtifactStoreService {
         folderPath.append(folders[i]);
         folderPath.append(File.separator);
       }
-      LOGGER.trace("NFSService - storeFile - folder path : {}", folderPath.toString());
+      LOGGER.trace(folderPath.toString(), () -> "NFSService - storeFile - folder path : {}");
 
       // Copy file to the target location (Replacing existing file with the same name)
       var foldersExists =

@@ -21,8 +21,7 @@ public class ArtifactStoreInitBeans {
   private static final Logger LOGGER = LogManager.getLogger(ArtifactStoreInitBeans.class);
 
   @Bean
-  public ArtifactStoreService artifactStoreService(Config config, AppContext appContext)
-      throws IOException {
+  public ArtifactStoreService artifactStoreService(Config config, AppContext appContext) {
 
     final var artifactStoreConfig = config.getArtifactStoreConfig();
     if (artifactStoreConfig.isEnabled()) {
@@ -59,7 +58,7 @@ public class ArtifactStoreInitBeans {
 
       switch (artifactStoreConfig.getArtifactStoreType()) {
         case "S3":
-          if (!artifactStoreConfig.getS3().getS3presignedURLEnabled()) {
+          if (!artifactStoreConfig.getS3().isS3presignedURLEnabled()) {
             appContext.registerBean("s3Controller", S3Controller.class);
           }
           artifactStoreService = new S3Service(artifactStoreConfig);

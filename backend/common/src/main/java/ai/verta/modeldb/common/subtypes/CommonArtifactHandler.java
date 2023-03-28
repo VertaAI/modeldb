@@ -51,23 +51,24 @@ public abstract class CommonArtifactHandler<T> {
             unused ->
                 jdbi.withHandle(
                     handle -> {
-                      Query query =
-                          buildGetArtifactsQuery(Collections.singleton(entityId), maybeKey, handle);
-                      return query
-                          .map(
-                              (rs, ctx) ->
-                                  Artifact.newBuilder()
-                                      .setKey(rs.getString("k"))
-                                      .setPath(rs.getString("p"))
-                                      .setArtifactTypeValue(rs.getInt("at"))
-                                      .setPathOnly(rs.getBoolean("po"))
-                                      .setLinkedArtifactId(rs.getString("lai"))
-                                      .setFilenameExtension(rs.getString("fe"))
-                                      .setSerialization(rs.getString("ser"))
-                                      .setArtifactSubtype(rs.getString("ast"))
-                                      .setUploadCompleted(rs.getBoolean("uc"))
-                                      .build())
-                          .list();
+                      try (Query query =
+                          buildGetArtifactsQuery(Collections.singleton(entityId), maybeKey, handle)) {
+                        return query
+                            .map(
+                                (rs, ctx) ->
+                                    Artifact.newBuilder()
+                                        .setKey(rs.getString("k"))
+                                        .setPath(rs.getString("p"))
+                                        .setArtifactTypeValue(rs.getInt("at"))
+                                        .setPathOnly(rs.getBoolean("po"))
+                                        .setLinkedArtifactId(rs.getString("lai"))
+                                        .setFilenameExtension(rs.getString("fe"))
+                                        .setSerialization(rs.getString("ser"))
+                                        .setArtifactSubtype(rs.getString("ast"))
+                                        .setUploadCompleted(rs.getBoolean("uc"))
+                                        .build())
+                            .list();
+                      }
                     }),
             executor)
         .thenApply(
@@ -92,8 +93,9 @@ public abstract class CommonArtifactHandler<T> {
   public InternalFuture<MapSubtypes<T, Artifact>> getArtifactsMap(Set<T> entityIds) {
     return jdbi.withHandle(
             handle -> {
-              Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle);
-              return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
+              try (Query query = buildGetArtifactsQuery(entityIds, Optional.empty(), handle)) {
+                return query.map((rs, ctx) -> getSimpleEntryFromResultSet(rs)).list();
+              }
             })
         .thenApply(
             simpleEntries ->

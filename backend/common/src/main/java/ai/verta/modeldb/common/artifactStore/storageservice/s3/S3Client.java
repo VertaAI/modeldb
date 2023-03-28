@@ -24,7 +24,7 @@ import org.apache.logging.log4j.Logger;
 // We use a reference counter to keep track of when we have to shutdown a previous client that
 // should not be used anymore.
 public class S3Client {
-  private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
+  private static final Logger LOGGER = LogManager.getLogger(S3Client.class);
 
   private final String bucketName;
 
@@ -32,7 +32,7 @@ public class S3Client {
   private volatile AtomicInteger referenceCounter;
   private volatile AWSCredentials awsCredentials;
 
-  public S3Client(S3Config s3Config) throws IOException, ModelDBException {
+  public S3Client(S3Config s3Config) throws ModelDBException {
     String cloudAccessKey = s3Config.getCloudAccessKey();
     String cloudSecretKey = s3Config.getCloudSecretKey();
     String minioEndpoint = s3Config.getMinioEndpoint();
@@ -96,7 +96,7 @@ public class S3Client {
     return new RefCountedS3Client(awsCredentials, s3Client, referenceCounter);
   }
 
-  private void initializeWithWebIdentity(Regions awsRegion) throws IOException {
+  private void initializeWithWebIdentity(Regions awsRegion) {
     /* While creating RoleCredentials we have set time (900 seconds (15 minutes))
     in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds
     so set cron to half of the duration of the credentials which will be ~(450 Second (7.5 minutes))

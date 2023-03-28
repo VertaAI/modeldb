@@ -31,7 +31,7 @@ public class GrpcServerConfig {
     this.port = port;
   }
 
-  public void setMetrics_port(int metrics_port) {
-    this.metrics_port = metrics_port;
+  public void setMetrics_port(int metricsPort) {
+    this.metrics_port = metricsPort;
   }
 }

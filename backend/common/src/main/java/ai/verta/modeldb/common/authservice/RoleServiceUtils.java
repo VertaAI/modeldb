@@ -80,9 +80,7 @@ public class RoleServiceUtils implements RoleService {
         setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
       }
 
-      if (ownerId.isPresent()) {
-        setResourcesBuilder.setOwnerId(ownerId.get());
-      }
+      ownerId.ifPresent(setResourcesBuilder::setOwnerId);
       workspaceId.ifPresent(setResourcesBuilder::setWorkspaceId);
       workspaceName.ifPresent(setResourcesBuilder::setWorkspaceName);
 
@@ -160,14 +158,12 @@ public class RoleServiceUtils implements RoleService {
       if (responseItem.isPresent()) {
         return responseItem.get();
       } else {
-        StringBuilder errorMessage =
-            new StringBuilder("Failed to locate ")
-                .append(modelDBServiceResourceTypes.name())
-                .append(" resources in UAC for ")
-                .append(modelDBServiceResourceTypes.name())
-                .append(" ID ")
-                .append(entityId);
-        throw new NotFoundException(errorMessage.toString());
+        String errorMessage =
+            String.format("Failed to locate %s resources in UAC for %s ID %s",
+                modelDBServiceResourceTypes.name(),
+                modelDBServiceResourceTypes.name(),
+                entityId);
+        throw new NotFoundException(errorMessage);
       }
     } catch (StatusRuntimeException ex) {
       LOGGER.trace(ex);

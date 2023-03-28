@@ -35,7 +35,7 @@ public class NFSController {
       throws ModelDBException, IOException {
     try {
       InputStream inputStream = requestEntity.getInputStream();
-      String fileName = nfsService.storeFile(artifactPath, inputStream, requestEntity);
+      String fileName = nfsService.storeFile(artifactPath, inputStream);
       LOGGER.trace("storeArtifact - file name : {}", fileName);
       LOGGER.debug("storeArtifact returned");
       return new UploadFileResponse(fileName, null, null, -1L, null);

@@ -136,7 +136,7 @@ public abstract class Reconciler<T> {
                   traceReconcile(pop());
                 }
               } catch (Exception ex) {
-                logger.error("Worker for " + getClass().getSimpleName() + " reconcile error: ", ex);
+                logger.error("Worker for {} reconcile error: {}", getClass().getSimpleName(), ex);
               }
             }
           };

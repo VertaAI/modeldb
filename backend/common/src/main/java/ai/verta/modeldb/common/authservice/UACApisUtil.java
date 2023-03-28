@@ -175,10 +175,9 @@ public class UACApisUtil {
             .setResourceType(resourceType)
             .setService(ServiceEnum.Service.MODELDB_SERVICE);
 
-    if (!resourceIdsOptional.isEmpty() && resourceIdsOptional.isPresent()) {
-      resources.addAllResourceIds(
-          resourceIdsOptional.get().stream().map(String::valueOf).collect(Collectors.toSet()));
-    }
+    resourceIdsOptional.ifPresent(resourceIds ->
+        resources.addAllResourceIds(
+            resourceIds.stream().map(String::valueOf).collect(Collectors.toSet())));
 
     var builder = GetResources.newBuilder().setResources(resources.build());
     workspaceName.ifPresent(builder::setWorkspaceName);
@@ -219,8 +218,7 @@ public class UACApisUtil {
   public InternalFuture<Map<String, UserInfo>> getUserInfoFromAuthServer(
       Set<String> vertaIdList,
       Set<String> emailIdList,
-      List<String> usernameList,
-      boolean isServiceUser) {
+      List<String> usernameList) {
     var getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
     if (emailIdList != null && !emailIdList.isEmpty()) {
       getUserRequestBuilder.addAllEmails(emailIdList);
@@ -270,14 +268,12 @@ public class UACApisUtil {
               if (responseItem.isPresent()) {
                 return responseItem.get();
               } else {
-                StringBuilder errorMessage =
-                    new StringBuilder("Failed to locate ")
-                        .append(modelDBServiceResourceTypes.name())
-                        .append(" resources in UAC for ")
-                        .append(modelDBServiceResourceTypes.name())
-                        .append(" ID ")
-                        .append(entityId);
-                throw new NotFoundException(errorMessage.toString());
+                String errorMessage =
+                    String.format("Failed to locate %s resources in UAC for %s ID %s" ,
+                        modelDBServiceResourceTypes.name(),
+                        modelDBServiceResourceTypes.name(),
+                        entityId);
+                throw new NotFoundException(errorMessage);
               }
             },
             executor);

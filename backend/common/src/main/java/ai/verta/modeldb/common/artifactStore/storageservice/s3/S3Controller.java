@@ -31,12 +31,12 @@ public class S3Controller {
       HttpServletRequest requestEntity,
       HttpServletResponse response,
       @RequestParam("artifact_path") String artifactPath,
-      @RequestParam("part_number") Long part_number,
-      @RequestParam("upload_id") String upload_id)
+      @RequestParam("part_number") Long partNumber,
+      @RequestParam("upload_id") String uploadId)
       throws ModelDBException, IOException {
     LOGGER.debug("S3 storeArtifact called");
     try {
-      String eTag = s3Service.uploadFile(artifactPath, requestEntity, part_number, upload_id);
+      String eTag = s3Service.uploadFile(artifactPath, requestEntity, partNumber, uploadId);
       LOGGER.trace("S3 storeArtifact - artifact_path : {}", artifactPath);
       LOGGER.trace("S3 storeArtifact - eTag : {}", eTag);
       response.addHeader("ETag", String.valueOf(eTag));

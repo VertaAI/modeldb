@@ -21,10 +21,10 @@ public class ExceptionInterceptor implements ServerInterceptor {
     return new ExceptionHandlingServerCallListener<>(listener, serverCall, metadata);
   }
 
-  private class ExceptionHandlingServerCallListener<ReqT, RespT>
+  private static class ExceptionHandlingServerCallListener<ReqT, RespT>
       extends ForwardingServerCallListener.SimpleForwardingServerCallListener<ReqT> {
-    private ServerCall<ReqT, RespT> serverCall;
-    private Metadata metadata;
+    private final ServerCall<ReqT, RespT> serverCall;
+    private final Metadata metadata;
 
     ExceptionHandlingServerCallListener(
         ServerCall.Listener<ReqT> listener, ServerCall<ReqT, RespT> serverCall, Metadata metadata) {
