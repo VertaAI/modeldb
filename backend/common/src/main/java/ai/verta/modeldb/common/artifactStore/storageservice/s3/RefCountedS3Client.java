@@ -29,8 +29,8 @@ public class RefCountedS3Client implements AutoCloseable {
   @Override
   public void close() {
     if (referenceCounter.decrementAndGet() == 0 && s3Client != null) {
-        LOGGER.debug("shutting client down");
-        s3Client.shutdown();
+      LOGGER.debug("shutting client down");
+      s3Client.shutdown();
     }
   }
 }

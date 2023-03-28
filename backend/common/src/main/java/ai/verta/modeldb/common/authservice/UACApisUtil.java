@@ -175,9 +175,10 @@ public class UACApisUtil {
             .setResourceType(resourceType)
             .setService(ServiceEnum.Service.MODELDB_SERVICE);
 
-    resourceIdsOptional.ifPresent(resourceIds ->
-        resources.addAllResourceIds(
-            resourceIds.stream().map(String::valueOf).collect(Collectors.toSet())));
+    resourceIdsOptional.ifPresent(
+        resourceIds ->
+            resources.addAllResourceIds(
+                resourceIds.stream().map(String::valueOf).collect(Collectors.toSet())));
 
     var builder = GetResources.newBuilder().setResources(resources.build());
     workspaceName.ifPresent(builder::setWorkspaceName);
@@ -216,9 +217,7 @@ public class UACApisUtil {
   }
 
   public InternalFuture<Map<String, UserInfo>> getUserInfoFromAuthServer(
-      Set<String> vertaIdList,
-      Set<String> emailIdList,
-      List<String> usernameList) {
+      Set<String> vertaIdList, Set<String> emailIdList, List<String> usernameList) {
     var getUserRequestBuilder = GetUsers.newBuilder().addAllUserIds(vertaIdList);
     if (emailIdList != null && !emailIdList.isEmpty()) {
       getUserRequestBuilder.addAllEmails(emailIdList);
@@ -269,7 +268,8 @@ public class UACApisUtil {
                 return responseItem.get();
               } else {
                 String errorMessage =
-                    String.format("Failed to locate %s resources in UAC for %s ID %s" ,
+                    String.format(
+                        "Failed to locate %s resources in UAC for %s ID %s",
                         modelDBServiceResourceTypes.name(),
                         modelDBServiceResourceTypes.name(),
                         entityId);

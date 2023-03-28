@@ -71,7 +71,9 @@ class FutureTest {
                   return Future.failedStage(new RuntimeException("broken"));
                 });
 
-    assertThatThrownBy(testFuture::blockAndGet).isInstanceOf(RuntimeException.class).hasMessage("borken");
+    assertThatThrownBy(testFuture::blockAndGet)
+        .isInstanceOf(RuntimeException.class)
+        .hasMessage("borken");
   }
 
   @Test

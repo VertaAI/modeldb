@@ -159,10 +159,9 @@ public class RoleServiceUtils implements RoleService {
         return responseItem.get();
       } else {
         String errorMessage =
-            String.format("Failed to locate %s resources in UAC for %s ID %s",
-                modelDBServiceResourceTypes.name(),
-                modelDBServiceResourceTypes.name(),
-                entityId);
+            String.format(
+                "Failed to locate %s resources in UAC for %s ID %s",
+                modelDBServiceResourceTypes.name(), modelDBServiceResourceTypes.name(), entityId);
         throw new NotFoundException(errorMessage);
       }
     } catch (StatusRuntimeException ex) {

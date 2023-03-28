@@ -71,8 +71,7 @@ public class NFSService implements ArtifactStoreService {
    * @return {@link String} : upload filename
    * @throws ModelDBException ModelDBException
    */
-  String storeFile(
-      String artifactPath, InputStream uploadedFileInputStream)
+  String storeFile(String artifactPath, InputStream uploadedFileInputStream)
       throws ModelDBException {
     LOGGER.trace("NFSService - storeFile called");
 

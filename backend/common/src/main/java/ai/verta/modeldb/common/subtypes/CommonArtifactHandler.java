@@ -52,7 +52,8 @@ public abstract class CommonArtifactHandler<T> {
                 jdbi.withHandle(
                     handle -> {
                       try (Query query =
-                          buildGetArtifactsQuery(Collections.singleton(entityId), maybeKey, handle)) {
+                          buildGetArtifactsQuery(
+                              Collections.singleton(entityId), maybeKey, handle)) {
                         return query
                             .map(
                                 (rs, ctx) ->

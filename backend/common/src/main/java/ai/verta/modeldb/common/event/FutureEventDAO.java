@@ -61,8 +61,8 @@ public class FutureEventDAO {
 
     return jdbi.useHandle(
             handle -> {
-              try (var updateQuery = handle
-                  .createUpdate(
+              try (var updateQuery =
+                  handle.createUpdate(
                       "insert into event (event_uuid, event_type, workspace_id, event_metadata) values (:event_uuid, :event_type, :workspace_id, :event_metadata) ")) {
                 updateQuery
                     .bind("event_uuid", UUID.randomUUID().toString())
@@ -105,11 +105,9 @@ public class FutureEventDAO {
 
     return jdbi.useHandle(
             handle -> {
-              try (var deleteQuery = handle
-                  .createUpdate("DELETE FROM event WHERE event_uuid IN (<eventUUIDs>) ")){
-                deleteQuery
-                    .bindList("eventUUIDs", eventUUIDs)
-                    .execute();
+              try (var deleteQuery =
+                  handle.createUpdate("DELETE FROM event WHERE event_uuid IN (<eventUUIDs>) ")) {
+                deleteQuery.bindList("eventUUIDs", eventUUIDs).execute();
               }
             })
         .thenAccept(unused -> LOGGER.debug("Events deleted successfully"), executor);
