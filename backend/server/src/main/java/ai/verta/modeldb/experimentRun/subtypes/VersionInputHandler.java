@@ -283,7 +283,7 @@ public class VersionInputHandler {
                 + " VALUES (:repository_id, :commit, :versioning_key, :versioning_location, :entity_type, :versioning_blob_type, :blob_hash, :entityId)",
             App.getInstance().mdbConfig.getDatabase().getRdbConfiguration().isMssql()
                 ? "\"commit\""
-                : COMMIT_QUERY_PARAM,
+                : "commit",
             entityIdReferenceColumn);
 
     if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
