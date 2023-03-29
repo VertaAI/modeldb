@@ -239,8 +239,7 @@ public class FutureExperimentDAO {
                                                       .setId(rs.getString("id"))
                                                       .setProjectId(rs.getString("project_id"))
                                                       .setName(rs.getString("name"))
-                                                      .setDescription(
-                                                          rs.getString("description"))
+                                                      .setDescription(rs.getString("description"))
                                                       .setDateUpdated(rs.getLong("date_updated"))
                                                       .setDateCreated(rs.getLong("date_created"))
                                                       .setOwner(rs.getString("owner"))
