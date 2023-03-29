@@ -18,11 +18,6 @@ public class MssqlMigrationUtil {
 
   private static final Logger LOGGER = LogManager.getLogger(MssqlMigrationUtil.class);
   private static final String TABLE_NAME = "tableName";
-  private static final String MAX_LENGTH_PARAM_FIELD = "max_length";
-  private static final String DATA_TYPE_PARAM_FIELD = "data_type";
-  private static final String TABLE_TYPE_PARAM_FIELD = "table";
-  private static final String COLUMN_NAME_TYPE_PARAM_FIELD = "column_name";
-  private static final String IS_NULLABLE_TYPE_PARAM_FIELD = "is_nullable";
 
   private MssqlMigrationUtil() {}
 
@@ -210,22 +205,19 @@ public class MssqlMigrationUtil {
     for (Map<String, Object> result : returnResults) {
       String dataType = "nvarchar(255)";
       var maxLength =
-          result.get(MAX_LENGTH_PARAM_FIELD).equals("-1")
-              ? "(max)"
-              : "(" + result.get(MAX_LENGTH_PARAM_FIELD) + ")";
-      if (result.get(DATA_TYPE_PARAM_FIELD).equals("varchar")
-          || result.get(DATA_TYPE_PARAM_FIELD).equals("text")) {
+          result.get("max_length").equals("-1") ? "(max)" : "(" + result.get("max_length") + ")";
+      if (result.get("data_type").equals("varchar") || result.get("data_type").equals("text")) {
         dataType = "nvarchar" + maxLength;
-      } else if (result.get(DATA_TYPE_PARAM_FIELD).equals("char")) {
+      } else if (result.get("data_type").equals("char")) {
         dataType = "nchar" + maxLength;
       }
 
-      if (!((boolean) result.get(IS_NULLABLE_TYPE_PARAM_FIELD))) {
+      if (!((boolean) result.get("is_nullable"))) {
         dataType += " NOT NULL ";
       }
 
-      String tableName = String.valueOf(result.get(TABLE_TYPE_PARAM_FIELD));
-      String columnName = String.valueOf(result.get(COLUMN_NAME_TYPE_PARAM_FIELD));
+      String tableName = String.valueOf(result.get("table"));
+      String columnName = String.valueOf(result.get("column_name"));
 
       try (var updateQuery =
           handle.createUpdate(
@@ -283,7 +275,7 @@ public class MssqlMigrationUtil {
       query
           .map(
               (rs, ctx) -> {
-                var tableName = rs.getString(TABLE_NAME);
+                var tableName = rs.getString("tableName");
                 var indexName = rs.getString("indexName");
                 var columnName = rs.getString("columnName");
 
@@ -318,7 +310,8 @@ public class MssqlMigrationUtil {
       }
       var queryStr =
           String.format(
-              "IF (OBJECT_ID('%s', '%s') IS NOT NULL) BEGIN "
+              "IF (OBJECT_ID('%s', '%s') IS NOT NULL) "
+                  + "BEGIN "
                   + "ALTER TABLE \"%s\" DROP CONSTRAINT \"%s\"; "
                   + "END",
               constraintName, type, tableName, constraintName);
@@ -350,9 +343,9 @@ public class MssqlMigrationUtil {
       query
           .map(
               (rs, ctx) -> {
-                var tableName = rs.getString(TABLE_TYPE_PARAM_FIELD);
+                var tableName = rs.getString("table");
                 var constraintName = rs.getString("constraint_name");
-                var columnName = rs.getString(COLUMN_NAME_TYPE_PARAM_FIELD);
+                var columnName = rs.getString("column_name");
 
                 Map.Entry<String, Set<String>> constraintsMap =
                     tableWisePrimaryMap.get(constraintName);
@@ -377,7 +370,7 @@ public class MssqlMigrationUtil {
       Handle handle, Map<String, Map<String, Map.Entry<String, String>>> tableWiseConstraintsMap) {
     for (Map.Entry<String, Map<String, Map.Entry<String, String>>> tableConstraintsMap :
         tableWiseConstraintsMap.entrySet()) {
-      Map.Entry<String, String> baseTableMap = tableConstraintsMap.getValue().get(TABLE_NAME);
+      Map.Entry<String, String> baseTableMap = tableConstraintsMap.getValue().get("tableName");
       var queryStr =
           String.format(
               "IF (OBJECT_ID('%s', 'F') IS NOT NULL) BEGIN "
@@ -439,7 +432,7 @@ public class MssqlMigrationUtil {
           .map(
               (rs, ctx) -> {
                 var fkName = rs.getString("FK_NAME");
-                var tableName = rs.getString(TABLE_NAME);
+                var tableName = rs.getString("tableName");
                 var refTableName = rs.getString("referenced_table");
                 var columnName = rs.getString("column");
                 var refColumnName = rs.getString("referenced_column");
@@ -450,7 +443,7 @@ public class MssqlMigrationUtil {
                   constraintsMap = new HashMap<>();
                 }
                 constraintsMap.put(
-                    TABLE_NAME, new AbstractMap.SimpleEntry<>(tableName, columnName));
+                    "tableName", new AbstractMap.SimpleEntry<>(tableName, columnName));
                 constraintsMap.put(
                     "refTableName", new AbstractMap.SimpleEntry<>(refTableName, refColumnName));
                 tableWiseConstraintsMap.put(fkName, constraintsMap);
@@ -483,7 +476,7 @@ public class MssqlMigrationUtil {
           .map(
               (rs, ctx) -> {
                 var fkName = rs.getString("CONSTRAINT_NAME");
-                var tableName = rs.getString(TABLE_NAME);
+                var tableName = rs.getString("tableName");
                 var columnName = rs.getString("columnName");
                 var defaultValue = rs.getString("DEFAULT_VALUE");
 
@@ -513,14 +506,12 @@ public class MssqlMigrationUtil {
           .map(
               (rs, ctx) -> {
                 Map<String, Object> objects = new HashMap<>();
-                objects.put(TABLE_TYPE_PARAM_FIELD, rs.getString(TABLE_TYPE_PARAM_FIELD));
+                objects.put("table", rs.getString("table"));
                 objects.put("column_id", rs.getString("column_id"));
-                objects.put(
-                    COLUMN_NAME_TYPE_PARAM_FIELD, rs.getString(COLUMN_NAME_TYPE_PARAM_FIELD));
-                objects.put(
-                    IS_NULLABLE_TYPE_PARAM_FIELD, rs.getBoolean(IS_NULLABLE_TYPE_PARAM_FIELD));
-                objects.put(DATA_TYPE_PARAM_FIELD, rs.getString(DATA_TYPE_PARAM_FIELD));
-                objects.put(MAX_LENGTH_PARAM_FIELD, rs.getString(MAX_LENGTH_PARAM_FIELD));
+                objects.put("column_name", rs.getString("column_name"));
+                objects.put("is_nullable", rs.getBoolean("is_nullable"));
+                objects.put("data_type", rs.getString("data_type"));
+                objects.put("max_length", rs.getString("max_length"));
                 objects.put("object_id", rs.getString("object_id"));
                 return objects;
               })
