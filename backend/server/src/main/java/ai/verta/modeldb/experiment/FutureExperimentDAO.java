@@ -87,7 +87,6 @@ public class FutureExperimentDAO {
   private final SortingHandler sortingHandler;
   private final CreateExperimentHandler createExperimentHandler;
   private final UACApisUtil uacApisUtil;
-  private static final String DESCRIPTION_FIELD = "description";
 
   public FutureExperimentDAO(
       FutureExecutor executor,
@@ -158,7 +157,7 @@ public class FutureExperimentDAO {
               final var localQueryContext = new QueryFilterContext();
               localQueryContext.getConditions().add("experiment.deleted = :deleted");
               localQueryContext.getConditions().add("p.deleted = :deleted");
-              localQueryContext.getBinds().add(q -> q.bind(ModelDBConstants.DELETED, false));
+              localQueryContext.getBinds().add(q -> q.bind("deleted", false));
 
               if (!request.getProjectId().isEmpty()) {
                 localQueryContext.getConditions().add("experiment.project_id=:request_project_id");
@@ -241,7 +240,7 @@ public class FutureExperimentDAO {
                                                       .setProjectId(rs.getString("project_id"))
                                                       .setName(rs.getString("name"))
                                                       .setDescription(
-                                                          rs.getString(DESCRIPTION_FIELD))
+                                                          rs.getString("description"))
                                                       .setDateUpdated(rs.getLong("date_updated"))
                                                       .setDateCreated(rs.getLong("date_created"))
                                                       .setOwner(rs.getString("owner"))
@@ -442,7 +441,7 @@ public class FutureExperimentDAO {
               // FIXME: this code never allows us to set the description as an empty string
               if (!request.getDescription().isEmpty()) {
                 return updateExperimentField(
-                    request.getId(), DESCRIPTION_FIELD, request.getDescription());
+                    request.getId(), "description", request.getDescription());
               }
               return InternalFuture.completedInternalFuture(null);
             },
@@ -477,7 +476,7 @@ public class FutureExperimentDAO {
                   "select id, project_id from experiment where id IN (<ids>) AND deleted = :deleted")) {
             List<Map<String, String>> experimentEntitiesMap =
                 query
-                    .bind(ModelDBConstants.DELETED, false)
+                    .bind("deleted", false)
                     .bindList("ids", experimentIds)
                     .map(
                         (rs, ctx) ->
@@ -549,7 +548,7 @@ public class FutureExperimentDAO {
                     query
                         .bind("projectId", projectId)
                         .bind("name", finalName)
-                        .bind(ModelDBConstants.DELETED, false)
+                        .bind("deleted", false)
                         .mapTo(Long.class)
                         .findOne();
                 if (countOptional.isPresent() && countOptional.get() > 0) {
@@ -572,7 +571,7 @@ public class FutureExperimentDAO {
             executor)
         .thenCompose(
             unused ->
-                updateExperimentField(request.getId(), DESCRIPTION_FIELD, request.getDescription()),
+                updateExperimentField(request.getId(), "description", request.getDescription()),
             executor)
         .thenCompose(unused -> getExperimentById(request.getId()), executor);
   }
@@ -743,7 +742,7 @@ public class FutureExperimentDAO {
                           "Update experiment SET deleted = :deleted WHERE id IN (<ids>)")) {
                     return updateQuery
                         .bindList("ids", experimentIds)
-                        .bind(ModelDBConstants.DELETED, true)
+                        .bind("deleted", true)
                         .execute();
                   }
                 }),
