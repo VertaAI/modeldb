@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package ai.verta.uac;
+option go_package = "github.com/VertaAI/protos-all/protos/gen/go/protos/public/uac";
+
+option java_multiple_files = true;
+
+import "google/api/annotations.proto";
+import "uac/UACService.proto";
+import "uac/Organization.proto";
+import "uac/Team.proto";
+import "uac/RoleService.proto";
+import "uac/RoleV2.proto";
+import "common/CommonService.proto";
+
+message ResourceV2 {
+  string id = 1;
+  string organization_id = 2;
+  ResourceTypeV2 resource_type = 3;
+}
+
+message GetResourcesV2 {
+  repeated string id = 1;
+  ResourceTypeV2 resource_type = 2;
+
+  message Response {
+    repeated ResourceV2 resources = 1;
+  }
+}
+
+service ResourceV2Service {
+  rpc getResources (GetResourcesV2) returns (GetResourcesV2.Response) {
+    option (google.api.http) = {
+      post: "/v2/resources"
+      body: "*"
+    };
+  };
+}
+
