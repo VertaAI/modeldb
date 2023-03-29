@@ -33,6 +33,7 @@ public class UAC extends Connection {
 
   private final WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub workspaceServiceV2FutureStub;
   private final UserServiceV2Grpc.UserServiceV2FutureStub userServiceV2FutureStub;
+  private final ResourceServiceV2Grpc.ResourceServiceV2FutureStub resourceServiceV2FutureStub;
 
   public static UAC fromConfig(
       Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
@@ -57,7 +58,8 @@ public class UAC extends Connection {
       EventServiceGrpc.EventServiceFutureStub eventServiceFutureStub,
       OrganizationServiceV2Grpc.OrganizationServiceV2FutureStub organizationServiceV2FutureStub,
       WorkspaceServiceV2Grpc.WorkspaceServiceV2FutureStub workspaceServiceV2FutureStub,
-      UserServiceV2Grpc.UserServiceV2FutureStub userServiceV2FutureStub) {
+      UserServiceV2Grpc.UserServiceV2FutureStub userServiceV2FutureStub,
+      ResourceServiceV2Grpc.ResourceServiceV2FutureStub resourceServiceV2FutureStub) {
     super(Optional.empty());
     this.config = config;
     this.collaboratorServiceFutureStub = collaboratorServiceFutureStub;
@@ -72,6 +74,7 @@ public class UAC extends Connection {
     this.organizationServiceV2FutureStub = organizationServiceV2FutureStub;
     this.workspaceServiceV2FutureStub = workspaceServiceV2FutureStub;
     this.userServiceV2FutureStub = userServiceV2FutureStub;
+    this.resourceServiceV2FutureStub = resourceServiceV2FutureStub;
   }
 
   private UAC(Config config, Optional<ClientInterceptor> tracingClientInterceptor) {
@@ -115,6 +118,7 @@ public class UAC extends Connection {
     organizationServiceV2FutureStub = OrganizationServiceV2Grpc.newFutureStub(authServiceChannel);
     workspaceServiceV2FutureStub = WorkspaceServiceV2Grpc.newFutureStub(authServiceChannel);
     userServiceV2FutureStub = UserServiceV2Grpc.newFutureStub(authServiceChannel);
+    resourceServiceV2FutureStub = ResourceServiceV2Grpc.newFutureStub(authServiceChannel);
   }
 
   public AuthServiceChannel getBlockingAuthServiceChannel() {
@@ -168,5 +172,9 @@ public class UAC extends Connection {
 
   public UserServiceV2Grpc.UserServiceV2FutureStub getUserServiceV2() {
     return attachInterceptors(userServiceV2FutureStub);
+  }
+
+  public ResourceServiceV2Grpc.ResourceServiceV2FutureStub getResourceServiceV2() {
+    return attachInterceptors(resourceServiceV2FutureStub);
   }
 }
