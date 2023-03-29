@@ -18,7 +18,6 @@ import com.google.rpc.Status;
 import io.grpc.StatusRuntimeException;
 import io.grpc.protobuf.StatusProto;
 import io.grpc.stub.StreamObserver;
-import java.io.File;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
@@ -415,15 +414,5 @@ public class CommonUtils {
     var query = handle.createQuery(queryStr);
     queryContext.getBinds().forEach(b -> b.accept(query));
     return query;
-  }
-
-  public static void cleanUpPIDFile() {
-    var path =
-        System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
-    File pidFile = new File(path);
-    if (pidFile.exists()) {
-      pidFile.deleteOnExit();
-      LOGGER.trace(CommonConstants.BACKEND_PID_FILENAME + " file is deleted: {}", pidFile.exists());
-    }
   }
 }
