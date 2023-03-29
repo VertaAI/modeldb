@@ -28,7 +28,7 @@ message GetResourcesV2 {
   }
 }
 
-service ResourceV2Service {
+service ResourceServiceV2 {
   rpc getResources (GetResourcesV2) returns (GetResourcesV2.Response) {
     option (google.api.http) = {
       post: "/v2/resources"
