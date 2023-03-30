@@ -76,7 +76,6 @@ class Endpoint(object):
                 "status: {}".format(status["status"]),
                 "Kafka settings: {}".format(self.kafka_settings),
                 "date created: {}".format(data["date_created"]),
-                "date updated: {}".format(data["date_updated"]),
                 "stage's date created: {}".format(status["date_created"]),
                 "stage's date updated: {}".format(status["date_updated"]),
                 "components: {}".format(json.dumps(status["components"], indent=4)),
