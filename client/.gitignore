@@ -20,6 +20,7 @@ verta/verta.egg-info/
 
 # unit testing
 verta/tests/.hypothesis
+.hypothesis
 
 # documentation
 verta/docs/_build/

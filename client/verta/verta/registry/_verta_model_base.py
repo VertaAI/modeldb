@@ -98,6 +98,10 @@ class VertaModelBase(object):
 
         This method is called when batch predictions are made against a Verta endpoint.
 
+        See `our product documentation on batch prediction
+        <https://docs.verta.ai/verta/deployment/guides/batch-predictions>`__
+        for more information about how this method is used.
+
         .. note::
 
             :meth:`batch_predict` must be written to both receive and return
