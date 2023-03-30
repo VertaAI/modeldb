@@ -34,6 +34,8 @@ public class Future<T> {
   private static boolean captureStacksAtCreation;
 
   public static final AttributeKey<String> STACK_ATTRIBUTE_KEY = AttributeKey.stringKey("stack");
+  public static final String FUTURE_EXECUTOR_REQUIRED_ERROR =
+      "A FutureExecutor is required to create a new Future.";
 
   static {
     String internalFutureTracingEnabled = System.getenv("IFUTURE_TRACING_ENABLED");
@@ -111,22 +113,19 @@ public class Future<T> {
    * libraries.
    */
   public static <R> Future<R> from(CompletionStage<R> other) {
-    Preconditions.checkNotNull(
-        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     return new Future<>(other);
   }
 
   /** @deprecated Use {@link #of(Object)} instead. */
   @Deprecated
   public static <R> Future<R> completedInternalFuture(R value) {
-    Preconditions.checkNotNull(
-        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     return of(value);
   }
 
   public static <R> Future<R> of(R value) {
-    Preconditions.checkNotNull(
-        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     return new Future<>(CompletableFuture.completedFuture(value));
   }
 
@@ -135,8 +134,7 @@ public class Future<T> {
    * Future}.
    */
   public static <T> Future<T> fromListenableFuture(ListenableFuture<T> listenableFuture) {
-    Preconditions.checkNotNull(
-        futureExecutor, "A FutureExecutor is required to create a new Future.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     CompletableFuture<T> promise = new CompletableFuture<>();
     Futures.addCallback(listenableFuture, new FutureUtil.Callback<>(promise), futureExecutor);
     return from(promise);
@@ -225,9 +223,7 @@ public class Future<T> {
   }
 
   public <U> Future<U> handle(BiFunction<? super T, Throwable, ? extends U> fn) {
-    Preconditions.checkNotNull(
-        futureExecutor,
-        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     final var executor = getExecutor();
     return from(stage.handleAsync(traceBiFunctionThrowable(fn), executor));
   }
@@ -249,9 +245,7 @@ public class Future<T> {
 
   public <U, V> Future<V> thenCombine(
       Future<? extends U> other, BiFunction<? super T, ? super U, ? extends V> fn) {
-    Preconditions.checkNotNull(
-        futureExecutor,
-        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     final var executor = getExecutor();
     BiFunction<? super T, ? super U, ? extends V> tracedBiFunction = traceBiFunction(fn);
     return from(stage.thenCombineAsync(other.stage, tracedBiFunction, executor));
@@ -273,9 +267,7 @@ public class Future<T> {
   }
 
   public Future<Void> thenAccept(Consumer<? super T> action) {
-    Preconditions.checkNotNull(
-        futureExecutor,
-        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     final var executor = getExecutor();
     return from(stage.thenAcceptAsync(traceConsumer(action), executor));
   }
@@ -295,9 +287,7 @@ public class Future<T> {
   }
 
   public Future<Void> thenRun(Runnable runnable) {
-    Preconditions.checkNotNull(
-        futureExecutor,
-        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     final var executor = getExecutor();
     return from(stage.thenRunAsync(traceRunnable(runnable), executor));
   }
@@ -349,9 +339,7 @@ public class Future<T> {
 
   /** Syntactic sugar for {@link #thenCompose(Function)} with the function ignoring the input. */
   public <U> Future<U> thenSupply(Supplier<Future<U>> supplier) {
-    Preconditions.checkNotNull(
-        futureExecutor,
-        "A FutureExecutor is required to be present for this method. Please call withExecutor before calling this.");
+    Preconditions.checkNotNull(futureExecutor, FUTURE_EXECUTOR_REQUIRED_ERROR);
     return thenCompose(ignored -> supplier.get());
   }
 

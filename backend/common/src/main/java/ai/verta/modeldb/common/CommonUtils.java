@@ -62,11 +62,11 @@ public class CommonUtils {
     }
   }
 
-  public static void logAmazonServiceExceptionErrorCodes(Logger LOGGER, AmazonServiceException e) {
-    LOGGER.debug("Amazon Service Status Code: " + e.getStatusCode());
-    LOGGER.debug("Amazon Service Error Code: " + e.getErrorCode());
-    LOGGER.debug("Amazon Service Error Type: " + e.getErrorType());
-    LOGGER.debug("Amazon Service Error Message: " + e.getErrorMessage());
+  public static void logAmazonServiceExceptionErrorCodes(Logger logger, AmazonServiceException e) {
+    logger.debug("Amazon Service Status Code: {}", e.getStatusCode());
+    logger.debug("Amazon Service Error Code: {}", e.getErrorCode());
+    logger.debug("Amazon Service Error Type: {}", e.getErrorType());
+    logger.debug("Amazon Service Error Message: {}", e.getErrorMessage());
   }
 
   public static boolean isEnvSet(String envVar) {
@@ -88,12 +88,14 @@ public class CommonUtils {
   }
 
   public static ModelDBException getInvalidFieldException(Exception ex) {
+    if (ex instanceof IllegalArgumentException) {
+      throw (IllegalArgumentException) ex;
+    }
+
     String invalidFieldName;
     if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Unknown column ")) {
       var invalidFieldNameArr = ex.getMessage().split("'");
       invalidFieldName = invalidFieldNameArr[1].substring(3);
-      return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     } else if (ex != null
         && ex.getMessage() != null
         && ex.getMessage().contains("Invalid column ")) {
@@ -101,19 +103,17 @@ public class CommonUtils {
       invalidFieldName = ex.getMessage();
       invalidFieldName = invalidFieldName.substring("Invalid column name '".length());
       invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("'"));
-      return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
     } else if (ex != null && ex.getMessage() != null && ex.getMessage().contains("Column ")) {
       // Logic for H2 Database
       invalidFieldName = ex.getMessage();
       invalidFieldName = invalidFieldName.substring("Column '*..".length());
       invalidFieldName = invalidFieldName.substring(0, invalidFieldName.indexOf("\""));
-      return new ModelDBException(
-          "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
-    } else if (ex instanceof IllegalArgumentException) {
-      throw (IllegalArgumentException) ex;
+    } else {
+      throw new ModelDBException(ex);
     }
-    throw new ModelDBException(ex);
+
+    return new ModelDBException(
+        "Invalid field found in the request : " + invalidFieldName, Code.INVALID_ARGUMENT);
   }
 
   public interface RetryCallInterface<T> {

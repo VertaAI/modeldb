@@ -75,11 +75,11 @@ public abstract class CommonDBUtil {
   }
 
   protected static boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
-    LOGGER.info("Checking DB connection with timeout [" + timeout + "]...");
+    LOGGER.info("Checking DB connection with timeout [{}]...", timeout);
     try (var con = getDBConnection(rdb)) {
-      LOGGER.debug("Got connection: " + con);
+      LOGGER.debug("Got connection: {}", con);
       boolean valid = con.isValid(timeout);
-      LOGGER.info("DB Connection valid? " + valid);
+      LOGGER.info("DB Connection valid? : {}", valid);
       return valid;
     } catch (Exception ex) {
       LOGGER.error("JdbiUtil checkDBConnection() got error ", ex);
@@ -480,7 +480,7 @@ public abstract class CommonDBUtil {
   public static void createDBIfNotExists(RdbConfig rdbConfiguration) throws SQLException {
     final var databaseName = RdbConfig.buildDatabaseName(rdbConfiguration);
     final var dbUrl = RdbConfig.buildDatabaseServerConnectionString(rdbConfiguration);
-    LOGGER.info("Connecting to DB URL " + dbUrl);
+    LOGGER.info("Connecting to DB URL {}", dbUrl);
     try (Connection connection =
         DriverManager.getConnection(
             dbUrl, rdbConfiguration.getRdbUsername(), rdbConfiguration.getRdbPassword())) {
@@ -494,15 +494,15 @@ public abstract class CommonDBUtil {
         String databaseNameRes = resultSet.getString(1);
         var dbName = RdbConfig.buildDatabaseName(rdbConfiguration);
         if (dbName.equals(databaseNameRes)) {
-          LOGGER.debug("the database " + databaseName + " exists");
+          LOGGER.debug("the database {} exists", databaseName);
           return;
         }
       }
 
-      LOGGER.debug("the database " + databaseName + " does not exist");
+      LOGGER.debug("the database {} does not exist", databaseName);
       try (Statement statement = connection.createStatement()) {
         statement.executeUpdate("CREATE DATABASE " + databaseName);
-        LOGGER.debug("the database " + databaseName + " was created successfully");
+        LOGGER.debug("the database {} was created successfully", databaseName);
       }
     }
   }

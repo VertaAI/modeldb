@@ -26,6 +26,7 @@ public class FutureExecutor implements Executor {
   @With private final io.opentelemetry.context.Context otelContext;
   @With private final io.grpc.Context grpcContext;
   private final Attributes metricAttributes;
+  private static final String UNKNOWN = "unknown";
 
   public FutureExecutor(
       Executor delegate, String name, Context otelContext, io.grpc.Context grpcContext) {
@@ -71,7 +72,7 @@ public class FutureExecutor implements Executor {
    */
   @Deprecated(forRemoval = true)
   public static FutureExecutor makeCompatibleExecutor(Executor ex) {
-    return makeCompatibleExecutor(ex, "unknown");
+    return makeCompatibleExecutor(ex, UNKNOWN);
   }
 
   /** Wraps an Executor and make it compatible with grpc's context */
@@ -84,7 +85,7 @@ public class FutureExecutor implements Executor {
    */
   @Deprecated(forRemoval = true)
   public static FutureExecutor initializeExecutor(Integer threadCount) {
-    return initializeExecutor(threadCount, "unknown");
+    return initializeExecutor(threadCount, UNKNOWN);
   }
 
   public static FutureExecutor initializeExecutor(Integer threadCount, String name) {
@@ -98,7 +99,7 @@ public class FutureExecutor implements Executor {
   }
 
   public static FutureExecutor newSingleThreadExecutor() {
-    return makeCompatibleExecutor(Executors.newSingleThreadExecutor(), "unknown");
+    return makeCompatibleExecutor(Executors.newSingleThreadExecutor(), UNKNOWN);
   }
 
   private Runnable wrapWithTimer(Runnable r) {

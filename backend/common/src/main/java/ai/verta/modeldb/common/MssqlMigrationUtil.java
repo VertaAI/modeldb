@@ -17,6 +17,7 @@ import org.apache.logging.log4j.Logger;
 public class MssqlMigrationUtil {
 
   private static final Logger LOGGER = LogManager.getLogger(MssqlMigrationUtil.class);
+  private static final String TABLE_NAME = "tableName";
 
   private MssqlMigrationUtil() {}
 
@@ -102,16 +103,14 @@ public class MssqlMigrationUtil {
       var tableName = primaryKeyConstraint.getValue().getKey();
       var type = "PK"; // primary_key_constraints
       String query =
-          "IF (OBJECT_ID('%s', '%s') IS NULL) "
-              + "BEGIN "
+          "IF (OBJECT_ID('%s', '%s') IS NULL) BEGIN "
               + "ALTER TABLE \"%s\" ADD CONSTRAINT %s PRIMARY KEY (%s) "
               + "END";
       if (constraintName.toLowerCase().startsWith("ck_")
           || constraintName.toLowerCase().startsWith("uq_")) {
         type = "UQ"; // unique_constraints
         query =
-            "IF (OBJECT_ID('%s', '%s') IS NULL) "
-                + "BEGIN "
+            "IF (OBJECT_ID('%s', '%s') IS NULL) BEGIN "
                 + "ALTER TABLE \"%s\" ADD CONSTRAINT %s UNIQUE (%s) "
                 + "END";
       }
@@ -136,13 +135,12 @@ public class MssqlMigrationUtil {
       Map<String, Map<String, Map.Entry<String, String>>> foreignKeyAndDefaultKeyConstraintsMap) {
     for (Map.Entry<String, Map<String, Map.Entry<String, String>>> tableConstraintsMap :
         foreignKeyAndDefaultKeyConstraintsMap.entrySet()) {
-      Map.Entry<String, String> baseTableMap = tableConstraintsMap.getValue().get("tableName");
+      Map.Entry<String, String> baseTableMap = tableConstraintsMap.getValue().get(TABLE_NAME);
       Map.Entry<String, String> refTableMap = tableConstraintsMap.getValue().get("refTableName");
       try (var updateQuery =
           handle.createUpdate(
               String.format(
-                  "IF (OBJECT_ID('%s', 'F') IS NULL) "
-                      + "BEGIN "
+                  "IF (OBJECT_ID('%s', 'F') IS NULL) BEGIN "
                       + "ALTER TABLE \"%s\" ADD CONSTRAINT \"%s\" FOREIGN KEY (%s) REFERENCES \"%s\"(%s) "
                       + "END",
                   tableConstraintsMap.getKey(),
@@ -166,8 +164,7 @@ public class MssqlMigrationUtil {
         try (var updateQuery =
             handle.createUpdate(
                 String.format(
-                    "IF (OBJECT_ID('%s', 'D') IS NULL) "
-                        + "BEGIN "
+                    "IF (OBJECT_ID('%s', 'D') IS NULL) BEGIN "
                         + "ALTER TABLE \"%s\" ADD CONSTRAINT \"%s\" default %s for %s "
                         + "END",
                     tableConstraintsMap.getKey(),
@@ -188,8 +185,7 @@ public class MssqlMigrationUtil {
         try (var updateQuery =
             handle.createUpdate(
                 String.format(
-                    "IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
-                        + "BEGIN "
+                    "IF NOT EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') BEGIN "
                         + "CREATE NONCLUSTERED INDEX \"%s\" ON \"%s\" (%s) "
                         + "END",
                     indexesMap.getKey(),
@@ -239,8 +235,7 @@ public class MssqlMigrationUtil {
       for (Map.Entry<String, Set<String>> indexesMap : tableIndexesMap.getValue().entrySet()) {
         final String format =
             String.format(
-                "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') "
-                    + "BEGIN "
+                "IF EXISTS (SELECT * FROM sys.indexes WHERE name = '%s') BEGIN "
                     + "DROP INDEX \"%s\" ON \"%s\" "
                     + "END",
                 indexesMap.getKey(), indexesMap.getKey(), tableIndexesMap.getKey());
@@ -378,8 +373,7 @@ public class MssqlMigrationUtil {
       Map.Entry<String, String> baseTableMap = tableConstraintsMap.getValue().get("tableName");
       var queryStr =
           String.format(
-              "IF (OBJECT_ID('%s', 'F') IS NOT NULL) "
-                  + "BEGIN "
+              "IF (OBJECT_ID('%s', 'F') IS NOT NULL) BEGIN "
                   + "ALTER TABLE %s DROP CONSTRAINT \"%s\"; "
                   + "END",
               tableConstraintsMap.getKey(), baseTableMap.getKey(), tableConstraintsMap.getKey());
@@ -397,8 +391,7 @@ public class MssqlMigrationUtil {
           tableConstraintsMap.getValue().entrySet()) {
         var queryStr =
             String.format(
-                "IF (OBJECT_ID('%s', 'D') IS NOT NULL) "
-                    + "BEGIN "
+                "IF (OBJECT_ID('%s', 'D') IS NOT NULL) BEGIN "
                     + "ALTER TABLE \"%s\" DROP CONSTRAINT \"%s\"; "
                     + "END",
                 tableConstraintsMap.getKey(),

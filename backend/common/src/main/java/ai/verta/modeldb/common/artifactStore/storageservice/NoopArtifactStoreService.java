@@ -21,7 +21,9 @@ public class NoopArtifactStoreService implements ArtifactStoreService {
 
   @Override
   public void commitMultipart(String s3Path, String uploadId, List<PartETag> partETags)
-      throws ModelDBException {}
+      throws ModelDBException {
+    // Do nothing because of Noop service.
+  }
 
   @Override
   public InputStream downloadFileFromStorage(String artifactPath) throws ModelDBException {

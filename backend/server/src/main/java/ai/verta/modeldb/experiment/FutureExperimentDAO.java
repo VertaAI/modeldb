@@ -19,6 +19,7 @@ import ai.verta.modeldb.GetTags;
 import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogExperimentArtifacts;
 import ai.verta.modeldb.LogExperimentCodeVersion;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.UpdateExperimentDescription;
 import ai.verta.modeldb.UpdateExperimentName;
@@ -103,7 +104,8 @@ public class FutureExperimentDAO {
     var entityName = "ExperimentEntity";
     attributeHandler = new AttributeHandler(executor, jdbi, entityName);
     tagsHandler = new TagsHandler(executor, jdbi, entityName);
-    codeVersionHandler = new CodeVersionHandler(executor, jdbi, "experiment");
+    codeVersionHandler =
+        new CodeVersionHandler(executor, jdbi, ModelDBConstants.EXPERIMENT_TABLE_NAME);
     DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName, mdbConfig);
     artifactHandler =
         new ArtifactHandler(
@@ -116,8 +118,12 @@ public class FutureExperimentDAO {
             mdbConfig);
     predicatesHandler =
         new PredicatesHandler(
-            executor, "experiment", "experiment", uacApisUtil, mdbConfig.isPermissionV2Enabled());
-    sortingHandler = new SortingHandler("experiment");
+            executor,
+            ModelDBConstants.EXPERIMENT_TABLE_NAME,
+            ModelDBConstants.EXPERIMENT_TABLE_NAME /*alias*/,
+            uacApisUtil,
+            mdbConfig.isPermissionV2Enabled());
+    sortingHandler = new SortingHandler(ModelDBConstants.EXPERIMENT_TABLE_NAME);
 
     createExperimentHandler =
         new CreateExperimentHandler(
@@ -216,7 +222,7 @@ public class FutureExperimentDAO {
 
                                     Query query =
                                         CommonUtils.buildQueryFromQueryContext(
-                                            "experiment",
+                                            ModelDBConstants.EXPERIMENT_TABLE_NAME,
                                             Pagination.newBuilder()
                                                 .setPageNumber(request.getPageNumber())
                                                 .setPageLimit(request.getPageLimit())
@@ -228,20 +234,16 @@ public class FutureExperimentDAO {
 
                                     return query
                                         .map(
-                                            (rs, ctx) -> {
-                                              var runBuilder =
-                                                  Experiment.newBuilder()
-                                                      .setId(rs.getString("id"))
-                                                      .setProjectId(rs.getString("project_id"))
-                                                      .setName(rs.getString("name"))
-                                                      .setDescription(rs.getString("description"))
-                                                      .setDateUpdated(rs.getLong("date_updated"))
-                                                      .setDateCreated(rs.getLong("date_created"))
-                                                      .setOwner(rs.getString("owner"))
-                                                      .setVersionNumber(
-                                                          rs.getLong("version_number"));
-                                              return runBuilder;
-                                            })
+                                            (rs, ctx) ->
+                                                Experiment.newBuilder()
+                                                    .setId(rs.getString("id"))
+                                                    .setProjectId(rs.getString("project_id"))
+                                                    .setName(rs.getString("name"))
+                                                    .setDescription(rs.getString("description"))
+                                                    .setDateUpdated(rs.getLong("date_updated"))
+                                                    .setDateCreated(rs.getLong("date_created"))
+                                                    .setOwner(rs.getString("owner"))
+                                                    .setVersionNumber(rs.getLong("version_number")))
                                         .list();
                                   })
                               .thenCompose(

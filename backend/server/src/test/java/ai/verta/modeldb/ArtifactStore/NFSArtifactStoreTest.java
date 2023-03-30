@@ -2,7 +2,6 @@ package ai.verta.modeldb.ArtifactStore;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.Assert.*;
-import static org.junit.Assume.assumeTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -324,7 +323,7 @@ public class NFSArtifactStoreTest {
 
       int responseCode = httpClient.getResponseCode();
       LOGGER.info("POST Response Code :: {}", responseCode);
-      assumeTrue(responseCode == HttpURLConnection.HTTP_OK);
+      assertEquals(responseCode, HttpURLConnection.HTTP_OK);
     }
   }
 
