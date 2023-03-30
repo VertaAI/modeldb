@@ -33,7 +33,7 @@ public class CronJobUtils {
       for (Map.Entry<String, CronJobConfig> cronJob : mdbConfig.getCron_job().entrySet()) {
         TimerTask task = null;
         if (cronJob.getKey().equals(ModelDBConstants.DELETE_ENTITIES)
-            && (mdbConfig.hasServiceAccount() || !services.getMdbRoleService().IsImplemented())) {
+            && (mdbConfig.hasServiceAccount() || !services.getMdbRoleService().isImplemented())) {
           task =
               new DeleteEntitiesCron(
                   services.getMdbRoleService(), cronJob.getValue().getRecord_update_limit());
@@ -46,7 +46,7 @@ public class CronJobUtils {
                   cronJob.getValue().getRecord_update_limit(),
                   mdbConfig);
         } else if (cronJob.getKey().equals(ModelDBConstants.CLEAN_UP_ENTITIES)
-            && (mdbConfig.hasServiceAccount() || !services.getMdbRoleService().IsImplemented())) {
+            && (mdbConfig.hasServiceAccount() || !services.getMdbRoleService().isImplemented())) {
           task =
               new CleanUpEntitiesCron(
                   services.getMdbRoleService(), cronJob.getValue().getRecord_update_limit());

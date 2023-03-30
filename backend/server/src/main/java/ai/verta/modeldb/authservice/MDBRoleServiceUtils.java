@@ -24,7 +24,7 @@ public class MDBRoleServiceUtils extends RoleServiceUtils implements MDBRoleServ
   }
 
   @Override
-  public boolean IsImplemented() {
+  public boolean isImplemented() {
     return true;
   }
 

@@ -153,7 +153,7 @@ public class Migrator {
         updateVersion(
             migration, false, migration.isUp() ? migration.getNumber() : migration.getNumber() - 1);
       } catch (IOException | SQLException e) {
-        throw new MigrationException("failed migration " + migration + "", e);
+        throw new MigrationException("failed migration " + migration, e);
       }
     }
   }

@@ -60,7 +60,7 @@ public class PopulateVersionMigration {
         List<RepositoryEntity> datasetEntities = repoTypedQuery.list();
 
         LOGGER.debug("got datasets");
-        if (datasetEntities.size() > 0) {
+        if (!datasetEntities.isEmpty()) {
           Set<Long> datasetIds = new HashSet<>();
           for (RepositoryEntity datasetsEntity : datasetEntities) {
             datasetIds.add(datasetsEntity.getId());

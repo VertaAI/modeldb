@@ -21,8 +21,8 @@ import java.util.*;
 public class PublicMDBRoleServiceUtils implements MDBRoleService {
 
   private FutureProjectDAO futureProjectDAO;
-  private RepositoryDAO repositoryDAO;
-  private MetadataDAO metadataDAO;
+  private final RepositoryDAO repositoryDAO;
+  private final MetadataDAO metadataDAO;
 
   public PublicMDBRoleServiceUtils(UACApisUtil uacApisUtil, MDBConfig mdbConfig) {
     this.metadataDAO = new MetadataDAORdbImpl();
@@ -32,7 +32,7 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public boolean IsImplemented() {
+  public boolean isImplemented() {
     return false;
   }
 

@@ -673,7 +673,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .collect(Collectors.toSet());
       }
 
-      if (accessibleResourceIds.isEmpty() && mdbRoleService.IsImplemented()) {
+      if (accessibleResourceIds.isEmpty() && mdbRoleService.isImplemented()) {
         LOGGER.debug("Accessible Repository Ids not found, size 0");
         return ListRepositoriesRequest.Response.newBuilder().setTotalRecords(0).build();
       }
@@ -1145,7 +1145,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                   .collect(Collectors.toSet());
         }
 
-        if (accessibleResourceIdsWithCollaborator.isEmpty() && mdbRoleService.IsImplemented()) {
+        if (accessibleResourceIdsWithCollaborator.isEmpty() && mdbRoleService.isImplemented()) {
           LOGGER.debug("Accessible Repository Ids not found, size 0");
           return FindRepositories.Response.newBuilder()
               .addAllRepositories(Collections.emptyList())
@@ -1159,7 +1159,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
               ModelDBConstants.REPOSITORY,
               new ArrayList<>(accessibleResourceIdsWithCollaborator),
               predicate,
-              mdbRoleService.IsImplemented());
+              mdbRoleService.isImplemented());
         }
 
         var findRepositoriesQuery =
@@ -1346,7 +1346,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
                 .collect(Collectors.toSet());
       }
 
-      if (accessibleDatasetIds.isEmpty() && mdbRoleService.IsImplemented()) {
+      if (accessibleDatasetIds.isEmpty() && mdbRoleService.isImplemented()) {
         LOGGER.debug("Accessible Dataset Ids not found, size 0");
         return getEmptyDatasetPaginationDTO();
       }
@@ -1360,7 +1360,7 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
             ModelDBConstants.DATASETS,
             new ArrayList<>(accessibleDatasetIds),
             predicate,
-            mdbRoleService.IsImplemented());
+            mdbRoleService.isImplemented());
       }
 
       if (!accessibleDatasetIds.isEmpty()) {

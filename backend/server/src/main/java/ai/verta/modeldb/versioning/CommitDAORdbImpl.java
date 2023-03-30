@@ -1015,7 +1015,7 @@ public class CommitDAORdbImpl implements CommitDAO {
               modelDBServiceResourceTypes);
     }
 
-    if (accessibleResourceIds.isEmpty() && mdbRoleService.IsImplemented()) {
+    if (accessibleResourceIds.isEmpty() && mdbRoleService.isImplemented()) {
       LOGGER.debug("Accessible Repository Ids not found, size 0");
       var commitPaginationDTO = new CommitPaginationDTO();
       commitPaginationDTO.setCommitEntities(Collections.emptyList());

@@ -22,12 +22,9 @@ import io.grpc.stub.StreamObserver;
 import java.util.Calendar;
 import java.util.List;
 import java.util.UUID;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class CommentServiceImpl extends CommentServiceImplBase {
 
-  private static final Logger LOGGER = LogManager.getLogger(CommentServiceImpl.class);
   private final UACApisUtil uacApisUtil;
   private final MDBRoleService mdbRoleService;
   private final CommentDAO commentDAO;

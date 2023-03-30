@@ -9,7 +9,7 @@ import com.google.protobuf.GeneratedMessageV3;
 
 public interface MDBRoleService extends RoleService {
 
-  boolean IsImplemented();
+  boolean isImplemented();
 
   /**
    * Checks permissions of the user wrt the Entity

@@ -31,13 +31,12 @@ public class OwnerRoleBindingUtils {
   private static final ModelDBHibernateUtil modelDBHibernateUtil =
       ModelDBHibernateUtil.getInstance();
   private static UACApisUtil uacApisUtil;
-  private static UAC uac;
   private static MDBRoleService mdbRoleService;
 
   public static void execute() {
     var config = App.getInstance().mdbConfig;
     if (config.hasAuth()) {
-      uac = UAC.fromConfig(config, Optional.empty());
+      UAC uac = UAC.fromConfig(config, Optional.empty());
       var executor =
           FutureExecutor.initializeExecutor(
               config.getGrpcServer().getThreadCount(), "OwnerRoleBindingUtils");
@@ -88,13 +87,13 @@ public class OwnerRoleBindingUtils {
         typedQuery.setMaxResults(pagesize);
         List<ExperimentEntity> experimentEntities = typedQuery.getResultList();
 
-        if (experimentEntities.size() > 0) {
+        if (!experimentEntities.isEmpty()) {
           Set<String> userIds = new HashSet<>();
           for (ExperimentEntity experiment : experimentEntities) {
             userIds.add(experiment.getOwner());
           }
-          LOGGER.debug("Experiments userId list : " + userIds);
-          if (userIds.size() == 0) {
+          LOGGER.debug("Experiments userId list : {}", userIds);
+          if (userIds.isEmpty()) {
             LOGGER.warn("userIds not found for Experiments on page lower boundary {}", lowerBound);
             lowerBound += pagesize;
             continue;
@@ -171,8 +170,8 @@ public class OwnerRoleBindingUtils {
           userIds.add(experimentRunEntity.getOwner());
         }
 
-        LOGGER.debug("ExperimentRuns userId list : " + userIds);
-        if (userIds.size() == 0) {
+        LOGGER.debug("ExperimentRuns userId list : {}", userIds);
+        if (userIds.isEmpty()) {
           LOGGER.warn("userIds not found for ExperimentRuns on page lower boundary {}", lowerBound);
           lowerBound += pagesize;
           continue;
@@ -239,13 +238,13 @@ public class OwnerRoleBindingUtils {
         typedQuery.setMaxResults(pagesize);
         List<DatasetVersionEntity> datasetVersionEntities = typedQuery.getResultList();
 
-        if (datasetVersionEntities.size() > 0) {
+        if (!datasetVersionEntities.isEmpty()) {
           Set<String> userIds = new HashSet<>();
           for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntities) {
             userIds.add(datasetVersionEntity.getOwner());
           }
-          LOGGER.debug("DatasetVersions userId list : " + userIds);
-          if (userIds.size() == 0) {
+          LOGGER.debug("DatasetVersions userId list : {}", userIds);
+          if (userIds.isEmpty()) {
             LOGGER.warn(
                 "userIds not found for DatasetVersions on page lower boundary {}", lowerBound);
             lowerBound += pagesize;
@@ -318,13 +317,13 @@ public class OwnerRoleBindingUtils {
         typedQuery.setMaxResults(pagesize);
         List<RepositoryEntity> repositoryEntities = typedQuery.getResultList();
 
-        if (repositoryEntities.size() > 0) {
+        if (!repositoryEntities.isEmpty()) {
           Set<String> userIds = new HashSet<>();
           for (RepositoryEntity repositoryEntity : repositoryEntities) {
             userIds.add(repositoryEntity.getOwner());
           }
-          LOGGER.debug("Repositories userId list : " + userIds);
-          if (userIds.size() == 0) {
+          LOGGER.debug("Repositories userId list : {}", userIds);
+          if (userIds.isEmpty()) {
             LOGGER.warn("userIds not found for Repositories on page lower boundary {}", lowerBound);
             lowerBound += pagesize;
             continue;

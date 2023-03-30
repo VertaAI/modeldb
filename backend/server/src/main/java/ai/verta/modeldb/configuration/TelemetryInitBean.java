@@ -5,7 +5,6 @@ import ai.verta.modeldb.common.config.InvalidConfigException;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.telemetry.TelemetryCron;
-import java.io.FileNotFoundException;
 import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
@@ -22,7 +21,7 @@ public class TelemetryInitBean {
   @Bean
   @Conditional(RunLiquibaseWithMainService.class)
   public TelemetryInitBean initializeTelemetryBasedOnConfig(MDBConfig mdbConfig)
-      throws FileNotFoundException, InvalidConfigException {
+      throws InvalidConfigException {
     if (!mdbConfig.getTelemetry().isOpt_out()) {
       // creating an instance of task to be scheduled
       TimerTask task = new TelemetryCron(mdbConfig.getTelemetry().getConsumer());
