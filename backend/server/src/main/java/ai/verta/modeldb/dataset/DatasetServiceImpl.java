@@ -22,7 +22,7 @@ import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums;
 import ai.verta.modeldb.experiment.FutureExperimentDAO;
-import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
+import ai.verta.modeldb.experimentrun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.metadata.MetadataServiceImpl;
 import ai.verta.modeldb.project.FutureProjectDAO;

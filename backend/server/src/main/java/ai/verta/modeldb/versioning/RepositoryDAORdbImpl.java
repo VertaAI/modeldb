@@ -16,7 +16,7 @@ import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.dto.DatasetPaginationDTO;
 import ai.verta.modeldb.entities.versioning.*;
 import ai.verta.modeldb.entities.versioning.RepositoryEnums.RepositoryTypeEnum;
-import ai.verta.modeldb.experimentRun.FutureExperimentRunDAO;
+import ai.verta.modeldb.experimentrun.FutureExperimentRunDAO;
 import ai.verta.modeldb.metadata.IdentificationType;
 import ai.verta.modeldb.metadata.MetadataDAO;
 import ai.verta.modeldb.utils.ModelDBHibernateUtil;

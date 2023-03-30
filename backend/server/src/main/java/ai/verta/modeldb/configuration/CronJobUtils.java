@@ -3,7 +3,7 @@ package ai.verta.modeldb.configuration;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
+import ai.verta.modeldb.common.artifactstore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.config.CronJobConfig;
 import ai.verta.modeldb.common.configuration.ServerEnabled;
 import ai.verta.modeldb.config.MDBConfig;

@@ -1,8 +1,8 @@
 package ai.verta.modeldb.utils;
 
 import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.batchProcess.OwnerRoleBindingUtils;
-import ai.verta.modeldb.batchProcess.PopulateVersionMigration;
+import ai.verta.modeldb.batchprocess.OwnerRoleBindingUtils;
+import ai.verta.modeldb.batchprocess.PopulateVersionMigration;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.DatabaseConfig;
 import ai.verta.modeldb.common.config.RdbConfig;

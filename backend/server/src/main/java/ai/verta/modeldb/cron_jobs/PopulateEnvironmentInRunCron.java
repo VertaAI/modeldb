@@ -2,9 +2,9 @@ package ai.verta.modeldb.cron_jobs;
 
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
-import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAORdbImpl;
-import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactstore.ArtifactStoreDAO;
+import ai.verta.modeldb.common.artifactstore.ArtifactStoreDAORdbImpl;
+import ai.verta.modeldb.common.artifactstore.storageservice.ArtifactStoreService;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;

@@ -1,12 +1,12 @@
 package ai.verta.modeldb.common.configuration;
 
-import ai.verta.modeldb.common.artifactStore.storageservice.ArtifactStoreService;
-import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
-import ai.verta.modeldb.common.artifactStore.storageservice.nfs.FileStorageProperties;
-import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSController;
-import ai.verta.modeldb.common.artifactStore.storageservice.nfs.NFSService;
-import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Controller;
-import ai.verta.modeldb.common.artifactStore.storageservice.s3.S3Service;
+import ai.verta.modeldb.common.artifactstore.storageservice.ArtifactStoreService;
+import ai.verta.modeldb.common.artifactstore.storageservice.NoopArtifactStoreService;
+import ai.verta.modeldb.common.artifactstore.storageservice.nfs.FileStorageProperties;
+import ai.verta.modeldb.common.artifactstore.storageservice.nfs.NFSController;
+import ai.verta.modeldb.common.artifactstore.storageservice.nfs.NFSService;
+import ai.verta.modeldb.common.artifactstore.storageservice.s3.S3Controller;
+import ai.verta.modeldb.common.artifactstore.storageservice.s3.S3Service;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import java.io.IOException;
