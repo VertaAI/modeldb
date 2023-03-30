@@ -99,8 +99,8 @@ class TestGet:
         def in_output(s: str) -> bool:
             return any(line.startswith(s) for line in result.output.splitlines())
 
-        assert in_output("path: {}".format(endpoint.path))
-        assert in_output("id: {}".format(endpoint.id))
+        assert in_output(f"path: {endpoint.path}")
+        assert in_output(f"id: {endpoint.id}")
         assert in_output("curl: <endpoint not deployed>")
         assert in_output("status")
         assert in_output("date created")
@@ -109,14 +109,12 @@ class TestGet:
         assert in_output("stage's date updated")
         assert in_output("components")
 
-        updated_status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        endpoint.update(experiment_run, DirectUpdateStrategy(), True)
         result = runner.invoke(
             cli,
             ["deployment", "get", "endpoint", path],
         )
-        assert (
-            "curl: {}".format(endpoint.get_deployed_model().get_curl()) in result.output
-        )
+        assert f"curl: {endpoint.get_deployed_model().get_curl()}" in result.output
 
 
 class TestUpdate:
