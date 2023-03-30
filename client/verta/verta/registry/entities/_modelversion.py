@@ -42,9 +42,7 @@ from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
 from ..stage_change import _StageChange
 
-from verta.dataset.entities import (
-    _dataset_version
-)
+from verta.dataset.entities import _dataset_version
 
 logger = logging.getLogger(__name__)
 
@@ -126,7 +124,9 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 "experiment run id: {}".format(msg.experiment_run_id),
                 # "archived status: {}".format(msg.archived == _CommonCommonService.TernaryEnum.TRUE),
                 "artifact keys: {}".format(sorted(artifact_keys)),
-                "dataset version keys: {}".format(sorted(dataset.key for dataset in msg.datasets)),
+                "dataset version keys: {}".format(
+                    sorted(dataset.key for dataset in msg.datasets)
+                ),
                 "code version keys: {}".format(sorted(msg.code_blob_map.keys())),
             )
         )

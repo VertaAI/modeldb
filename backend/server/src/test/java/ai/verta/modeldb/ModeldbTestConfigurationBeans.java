@@ -74,6 +74,9 @@ public class ModeldbTestConfigurationBeans {
     UserServiceV2Grpc.UserServiceV2FutureStub userV2 =
         mock(UserServiceV2Grpc.UserServiceV2FutureStub.class);
 
+    ResourceServiceV2Grpc.ResourceServiceV2FutureStub resourceV2 =
+        mock(ResourceServiceV2Grpc.ResourceServiceV2FutureStub.class);
+
     AuthServiceChannel authServiceChannel = new TestAuthServiceChannel(config);
     return new UAC(
         config,
@@ -88,7 +91,8 @@ public class ModeldbTestConfigurationBeans {
         event,
         orgV2,
         workspaceV2,
-        userV2) {
+        userV2,
+        resourceV2) {
       @Override
       public AuthServiceChannel getBlockingAuthServiceChannel() {
         return authServiceChannel;

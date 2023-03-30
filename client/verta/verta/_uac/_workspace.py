@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from verta._protos.public.uac import WorkspaceV2_pb2
 
+
 class Workspace(object):
     """
     Object representing a Workspace.
@@ -15,9 +16,7 @@ class Workspace(object):
         self.name = msg.name
 
     @classmethod
-    def _create(
-        cls, conn, name, org_id, permissions
-    ):
+    def _create(cls, conn, name, org_id, permissions):
         Message = WorkspaceV2_pb2.SetWorkspaceV2
         msg = cls._create_msg(name, org_id, permissions)
 
@@ -34,8 +33,7 @@ class Workspace(object):
     @classmethod
     def _create_msg(cls, name, org_id, permissions):
         Message = WorkspaceV2_pb2.WorkspaceV2
-        msg = Message(name=name, org_id=org_id,
-                      permissions = permissions)
+        msg = Message(name=name, org_id=org_id, permissions=permissions)
         return msg
 
     def delete(self):

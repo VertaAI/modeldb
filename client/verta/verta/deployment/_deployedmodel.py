@@ -1,5 +1,3 @@
-
-
 # -*- coding: utf-8 -*-
 
 import gzip
@@ -67,20 +65,17 @@ class DeployedModel(object):
 
     """
 
-    def __init__(
-            self,
-            prediction_url,
-            token=None,
-            creds=None
-    ):
+    def __init__(self, prediction_url, token=None, creds=None):
         self.prediction_url: str = prediction_url
-        self._credentials: credentials.Credentials = creds or credentials.load_from_os_env()
+        self._credentials: credentials.Credentials = (
+            creds or credentials.load_from_os_env()
+        )
         self._access_token: str = token
         self._session: Session = None
         self._init_session()
 
     def _init_session(self):
-        """ Create a single persistent Session object. """
+        """Create a single persistent Session object."""
         session: Session = http_session.init_session(retry=http_session.retry_config())
 
         if self._credentials:
@@ -88,9 +83,7 @@ class DeployedModel(object):
                 Connection.prefixed_headers_for_credentials(self._credentials)
             )
         if self._access_token:
-            session.headers.update(
-                AccessToken(self._access_token).headers()
-            )
+            session.headers.update(AccessToken(self._access_token).headers())
         self._session = session
 
     def __repr__(self):
@@ -116,20 +109,20 @@ class DeployedModel(object):
 
     # TODO: Implement dynamic compression via separate utility and call it from here
     def _predict(
-            self,
-            x: Any,
-            prediction_url,
-            compress: bool = False,
-            prediction_id: Optional[str] = None,
+        self,
+        x: Any,
+        prediction_url,
+        compress: bool = False,
+        prediction_id: Optional[str] = None,
     ):
         """Make prediction, handling compression and error propagation."""
         request_headers = dict()
         if prediction_id:
-            request_headers.update({'verta-request-id': prediction_id})
+            request_headers.update({"verta-request-id": prediction_id})
 
         x = _utils.to_builtin(x)
         if compress:
-            request_headers.update({'Content-Encoding': 'gzip'})
+            request_headers.update({"Content-Encoding": "gzip"})
             # create gzip
             gzstream = six.BytesIO()
             with gzip.GzipFile(fileobj=gzstream, mode="wb") as gzf:
@@ -151,8 +144,8 @@ class DeployedModel(object):
                 data=body,
             )
         if response.status_code in (
-                400,
-                502,
+            400,
+            502,
         ):  # possibly error from the model back end
             try:
                 data = _utils.body_to_json(response)
@@ -184,20 +177,20 @@ class DeployedModel(object):
         headers.update({"Content-Type": "application/json"})
         curl = f"curl -X POST {self.prediction_url} -d '' -H \"Content-Type: application/json\""
         for header, value in headers.items():
-            curl += f" -H \"{header}: {value}\""
+            curl += f' -H "{header}: {value}"'
         return curl
 
     # TODO: Removed deprecated `always_retry_404` and `always_retry_429` params
     def predict(
-            self,
-            x: List[Any],
-            compress=False,
-            max_retries: int = http_session.DEFAULT_MAX_RETRIES,
-            always_retry_404=False,
-            always_retry_429=False,
-            retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
-            backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
-            prediction_id: str = None,
+        self,
+        x: List[Any],
+        compress=False,
+        max_retries: int = http_session.DEFAULT_MAX_RETRIES,
+        always_retry_404=False,
+        always_retry_429=False,
+        retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
+        backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
+        prediction_id: str = None,
     ) -> Dict[str, Any]:
         """
         Makes a prediction using input `x`.
@@ -272,13 +265,13 @@ class DeployedModel(object):
         return prediction_with_id[1]
 
     def predict_with_id(
-            self,
-            x: List[Any],
-            compress=False,
-            max_retries: int = http_session.DEFAULT_MAX_RETRIES,
-            retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
-            backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
-            prediction_id: str = None,
+        self,
+        x: List[Any],
+        compress=False,
+        max_retries: int = http_session.DEFAULT_MAX_RETRIES,
+        retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
+        backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
+        prediction_id: str = None,
     ) -> Tuple[str, List[Any]]:
         """
         Makes a prediction using input `x` the same as `predict`, but returns a tuple including the ID of the
@@ -333,18 +326,18 @@ class DeployedModel(object):
         )
 
         response = self._predict(x, self.prediction_url, compress, prediction_id)
-        id = response.headers.get('verta-request-id', '')
+        id = response.headers.get("verta-request-id", "")
         return (id, _utils.body_to_json(response))
 
     def batch_predict(
-            self,
-            df,
-            batch_size: int = 100,
-            compress: bool = False,
-            max_retries: int = http_session.DEFAULT_MAX_RETRIES,
-            retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
-            backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
-            prediction_id: str = None,
+        self,
+        df,
+        batch_size: int = 100,
+        compress: bool = False,
+        max_retries: int = http_session.DEFAULT_MAX_RETRIES,
+        retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
+        backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
+        prediction_id: str = None,
     ):
         """
         Makes a prediction using input `df` of type pandas.DataFrame.
@@ -402,12 +395,18 @@ class DeployedModel(object):
         # Split into batches
         out_df_list = []
         for i in range(0, len(df), batch_size):
-            batch = df.iloc[i:i+batch_size]
+            batch = df.iloc[i : i + batch_size]
             serialized_batch = batch.to_dict(orient="split")
             # Predict with one batch at a time
-            response = self._predict(serialized_batch, self._batch_prediction_url, compress, prediction_id)
+            response = self._predict(
+                serialized_batch, self._batch_prediction_url, compress, prediction_id
+            )
             json_response = _utils.body_to_json(response)
-            out_df = pd.DataFrame(data=json_response['data'], index=json_response['index'], columns=json_response['columns'])
+            out_df = pd.DataFrame(
+                data=json_response["data"],
+                index=json_response["index"],
+                columns=json_response["columns"],
+            )
             out_df_list.append(out_df)
         # Reassemble output and return to user
         return pd.concat(out_df_list)
@@ -424,7 +423,7 @@ class DeployedModel(object):
         """
         warnings.warn(
             "This method is deprecated and will be removed in an upcoming version;"
-            " Drop \".from_url\" and call the DeployedModel class directly with the same parameters.",
+            ' Drop ".from_url" and call the DeployedModel class directly with the same parameters.',
             category=FutureWarning,
         )
         return cls(

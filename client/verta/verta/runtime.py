@@ -20,7 +20,7 @@ def _get_thread_logs() -> Dict[str, Any]:
     """
     Return the 'logs' attribute of the thread-local variable.
     """
-    if hasattr(_THREAD, 'logs'):
+    if hasattr(_THREAD, "logs"):
         return _THREAD.logs
     return {}
 
@@ -37,14 +37,14 @@ def _delete_thread_logs() -> None:
     """
     Drop the `log` attribute from the thread local variable.
     """
-    delattr(_THREAD, 'logs')
+    delattr(_THREAD, "logs")
 
 
 def _get_validate_flag() -> bool:
     """
     Return the 'validate' attribute of the thread local variable.
     """
-    if hasattr(_THREAD, 'validate'):
+    if hasattr(_THREAD, "validate"):
         return _THREAD.validate
     return False
 
@@ -61,7 +61,7 @@ def _delete_validate_flag() -> None:
     """
     Drop the `validate` attribute from the thread local variable.
     """
-    delattr(_THREAD, 'validate')
+    delattr(_THREAD, "validate")
 
 
 def _validate_json(value: Any) -> str:
@@ -75,20 +75,21 @@ def _validate_json(value: Any) -> str:
         raise
 
 
-def _validate_s3(
-        value: str,
-        pattern: re.Pattern = _S3_REGEX
-    ) -> None:
+def _validate_s3(value: str, pattern: re.Pattern = _S3_REGEX) -> None:
     """
     Check the provided value for any special characters that would
     violate Amazon S3 object key naming rules. Raise ValueError if any
     are found.
     """
     if len(value) > 100:
-        raise ValueError(" provided key value must be 100 characters or less in length.")
+        raise ValueError(
+            " provided key value must be 100 characters or less in length."
+        )
     if not pattern.match(value):
-        raise ValueError(f" provided value \"{value}\" contains non-alphanumeric "
-                         f"characters. (dashes and underscores permitted)")
+        raise ValueError(
+            f' provided value "{value}" contains non-alphanumeric '
+            f"characters. (dashes and underscores permitted)"
+        )
 
 
 def log(key: str, value: Any) -> None:
@@ -153,7 +154,7 @@ def log(key: str, value: Any) -> None:
                 return embedding
 
     """
-    if not hasattr(_THREAD, 'logs'):
+    if not hasattr(_THREAD, "logs"):
         raise RuntimeError(
             "no active verta.runtime.context() found; please ensure calls to"
             " verta.runtime.log() are made within your model's predict()"
@@ -164,7 +165,7 @@ def log(key: str, value: Any) -> None:
     _validate_s3(key)
     local_logs: Dict[str, Any] = _get_thread_logs()
     if key in local_logs.keys():
-        raise ValueError(f" cannot overwrite existing value for \"{key}\"")
+        raise ValueError(f' cannot overwrite existing value for "{key}"')
     local_logs.update({key: value})
 
 
@@ -209,6 +210,7 @@ class context:
         print(json.dumps(ctx.logs()))
 
     """
+
     def __init__(self, validate: Optional[bool] = False):
         self._validate = validate
         self._logs_dict = dict()
@@ -217,7 +219,7 @@ class context:
         """
         Ensure empty logs to start and set validation flag.
         """
-        if hasattr(_THREAD, 'logs'):  # If logs attribute exists already.
+        if hasattr(_THREAD, "logs"):  # If logs attribute exists already.
             raise RuntimeError(
                 "nesting an instance of verta.runtime.context() inside"
                 " an existing instance is not supported."
@@ -246,4 +248,4 @@ class context:
         logs : Dict[str, Any]
             Dictionary of logs collected within this context manager.
         """
-        return  self._logs_dict or _get_thread_logs()
+        return self._logs_dict or _get_thread_logs()

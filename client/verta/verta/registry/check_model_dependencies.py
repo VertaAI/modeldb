@@ -11,10 +11,10 @@ from verta.environment import Python
 from ._verta_model_base import VertaModelBase
 
 
-def _check_model_dependencies(
-        model_cls: Type[VertaModelBase],
-        environment: Python,
-        raise_for_missing: bool = False,
+def check_model_dependencies(
+    model_cls: Type[VertaModelBase],
+    environment: Python,
+    raise_for_missing: bool = False,
 ) -> bool:
     """Scan for missing dependencies in a model's environment.
 
@@ -72,8 +72,10 @@ def _check_model_dependencies(
     }
 
     if missing_packages:
-        error_msg = f"the following packages are required by the model but missing " \
-                    f"from the environment:"
+        error_msg = (
+            f"the following packages are required by the model but missing "
+            f"from the environment:"
+        )
         for m, p in sorted(missing_packages.items(), key=lambda item: item[0]):
             error_msg += f"\n{m} (installed via {p})"
         if raise_for_missing:
