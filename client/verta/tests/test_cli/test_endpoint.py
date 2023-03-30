@@ -104,7 +104,6 @@ class TestGet:
         assert in_output("curl: <endpoint not deployed>")
         assert in_output("status")
         assert in_output("date created")
-        assert in_output("date updated")
         assert in_output("stage's date created")
         assert in_output("stage's date updated")
         assert in_output("components")

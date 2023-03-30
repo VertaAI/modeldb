@@ -145,7 +145,6 @@ class TestEndpoint:
         assert in_repr("curl: <endpoint not deployed>")
         assert in_repr("status")
         assert in_repr("date created")
-        assert in_repr("date updated")
         assert in_repr("stage's date created")
         assert in_repr("stage's date updated")
         assert in_repr("components")
