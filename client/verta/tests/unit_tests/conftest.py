@@ -6,6 +6,7 @@ import os
 from unittest.mock import patch
 
 import pytest
+import responses
 
 from verta._internal_utils._utils import Connection, Configuration
 from verta.credentials import EmailCredentials
@@ -27,3 +28,9 @@ def mock_conn() -> Connection:
 def mock_config() -> Configuration:
     """ Return a mocked object of the _internal_utils._utils.Configuration class for use in tests """
     return Configuration(use_git=False, debug=False)
+
+
+@pytest.fixture
+def mocked_responses():
+    with responses.RequestsMock() as rsps:
+        yield rsps
