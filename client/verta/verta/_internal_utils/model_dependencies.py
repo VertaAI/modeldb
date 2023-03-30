@@ -10,9 +10,9 @@ from ..registry._verta_model_base import VertaModelBase
 
 def class_functions(model_class: Type[VertaModelBase]) -> Set[Callable]:
     """Return a set of all the functions present in the provided class object."""
-    return set([
-        f[1] for f in inspect.getmembers(model_class, predicate=inspect.isfunction)
-    ])
+    return set(
+        [f[1] for f in inspect.getmembers(model_class, predicate=inspect.isfunction)]
+    )
 
 
 def unwrap(func: Callable) -> Callable:
@@ -50,14 +50,14 @@ def modules_in_function_signature(func: Callable) -> Set[str]:
     function's arguments and return type hint."""
     _func = unwrap(func)
     hints = get_type_hints(_func)
-    arg_hints = {k: v for k, v in hints.items() if k != 'return'}
-    return_hint = hints.get('return')
+    arg_hints = {k: v for k, v in hints.items() if k != "return"}
+    return_hint = hints.get("return")
 
     modules = [inspect.getmodule(value) for value in arg_hints.values()]
 
     if return_hint:
         mod = inspect.getmodule(return_hint)
-        if mod.__name__ == 'typing':
+        if mod.__name__ == "typing":
             ret_ann = inspect.signature(_func).return_annotation
             nested_args = ret_ann.__args__
             for a in nested_args:
@@ -65,7 +65,7 @@ def modules_in_function_signature(func: Callable) -> Set[str]:
                     modules.append(inspect.getmodule(a))
         else:
             modules.append(inspect.getmodule(return_hint))
-    return set([m.__name__.split('.')[0] for m in modules])
+    return set([m.__name__.split(".")[0] for m in modules])
 
 
 def class_module_names(model_class: Type[VertaModelBase]) -> Set[str]:

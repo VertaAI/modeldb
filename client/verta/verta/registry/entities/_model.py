@@ -3,7 +3,6 @@
 from __future__ import print_function
 
 from verta._internal_utils._utils import check_unnecessary_params_warning
-from verta.registry import _check_model_dependencies
 from verta.tracking import _Context
 from verta.tracking.entities import _entity
 from verta._internal_utils import _artifact_utils, _utils, arg_handler, model_validator
@@ -16,6 +15,7 @@ from ._modelversion import RegisteredModelVersion
 from ._modelversions import RegisteredModelVersions
 from .. import task_type as task_type_module
 from .. import data_type as data_type_module
+from .. import check_model_dependencies as check_model_dependencies_fn
 
 
 class RegisteredModel(_entity._ModelDBEntity):
@@ -441,7 +441,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         model_validator.must_verta(model_cls)
 
         if check_model_dependencies:
-            _check_model_dependencies(
+            check_model_dependencies_fn(
                 model_cls=model_cls, environment=environment, raise_for_missing=True
             )
 

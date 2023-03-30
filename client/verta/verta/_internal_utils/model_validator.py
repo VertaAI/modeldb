@@ -84,9 +84,7 @@ def must_verta(model):
     expected_init_params = list(
         inspect.signature(VertaModelBase.__init__).parameters.keys()
     )
-    init_params = list(
-        inspect.signature(model.__init__).parameters.keys()
-    )
+    init_params = list(inspect.signature(model.__init__).parameters.keys())
     if init_params != expected_init_params:
         raise TypeError(
             "model __init__() parameters must be {},"
@@ -102,9 +100,7 @@ def must_verta(model):
     expected_test_params = list(
         inspect.signature(VertaModelBase.model_test).parameters.keys()
     )
-    test_params = list(
-        inspect.signature(model.model_test).parameters.keys()
-    )
+    test_params = list(inspect.signature(model.model_test).parameters.keys())
     if test_params != expected_test_params:
         raise TypeError(
             "model model_test() parameters must be {},"
