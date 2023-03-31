@@ -8,7 +8,6 @@ import ai.verta.modeldb.Experiment;
 import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.CommonMessages;
-import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
@@ -30,7 +29,6 @@ import ai.verta.uac.ServiceEnum;
 import ai.verta.uac.SetRoleBinding;
 import ai.verta.uac.UserInfo;
 import java.time.Instant;
-import java.util.Calendar;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -42,11 +40,10 @@ import org.apache.logging.log4j.Logger;
 
 public class CreateExperimentHandler extends HandlerUtil {
 
-  private static Logger LOGGER = LogManager.getLogger(CreateExperimentHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(CreateExperimentHandler.class);
 
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
-  private final Config config;
   private final UAC uac;
 
   private final AttributeHandler attributeHandler;
@@ -57,14 +54,12 @@ public class CreateExperimentHandler extends HandlerUtil {
   public CreateExperimentHandler(
       FutureExecutor executor,
       FutureJdbi jdbi,
-      Config config,
       UAC uac,
       AttributeHandler attributeHandler,
       TagsHandler tagsHandler,
       ArtifactHandler artifactHandler) {
     this.executor = executor;
     this.jdbi = jdbi;
-    this.config = config;
     this.uac = uac;
 
     this.attributeHandler = attributeHandler;
@@ -134,7 +129,6 @@ public class CreateExperimentHandler extends HandlerUtil {
   }
 
   public InternalFuture<Experiment> insertExperiment(Experiment newExperiment) {
-    final var now = Calendar.getInstance().getTimeInMillis();
     Map<String, Object> valueMap = new LinkedHashMap<>();
     valueMap.put("id", newExperiment.getId());
     valueMap.put("project_id", newExperiment.getProjectId());
@@ -162,15 +156,16 @@ public class CreateExperimentHandler extends HandlerUtil {
                   String queryString = buildInsertQuery(valueMap, "experiment");
 
                   LOGGER.trace("insert experiment query string: " + queryString);
-                  var query = handle.createUpdate(queryString);
+                  try (var query = handle.createUpdate(queryString)) {
 
-                  // Inserting fields arguments based on the keys and value of map
-                  for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
-                    query.bind(objectEntry.getKey(), objectEntry.getValue());
+                    // Inserting fields arguments based on the keys and value of map
+                    for (Map.Entry<String, Object> objectEntry : valueMap.entrySet()) {
+                      query.bind(objectEntry.getKey(), objectEntry.getValue());
+                    }
+
+                    int count = query.execute();
+                    LOGGER.trace("Experiment Inserted : " + (count > 0));
                   }
-
-                  int count = query.execute();
-                  LOGGER.trace("Experiment Inserted : " + (count > 0));
 
                   if (!builder.getTagsList().isEmpty()) {
                     tagsHandler.addTags(handle, builder.getId(), builder.getTagsList());
@@ -201,12 +196,16 @@ public class CreateExperimentHandler extends HandlerUtil {
         .thenCompose(
             createdExperiment ->
                 jdbi.useHandle(
-                        handle ->
-                            handle
-                                .createUpdate("UPDATE experiment SET created=:created WHERE id=:id")
+                        handle -> {
+                          try (var updateQuery =
+                              handle.createUpdate(
+                                  "UPDATE experiment SET created=:created WHERE id=:id")) {
+                            updateQuery
                                 .bind("created", true)
                                 .bind("id", createdExperiment.getId())
-                                .execute())
+                                .execute();
+                          }
+                        })
                     .thenApply(unused -> createdExperiment, executor),
             executor);
   }

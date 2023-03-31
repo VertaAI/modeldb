@@ -21,6 +21,7 @@ import ai.verta.modeldb.DeleteHyperparameters;
 import ai.verta.modeldb.DeleteMetrics;
 import ai.verta.modeldb.DeleteObservations;
 import ai.verta.modeldb.ExperimentRun;
+import ai.verta.modeldb.ExperimentRun.Builder;
 import ai.verta.modeldb.Feature;
 import ai.verta.modeldb.FindExperimentRuns;
 import ai.verta.modeldb.GetArtifacts;
@@ -123,7 +124,7 @@ import org.hibernate.Session;
 import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentRunDAO {
-  private static Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
+  private static final Logger LOGGER = LogManager.getLogger(FutureExperimentRunDAO.class);
   private static final String EXPERIMENT_RUN_ENTITY_NAME = "ExperimentRunEntity";
 
   private final FutureExecutor executor;
@@ -457,29 +458,28 @@ public class FutureExperimentRunDAO {
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
     return jdbi.useHandle(
         handle -> {
-          final var currentDateUpdated =
-              handle
-                  .createQuery("SELECT date_updated FROM experiment_run WHERE id=:run_id")
-                  .bind("run_id", runId)
-                  .mapTo(Long.class)
-                  .one();
-          final var dateUpdated = Math.max(currentDateUpdated, now);
-          handle
-              .createUpdate("update experiment_run set date_updated=:date_updated where id=:run_id")
-              .bind("run_id", runId)
-              .bind("date_updated", dateUpdated)
-              .execute();
+          try (var findQuery =
+              handle.createQuery("SELECT date_updated FROM experiment_run WHERE id=:run_id")) {
+            final var currentDateUpdated = findQuery.bind("run_id", runId).mapTo(Long.class).one();
+            final var dateUpdated = Math.max(currentDateUpdated, now);
+            try (var updateQuery =
+                handle.createUpdate(
+                    "update experiment_run set date_updated=:date_updated where id=:run_id")) {
+              updateQuery.bind("run_id", runId).bind("date_updated", dateUpdated).execute();
+            }
+          }
         });
   }
 
   private InternalFuture<Void> updateVersionNumber(String erId) {
     return jdbi.useHandle(
-        handle ->
-            handle
-                .createUpdate(
-                    "update experiment_run set version_number=(version_number + 1) where id=:er_id")
-                .bind("er_id", erId)
-                .execute());
+        handle -> {
+          try (var updateQuery =
+              handle.createUpdate(
+                  "update experiment_run set version_number=(version_number + 1) where id=:er_id")) {
+            updateQuery.bind("er_id", erId).execute();
+          }
+        });
   }
 
   private InternalFuture<Boolean> getEntityPermissionBasedOnResourceTypes(
@@ -519,14 +519,17 @@ public class FutureExperimentRunDAO {
 
     var futureMaybeProjectIds =
         jdbi.withHandle(
-            handle ->
-                handle
-                    .createQuery(
-                        "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=:deleted")
+            handle -> {
+              try (var findQuery =
+                  handle.createQuery(
+                      "SELECT project_id FROM experiment_run WHERE id IN (<ids>) AND deleted=:deleted")) {
+                return findQuery
                     .bindList("ids", finalRunIds)
                     .bind("deleted", 0)
                     .mapTo(String.class)
-                    .list());
+                    .list();
+              }
+            });
 
     return futureMaybeProjectIds.thenCompose(
         maybeProjectIds -> {
@@ -565,7 +568,6 @@ public class FutureExperimentRunDAO {
 
   public InternalFuture<Void> deleteExperimentRuns(DeleteExperimentRuns request) {
     final var runIds = request.getIdsList();
-    final var now = Calendar.getInstance().getTimeInMillis();
 
     var futureDeleteTask =
         InternalFuture.runAsync(
@@ -586,17 +588,14 @@ public class FutureExperimentRunDAO {
   }
 
   private InternalFuture<Void> deleteExperimentRuns(List<String> runIds) {
-    return InternalFuture.runAsync(
-        () ->
-            jdbi.withHandle(
-                handle ->
-                    handle
-                        .createUpdate(
-                            "Update experiment_run SET deleted = :deleted WHERE id IN (<ids>)")
-                        .bindList("ids", runIds)
-                        .bind("deleted", true)
-                        .execute()),
-        executor);
+    return jdbi.useHandle(
+        handle -> {
+          try (var updateQuery =
+              handle.createUpdate(
+                  "Update experiment_run SET deleted = :deleted WHERE id IN (<ids>)")) {
+            updateQuery.bindList("ids", runIds).bind("deleted", true).execute();
+          }
+        });
   }
 
   public InternalFuture<ExperimentRun> logArtifacts(LogArtifacts request) {
@@ -702,7 +701,7 @@ public class FutureExperimentRunDAO {
     final var runId = request.getId();
 
     InternalFuture<Void> permissionCheck;
-    if (request.getMethod().toUpperCase().equals("GET")) {
+    if (request.getMethod().equalsIgnoreCase("GET")) {
       permissionCheck =
           checkPermission(
               Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ);
@@ -834,7 +833,7 @@ public class FutureExperimentRunDAO {
                                     sql +=
                                         " inner join experiment e ON e.id = experiment_run.experiment_id ";
 
-                                    Query query =
+                                    try (Query query =
                                         CommonUtils.buildQueryFromQueryContext(
                                             "experiment_run",
                                             Pagination.newBuilder()
@@ -844,42 +843,43 @@ public class FutureExperimentRunDAO {
                                             queryContext,
                                             handle,
                                             sql,
-                                            config.getDatabase().getRdbConfiguration().isMssql());
+                                            config.getDatabase().getRdbConfiguration().isMssql())) {
+                                      return query
+                                          .map(
+                                              (rs, ctx) -> {
+                                                var runBuilder =
+                                                    ExperimentRun.newBuilder()
+                                                        .setId(rs.getString("id"))
+                                                        .setProjectId(rs.getString("project_id"))
+                                                        .setExperimentId(
+                                                            rs.getString("experiment_id"))
+                                                        .setName(rs.getString("name"))
+                                                        .setDescription(rs.getString("description"))
+                                                        .setDateUpdated(rs.getLong("date_updated"))
+                                                        .setDateCreated(rs.getLong("date_created"))
+                                                        .setStartTime(rs.getLong("start_time"))
+                                                        .setEndTime(rs.getLong("end_time"))
+                                                        .setOwner(rs.getString("owner"))
+                                                        .setCodeVersion(
+                                                            rs.getString("code_version"))
+                                                        .setJobId(rs.getString("job_id"))
+                                                        .setVersionNumber(
+                                                            rs.getLong("version_number"));
 
-                                    return query
-                                        .map(
-                                            (rs, ctx) -> {
-                                              var runBuilder =
-                                                  ExperimentRun.newBuilder()
-                                                      .setId(rs.getString("id"))
-                                                      .setProjectId(rs.getString("project_id"))
-                                                      .setExperimentId(
-                                                          rs.getString("experiment_id"))
-                                                      .setName(rs.getString("name"))
-                                                      .setDescription(rs.getString("description"))
-                                                      .setDateUpdated(rs.getLong("date_updated"))
-                                                      .setDateCreated(rs.getLong("date_created"))
-                                                      .setStartTime(rs.getLong("start_time"))
-                                                      .setEndTime(rs.getLong("end_time"))
-                                                      .setOwner(rs.getString("owner"))
-                                                      .setCodeVersion(rs.getString("code_version"))
-                                                      .setJobId(rs.getString("job_id"))
-                                                      .setVersionNumber(
-                                                          rs.getLong("version_number"));
+                                                var environment = rs.getString("environment");
+                                                if (environment != null && !environment.isEmpty()) {
+                                                  var environmentBlobBuilder =
+                                                      EnvironmentBlob.newBuilder();
+                                                  CommonUtils.getProtoObjectFromString(
+                                                      environment, environmentBlobBuilder);
+                                                  runBuilder.setEnvironment(
+                                                      environmentBlobBuilder.build());
+                                                }
 
-                                              var environment = rs.getString("environment");
-                                              if (environment != null && !environment.isEmpty()) {
-                                                var environmentBlobBuilder =
-                                                    EnvironmentBlob.newBuilder();
-                                                CommonUtils.getProtoObjectFromString(
-                                                    environment, environmentBlobBuilder);
-                                                runBuilder.setEnvironment(
-                                                    environmentBlobBuilder.build());
-                                              }
-
-                                              return runBuilder;
-                                            })
-                                        .list();
+                                                return runBuilder;
+                                              })
+                                          .list();
+                                    }
                                   })
                               .thenCompose(
                                   builders -> {
@@ -892,7 +892,7 @@ public class FutureExperimentRunDAO {
                                         InternalFuture.completedInternalFuture(builders.stream());
                                     final var ids =
                                         builders.stream()
-                                            .map(x -> x.getId())
+                                            .map(Builder::getId)
                                             .collect(Collectors.toSet());
 
                                     // Get tags
@@ -1172,10 +1172,10 @@ public class FutureExperimentRunDAO {
                                             + String.join(" AND ", queryContext.getConditions());
                                   }
 
-                                  var query = handle.createQuery(sql);
-                                  queryContext.getBinds().forEach(b -> b.accept(query));
-
-                                  return query.mapTo(Long.class).one();
+                                  try (var query = handle.createQuery(sql)) {
+                                    queryContext.getBinds().forEach(b -> b.accept(query));
+                                    return query.mapTo(Long.class).one();
+                                  }
                                 }),
                         executor);
               }
@@ -1378,15 +1378,14 @@ public class FutureExperimentRunDAO {
             unused ->
                 jdbi.useHandle(
                     handle -> {
-                      Long count =
-                          handle
-                              .createQuery("SELECT COUNT(id) FROM experiment where id = :id")
-                              .bind("id", request.getExperimentId())
-                              .mapTo(Long.class)
-                              .one();
-                      if (count == 0) {
-                        throw new NotFoundException(
-                            "Experiment not found for given ID: " + request.getExperimentId());
+                      try (var findQuery =
+                          handle.createQuery("SELECT COUNT(id) FROM experiment where id = :id")) {
+                        Long count =
+                            findQuery.bind("id", request.getExperimentId()).mapTo(Long.class).one();
+                        if (count == 0) {
+                          throw new NotFoundException(
+                              "Experiment not found for given ID: " + request.getExperimentId());
+                        }
                       }
                     }),
             executor)
@@ -1520,33 +1519,36 @@ public class FutureExperimentRunDAO {
                         query =
                             "SELECT COUNT(commit_hash) FROM \"commit\" WHERE commit_hash = :commitHash";
                       }
-                      Optional<Long> count =
-                          handle
-                              .createQuery(query)
-                              .bind("commitHash", request.getDatasetVersionId())
-                              .mapTo(Long.class)
-                              .findOne();
-                      if (count.isEmpty() || count.get() == 0) {
-                        throw new NotFoundException("DatasetVersion not found");
+                      try (var findQuery = handle.createQuery(query)) {
+                        Optional<Long> count =
+                            findQuery
+                                .bind("commitHash", request.getDatasetVersionId())
+                                .mapTo(Long.class)
+                                .findOne();
+                        if (count.isEmpty() || count.get() == 0) {
+                          throw new NotFoundException("DatasetVersion not found");
+                        }
                       }
 
                       // Validate requested dataset version mappings with datasets
-                      List<Long> mappingDatasetIds =
-                          handle
-                              .createQuery(
-                                  "SELECT repository_id FROM repository_commit WHERE commit_hash = :id")
-                              .bind("id", request.getDatasetVersionId())
-                              .mapTo(Long.class)
-                              .list();
+                      try (var findQuery =
+                          handle.createQuery(
+                              "SELECT repository_id FROM repository_commit WHERE commit_hash = :id")) {
+                        List<Long> mappingDatasetIds =
+                            findQuery
+                                .bind("id", request.getDatasetVersionId())
+                                .mapTo(Long.class)
+                                .list();
 
-                      if (mappingDatasetIds.size() == 0) {
-                        throw new InternalErrorException(
-                            "DatasetVersion not attached with the dataset");
-                      } else if (mappingDatasetIds.size() > 1) {
-                        throw new InternalErrorException(
-                            "DatasetVersion '"
-                                + request.getDatasetVersionId()
-                                + "' associated with multiple datasets");
+                        if (mappingDatasetIds.size() == 0) {
+                          throw new InternalErrorException(
+                              "DatasetVersion not attached with the dataset");
+                        } else if (mappingDatasetIds.size() > 1) {
+                          throw new InternalErrorException(
+                              "DatasetVersion '"
+                                  + request.getDatasetVersionId()
+                                  + "' associated with multiple datasets");
+                        }
                       }
                     }),
             executor)
@@ -1601,13 +1603,13 @@ public class FutureExperimentRunDAO {
         .thenAccept(
             unused ->
                 jdbi.useHandle(
-                    handle ->
-                        handle
-                            .createUpdate(
-                                "UPDATE experiment_run SET description = :description WHERE id = :id")
-                            .bind("id", runId)
-                            .bind("description", description)
-                            .execute()),
+                    handle -> {
+                      try (var updateQuery =
+                          handle.createUpdate(
+                              "UPDATE experiment_run SET description = :description WHERE id = :id")) {
+                        updateQuery.bind("id", runId).bind("description", description).execute();
+                      }
+                    }),
             executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor)
@@ -1629,12 +1631,15 @@ public class FutureExperimentRunDAO {
         .thenCompose(
             unused ->
                 jdbi.withHandle(
-                    handle ->
-                        handle
-                            .createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id")
+                    handle -> {
+                      try (var findQuery =
+                          handle.createQuery("SELECT COUNT(id) FROM experiment WHERE id = :id")) {
+                        return findQuery
                             .bind("id", request.getExperimentId())
                             .mapTo(Long.class)
-                            .one()),
+                            .one();
+                      }
+                    }),
             executor)
         .thenAccept(
             count -> {
@@ -1749,12 +1754,15 @@ public class FutureExperimentRunDAO {
     if (!request.getDestExperimentId().isEmpty()) {
       if (!cloneExperimentRunBuilder.getExperimentId().equals(request.getDestExperimentId())) {
         return jdbi.withHandle(
-                handle ->
-                    handle
-                        .createQuery("SELECT project_id FROM experiment where id = :id")
+                handle -> {
+                  try (var findQuery =
+                      handle.createQuery("SELECT project_id FROM experiment where id = :id")) {
+                    return findQuery
                         .bind("id", request.getDestExperimentId())
                         .mapTo(String.class)
-                        .findOne())
+                        .findOne();
+                  }
+                })
             .thenApply(
                 projectId -> {
                   if (projectId.isEmpty()) {
