@@ -8,7 +8,7 @@ from verta._internal_utils import _utils
 
 
 def list_kafka_configurations(conn: _utils.Connection) -> List[Dict[str, Any]]:
-    """Make an HTTP call to fetch a list of Kafka configurations. If no
+    """Make an HTTP call to fetch a dict of Kafka configurations. If no
     configurations exist, an empty dict is returned by the API.  In that
     case this function wraps one in a list and returns it to maintain
     type consistency.
