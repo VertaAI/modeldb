@@ -19,7 +19,7 @@ def list_kafka_configurations(conn: _utils.Connection) -> List[Dict[str, Any]]:
         conn,
     )
     _utils.raise_for_http_error(response)
-    return response.json().get("configurations", [{}])
+    return response.json().get("configurations", [])
 
 
 def format_kafka_config_for_topic_search(config: Dict[str, Any]) -> Dict[str, Any]:
