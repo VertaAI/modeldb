@@ -76,7 +76,6 @@ class Endpoint(object):
                 "status: {}".format(status["status"]),
                 "Kafka settings: {}".format(self.kafka_settings),
                 "date created: {}".format(data["date_created"]),
-                "date updated: {}".format(data["date_updated"]),
                 "stage's date created: {}".format(status["date_created"]),
                 "stage's date updated: {}".format(status["date_updated"]),
                 "components: {}".format(json.dumps(status["components"], indent=4)),
@@ -126,8 +125,8 @@ class Endpoint(object):
     def _path(self, data):
         return data["creator_request"]["path"]
 
-    def _date_updated(self, data):
-        return data["date_updated"]
+    def _date_created(self, data):
+        return data["date_created"]
 
     @classmethod
     def _create(
@@ -202,7 +201,7 @@ class Endpoint(object):
 
     def _get_info_list_by_id(self):
         data = Endpoint._get_json_by_id(self._conn, self.workspace, self.id)
-        return [self._path(data), str(self.id), self._date_updated(data)]
+        return [self._path(data), str(self.id), self._date_created(data)]
 
     @classmethod
     def _get_json_by_id(cls, conn, workspace, id):

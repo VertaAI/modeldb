@@ -28,7 +28,7 @@ def lst_endpoint(workspace):
     endpoints = client.endpoints
     if workspace:
         endpoints = endpoints.with_workspace(workspace)
-    table_data = [["PATH", "ID", "DATE UPDATED"]] + list(
+    table_data = [["PATH", "ID", "DATE CREATED"]] + list(
         sorted(
             map(lambda endpoint: endpoint._get_info_list_by_id(), endpoints),
             key=lambda data: data[0],

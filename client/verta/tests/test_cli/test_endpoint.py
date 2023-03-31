@@ -95,25 +95,25 @@ class TestGet:
             ["deployment", "get", "endpoint", path],
         )
         assert not result.exception
-        assert "path: {}".format(endpoint.path) in result.output
-        assert "id: {}".format(endpoint.id) in result.output
-        assert "curl: <endpoint not deployed>" in result.output
 
-        assert "status" in result.output
-        assert "date created" in result.output
-        assert "date updated" in result.output
-        assert "stage's date created" in result.output
-        assert "stage's date updated" in result.output
-        assert "components" in result.output
+        def in_output(s: str) -> bool:
+            return any(line.startswith(s) for line in result.output.splitlines())
 
-        updated_status = endpoint.update(experiment_run, DirectUpdateStrategy(), True)
+        assert in_output(f"path: {endpoint.path}")
+        assert in_output(f"id: {endpoint.id}")
+        assert in_output("curl: <endpoint not deployed>")
+        assert in_output("status")
+        assert in_output("date created")
+        assert in_output("stage's date created")
+        assert in_output("stage's date updated")
+        assert in_output("components")
+
+        endpoint.update(experiment_run, DirectUpdateStrategy(), True)
         result = runner.invoke(
             cli,
             ["deployment", "get", "endpoint", path],
         )
-        assert (
-            "curl: {}".format(endpoint.get_deployed_model().get_curl()) in result.output
-        )
+        assert f"curl: {endpoint.get_deployed_model().get_curl()}" in result.output
 
 
 class TestUpdate:

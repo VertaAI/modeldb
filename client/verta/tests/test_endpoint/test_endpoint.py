@@ -136,23 +136,22 @@ class TestEndpoint:
         created_entities.append(endpoint)
         str_repr = repr(endpoint)
 
-        assert "path: {}".format(endpoint.path) in str_repr
-        assert endpoint.url in str_repr
-        assert "url" in str_repr
-        assert "id: {}".format(endpoint.id) in str_repr
-        assert "curl: <endpoint not deployed>" in str_repr
+        def in_repr(s: str) -> bool:
+            return any(line.startswith(s) for line in str_repr.splitlines())
 
-        # these fields might have changed:
-        assert "status" in str_repr
-        assert "date created" in str_repr
-        assert "date updated" in str_repr
-        assert "stage's date created" in str_repr
-        assert "stage's date updated" in str_repr
-        assert "components" in str_repr
+        assert in_repr(f"path: {endpoint.path}")
+        assert in_repr(f"url: {endpoint.url}")
+        assert in_repr(f"id: {endpoint.id}")
+        assert in_repr("curl: <endpoint not deployed>")
+        assert in_repr("status")
+        assert in_repr("date created")
+        assert in_repr("stage's date created")
+        assert in_repr("stage's date updated")
+        assert in_repr("components")
 
         endpoint.update(experiment_run, DirectUpdateStrategy(), True)
         str_repr = repr(endpoint)
-        assert "curl: {}".format(endpoint.get_deployed_model().get_curl()) in str_repr
+        assert f"curl: {endpoint.get_deployed_model().get_curl()}" in str_repr
 
     def test_download_manifest(self, client, in_tempdir):
         download_to_path = "manifest.yaml"
