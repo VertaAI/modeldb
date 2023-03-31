@@ -98,4 +98,4 @@ def test_list_kafka_topics(
         conn=mock_conn, kafka_config=mock_kafka_configs_response["configurations"][0]
     )
     mocked_responses.assert_call_count(url, 1)
-    assert topics == ["test-topic-1", "test-topic-2", "test-topic-3"]
+    assert topics == mock_kafka_topics
