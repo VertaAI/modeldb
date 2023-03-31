@@ -613,9 +613,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           updatedDataset.getId(),
           Optional.of(updatedDataset.getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
-          Optional.of("attributes"),
+          Optional.of(ModelDBConstants.ATTRIBUTES),
           Collections.singletonMap(
-              "attribute_keys",
+              ModelDBConstants.ATTRIBUTE_KEYS,
               new Gson()
                   .toJsonTree(
                       request.getAttributesList().stream()
@@ -667,9 +667,9 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           updatedDataset.getId(),
           Optional.of(updatedDataset.getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
-          Optional.of("attributes"),
+          Optional.of(ModelDBConstants.ATTRIBUTES),
           Collections.singletonMap(
-              "attribute_keys",
+              ModelDBConstants.ATTRIBUTE_KEYS,
               new Gson()
                   .toJsonTree(
                       Stream.of(request.getAttribute())
@@ -730,7 +730,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
         extraField.put("attributes_delete_all", true);
       } else {
         extraField.put(
-            "attribute_keys",
+            ModelDBConstants.ATTRIBUTE_KEYS,
             new Gson()
                 .toJsonTree(
                     request.getAttributeKeysList(),
@@ -740,7 +740,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
           response.getDataset().getId(),
           Optional.of(response.getDataset().getWorkspaceServiceId()),
           UPDATE_DATASET_EVENT_TYPE,
-          Optional.of("attributes"),
+          Optional.of(ModelDBConstants.ATTRIBUTES),
           extraField,
           "dataset attributes deleted successfully");
 

@@ -33,6 +33,7 @@ import ai.verta.modeldb.GetUrlForArtifact;
 import ai.verta.modeldb.LogAttributes;
 import ai.verta.modeldb.LogProjectArtifacts;
 import ai.verta.modeldb.LogProjectCodeVersion;
+import ai.verta.modeldb.ModelDBConstants;
 import ai.verta.modeldb.ProjectServiceGrpc.ProjectServiceImplBase;
 import ai.verta.modeldb.SetProjectReadme;
 import ai.verta.modeldb.SetProjectShortName;
@@ -187,9 +188,9 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                               updatedProject.getId(),
                               updatedProject.getWorkspaceServiceId(),
                               UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("attributes"),
+                              Optional.of(ModelDBConstants.ATTRIBUTES),
                               Collections.singletonMap(
-                                  "attribute_keys",
+                                  ModelDBConstants.ATTRIBUTE_KEYS,
                                   new Gson()
                                       .toJsonTree(
                                           request.getAttributesList().stream()
@@ -224,9 +225,9 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                               updatedProject.getId(),
                               updatedProject.getWorkspaceServiceId(),
                               UPDATE_PROJECT_EVENT_TYPE,
-                              Optional.of("attributes"),
+                              Optional.of(ModelDBConstants.ATTRIBUTES),
                               Collections.singletonMap(
-                                  "attribute_keys",
+                                  ModelDBConstants.ATTRIBUTE_KEYS,
                                   new Gson()
                                       .toJsonTree(
                                           Stream.of(request.getAttribute())
@@ -282,7 +283,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
                       extraFieldValue.put("attributes_deleted_all", true);
                     } else {
                       extraFieldValue.put(
-                          "attribute_keys",
+                          ModelDBConstants.ATTRIBUTE_KEYS,
                           new Gson()
                               .toJsonTree(
                                   request.getAttributeKeysList(),

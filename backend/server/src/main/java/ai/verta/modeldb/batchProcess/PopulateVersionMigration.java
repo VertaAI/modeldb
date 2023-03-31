@@ -128,10 +128,6 @@ public class PopulateVersionMigration {
         } else {
           throw ex;
         }
-      } finally {
-        LOGGER.debug("gc starts");
-        Runtime.getRuntime().gc();
-        LOGGER.debug("gc ends");
       }
     }
 

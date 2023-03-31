@@ -70,6 +70,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       case "experiment_run":
         entityColumn = "experiment_run_id";
         break;
+      default:
+        return entityColumn;
     }
     return entityColumn;
   }
@@ -86,6 +88,8 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       case "experiment_run":
         entityColumn = "ExperimentRunEntity";
         break;
+      default:
+        return entityColumn;
     }
     return entityColumn;
   }
