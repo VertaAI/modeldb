@@ -24,7 +24,7 @@ def list_kafka_configurations(conn: _utils.Connection) -> List[Dict[str, Any]]:
 
 def format_kafka_config_for_topic_search(config: Dict[str, Any]) -> Dict[str, Any]:
     """Extract and format relevant data from a Kafka configuration for use
-    with the `deployment/list//kafka-topics` API.
+    with the `deployment/list/kafka-topics` API.
 
     The `kerberos` object is passed through unaltered, but `brokerAddresses`
     is altered for compatibility with the `/kafka-topics` API:
