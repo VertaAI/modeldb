@@ -48,7 +48,7 @@ def test_list_kafka_configurations(
     """Verify that list_kafka_configurations function makes the expected calls
     and handles results correctly.
     """
-    url = "https://test_socket/api/v1/uac-proxy/system_admin/listKafkaConfiguration"
+    url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/uac-proxy/system_admin/listKafkaConfiguration"
     mocked_responses.get(url=url, status=200, json=mock_kafka_configs_response)
     config = kafka.list_kafka_configurations(mock_conn)
     mocked_responses.assert_call_count(url, 1)
