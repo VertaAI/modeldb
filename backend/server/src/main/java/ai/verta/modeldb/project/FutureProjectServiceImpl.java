@@ -567,7 +567,7 @@ public class FutureProjectServiceImpl extends ProjectServiceImplBase {
   public void verifyConnection(
       Empty request, StreamObserver<VerifyConnectionResponse> responseObserver) {
     try {
-      final var response = futureProjectDAO.verifyConnection(request);
+      final var response = futureProjectDAO.verifyConnection();
       FutureGrpc.ServerResponse(responseObserver, response, executor);
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);

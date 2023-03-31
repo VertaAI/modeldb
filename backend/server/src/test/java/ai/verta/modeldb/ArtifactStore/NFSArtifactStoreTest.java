@@ -1,7 +1,8 @@
 package ai.verta.modeldb.ArtifactStore;
 
 import static org.awaitility.Awaitility.await;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -241,10 +242,19 @@ public class NFSArtifactStoreTest {
   private void createProjectEntities() {
     var name = "Project" + new Date().getTime();
     CreateProject.Response createProjectResponse =
-        projectServiceStub.createProject(CreateProject.newBuilder().setName(name).build());
+        projectServiceStub.createProject(
+            CreateProject.newBuilder()
+                .setName(name)
+                .addArtifacts(
+                    Artifact.newBuilder()
+                        .setKey(artifactKey)
+                        .setPath(artifactKey)
+                        .setArtifactType(ArtifactType.IMAGE)
+                        .build())
+                .build());
     project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
-    assertEquals("Project name not match with expected Project name", name, project.getName());
+    assertEquals(name, project.getName(), "Project name not match with expected Project name");
 
     if (testConfig.getDatabase().getRdbConfiguration().isH2()) {
       when(uac.getCollaboratorService().getResources(any()))
@@ -268,7 +278,7 @@ public class NFSArtifactStoreTest {
     experiment = createExperimentResponse.getExperiment();
     LOGGER.info("Experiment created successfully");
     assertEquals(
-        "Experiment name does not match with expected Experiment name", name, experiment.getName());
+        name, experiment.getName(), "Experiment name does not match with expected Experiment name");
   }
 
   private void createExperimentRunEntities() {
@@ -290,13 +300,17 @@ public class NFSArtifactStoreTest {
     experimentRun = createExperimentRunResponse.getExperimentRun();
     LOGGER.info("ExperimentRun created successfully");
     assertEquals(
-        "ExperimentRun name not match with expected ExperimentRun name",
         createExperimentRunRequest.getName(),
-        experimentRun.getName());
+        experimentRun.getName(),
+        "ExperimentRun name not match with expected ExperimentRun name");
   }
 
   @Test
-  public void getUrlForArtifactTest() throws IOException {
+  public void loggedArtifactByGetUrlForArtifactExperimentRunTest() throws IOException {
+    loggedArtifactByUrlExperimentRun();
+  }
+
+  private void loggedArtifactByUrlExperimentRun() throws IOException {
     GetUrlForArtifact getUrlForArtifactRequest =
         GetUrlForArtifact.newBuilder()
             .setId(experimentRun.getId())
@@ -328,9 +342,45 @@ public class NFSArtifactStoreTest {
   }
 
   @Test
-  public void getArtifactTest() throws IOException {
+  public void getUrlForArtifactProjectTest() throws IOException {
+    loggedArtifactByUrlProject();
+  }
+
+  private void loggedArtifactByUrlProject() throws IOException {
+    GetUrlForArtifact getUrlForArtifactRequest =
+        GetUrlForArtifact.newBuilder()
+            .setId(project.getId())
+            .setKey(artifactKey)
+            .setMethod("put")
+            .setArtifactType(ArtifactType.STRING)
+            .build();
+    GetUrlForArtifact.Response getUrlForArtifactResponse =
+        projectServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+
+    try (InputStream inputStream =
+        new FileInputStream("src/test/java/ai/verta/modeldb/updateProjectReadMe.md")) {
+
+      String url = getUrlForArtifactResponse.getUrl();
+      System.out.println("url = " + url);
+      HttpURLConnection httpClient = (HttpURLConnection) new URL(url).openConnection();
+      httpClient.setRequestMethod("PUT");
+      httpClient.setDoOutput(true);
+      httpClient.setRequestProperty("Content-Type", "application/json");
+      try (OutputStream out = httpClient.getOutputStream()) {
+        IOUtils.copy(inputStream, out);
+        out.flush();
+      }
+
+      int responseCode = httpClient.getResponseCode();
+      LOGGER.info("POST Response Code :: {}", responseCode);
+      assertEquals(responseCode, HttpURLConnection.HTTP_OK);
+    }
+  }
+
+  @Test
+  public void getArtifactByUrlExperimentRunTest() throws IOException {
     LOGGER.info("get artifact test start................................");
-    getUrlForArtifactTest();
+    loggedArtifactByUrlExperimentRun();
 
     GetUrlForArtifact getUrlForArtifactRequest =
         GetUrlForArtifact.newBuilder()
@@ -341,6 +391,43 @@ public class NFSArtifactStoreTest {
             .build();
     GetUrlForArtifact.Response getUrlForArtifactResponse =
         experimentRunServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
+
+    URL url = new URL(getUrlForArtifactResponse.getUrl());
+    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+    connection.setRequestMethod("GET");
+    InputStream inputStream = connection.getInputStream();
+
+    String rootPath = System.getProperty("user.dir");
+    FileOutputStream fileOutputStream =
+        new FileOutputStream(rootPath + File.separator + artifactKey);
+    IOUtils.copy(inputStream, fileOutputStream);
+    fileOutputStream.close();
+    inputStream.close();
+
+    File downloadedFile = new File(rootPath + File.separator + artifactKey);
+    if (!downloadedFile.exists()) {
+      fail("File not fount at download destination");
+    }
+    var fileDeleted = downloadedFile.delete();
+    LOGGER.info("test artifact removed from storage: {}", fileDeleted);
+
+    LOGGER.info("get artifact test stop................................");
+  }
+
+  @Test
+  public void getArtifactByUrlProjectTest() throws IOException {
+    LOGGER.info("get artifact test start................................");
+    loggedArtifactByUrlProject();
+
+    GetUrlForArtifact getUrlForArtifactRequest =
+        GetUrlForArtifact.newBuilder()
+            .setId(project.getId())
+            .setKey(artifactKey)
+            .setMethod("GET")
+            .setArtifactType(ArtifactType.STRING)
+            .build();
+    GetUrlForArtifact.Response getUrlForArtifactResponse =
+        projectServiceStub.getUrlForArtifact(getUrlForArtifactRequest);
 
     URL url = new URL(getUrlForArtifactResponse.getUrl());
     HttpURLConnection connection = (HttpURLConnection) url.openConnection();
