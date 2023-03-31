@@ -22,7 +22,7 @@
     </modules>
 
     <properties>
-        <hibernate.version>5.6.11.Final</hibernate.version>
+        <hibernate.version>5.6.15.Final</hibernate.version>
         <log4j.version>2.20.0</log4j.version>
         <grpc.version>1.53.0</grpc.version>
         <liquibase.version>4.9.1</liquibase.version>
