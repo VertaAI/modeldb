@@ -67,22 +67,8 @@ def test_format_kafka_config_for_topic_search(mock_kafka_configs_response) -> No
     mock_config = mock_kafka_configs_response["configurations"][0]
     config = kafka.format_kafka_config_for_topic_search(mock_config)
     assert config == {
-        "broker_addresses": [
-            "integrations--kafka-X.integrations--kafka-headless.ci.svc.cluster.local:00001"
-        ],
-        "kerberos": {
-            "enabled": True,
-            "conf": (
-                "[libdefaults]\ndefault_realm = EXAMPLE.COM\n\n[realms]\nEXAMPLE.COM"
-                " = {\n    kdc_ports = 12,345\n    kadmind_port = 123\n    kdc ="
-                " testing--kafka-server-X.integrations--kafka-server-headless.ci.svc.cluster.local\n"
-                "    admin_server ="
-                " testing--kafka-server-X.integrations--kafka-server-headless.ci.svc.cluster.local\n}"
-            ),
-            "keytab": "SLG45KJlksajdfglakjWlskadfj098lkjakdfjl1k3kjflakdj-lakf+alkqfvmLPWZNVTdfS84UHads3dlkfj97alfkj!lakdfjlkaj8fg=",
-            "client_name": "test-kafka-client_name",
-            "service_name": "test-kafka-utils",
-        },
+        "broker_addresses": [mock_config["brokerAddresses"]],
+        "kerberos": mock_config["kerberos"],
     }
 
 
