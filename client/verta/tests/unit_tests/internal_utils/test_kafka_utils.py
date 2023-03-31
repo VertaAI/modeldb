@@ -22,18 +22,13 @@ def mock_kafka_configs_response() -> Dict[str, Any]:
                 "kerberos": {
                     "enabled": True,
                     "conf": (
-                        "[libdefaults]\ndefault_realm ="
-                        " EXAMPLE.COM\n\n[realms]\nEXAMPLE.COM"
-                        " = {\n    kdc_ports = 12,345\n    kadmind_port = 123\n    kdc ="
-                        " testing--kafka-server-X.integrations--kafka-server-headless.ci.svc.cluster.local\n"
-                        "    admin_server ="
-                        " testing--kafka-server-X.integrations--kafka-server-headless.ci.svc.cluster.local\n}"
+                        "kerberos.example.com"
                     ),
-                    "keytab": "SLG45KJlksajdfglakjWlskadfj098lkjakdfjl1k3kjflakdj-lakf+alkqfvmLPWZNVTdfS84UHads3dlkfj97alfkj!lakdfjlkaj8fg=",
+                    "keytab": "test-key-tab=",
                     "client_name": "test-kafka-client_name",
                     "service_name": "test-kafka-utils",
                 },
-                "brokerAddresses": "integrations--kafka-X.integrations--kafka-headless.ci.svc.cluster.local:00001",
+                "brokerAddresses": "kerberos.example.com",
                 "enabled": True,
                 "name": "Test Kafka Name",
             }
