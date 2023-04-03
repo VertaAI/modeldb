@@ -15,16 +15,17 @@ def mock_kafka_configs_response(draw) -> Dict[str, Any]:
     Provide mocked API result from `api/v1/uac-proxy/system_admin/listKafkaConfiguration`
     with a single Kafka configuration.
     """
-    recursive_json = st.recursive(
-        st.none() | st.booleans() | st.integers() | st.text(),
-        lambda children: st.lists(children) | st.dictionaries(st.text(), children),
-        max_leaves=5,
-    )
     return {
         "configurations": [
             {
                 "id": draw(st.integers()),
-                "kerberos": draw(recursive_json),
+                "kerberos": {
+                    "enabled": draw(st.booleans()),
+                    "client_name": draw(st.text()),
+                    "conf": draw(st.text()),
+                    "keytab": draw(st.text()),
+                    "service_name": draw(st.text()),
+                },
                 "brokerAddresses": draw(st.text()),
                 "enabled": draw(st.booleans()),
                 "name": draw(st.text()),
