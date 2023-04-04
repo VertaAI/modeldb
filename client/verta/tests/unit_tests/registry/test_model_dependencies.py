@@ -11,6 +11,7 @@ def test_class_functions(dependency_testing_model) -> None:
     """
     expected_func_names = [
         "__init__",
+        "batch_predict",
         "make_dataframe",
         "make_message",
         "make_timeout",
