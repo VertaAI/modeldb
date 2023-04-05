@@ -27,8 +27,8 @@ class KafkaSettings(object):
     error_topic : str
         The error topic for an endpoint to write errors to.
     cluster_config_id: str, optional
-        The ID of the current kafka configuration.  Fetched from the
-        current Kafka configuration by default.
+        The ID of the current Kafka configuration.  Fetched from the
+        current config by default.
 
     Examples
     --------
