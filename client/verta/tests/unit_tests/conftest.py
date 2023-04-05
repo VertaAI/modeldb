@@ -54,4 +54,4 @@ def mocked_responses():
 @pytest.fixture(scope="session")
 def mock_registered_model_version(mock_conn, mock_config):
     Message = _RegistryService.RegisteredModel
-    return RegisteredModelVersion(mock_conn, mock_config, Message(id=654))
+    return RegisteredModelVersion(mock_conn, mock_config, Message(id=555))

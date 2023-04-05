@@ -25,6 +25,10 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
 VERTA_CLASS: str = "verta.endpoint.Endpoint"
 WORKSPACE_ID: int = 456
 DEPLOYMENT_ID: int = 123
+STAGE_ID: int = 654
+BUILD_ID = 321
+KAFKA_CONFIG_ID: int = 789
+
 
 # TODO: Generate responses dynamically from swagger to ensure ongoing consistency with back-end API schemas
 # Expected response from the _get_json_by_id method as of 2022-10-24
@@ -150,18 +154,18 @@ def test_kafka_cluster_config_id_default(
 
     with mocked_responses as _responses:
         # Mock all HTTP requests involved
-        _responses.get(url=stages_url, status=200, json={"id": 654})
-        _responses.get(url=stages_url + "/654", status=200, json={"id": 654})
-        _responses.post(url=stages_url, status=200, json={"id": 654})
-        _responses.put(url=stages_url + "/654/update", status=200, json={"id": 654})
+        _responses.get(url=stages_url, status=200, json={"id": STAGE_ID})
+        _responses.get(url=stages_url + f"/{STAGE_ID}", status=200, json={"id": STAGE_ID})
+        _responses.post(url=stages_url, status=200, json={"id": STAGE_ID})
+        _responses.put(url=stages_url + f"/{STAGE_ID}/update", status=200, json={"id": STAGE_ID})
         _responses.get(url=get_configs_url, status=200, json=kafka_configs_response)
         _responses.put(
             url=put_config_url,
             status=200,
-            json={"update_request": {"cluster_config_id": 987}},
+            json={"update_request": {"cluster_config_id": KAFKA_CONFIG_ID}},
         )
         _responses.post(
-            url=builds_url, status=200, json={"id": 321, "status": "succeeded"}
+            url=builds_url, status=200, json={"id": BUILD_ID, "status": "succeeded"}
         )
 
         mock_endpoint.update(
@@ -187,22 +191,22 @@ def test_kafka_cluster_config_id_value(
     stages_url = (
         f"{deployment_url}/workspace/{WORKSPACE_ID}/endpoints/{DEPLOYMENT_ID}/stages"
     )
-    put_config_url = f"{deployment_url}/stages/432/kafka"
+    put_config_url = f"{deployment_url}/stages/{STAGE_ID}/kafka"
     builds_url = f"{deployment_url}/workspace/{WORKSPACE_ID}/builds"
 
     with mocked_responses as _responses:
         # Mock all HTTP requests involved
-        _responses.get(url=stages_url, status=200, json={"stages": [{"id": 432}]})
+        _responses.get(url=stages_url, status=200, json={"stages": [{"id": STAGE_ID}]})
         _responses.put(
             url=put_config_url,
             status=200,
-            json={"update_request": {"cluster_config_id": 987}},
+            json={"update_request": {"cluster_config_id": KAFKA_CONFIG_ID}},
         )
         _responses.post(
-            url=builds_url, status=200, json={"id": 876, "status": "succeeded"}
+            url=builds_url, status=200, json={"id": BUILD_ID, "status": "succeeded"}
         )
-        _responses.put(url=stages_url + "/432/update", status=200, json={"id": 432})
-        _responses.get(url=stages_url + "/432", status=200, json={"id": 432})
+        _responses.put(url=stages_url + f"/{STAGE_ID}/update", status=200, json={"id": STAGE_ID})
+        _responses.get(url=stages_url + f"/{STAGE_ID}", status=200, json={"id": STAGE_ID})
         mock_endpoint.update(
             mock_registered_model_version, kafka_settings=kafka_settings
         )
