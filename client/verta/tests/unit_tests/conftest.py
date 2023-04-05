@@ -19,7 +19,7 @@ from verta.registry.entities import RegisteredModelVersion
 def mock_client(mock_conn) -> Client:
     """Return a mocked object of the Client class for use in tests"""
     # with patch.dict(os.environ, {'VERTA_EMAIL': 'test_email@verta.ai', 'VERTA_DEV_KEY':'123test1232dev1232key123'}):
-    client = Client(ignore_conn_err=True, _connect=False)
+    client = Client(_connect=False)
     client._conn = mock_conn
     return client
 
