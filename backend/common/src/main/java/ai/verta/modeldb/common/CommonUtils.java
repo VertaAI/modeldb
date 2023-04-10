@@ -78,7 +78,15 @@ public class CommonUtils {
   public static void scheduleTask(
       TimerTask task, long initialDelay, long frequency, TimeUnit timeUnit) {
     // scheduling the timer instance
-    ScheduledExecutorService executor = Executors.newSingleThreadScheduledExecutor();
+    ScheduledExecutorService executor =
+            Executors.newSingleThreadScheduledExecutor(
+                    r -> {
+                      Thread t = new Thread(r);
+                      t.setName(task.getClass().getSimpleName());
+                      t.setDaemon(true);
+                      return t;
+                    });
+
     executor.scheduleAtFixedRate(task, initialDelay, frequency, timeUnit);
   }
 
