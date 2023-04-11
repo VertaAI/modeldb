@@ -396,9 +396,7 @@ public class RepositoryTest extends ModeldbTestSetup {
                             .build())
                     .build())
             .setRepository(
-                getByNameResult
-                    .getRepository()
-                    .toBuilder()
+                getByNameResult.getRepository().toBuilder()
                     .setName("Repo-" + new Date().getTime())
                     .build())
             .build();
@@ -461,9 +459,7 @@ public class RepositoryTest extends ModeldbTestSetup {
                             .build())
                     .build())
             .setRepository(
-                getByNameResult
-                    .getRepository()
-                    .toBuilder()
+                getByNameResult.getRepository().toBuilder()
                     .setName(repository.getName())
                     .setDescription(description)
                     .build())

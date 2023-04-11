@@ -344,8 +344,7 @@ public class IntegrationTest extends ModeldbTestSetup {
       GetProjects getProjects = GetProjects.newBuilder().build();
       GetProjects.Response getProjectResponse = projectServiceStub.getProjects(getProjects);
       project =
-          project
-              .toBuilder()
+          project.toBuilder()
               .setDateUpdated(getProjectResponse.getProjectsList().get(0).getDateUpdated())
               .build();
       assertEquals(
@@ -361,8 +360,7 @@ public class IntegrationTest extends ModeldbTestSetup {
       GetExperimentById.Response getExperimentResponse =
           experimentServiceStub.getExperimentById(getExperimentRequest);
       experiment =
-          experiment
-              .toBuilder()
+          experiment.toBuilder()
               .setDateUpdated(getExperimentResponse.getExperiment().getDateUpdated())
               .build();
       assertEquals(

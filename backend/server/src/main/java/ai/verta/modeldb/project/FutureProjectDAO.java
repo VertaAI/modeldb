@@ -998,8 +998,7 @@ public class FutureProjectDAO {
                             .bind("dateUpdated", now)
                             .execute();
                       }
-                      return project
-                          .toBuilder()
+                      return project.toBuilder()
                           .setDateUpdated(now)
                           .setDescription(request.getDescription())
                           .setVersionNumber(project.getVersionNumber() + 1L)

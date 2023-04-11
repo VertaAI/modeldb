@@ -485,8 +485,7 @@ public class VersionInputHandler {
                 if (entryMap.containsKey(entry.getKey())) {
                   var versioningEntry = entryMap.get(entry.getKey());
                   versioningEntry =
-                      versioningEntry
-                          .toBuilder()
+                      versioningEntry.toBuilder()
                           .putAllKeyLocationMap(entry.getValue().getKeyLocationMapMap())
                           .build();
                   entryMap.put(entry.getKey(), versioningEntry);

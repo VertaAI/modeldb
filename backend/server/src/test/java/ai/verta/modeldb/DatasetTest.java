@@ -128,8 +128,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A00")
@@ -157,8 +156,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.31).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A1")
@@ -186,8 +184,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .build();
@@ -212,8 +209,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.001212).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A5")

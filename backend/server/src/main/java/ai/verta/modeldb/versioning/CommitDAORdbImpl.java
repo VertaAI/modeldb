@@ -143,8 +143,7 @@ public class CommitDAORdbImpl implements CommitDAO {
             false,
             RepositoryEnums.RepositoryTypeEnum.DATASET);
     datasetVersion =
-        datasetVersion
-            .toBuilder()
+        datasetVersion.toBuilder()
             .setParentId(getBranchResponse.getCommit().getCommitSha())
             .build();
 

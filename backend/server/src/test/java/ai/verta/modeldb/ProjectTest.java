@@ -184,8 +184,7 @@ public class ProjectTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
+        createExperimentRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -262,8 +261,7 @@ public class ProjectTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(9).build())
             .build();
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setCodeVersion("4.0")
             .addMetrics(metric1)
             .addMetrics(metric2)
@@ -1862,8 +1860,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 testUser2.getVertaInfo().getUsername(),
                 Optional.empty());
         createProjectRequest =
-            createProjectRequest
-                .toBuilder()
+            createProjectRequest.toBuilder()
                 .setWorkspaceName(organizationId + "/" + testUserWorkspace.getName())
                 .build();
       }

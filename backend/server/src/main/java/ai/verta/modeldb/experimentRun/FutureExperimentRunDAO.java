@@ -1398,8 +1398,7 @@ public class FutureExperimentRunDAO {
                         this::getEntityPermissionBasedOnResourceTypes)
                     .thenApply(
                         privilegedDatasets ->
-                            request
-                                .toBuilder()
+                            request.toBuilder()
                                 .clearDatasets()
                                 .addAllDatasets(privilegedDatasets)
                                 .build(),
