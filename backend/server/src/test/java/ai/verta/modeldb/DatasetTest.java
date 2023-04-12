@@ -13,7 +13,7 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -1570,7 +1570,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1615,7 +1615,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
 
       logDatasetRequest =
@@ -1831,7 +1831,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1870,7 +1870,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
 
       logDatasetRequest =

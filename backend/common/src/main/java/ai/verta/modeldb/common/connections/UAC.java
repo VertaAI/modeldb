@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.connections;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.config.Config;
@@ -86,9 +85,7 @@ public class UAC extends Connection {
     ManagedChannel authServiceChannel;
     if (host != null) {
       authServiceChannel =
-          ManagedChannelBuilder.forTarget(host + CommonConstants.STRING_COLON + port)
-              .usePlaintext()
-              .build();
+          ManagedChannelBuilder.forTarget(host + ":" + port).usePlaintext().build();
     } else {
       throw new UnavailableException(
           "Host OR Port not found for contacting authentication service");

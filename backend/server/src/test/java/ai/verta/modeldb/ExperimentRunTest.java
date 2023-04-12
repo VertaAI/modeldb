@@ -15,7 +15,7 @@ import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.GetExperimentRunById.Response;
-import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -463,7 +463,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -475,7 +475,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("png")
             .build());
 
@@ -489,7 +489,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("pkl")
             .build());
     datasets.add(
@@ -501,7 +501,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("json")
             .build());
 
@@ -5142,7 +5142,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .build();
@@ -5197,7 +5197,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .setOverwrite(true)
@@ -5259,7 +5259,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .build();
@@ -8041,7 +8041,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
       artifacts.add(artifact1);
       artifactMap.put(artifact1.getKey(), artifact1);
@@ -8055,7 +8055,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
       artifacts.add(artifact2);
       artifactMap.put(artifact2.getKey(), artifact2);
