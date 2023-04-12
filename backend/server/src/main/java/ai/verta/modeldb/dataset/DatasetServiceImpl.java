@@ -433,9 +433,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
       var updatedDataset =
-          getDatasetResponse
-              .getDataset()
-              .toBuilder()
+          getDatasetResponse.getDataset().toBuilder()
               .setDescription(request.getDescription())
               .build();
       var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();
@@ -600,9 +598,7 @@ public class DatasetServiceImpl extends DatasetServiceImplBase {
 
       var getDatasetResponse = repositoryDAO.getDatasetById(metadataDAO, request.getId());
       var updatedDataset =
-          getDatasetResponse
-              .getDataset()
-              .toBuilder()
+          getDatasetResponse.getDataset().toBuilder()
               .addAllAttributes(request.getAttributesList())
               .build();
       var userInfo = uacApisUtil.getCurrentLoginUserInfo().blockAndGet();

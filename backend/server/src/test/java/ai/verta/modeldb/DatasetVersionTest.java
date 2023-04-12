@@ -248,8 +248,7 @@ public class DatasetVersionTest extends ModeldbTestSetup {
 
     createDatasetVersionRequest = getDatasetVersionRequest(dataset.getId());
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
+        createDatasetVersionRequest.toBuilder()
             .setDatasetBlob(CommitTest.getDatasetBlobFromPath("datasetVersion").getDataset())
             .build();
     createDatasetVersionResponse =
