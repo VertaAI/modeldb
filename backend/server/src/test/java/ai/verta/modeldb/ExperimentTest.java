@@ -11,7 +11,7 @@ import ai.verta.common.CodeVersion;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.uac.DeleteRoleBindings;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -205,7 +205,7 @@ public class ExperimentTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -217,7 +217,7 @@ public class ExperimentTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
 
     return CreateExperiment.newBuilder()
@@ -1545,7 +1545,7 @@ public class ExperimentTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .build();
@@ -1602,7 +1602,7 @@ public class ExperimentTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .build();

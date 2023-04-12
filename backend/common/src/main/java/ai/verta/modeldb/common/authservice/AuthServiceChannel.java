@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.authservice;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.connections.Connection;
@@ -41,10 +40,7 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
     int port = config.getAuthService().getPort();
     LOGGER.trace(CommonMessages.HOST_PORT_INFO_STR, host, port);
     if (host != null && port != 0) { // AuthService not available.
-      authChannel =
-          ManagedChannelBuilder.forTarget(host + CommonConstants.STRING_COLON + port)
-              .usePlaintext()
-              .build();
+      authChannel = ManagedChannelBuilder.forTarget(host + ":" + port).usePlaintext().build();
 
       this.serviceUserEmail = config.getService_user().getEmail();
       this.serviceUserDevKey = config.getService_user().getDevKey();

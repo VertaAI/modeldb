@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.handlers;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
@@ -17,11 +16,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public abstract class TagsHandlerBase<T> {
-  private static final Logger LOGGER = LogManager.getLogger(TagsHandlerBase.class);
   protected static final String ENTITY_ID_QUERY_PARAM = "entity_id";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
 
@@ -42,12 +38,9 @@ public abstract class TagsHandlerBase<T> {
       if (tag.isEmpty()) {
         var errorMessage = "Invalid tag found, Tag shouldn't be empty";
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
-      } else if (tag.length() > CommonConstants.TAG_LENGTH) {
+      } else if (tag.length() > 40) {
         String errorMessage =
-            "Tag name can not be more than "
-                + CommonConstants.TAG_LENGTH
-                + " characters. Limit exceeded tag is: "
-                + tag;
+            "Tag name can not be more than " + 40 + " characters. Limit exceeded tag is: " + tag;
         throw new ModelDBException(errorMessage, Code.INVALID_ARGUMENT);
       }
     }

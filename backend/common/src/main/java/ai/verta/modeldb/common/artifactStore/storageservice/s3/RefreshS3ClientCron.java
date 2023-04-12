@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicSessionCredentials;
@@ -96,14 +95,14 @@ public class RefreshS3ClientCron implements Runnable {
           WebIdentityTokenCredentialsProvider.builder()
               .webIdentityTokenFile(
                   CommonUtils.appendOptionalTelepresencePath(
-                      System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))
+                      System.getenv(S3Client.AWS_WEB_IDENTITY_TOKEN_FILE)))
               .build());
     }
     return stsClientBuilder.build();
   }
 
   private AssumeRoleWithWebIdentityRequest getCredentialFromWebIdentity() throws IOException {
-    String roleArn = System.getenv(CommonConstants.AWS_ROLE_ARN);
+    String roleArn = System.getenv(S3Client.AWS_ROLE_ARN);
     String token = getWebIdentityToken();
 
     // Obtain credentials for the IAM role. Note that you cannot assume the role of
@@ -122,6 +121,6 @@ public class RefreshS3ClientCron implements Runnable {
         Files.readAllBytes(
             Paths.get(
                 CommonUtils.appendOptionalTelepresencePath(
-                    System.getenv(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)))));
+                    System.getenv(S3Client.AWS_WEB_IDENTITY_TOKEN_FILE)))));
   }
 }

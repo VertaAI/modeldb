@@ -4,6 +4,9 @@ import lombok.Value;
 
 @Value
 public class Migration implements Comparable<Migration> {
+  public static final String ENABLE_MIGRATIONS_ENV_VAR = "LIQUIBASE_MIGRATION";
+  public static final String RUN_MIGRATIONS_SEPARATELY = "RUN_LIQUIBASE_SEPARATE";
+
   String filename;
 
   @Override
