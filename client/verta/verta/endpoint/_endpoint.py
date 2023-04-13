@@ -509,8 +509,15 @@ class Endpoint(object):
                 " not {}".format(type(kafka_settings))
             )
         if kafka_settings._cluster_config_id is None:
-            config = kafka.list_kafka_configurations(self._conn)[0]
-            kafka_settings._cluster_config_id = config.get("id", None) if config else None
+            configs = kafka.list_kafka_configurations(self._conn)
+            if not configs:
+                raise RuntimeError("no valid Kafka configuration found.")
+            config_id = configs[0].get("id", None)
+            if config_id is None:
+                raise RuntimeError(
+                    "Kafka configuration is missing the required cluster_configuration_id."
+                )
+            kafka_settings._cluster_config_id = config_id
 
         url = "{}://{}/api/v1/deployment/stages/{}/kafka".format(
             self._conn.scheme,
