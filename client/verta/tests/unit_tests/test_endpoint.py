@@ -154,9 +154,8 @@ def test_kafka_cluster_config_id_default(
 
     with mocked_responses as _responses:
         # Mock all HTTP requests involved
-        _responses.get(url=stages_url, status=200, json={"id": STAGE_ID})
+        _responses.get(url=stages_url, status=200, json={"stages": [{"id": STAGE_ID}]})
         _responses.get(url=stages_url + f"/{STAGE_ID}", status=200, json={"id": STAGE_ID})
-        _responses.post(url=stages_url, status=200, json={"id": STAGE_ID})
         _responses.put(url=stages_url + f"/{STAGE_ID}/update", status=200, json={"id": STAGE_ID})
         _responses.get(url=get_configs_url, status=200, json=kafka_configs_response)
         _responses.put(
