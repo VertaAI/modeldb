@@ -209,3 +209,67 @@ def test_kafka_cluster_config_id_value(
         mock_endpoint.update(
             mock_registered_model_version, kafka_settings=kafka_settings
         )
+
+
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(
+    kafka_settings=mock_kafka_settings(),
+    kafka_configs_response=mock_kafka_configs_response(),
+)
+def test_kafka_config_missing_config_id_exception(
+    kafka_settings,
+    kafka_configs_response,
+    mock_endpoint,
+    mock_conn,
+    mocked_responses,
+    mock_registered_model_version,
+) -> None:
+    """In the unlikely evert the ID of a found Kafka config is missing from the
+    backend response, the expected exception is raised.
+    """
+    kafka_configs_response["configurations"][0].pop("id")
+    deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
+    stages_url = (
+        f"{deployment_url}/workspace/{WORKSPACE_ID}/endpoints/{DEPLOYMENT_ID}/stages"
+    )
+    get_configs_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/uac-proxy/system_admin/listKafkaConfiguration"
+
+    with mocked_responses as _responses:
+        # Mock all HTTP requests before bad config is encountered
+        _responses.get(url=stages_url, status=200, json={"stages": [{"id": STAGE_ID}]})
+        _responses.get(url=get_configs_url, status=200, json=kafka_configs_response)
+        with pytest.raises(RuntimeError) as err:
+            mock_endpoint.update(
+                mock_registered_model_version, kafka_settings=kafka_settings
+            )
+        assert (
+            str(err.value)
+            == "Kafka configuration is missing the required cluster_configuration_id."
+        )
+
+
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(kafka_settings=mock_kafka_settings())
+def test_no_kafka_configs_found_exception(
+    kafka_settings,
+    mock_endpoint,
+    mock_conn,
+    mocked_responses,
+    mock_registered_model_version,
+) -> None:
+    """If no valid Kafka configurations are found, the expected exception is raised."""
+    deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
+    stages_url = (
+        f"{deployment_url}/workspace/{WORKSPACE_ID}/endpoints/{DEPLOYMENT_ID}/stages"
+    )
+    get_configs_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/uac-proxy/system_admin/listKafkaConfiguration"
+
+    with mocked_responses as _responses:
+        # Mock all HTTP requests before lack of Kafka configs is encountered
+        _responses.get(url=stages_url, status=200, json={"stages": [{"id": STAGE_ID}]})
+        _responses.get(url=get_configs_url, status=200, json={"configurations": []})
+        with pytest.raises(RuntimeError) as err:
+            mock_endpoint.update(
+                mock_registered_model_version, kafka_settings=kafka_settings
+            )
+        assert str(err.value) == "no valid Kafka configuration found."
