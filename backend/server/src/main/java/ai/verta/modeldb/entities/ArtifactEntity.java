@@ -2,7 +2,7 @@ package ai.verta.modeldb.entities;
 
 import ai.verta.common.Artifact;
 import ai.verta.modeldb.App;
-import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import java.io.Serializable;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -48,7 +48,8 @@ public class ArtifactEntity implements Serializable {
     }
 
     this.field_type = fieldType;
-    var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+    var uploadCompleted =
+        !artifactStoreConfig.getArtifactStoreType().equals(ArtifactStoreConfig.S3_TYPE_STORE);
     if (artifact.getUploadCompleted()) {
       uploadCompleted = true;
     }

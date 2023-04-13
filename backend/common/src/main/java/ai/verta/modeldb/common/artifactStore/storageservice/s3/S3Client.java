@@ -1,6 +1,5 @@
 package ai.verta.modeldb.common.artifactStore.storageservice.s3;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.config.S3Config;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -24,6 +23,9 @@ import org.apache.logging.log4j.Logger;
 // We use a reference counter to keep track of when we have to shutdown a previous client that
 // should not be used anymore.
 public class S3Client {
+  // AWS Releated Constants
+  public static final String AWS_ROLE_ARN = "AWS_ROLE_ARN";
+  public static final String AWS_WEB_IDENTITY_TOKEN_FILE = "AWS_WEB_IDENTITY_TOKEN_FILE";
   private static final Logger LOGGER = LogManager.getLogger(S3Service.class);
 
   private final String bucketName;
@@ -50,8 +52,8 @@ public class S3Client {
         LOGGER.debug("minio client");
         initializeMinioClient(cloudAccessKey, cloudSecretKey, awsRegion, minioEndpoint);
       }
-    } else if (CommonUtils.isEnvSet(CommonConstants.AWS_ROLE_ARN)
-        && CommonUtils.isEnvSet(CommonConstants.AWS_WEB_IDENTITY_TOKEN_FILE)) {
+    } else if (CommonUtils.isEnvSet(AWS_ROLE_ARN)
+        && CommonUtils.isEnvSet(AWS_WEB_IDENTITY_TOKEN_FILE)) {
       LOGGER.debug("temporary token based s3 client");
       initializeWithWebIdentity(awsRegion);
     } else {

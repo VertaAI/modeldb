@@ -1,6 +1,6 @@
 package ai.verta.modeldb.common.configuration;
 
-import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.db.migration.Migration;
 import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -14,7 +14,7 @@ public class RunLiquibaseSeparately implements Condition {
   private boolean liquibaseRunSeparately() {
     var liquibaseRunSeparately =
         Boolean.parseBoolean(
-            Optional.ofNullable(System.getenv(CommonConstants.RUN_LIQUIBASE_SEPARATE))
+            Optional.ofNullable(System.getenv(Migration.RUN_MIGRATIONS_SEPARATELY))
                 .orElse("false"));
     LOGGER.info("RUN_LIQUIBASE_SEPARATE: {}", liquibaseRunSeparately);
     return liquibaseRunSeparately;

@@ -122,8 +122,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createProjectRequest =
-        createProjectRequest
-            .toBuilder()
+        createProjectRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -151,8 +150,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.31).build())
             .build();
     createProjectRequest =
-        createProjectRequest
-            .toBuilder()
+        createProjectRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -180,8 +178,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
             .build();
     createProjectRequest =
-        createProjectRequest
-            .toBuilder()
+        createProjectRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -214,8 +211,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(1.1).build())
             .build();
     createProjectRequest =
-        createProjectRequest
-            .toBuilder()
+        createProjectRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addAttributes(attribute3)
@@ -273,8 +269,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
+        createExperimentRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -304,8 +299,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.31).build())
             .build();
     createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
+        createExperimentRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -335,8 +329,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
             .build();
     createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
+        createExperimentRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -366,8 +359,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.001212).build())
             .build();
     createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
+        createExperimentRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_5")
@@ -408,8 +400,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(9).build())
             .build();
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setCodeVersion("4.0")
             .addMetrics(metric1)
             .addMetrics(metric2)
@@ -443,8 +434,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(7).build())
             .build();
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setCodeVersion("3.0")
             .addMetrics(metric1)
             .addMetrics(metric2)
@@ -478,8 +468,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(4.55).build())
             .build();
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setCodeVersion("2.0")
             .addMetrics(metric1)
             .addMetrics(metric2)
@@ -513,8 +502,7 @@ public class FindProjectEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(2.545).build())
             .build();
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setCodeVersion("1.0")
             .addMetrics(metric1)
             .addMetrics(metric2)

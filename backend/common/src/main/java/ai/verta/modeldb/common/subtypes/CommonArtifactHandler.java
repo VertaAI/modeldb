@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.subtypes;
 
 import ai.verta.common.Artifact;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -129,7 +128,8 @@ public abstract class CommonArtifactHandler<T> {
 
     List<Artifact> pathUpdatedArtifacts = new ArrayList<>();
     for (var artifact : artifacts) {
-      var uploadCompleted = !artifactStoreConfig.getArtifactStoreType().equals(CommonConstants.S3);
+      var uploadCompleted =
+          !artifactStoreConfig.getArtifactStoreType().equals(ArtifactStoreConfig.S3_TYPE_STORE);
       if (artifact.getUploadCompleted()) {
         uploadCompleted = true;
       }

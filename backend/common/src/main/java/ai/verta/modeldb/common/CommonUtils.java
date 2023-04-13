@@ -200,7 +200,7 @@ public class CommonUtils {
         status =
             Status.newBuilder()
                 .setCode(Code.INTERNAL_VALUE)
-                .setMessage(CommonConstants.INTERNAL_ERROR)
+                .setMessage("Internal server error")
                 .build();
       }
       var n = 0;
@@ -418,12 +418,11 @@ public class CommonUtils {
   }
 
   public static void cleanUpPIDFile() {
-    var path =
-        System.getProperty(CommonConstants.USER_DIR) + "/" + CommonConstants.BACKEND_PID_FILENAME;
+    var path = System.getProperty("user.dir") + "/" + "verta-backend.pid";
     File pidFile = new File(path);
     if (pidFile.exists()) {
       pidFile.deleteOnExit();
-      LOGGER.trace(CommonConstants.BACKEND_PID_FILENAME + " file is deleted: {}", pidFile.exists());
+      LOGGER.trace("verta-backend.pid" + " file is deleted: {}", pidFile.exists());
     }
   }
 }

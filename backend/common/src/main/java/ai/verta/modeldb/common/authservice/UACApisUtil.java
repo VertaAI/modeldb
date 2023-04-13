@@ -4,7 +4,6 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
-import ai.verta.modeldb.common.CommonConstants.UserIdentifier;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
@@ -433,5 +432,11 @@ public class UACApisUtil {
     } catch (Exception ex) {
       throw new ModelDBException(ex);
     }
+  }
+
+  public enum UserIdentifier {
+    VERTA_ID,
+    EMAIL_ID,
+    USER_NAME
   }
 }

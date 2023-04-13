@@ -15,7 +15,7 @@ import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.common.TernaryEnum.Ternary;
 import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.GetExperimentRunById.Response;
-import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.metadata.GenerateRandomNameRequest;
 import ai.verta.modeldb.utils.ModelDBUtils;
@@ -263,8 +263,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
+        createExperimentRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -312,8 +311,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(7).build())
             .build();
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .addMetrics(metric1)
             .addMetrics(metric2)
             .addHyperparameters(hyperparameter1)
@@ -349,8 +347,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(4.55).build())
             .build();
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .addMetrics(metric1)
             .addMetrics(metric2)
             .addHyperparameters(hyperparameter1)
@@ -466,7 +463,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -478,7 +475,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("png")
             .build());
 
@@ -492,7 +489,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("pkl")
             .build());
     datasets.add(
@@ -504,7 +501,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("json")
             .build());
 
@@ -631,8 +628,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                     IsSelfAllowed.Response.newBuilder().setAllowed(true).build()));
       }
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setProjectId(project.getId())
               .setExperimentId("xyz")
               .build();
@@ -647,8 +643,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     try {
       String tag52 = "Human Activity Recognition using Smartphone Dataset";
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setProjectId(project.getId())
               .setExperimentId(experiment.getId())
               .addTags(tag52)
@@ -3976,8 +3971,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(9).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .addMetrics(metric1)
               .addMetrics(metric2)
               .addHyperparameters(hyperparameter1)
@@ -4011,8 +4005,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(7).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .addMetrics(metric1)
               .addMetrics(metric2)
               .addHyperparameters(hyperparameter1)
@@ -4046,8 +4039,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(4.55).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .addMetrics(metric1)
               .addMetrics(metric2)
               .addHyperparameters(hyperparameter1)
@@ -4081,8 +4073,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(2.545).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .addMetrics(metric1)
               .addMetrics(metric2)
               .addHyperparameters(hyperparameter1)
@@ -4269,8 +4260,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(9).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setCodeVersion("1")
               .addMetrics(metric1)
               .addMetrics(metric2)
@@ -4305,8 +4295,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(7).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setCodeVersion("2")
               .addMetrics(metric1)
               .addMetrics(metric2)
@@ -4341,8 +4330,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(4.55).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setCodeVersion("3")
               .addMetrics(metric1)
               .addMetrics(metric2)
@@ -4377,8 +4365,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(2.545).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setCodeVersion("4")
               .addMetrics(metric1)
               .addMetrics(metric2)
@@ -4890,8 +4877,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(7).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setParentId(parentExperimentRun.getId())
               .addMetrics(metric1)
               .addMetrics(metric2)
@@ -4932,8 +4918,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setNumberValue(4.55).build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setParentId(parentExperimentRun.getId())
               .addMetrics(metric1)
               .addMetrics(metric2)
@@ -5157,7 +5142,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .build();
@@ -5200,8 +5185,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     }
 
     logExperimentRunCodeVersionRequest =
-        logExperimentRunCodeVersionRequest
-            .toBuilder()
+        logExperimentRunCodeVersionRequest.toBuilder()
             .setCodeVersion(
                 CodeVersion.newBuilder()
                     .setCodeArchive(
@@ -5213,7 +5197,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .setOverwrite(true)
@@ -5275,7 +5259,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .build();
@@ -5565,8 +5549,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     locationMap.put(
         "location-2", Location.newBuilder().addLocation("dataset").addLocation("train").build());
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(repoId)
@@ -5634,8 +5617,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
     locationMap.put(
         "location-2", Location.newBuilder().addLocation("dataset").addLocation("train").build());
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(123456)
@@ -5651,8 +5633,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setName("test-" + Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
@@ -5669,8 +5650,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
     try {
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setName("test-" + Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
@@ -5946,8 +5926,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       Map<String, Location> locationMap = new HashMap<>();
       locationMap.put("location-1", location1);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setDateCreated(Calendar.getInstance().getTimeInMillis())
               .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setVersionedInputs(
@@ -5965,8 +5944,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
       locationMap.put("location-2", location2);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setDateCreated(Calendar.getInstance().getTimeInMillis())
               .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-2-" + new Date().getTime())
@@ -5983,8 +5961,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       LOGGER.info("ExperimentRun2 created successfully");
 
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setDateCreated(Calendar.getInstance().getTimeInMillis())
               .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-3-" + new Date().getTime())
@@ -6171,8 +6148,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       Map<String, Location> locationMap = new HashMap<>();
       locationMap.put("location-2", location1);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -6187,15 +6163,12 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       LOGGER.info("ExperimentRun1 created successfully");
 
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setDateCreated(Calendar.getInstance().getTimeInMillis())
               .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-2")
               .setVersionedInputs(
-                  createExperimentRunRequest
-                      .getVersionedInputs()
-                      .toBuilder()
+                  createExperimentRunRequest.getVersionedInputs().toBuilder()
                       .putKeyLocationMap("XYZ", location2)
                       .build())
               .build();
@@ -6206,15 +6179,12 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       LOGGER.info("ExperimentRun2 created successfully");
 
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setDateCreated(Calendar.getInstance().getTimeInMillis())
               .setDateUpdated(Calendar.getInstance().getTimeInMillis())
               .setName("ExperimentRun-3")
               .setVersionedInputs(
-                  createExperimentRunRequest
-                      .getVersionedInputs()
-                      .toBuilder()
+                  createExperimentRunRequest.getVersionedInputs().toBuilder()
                       .putKeyLocationMap("PQR", location3)
                       .build())
               .build();
@@ -6264,13 +6234,10 @@ public class ExperimentRunTest extends ModeldbTestSetup {
 
       Location location4 = Location.newBuilder().addLocation("test-2").build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setName("ExperimentRun-4")
               .setVersionedInputs(
-                  createExperimentRunRequest
-                      .getVersionedInputs()
-                      .toBuilder()
+                  createExperimentRunRequest.getVersionedInputs().toBuilder()
                       .putKeyLocationMap("PQR", location4)
                       .build())
               .build();
@@ -6348,8 +6315,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
         getCreateExperimentRunRequest(
             project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setVersionedInputs(
                 VersioningEntry.newBuilder()
                     .setRepositoryId(repoId)
@@ -6584,8 +6550,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               project.getId(), experiment.getId(), "ExperimentRun-1-" + new Date().getTime());
       KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -6605,8 +6570,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment.getId(), "ExperimentRun-2-" + new Date().getTime());
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -6627,8 +6591,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       Map<String, Location> locationMap2 = new HashMap<>();
       locationMap2.put("location-4", location4);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7002,8 +6965,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
       KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7023,8 +6985,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7045,8 +7006,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       Map<String, Location> locationMap2 = new HashMap<>();
       locationMap2.put("location-4", location4);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7424,8 +7384,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
       KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7445,8 +7404,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7467,8 +7425,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       Map<String, Location> locationMap2 = new HashMap<>();
       locationMap2.put("location-111", test2Location);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7702,8 +7659,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               .setValue(Value.newBuilder().setStringValue("2.5").build())
               .build();
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7724,8 +7680,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment.getId(), "ExperimentRun-" + new Date().getTime());
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -7750,8 +7705,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       Map<String, Location> locationMap2 = new HashMap<>();
       locationMap2.put("location-4", location4);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -8032,8 +7986,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
+        createDatasetVersionRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -8058,8 +8011,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.31).build())
             .build();
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
+        createDatasetVersionRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -8089,7 +8041,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
       artifacts.add(artifact1);
       artifactMap.put(artifact1.getKey(), artifact1);
@@ -8103,7 +8055,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
       artifacts.add(artifact2);
       artifactMap.put(artifact2.getKey(), artifact2);
@@ -8575,8 +8527,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
               project1.getId(), experiment1.getId(), "ExperimentRun-" + new Date().getTime());
       KeyValue hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
-          createExperimentRunRequest
-              .toBuilder()
+          createExperimentRunRequest.toBuilder()
               .setVersionedInputs(
                   VersioningEntry.newBuilder()
                       .setRepositoryId(repoId)
@@ -8599,8 +8550,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           srcExperimentRun.getId(),
           cloneResponse.getRun().getId());
       srcExperimentRun =
-          srcExperimentRun
-              .toBuilder()
+          srcExperimentRun.toBuilder()
               .setId(cloneResponse.getRun().getId())
               .setName(cloneResponse.getRun().getName())
               .setDateCreated(cloneResponse.getRun().getDateCreated())
@@ -8625,8 +8575,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
           srcExperimentRun.getId(),
           cloneResponse.getRun().getId());
       srcExperimentRun =
-          srcExperimentRun
-              .toBuilder()
+          srcExperimentRun.toBuilder()
               .setId(cloneResponse.getRun().getId())
               .setName(cloneExperimentRun.getDestExperimentRunName())
               .setProjectId(cloneResponse.getRun().getProjectId())

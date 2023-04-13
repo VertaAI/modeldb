@@ -28,7 +28,7 @@ public class Migration {
     modelDBHibernateUtil.createOrGetSessionFactory(databaseConfig);
 
     LOGGER.info("Code migration starting");
-    modelDBHibernateUtil.runMigration(databaseConfig, config.getMigrations());
+    modelDBHibernateUtil.runMigration(config.getMigrations());
     LOGGER.info("Code migration done");
 
     if (databaseConfig.getRdbConfiguration().isMssql()) {

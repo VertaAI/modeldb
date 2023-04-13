@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.collaborator;
 
 import ai.verta.common.EntitiesEnum.EntitiesTypes;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.uac.AddCollaboratorRequest.Response.Builder;
 import ai.verta.uac.Entities;
 import com.google.protobuf.GeneratedMessageV3;
@@ -19,7 +18,7 @@ public abstract class CollaboratorBase {
   }
 
   public String getVertaId() {
-    return CommonConstants.EMPTY_STRING;
+    return "";
   }
 
   public abstract String getNameForBinding();

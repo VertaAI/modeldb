@@ -12,8 +12,8 @@ import ai.verta.common.CollaboratorTypeEnum.CollaboratorType;
 import ai.verta.common.KeyValue;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.utils.ModelDBUtils;
 import ai.verta.uac.*;
@@ -184,8 +184,7 @@ public class ProjectTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createExperimentRequest =
-        createExperimentRequest
-            .toBuilder()
+        createExperimentRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("Tag_1")
@@ -228,7 +227,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
     datasets.add(
         Artifact.newBuilder()
@@ -240,7 +239,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
     CreateExperimentRun createExperimentRunRequest =
         getCreateExperimentRunRequest(project.getId(), experiment.getId(), "ExperimentRun_sprt_1");
@@ -262,8 +261,7 @@ public class ProjectTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(9).build())
             .build();
     createExperimentRunRequest =
-        createExperimentRunRequest
-            .toBuilder()
+        createExperimentRunRequest.toBuilder()
             .setCodeVersion("4.0")
             .addMetrics(metric1)
             .addMetrics(metric2)
@@ -362,7 +360,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -374,7 +372,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
 
     return CreateProject.newBuilder()
@@ -469,7 +467,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .build());
     artifactList.add(
         Artifact.newBuilder()
@@ -481,7 +479,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("png")
             .build());
 
@@ -495,7 +493,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("pkl")
             .build());
     datasets.add(
@@ -507,7 +505,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 !testConfig
                     .getArtifactStoreConfig()
                     .getArtifactStoreType()
-                    .equals(CommonConstants.S3))
+                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
             .setFilenameExtension("json")
             .build());
 
@@ -1862,8 +1860,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 testUser2.getVertaInfo().getUsername(),
                 Optional.empty());
         createProjectRequest =
-            createProjectRequest
-                .toBuilder()
+            createProjectRequest.toBuilder()
                 .setWorkspaceName(organizationId + "/" + testUserWorkspace.getName())
                 .build();
       }
@@ -3130,7 +3127,7 @@ public class ProjectTest extends ModeldbTestSetup {
                                   !testConfig
                                       .getArtifactStoreConfig()
                                       .getArtifactStoreType()
-                                      .equals(CommonConstants.S3))
+                                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                               .build())
                       .build())
               .build();
@@ -3204,7 +3201,7 @@ public class ProjectTest extends ModeldbTestSetup {
                                 !testConfig
                                     .getArtifactStoreConfig()
                                     .getArtifactStoreType()
-                                    .equals(CommonConstants.S3))
+                                    .equals(ArtifactStoreConfig.S3_TYPE_STORE))
                             .build())
                     .build())
             .build();

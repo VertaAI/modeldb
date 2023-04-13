@@ -1,6 +1,5 @@
 package ai.verta.modeldb.utils;
 
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonDBUtil;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.config.Config;
@@ -10,17 +9,12 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnavailableException;
 import com.microsoft.sqlserver.jdbc.SQLServerDataSource;
 import io.grpc.health.v1.HealthCheckResponse;
-import java.io.File;
-import java.sql.*;
-import java.util.EnumSet;
-import java.util.Optional;
-import liquibase.exception.LiquibaseException;
-import liquibase.resource.FileSystemResourceAccessor;
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.h2.jdbcx.JdbcDataSource;
 import org.hibernate.SessionFactory;
-import org.hibernate.boot.Metadata;
 import org.hibernate.boot.MetadataSources;
 import org.hibernate.boot.registry.StandardServiceRegistry;
 import org.hibernate.boot.registry.StandardServiceRegistryBuilder;
@@ -29,8 +23,6 @@ import org.hibernate.cfg.Configuration;
 import org.hibernate.engine.jdbc.connections.spi.ConnectionProvider;
 import org.hibernate.exception.JDBCConnectionException;
 import org.hibernate.hikaricp.internal.HikariCPConnectionProvider;
-import org.hibernate.tool.hbm2ddl.SchemaExport;
-import org.hibernate.tool.schema.TargetType;
 import org.mariadb.jdbc.MariaDbDataSource;
 
 public abstract class CommonHibernateUtil extends CommonDBUtil {
@@ -42,7 +34,6 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
   protected DatabaseConfig databaseConfig;
   protected static Class<?>[] entities;
   protected static String liquibaseRootFilePath;
-  // private HibernateStatisticsCollector hibernateStatisticsCollector;
 
   public Connection getConnection() throws SQLException {
     return getSessionFactory()
@@ -69,7 +60,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
       final var connectionProviderClass = HikariCPConnectionProvider.class.getName();
       final var datasourceClass = getDatasourceClass(rdb);
 
-      // Hibernate settings equivalent to hibernate.cfg.xml's properties
+      // Hibernate settings equivalent to hibernate.cfg.xml properties
       final var configuration =
           new Configuration()
               .setProperty("hibernate.hbm2ddl.auto", "validate")
@@ -117,18 +108,6 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
 
       // Create session factory and validate entity
       sessionFactory = metaDataSrc.buildMetadata().buildSessionFactory();
-      // Enable JMX metrics collection from hibernate
-      // FIXME: Identify right way for how to re-initialize hibernateStatisticsCollector
-      /*if (hibernateStatisticsCollector != null) {
-        hibernateStatisticsCollector.add(sessionFactory, "hibernate");
-      } else {
-        hibernateStatisticsCollector = new HibernateStatisticsCollector(sessionFactory, "hibernate").register();
-      }*/
-
-      // Export schema
-      if (CommonConstants.EXPORT_SCHEMA) {
-        exportSchema(metaDataSrc.buildMetadata());
-      }
 
       LOGGER.info(CommonMessages.READY_STATUS, isReady);
       isReady = true;
@@ -137,8 +116,6 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
       LOGGER.warn("CommonHibernateUtil getSessionFactory() getting error : {}", e.getMessage(), e);
       if (registry != null) {
         StandardServiceRegistryBuilder.destroy(registry);
-        // If registry will destroy then session factory also useless and have stale reference of
-        // registry so need to clean it as well.
         sessionFactory = null;
       }
       if (e instanceof InterruptedException) {
@@ -198,21 +175,6 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
     }
   }
 
-  private void exportSchema(Metadata buildMetadata) {
-    String rootPath = System.getProperty(CommonConstants.USER_DIR);
-    rootPath = rootPath + "\\src\\main\\resources\\liquibase\\hibernate-base-db-schema.sql";
-    new SchemaExport()
-        .setDelimiter(";")
-        .setOutputFile(rootPath)
-        .create(EnumSet.of(TargetType.SCRIPT), buildMetadata);
-  }
-
-  public void shutdown() {
-    if (registry != null) {
-      StandardServiceRegistryBuilder.destroy(registry);
-    }
-  }
-
   public boolean ping() {
     if (sessionFactory != null) {
       try (var session = sessionFactory.openSession()) {
@@ -247,14 +209,5 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
 
   public HealthCheckResponse.ServingStatus checkLive() {
     return HealthCheckResponse.ServingStatus.SERVING;
-  }
-
-  public void runLiquibaseMigration(DatabaseConfig config)
-      throws InterruptedException, LiquibaseException, SQLException {
-    runLiquibaseMigration(
-        config,
-        liquibaseRootFilePath,
-        new FileSystemResourceAccessor(new File(System.getProperty(CommonConstants.USER_DIR))),
-        Optional.of("liquibase/reset_filepath_database_change_log_2022_10.json"));
   }
 }

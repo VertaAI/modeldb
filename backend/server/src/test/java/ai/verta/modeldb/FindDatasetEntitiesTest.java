@@ -139,8 +139,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A1")
@@ -169,8 +168,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.31).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A1")
@@ -199,8 +197,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .build();
@@ -226,8 +223,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.001212).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A5")
@@ -267,8 +263,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setStringValue("0.99").build())
             .build();
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
+        createDatasetVersionRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A1")
@@ -292,8 +287,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setStringValue("0.31").build())
             .build();
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
+        createDatasetVersionRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A1")
@@ -318,8 +312,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setStringValue("0.6543210").build())
             .build();
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
+        createDatasetVersionRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A1")
@@ -344,8 +337,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setStringValue("0.001212").build())
             .build();
     createDatasetVersionRequest =
-        createDatasetVersionRequest
-            .toBuilder()
+        createDatasetVersionRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A5")
@@ -537,8 +529,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
         dataset2.getId(),
         response.getDatasetsList().get(0).getId());
     dataset2 =
-        dataset2
-            .toBuilder()
+        dataset2.toBuilder()
             .setTimeUpdated(response.getDatasetsList().get(0).getTimeUpdated())
             .setVersionNumber(response.getDatasetsList().get(0).getVersionNumber())
             .build();
@@ -872,8 +863,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
       Dataset dataset = response.getDatasetsList().get(index);
       if (index == 0) {
         dataset3 =
-            dataset3
-                .toBuilder()
+            dataset3.toBuilder()
                 .setTimeUpdated(dataset.getTimeUpdated())
                 .setVersionNumber(dataset.getVersionNumber())
                 .build();
@@ -882,8 +872,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             "Dataset Id not match with expected dataset Id", dataset3.getId(), dataset.getId());
       } else if (index == 1) {
         dataset2 =
-            dataset2
-                .toBuilder()
+            dataset2.toBuilder()
                 .setTimeUpdated(dataset.getTimeUpdated())
                 .setVersionNumber(dataset.getVersionNumber())
                 .build();
@@ -892,8 +881,7 @@ public class FindDatasetEntitiesTest extends ModeldbTestSetup {
             "Dataset Id not match with expected dataset Id", dataset2.getId(), dataset.getId());
       } else if (index == 2) {
         dataset1 =
-            dataset1
-                .toBuilder()
+            dataset1.toBuilder()
                 .setTimeUpdated(dataset.getTimeUpdated())
                 .setVersionNumber(dataset.getVersionNumber())
                 .build();

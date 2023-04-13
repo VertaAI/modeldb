@@ -23,9 +23,6 @@
         <Logger name="ai.verta.modeldb.utils.MongoToPostgresMigrationUtils" level="TRACE" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" level="TRACE" />
         </Logger>
-        <Logger name="liquibase" level="INFO" additivity="false">
-            <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
-        </Logger>
         <Logger name="org.mongodb.driver" level="INFO" additivity="false">
             <AppenderRef ref="ConsoleJSONAppender" level="INFO" />
         </Logger>

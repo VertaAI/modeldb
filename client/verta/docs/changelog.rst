@@ -37,6 +37,28 @@ Changelog
      (`# <>`__)
 
 
+v0.22.2 (2023-04-04)
+--------------------
+
+New Features
+^^^^^^^^^^^^
+- add :func:`verta.registry.check_model_dependencies`
+  (`#3641 <https://github.com/VertaAI/modeldb/pull/3641>`__,
+  `#3676 <https://github.com/VertaAI/modeldb/pull/3676>`__)
+- add ``check_model_dependencies`` parameter to
+  :meth:`RegisteredModel.create_standard_model() <verta.registry.entities.RegisteredModel.create_standard_model>`
+  (`#3670 <https://github.com/VertaAI/modeldb/pull/3670>`__)
+- add :meth:`DeployedModel.batch_predict() <verta.deployment.DeployedModel.batch_predict>`
+  (`#3645 <https://github.com/VertaAI/modeldb/pull/3645>`__)
+- add :meth:`VertaModelBase.batch_predict() <verta.registry.VertaModelBase.batch_predict>`
+  (`#3673 <https://github.com/VertaAI/modeldb/pull/3673>`__)
+
+Internal Changes
+^^^^^^^^^^^^^^^^
+- remove ``date_updated`` timestamp from :class:`~verta.endpoint.Endpoint`\ s
+  (`#3711 <https://github.com/VertaAI/modeldb/pull/3711>`__)
+
+
 v0.22.1 (2023-03-13)
 --------------------
 

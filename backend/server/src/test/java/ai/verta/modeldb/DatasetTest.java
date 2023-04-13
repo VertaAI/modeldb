@@ -13,7 +13,7 @@ import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum;
 import ai.verta.common.ValueTypeEnum.ValueType;
-import ai.verta.modeldb.common.CommonConstants;
+import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
 import ai.verta.uac.AddCollaboratorRequest;
@@ -128,8 +128,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.99).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A00")
@@ -157,8 +156,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.31).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A1")
@@ -186,8 +184,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.6543210).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .build();
@@ -212,8 +209,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .setValue(Value.newBuilder().setNumberValue(0.001212).build())
             .build();
     createDatasetRequest =
-        createDatasetRequest
-            .toBuilder()
+        createDatasetRequest.toBuilder()
             .addAttributes(attribute1)
             .addAttributes(attribute2)
             .addTags("A5")
@@ -1574,7 +1570,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1619,7 +1615,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
 
       logDatasetRequest =
@@ -1835,7 +1831,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
 
       LogDataset logDatasetRequest =
@@ -1874,7 +1870,7 @@ public class DatasetTest extends ModeldbTestSetup {
                   !testConfig
                       .getArtifactStoreConfig()
                       .getArtifactStoreType()
-                      .equals(CommonConstants.S3))
+                      .equals(ArtifactStoreConfig.S3_TYPE_STORE))
               .build();
 
       logDatasetRequest =

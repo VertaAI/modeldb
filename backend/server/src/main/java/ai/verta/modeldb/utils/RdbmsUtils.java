@@ -5,7 +5,6 @@ import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
 import ai.verta.common.OperatorEnum.Operator;
 import ai.verta.modeldb.*;
 import ai.verta.modeldb.authservice.MDBRoleService;
-import ai.verta.modeldb.common.CommonConstants;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
@@ -2068,7 +2067,7 @@ public class RdbmsUtils {
           new VersioningModeldbEntityMapping(
               versioningEntry.getRepositoryId(),
               versioningEntry.getCommit(),
-              CommonConstants.EMPTY_STRING,
+              "",
               null,
               null,
               null,

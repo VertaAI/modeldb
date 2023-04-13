@@ -17,6 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter(AccessLevel.NONE)
 public class ArtifactStoreConfig {
+  public static final String S3_TYPE_STORE = "S3";
   @JsonProperty private String artifactStoreType;
   @JsonProperty private boolean pickArtifactStoreHostFromConfig = false;
   @JsonProperty private boolean enabled = true;

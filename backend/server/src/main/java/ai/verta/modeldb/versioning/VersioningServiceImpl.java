@@ -132,12 +132,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
     try {
       if (request.getRepository().getName().isEmpty()) {
         request =
-            request
-                .toBuilder()
+            request.toBuilder()
                 .setRepository(
-                    request
-                        .getRepository()
-                        .toBuilder()
+                    request.getRepository().toBuilder()
                         .setName(MetadataServiceImpl.createRandomName()))
                 .build();
       }
@@ -183,12 +180,9 @@ public class VersioningServiceImpl extends VersioningServiceImplBase {
         throw new ModelDBException("Description is empty", Code.INVALID_ARGUMENT);
       } else if (request.getRepository().getName().isEmpty()) {
         request =
-            request
-                .toBuilder()
+            request.toBuilder()
                 .setRepository(
-                    request
-                        .getRepository()
-                        .toBuilder()
+                    request.getRepository().toBuilder()
                         .setName(MetadataServiceImpl.createRandomName()))
                 .build();
       }
