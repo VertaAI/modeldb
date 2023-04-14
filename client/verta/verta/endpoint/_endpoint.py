@@ -511,7 +511,7 @@ class Endpoint(object):
         if kafka_settings._cluster_config_id is None:
             configs = kafka.list_kafka_configurations(self._conn)
             if not configs:
-                raise RuntimeError("no valid Kafka configuration found.")
+                raise RuntimeError("no Kafka configuration found; please ensure that Kafka is configured in Verta")
             config_id = configs[0].get("id", None)
             if config_id is None:
                 raise RuntimeError(
