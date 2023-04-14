@@ -244,7 +244,8 @@ def test_kafka_config_missing_config_id_exception(
             )
         assert (
             str(err.value)
-            == "Kafka configuration is missing the required cluster_configuration_id."
+            == "active Kafka configuration is missing its ID; please notify the Verta"
+            " development team"
         )
 
 
@@ -272,4 +273,8 @@ def test_no_kafka_configs_found_exception(
             mock_endpoint.update(
                 mock_registered_model_version, kafka_settings=kafka_settings
             )
-        assert str(err.value) == "no valid Kafka configuration found."
+        assert (
+            str(err.value)
+            == "no Kafka configuration found; please ensure that Kafka is configured in"
+            " Verta"
+        )
