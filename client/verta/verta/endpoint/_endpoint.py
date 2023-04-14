@@ -515,7 +515,7 @@ class Endpoint(object):
             config_id = configs[0].get("id", None)
             if config_id is None:
                 raise RuntimeError(
-                    "Kafka configuration is missing the required cluster_configuration_id."
+                    "active Kafka configuration is missing its ID; please notify the Verta development team"
                 )
             kafka_settings._cluster_config_id = config_id
 
