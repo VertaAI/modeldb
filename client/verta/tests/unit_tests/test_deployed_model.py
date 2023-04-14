@@ -5,6 +5,7 @@ import os
 import random
 from typing import Any, Dict
 
+import hypothesis
 import pytest
 
 from tests import utils
@@ -515,6 +516,7 @@ def generate_data(draw):
     return out_dict
 
 
+@hypothesis.settings(deadline=None)  # client utilities make DataFrame handling inconsistent
 @given(json_df=generate_data(), batch_size=st.integers(min_value=1, max_value=50))
 def test_batch(json_df, batch_size) -> None:
     """ Test that the batch_predict method works with a variety of inputs. """
