@@ -516,7 +516,7 @@ def generate_data(draw, max_rows=50, max_cols=6):
     return out_dict
 
 
-@hypothesis.settings(deadline=None)  # client utilities make DataFrame handling inconsistent
+@hypothesis.settings(deadline=None)  # client utils make DataFrame handling slow at first
 @given(json_df=generate_data(), batch_size=st.integers(min_value=1, max_value=10))
 def test_batch(json_df, batch_size) -> None:
     """ Test that the batch_predict method works with a variety of inputs. """
