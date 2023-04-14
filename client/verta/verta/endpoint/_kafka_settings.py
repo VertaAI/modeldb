@@ -10,6 +10,11 @@ class KafkaSettings(object):
     For use during :class:`~verta.endpoint.Endpoint` creation or with
     :meth:`Endpoint.update() <verta.endpoint.Endpoint.update>`.
 
+    Search for available Kafka topics with :meth:`Client.get_kafka_topics() <verta.Client.get_kafka_topics>`.
+
+    .. versionchanged:: 0.22.3
+        If ``cluster_config_id`` is not provided, it is fetched from
+        the active Kafka configuration, assuming only one config exists.
     .. versionadded:: 0.19.0
 
     Attributes
@@ -20,8 +25,9 @@ class KafkaSettings(object):
         The output topic for an endpoint to write predictions to.
     error_topic : str
         The error topic for an endpoint to write errors to.
-    cluster_config_id: str
-        The ID of the chosen kafka configuration to use.
+    cluster_config_id: str, optional
+        The ID of the current Kafka configuration.  Fetched from the
+        current config by default.
 
     Examples
     --------
@@ -33,7 +39,6 @@ class KafkaSettings(object):
             input_topic="my_input_data",
             output_topic="my_predictions",
             error_topic="my_endpoint_errors",
-            cluster_config_id="kafka_config_id",
         )
 
         endpoint = client.create_endpoint(path="/my-endpoint", kafka_settings=kafka_settings)
@@ -41,7 +46,7 @@ class KafkaSettings(object):
 
     """
 
-    def __init__(self, input_topic, output_topic, error_topic, cluster_config_id):
+    def __init__(self, input_topic, output_topic, error_topic, cluster_config_id=None):
         if input_topic == output_topic or input_topic == error_topic:
             raise ValueError(
                 "input_topic must not be equal to either the output or error topics"
@@ -50,8 +55,10 @@ class KafkaSettings(object):
         self._input_topic = self._check_non_empty_str("input_topic", input_topic)
         self._output_topic = self._check_non_empty_str("output_topic", output_topic)
         self._error_topic = self._check_non_empty_str("error_topic", error_topic)
-        self._cluster_config_id = self._check_non_empty_str(
-            "cluster_config_id", cluster_config_id
+        self._cluster_config_id = (
+            self._check_non_empty_str("cluster_config_id", cluster_config_id)
+            if cluster_config_id
+            else None
         )
 
     def __eq__(self, other):

@@ -6,32 +6,8 @@ from typing import Any, Dict
 
 from hypothesis import given, HealthCheck, settings, strategies as st
 
+from tests.unit_tests.strategies import mock_kafka_configs_response
 from verta._internal_utils import kafka
-
-
-@st.composite
-def mock_kafka_configs_response(draw) -> Dict[str, Any]:
-    """
-    Provide mocked API result from `api/v1/uac-proxy/system_admin/listKafkaConfiguration`
-    with a single Kafka configuration.
-    """
-    return {
-        "configurations": [
-            {
-                "id": draw(st.integers()),
-                "kerberos": {
-                    "enabled": draw(st.booleans()),
-                    "client_name": draw(st.text()),
-                    "conf": draw(st.text()),
-                    "keytab": draw(st.text()),
-                    "service_name": draw(st.text()),
-                },
-                "brokerAddresses": draw(st.text()),
-                "enabled": draw(st.booleans()),
-                "name": draw(st.text()),
-            }
-        ]
-    }
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])

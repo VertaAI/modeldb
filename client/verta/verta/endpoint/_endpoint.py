@@ -10,7 +10,7 @@ import yaml
 from verta.external import six
 
 from verta.deployment import DeployedModel
-from verta._internal_utils import _utils, arg_handler
+from verta._internal_utils import _utils, arg_handler, kafka
 from verta.tracking.entities import ExperimentRun
 from verta.registry.entities import RegisteredModelVersion
 from verta.visibility import _visibility
@@ -508,6 +508,16 @@ class Endpoint(object):
                 "`kafka_settings` must be of type verta.endpoint.KafkaSettings,"
                 " not {}".format(type(kafka_settings))
             )
+        if kafka_settings._cluster_config_id is None:
+            configs = kafka.list_kafka_configurations(self._conn)
+            if not configs:
+                raise RuntimeError("no Kafka configuration found; please ensure that Kafka is configured in Verta")
+            config_id = configs[0].get("id", None)
+            if config_id is None:
+                raise RuntimeError(
+                    "active Kafka configuration is missing its ID; please notify the Verta development team"
+                )
+            kafka_settings._cluster_config_id = config_id
 
         url = "{}://{}/api/v1/deployment/stages/{}/kafka".format(
             self._conn.scheme,

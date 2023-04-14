@@ -3,13 +3,14 @@
 """Hypothesis composite strategies for use in client unit tests."""
 
 from string import ascii_letters, ascii_lowercase, hexdigits
-from typing import List
+from typing import Any, Dict
 
 import hypothesis.strategies as st
 
 from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS
 from verta._protos.public.common import CommonService_pb2
 from verta._protos.public.modeldb.versioning import Code_pb2, Dataset_pb2
+from verta.endpoint import KafkaSettings
 
 
 @st.composite
@@ -21,7 +22,7 @@ def uint64(draw) -> int:
 @st.composite
 def int64(draw) -> int:
     """Generate an integer within the range of an int64."""
-    return draw(st.integers(min_value=-2**63, max_value=2**63 - 1))
+    return draw(st.integers(min_value=-(2**63), max_value=2**63 - 1))
 
 
 @st.composite
@@ -32,14 +33,14 @@ def artifact_proto(draw) -> CommonService_pb2.Artifact:
 
     return CommonService_pb2.Artifact(
         key=key,
-        path= f"{draw(st.text(ascii_letters + '/'))}/{key}.{filename_extension}",
+        path=f"{draw(st.text(ascii_letters + '/'))}/{key}.{filename_extension}",
         filename_extension=filename_extension,
-
         artifact_type=CommonService_pb2.ArtifactTypeEnum.BLOB,
         upload_completed=draw(st.booleans()),
-
         # these possible values are based on _artifact_utils.serialize_model()
-        serialization=draw(st.sampled_from(["joblib", "cloudpickle", "pickle", "keras"])),
+        serialization=draw(
+            st.sampled_from(["joblib", "cloudpickle", "pickle", "keras"])
+        ),
     )
 
 
@@ -53,7 +54,9 @@ def model_artifact_proto(draw) -> CommonService_pb2.Artifact:
     proto.artifact_type = CommonService_pb2.ArtifactTypeEnum.MODEL
     proto.artifact_subtype = draw(
         # these possible values are based on _artifact_utils.serialize_model()
-        st.sampled_from(["torch", "sklearn", "xgboost", "tensorflow", "custom", "callable"]),
+        st.sampled_from(
+            ["torch", "sklearn", "xgboost", "tensorflow", "custom", "callable"]
+        )
     )
 
     return proto
@@ -95,3 +98,49 @@ def code_blob_proto(draw) -> Code_pb2.CodeBlob:
         proto.notebook.CopyFrom(draw(notebook_code_blob_proto()))
 
     return proto
+
+
+@st.composite
+def mock_kafka_configs_response(draw) -> Dict[str, Any]:
+    """
+    Provide mocked API result from `api/v1/uac-proxy/system_admin/listKafkaConfiguration`
+    with a single Kafka configuration.
+    """
+    return {
+        "configurations": [
+            {
+                "id": draw(st.integers()),
+                "kerberos": {
+                    "enabled": draw(st.booleans()),
+                    "client_name": draw(st.text()),
+                    "conf": draw(st.text()),
+                    "keytab": draw(st.text()),
+                    "service_name": draw(st.text()),
+                },
+                "brokerAddresses": draw(st.text()),
+                "enabled": draw(st.booleans()),
+                "name": draw(st.text()),
+            }
+        ]
+    }
+
+
+@st.composite
+def mock_kafka_settings(draw) -> KafkaSettings:
+    """Generate a mocked KafkaSettings object with no value for cluster config ID."""
+    topics = draw(st.lists(st.text(min_size=1), min_size=3, max_size=3, unique=True))
+    return KafkaSettings(
+        input_topic=topics[0], output_topic=topics[1], error_topic=topics[2]
+    )
+
+
+@st.composite
+def mock_kafka_settings_with_config_id(draw) -> KafkaSettings:
+    """Generate a mocked KafkaSettings object that includes a cluster config ID."""
+    topics = draw(st.lists(st.text(min_size=1), min_size=3, max_size=3, unique=True))
+    return KafkaSettings(
+        input_topic=topics[0],
+        output_topic=topics[1],
+        error_topic=topics[2],
+        cluster_config_id=draw(st.text(min_size=1)),
+    )

@@ -5,10 +5,12 @@ from __future__ import print_function
 import os
 import re
 from urllib.parse import urlparse
+from typing import Any, Dict, List
 import warnings
 
 import requests
 from ._internal_utils._utils import check_unnecessary_params_warning
+from ._internal_utils import kafka
 from ._uac._organization import OrganizationV2
 
 from .external import six
@@ -1782,3 +1784,26 @@ class Client(object):
                 ),
             ],
         )
+
+
+    def get_kafka_topics(self) -> List[str]:
+        """
+        Get available topics for the current Kafka configuration, for associating
+        with an endpoint via :class:`~verta.endpoint.KafkaSettings`.
+
+        .. versionadded:: 0.22.3
+
+        Returns
+        -------
+        topics: list of str
+            List of topic names.
+
+        Raises
+        ------
+        HTTPError
+            If no valid Kafka configuration can be found.
+        """
+        kafka_configs: List[Dict[str, Any]] = kafka.list_kafka_configurations(self._conn)
+        if kafka_configs:
+            return kafka.list_kafka_topics(self._conn, kafka_configs[0])
+        return []
