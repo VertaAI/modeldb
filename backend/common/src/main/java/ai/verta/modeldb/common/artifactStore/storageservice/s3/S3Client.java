@@ -96,13 +96,12 @@ public class S3Client {
     return new RefCountedS3Client(awsCredentials, s3Client, referenceCounter);
   }
 
-  private void initializeWithWebIdentity(Regions awsRegion) throws IOException {
-    /* While creating RoleCredentials we have set time (900 seconds (15 minutes))
-    in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds
-    so set cron to half of the duration of the credentials which will be ~(450 Second (7.5 minutes))
-     */
+  private void initializeWithWebIdentity(Regions awsRegion) {
+    // While creating RoleCredentials we have a set time (900 seconds (15 minutes))
+    // in the AssumeRoleWithWebIdentityRequest so here expiration will be 900 seconds
+    // so set cron to 1/3 of the duration of the credentials which will be 5 minutes.
     var durationSeconds = 900; /*900 seconds (15 minutes)*/
-    var refreshTokenFrequency = durationSeconds / 2;
+    var refreshTokenFrequency = durationSeconds / 3;
     LOGGER.trace(String.format("S3 Client refresh frequency %d seconds", refreshTokenFrequency));
 
     CommonUtils.scheduleTask(
