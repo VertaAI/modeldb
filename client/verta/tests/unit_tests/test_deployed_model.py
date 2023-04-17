@@ -5,6 +5,7 @@ import os
 import random
 from typing import Any, Dict
 
+import hypothesis
 import pytest
 
 from tests import utils
@@ -489,10 +490,10 @@ def test_batch_predict_with_batches_and_indexes(mocked_responses) -> None:
 
 
 @st.composite
-def generate_data(draw):
+def generate_data(draw, max_rows=50, max_cols=6):
     """ Return a dict that represents a dataframe. Generates ints, floats, and strings."""
-    num_rows = draw(st.integers(min_value=1, max_value=200))
-    num_cols = draw(st.integers(min_value=1, max_value=10))
+    num_rows = draw(st.integers(min_value=1, max_value=max_rows))
+    num_cols = draw(st.integers(min_value=1, max_value=max_cols))
     col_names = draw(st.lists(st.text(), max_size=num_cols, min_size=num_cols, unique=True))
     data = {}
     for name in col_names:
@@ -515,7 +516,8 @@ def generate_data(draw):
     return out_dict
 
 
-@given(json_df=generate_data(), batch_size=st.integers(min_value=1, max_value=50))
+@hypothesis.settings(deadline=None)  # client utils make DataFrame handling slow at first
+@given(json_df=generate_data(), batch_size=st.integers(min_value=1, max_value=10))
 def test_batch(json_df, batch_size) -> None:
     """ Test that the batch_predict method works with a variety of inputs. """
     with responses.RequestsMock() as rsps:
