@@ -117,7 +117,7 @@ class Endpoint(object):
         # Note: the line below triggers a spurious and incorrect pylint error
         build_id = next(map(lambda component: component["build_id"], components), None)
         if build_id:
-            build = self._get_build(build_id)
+            build = Build._get(self._conn, self.workspace, build_id)
             return build
         else:
             return None
@@ -874,16 +874,6 @@ class Endpoint(object):
         response = _utils.make_request("GET", url, self._conn)
         _utils.raise_for_http_error(response)
         return response.json()
-
-    def _get_build(self, build_id):
-        url = "{}://{}/api/v1/deployment/workspace/{}/builds/{}".format(
-            self._conn.scheme, self._conn.socket, self.workspace, build_id
-        )
-
-        response = _utils.make_request("GET", url, self._conn)
-
-        _utils.raise_for_http_error(response)
-        return Build._from_json(response.json())
 
     def delete(self):
         """Delete this endpoint."""

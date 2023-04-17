@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from verta._internal_utils import _utils
+
 
 class Build(object):
     """
@@ -32,9 +34,19 @@ class Build(object):
 
     @classmethod
     def _from_json(cls, response):
-        return Build(
+        return cls(
             response["id"], response["status"], response.get("message"), response
         )
+
+    @classmethod
+    def _get(cls, conn: _utils.Connection, workspace: str, id: int):
+        url = "{}://{}/api/v1/deployment/workspace/{}/builds/{}".format(
+            conn.scheme, conn.socket, workspace, id
+        )
+        response = _utils.make_request("GET", url, conn)
+        _utils.raise_for_http_error(response)
+
+        return cls._from_json(response.json())
 
     @property
     def id(self):
