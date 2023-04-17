@@ -16,7 +16,7 @@ from verta.registry.entities import RegisteredModelVersion
 from verta.visibility import _visibility
 
 from . import KafkaSettings
-from . import Build
+from .build import Build
 from .autoscaling import Autoscaling
 from .autoscaling.metrics import _AutoscalingMetric
 from .resources import Resources
