@@ -42,7 +42,7 @@ public class RefreshS3ClientCron implements Runnable {
       createAndRefreshNewClient(awsCredentials);
     } catch (Throwable ex) {
       LOGGER.error("Failed to refresh S3 Client: " + ex.getMessage(), ex);
-      throw new RuntimeException(ex);
+      return;
     }
     LOGGER.info("Refreshing S3Client complete");
   }
