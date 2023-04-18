@@ -374,13 +374,13 @@ class Endpoint(object):
             print("waiting for update...", end="")
             sys.stdout.flush()
             build_id = update_body["build_id"]
-            build = self._get_build(build_id)
+            build = Build._get(self._conn, self.workspace, build_id)
             # have to check using build status, otherwise might never terminate
             while not build.is_complete:
                 print(".", end="")
                 sys.stdout.flush()
                 time.sleep(5)
-                build = self._get_build(build_id)
+                build = Build._get(self._conn, self.workspace, build_id)
 
             if build.status == "error":
                 print()
@@ -433,7 +433,7 @@ class Endpoint(object):
                 print(msg, end="")
                 sys.stdout.flush()
             time.sleep(polling_seconds)
-            current_build = self._get_build(build_id)
+            current_build = Build._get(self._conn, self.workspace, build_id)
         return current_build
 
     def _create_build(self, model_reference):
