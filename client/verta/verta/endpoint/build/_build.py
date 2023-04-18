@@ -27,7 +27,7 @@ class Build:
         self._json = json
 
     def __repr__(self):
-        return "Build({}, {})".format(self.id, repr(self.status))
+        return f'<Build (ID {self.id}, status "{self.status}")>'
 
     @classmethod
     def _get(cls, conn: _utils.Connection, workspace: str, id: int):
