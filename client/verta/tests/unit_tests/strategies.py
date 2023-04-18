@@ -144,3 +144,28 @@ def mock_kafka_settings_with_config_id(draw) -> KafkaSettings:
         error_topic=topics[2],
         cluster_config_id=draw(st.text(min_size=1)),
     )
+
+
+@st.composite
+def build_dict(draw) -> Dict[str, Any]:
+    """Generate a Verta model build, as returned by /api/v1/deployment/builds/{build_id}."""
+    creator_request = {
+        "requires_root": draw(st.booleans()),
+        "scan_external": draw(st.booleans()),
+        "self_contained": draw(st.booleans()),
+        "uses_flask": draw(st.booleans()),
+    }
+    if draw(st.booleans()):
+        creator_request["model_version_id"] = draw(st.integers(min_value=1))
+    else:
+        creator_request["run_id"] = str(draw(st.uuids()))
+
+    return {
+        "creator_request": creator_request,
+        "date_created": draw(st.datetimes()).isoformat(timespec="milliseconds") + "Z",
+        "date_updated": draw(st.datetimes()).isoformat(timespec="milliseconds") + "Z",
+        "id": draw(st.integers(min_value=1)),
+        "location": draw(st.text()),
+        "message": draw(st.text()),
+        "status": draw(st.text()),
+    }
