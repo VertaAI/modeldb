@@ -318,6 +318,7 @@ class TestWithBuilds:
         mocked_responses,
         build_dict,
     ):
+        """Verify we can construct a Build object from get_current_build()."""
         deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
         stages_url = f"{deployment_url}/workspace/{WORKSPACE_ID}/endpoints/{mock_endpoint.id}/stages"
         build_url = (
