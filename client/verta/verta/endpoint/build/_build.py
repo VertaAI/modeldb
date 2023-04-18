@@ -58,7 +58,7 @@ class Build:
     @property
     def message(self):
         """Get an error message reported by this build if one exists."""
-        return self._json.get("message", self._EMPTY_MESSAGE)
+        return self._json.get("message") or self._EMPTY_MESSAGE
 
     @property
     def is_complete(self):
