@@ -3,7 +3,7 @@
 from verta._internal_utils import _utils
 
 
-class Build(object):
+class Build:
     """
     An initiated docker build process of a deployable model.
 
@@ -21,22 +21,13 @@ class Build(object):
     is_complete : bool
     """
 
-    EMPTY_MESSAGE = "no error message available"
+    _EMPTY_MESSAGE = "no error message available"
 
-    def __init__(self, id, status, message, _json):
-        self._id = id
-        self._status = status
-        self._message = message
-        self._json = _json
+    def __init__(self, json):
+        self._json = json
 
     def __repr__(self):
         return "Build({}, {})".format(self.id, repr(self.status))
-
-    @classmethod
-    def _from_json(cls, response):
-        return cls(
-            response["id"], response["status"], response.get("message"), response
-        )
 
     @classmethod
     def _get(cls, conn: _utils.Connection, workspace: str, id: int):
@@ -46,22 +37,22 @@ class Build(object):
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
 
-        return cls._from_json(response.json())
+        return cls(response.json())
 
     @property
     def id(self):
         """Get the ID of this build."""
-        return self._id
+        return self._json["id"]
 
     @property
     def status(self):
         """Get the status of this build."""
-        return self._status
+        return self._json["status"]
 
     @property
     def message(self):
         """Get an error message reported by this build if one exists."""
-        return self._message or Build.EMPTY_MESSAGE
+        return self._json.get("message", Build._EMPTY_MESSAGE)
 
     @property
     def is_complete(self):
