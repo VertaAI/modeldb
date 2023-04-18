@@ -13,6 +13,12 @@ class Build:
     may obtain :class:`~verta.endpoint.Build` objects from methods such as
     :meth:`Endpoint.get_current_build<verta.endpoint.Endpoint.get_current_build>`.
 
+    .. note::
+
+        ``Build`` objects do not currently fetch live information from the
+        backend; new objects must be obtained from public client methods to
+        get up-to-date build statuses.
+
     Attributes
     ----------
     id : int
