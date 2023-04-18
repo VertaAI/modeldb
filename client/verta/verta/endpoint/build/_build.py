@@ -23,7 +23,7 @@ class Build:
     ----------
     id : int
     status : str
-    message : str, optional
+    message : str
     is_complete : bool
     """
 
