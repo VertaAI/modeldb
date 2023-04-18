@@ -311,14 +311,20 @@ class TestKafka:
 class TestWithBuilds:
     @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
     @given(build_dict=build_dict())
-    def test_get_current_build(self, mock_endpoint, mock_conn, build_dict):
+    def test_get_current_build(
+        self,
+        mock_endpoint,
+        mock_conn,
+        mocked_responses,
+        build_dict,
+    ):
         deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
         stages_url = f"{deployment_url}/workspace/{WORKSPACE_ID}/endpoints/{mock_endpoint.id}/stages"
         build_url = (
             f"{deployment_url}/workspace/{WORKSPACE_ID}/builds/{build_dict['id']}"
         )
 
-        with responses.RequestsMock() as rsps:
+        with mocked_responses as rsps:
             rsps.get(
                 url=stages_url,
                 status=200,
