@@ -6,22 +6,13 @@ from typing import Any, Dict
 from unittest.mock import patch
 
 import pytest
-import responses
 from hypothesis import given, HealthCheck, settings
 
 from tests.unit_tests.strategies import (
     mock_kafka_configs_response,
     mock_kafka_settings,
     mock_kafka_settings_with_config_id,
-    build_dict,
 )
-from verta.endpoint import Build, Endpoint
-
-
-@pytest.fixture
-def mock_endpoint(mock_conn, mock_config) -> Endpoint:
-    """Return a mocked object of the Endpoint class for use in tests"""
-    return Endpoint(conn=mock_conn, conf=mock_config, workspace=456, id=123)
 
 
 VERTA_CLASS: str = "verta.endpoint.Endpoint"
@@ -306,35 +297,3 @@ class TestKafka:
                 == "no Kafka configuration found; please ensure that Kafka is configured in"
                 " Verta"
             )
-
-
-class TestWithBuilds:
-    @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-    @given(build_dict=build_dict())
-    def test_get_current_build(
-        self,
-        mock_endpoint,
-        mock_conn,
-        mocked_responses,
-        build_dict,
-    ):
-        """Verify we can construct a Build object from get_current_build()."""
-        deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
-        stages_url = f"{deployment_url}/workspace/{WORKSPACE_ID}/endpoints/{mock_endpoint.id}/stages"
-        build_url = (
-            f"{deployment_url}/workspace/{WORKSPACE_ID}/builds/{build_dict['id']}"
-        )
-
-        with mocked_responses as rsps:
-            rsps.get(
-                url=stages_url,
-                status=200,
-                json={"stages": [{"components": [{"build_id": build_dict["id"]}]}]},
-            )
-            rsps.get(url=build_url, status=200, json=build_dict)
-
-            build = mock_endpoint.get_current_build()
-
-        assert build.id == build_dict["id"]
-        assert build.status == build_dict["status"]
-        assert build.message == build_dict["message"] or Build.EMPTY_MESSAGE

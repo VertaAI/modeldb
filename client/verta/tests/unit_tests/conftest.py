@@ -12,6 +12,7 @@ from verta._internal_utils._utils import Configuration, Connection
 from verta._protos.public.registry import RegistryService_pb2 as _RegistryService
 from verta.client import Client
 from verta.credentials import EmailCredentials
+from verta.endpoint import Endpoint
 from verta.registry.entities import RegisteredModelVersion
 
 
@@ -49,6 +50,12 @@ def mock_config() -> Configuration:
 def mocked_responses():
     with responses.RequestsMock() as rsps:
         yield rsps
+
+
+@pytest.fixture
+def mock_endpoint(mock_conn, mock_config) -> Endpoint:
+    """Return a mocked object of the Endpoint class for use in tests"""
+    return Endpoint(conn=mock_conn, conf=mock_config, workspace=456, id=123)
 
 
 @pytest.fixture(scope="session")
