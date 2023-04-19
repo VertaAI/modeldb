@@ -4,7 +4,18 @@ from hypothesis import given, HealthCheck, settings
 
 from tests.unit_tests.strategies import build_dict
 
-from verta.endpoint import Build
+from verta.endpoint.build import Build
+
+
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(build_dict=build_dict())
+def test_instantiation(build_dict):
+    """Verify a Build object can be instantated from a dict."""
+    build = Build(build_dict)
+
+    assert build.id == build_dict["id"]
+    assert build.status == build_dict["status"]
+    assert build.message == build_dict["message"] or Build._EMPTY_MESSAGE
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
@@ -32,4 +43,4 @@ def test_endpoint_get_current_build(
 
     assert build.id == build_dict["id"]
     assert build.status == build_dict["status"]
-    assert build.message == build_dict["message"] or Build.EMPTY_MESSAGE
+    assert build.message == build_dict["message"] or Build._EMPTY_MESSAGE
