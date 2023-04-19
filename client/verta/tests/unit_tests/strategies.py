@@ -172,6 +172,28 @@ def build_dict(draw) -> Dict[str, Any]:
 
 
 @st.composite
+def _build_scan_detail(draw) -> Dict[str, Any]:
+    """For use in build_scan_dict"""
+    return {
+        "name": draw(st.text()),
+        "package": draw(st.text()),
+        "description": draw(st.text()),
+        "severity": draw(
+            st.sampled_from(
+                [
+                    "critical",
+                    "high",
+                    "medium",
+                    "low",
+                    "informational",
+                    "unknown",
+                ],
+            )
+        ),
+    }
+
+
+@st.composite
 def build_scan_dict(draw) -> Dict[str, Any]:
     """Generate a Verta build scan, as returned by /api/v1/deployment/builds/{build_id}/scan."""
     scan_external = draw(st.booleans())
@@ -180,7 +202,7 @@ def build_scan_dict(draw) -> Dict[str, Any]:
             "scan_external": scan_external,
         },
         "date_updated": draw(st.datetimes()).isoformat(timespec="milliseconds") + "Z",
-        "details": [],
+        "details": draw(_build_scan_detail()),
         "id": draw(st.integers(min_value=1)),
         "safety_status": draw(st.sampled_from(list(build.ScanStatusEnum))).value,
         "scan_status": draw(st.sampled_from(list(build.ScanProgressEnum))).value,
