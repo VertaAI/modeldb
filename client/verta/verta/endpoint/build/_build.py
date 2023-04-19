@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
+from typing import List
 
 from verta._internal_utils import _utils, time_utils
 from . import _build_scan
@@ -51,6 +52,23 @@ class Build:
         _utils.raise_for_http_error(response)
 
         return cls(conn, response.json())
+
+    @classmethod
+    def _list_model_version_builds(
+        cls,
+        conn: _utils.Connection,
+        id: int,
+    ) -> List["Build"]:
+        """Returns a model version's builds in order of creation (most recent first)."""
+        url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds"
+        data = {"model_version_id": id}
+        response = _utils.make_request("GET", url, conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        builds = (
+            Build(conn, build_json) for build_json in response.json().get("builds", [])
+        )
+        return sorted(builds, key=lambda build: build.date_created, reverse=True)
 
     @property
     def id(self) -> int:
