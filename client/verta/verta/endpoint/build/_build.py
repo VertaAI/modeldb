@@ -73,4 +73,12 @@ class Build:
         return self.status in ("finished", "error")
 
     def get_scan(self) -> _build_scan.BuildScan:
-        pass
+        """Get this build's most recent scan.
+
+        Returns
+        -------
+        :class:`~verta.endpoint.build.BuildScan`
+            Build scan.
+
+        """
+        return _build_scan.BuildScan._get(self._conn, self.id)
