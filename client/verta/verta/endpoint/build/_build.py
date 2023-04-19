@@ -40,10 +40,8 @@ class Build:
         return f'<Build (ID {self.id}, status "{self.status}")>'
 
     @classmethod
-    def _get(cls, conn: _utils.Connection, workspace: str, id: int):
-        url = "{}://{}/api/v1/deployment/workspace/{}/builds/{}".format(
-            conn.scheme, conn.socket, workspace, id
-        )
+    def _get(cls, conn: _utils.Connection, workspace: str, id: int) -> "Build":
+        url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/workspace/{workspace}/builds/{id}"
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
 
