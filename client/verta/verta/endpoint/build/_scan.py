@@ -8,6 +8,8 @@ from verta._internal_utils import _utils, time_utils
 
 
 class ScanProgress(str, Enum):
+    """The current progress of a build scan."""
+
     UNSCANNED = "unscanned"
     SCANNING = "scanning"
     SCANNED = "scanned"
@@ -15,12 +17,42 @@ class ScanProgress(str, Enum):
 
 
 class ScanStatus(str, Enum):
+    """The result of a build scan."""
+
     UNKNOWN = "unknown"
     SAFE = "safe"
     UNSAFE = "unsafe"
 
 
 class BuildScan:
+    """A scan of a Verta model build.
+
+    There should not be a need to instantiate this class directly; please use
+    :meth:`Build.get_scan() <verta.endpoint.build.Build.get_scan>` instead.
+
+    Attributes
+    ----------
+    date_updated : :class:`~datetime.datetime`
+        The date and time when this scan was performed/updated.
+    progress : :class:`ScanProgress`
+        The current progress of this scan.
+    status : :class:`ScanStatus`
+        The result of this scan.
+    passed : bool
+        Whether this scan passed. This property is for convenience, equivalent to
+
+        .. code-block:: python
+
+            self.status == ScanStatus.SAFE
+    failed : bool
+        Whether this scan failed. This property is for convenience, equivalent to
+
+        .. code-block:: python
+
+            self.status in {ScanStatus.UNKNOWN, ScanStatus.UNSAFE}
+
+    """
+
     def __init__(self, json):
         self._json = json
 
