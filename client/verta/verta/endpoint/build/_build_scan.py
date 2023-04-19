@@ -77,9 +77,7 @@ class BuildScan:
 
     @classmethod
     def _get(cls, conn: _utils.Connection, build_id: int):
-        url = "{}://{}/api/v1/deployment/builds/{}/scan".format(
-            conn.scheme, conn.socket, build_id
-        )
+        url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds/{build_id}/scan"
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
 
