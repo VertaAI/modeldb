@@ -49,20 +49,16 @@ class Build:
 
     @property
     def id(self) -> int:
-        """Get the ID of this build."""
         return self._json["id"]
 
     @property
     def status(self) -> str:
-        """Get the status of this build."""
         return self._json["status"]
 
     @property
     def message(self) -> str:
-        """Get an error message reported by this build if one exists."""
         return self._json.get("message") or self._EMPTY_MESSAGE
 
     @property
     def is_complete(self) -> bool:
-        """Return true if this build's status is finished or error."""
         return self.status in ("finished", "error")
