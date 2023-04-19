@@ -67,6 +67,30 @@ def datetime_from_millis(millis):
     return UNIX_EPOCH + timedelta(milliseconds=millis)
 
 
+def datetime_from_iso(date_string) -> datetime:
+    """Basically the std lib's :func:`datetime.datetime.fromisoformat`.
+
+    Additionally has a handler for ISO 8601's Z suffix as returned by some of
+    our backends, which isn't supported until Python 3.11 [#]_.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        dt = datetime_from_iso("2011-11-04T00:05:23Z")
+        expected_dt = datetime(2011, 11, 4, 0, 5, 23, tzinfo=timezone.utc)
+        assert dt == expected_dt
+
+    References
+    ----------
+    .. [#] https://docs.python.org/3.11/library/datetime.html#datetime.datetime.fromisoformat
+
+    """
+    if date_string[-1] == "Z":
+        date_string = date_string[:-1] + "+00:00"
+    return datetime.fromisoformat(date_string)
+
+
 def parse_duration(value):
     duration = None
     if isinstance(value, six.string_types):

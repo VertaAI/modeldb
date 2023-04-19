@@ -4,6 +4,7 @@ from hypothesis import given, HealthCheck, settings
 
 from tests.unit_tests.strategies import build_dict
 
+from verta._internal_utils import time_utils
 from verta.endpoint.build import Build
 
 
@@ -14,6 +15,9 @@ def test_instantiation(build_dict):
     build = Build(build_dict)
 
     assert build.id == build_dict["id"]
+    assert build.date_created == time_utils.datetime_from_iso(
+        build_dict["date_created"],
+    )
     assert build.status == build_dict["status"]
     assert build.message == build_dict["message"] or Build._EMPTY_MESSAGE
 
@@ -42,5 +46,8 @@ def test_endpoint_get_current_build(
         build = mock_endpoint.get_current_build()
 
     assert build.id == build_dict["id"]
+    assert build.date_created == time_utils.datetime_from_iso(
+        build_dict["date_created"],
+    )
     assert build.status == build_dict["status"]
     assert build.message == build_dict["message"] or Build._EMPTY_MESSAGE

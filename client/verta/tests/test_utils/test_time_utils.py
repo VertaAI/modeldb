@@ -89,3 +89,14 @@ class TestParseDuration:
         with pytest.warns(UserWarning):
             duration = time_utils.parse_duration(delta)
         assert duration == timedelta(milliseconds=millis)
+
+
+class TestDatetimeFromISO:
+    """Tests for :func:`verta._internal_utils.time_utils.datetime_from_iso`."""
+
+    @given(dt=st.datetimes())
+    def test_zulu(self, dt: datetime):
+        """Verify that we can parse timestamps with ISO 8601's Z suffix."""
+        date_string = dt.isoformat() + "Z"
+        parsed_dt = time_utils.datetime_from_iso(date_string)
+        assert dt == parsed_dt.replace(tzinfo=None)
