@@ -22,9 +22,13 @@ class Build:
     Attributes
     ----------
     id : int
+        Build ID.
     status : str
+        Status of the build (e.g. ``"building"``, ``"finished"``).
     message : str
+        Message or logs associated with the build.
     is_complete : bool
+        Whether the build is finished either successfully or with an error.
     """
 
     _EMPTY_MESSAGE = "no error message available"
