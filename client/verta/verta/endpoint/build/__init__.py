@@ -5,7 +5,7 @@
 from verta._internal_utils import documentation
 
 from ._build import Build
-from ._scan import BuildScan, ScanProgressEnum, ScanStatusEnum
+from ._build_scan import BuildScan, ScanProgressEnum, ScanStatusEnum
 
 
 documentation.reassign_module(
