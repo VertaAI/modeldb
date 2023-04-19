@@ -457,7 +457,7 @@ class Endpoint(object):
             )
 
         _utils.raise_for_http_error(response)
-        return Build(response.json())
+        return Build(self._conn, response.json())
 
     def _get_or_create_stage(self, name="production"):
         """Return a stage id for compatibility reasons at the moment."""
@@ -511,7 +511,9 @@ class Endpoint(object):
         if kafka_settings._cluster_config_id is None:
             configs = kafka.list_kafka_configurations(self._conn)
             if not configs:
-                raise RuntimeError("no Kafka configuration found; please ensure that Kafka is configured in Verta")
+                raise RuntimeError(
+                    "no Kafka configuration found; please ensure that Kafka is configured in Verta"
+                )
             config_id = configs[0].get("id", None)
             if config_id is None:
                 raise RuntimeError(
