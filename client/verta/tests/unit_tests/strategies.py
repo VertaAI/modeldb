@@ -10,7 +10,7 @@ import hypothesis.strategies as st
 from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS
 from verta._protos.public.common import CommonService_pb2
 from verta._protos.public.modeldb.versioning import Code_pb2, Dataset_pb2
-from verta.endpoint import KafkaSettings
+from verta.endpoint import KafkaSettings, build
 
 
 @st.composite
@@ -169,3 +169,27 @@ def build_dict(draw) -> Dict[str, Any]:
         "message": draw(st.text()),
         "status": draw(st.text()),
     }
+
+
+@st.composite
+def build_scan_dict(draw) -> Dict[str, Any]:
+    """Generate a Verta build scan, as returned by /api/v1/deployment/builds/{build_id}/scan."""
+    scan_external = draw(st.booleans())
+    d = {
+        "creator_request": {
+            "scan_external": scan_external,
+        },
+        "date_updated": draw(st.datetimes()).isoformat(timespec="milliseconds") + "Z",
+        "details": [],
+        "id": draw(st.integers(min_value=1)),
+        "safety_status": draw(st.sampled_from(list(build.ScanStatusEnum))).value,
+        "scan_status": draw(st.sampled_from(list(build.ScanProgressEnum))).value,
+        "scanner": draw(st.text()),
+    }
+    if scan_external:
+        d["scan_external_status"] = {
+            "safety_status": draw(st.sampled_from(list(build.ScanStatusEnum))).value,
+            "url": draw(st.text()),
+        }
+
+    return d
