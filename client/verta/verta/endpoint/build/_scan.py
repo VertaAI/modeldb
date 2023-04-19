@@ -7,8 +7,18 @@ from enum import Enum
 from verta._internal_utils import _utils, time_utils
 
 
-class ScanProgress(str, Enum):
-    """The current progress of a build scan."""
+class ScanProgressEnum(str, Enum):
+    """The current progress of a build scan.
+
+    For all intents and purposes, this can be treated as a :class:`str`.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        assert build.get_scan().progress == "scanned"
+
+    """
 
     UNSCANNED = "unscanned"
     SCANNING = "scanning"
@@ -16,8 +26,18 @@ class ScanProgress(str, Enum):
     ERROR = "error"
 
 
-class ScanStatus(str, Enum):
-    """The result of a build scan."""
+class ScanStatusEnum(str, Enum):
+    """The result of a build scan.
+
+    For all intents and purposes, this can be treated as a :class:`str`.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        assert build.get_scan().status == "safe"
+
+    """
 
     UNKNOWN = "unknown"
     SAFE = "safe"
@@ -34,22 +54,22 @@ class BuildScan:
     ----------
     date_updated : :class:`~datetime.datetime`
         The date and time when this scan was performed/updated.
-    progress : :class:`ScanProgress`
+    progress : :class:`ScanProgressEnum`
         The current progress of this scan.
-    status : :class:`ScanStatus`
+    status : :class:`ScanStatusEnum`
         The result of this scan.
     passed : bool
         Whether this scan passed. This property is for convenience, equivalent to
 
         .. code-block:: python
 
-            self.status == ScanStatus.SAFE
+            self.status == "safe"
     failed : bool
         Whether this scan failed. This property is for convenience, equivalent to
 
         .. code-block:: python
 
-            self.status in {ScanStatus.UNKNOWN, ScanStatus.UNSAFE}
+            self.status in {"unknown", "unsafe"}
 
     """
 
@@ -71,19 +91,19 @@ class BuildScan:
         return time_utils.datetime_from_iso(self._json["date_updated"])
 
     @property
-    def progress(self) -> ScanProgress:
-        return ScanProgress(self._json["scan_status"])
+    def progress(self) -> ScanProgressEnum:
+        return ScanProgressEnum(self._json["scan_status"])
 
     @property
-    def status(self) -> ScanStatus:
-        return ScanStatus(self._json["safety_status"])
+    def status(self) -> ScanStatusEnum:
+        return ScanStatusEnum(self._json["safety_status"])
 
     @property
     def passed(self) -> bool:
-        return self.status == ScanStatus.SAFE
+        return self.status == ScanStatusEnum.SAFE
 
     @property
     def failed(self) -> bool:
         # based on the web app's notion of failure
         # https://github.com/VertaAI/VertaWebApp/blob/1e66c73/webapp/client/src/features/catalog/registeredModelVersion/release/view/VulnerabilityScanCard/VulnerabilityScanInfo.tsx#L22-L45
-        return self.status in {ScanStatus.UNKNOWN, ScanStatus.UNSAFE}
+        return self.status in {ScanStatusEnum.UNKNOWN, ScanStatusEnum.UNSAFE}

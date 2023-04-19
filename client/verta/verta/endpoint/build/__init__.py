@@ -5,15 +5,15 @@
 from verta._internal_utils import documentation
 
 from ._build import Build
-from ._scan import BuildScan, ScanProgress, ScanStatus
+from ._scan import BuildScan, ScanProgressEnum, ScanStatusEnum
 
 
 documentation.reassign_module(
     [
         Build,
         BuildScan,
-        ScanProgress,
-        ScanStatus,
+        ScanProgressEnum,
+        ScanStatusEnum,
     ],
     module_name=__name__,
 )
