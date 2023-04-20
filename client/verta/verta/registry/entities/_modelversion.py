@@ -37,6 +37,7 @@ from verta._internal_utils import (
 from verta import utils
 
 from verta import _blob, code, data_types, environment
+from verta.endpoint.build import Build
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
