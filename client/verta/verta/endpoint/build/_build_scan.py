@@ -98,7 +98,7 @@ class BuildScan:
 
         Returns
         -------
-        ScanStatusEnum
+        :class:`ScanStatusEnum`
             The result of this scan.
 
         Raises
