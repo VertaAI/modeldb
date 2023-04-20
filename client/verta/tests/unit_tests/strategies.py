@@ -196,22 +196,24 @@ def _build_scan_detail(draw) -> Dict[str, Any]:
 @st.composite
 def build_scan_dict(draw) -> Dict[str, Any]:
     """Generate a Verta build scan, as returned by /api/v1/deployment/builds/{build_id}/scan."""
-    scan_external = draw(st.booleans())
     d = {
         "creator_request": {
-            "scan_external": scan_external,
+            "scan_external": draw(st.booleans()),
         },
         "date_updated": draw(st.datetimes()).isoformat(timespec="milliseconds") + "Z",
-        "details": draw(_build_scan_detail()),
+        "details": None,
         "id": draw(st.integers(min_value=1)),
-        "safety_status": draw(st.sampled_from(list(build.ScanStatusEnum))).value,
         "scan_status": draw(st.sampled_from(list(build.ScanProgressEnum))).value,
-        "scanner": draw(st.text()),
     }
-    if scan_external:
-        d["scan_external_status"] = {
-            "safety_status": draw(st.sampled_from(list(build.ScanStatusEnum))).value,
-            "url": draw(st.text()),
-        }
+    if d["scan_status"] == build.ScanProgressEnum.SCANNED:
+        d["safety_status"] = draw(st.sampled_from(list(build.ScanStatusEnum))).value
+        if d["creator_request"]["scan_external"]:
+            d["scan_external_status"] = {
+                "safety_status": d["safety_status"],
+                "url": draw(st.text()),
+            }
+        else:
+            d["scanner"] = draw(st.text())
+            d["details"] = draw(_build_scan_detail())
 
     return d
