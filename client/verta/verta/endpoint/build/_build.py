@@ -29,6 +29,7 @@ class Build:
         Message or logs associated with the build.
     is_complete : bool
         Whether the build is finished either successfully or with an error.
+
     """
 
     _EMPTY_MESSAGE = "no error message available"
