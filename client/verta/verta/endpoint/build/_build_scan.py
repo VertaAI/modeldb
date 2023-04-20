@@ -55,20 +55,18 @@ class BuildScan:
         The date and time when this scan was performed/updated.
     progress : :class:`ScanProgressEnum`
         The current progress of this scan.
-    status : :class:`ScanStatusEnum`
-        The result of this scan.
     passed : bool
         Whether this scan passed. This property is for convenience, equivalent to
 
         .. code-block:: python
 
-            self.status == "safe"
+            build_scan.get_status() == "safe"
     failed : bool
         Whether this scan failed. This property is for convenience, equivalent to
 
         .. code-block:: python
 
-            self.status in {"unknown", "unsafe"}
+            build_scan.get_status() in {"unknown", "unsafe"}
 
     """
 
@@ -92,15 +90,29 @@ class BuildScan:
         return ScanProgressEnum(self._json["scan_status"])
 
     @property
-    def status(self) -> ScanStatusEnum:
-        return ScanStatusEnum(self._json["safety_status"])
-
-    @property
     def passed(self) -> bool:
-        return self.status == ScanStatusEnum.SAFE
+        return self.get_status() == ScanStatusEnum.SAFE
 
     @property
     def failed(self) -> bool:
         # based on the web app's notion of failure
         # https://github.com/VertaAI/VertaWebApp/blob/1e66c73/webapp/client/src/features/catalog/registeredModelVersion/release/view/VulnerabilityScanCard/VulnerabilityScanInfo.tsx#L22-L45
-        return self.status in {ScanStatusEnum.UNKNOWN, ScanStatusEnum.UNSAFE}
+        return self.get_status() in {ScanStatusEnum.UNKNOWN, ScanStatusEnum.UNSAFE}
+
+    def get_status(self) -> ScanStatusEnum:
+        """Returns the result of this scan.
+
+        Returns
+        -------
+        ScanStatusEnum
+            The result of this scan.
+
+        Raises
+        ------
+        RuntimeError
+            If this build scan is not yet finished, and therefore has no status.
+
+        """
+        if self.progress != ScanProgressEnum.SCANNED:
+            raise RuntimeError("build scan is not yet finished")
+        return ScanStatusEnum(self._json["safety_status"])

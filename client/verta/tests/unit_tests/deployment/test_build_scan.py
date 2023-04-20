@@ -20,11 +20,13 @@ def test_instantiation(build_scan_dict):
     assert build_scan.progress == build_module.ScanProgressEnum(
         build_scan_dict["scan_status"]
     )
-    assert build_scan.status == build_module.ScanStatusEnum(
+    assert build_scan.get_status() == build_module.ScanStatusEnum(
         build_scan_dict["safety_status"]
     )
-    assert build_scan.passed == (build_scan.status == build_module.ScanStatusEnum.SAFE)
+    assert build_scan.passed == (
+        build_scan.get_status() == build_module.ScanStatusEnum.SAFE
+    )
     assert build_scan.failed == (
-        build_scan.status
+        build_scan.get_status()
         in {build_module.ScanStatusEnum.UNKNOWN, build_module.ScanStatusEnum.UNSAFE}
     )
