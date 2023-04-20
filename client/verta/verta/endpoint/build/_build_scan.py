@@ -70,6 +70,13 @@ class BuildScan:
     def __init__(self, json):
         self._json = json
 
+    def __repr__(self):
+        detail_str = f'progress "{self.progress.value}"'
+        if self.progress == ScanProgressEnum.SCANNED:
+            detail_str += f', status "{self.get_status().value}"'
+
+        return f"<BuildScan ({detail_str})>"
+
     @classmethod
     def _get(cls, conn: _utils.Connection, build_id: int):
         url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds/{build_id}/scan"
