@@ -56,17 +56,12 @@ class BuildScan:
     progress : :class:`ScanProgressEnum`
         The current progress of this scan.
     passed : bool
-        Whether this scan passed. This property is for convenience, equivalent to
+        Whether this scan finished and passed. This property is for
+        convenience, equivalent to
 
         .. code-block:: python
 
-            build_scan.get_status() == "safe"
-    failed : bool
-        Whether this scan failed. This property is for convenience, equivalent to
-
-        .. code-block:: python
-
-            build_scan.get_status() in {"unknown", "unsafe"}
+            (build_scan.progress == "scanned") and (build_scan.get_status() == "safe")
 
     """
 
@@ -93,13 +88,10 @@ class BuildScan:
 
     @property
     def passed(self) -> bool:
-        return self.get_status() == ScanStatusEnum.SAFE
-
-    @property
-    def failed(self) -> bool:
-        # based on the web app's notion of failure
-        # https://github.com/VertaAI/VertaWebApp/blob/1e66c73/webapp/client/src/features/catalog/registeredModelVersion/release/view/VulnerabilityScanCard/VulnerabilityScanInfo.tsx#L22-L45
-        return self.get_status() in {ScanStatusEnum.UNKNOWN, ScanStatusEnum.UNSAFE}
+        return (
+            self.progress == ScanProgressEnum.SCANNED
+            and self.get_status() == ScanStatusEnum.SAFE
+        )
 
     def get_status(self) -> ScanStatusEnum:
         """Returns the result of this scan.
