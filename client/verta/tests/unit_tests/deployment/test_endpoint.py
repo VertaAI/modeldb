@@ -13,13 +13,6 @@ from tests.unit_tests.strategies import (
     mock_kafka_settings,
     mock_kafka_settings_with_config_id,
 )
-from verta.endpoint import Endpoint
-
-
-@pytest.fixture
-def mock_endpoint(mock_conn, mock_config) -> Endpoint:
-    """Return a mocked object of the Endpoint class for use in tests"""
-    return Endpoint(conn=mock_conn, conf=mock_config, workspace=456, id=123)
 
 
 VERTA_CLASS: str = "verta.endpoint.Endpoint"
