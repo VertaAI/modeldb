@@ -25,6 +25,8 @@ class Build:
     ----------
     id : int
         Build ID.
+    date_created : timezone-aware :class:`~datetime.datetime`
+        The date and time when this build was created.
     status : str
         Status of the build (e.g. ``"building"``, ``"finished"``).
     message : str
