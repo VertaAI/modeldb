@@ -51,7 +51,7 @@ class BuildScan:
 
     Attributes
     ----------
-    date_updated : :class:`~datetime.datetime`
+    date_updated : timezone-aware :class:`~datetime.datetime`
         The date and time when this scan was performed/updated.
     progress : :class:`ScanProgressEnum`
         The current progress of this scan.
