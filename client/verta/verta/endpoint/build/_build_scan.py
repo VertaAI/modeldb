@@ -70,6 +70,8 @@ class BuildScan:
 
     """
 
+    _UNFINISHED_ERROR_MSG = "build scan is not yet finished"
+
     def __init__(self, json):
         self._json = json
 
@@ -114,5 +116,5 @@ class BuildScan:
 
         """
         if self.progress != ScanProgressEnum.SCANNED:
-            raise RuntimeError("build scan is not yet finished")
+            raise RuntimeError(self._UNFINISHED_ERROR_MSG)
         return ScanStatusEnum(self._json["safety_status"])
