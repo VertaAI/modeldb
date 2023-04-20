@@ -1726,7 +1726,4 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             ))
 
         """
-        return Build._list_model_version_builds(
-            self._conn,
-            self.id,
-        )
+        return Build._list_model_version_builds(self._conn, self.id)
