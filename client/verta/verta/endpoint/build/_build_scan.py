@@ -2,6 +2,7 @@
 
 from datetime import datetime
 from enum import Enum
+from typing import Optional
 
 from verta._internal_utils import _utils, time_utils
 
@@ -34,7 +35,7 @@ class ScanStatusEnum(str, Enum):
     --------
     .. code-block:: python
 
-        assert build.get_scan().get_status() == "safe"
+        assert build.get_scan().status == "safe"
 
     """
 
@@ -55,13 +56,16 @@ class BuildScan:
         The date and time when this scan was performed/updated.
     progress : :class:`ScanProgressEnum`
         The current progress of this scan.
+    status : :class:`ScanStatusEnum` or None
+        The result of this scan. ``None`` is returned if this scan is not yet
+        finished, and therefore has no status.
     passed : bool
         Whether this scan finished and passed. This property is for
         convenience, equivalent to
 
         .. code-block:: python
 
-            (build_scan.progress == "scanned") and (build_scan.get_status() == "safe")
+            build_scan.status == "safe"
 
     """
 
@@ -72,8 +76,8 @@ class BuildScan:
 
     def __repr__(self):
         detail_str = f'progress "{self.progress.value}"'
-        if self.progress == ScanProgressEnum.SCANNED:
-            detail_str += f', status "{self.get_status().value}"'
+        if self.status is not None:
+            detail_str += f', status "{self.status.value}"'
 
         return f"<BuildScan ({detail_str})>"
 
@@ -94,26 +98,11 @@ class BuildScan:
         return ScanProgressEnum(self._json["scan_status"])
 
     @property
-    def passed(self) -> bool:
-        return (
-            self.progress == ScanProgressEnum.SCANNED
-            and self.get_status() == ScanStatusEnum.SAFE
-        )
-
-    def get_status(self) -> ScanStatusEnum:
-        """Returns the result of this scan.
-
-        Returns
-        -------
-        :class:`ScanStatusEnum`
-            The result of this scan.
-
-        Raises
-        ------
-        RuntimeError
-            If this build scan is not yet finished, and therefore has no status.
-
-        """
+    def status(self) -> Optional[ScanStatusEnum]:
         if self.progress != ScanProgressEnum.SCANNED:
-            raise RuntimeError(self._UNFINISHED_ERROR_MSG)
+            return None
         return ScanStatusEnum(self._json["safety_status"])
+
+    @property
+    def passed(self) -> bool:
+        return self.status == ScanStatusEnum.SAFE

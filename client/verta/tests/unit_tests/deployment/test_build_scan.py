@@ -19,11 +19,8 @@ def test_instantiation(build_scan_dict):
     )
     assert build_scan.progress == ScanProgressEnum(build_scan_dict["scan_status"])
     if build_scan.progress == ScanProgressEnum.SCANNED:
-        assert build_scan.passed == (build_scan.get_status() == ScanStatusEnum.SAFE)
-        assert build_scan.get_status() == ScanStatusEnum(
-            build_scan_dict["safety_status"]
-        )
+        assert build_scan.passed == (build_scan.status == ScanStatusEnum.SAFE)
+        assert build_scan.status == ScanStatusEnum(build_scan_dict["safety_status"])
     else:
-        assert build_scan.passed == False
-        with pytest.raises(RuntimeError, match=f"^{BuildScan._UNFINISHED_ERROR_MSG}$"):
-            build_scan.get_status()
+        assert build_scan.passed is False
+        assert build_scan.status is None
