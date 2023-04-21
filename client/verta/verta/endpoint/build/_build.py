@@ -14,8 +14,9 @@ class Build:
     Represents an initiated docker build process. A build can be complete or in
     progress. Completed builds may be successful or failed. End-users of this
     library should not need to instantiate this class directly, but instead
-    may obtain :class:`~verta.endpoint.Build` objects from methods such as
-    :meth:`Endpoint.get_current_build<verta.endpoint.Endpoint.get_current_build>`.
+    may obtain :class:`Build` objects from methods such as
+    :meth:`Endpoint.get_current_build() <verta.endpoint.Endpoint.get_current_build>`
+    and :meth:`RegisteredModelVersion.list_builds() <verta.registry.entities.RegisteredModelVersion.list_builds>`.
 
     .. note::
 
