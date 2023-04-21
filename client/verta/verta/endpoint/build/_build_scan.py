@@ -69,8 +69,6 @@ class BuildScan:
 
     """
 
-    _UNFINISHED_ERROR_MSG = "build scan is not yet finished"
-
     def __init__(self, json):
         self._json = json
 
