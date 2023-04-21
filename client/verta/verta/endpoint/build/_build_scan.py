@@ -34,7 +34,7 @@ class ScanStatusEnum(str, Enum):
     --------
     .. code-block:: python
 
-        assert build.get_scan().status == "safe"
+        assert build.get_scan().get_status() == "safe"
 
     """
 
