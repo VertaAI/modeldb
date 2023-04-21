@@ -214,6 +214,6 @@ def build_scan_dict(draw) -> Dict[str, Any]:
             }
         else:
             d["scanner"] = draw(st.text())
-            d["details"] = draw(_build_scan_detail())
+            d["details"] = draw(st.lists(_build_scan_detail()))
 
     return d
