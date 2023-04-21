@@ -19,6 +19,7 @@ def assert_build_fields(build: Build, build_dict: Dict[str, Any]) -> None:
     assert build.message == build_dict["message"] or Build._EMPTY_MESSAGE
 
 
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(build_dict=build_dict())
 def test_instantiation(build_dict):
     """Verify a Build object can be instantated from a dict."""
