@@ -9,7 +9,6 @@ from verta._internal_utils import time_utils
 from verta.endpoint.build import BuildScan, ScanProgressEnum, ScanStatusEnum
 
 
-@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(build_scan_dict=build_scan_dict())
 def test_instantiation(build_scan_dict):
     """Verify a BuildScan object can be instantated from a dict."""
