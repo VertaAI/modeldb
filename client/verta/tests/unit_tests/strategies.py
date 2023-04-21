@@ -173,7 +173,7 @@ def build_dict(draw) -> Dict[str, Any]:
 
 @st.composite
 def _build_scan_detail(draw) -> Dict[str, Any]:
-    """For use in build_scan_dict"""
+    """For use in build_scan_dict."""
     return {
         "name": draw(st.text()),
         "package": draw(st.text()),
