@@ -69,7 +69,8 @@ class TestClientGetWorkspace:
     """Order of precedence for `client.get_workspace()`."""
 
     def test_client_get_workspace(
-            self, create_client, created_entities, in_tempdir, workspace, workspace2, workspace3, workspace4, namespace
+            self, create_client, created_entities, in_tempdir, workspace, workspace2, workspace3, workspace_mns,
+            namespace
     ):
         client = create_client()
 
@@ -106,4 +107,4 @@ class TestClientGetWorkspace:
         assert dataset.workspace == PARAM_WORKSPACE
 
         # make sure namespace persists on creation
-        assert workspace4.namespace == namespace
+        assert workspace_mns.namespace == namespace

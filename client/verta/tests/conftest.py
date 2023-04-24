@@ -120,7 +120,7 @@ def dev_key_sys_admin():
 
 @pytest.fixture(scope="session")
 def namespace():
-    return constants.NAMESPACE
+    return constants.NAMESPACE_MNS
 
 
 @pytest.fixture
@@ -578,14 +578,14 @@ def workspace3(client_sys_admin, created_entities):
 
 
 @pytest.fixture
-def workspace4(client_sys_admin, created_entities, namespace):
+def workspace_mns(client_sys_admin, created_entities, namespace_mns):
     return create_workspace(client_sys_admin, created_entities, [
     RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
                                    allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
     RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
                                    allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
                                                     RoleV2_pb2.ActionTypeV2.UPDATE]),
-], namespace=namespace)
+], namespace=namespace_mns)
 
 
 def create_workspace(client, created_entities, roles, namespace=""):
