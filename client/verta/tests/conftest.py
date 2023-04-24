@@ -120,6 +120,7 @@ def dev_key_sys_admin():
 
 @pytest.fixture(scope="session")
 def namespace():
+    """For use with a workspace in multiple-namespace setups."""
     return constants.NAMESPACE_MNS
 
 
