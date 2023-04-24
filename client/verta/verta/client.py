@@ -1739,7 +1739,7 @@ class Client(object):
 
         return datasets
 
-    def _create_workspace(self, org_id, workspace_name, resource_action_groups):
+    def _create_workspace(self, org_id, workspace_name, resource_action_groups, namespace=""):
         """
         creates a workspace with a custom role for all users.
 
@@ -1751,6 +1751,9 @@ class Client(object):
             name of workspace.
         resource_action_groups : list of RoleV2_pb2.RoleResourceActions
             Resource actions for non-admins in this workspace.
+        namespace: str, optional
+            namespace where workspace endpoints will be hosted.
+            Must follow `cluster--namespace` format.
 
         Returns
         -------
@@ -1783,6 +1786,7 @@ class Client(object):
                     group_id=all_users_group_id, role_id=custom_role_id
                 ),
             ],
+            namespace,
         )
 
 
