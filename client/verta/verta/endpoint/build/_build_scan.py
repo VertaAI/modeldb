@@ -65,7 +65,7 @@ class BuildScan:
 
         .. code-block:: python
 
-            build_scan.result == "safe"
+            (build_scan.progress == "scanned") and (build_scan.result == "safe")
 
     """
 
