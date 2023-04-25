@@ -32,6 +32,9 @@ class DeployedModel(object):
     Authentication credentials will be picked up from environment variables if
     they are not supplied explicitly in the creds parameter.
 
+    .. versionchanged:: 0.23.0
+        The ``from_url`` method has been removed.
+
     Parameters
     ----------
     prediction_url : str
@@ -180,14 +183,11 @@ class DeployedModel(object):
             curl += f' -H "{header}: {value}"'
         return curl
 
-    # TODO: Removed deprecated `always_retry_404` and `always_retry_429` params
     def predict(
         self,
         x: List[Any],
         compress=False,
         max_retries: int = http_session.DEFAULT_MAX_RETRIES,
-        always_retry_404=False,
-        always_retry_429=False,
         retry_status: Set[int] = http_session.DEFAULT_STATUS_FORCELIST,
         backoff_factor: float = http_session.DEFAULT_BACKOFF_FACTOR,
         prediction_id: str = None,
@@ -195,14 +195,8 @@ class DeployedModel(object):
         """
         Makes a prediction using input `x`.
 
-        .. deprecated:: 0.22.0
-           The ``always_retry_404`` parameter is deprecated. 404 is included by default in the
-           ``retry_status`` parameter.  Default is 13 retries over 10 minutes.  This behavior
-           can be changed by adjusting ``max_retries`` and ``backoff_factor``.
-        .. deprecated:: 0.22.0
-           The ``always_retry_429`` parameter is deprecated. 429 is included by default in the
-           ``retry_status`` parameter.  Default is 13 retries over 10 minutes.  This behavior
-           can be changed by adjusting ``max_retries`` and ``backoff_factor``.
+        .. versionchanged:: 0.23.0
+           The ``always_retry_404`` and ``always_retry_429`` parameters have been removed.
         .. versionadded:: 0.22.0
            The ``retry_status`` parameter.
         .. versionadded:: 0.22.0
@@ -218,11 +212,6 @@ class DeployedModel(object):
             Whether to compress the request body.
         max_retries : int, default 13
             Maximum number of retries on status codes listed in ``retry_status``.
-        always_retry_404 : bool, default False
-            Deprecated: Whether to retry on 404s indefinitely. This is to accommodate model deployment warm-up.
-        always_retry_429 : bool, default False
-            Deprecated: Whether to retry on 429s indefinitely. This is to accommodate third-party cluster
-            autoscalers, which may take minutes to launch new pods for servicing requests.
         retry_status : set, default {404, 429, 500, 503, 504}
             Set of status codes, as integers, for which retry attempts should be made.  Overwrites default value.
             Expand the set to include more. For example, to add status code 409 to the existing set, use:
@@ -246,14 +235,6 @@ class DeployedModel(object):
             If the server encounters an error while handing the HTTP request.
 
         """
-        if always_retry_404 or always_retry_429:
-            warnings.warn(
-                "Deprecation warning: The `always_retry_404` and `always_retry_429`"
-                "parameters are deprecated and will removed in an upcoming version; "
-                "Status codes that should be retried are passed in the `retry_status`"
-                "parameter which includes 404 and 429 by default.",
-                category=FutureWarning,
-            )
         prediction_with_id: Tuple[str, Any] = self.predict_with_id(
             x=x,
             compress=compress,
@@ -410,27 +391,6 @@ class DeployedModel(object):
             out_df_list.append(out_df)
         # Reassemble output and return to user
         return pd.concat(out_df_list)
-
-    # TODO: Remove this method after release of 0.22.0
-    @classmethod
-    def from_url(cls, url, token=None, creds=None):
-        """
-        Returns a :class:`DeployedModel` based on a custom URL and token.
-
-        .. deprecated:: 0.22.0
-           For most use cases, call :meth:`Endpoint.get_deployed_model() <verta.endpoint.Endpoint.get_deployed_model>`.
-           For lower-level needs, call the ``DeployedModel`` class directly with the same parameters.
-        """
-        warnings.warn(
-            "This method is deprecated and will be removed in an upcoming version;"
-            ' Drop ".from_url" and call the DeployedModel class directly with the same parameters.',
-            category=FutureWarning,
-        )
-        return cls(
-            prediction_url=url,
-            token=token,
-            creds=creds,
-        )
 
 
 def prediction_input_unpack(func):
