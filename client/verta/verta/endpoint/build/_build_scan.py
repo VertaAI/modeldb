@@ -26,7 +26,7 @@ class ScanProgressEnum(str, Enum):
     ERROR = "error"
 
 
-class ScanStatusEnum(str, Enum):
+class ScanResultEnum(str, Enum):
     """The result of a build scan.
 
     For all intents and purposes, this can be treated as a :class:`str`.
@@ -56,7 +56,7 @@ class BuildScan:
         The date and time when this scan was performed/updated.
     progress : :class:`ScanProgressEnum`
         The current progress of this scan.
-    result : :class:`ScanStatusEnum` or None
+    result : :class:`ScanResultEnum` or None
         The result of this scan. ``None`` is returned if this scan is not yet
         finished, and therefore has no result.
     passed : bool
@@ -96,11 +96,11 @@ class BuildScan:
         return ScanProgressEnum(self._json["scan_status"])
 
     @property
-    def result(self) -> Optional[ScanStatusEnum]:
+    def result(self) -> Optional[ScanResultEnum]:
         if self.progress != ScanProgressEnum.SCANNED:
             return None
-        return ScanStatusEnum(self._json["safety_status"])
+        return ScanResultEnum(self._json["safety_status"])
 
     @property
     def passed(self) -> bool:
-        return self.result == ScanStatusEnum.SAFE
+        return self.result == ScanResultEnum.SAFE

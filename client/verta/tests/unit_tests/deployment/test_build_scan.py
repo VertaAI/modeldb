@@ -8,7 +8,7 @@ import pytest
 from tests.unit_tests.strategies import build_dict, build_scan_dict
 
 from verta._internal_utils import time_utils
-from verta.endpoint.build import Build, BuildScan, ScanProgressEnum, ScanStatusEnum
+from verta.endpoint.build import Build, BuildScan, ScanProgressEnum, ScanResultEnum
 
 
 def assert_build_scan_fields(
@@ -20,8 +20,8 @@ def assert_build_scan_fields(
     )
     assert build_scan.progress == ScanProgressEnum(build_scan_dict["scan_status"])
     if build_scan.progress == ScanProgressEnum.SCANNED:
-        assert build_scan.passed == (build_scan.result == ScanStatusEnum.SAFE)
-        assert build_scan.result == ScanStatusEnum(build_scan_dict["safety_status"])
+        assert build_scan.passed == (build_scan.result == ScanResultEnum.SAFE)
+        assert build_scan.result == ScanResultEnum(build_scan_dict["safety_status"])
     else:
         assert build_scan.passed is False
         assert build_scan.result is None
