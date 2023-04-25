@@ -118,6 +118,12 @@ def dev_key_sys_admin():
     return constants.DEV_KEY_SYS_ADMIN
 
 
+@pytest.fixture(scope="session")
+def namespace():
+    """For use with a workspace in multiple-namespace setups."""
+    return constants.NAMESPACE_MNS
+
+
 @pytest.fixture
 def seed():
     return RANDOM_SEED
@@ -572,8 +578,19 @@ def workspace3(client_sys_admin, created_entities):
 ])
 
 
-def create_workspace(client, created_entities, roles):
-    workspace = client._create_workspace(client._conn._get_organization_id(), generate_default_name(), roles)
+@pytest.fixture
+def workspace_mns(client_sys_admin, created_entities, namespace_mns):
+    return create_workspace(client_sys_admin, created_entities, [
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.ENDPOINT,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ]),
+    RoleV2_pb2.RoleResourceActions(resource_type=RoleV2_pb2.ResourceTypeV2.REGISTERED_MODEL,
+                                   allowed_actions=[RoleV2_pb2.ActionTypeV2.READ,
+                                                    RoleV2_pb2.ActionTypeV2.UPDATE]),
+], namespace=namespace_mns)
+
+
+def create_workspace(client, created_entities, roles, namespace=""):
+    workspace = client._create_workspace(client._conn._get_organization_id(), generate_default_name(), roles, namespace)
     created_entities.append(workspace)
     return workspace
 

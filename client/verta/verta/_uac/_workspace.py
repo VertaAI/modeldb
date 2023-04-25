@@ -14,11 +14,12 @@ class Workspace(object):
         self.id = msg.id
         self.org_id = msg.org_id
         self.name = msg.name
+        self.namespace = msg.namespace
 
     @classmethod
-    def _create(cls, conn, name, org_id, permissions):
+    def _create(cls, conn, name, org_id, permissions, namespace):
         Message = WorkspaceV2_pb2.SetWorkspaceV2
-        msg = cls._create_msg(name, org_id, permissions)
+        msg = cls._create_msg(name, org_id, permissions, namespace)
 
         response = conn.make_proto_request(
             "POST",
@@ -31,9 +32,9 @@ class Workspace(object):
         return cls(conn, workspace)
 
     @classmethod
-    def _create_msg(cls, name, org_id, permissions):
+    def _create_msg(cls, name, org_id, permissions, namespace):
         Message = WorkspaceV2_pb2.WorkspaceV2
-        msg = Message(name=name, org_id=org_id, permissions=permissions)
+        msg = Message(name=name, org_id=org_id, permissions=permissions, namespace=namespace)
         return msg
 
     def delete(self):
