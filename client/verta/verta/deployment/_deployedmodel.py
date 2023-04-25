@@ -33,7 +33,7 @@ class DeployedModel(object):
     they are not supplied explicitly in the creds parameter.
 
     .. versionchanged:: 0.23.0
-        The ``from_url`` method has been removed.
+        The ``from_url`` method has been removed in favor of directly instantiating :class:`DeployedModel`.
 
     Parameters
     ----------
