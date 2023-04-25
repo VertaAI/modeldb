@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from verta._internal_utils import _utils
+from datetime import datetime
+from typing import List
+
+from verta._internal_utils import _utils, time_utils
+from . import _build_scan
 
 
 class Build:
@@ -10,8 +14,9 @@ class Build:
     Represents an initiated docker build process. A build can be complete or in
     progress. Completed builds may be successful or failed. End-users of this
     library should not need to instantiate this class directly, but instead
-    may obtain :class:`~verta.endpoint.Build` objects from methods such as
-    :meth:`Endpoint.get_current_build<verta.endpoint.Endpoint.get_current_build>`.
+    may obtain :class:`Build` objects from methods such as
+    :meth:`Endpoint.get_current_build() <verta.endpoint.Endpoint.get_current_build>`
+    and :meth:`RegisteredModelVersion.list_builds() <verta.registry.entities.RegisteredModelVersion.list_builds>`.
 
     .. note::
 
@@ -23,6 +28,8 @@ class Build:
     ----------
     id : int
         Build ID.
+    date_created : timezone-aware :class:`~datetime.datetime`
+        The date and time when this build was created.
     status : str
         Status of the build (e.g. ``"building"``, ``"finished"``).
     message : str
@@ -34,7 +41,8 @@ class Build:
 
     _EMPTY_MESSAGE = "no error message available"
 
-    def __init__(self, json):
+    def __init__(self, conn, json):
+        self._conn = conn
         self._json = json
 
     def __repr__(self):
@@ -46,11 +54,31 @@ class Build:
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
 
-        return cls(response.json())
+        return cls(conn, response.json())
+
+    @classmethod
+    def _list_model_version_builds(
+        cls,
+        conn: _utils.Connection,
+        id: int,
+    ) -> List["Build"]:
+        """Returns a model version's builds."""
+        url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds"
+        data = {"model_version_id": id}
+        response = _utils.make_request("GET", url, conn, params=data)
+        _utils.raise_for_http_error(response)
+
+        return [
+            cls(conn, build_json) for build_json in response.json().get("builds", [])
+        ]
 
     @property
     def id(self) -> int:
         return self._json["id"]
+
+    @property
+    def date_created(self) -> datetime:
+        return time_utils.datetime_from_iso(self._json["date_created"])
 
     @property
     def status(self) -> str:
@@ -63,3 +91,14 @@ class Build:
     @property
     def is_complete(self) -> bool:
         return self.status in ("finished", "error")
+
+    def get_scan(self) -> _build_scan.BuildScan:
+        """Get this build's most recent scan.
+
+        Returns
+        -------
+        :class:`~verta.endpoint.build.BuildScan`
+            Build scan.
+
+        """
+        return _build_scan.BuildScan._get(self._conn, self.id)

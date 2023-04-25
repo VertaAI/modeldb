@@ -10,7 +10,7 @@ import hypothesis.strategies as st
 from verta._internal_utils._utils import _VALID_FLAT_KEY_CHARS
 from verta._protos.public.common import CommonService_pb2
 from verta._protos.public.modeldb.versioning import Code_pb2, Dataset_pb2
-from verta.endpoint import KafkaSettings
+from verta.endpoint import KafkaSettings, build
 
 
 @st.composite
@@ -169,3 +169,51 @@ def build_dict(draw) -> Dict[str, Any]:
         "message": draw(st.text()),
         "status": draw(st.text()),
     }
+
+
+@st.composite
+def _build_scan_detail(draw) -> Dict[str, Any]:
+    """For use in build_scan_dict."""
+    return {
+        "name": draw(st.text()),
+        "package": draw(st.text()),
+        "description": draw(st.text()),
+        "severity": draw(
+            st.sampled_from(
+                [
+                    "critical",
+                    "high",
+                    "medium",
+                    "low",
+                    "informational",
+                    "unknown",
+                ],
+            )
+        ),
+    }
+
+
+@st.composite
+def build_scan_dict(draw) -> Dict[str, Any]:
+    """Generate a Verta build scan, as returned by /api/v1/deployment/builds/{build_id}/scan."""
+    d = {
+        "creator_request": {
+            "scan_external": draw(st.booleans()),
+        },
+        "date_updated": draw(st.datetimes()).isoformat(timespec="milliseconds") + "Z",
+        "details": None,
+        "id": draw(st.integers(min_value=1)),
+        "scan_status": draw(st.sampled_from(list(build.ScanProgressEnum))).value,
+    }
+    if d["scan_status"] == build.ScanProgressEnum.SCANNED:
+        d["safety_status"] = draw(st.sampled_from(list(build.ScanResultEnum))).value
+        if d["creator_request"]["scan_external"]:
+            d["scan_external_status"] = {
+                "safety_status": d["safety_status"],
+                "url": draw(st.text()),
+            }
+        else:
+            d["scanner"] = draw(st.text())
+            d["details"] = draw(st.lists(_build_scan_detail()))
+
+    return d

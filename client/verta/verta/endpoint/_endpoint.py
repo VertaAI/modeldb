@@ -11,8 +11,8 @@ from verta.external import six
 
 from verta.deployment import DeployedModel
 from verta._internal_utils import _utils, arg_handler, kafka
-from verta.tracking.entities import ExperimentRun
-from verta.registry.entities import RegisteredModelVersion
+import verta.tracking.entities as tracking_entities
+import verta.registry.entities as registry_entities
 from verta.visibility import _visibility
 
 from . import KafkaSettings
@@ -315,7 +315,12 @@ class Endpoint(object):
 
         """
         if not isinstance(
-            model_reference, (RegisteredModelVersion, ExperimentRun, Build)
+            model_reference,
+            (
+                registry_entities.RegisteredModelVersion,
+                tracking_entities.ExperimentRun,
+                Build,
+            ),
         ):
             raise TypeError(
                 "`model_reference` must be an ExperimentRun, RegisteredModelVersion, or Build"
@@ -338,7 +343,7 @@ class Endpoint(object):
             update_body["build_id"] = build.id
 
         ret = self._update_from_build(update_body, wait)
-        if isinstance(model_reference, RegisteredModelVersion):
+        if isinstance(model_reference, registry_entities.RegisteredModelVersion):
             model_version = model_reference
 
             try:
@@ -443,11 +448,11 @@ class Endpoint(object):
             self.workspace,
         )
 
-        if isinstance(model_reference, RegisteredModelVersion):
+        if isinstance(model_reference, registry_entities.RegisteredModelVersion):
             response = _utils.make_request(
                 "POST", url, self._conn, json={"model_version_id": model_reference.id}
             )
-        elif isinstance(model_reference, ExperimentRun):
+        elif isinstance(model_reference, tracking_entities.ExperimentRun):
             response = _utils.make_request(
                 "POST", url, self._conn, json={"run_id": model_reference.id}
             )
@@ -457,7 +462,7 @@ class Endpoint(object):
             )
 
         _utils.raise_for_http_error(response)
-        return Build(response.json())
+        return Build(self._conn, response.json())
 
     def _get_or_create_stage(self, name="production"):
         """Return a stage id for compatibility reasons at the moment."""
@@ -511,7 +516,9 @@ class Endpoint(object):
         if kafka_settings._cluster_config_id is None:
             configs = kafka.list_kafka_configurations(self._conn)
             if not configs:
-                raise RuntimeError("no Kafka configuration found; please ensure that Kafka is configured in Verta")
+                raise RuntimeError(
+                    "no Kafka configuration found; please ensure that Kafka is configured in Verta"
+                )
             config_id = configs[0].get("id", None)
             if config_id is None:
                 raise RuntimeError(
@@ -648,11 +655,11 @@ class Endpoint(object):
         if "run_id" in update_dict and "model_version_id" in update_dict:
             raise ValueError("cannot provide both run_id and model_version_id")
         elif "run_id" in update_dict:
-            model_reference = ExperimentRun._get_by_id(
+            model_reference = tracking_entities.ExperimentRun._get_by_id(
                 self._conn, self._conf, id=update_dict["run_id"]
             )
         elif "model_version_id" in update_dict:
-            model_reference = RegisteredModelVersion._get_by_id(
+            model_reference = registry_entities.RegisteredModelVersion._get_by_id(
                 self._conn, self._conf, id=update_dict["model_version_id"]
             )
         else:
