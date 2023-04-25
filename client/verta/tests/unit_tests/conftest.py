@@ -55,10 +55,24 @@ def mocked_responses():
 @pytest.fixture
 def mock_endpoint(mock_conn, mock_config) -> Endpoint:
     """Return a mocked object of the Endpoint class for use in tests"""
-    return Endpoint(conn=mock_conn, conf=mock_config, workspace=456, id=123)
+
+    class MockEndpoint(Endpoint):
+        def __repr__(self):  # avoid network calls when displaying test results
+            return object.__repr__(self)
+
+    return MockEndpoint(conn=mock_conn, conf=mock_config, workspace=456, id=123)
 
 
 @pytest.fixture(scope="session")
 def mock_registered_model_version(mock_conn, mock_config):
-    Message = _RegistryService.ModelVersion
-    return RegisteredModelVersion(mock_conn, mock_config, Message(id=555))
+    """Return a mocked object of the RegisteredModelVersion class for use in tests"""
+
+    class MockRegisteredModelVersion(RegisteredModelVersion):
+        def __repr__(self):  # avoid network calls when displaying test results
+            return object.__repr__(self)
+
+    return MockRegisteredModelVersion(
+        mock_conn,
+        mock_config,
+        _RegistryService.ModelVersion(id=555),
+    )
