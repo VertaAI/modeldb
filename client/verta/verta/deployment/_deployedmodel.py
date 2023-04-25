@@ -196,7 +196,10 @@ class DeployedModel(object):
         Makes a prediction using input `x`.
 
         .. versionchanged:: 0.23.0
-           The ``always_retry_404`` and ``always_retry_429`` parameters have been removed.
+           The ``always_retry_404`` and ``always_retry_429`` parameters have been removed. Status codes
+           ``404`` and ``429``, among others,  are included by default in the ``retry_status`` parameter.
+           Default is 13 retries over 10 minutes. This behavior can be changed by adjusting ``max_retries``
+           and ``backoff_factor``.
         .. versionadded:: 0.22.0
            The ``retry_status`` parameter.
         .. versionadded:: 0.22.0
