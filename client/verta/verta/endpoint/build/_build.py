@@ -3,6 +3,7 @@
 from datetime import datetime
 
 from verta._internal_utils import _utils, time_utils
+from . import _build_scan
 
 
 class Build:
@@ -38,7 +39,8 @@ class Build:
 
     _EMPTY_MESSAGE = "no error message available"
 
-    def __init__(self, json):
+    def __init__(self, conn, json):
+        self._conn = conn
         self._json = json
 
     def __repr__(self):
@@ -50,7 +52,7 @@ class Build:
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
 
-        return cls(response.json())
+        return cls(conn, response.json())
 
     @property
     def id(self) -> int:
@@ -71,3 +73,14 @@ class Build:
     @property
     def is_complete(self) -> bool:
         return self.status in ("finished", "error")
+
+    def get_scan(self) -> _build_scan.BuildScan:
+        """Get this build's most recent scan.
+
+        Returns
+        -------
+        :class:`~verta.endpoint.build.BuildScan`
+            Build scan.
+
+        """
+        return _build_scan.BuildScan._get(self._conn, self.id)
