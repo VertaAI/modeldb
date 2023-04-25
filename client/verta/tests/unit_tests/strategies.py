@@ -206,7 +206,7 @@ def build_scan_dict(draw) -> Dict[str, Any]:
         "scan_status": draw(st.sampled_from(list(build.ScanProgressEnum))).value,
     }
     if d["scan_status"] == build.ScanProgressEnum.SCANNED:
-        d["safety_status"] = draw(st.sampled_from(list(build.ScanStatusEnum))).value
+        d["safety_status"] = draw(st.sampled_from(list(build.ScanResultEnum))).value
         if d["creator_request"]["scan_external"]:
             d["scan_external_status"] = {
                 "safety_status": d["safety_status"],
