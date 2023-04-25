@@ -9,6 +9,7 @@ import os
 import pathlib
 import pickle
 import tempfile
+from typing import List
 import warnings
 
 from google.protobuf.struct_pb2 import Value
@@ -37,6 +38,7 @@ from verta._internal_utils import (
 from verta import utils
 
 from verta import _blob, code, data_types, environment
+from verta.endpoint.build import Build
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from verta.tracking.entities import _deployable_entity
 from .. import lock, DockerImage
@@ -1690,3 +1692,39 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         del self._msg.datasets[ind]
         self._update(self._msg, method="PUT")
+
+    def list_builds(self) -> List[Build]:
+        """
+        Gets this model version's past and present builds.
+
+        Builds are returned in order of creation (most recent first).
+
+        Returns
+        -------
+        list of :class:`~verta.endpoint.build.Build`
+
+        Examples
+        --------
+        To fetch builds that have passed their scans:
+
+        .. code-block:: python
+
+            passed_builds = list(filter(
+                lambda build: build.get_scan().passed,
+                model_ver.list_builds(),
+            ))
+
+        To fetch builds that haven't been scanned in a while:
+
+        .. code-block:: python
+
+            from datetime import datetime, timedelta
+
+            past_builds = list(filter(
+                lambda build: build.get_scan().date_updated < datetime.now().astimezone() - timedelta(days=30),
+                model_ver.list_builds(),
+            ))
+
+        """
+        builds = Build._list_model_version_builds(self._conn, self.id)
+        return sorted(builds, key=lambda build: build.date_created, reverse=True)

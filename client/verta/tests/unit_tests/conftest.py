@@ -60,5 +60,5 @@ def mock_endpoint(mock_conn, mock_config) -> Endpoint:
 
 @pytest.fixture(scope="session")
 def mock_registered_model_version(mock_conn, mock_config):
-    Message = _RegistryService.RegisteredModel
+    Message = _RegistryService.ModelVersion
     return RegisteredModelVersion(mock_conn, mock_config, Message(id=555))
