@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
-from verta._internal_utils import _utils
+from datetime import datetime
+
+from verta._internal_utils import _utils, time_utils
 
 
 class Build:
@@ -23,6 +25,8 @@ class Build:
     ----------
     id : int
         Build ID.
+    date_created : timezone-aware :class:`~datetime.datetime`
+        The date and time when this build was created.
     status : str
         Status of the build (e.g. ``"building"``, ``"finished"``).
     message : str
@@ -51,6 +55,10 @@ class Build:
     @property
     def id(self) -> int:
         return self._json["id"]
+
+    @property
+    def date_created(self) -> datetime:
+        return time_utils.datetime_from_iso(self._json["date_created"])
 
     @property
     def status(self) -> str:
