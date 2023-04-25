@@ -19,8 +19,8 @@ def test_instantiation(build_scan_dict):
     )
     assert build_scan.progress == ScanProgressEnum(build_scan_dict["scan_status"])
     if build_scan.progress == ScanProgressEnum.SCANNED:
-        assert build_scan.passed == (build_scan.status == ScanStatusEnum.SAFE)
-        assert build_scan.status == ScanStatusEnum(build_scan_dict["safety_status"])
+        assert build_scan.passed == (build_scan.result == ScanStatusEnum.SAFE)
+        assert build_scan.result == ScanStatusEnum(build_scan_dict["safety_status"])
     else:
         assert build_scan.passed is False
-        assert build_scan.status is None
+        assert build_scan.result is None

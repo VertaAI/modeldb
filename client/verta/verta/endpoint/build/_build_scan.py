@@ -35,7 +35,7 @@ class ScanStatusEnum(str, Enum):
     --------
     .. code-block:: python
 
-        assert build.get_scan().status == "safe"
+        assert build.get_scan().result == "safe"
 
     """
 
@@ -56,16 +56,16 @@ class BuildScan:
         The date and time when this scan was performed/updated.
     progress : :class:`ScanProgressEnum`
         The current progress of this scan.
-    status : :class:`ScanStatusEnum` or None
+    result : :class:`ScanStatusEnum` or None
         The result of this scan. ``None`` is returned if this scan is not yet
-        finished, and therefore has no status.
+        finished, and therefore has no result.
     passed : bool
         Whether this scan finished and passed. This property is for
         convenience, equivalent to
 
         .. code-block:: python
 
-            build_scan.status == "safe"
+            build_scan.result == "safe"
 
     """
 
@@ -74,8 +74,8 @@ class BuildScan:
 
     def __repr__(self):
         detail_str = f'progress "{self.progress.value}"'
-        if self.status is not None:
-            detail_str += f', status "{self.status.value}"'
+        if self.result is not None:
+            detail_str += f', result "{self.result.value}"'
 
         return f"<BuildScan ({detail_str})>"
 
@@ -96,11 +96,11 @@ class BuildScan:
         return ScanProgressEnum(self._json["scan_status"])
 
     @property
-    def status(self) -> Optional[ScanStatusEnum]:
+    def result(self) -> Optional[ScanStatusEnum]:
         if self.progress != ScanProgressEnum.SCANNED:
             return None
         return ScanStatusEnum(self._json["safety_status"])
 
     @property
     def passed(self) -> bool:
-        return self.status == ScanStatusEnum.SAFE
+        return self.result == ScanStatusEnum.SAFE
