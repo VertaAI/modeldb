@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import pytest
 from typing import Any, Dict
 
 import hypothesis.strategies as st
-import pytest
 from hypothesis import given, HealthCheck, settings
 from responses.matchers import query_param_matcher
 
