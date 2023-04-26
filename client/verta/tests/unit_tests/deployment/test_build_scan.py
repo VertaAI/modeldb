@@ -50,3 +50,22 @@ def test_get_scan(mock_conn, mocked_responses, build_dict, build_scan_dict):
         build_scan = build.get_scan()
 
     assert_build_scan_fields(build_scan, build_scan_dict)
+
+@settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
+@given(
+    build_dict=build_dict(external_scan=True),
+    build_scan_dict=build_scan_dict(external_scan=True),
+)
+def test_start_external_scan(mock_conn, mocked_responses, build_dict, build_scan_dict):
+    """Verify we can construct a BuildScan object from start_scan(external=True)."""
+    build = Build(mock_conn, build_dict)
+
+    deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
+    scan_url = f"{deployment_url}/builds/{build.id}/scan"
+
+    with mocked_responses as rsps:
+        rsps.post(url=scan_url, status=200, json=build_scan_dict)
+
+        build_scan = build.start_scan(external=True)
+
+    assert_build_scan_fields(build_scan, build_scan_dict)

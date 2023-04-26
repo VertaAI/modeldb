@@ -2,12 +2,13 @@
 
 from typing import Any, Dict
 
-from hypothesis import given, HealthCheck, settings
+import pytest
+
 import hypothesis.strategies as st
+from hypothesis import given, HealthCheck, settings
 from responses.matchers import query_param_matcher
 
 from tests.unit_tests.strategies import build_dict
-
 from verta._internal_utils import time_utils
 from verta.endpoint.build import Build
 
@@ -92,3 +93,18 @@ def test_model_version_list_builds(
         sorted(build_dicts, key=lambda d: d["id"]),
     ):
         assert_build_fields(build, build_dict)
+
+
+@given(build_dict=build_dict())
+def test_build_start_scan_not_external_exception(mock_conn, build_dict):
+    """Test that start_scan() raises the expected error when the `external` parameter is not
+    included or False.  This can be removed when we support internal scans.
+    """
+    build = Build(mock_conn, build_dict)
+    with pytest.raises(
+        NotImplementedError,
+        match=(
+            "internal scans are not yet supported; please use `external=True` parameter"
+        ),
+    ):
+        build.start_scan(external=False)

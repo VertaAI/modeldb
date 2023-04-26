@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 
 from verta._internal_utils import _utils, time_utils
 from . import _build_scan
@@ -109,3 +109,30 @@ class Build:
 
         """
         return _build_scan.BuildScan._get(self._conn, self.id)
+
+    def start_scan(self, external: bool) -> _build_scan.BuildScan:
+        """Start a new scan for this build. Internal scans are not yet supported.
+        Use ``external=True`` parameter.
+
+        This function only starts a scan; it does not wait for the finished scan
+        to return results. Use
+        :meth:`Build.get_scan() <verta.endpoint.build.Build.get_scan()>` to view
+        progress and results of the scan.
+
+        Parameters
+        ----------
+        external : bool
+            True if using an external scan provider.
+
+        Returns
+        -------
+        :class:`~verta.endpoint.build.BuildScan`
+            Build scan.
+
+        """
+        if not external:
+            raise NotImplementedError(
+                "internal scans are not yet supported; please use `external=True`"
+                " parameter"
+            )
+        return _build_scan.BuildScan._create(self._conn, self.id, external=external)

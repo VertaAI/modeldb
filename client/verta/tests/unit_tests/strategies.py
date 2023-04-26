@@ -3,7 +3,7 @@
 """Hypothesis composite strategies for use in client unit tests."""
 
 from string import ascii_letters, ascii_lowercase, hexdigits
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import hypothesis.strategies as st
 
@@ -147,11 +147,13 @@ def mock_kafka_settings_with_config_id(draw) -> KafkaSettings:
 
 
 @st.composite
-def build_dict(draw) -> Dict[str, Any]:
-    """Generate a Verta model build, as returned by /api/v1/deployment/builds/{build_id}."""
+def build_dict(draw, external_scan: bool = False) -> Dict[str, Any]:
+    """Generate a Verta model build, as returned by /api/v1/deployment/builds/{build_id}
+    with option to force external scan to True for specific testing scenarios.
+    """
     creator_request = {
         "requires_root": draw(st.booleans()),
-        "scan_external": draw(st.booleans()),
+        "scan_external": True if external_scan else draw(st.booleans()),
         "self_contained": draw(st.booleans()),
         "uses_flask": draw(st.booleans()),
     }
@@ -194,11 +196,13 @@ def _build_scan_detail(draw) -> Dict[str, Any]:
 
 
 @st.composite
-def build_scan_dict(draw) -> Dict[str, Any]:
-    """Generate a Verta build scan, as returned by /api/v1/deployment/builds/{build_id}/scan."""
+def build_scan_dict(draw, external_scan: Optional[bool] = None) -> Dict[str, Any]:
+    """Generate a Verta build scan, as returned by /api/v1/deployment/builds/{build_id}/scan
+    with the option to force scan_external to True for specific testing scenarios.
+    """
     d = {
         "creator_request": {
-            "scan_external": draw(st.booleans()),
+            "scan_external": True if external_scan else draw(st.booleans()),
         },
         "date_updated": draw(st.datetimes()).isoformat(timespec="milliseconds") + "Z",
         "details": None,
