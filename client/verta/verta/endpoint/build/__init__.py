@@ -1,6 +1,10 @@
 # -*- coding: utf-8 -*-
 
-"""Verta model builds."""
+"""Verta model builds.
+
+.. versionadded:: 0.23.0
+
+"""
 
 from verta._internal_utils import documentation
 

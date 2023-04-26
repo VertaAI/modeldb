@@ -11,6 +11,11 @@ class Build:
     """
     An initiated docker build process of a deployable model.
 
+    .. versionchanged:: 0.23.0
+        Moved from ``verta.endpoint.Build`` to ``verta.endpoint.build.Build``.
+    .. versionadded:: 0.23.0
+        The ``date_created`` property.
+
     Represents an initiated docker build process. A build can be complete or in
     progress. Completed builds may be successful or failed. End-users of this
     library should not need to instantiate this class directly, but instead
@@ -94,6 +99,8 @@ class Build:
 
     def get_scan(self) -> _build_scan.BuildScan:
         """Get this build's most recent scan.
+
+        .. versionadded:: 0.23.0
 
         Returns
         -------
