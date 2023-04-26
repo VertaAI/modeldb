@@ -200,7 +200,6 @@ def build_scan_dict(draw, external_scan: bool = False) -> Dict[str, Any]:
     """Generate a Verta build scan, as returned by /api/v1/deployment/builds/{build_id}/scan
     with the option to force scan_external to True for specific testing scenarios.
     """
-
     d = {
         "creator_request": {
             "scan_external": True if external_scan else draw(st.booleans()),
