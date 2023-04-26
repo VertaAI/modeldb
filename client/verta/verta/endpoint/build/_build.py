@@ -103,7 +103,7 @@ class Build:
         """
         return _build_scan.BuildScan._get(self._conn, self.id)
 
-    def start_scan(self, external: bool = False) -> _build_scan.BuildScan:
+    def start_scan(self, external: bool) -> _build_scan.BuildScan:
         """Start a new scan for this build. Internal scans are not yet supported.
         Use ``external=True`` parameter.
 
