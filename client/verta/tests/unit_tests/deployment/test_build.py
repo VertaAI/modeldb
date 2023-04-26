@@ -96,8 +96,8 @@ def test_model_version_list_builds(
 
 @given(build_dict=build_dict())
 def test_build_start_scan_not_external_exception(mock_conn, build_dict):
-    """Test that start_scan() raises the expected error when the `external` parameter is  not
-    included or False.
+    """Test that start_scan() raises the expected error when the `external` parameter is not
+    included or False.  This can be removed when we support internal scans.
     """
     build = Build(mock_conn, build_dict)
     with pytest.raises(
