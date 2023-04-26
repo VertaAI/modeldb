@@ -52,13 +52,12 @@ def test_get_scan(mock_conn, mocked_responses, build_dict, build_scan_dict):
     assert_build_scan_fields(build_scan, build_scan_dict)
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(build_dict=build_dict(), build_scan_dict=build_scan_dict())
-def test_start_scan(mock_conn, mocked_responses, build_dict, build_scan_dict):
-    """Verify we can construct a BuildScan object from start_scan."""
-    build_dict["creator_request"]["scan_external"] = True
-    build_scan_dict["creator_request"]["scan_external"] = True
-    # Must assume external scan to avoid NotImplementedError
-
+@given(
+    build_dict=build_dict(external_scan=True),
+    build_scan_dict=build_scan_dict(external_scan=True),
+)
+def test_start_external_scan(mock_conn, mocked_responses, build_dict, build_scan_dict):
+    """Verify we can construct a BuildScan object from start_scan(external=True)."""
     build = Build(mock_conn, build_dict)
 
     deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
