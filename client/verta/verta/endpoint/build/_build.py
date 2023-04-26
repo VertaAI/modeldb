@@ -126,6 +126,6 @@ class Build:
         if not external:
             raise NotImplementedError(
                 "internal scans are not yet supported.  Please use `external=True`"
-                " parameter."
+                " parameter"
             )
         return _build_scan.BuildScan._start(self._conn, self.id, external=external)
