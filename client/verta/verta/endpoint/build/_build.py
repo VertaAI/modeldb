@@ -128,4 +128,4 @@ class Build:
                 "internal scans are not yet supported.  Please use `external=True`"
                 " parameter"
             )
-        return _build_scan.BuildScan._start(self._conn, self.id, external=external)
+        return _build_scan.BuildScan._create(self._conn, self.id, external=external)

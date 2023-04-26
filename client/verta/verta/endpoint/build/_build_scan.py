@@ -88,11 +88,8 @@ class BuildScan:
         return cls(response.json())
 
     @classmethod
-    def _start(cls, conn: _utils.Connection, build_id: int, external: bool) -> "BuildScan":
-        if external:
-            data = {"scan_external": True}
-        else:
-            data = {"scan_external": False}
+    def _create(cls, conn: _utils.Connection, build_id: int, external: bool) -> "BuildScan":
+        data = {"scan_external": external}
         url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds/{build_id}/scan"
         response = _utils.make_request("POST", url, conn, json=data)
         _utils.raise_for_http_error(response)
