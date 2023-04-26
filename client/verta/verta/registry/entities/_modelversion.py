@@ -1697,6 +1697,8 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         """
         Gets this model version's past and present builds.
 
+        .. versionadded:: 0.23.0
+
         Builds are returned in order of creation (most recent first).
 
         Returns

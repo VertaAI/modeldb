@@ -10,6 +10,8 @@ from verta._internal_utils import _utils, time_utils
 class ScanProgressEnum(str, Enum):
     """The current progress of a build scan.
 
+    .. versionadded:: 0.23.0
+
     For all intents and purposes, this can be treated as a :class:`str`.
 
     Examples
@@ -29,6 +31,8 @@ class ScanProgressEnum(str, Enum):
 class ScanResultEnum(str, Enum):
     """The result of a build scan.
 
+    .. versionadded:: 0.23.0
+
     For all intents and purposes, this can be treated as a :class:`str`.
 
     Examples
@@ -46,6 +50,8 @@ class ScanResultEnum(str, Enum):
 
 class BuildScan:
     """A scan of a Verta model build.
+
+    .. versionadded:: 0.23.0
 
     There should not be a need to instantiate this class directly; please use
     :meth:`Build.get_scan() <verta.endpoint.build.Build.get_scan>` instead.
