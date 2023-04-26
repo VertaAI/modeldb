@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import pytest
 from typing import Any, Dict
+
+import pytest
 
 import hypothesis.strategies as st
 from hypothesis import given, HealthCheck, settings
@@ -103,16 +104,14 @@ def test_build_start_scan_not_external_exception(mock_conn, build_dict):
     with pytest.raises(
         NotImplementedError,
         match=(
-            "internal scans are not yet supported.  Please use `external=True`"
-            " parameter"
+            "internal scans are not yet supported; please use `external=True` parameter"
         ),
     ):
         build.start_scan()
     with pytest.raises(
         NotImplementedError,
         match=(
-            "internal scans are not yet supported.  Please use `external=True`"
-            " parameter"
+            "internal scans are not yet supported; please use `external=True` parameter"
         ),
     ):
         build.start_scan(external=False)
