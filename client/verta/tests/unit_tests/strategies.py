@@ -3,7 +3,7 @@
 """Hypothesis composite strategies for use in client unit tests."""
 
 from string import ascii_letters, ascii_lowercase, hexdigits
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import hypothesis.strategies as st
 
