@@ -50,6 +50,13 @@ class BuildScan:
     There should not be a need to instantiate this class directly; please use
     :meth:`Build.get_scan() <verta.endpoint.build.Build.get_scan>` instead.
 
+    .. note::
+
+        ``BuildScan`` objects do not currently fetch live information from the
+        backend; new objects must be obtained from
+        :meth:`Build.get_scan() <verta.endpoint.build.Build.get_scan>` to get
+        up-to-date scan progress and results.
+
     Attributes
     ----------
     date_updated : timezone-aware :class:`~datetime.datetime`
