@@ -108,8 +108,9 @@ class Build:
         Use ``external=True`` parameter.
 
         This function only awaits a success response for the request, not any result
-        from the scan itself. Use ``get_scan()`` to view progress and results of the
-        scan.
+        from the scan itself. Use
+        :meth:`Build.get_scan() <verta.endpoint.build.Build.get_scan()>` to view
+        progress and results of the scan.
 
         Parameters
         ----------
