@@ -114,7 +114,7 @@ class Build:
 
         Parameters
         ----------
-        external : bool, default False
+        external : bool
             True if using an external scan provider.
 
         Returns
