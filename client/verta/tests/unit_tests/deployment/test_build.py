@@ -104,7 +104,7 @@ def test_build_start_scan_not_external_exception(mock_conn, build_dict):
         NotImplementedError,
         match=(
             "internal scans are not yet supported.  Please use `external=True`"
-            " parameter."
+            " parameter"
         ),
     ):
         build.start_scan()
@@ -112,7 +112,7 @@ def test_build_start_scan_not_external_exception(mock_conn, build_dict):
             NotImplementedError,
             match=(
                     "internal scans are not yet supported.  Please use `external=True`"
-                    " parameter."
+                    " parameter"
             ),
     ):
         build.start_scan(external=False)
