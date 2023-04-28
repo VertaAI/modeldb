@@ -1795,7 +1795,7 @@ class Client(object):
         Get available topics for the current Kafka configuration, for associating
         with an endpoint via :class:`~verta.endpoint.KafkaSettings`.
 
-        .. versionadded:: 0.22.3
+        .. versionadded:: 0.23.0
 
         Returns
         -------

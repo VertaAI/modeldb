@@ -12,7 +12,7 @@ class KafkaSettings(object):
 
     Search for available Kafka topics with :meth:`Client.get_kafka_topics() <verta.Client.get_kafka_topics>`.
 
-    .. versionchanged:: 0.22.3
+    .. versionchanged:: 0.23.0
         If ``cluster_config_id`` is not provided, it is fetched from
         the active Kafka configuration, assuming only one config exists.
     .. versionadded:: 0.19.0
