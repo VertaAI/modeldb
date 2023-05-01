@@ -1,4 +1,4 @@
-sphinx==5.2.3
+sphinx==7.0.0
 sphinx_copybutton
 
 click
