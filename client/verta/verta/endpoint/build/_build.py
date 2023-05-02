@@ -134,7 +134,8 @@ class Build:
         """
         if not external:
             raise NotImplementedError(
-                "internal scans are not yet supported; please use `external=True`"
-                " parameter"
+                "internal scans are not yet supported; please use `external=True` parameter"
             )
-        return _build_scan.BuildScan._create(self._conn, self.id, external=external, workspace=workspace)
+        return _build_scan.BuildScan._create(
+            self._conn, self.id, external=external, workspace=workspace
+        )
