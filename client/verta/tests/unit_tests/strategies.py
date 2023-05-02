@@ -221,3 +221,14 @@ def build_scan_dict(draw, external_scan: Optional[bool] = None) -> Dict[str, Any
             d["details"] = draw(st.lists(_build_scan_detail()))
 
     return d
+
+
+@st.composite
+def mock_workspace(draw):
+    workspace = draw(
+        st.text(
+            alphabet=st.characters(whitelist_categories=("Ll", "Lu", "Nl", "Pd")),
+            min_size=1,
+        )
+    )
+    return workspace
