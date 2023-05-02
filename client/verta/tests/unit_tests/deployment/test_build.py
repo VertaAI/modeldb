@@ -107,4 +107,4 @@ def test_build_start_scan_not_external_exception(mock_conn, build_dict):
             "internal scans are not yet supported; please use `external=True` parameter"
         ),
     ):
-        build.start_scan(external=False)
+        build.start_scan(external=False, workspace="test_workspace")
