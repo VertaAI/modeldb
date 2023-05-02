@@ -149,7 +149,7 @@ def mock_kafka_settings_with_config_id(draw) -> KafkaSettings:
 @st.composite
 def build_dict(draw, external_scan: Optional[bool] = None) -> Dict[str, Any]:
     """Generate a Verta model build, as returned by /api/v1/deployment/builds/{build_id}
-    with option to force external scan to True for specific testing scenarios.
+    with the option to force scan_external to True for specific testing scenarios.
     """
     creator_request = {
         "requires_root": draw(st.booleans()),
