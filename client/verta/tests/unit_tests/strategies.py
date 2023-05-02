@@ -147,13 +147,15 @@ def mock_kafka_settings_with_config_id(draw) -> KafkaSettings:
 
 
 @st.composite
-def build_dict(draw, external_scan: bool = False) -> Dict[str, Any]:
+def build_dict(draw, external_scan: Optional[bool] = None) -> Dict[str, Any]:
     """Generate a Verta model build, as returned by /api/v1/deployment/builds/{build_id}
     with option to force external scan to True for specific testing scenarios.
     """
     creator_request = {
         "requires_root": draw(st.booleans()),
-        "scan_external": True if external_scan else draw(st.booleans()),
+        "scan_external": draw(st.booleans())
+        if external_scan is None
+        else external_scan,
         "self_contained": draw(st.booleans()),
         "uses_flask": draw(st.booleans()),
     }
@@ -202,7 +204,9 @@ def build_scan_dict(draw, external_scan: Optional[bool] = None) -> Dict[str, Any
     """
     d = {
         "creator_request": {
-            "scan_external": True if external_scan else draw(st.booleans()),
+            "scan_external": draw(st.booleans())
+            if external_scan is None
+            else external_scan,
         },
         "date_updated": draw(st.datetimes()).isoformat(timespec="milliseconds") + "Z",
         "details": None,
