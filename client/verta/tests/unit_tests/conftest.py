@@ -74,5 +74,5 @@ def mock_registered_model_version(mock_conn, mock_config):
     return MockRegisteredModelVersion(
         mock_conn,
         mock_config,
-        _RegistryService.ModelVersion(id=555),
+        _RegistryService.ModelVersion(id=555, registered_model_id=123)
     )
