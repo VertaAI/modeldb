@@ -46,8 +46,9 @@ class Build:
 
     _EMPTY_MESSAGE = "no error message available"
 
-    def __init__(self, conn, json):
+    def __init__(self, conn, workspace, json):
         self._conn = conn
+        self._workspace = workspace
         self._json = json
 
     def __repr__(self):
@@ -59,13 +60,11 @@ class Build:
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
 
-        return cls(conn, response.json())
+        return cls(conn, workspace, response.json())
 
     @classmethod
     def _list_model_version_builds(
-        cls,
-        conn: _utils.Connection,
-        id: int,
+        cls, conn: _utils.Connection, id: int, workspace: str
     ) -> List["Build"]:
         """Returns a model version's builds."""
         url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds"
@@ -74,7 +73,8 @@ class Build:
         _utils.raise_for_http_error(response)
 
         return [
-            cls(conn, build_json) for build_json in response.json().get("builds", [])
+            cls(conn, workspace, build_json)
+            for build_json in response.json().get("builds", [])
         ]
 
     @property
@@ -110,7 +110,7 @@ class Build:
         """
         return _build_scan.BuildScan._get(self._conn, self.id)
 
-    def start_scan(self, external: bool, workspace: str) -> _build_scan.BuildScan:
+    def start_scan(self, external: bool) -> _build_scan.BuildScan:
         """Start a new scan for this build. Internal scans are not yet supported.
         Use ``external=True`` parameter.
 
@@ -123,8 +123,6 @@ class Build:
         ----------
         external : bool
             True if using an external scan provider.
-        workspace : str
-            Name of the workspace where the build resides.
 
         Returns
         -------
@@ -137,5 +135,5 @@ class Build:
                 "internal scans are not yet supported; please use `external=True` parameter"
             )
         return _build_scan.BuildScan._create(
-            self._conn, self.id, external=external, workspace=workspace
+            self._conn, self.id, external=external, workspace=self._workspace
         )
