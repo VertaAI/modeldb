@@ -8,7 +8,7 @@ import hypothesis.strategies as st
 from hypothesis import given, HealthCheck, settings
 from responses.matchers import query_param_matcher
 
-from tests.unit_tests.strategies import build_dict
+from tests.unit_tests.strategies import build_dict, mock_workspace
 from verta._internal_utils import time_utils
 from verta.endpoint.build import Build
 
@@ -23,10 +23,10 @@ def assert_build_fields(build: Build, build_dict: Dict[str, Any]) -> None:
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(build_dict=build_dict())
-def test_instantiation(mock_conn, build_dict):
+@given(build_dict=build_dict(), workspace=mock_workspace())
+def test_instantiation(mock_conn, build_dict, workspace):
     """Verify a Build object can be instantated from a dict."""
-    build = Build(mock_conn, build_dict)
+    build = Build(mock_conn, workspace, build_dict)
 
     assert_build_fields(build, build_dict)
 
@@ -66,6 +66,8 @@ def test_model_version_list_builds(
     build_dicts,
 ):
     """Verify we can construct Build objects from list_builds()."""
+    registry_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/registry"
+    model_version_url = f"{registry_url}/registered_models/{mock_registered_model_version.registered_model_id}"
     deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
     list_builds_url = f"{deployment_url}/builds"
 
@@ -79,6 +81,11 @@ def test_model_version_list_builds(
                 ),
             ],
             json={"builds": build_dicts},
+        )
+        rsps.get(
+            url=model_version_url,
+            status=200,
+            json={"workspace_id": "123"},
         )
 
         builds = mock_registered_model_version.list_builds()
@@ -95,16 +102,19 @@ def test_model_version_list_builds(
         assert_build_fields(build, build_dict)
 
 
-@given(build_dict=build_dict())
-def test_build_start_scan_not_external_exception(mock_conn, build_dict):
+@given(
+    build_dict=build_dict(),
+    workspace=mock_workspace(),
+)
+def test_build_start_scan_not_external_exception(mock_conn, build_dict, workspace):
     """Test that start_scan() raises the expected error when the `external` parameter is not
     included or False.  This can be removed when we support internal scans.
     """
-    build = Build(mock_conn, build_dict)
+    build = Build(mock_conn, workspace, build_dict)
     with pytest.raises(
         NotImplementedError,
         match=(
             "internal scans are not yet supported; please use `external=True` parameter"
         ),
     ):
-        build.start_scan(external=False, workspace="test_workspace")
+        build.start_scan(external=False)
