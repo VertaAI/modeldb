@@ -110,7 +110,7 @@ class Build:
         """
         return _build_scan.BuildScan._get(self._conn, self.id)
 
-    def start_scan(self, external: bool) -> _build_scan.BuildScan:
+    def start_scan(self, external: bool, workspace: str) -> _build_scan.BuildScan:
         """Start a new scan for this build. Internal scans are not yet supported.
         Use ``external=True`` parameter.
 
@@ -123,6 +123,8 @@ class Build:
         ----------
         external : bool
             True if using an external scan provider.
+        workspace : str
+            Name of the workspace where the build resides.
 
         Returns
         -------
@@ -135,4 +137,4 @@ class Build:
                 "internal scans are not yet supported; please use `external=True`"
                 " parameter"
             )
-        return _build_scan.BuildScan._create(self._conn, self.id, external=external)
+        return _build_scan.BuildScan._create(self._conn, self.id, external=external, workspace=workspace)
