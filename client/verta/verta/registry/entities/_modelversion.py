@@ -1728,5 +1728,5 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
             ))
 
         """
-        builds = Build._list_model_version_builds(self._conn, self.id)
+        builds = Build._list_model_version_builds(self._conn, self.id, self.workspace)
         return sorted(builds, key=lambda build: build.date_created, reverse=True)
