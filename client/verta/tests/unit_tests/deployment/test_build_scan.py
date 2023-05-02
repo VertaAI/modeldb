@@ -5,7 +5,6 @@ from typing import Any, Dict
 from hypothesis import given, HealthCheck, settings
 from responses.matchers import json_params_matcher
 
-
 from tests.unit_tests.strategies import build_dict, build_scan_dict
 
 from verta._internal_utils import time_utils
