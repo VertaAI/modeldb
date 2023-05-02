@@ -462,7 +462,7 @@ class Endpoint(object):
             )
 
         _utils.raise_for_http_error(response)
-        return Build(self._conn, response.json())
+        return Build(self._conn, self.workspace, response.json())
 
     def _get_or_create_stage(self, name="production"):
         """Return a stage id for compatibility reasons at the moment."""
