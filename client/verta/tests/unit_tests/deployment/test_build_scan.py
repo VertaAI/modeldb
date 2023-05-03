@@ -2,7 +2,7 @@
 
 from typing import Any, Dict
 
-from hypothesis import given, HealthCheck, settings, strategies as st
+from hypothesis import given, HealthCheck, settings
 import pytest
 
 from tests.unit_tests.strategies import build_dict, build_scan_dict, mock_workspace
