@@ -102,7 +102,7 @@ class BuildScan:
 
     @classmethod
     def _create(
-        cls, conn: _utils.Connection, build_id: int, external: bool, workspace: str
+        cls, conn: _utils.Connection, workspace: str, build_id: int, external: bool
     ) -> "BuildScan":
         data = {"scan_external": external}
         url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/workspace/{workspace}/builds/{build_id}/scan"
