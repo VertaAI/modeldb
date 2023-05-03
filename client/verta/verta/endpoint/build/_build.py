@@ -64,7 +64,7 @@ class Build:
 
     @classmethod
     def _list_model_version_builds(
-        cls, conn: _utils.Connection, id: int, workspace: str
+        cls, conn: _utils.Connection, workspace: str, id: int
     ) -> List["Build"]:
         """Returns a model version's builds."""
         url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds"
