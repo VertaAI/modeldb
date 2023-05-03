@@ -135,5 +135,5 @@ class Build:
                 "internal scans are not yet supported; please use `external=True` parameter"
             )
         return _build_scan.BuildScan._create(
-            self._conn, self.id, external=external, workspace=self._workspace
+            self._conn, self._workspace, self.id, external=external
         )
