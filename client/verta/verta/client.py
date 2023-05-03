@@ -1353,7 +1353,7 @@ class Client(object):
 
         Returns
         -------
-        :class:`~verta.registry.entities.RegisteredModel`
+        :class:`~verta.endpoint.Endpoint`
 
         Raises
         ------
