@@ -3,7 +3,7 @@
 from typing import Any, Dict
 
 from hypothesis import given, HealthCheck, settings
-import pytest
+from responses.matchers import json_params_matcher
 
 from tests.unit_tests.strategies import build_dict, build_scan_dict, mock_workspace
 
@@ -72,7 +72,12 @@ def test_start_external_scan(
     scan_url = f"{deployment_url}/workspace/{workspace}/builds/{build.id}/scan"
 
     with mocked_responses as rsps:
-        rsps.post(url=scan_url, status=200, json=build_scan_dict)
+        rsps.post(
+            url=scan_url,
+            status=200,
+            match=[json_params_matcher({"scan_external": True})],
+            json=build_scan_dict,
+        )
 
         build_scan = build.start_scan(external=True)
 
