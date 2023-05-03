@@ -101,9 +101,11 @@ class BuildScan:
         return cls(response.json())
 
     @classmethod
-    def _create(cls, conn: _utils.Connection, build_id: int, external: bool) -> "BuildScan":
+    def _create(
+        cls, conn: _utils.Connection, workspace: str, build_id: int, external: bool
+    ) -> "BuildScan":
         data = {"scan_external": external}
-        url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds/{build_id}/scan"
+        url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/workspace/{workspace}/builds/{build_id}/scan"
         response = _utils.make_request("POST", url, conn, json=data)
         _utils.raise_for_http_error(response)
 

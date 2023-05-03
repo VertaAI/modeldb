@@ -46,8 +46,9 @@ class Build:
 
     _EMPTY_MESSAGE = "no error message available"
 
-    def __init__(self, conn, json):
+    def __init__(self, conn, workspace, json):
         self._conn = conn
+        self._workspace = workspace
         self._json = json
 
     def __repr__(self):
@@ -59,13 +60,11 @@ class Build:
         response = _utils.make_request("GET", url, conn)
         _utils.raise_for_http_error(response)
 
-        return cls(conn, response.json())
+        return cls(conn, workspace, response.json())
 
     @classmethod
     def _list_model_version_builds(
-        cls,
-        conn: _utils.Connection,
-        id: int,
+        cls, conn: _utils.Connection, workspace: str, id: int
     ) -> List["Build"]:
         """Returns a model version's builds."""
         url = f"{conn.scheme}://{conn.socket}/api/v1/deployment/builds"
@@ -74,7 +73,8 @@ class Build:
         _utils.raise_for_http_error(response)
 
         return [
-            cls(conn, build_json) for build_json in response.json().get("builds", [])
+            cls(conn, workspace, build_json)
+            for build_json in response.json().get("builds", [])
         ]
 
     @property
@@ -132,7 +132,8 @@ class Build:
         """
         if not external:
             raise NotImplementedError(
-                "internal scans are not yet supported; please use `external=True`"
-                " parameter"
+                "internal scans are not yet supported; please use `external=True` parameter"
             )
-        return _build_scan.BuildScan._create(self._conn, self.id, external=external)
+        return _build_scan.BuildScan._create(
+            self._conn, self._workspace, self.id, external=external
+        )

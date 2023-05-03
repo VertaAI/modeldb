@@ -5,7 +5,7 @@ from typing import Any, Dict
 from hypothesis import given, HealthCheck, settings
 import pytest
 
-from tests.unit_tests.strategies import build_dict, build_scan_dict
+from tests.unit_tests.strategies import build_dict, build_scan_dict, mock_workspace
 
 from verta._internal_utils import time_utils
 from verta.endpoint.build import Build, BuildScan, ScanProgressEnum, ScanResultEnum
@@ -36,10 +36,14 @@ def test_instantiation(build_scan_dict):
 
 
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
-@given(build_dict=build_dict(), build_scan_dict=build_scan_dict())
-def test_get_scan(mock_conn, mocked_responses, build_dict, build_scan_dict):
+@given(
+    build_dict=build_dict(),
+    build_scan_dict=build_scan_dict(),
+    workspace=mock_workspace(),
+)
+def test_get_scan(mock_conn, mocked_responses, build_dict, build_scan_dict, workspace):
     """Verify we can construct a BuildScan object from get_scan()."""
-    build = Build(mock_conn, build_dict)
+    build = Build(mock_conn, workspace, build_dict)
 
     deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
     scan_url = f"{deployment_url}/builds/{build.id}/scan"
@@ -51,17 +55,21 @@ def test_get_scan(mock_conn, mocked_responses, build_dict, build_scan_dict):
 
     assert_build_scan_fields(build_scan, build_scan_dict)
 
+
 @settings(suppress_health_check=[HealthCheck.function_scoped_fixture])
 @given(
     build_dict=build_dict(external_scan=True),
     build_scan_dict=build_scan_dict(external_scan=True),
+    workspace=mock_workspace(),
 )
-def test_start_external_scan(mock_conn, mocked_responses, build_dict, build_scan_dict):
+def test_start_external_scan(
+    mock_conn, mocked_responses, build_dict, build_scan_dict, workspace
+):
     """Verify we can construct a BuildScan object from start_scan(external=True)."""
-    build = Build(mock_conn, build_dict)
+    build = Build(mock_conn, workspace, build_dict)
 
     deployment_url = f"{mock_conn.scheme}://{mock_conn.socket}/api/v1/deployment"
-    scan_url = f"{deployment_url}/builds/{build.id}/scan"
+    scan_url = f"{deployment_url}/workspace/{workspace}/builds/{build.id}/scan"
 
     with mocked_responses as rsps:
         rsps.post(url=scan_url, status=200, json=build_scan_dict)
