@@ -89,7 +89,7 @@ class Connection(object):
         self.retry = Retry(
             total=max_retries,
             backoff_factor=1,  # each retry waits (2**retry_num) seconds
-            method_whitelist=False,  # retry on all HTTP methods
+            allowed_methods=False,  # retry on all HTTP methods
             status_forcelist=(
                 requests.codes.bad_gateway,
                 requests.codes.unavailable,
