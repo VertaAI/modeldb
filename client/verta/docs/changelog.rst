@@ -37,6 +37,49 @@ Changelog
      (`# <>`__)
 
 
+v0.23.0 (2023-05-05)
+--------------------
+
+Backwards Incompatibilities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- move :class:`~verta.endpoint.build.Build` from ``verta.endpoint`` to ``verta.endpoint.build``
+  (`#3749 <https://github.com/VertaAI/modeldb/pull/3749>`__)
+- remove deprecated ``always_retry_404`` and ``always_retry_429`` parameters from
+  :meth:`DeployedModel.predict() <verta.deployment.DeployedModel.predict>`
+  (`#3772 <https://github.com/VertaAI/modeldb/pull/3772>`__)
+- remove deprecated ``DeployedModel.from_url()``
+  (`#3772 <https://github.com/VertaAI/modeldb/pull/3772>`__)
+
+New Features
+^^^^^^^^^^^^
+- add :meth:`RegisteredModelVersion.list_builds() <verta.registry.entities.RegisteredModelVersion.list_builds>`
+  (`#3759 <https://github.com/VertaAI/modeldb/pull/3759>`__)
+- add ``Build.date_created``
+  (`#3756 <https://github.com/VertaAI/modeldb/pull/3756>`__)
+- add :meth:`Build.get_scan() <verta.endpoint.build.Build.get_scan>`
+  (`#3758 <https://github.com/VertaAI/modeldb/pull/3758>`__)
+- add :meth:`Build.start_scan() <verta.endpoint.build.Build.start_scan>`
+  (`#3778 <https://github.com/VertaAI/modeldb/pull/3778>`__,
+  `#3785 <https://github.com/VertaAI/modeldb/pull/3785>`__)
+- add :class:`~verta.endpoint.build.BuildScan`
+  (`#3757 <https://github.com/VertaAI/modeldb/pull/3757>`__)
+- add :meth:`Client.get_kafka_topics() <verta.Client.get_kafka_topics>`
+  (`#3727 <https://github.com/VertaAI/modeldb/pull/3727>`__)
+
+Enhancements
+^^^^^^^^^^^^
+- make ``cluster_config_id`` optional in :class:`~verta.endpoint.KafkaSettings`
+  (`#3727 <https://github.com/VertaAI/modeldb/pull/3727>`__)
+
+Bug Fixes
+^^^^^^^^^
+- replace ``method_whitelist`` with ``allowed_methods`` for ``urllib3>=2.0.0``
+  (`#3792 <https://github.com/VertaAI/modeldb/pull/3792>`__)
+- fix :meth:`Client.create_endpoint() <verta.Client.create_endpoint>`'s
+  documented return type
+  (`#3789 <https://github.com/VertaAI/modeldb/pull/3789>`__)
+
+
 v0.22.2 (2023-04-04)
 --------------------
 
