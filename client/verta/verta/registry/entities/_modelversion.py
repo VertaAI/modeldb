@@ -1668,7 +1668,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
     
     def get_dataset_versions(self):
         """
-        Gets all the ``DatasetVersion``\ s with associated with this Model Version.
+        Gets all the ``DatasetVersion``\ s associated with this Model Version.
 
         Returns
         -------
