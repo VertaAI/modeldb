@@ -32,10 +32,10 @@ class TestLogDataset:
         dataset = model_version.get_dataset_version(key3)
         assert dataset_version3.id == dataset.id
 
-        dataset_versions =  model_version.get_dataset_versions()
-        assert dataset_versions[key1].id == dataset_version1.id
-        assert dataset_versions[key2].id == dataset_version2.id
-        assert dataset_versions[key3].id == dataset_version3.id
+        dataset_versions = model_version.get_dataset_versions()
+        assert dataset_versions[0].id == dataset_version1.id
+        assert dataset_versions[1].id == dataset_version2.id
+        assert dataset_versions[2].id == dataset_version3.id
 
         with pytest.raises(KeyError, match="no dataset found with key"):
             model_version.del_dataset_version("fake")
