@@ -1665,6 +1665,31 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 )
 
         raise KeyError("no dataset found with key {}".format(key))
+    
+    def get_dataset_versions(self):
+        """
+        Gets all DatasetVersions associated with this Model Version.
+
+        Returns
+        -------
+        list of :class:`~verta.dataset.entities.DatasetVersion`
+            DatasetVersions associated with this Model Version.
+        """
+        self._refresh_cache()
+
+        dataset_versions = list()
+
+        for dataset in self._msg.datasets:
+            dataset_versions.append(
+                _dataset_version.DatasetVersion(
+                    self._conn,
+                    self._conf,
+                    _dataset_version.DatasetVersion._get_proto_by_id(
+                        self._conn, dataset.linked_artifact_id
+                    ),
+                )
+            )
+        return dataset_versions
 
     def del_dataset_version(self, key):
         """
