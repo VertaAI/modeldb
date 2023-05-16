@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/registry/model_versions/find": {
+    "/model_versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
         "operationId": "RegistryService_FindModelVersion4",
@@ -44,7 +44,7 @@
         ]
       }
     },
-    "/registry/model_versions/{id.model_version_id}": {
+    "/model_versions/{id.model_version_id}": {
       "get": {
         "operationId": "RegistryService_GetModelVersion2",
         "responses": {
@@ -150,7 +150,7 @@
         ]
       }
     },
-    "/registry/model_versions/{id.model_version_id}/lock": {
+    "/model_versions/{id.model_version_id}/lock": {
       "put": {
         "operationId": "RegistryService_SetLockModelVersion",
         "responses": {
@@ -190,7 +190,7 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/commitArtifactPart": {
+    "/model_versions/{model_version_id}/commitArtifactPart": {
       "post": {
         "operationId": "RegistryService_commitArtifactPart",
         "responses": {
@@ -230,7 +230,7 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/commitMultipartArtifact": {
+    "/model_versions/{model_version_id}/commitMultipartArtifact": {
       "post": {
         "operationId": "RegistryService_commitMultipartArtifact",
         "responses": {
@@ -270,7 +270,7 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/getCommittedArtifactParts": {
+    "/model_versions/{model_version_id}/getCommittedArtifactParts": {
       "get": {
         "operationId": "RegistryService_getCommittedArtifactParts",
         "responses": {
@@ -309,7 +309,7 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/getUrlForArtifact": {
+    "/model_versions/{model_version_id}/getUrlForArtifact": {
       "post": {
         "operationId": "RegistryService_getUrlForArtifact",
         "responses": {
@@ -349,7 +349,7 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logAttributes": {
+    "/model_versions/{model_version_id}/logAttributes": {
       "post": {
         "operationId": "RegistryService_logAttributesInModelVersion",
         "responses": {
@@ -388,7 +388,7 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion": {
+    "/model_versions/{model_version_id}/logCodeBlobInModelVersion": {
       "post": {
         "operationId": "RegistryService_logCodeBlobInModelVersion",
         "responses": {
@@ -427,7 +427,7 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logDatasets": {
+    "/model_versions/{model_version_id}/logDatasets": {
       "post": {
         "operationId": "RegistryService_logDatasetsInModelVersion",
         "responses": {
@@ -466,7 +466,7 @@
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logDockerMetadata": {
+    "/model_versions/{model_version_id}/logDockerMetadata": {
       "post": {
         "operationId": "RegistryService_logDockerMetadataInModelVersion",
         "responses": {
@@ -505,7 +505,7 @@
         ]
       }
     },
-    "/registry/registered_models/count": {
+    "/registered_models/count": {
       "get": {
         "operationId": "RegistryService_GetRegisteredModelCount",
         "responses": {
@@ -535,7 +535,7 @@
         ]
       }
     },
-    "/registry/registered_models/find": {
+    "/registered_models/find": {
       "post": {
         "summary": "CRUD for RegisteredModel",
         "operationId": "RegistryService_FindRegisteredModel2",
@@ -568,7 +568,7 @@
         ]
       }
     },
-    "/registry/registered_models/model_versions/external_deployments": {
+    "/registered_models/model_versions/external_deployments": {
       "post": {
         "operationId": "RegistryService_CreateExternalDeployment",
         "responses": {
@@ -630,7 +630,7 @@
         ]
       }
     },
-    "/registry/registered_models/model_versions/external_deployments/{external_deployment_id}": {
+    "/registered_models/model_versions/external_deployments/{external_deployment_id}": {
       "get": {
         "operationId": "RegistryService_GetExternalDeployment",
         "responses": {
@@ -690,7 +690,7 @@
         ]
       }
     },
-    "/registry/registered_models/{id.model_id.registered_model_id}/model_versions": {
+    "/registered_models/{id.model_id.registered_model_id}/model_versions": {
       "post": {
         "operationId": "RegistryService_CreateModelVersion2",
         "responses": {
@@ -730,7 +730,7 @@
         ]
       }
     },
-    "/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}": {
+    "/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}": {
       "delete": {
         "operationId": "RegistryService_DeleteModelVersion2",
         "responses": {
@@ -876,7 +876,7 @@
         ]
       }
     },
-    "/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}/full_body": {
+    "/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}/full_body": {
       "patch": {
         "operationId": "RegistryService_UpdateModelVersion4",
         "responses": {
@@ -924,7 +924,7 @@
         ]
       }
     },
-    "/registry/registered_models/{id.registered_model_id}": {
+    "/registered_models/{id.registered_model_id}": {
       "get": {
         "operationId": "RegistryService_GetRegisteredModel2",
         "responses": {
@@ -1090,7 +1090,7 @@
         ]
       }
     },
-    "/registry/registered_models/{id.registered_model_id}/full_body": {
+    "/registered_models/{id.registered_model_id}/full_body": {
       "patch": {
         "operationId": "RegistryService_UpdateRegisteredModel4",
         "responses": {
@@ -1130,7 +1130,7 @@
         ]
       }
     },
-    "/registry/registered_models/{id.registered_model_id}/model_versions/find": {
+    "/registered_models/{id.registered_model_id}/model_versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
         "operationId": "RegistryService_FindModelVersion2",
@@ -1171,7 +1171,7 @@
         ]
       }
     },
-    "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions": {
+    "/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions": {
       "post": {
         "operationId": "RegistryService_CreateModelVersion",
         "responses": {
@@ -1217,7 +1217,7 @@
         ]
       }
     },
-    "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}": {
+    "/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}": {
       "get": {
         "operationId": "RegistryService_GetModelVersion",
         "responses": {
@@ -1427,7 +1427,7 @@
         ]
       }
     },
-    "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}/full_body": {
+    "/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}/full_body": {
       "patch": {
         "operationId": "RegistryService_UpdateModelVersion3",
         "responses": {
@@ -1481,7 +1481,7 @@
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/model_versions/find": {
+    "/workspaces/{id.named_id.workspace_name}/model_versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
         "operationId": "RegistryService_FindModelVersion3",
@@ -1521,7 +1521,7 @@
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/registered_models": {
+    "/workspaces/{id.named_id.workspace_name}/registered_models": {
       "post": {
         "operationId": "RegistryService_CreateRegisteredModel",
         "responses": {
@@ -1560,7 +1560,7 @@
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}": {
+    "/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}": {
       "get": {
         "operationId": "RegistryService_GetRegisteredModel",
         "responses": {
@@ -1738,7 +1738,7 @@
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/full_body": {
+    "/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/full_body": {
       "patch": {
         "operationId": "RegistryService_UpdateRegisteredModel3",
         "responses": {
@@ -1784,7 +1784,7 @@
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/model_versions/find": {
+    "/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/model_versions/find": {
       "post": {
         "summary": "CRUD for Model Version",
         "operationId": "RegistryService_FindModelVersion",
@@ -1831,7 +1831,7 @@
         ]
       }
     },
-    "/registry/workspaces/{workspace_name}/registered_models/find": {
+    "/workspaces/{workspace_name}/registered_models/find": {
       "post": {
         "summary": "CRUD for RegisteredModel",
         "operationId": "RegistryService_FindRegisteredModel",
