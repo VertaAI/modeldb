@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "monitoring/Ingest.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "monitoring/Ingest.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -14,16 +14,16 @@
     "/api/v1/monitoring/ingest/batchIngest": {
       "post": {
         "operationId": "IngestService_batchIngest",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/monitoringBatchIngestRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,14 +31,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/monitoringBatchIngestRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "IngestService"
         ]
       }
@@ -46,29 +46,29 @@
   },
   "definitions": {
     "BatchIngestRequestColumnSpec": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "monitoring_name": {
-          "/ype": "string",
+          "type": "string",
           "description": "Name of the column that is associated with the monitoring system. Used to enable datasets to have different column names.\nEquivalent to x-verta-monitoring-name in the model API.\nOptional (will default to the original column name)."
         },
-        "/o_type": {
+        "io_type": {
           "$ref": "#/definitions/IOTypeEnumIOType",
           "description": "Type of the IO entry so that it can be mapped correctly."
         },
         "confidence_for": {
-          "/ype": "string",
+          "type": "string",
           "description": "Name of the \"monitoring_name\" entry that this column corresponds to a confidence for.\nEquivalent to x-verta-monitoring-confidence-for in the model API.\nOptional."
         },
-        "/round_truth_for": {
-          "/ype": "string",
+        "ground_truth_for": {
+          "type": "string",
           "description": "Name of the \"monitoring_name\" entry that this column corresponds to the ground truth for.\nOptional."
         }
       }
     },
     "CompressionTypeEnumCompressionType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "RAW",
         "GZIP"
@@ -76,8 +76,8 @@
       "default": "UNKNOWN"
     },
     "EncodingTypeEnumEncodingType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "CSV",
         "JSON",
@@ -86,8 +86,8 @@
       "default": "UNKNOWN"
     },
     "IOTypeEnumIOType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "INPUT",
         "OUTPUT",
@@ -96,8 +96,8 @@
       "default": "UNKNOWN"
     },
     "SourceTypeEnumSourceType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "REFERENCE",
         "GROUND_TRUTH",
@@ -106,105 +106,105 @@
       "default": "UNKNOWN"
     },
     "monitoringBatchIngestRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ource_type": {
+        "source_type": {
           "$ref": "#/definitions/SourceTypeEnumSourceType"
         },
-        "/d_column_name": {
-          "/ype": "string",
+        "id_column_name": {
+          "type": "string",
           "description": "Name of the column in the data that can be used as the prediction id.\nRequired for ground truth and predictions."
         },
         "column_name": {
-          "/ype": "string",
+          "type": "string",
           "description": "Name of the column in the data that can be used as the timestamp for each row."
         },
-        "/fc3339_nano": {
-          "/ype": "string",
+        "rfc3339_nano": {
+          "type": "string",
           "description": "String representation of the timestamp in RFC3339 format."
         },
         "unix_utc_nano": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64",
           "description": "UTC unix time in nanoseconds."
         },
         "dataset_version_id": {
-          "/ype": "string",
+          "type": "string",
           "description": "ID of the dataset version inside Verta to be used for ingestion."
         },
         "config": {
           "$ref": "#/definitions/versioningDatasetBlob",
           "description": "DatasetBlob that is equivalent to a dataset version, but not registered in the system."
         },
-        "/ngest_columns": {
-          "/ype": "object",
+        "ingest_columns": {
+          "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/BatchIngestRequestColumnSpec"
           },
           "description": "Map from name of the column in the original data to a specification of how to ingest it."
         },
         "batch_id": {
-          "/ype": "string",
+          "type": "string",
           "description": "Unique ID associated with this batch of data.\nOptional."
         },
-        "/ncoding_type": {
+        "encoding_type": {
           "$ref": "#/definitions/EncodingTypeEnumEncodingType"
         },
         "compression_type": {
           "$ref": "#/definitions/CompressionTypeEnumCompressionType"
         },
         "monitored_entity_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64",
           "description": "MonitoredEntity to attach this batch to."
         },
         "model_version_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64",
-          "/itle": "ModelVersion to which this batch is associated.\nTOOD: make this optional? We don't need a specific model to monitor data"
+          "title": "ModelVersion to which this batch is associated.\nTOOD: make this optional? We don't need a specific model to monitor data"
         }
       }
     },
     "monitoringBatchIngestRequestResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string"
+        "type_url": {
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte"
         }
       }
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
-    "/ersioningDatasetBlob": {
-      "/ype": "object",
+    "versioningDatasetBlob": {
+      "type": "object",
       "properties": {
-        "/3": {
+        "s3": {
           "$ref": "#/definitions/versioningS3DatasetBlob"
         },
         "path": {
@@ -215,95 +215,95 @@
         }
       }
     },
-    "/ersioningPathDatasetBlob": {
-      "/ype": "object",
+    "versioningPathDatasetBlob": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningPathDatasetComponentBlob"
           }
         }
       }
     },
-    "/ersioningPathDatasetComponentBlob": {
-      "/ype": "object",
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
       "properties": {
         "path": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/ize": {
-          "/ype": "string",
+        "size": {
+          "type": "string",
           "format": "uint64"
         },
         "last_modified_at_source": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
-        "/ha256": {
-          "/ype": "string"
+        "sha256": {
+          "type": "string"
         },
         "md5": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/nternal_versioned_path": {
-          "/ype": "string"
+        "internal_versioned_path": {
+          "type": "string"
         },
         "base_path": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
-    "/ersioningQueryDatasetBlob": {
-      "/ype": "object",
+    "versioningQueryDatasetBlob": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningQueryDatasetComponentBlob"
           }
         }
       }
     },
-    "/ersioningQueryDatasetComponentBlob": {
-      "/ype": "object",
+    "versioningQueryDatasetComponentBlob": {
+      "type": "object",
       "properties": {
         "query": {
-          "/ype": "string"
+          "type": "string"
         },
         "data_source_uri": {
-          "/ype": "string",
-          "/itle": "string query_template = 2;\nrepeated QueryParameter query_parameters = 3;"
+          "type": "string",
+          "title": "string query_template = 2;\nrepeated QueryParameter query_parameters = 3;"
         },
-        "/xecution_timestamp": {
-          "/ype": "string",
+        "execution_timestamp": {
+          "type": "string",
           "format": "uint64"
         },
         "num_records": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         }
       }
     },
-    "/ersioningS3DatasetBlob": {
-      "/ype": "object",
+    "versioningS3DatasetBlob": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningS3DatasetComponentBlob"
           }
         }
       }
     },
-    "/ersioningS3DatasetComponentBlob": {
-      "/ype": "object",
+    "versioningS3DatasetComponentBlob": {
+      "type": "object",
       "properties": {
         "path": {
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
-        "/3_version_id": {
-          "/ype": "string"
+        "s3_version_id": {
+          "type": "string"
         }
       }
     }

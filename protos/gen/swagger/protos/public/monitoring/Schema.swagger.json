@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "monitoring/Schema.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "monitoring/Schema.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -14,16 +14,16 @@
     "/api/v1/monitoring/schema/createSchema": {
       "post": {
         "operationId": "SchemaService_createSchema",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/monitoringSchema"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,14 +31,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/monitoringCreateSchema"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "SchemaService"
         ]
       }
@@ -46,16 +46,16 @@
     "/api/v1/monitoring/schema/deleteSchema": {
       "delete": {
         "operationId": "SchemaService_deleteSchema",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,14 +63,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/monitoringDeleteSchema"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "SchemaService"
         ]
       }
@@ -78,16 +78,16 @@
     "/api/v1/monitoring/schema/findSchema": {
       "post": {
         "operationId": "SchemaService_findSchema",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/monitoringFindSchemasResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,14 +95,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/monitoringFindSchemas"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "SchemaService"
         ]
       }
@@ -110,16 +110,16 @@
     "/api/v1/monitoring/schema/updateSchema": {
       "post": {
         "operationId": "SchemaService_updateSchema",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/monitoringSchema"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,14 +127,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/monitoringUpdateSchema"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "SchemaService"
         ]
       }
@@ -142,14 +142,14 @@
   },
   "definitions": {
     "monitoringCreateSchema": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "monitored_entity_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "features": {
-          "/ype": "object",
+          "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/monitoringFeatureSchema"
           }
@@ -157,25 +157,25 @@
       }
     },
     "monitoringDeleteSchema": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "monitored_entity_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         }
       }
     },
     "monitoringFeatureSchema": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype": {
+        "type": {
           "$ref": "#/definitions/monitoringFeatureSchemaType"
         }
       }
     },
     "monitoringFeatureSchemaType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNDEFINED",
         "STRING",
         "LONG",
@@ -185,102 +185,102 @@
       "default": "UNDEFINED"
     },
     "monitoringFindMonitoredEntityRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ds": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string",
+        "ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
             "format": "uint64"
           }
         },
         "names": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "fuzzy_names": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "/itle": "Add names to find with a fuzzy (non-exact) search"
+          "title": "Add names to find with a fuzzy (non-exact) search"
         },
-        "/ndpoint_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string",
+        "endpoint_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
             "format": "uint64"
           }
         },
         "model_version_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "workspace_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "workspace_name": {
-          "/ype": "string"
+          "type": "string"
         },
         "page_number": {
-          "/ype": "integer",
-          "format": "/nt32",
-          "/itle": "Pagination"
+          "type": "integer",
+          "format": "int32",
+          "title": "Pagination"
         },
         "page_limit": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         }
       }
     },
     "monitoringFindSchemas": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "find_entities": {
           "$ref": "#/definitions/monitoringFindMonitoredEntityRequest"
         },
-        "/ersions": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string",
+        "versions": {
+          "type": "array",
+          "items": {
+            "type": "string",
             "format": "uint64"
           }
         }
       }
     },
     "monitoringFindSchemasResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/chemas": {
-          "/ype": "array",
-          "/tems": {
+        "schemas": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/monitoringSchema"
           }
         }
       }
     },
     "monitoringSchema": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "monitored_entity_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
-        "/ersion": {
-          "/ype": "string",
+        "version": {
+          "type": "string",
           "format": "uint64"
         },
         "created_at_millis": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "features": {
-          "/ype": "object",
+          "type": "object",
           "additionalProperties": {
             "$ref": "#/definitions/monitoringFeatureSchema"
           }
@@ -288,48 +288,48 @@
       }
     },
     "monitoringUpdateSchema": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/chema": {
+        "schema": {
           "$ref": "#/definitions/monitoringSchema"
         }
       }
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string"
+        "type_url": {
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte"
         }
       }
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
-    "/ertamonitoringEmpty": {
-      "/ype": "object"
+    "vertamonitoringEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"

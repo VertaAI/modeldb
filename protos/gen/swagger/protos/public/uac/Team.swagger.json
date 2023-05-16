@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "uac/Team.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "uac/Team.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,20 +11,20 @@
     "application/json"
   ],
   "paths": {
-    "/v1/team/addUser": {
+    "/team/addUser": {
       "post": {
-        "/ummary": "Adds the given user to the team\nOnly enabled if the requester is the creator of the team or the organization",
+        "summary": "Adds the given user to the team\nOnly enabled if the requester is the creator of the team or the organization",
         "operationId": "TeamService_addUser",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddTeamUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -32,32 +32,32 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddTeamUser"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
     },
-    "/v1/team/deleteTeam": {
+    "/team/deleteTeam": {
       "post": {
-        "/ummary": "Delete an existing team\nOnly enabled if the person deleting is the owner of the organization or owner of the team",
+        "summary": "Delete an existing team\nOnly enabled if the person deleting is the owner of the organization or owner of the team",
         "operationId": "TeamService_deleteTeam",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacDeleteTeamResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -65,63 +65,63 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacDeleteTeam"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
     },
-    "/v1/team/getTeamById": {
-      "/et": {
-        "/ummary": "Gets information from a given team",
+    "/team/getTeamById": {
+      "get": {
+        "summary": "Gets information from a given team",
         "operationId": "TeamService_getTeamById",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetTeamByIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/eam_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
     },
-    "/v1/team/getTeamByName": {
-      "/et": {
-        "/ummary": "Gets information from a given team",
+    "/team/getTeamByName": {
+      "get": {
+        "summary": "Gets information from a given team",
         "operationId": "TeamService_getTeamByName",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetTeamByNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -129,36 +129,36 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/eam_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "team_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
     },
-    "/v1/team/getTeamByShortName": {
-      "/et": {
-        "/ummary": "Gets information from a given team",
+    "/team/getTeamByShortName": {
+      "get": {
+        "summary": "Gets information from a given team",
         "operationId": "TeamService_getTeamByShortName",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetTeamByShortNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -166,36 +166,36 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/hort_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "short_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
     },
-    "/v1/team/listMyTeams": {
-      "/et": {
-        "/ummary": "Lists the teams that the current user is a member of",
+    "/team/listMyTeams": {
+      "get": {
+        "summary": "Lists the teams that the current user is a member of",
         "operationId": "TeamService_listMyTeams",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacListMyTeamsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -203,83 +203,83 @@
         "parameters": [
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
     },
-    "/v1/team/listUsers": {
-      "/et": {
-        "/ummary": "List users inside a team\nOnly available for users inside the team itself",
+    "/team/listUsers": {
+      "get": {
+        "summary": "List users inside a team\nOnly available for users inside the team itself",
         "operationId": "TeamService_listUsers",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacListTeamUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/eam_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "team_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
     },
-    "/v1/team/removeUser": {
+    "/team/removeUser": {
       "post": {
-        "/ummary": "Removes the given user to the team\nOnly enabled if the requester is the creator of the team\nThe owner can never be removed",
+        "summary": "Removes the given user to the team\nOnly enabled if the requester is the creator of the team\nThe owner can never be removed",
         "operationId": "TeamService_removeUser",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveTeamUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -287,32 +287,32 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacRemoveTeamUser"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
     },
-    "/v1/team/setTeam": {
+    "/team/setTeam": {
       "post": {
-        "/ummary": "Create or update a team\nAutomatically adds the caller to the team",
+        "summary": "Create or update a team\nAutomatically adds the caller to the team",
         "operationId": "TeamService_setTeam",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacSetTeamResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -320,14 +320,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacSetTeam"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "TeamService"
         ]
       }
@@ -335,8 +335,8 @@
   },
   "definitions": {
     "IdServiceProviderEnumIdServiceProvider": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "GITHUB",
         "BITBUCKET",
@@ -352,213 +352,213 @@
       "default": "UNKNOWN"
     },
     "commonPagination": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "page_number": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "page_limit": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         }
       },
-      "/itle": "For pagination"
+      "title": "For pagination"
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string",
+        "type_url": {
+          "type": "string",
           "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte",
           "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
       },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"/.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacAddTeamUser": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam_id": {
-          "/ype": "string"
+        "team_id": {
+          "type": "string"
         },
-        "/hare_with": {
-          "/ype": "string"
+        "share_with": {
+          "type": "string"
         }
       }
     },
     "uacAddTeamUserResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacDeleteTeam": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam_id": {
-          "/ype": "string"
+        "team_id": {
+          "type": "string"
         }
       }
     },
     "uacDeleteTeamResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacGetTeamByIdResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam": {
+        "team": {
           "$ref": "#/definitions/uacTeam"
         }
       }
     },
     "uacGetTeamByNameResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam": {
+        "team": {
           "$ref": "#/definitions/uacTeam"
         }
       }
     },
     "uacGetTeamByShortNameResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam": {
+        "team": {
           "$ref": "#/definitions/uacTeam"
         }
       }
     },
     "uacListMyTeamsResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eams": {
-          "/ype": "array",
-          "/tems": {
+        "teams": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/uacTeam"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacListTeamUserResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "user_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacRemoveTeamUser": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam_id": {
-          "/ype": "string"
+        "team_id": {
+          "type": "string"
         },
-        "/hare_with": {
-          "/ype": "string"
+        "share_with": {
+          "type": "string"
         }
       }
     },
     "uacRemoveTeamUserResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacSetTeam": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam": {
+        "team": {
           "$ref": "#/definitions/uacTeam"
         }
       }
     },
     "uacSetTeamResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam": {
+        "team": {
           "$ref": "#/definitions/uacTeam"
         }
       }
     },
     "uacTeam": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/hort_name": {
-          "/ype": "string"
+        "short_name": {
+          "type": "string"
         },
         "description": {
-          "/ype": "string"
+          "type": "string"
         },
         "owner_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/d_service_provider": {
+        "id_service_provider": {
           "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
         },
         "created_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         },
         "updated_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         }
       }
     }

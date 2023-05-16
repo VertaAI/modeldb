@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "uac/Organization.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "uac/Organization.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/v1/organization/addAdmins": {
+    "/organization/addAdmins": {
       "post": {
         "operationId": "OrganizationService_addAdmins",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,32 +31,32 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacModifyOrganizationAdmins"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/addUser": {
+    "/organization/addUser": {
       "post": {
-        "/ummary": "Adds the given user to the organization\nOnly enabled if the requester is the creator of the organization",
+        "summary": "Adds the given user to the organization\nOnly enabled if the requester is the creator of the organization",
         "operationId": "OrganizationService_addUser",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -64,32 +64,32 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddUser"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/deleteOrganization": {
+    "/organization/deleteOrganization": {
       "post": {
-        "/ummary": "Delete an existing organization\nOnly enabled if the person deleting is the creator",
+        "summary": "Delete an existing organization\nOnly enabled if the person deleting is the creator",
         "operationId": "OrganizationService_deleteOrganization",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacDeleteOrganizationResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -97,32 +97,32 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacDeleteOrganization"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/getOrganizationById": {
-      "/et": {
-        "/ummary": "Gets information from a given organization",
+    "/organization/getOrganizationById": {
+      "get": {
+        "summary": "Gets information from a given organization",
         "operationId": "OrganizationService_getOrganizationById",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetOrganizationByIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -130,30 +130,30 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/getOrganizationByName": {
-      "/et": {
-        "/ummary": "Gets information from a given organization",
+    "/organization/getOrganizationByName": {
+      "get": {
+        "summary": "Gets information from a given organization",
         "operationId": "OrganizationService_getOrganizationByName",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetOrganizationByNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -161,61 +161,61 @@
         "parameters": [
           {
             "name": "org_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/getOrganizationByShortName": {
-      "/et": {
-        "/ummary": "Gets information from a given organization",
+    "/organization/getOrganizationByShortName": {
+      "get": {
+        "summary": "Gets information from a given organization",
         "operationId": "OrganizationService_getOrganizationByShortName",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetOrganizationByShortNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/hort_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "short_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/listMyOrganizations": {
-      "/et": {
-        "/ummary": "Lists the organizations that the current user is a member of",
+    "/organization/listMyOrganizations": {
+      "get": {
+        "summary": "Lists the organizations that the current user is a member of",
         "operationId": "OrganizationService_listMyOrganizations",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacListMyOrganizationsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -223,84 +223,84 @@
         "parameters": [
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/listOrganizations": {
-      "/et": {
-        "/ummary": "Lists the organizations that the current user can access",
+    "/organization/listOrganizations": {
+      "get": {
+        "summary": "Lists the organizations that the current user can access",
         "operationId": "OrganizationService_listOrganizations",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacListOrganizationsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/xternalOnly",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "boolean",
+            "name": "externalOnly",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
             "format": "boolean"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/listTeams": {
-      "/et": {
-        "/ummary": "List teams that are part of an organization\nOnly available for users inside the organization itself",
+    "/organization/listTeams": {
+      "get": {
+        "summary": "List teams that are part of an organization\nOnly available for users inside the organization itself",
         "operationId": "OrganizationService_listTeams",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacListTeamsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -308,51 +308,51 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/xternal_only",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "boolean",
+            "name": "external_only",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
             "format": "boolean"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/listUsers": {
-      "/et": {
-        "/ummary": "List users inside an organization\nOnly available for users inside the organization itself",
+    "/organization/listUsers": {
+      "get": {
+        "summary": "List users inside an organization\nOnly available for users inside the organization itself",
         "operationId": "OrganizationService_listUsers",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacListUsersResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -360,43 +360,43 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/removeAdmins": {
+    "/organization/removeAdmins": {
       "post": {
         "operationId": "OrganizationService_removeAdmins",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -404,32 +404,32 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacModifyOrganizationAdmins"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/removeUser": {
+    "/organization/removeUser": {
       "post": {
-        "/ummary": "Removes the given user to the organization\nOnly enabled if the requester is the creator of the organization\nThe owner can never be removed",
+        "summary": "Removes the given user to the organization\nOnly enabled if the requester is the creator of the organization\nThe owner can never be removed",
         "operationId": "OrganizationService_removeUser",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -437,32 +437,32 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacRemoveUser"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
     },
-    "/v1/organization/setOrganization": {
+    "/organization/setOrganization": {
       "post": {
-        "/ummary": "Create or update an organization\nAutomatically sets the user making the call as owner and adds to the organization",
+        "summary": "Create or update an organization\nAutomatically sets the user making the call as owner and adds to the organization",
         "operationId": "OrganizationService_setOrganization",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacSetOrganizationResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -470,14 +470,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacSetOrganization"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "OrganizationService"
         ]
       }
@@ -485,16 +485,16 @@
   },
   "definitions": {
     "CollaboratorTypeEnumCollaboratorType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "READ_ONLY",
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
     },
     "CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "READ_WRITE",
         "READ_ONLY"
@@ -502,8 +502,8 @@
       "default": "UNKNOWN"
     },
     "OrganizationBaselinePermissionsBaselinePermissions": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "PRIVATE",
         "READ",
@@ -513,8 +513,8 @@
       "default": "UNKNOWN"
     },
     "TernaryEnumTernary": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -522,94 +522,94 @@
       "default": "UNKNOWN"
     },
     "commonPagination": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "page_number": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "page_limit": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         }
       },
-      "/itle": "For pagination"
+      "title": "For pagination"
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string",
+        "type_url": {
+          "type": "string",
           "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte",
           "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
       },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"/.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacAddUser": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/hare_with": {
-          "/ype": "string"
+        "share_with": {
+          "type": "string"
         }
       }
     },
     "uacAddUserResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacDeleteOrganization": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "uacDeleteOrganizationResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacGetOrganizationByIdResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "organization": {
           "$ref": "#/definitions/uacOrganization"
@@ -617,7 +617,7 @@
       }
     },
     "uacGetOrganizationByNameResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "organization": {
           "$ref": "#/definitions/uacOrganization"
@@ -625,7 +625,7 @@
       }
     },
     "uacGetOrganizationByShortNameResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "organization": {
           "$ref": "#/definitions/uacOrganization"
@@ -633,121 +633,121 @@
       }
     },
     "uacIdServiceProviderEnum": {
-      "/ype": "object"
+      "type": "object"
     },
     "uacListMyOrganizationsResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "organizations": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/uacOrganization"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacListOrganizationsResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "organizations": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/uacOrganization"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacListTeamsResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/eam_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacListUsersResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "user_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacModifyOrganizationAdmins": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "user_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/eam_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
     "uacOrganization": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/hort_name": {
-          "/ype": "string"
+        "short_name": {
+          "type": "string"
         },
         "description": {
-          "/ype": "string"
+          "type": "string"
         },
         "owner_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/dp": {
+        "idp": {
           "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         },
         "updated_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         },
-        "/lobal_collaborator_type": {
+        "global_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
-        "/lobal_can_deploy": {
+        "global_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_repo_collaborator_type": {
@@ -756,7 +756,7 @@
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
-        "/ndpoint_can_predict": {
+        "endpoint_can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_dataset_collaborator_type": {
@@ -766,9 +766,9 @@
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
         "workspace_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/egistered_model_can_deploy": {
+        "registered_model_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_monitored_entity_collaborator_type": {
@@ -784,29 +784,29 @@
           "$ref": "#/definitions/uacOrganizationBaselinePermissions"
         },
         "namespace": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "uacOrganizationAdmins": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "user_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/eam_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
     "uacOrganizationBaselinePermissions": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "minimum_resources_permission": {
           "$ref": "#/definitions/OrganizationBaselinePermissionsBaselinePermissions"
@@ -814,36 +814,36 @@
         "project_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
-        "/egistry_can_deploy": {
+        "registry_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
-        "/ndpoint_can_predict": {
+        "endpoint_can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
     "uacRemoveUser": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/hare_with": {
-          "/ype": "string"
+        "share_with": {
+          "type": "string"
         }
       }
     },
     "uacRemoveUserResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacSetOrganization": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "organization": {
           "$ref": "#/definitions/uacOrganization"
@@ -851,15 +851,15 @@
       }
     },
     "uacSetOrganizationResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "organization": {
           "$ref": "#/definitions/uacOrganization"
         }
       }
     },
-    "/ertauacEmpty": {
-      "/ype": "object"
+    "vertauacEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"

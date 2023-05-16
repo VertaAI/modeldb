@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "deployment/APISync.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "deployment/APISync.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -13,7 +13,7 @@
   "paths": {},
   "definitions": {
     "APISyncResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "objectUpdated": {
           "$ref": "#/definitions/ObjectUpdated"
@@ -21,119 +21,119 @@
         "objectDeleted": {
           "$ref": "#/definitions/ObjectDeleted"
         },
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "packageType": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "CommitObjectUpdate": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "object": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "DeleteStatus": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         }
       }
     },
     "ObjectDeleted": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "object": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "ObjectUpdated": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "object": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "UpdateStatus": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "object": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string"
+        "type_url": {
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte"
         }
       }
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
-    "/untimeStreamError": {
-      "/ype": "object",
+    "runtimeStreamError": {
+      "type": "object",
       "properties": {
-        "/rpc_code": {
-          "/ype": "integer",
-          "format": "/nt32"
+        "grpc_code": {
+          "type": "integer",
+          "format": "int32"
         },
         "http_code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "http_status": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }

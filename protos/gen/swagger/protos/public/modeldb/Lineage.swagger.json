@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "modeldb/Lineage.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "modeldb/Lineage.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/v1/lineage/addLineage": {
+    "/lineage/addLineage": {
       "post": {
         "operationId": "LineageService_addLineage",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/modeldbAddLineageResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,31 +31,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/modeldbAddLineage"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "LineageService"
         ]
       }
     },
-    "/v1/lineage/deleteLineage": {
+    "/lineage/deleteLineage": {
       "post": {
         "operationId": "LineageService_deleteLineage",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/modeldbDeleteLineageResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,31 +63,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/modeldbDeleteLineage"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "LineageService"
         ]
       }
     },
-    "/v1/lineage/findAllInputs": {
+    "/lineage/findAllInputs": {
       "post": {
         "operationId": "LineageService_findAllInputs",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/modeldbFindAllInputsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,31 +95,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/modeldbFindAllInputs"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "LineageService"
         ]
       }
     },
-    "/v1/lineage/findAllInputsOutputs": {
+    "/lineage/findAllInputsOutputs": {
       "post": {
         "operationId": "LineageService_findAllInputsOutputs",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/modeldbFindAllInputsOutputsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,31 +127,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/modeldbFindAllInputsOutputs"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "LineageService"
         ]
       }
     },
-    "/v1/lineage/findAllOutputs": {
+    "/lineage/findAllOutputs": {
       "post": {
         "operationId": "LineageService_findAllOutputs",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/modeldbFindAllOutputsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -159,14 +159,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/modeldbFindAllOutputs"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "LineageService"
         ]
       }
@@ -174,8 +174,8 @@
   },
   "definitions": {
     "LineageEntryEnumLineageEntryType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "EXPERIMENT_RUN",
         "DATASET_VERSION"
@@ -183,152 +183,152 @@
       "default": "UNKNOWN"
     },
     "modeldbAddLineage": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/nput": {
-          "/ype": "array",
-          "/tems": {
+        "input": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
           }
         },
         "output": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
           }
         }
       },
-      "description": "Add every item of \"/nput\" as a parent of every item on \"output\"."
+      "description": "Add every item of \"input\" as a parent of every item on \"output\"."
     },
     "modeldbAddLineageResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteLineage": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/nput": {
-          "/ype": "array",
-          "/tems": {
+        "input": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
           }
         },
         "output": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
           }
         }
       },
-      "description": "Delete every item of \"/nput\" as a parent of every item on \"output\"."
+      "description": "Delete every item of \"input\" as a parent of every item on \"output\"."
     },
     "modeldbDeleteLineageResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbFindAllInputs": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tems": {
-          "/ype": "array",
-          "/tems": {
+        "items": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
           }
         }
       },
-      "description": "For each item provided, list its inputs.\nThis operation is batched by default. If \"/tems\" contains N elements,\nthen Response.inputs will contain N elements, where each element\nis the set of inputs for the corresponding i-th item provided in the\nrequest."
+      "description": "For each item provided, list its inputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.inputs will contain N elements, where each element\nis the set of inputs for the corresponding i-th item provided in the\nrequest."
     },
     "modeldbFindAllInputsOutputs": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tems": {
-          "/ype": "array",
-          "/tems": {
+        "items": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
           }
         }
       },
-      "description": "For each item provided, list its inputs and outputs.\nThis operation is batched by default. If \"/tems\" contains N elements,\nthen Response.inputs and Response.outputs will contain N elements each, where each element\nis the set of inputs and outputs for the corresponding i-th item provided in the\nrequest."
+      "description": "For each item provided, list its inputs and outputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.inputs and Response.outputs will contain N elements each, where each element\nis the set of inputs and outputs for the corresponding i-th item provided in the\nrequest."
     },
     "modeldbFindAllInputsOutputsResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/nputs": {
-          "/ype": "array",
-          "/tems": {
+        "inputs": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntryBatch"
           }
         },
         "outputs": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntryBatch"
           }
         }
       }
     },
     "modeldbFindAllInputsResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/nputs": {
-          "/ype": "array",
-          "/tems": {
+        "inputs": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntryBatch"
           }
         }
       }
     },
     "modeldbFindAllOutputs": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tems": {
-          "/ype": "array",
-          "/tems": {
+        "items": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
           }
         }
       },
-      "description": "For each item provided, list its outputs.\nThis operation is batched by default. If \"/tems\" contains N elements,\nthen Response.outputs will contain N elements, where each element\nis the set of outputs for the corresponding i-th item provided in the\nrequest."
+      "description": "For each item provided, list its outputs.\nThis operation is batched by default. If \"items\" contains N elements,\nthen Response.outputs will contain N elements, where each element\nis the set of outputs for the corresponding i-th item provided in the\nrequest."
     },
     "modeldbFindAllOutputsResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "outputs": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntryBatch"
           }
         }
       }
     },
     "modeldbLineageEntry": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype": {
+        "type": {
           "$ref": "#/definitions/LineageEntryEnumLineageEntryType"
         },
-        "/xternal_id": {
-          "/ype": "string",
-          "/itle": "External ID of the item for the given type, if compatible"
+        "external_id": {
+          "type": "string",
+          "title": "External ID of the item for the given type, if compatible"
         }
       }
     },
     "modeldbLineageEntryBatch": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tems": {
-          "/ype": "array",
-          "/tems": {
+        "items": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/modeldbLineageEntry"
           }
         }
@@ -336,33 +336,33 @@
       "description": "Represent a set of lineage items, essentially an array so that it can be embedded on other proto messages."
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string"
+        "type_url": {
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte"
         }
       }
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }

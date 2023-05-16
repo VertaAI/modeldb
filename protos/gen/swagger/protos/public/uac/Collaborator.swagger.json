@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "uac/Collaborator.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "uac/Collaborator.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/v1/collaborator/addOrUpdateDatasetCollaborator": {
+    "/collaborator/addOrUpdateDatasetCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateDatasetCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,31 +31,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/addOrUpdateEndpointCollaborator": {
+    "/collaborator/addOrUpdateEndpointCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateEndpointCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,31 +63,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/addOrUpdateEndpointCollaboratorCommonService": {
+    "/collaborator/addOrUpdateEndpointCollaboratorCommonService": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateEndpointCollaboratorCommonService",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,31 +95,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/addOrUpdateMonitoredEntityCollaborator": {
+    "/collaborator/addOrUpdateMonitoredEntityCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateMonitoredEntityCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,31 +127,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/addOrUpdateProjectCollaborator": {
+    "/collaborator/addOrUpdateProjectCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateProjectCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -159,31 +159,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/addOrUpdateRegisteredModelCollaborator": {
+    "/collaborator/addOrUpdateRegisteredModelCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateRegisteredModelCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -191,31 +191,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/addOrUpdateRepositoryCollaborator": {
+    "/collaborator/addOrUpdateRepositoryCollaborator": {
       "post": {
         "operationId": "CollaboratorService_addOrUpdateRepositoryCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -223,31 +223,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddCollaboratorRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/addResourceAdmins": {
+    "/collaborator/addResourceAdmins": {
       "post": {
         "operationId": "CollaboratorService_addResourceAdmins",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -255,350 +255,350 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacModifyResourceAdmins"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getDatasetCollaborators": {
-      "/et": {
+    "/collaborator/getDatasetCollaborators": {
+      "get": {
         "operationId": "CollaboratorService_getDatasetCollaborators",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getEndpointCollaborators": {
-      "/et": {
+    "/collaborator/getEndpointCollaborators": {
+      "get": {
         "operationId": "CollaboratorService_getEndpointCollaborators",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getEndpointCollaboratorsCommonService": {
-      "/et": {
+    "/collaborator/getEndpointCollaboratorsCommonService": {
+      "get": {
         "operationId": "CollaboratorService_getEndpointCollaboratorsCommonService",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getMonitoredEntityCollaborators": {
-      "/et": {
+    "/collaborator/getMonitoredEntityCollaborators": {
+      "get": {
         "operationId": "CollaboratorService_getMonitoredEntityCollaborators",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getProjectCollaborators": {
-      "/et": {
+    "/collaborator/getProjectCollaborators": {
+      "get": {
         "operationId": "CollaboratorService_getProjectCollaborators",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getRegisteredModelCollaborators": {
-      "/et": {
+    "/collaborator/getRegisteredModelCollaborators": {
+      "get": {
         "operationId": "CollaboratorService_getRegisteredModelCollaborators",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getRepositoryCollaborators": {
-      "/et": {
+    "/collaborator/getRepositoryCollaborators": {
+      "get": {
         "operationId": "CollaboratorService_getRepositoryCollaborators",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getResourceAdmins": {
-      "/et": {
+    "/collaborator/getResourceAdmins": {
+      "get": {
         "operationId": "CollaboratorService_getResourceAdmins",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacResourceAdmins"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ervice",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "service",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ROLE_SERVICE",
@@ -611,18 +611,18 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esource_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "resource_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/esource_type.role_service_resource_type",
+            "name": "resource_type.role_service_resource_type",
             "description": "Separate based on the service itself.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ROLE",
@@ -631,11 +631,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esource_type.authz_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resource_type.authz_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ORGANIZATION",
@@ -655,11 +655,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esource_type.modeldb_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resource_type.modeldb_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "PROJECT",
@@ -687,11 +687,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esource_type.deployment_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resource_type.deployment_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ENDPOINT",
@@ -701,49 +701,49 @@
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getResources": {
-      "/et": {
-        "/ummary": "The caller must have permission to GET the resource accordingly",
+    "/collaborator/getResources": {
+      "get": {
+        "summary": "The caller must have permission to GET the resource accordingly",
         "operationId": "CollaboratorService_getResources",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetResourcesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/esources.service",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resources.service",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ROLE_SERVICE",
@@ -756,30 +756,30 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esources.resource_ids",
+            "name": "resources.resource_ids",
             "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           },
           {
-            "name": "/esources.all_resource_ids",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "boolean",
+            "name": "resources.all_resource_ids",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
             "format": "boolean"
           },
           {
-            "name": "/esources.resource_type.role_service_resource_type",
+            "name": "resources.resource_type.role_service_resource_type",
             "description": "Separate based on the service itself.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ROLE",
@@ -788,11 +788,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esources.resource_type.authz_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resources.resource_type.authz_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ORGANIZATION",
@@ -812,11 +812,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esources.resource_type.modeldb_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resources.resource_type.modeldb_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "PROJECT",
@@ -844,11 +844,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esources.resource_type.deployment_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resources.resource_type.deployment_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ENDPOINT",
@@ -858,80 +858,80 @@
           },
           {
             "name": "workspace_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/esource_name",
+            "name": "resource_name",
             "description": "Optional. If Provided, workspace, resource service, type should be provided.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "owner_ids",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
               "format": "uint64"
             },
             "collectionFormat": "multi"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/getResourcesSpecialPersonalWorkspace": {
-      "/et": {
-        "/ummary": "The caller must have permission to GET the resource accordingly\ngets resources that is available in personal workspace (all except organization workspace resources)",
+    "/collaborator/getResourcesSpecialPersonalWorkspace": {
+      "get": {
+        "summary": "The caller must have permission to GET the resource accordingly\ngets resources that is available in personal workspace (all except organization workspace resources)",
         "operationId": "CollaboratorService_getResourcesSpecialPersonalWorkspace",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetResourcesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/esources.service",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resources.service",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ROLE_SERVICE",
@@ -944,30 +944,30 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esources.resource_ids",
+            "name": "resources.resource_ids",
             "description": "Internal ID for the resource in the service, whose meaning doesn't matter for other services.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           },
           {
-            "name": "/esources.all_resource_ids",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "boolean",
+            "name": "resources.all_resource_ids",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
             "format": "boolean"
           },
           {
-            "name": "/esources.resource_type.role_service_resource_type",
+            "name": "resources.resource_type.role_service_resource_type",
             "description": "Separate based on the service itself.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ROLE",
@@ -976,11 +976,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esources.resource_type.authz_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resources.resource_type.authz_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ORGANIZATION",
@@ -1000,11 +1000,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esources.resource_type.modeldb_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resources.resource_type.modeldb_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "PROJECT",
@@ -1032,11 +1032,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/esources.resource_type.deployment_service_resource_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "resources.resource_type.deployment_service_resource_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ALL",
               "ENDPOINT",
@@ -1046,98 +1046,98 @@
           },
           {
             "name": "workspace_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/esource_name",
+            "name": "resource_name",
             "description": "Optional. If Provided, workspace, resource service, type should be provided.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "owner_ids",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
               "format": "uint64"
             },
             "collectionFormat": "multi"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/removeDatasetCollaborator": {
+    "/collaborator/removeDatasetCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeDatasetCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/hare_with",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "date_deleted",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "authz_entity_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
@@ -1146,54 +1146,54 @@
             "default": "UNKNOWN"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/removeEndpointCollaborator": {
+    "/collaborator/removeEndpointCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeEndpointCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/hare_with",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "date_deleted",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "authz_entity_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
@@ -1202,54 +1202,54 @@
             "default": "UNKNOWN"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/removeEndpointCollaboratorCommonService": {
+    "/collaborator/removeEndpointCollaboratorCommonService": {
       "delete": {
         "operationId": "CollaboratorService_removeEndpointCollaboratorCommonService",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/hare_with",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "date_deleted",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "authz_entity_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
@@ -1258,54 +1258,54 @@
             "default": "UNKNOWN"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/removeMonitoredEntityCollaborator": {
+    "/collaborator/removeMonitoredEntityCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeMonitoredEntityCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/hare_with",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "date_deleted",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "authz_entity_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
@@ -1314,54 +1314,54 @@
             "default": "UNKNOWN"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/removeProjectCollaborator": {
+    "/collaborator/removeProjectCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeProjectCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/hare_with",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "date_deleted",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "authz_entity_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
@@ -1370,54 +1370,54 @@
             "default": "UNKNOWN"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/removeRegisteredModelCollaborator": {
+    "/collaborator/removeRegisteredModelCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeRegisteredModelCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/hare_with",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "date_deleted",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "authz_entity_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
@@ -1426,54 +1426,54 @@
             "default": "UNKNOWN"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/removeRepositoryCollaborator": {
+    "/collaborator/removeRepositoryCollaborator": {
       "delete": {
         "operationId": "CollaboratorService_removeRepositoryCollaborator",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveCollaboratorResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/ntity_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "entity_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/hare_with",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "share_with",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "date_deleted",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "authz_entity_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
@@ -1482,24 +1482,24 @@
             "default": "UNKNOWN"
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/removeResourceAdmins": {
+    "/collaborator/removeResourceAdmins": {
       "post": {
         "operationId": "CollaboratorService_removeResourceAdmins",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/vertauacEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -1507,32 +1507,32 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacModifyResourceAdmins"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
     },
-    "/v1/collaborator/setResource": {
+    "/collaborator/setResource": {
       "post": {
-        "/ummary": "The caller must have permission to CREATE or UPDATE the resource accordingly",
+        "summary": "The caller must have permission to CREATE or UPDATE the resource accordingly",
         "operationId": "CollaboratorService_setResource",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacSetResourceResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -1540,14 +1540,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacSetResource"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "CollaboratorService"
         ]
       }
@@ -1555,8 +1555,8 @@
   },
   "definitions": {
     "AuthzActionEnumAuthzServiceActions": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "IS_ALLOWED",
@@ -1574,8 +1574,8 @@
       "default": "UNKNOWN"
     },
     "AuthzResourceEnumAuthzServiceResourceTypes": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "ORGANIZATION",
@@ -1595,16 +1595,16 @@
       "default": "UNKNOWN"
     },
     "CollaboratorTypeEnumCollaboratorType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "READ_ONLY",
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
     },
     "CollaboratorTypeEnumWithDefaultEnumCollaboratorTypeEnumWithDefault": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "READ_WRITE",
         "READ_ONLY"
@@ -1612,8 +1612,8 @@
       "default": "UNKNOWN"
     },
     "DeploymentActionEnumDeploymentServiceActions": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "CREATE",
@@ -1627,8 +1627,8 @@
       "default": "UNKNOWN"
     },
     "DeploymentResourceEnumDeploymentServiceResourceTypes": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "ENDPOINT",
@@ -1637,8 +1637,8 @@
       "default": "UNKNOWN"
     },
     "EntitiesEnumEntitiesTypes": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ORGANIZATION",
         "TEAM",
@@ -1647,8 +1647,8 @@
       "default": "UNKNOWN"
     },
     "IdServiceProviderEnumIdServiceProvider": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "GITHUB",
         "BITBUCKET",
@@ -1664,8 +1664,8 @@
       "default": "UNKNOWN"
     },
     "ModelDBActionEnumModelDBServiceActions": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "CREATE",
@@ -1691,8 +1691,8 @@
       "default": "UNKNOWN"
     },
     "ModelDBResourceEnumModelDBServiceResourceTypes": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "PROJECT",
@@ -1720,8 +1720,8 @@
       "default": "UNKNOWN"
     },
     "OrganizationBaselinePermissionsBaselinePermissions": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "PRIVATE",
         "READ",
@@ -1731,8 +1731,8 @@
       "default": "UNKNOWN"
     },
     "RoleActionEnumRoleServiceActions": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "GET_BY_ID",
@@ -1745,8 +1745,8 @@
       "default": "UNKNOWN"
     },
     "RoleResourceEnumRoleServiceResourceTypes": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "ROLE",
@@ -1755,8 +1755,8 @@
       "default": "UNKNOWN"
     },
     "ServiceEnumService": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ALL",
         "ROLE_SERVICE",
@@ -1769,8 +1769,8 @@
       "default": "UNKNOWN"
     },
     "TernaryEnumTernary": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -1778,73 +1778,73 @@
       "default": "UNKNOWN"
     },
     "commonGroupId": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/roup_id": {
-          "/ype": "string"
+        "group_id": {
+          "type": "string"
         }
       }
     },
     "commonPagination": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "page_number": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "page_limit": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         }
       },
-      "/itle": "For pagination"
+      "title": "For pagination"
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string",
+        "type_url": {
+          "type": "string",
           "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte",
           "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
       },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"/.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacAction": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ervice": {
+        "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "/ole_service_action": {
+        "role_service_action": {
           "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
         },
         "authz_service_action": {
@@ -1857,32 +1857,32 @@
           "$ref": "#/definitions/DeploymentActionEnumDeploymentServiceActions"
         }
       },
-      "/itle": "An action describes a specific operation that can be performed on a service"
+      "title": "An action describes a specific operation that can be performed on a service"
     },
     "uacAddCollaboratorRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ntity_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "entity_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/hare_with": {
-          "/ype": "string"
+        "share_with": {
+          "type": "string"
         },
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "date_created": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "date_updated": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "can_deploy": {
@@ -1900,16 +1900,16 @@
       }
     },
     "uacAddCollaboratorRequestResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/elf_allowed_actions": {
-          "/ype": "array",
-          "/tems": {
+        "self_allowed_actions": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/uacAction"
           }
         },
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         },
         "collaborator_user_info": {
@@ -1924,7 +1924,7 @@
       }
     },
     "uacCollaboratorPermissions": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
@@ -1938,11 +1938,11 @@
       }
     },
     "uacDeleteResourcesResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "uacFlagEnum": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNDEFINED",
         "TRUE",
         "FALSE"
@@ -1950,34 +1950,34 @@
       "default": "UNDEFINED"
     },
     "uacGetCollaboratorResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/hared_users": {
-          "/ype": "array",
-          "/tems": {
+        "shared_users": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/uacGetCollaboratorResponseItem"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacGetCollaboratorResponseItem": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "user_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
-        "/hare_via_type": {
+        "share_via_type": {
           "$ref": "#/definitions/uacShareViaEnum"
         },
-        "/erta_id": {
-          "/ype": "string"
+        "verta_id": {
+          "type": "string"
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
@@ -1994,118 +1994,118 @@
       }
     },
     "uacGetResourcesResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tem": {
-          "/ype": "array",
-          "/tems": {
+        "item": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/uacGetResourcesResponseItem"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacGetResourcesResponseItem": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ervice": {
+        "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "/esource_id": {
-          "/ype": "string"
+        "resource_id": {
+          "type": "string"
         },
-        "/esource_name": {
-          "/ype": "string"
+        "resource_name": {
+          "type": "string"
         },
-        "/esource_type": {
+        "resource_type": {
           "$ref": "#/definitions/uacResourceType"
         },
         "workspace_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "owner_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
-        "/roup_owner_id": {
+        "group_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         },
-        "/isibility": {
+        "visibility": {
           "$ref": "#/definitions/uacResourceVisibility",
-          "/itle": "Type of the visibility"
+          "title": "Type of the visibility"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         }
       }
     },
     "uacIdServiceProviderEnum": {
-      "/ype": "object"
+      "type": "object"
     },
     "uacModifyResourceAdmins": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ervice": {
+        "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "/esource_id": {
-          "/ype": "string"
+        "resource_id": {
+          "type": "string"
         },
-        "/esource_type": {
+        "resource_type": {
           "$ref": "#/definitions/uacResourceType"
         },
         "user_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/eam_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
     "uacOrganization": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/hort_name": {
-          "/ype": "string"
+        "short_name": {
+          "type": "string"
         },
         "description": {
-          "/ype": "string"
+          "type": "string"
         },
         "owner_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/dp": {
+        "idp": {
           "$ref": "#/definitions/uacIdServiceProviderEnum"
         },
         "created_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         },
         "updated_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         },
-        "/lobal_collaborator_type": {
+        "global_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
-        "/lobal_can_deploy": {
+        "global_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_repo_collaborator_type": {
@@ -2114,7 +2114,7 @@
         "default_endpoint_collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
-        "/ndpoint_can_predict": {
+        "endpoint_can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_dataset_collaborator_type": {
@@ -2124,9 +2124,9 @@
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
         },
         "workspace_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/egistered_model_can_deploy": {
+        "registered_model_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
         "default_monitored_entity_collaborator_type": {
@@ -2142,29 +2142,29 @@
           "$ref": "#/definitions/uacOrganizationBaselinePermissions"
         },
         "namespace": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "uacOrganizationAdmins": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "user_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/eam_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
     "uacOrganizationBaselinePermissions": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "minimum_resources_permission": {
           "$ref": "#/definitions/OrganizationBaselinePermissionsBaselinePermissions"
@@ -2172,56 +2172,56 @@
         "project_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
-        "/egistry_can_deploy": {
+        "registry_can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
         },
-        "/ndpoint_can_predict": {
+        "endpoint_can_predict": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
     "uacRemoveCollaboratorResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         },
-        "/elf_allowed_actions": {
-          "/ype": "array",
-          "/tems": {
+        "self_allowed_actions": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/uacAction"
           }
         }
       }
     },
     "uacResourceAdmins": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "user_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/eam_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "team_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacResourceType": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ole_service_resource_type": {
+        "role_service_resource_type": {
           "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "/itle": "Separate based on the service itself"
+          "title": "Separate based on the service itself"
         },
         "authz_service_resource_type": {
           "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
@@ -2235,8 +2235,8 @@
       }
     },
     "uacResourceVisibility": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
@@ -2246,66 +2246,66 @@
       "default": "UNKNOWN"
     },
     "uacResources": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ervice": {
+        "service": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "/esource_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "resource_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "/itle": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
         },
         "all_resource_ids": {
-          "/ype": "boolean",
+          "type": "boolean",
           "format": "boolean"
         },
-        "/esource_type": {
+        "resource_type": {
           "$ref": "#/definitions/uacResourceType"
         }
       },
-      "/itle": "A resource describes a specific object in a service that can receive an action"
+      "title": "A resource describes a specific object in a service that can receive an action"
     },
     "uacSetResource": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ervice": {
+        "service": {
           "$ref": "#/definitions/ServiceEnumService",
-          "/itle": "Specification of the resources. IDs are globally unique, so changes in the fields above cause\nupdate on pre-exising resources"
+          "title": "Specification of the resources. IDs are globally unique, so changes in the fields above cause\nupdate on pre-exising resources"
         },
-        "/esource_id": {
-          "/ype": "string",
-          "/itle": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
+        "resource_id": {
+          "type": "string",
+          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services\nThis is optional. If empty, means all resources"
         },
-        "/esource_name": {
-          "/ype": "string"
+        "resource_name": {
+          "type": "string"
         },
-        "/esource_type": {
+        "resource_type": {
           "$ref": "#/definitions/uacResourceType"
         },
         "workspace_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "workspace_name": {
-          "/ype": "string"
+          "type": "string"
         },
         "owner_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
-        "/roup_owner_id": {
+        "group_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         },
-        "/isibility": {
+        "visibility": {
           "$ref": "#/definitions/uacResourceVisibility",
-          "/itle": "Type of the visibility"
+          "title": "Type of the visibility"
         },
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType",
-          "/itle": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC. We should error\notherwise"
+          "title": "The next fields only makes sense when visibility == ORG_SCOPED_PUBLIC. We should error\notherwise"
         },
         "can_deploy": {
           "$ref": "#/definitions/TernaryEnumTernary"
@@ -2316,11 +2316,11 @@
       }
     },
     "uacSetResourceResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "uacShareViaEnum": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "USER_ID",
         "EMAIL_ID",
         "USERNAME"
@@ -2328,123 +2328,123 @@
       "default": "USER_ID"
     },
     "uacTeam": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/hort_name": {
-          "/ype": "string"
+        "short_name": {
+          "type": "string"
         },
         "description": {
-          "/ype": "string"
+          "type": "string"
         },
         "owner_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/d_service_provider": {
+        "id_service_provider": {
           "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
         },
         "created_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         },
         "updated_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacUserInfo": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "user_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "full_name": {
-          "/ype": "string"
+          "type": "string"
         },
         "first_name": {
-          "/ype": "string"
+          "type": "string"
         },
         "last_name": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/mail": {
-          "/ype": "string"
+        "email": {
+          "type": "string"
         },
-        "/d_service_provider": {
+        "id_service_provider": {
           "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
         },
-        "/oles": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "roles": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/mage_url": {
-          "/ype": "string"
+        "image_url": {
+          "type": "string"
         },
         "dev_key": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/erta_info": {
+        "verta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
         },
-        "/econdary_dev_key": {
-          "/ype": "string"
+        "secondary_dev_key": {
+          "type": "string"
         },
         "disabled": {
-          "/ype": "boolean",
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacVertaUserInfo": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ndividual_user": {
-          "/ype": "boolean",
+        "individual_user": {
+          "type": "boolean",
           "format": "boolean"
         },
         "username": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/efresh_timestamp": {
-          "/ype": "string",
+        "refresh_timestamp": {
+          "type": "string",
           "format": "uint64"
         },
         "last_login_timestamp": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "user_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
         },
         "workspace_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "default_workspace_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64",
-          "/itle": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+          "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
         },
         "description": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
-    "/ertauacEmpty": {
-      "/ype": "object"
+    "vertauacEmpty": {
+      "type": "object"
     }
   },
   "basePath": "/v1"

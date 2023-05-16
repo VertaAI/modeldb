@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "modeldb/metadata/MetadataService.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "modeldb/metadata/MetadataService.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,41 +11,41 @@
     "application/json"
   ],
   "paths": {
-    "/v1/metadata/generateRandomName": {
-      "/et": {
+    "/metadata/generateRandomName": {
+      "get": {
         "operationId": "MetadataService_GenerateRandomName",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataGenerateRandomNameRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       }
     },
-    "/v1/metadata/getLabelIds": {
-      "/et": {
+    "/metadata/getLabelIds": {
+      "get": {
         "operationId": "MetadataService_GetLabelIds",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataGetLabelIdsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -53,20 +53,20 @@
         "parameters": [
           {
             "name": "labels",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           },
           {
             "name": "operator",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "EQ",
               "NE",
               "GT",
@@ -81,35 +81,35 @@
             "default": "EQ"
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       }
     },
-    "/v1/metadata/keyValueProperties": {
-      "/et": {
+    "/metadata/keyValueProperties": {
+      "get": {
         "operationId": "MetadataService_GetKeyValueProperties",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataGetKeyValuePropertiesRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/d.id_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "id.id_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "VERSIONING_REPOSITORY",
               "VERSIONING_COMMIT",
@@ -119,58 +119,58 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/d.int_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "id.int_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/d.string_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "id.string_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "property_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "keys",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           },
           {
-            "name": "/etAll",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "boolean",
+            "name": "getAll",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
             "format": "boolean"
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       },
       "delete": {
         "operationId": "MetadataService_DeleteKeyValueProperties",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataDeleteKeyValuePropertiesRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -178,29 +178,29 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/metadataDeleteKeyValuePropertiesRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       },
       "put": {
         "operationId": "MetadataService_AddKeyValueProperties",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataAddKeyValuePropertiesRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -208,42 +208,42 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/metadataAddKeyValuePropertiesRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       }
     },
-    "/v1/metadata/labels": {
-      "/et": {
+    "/metadata/labels": {
+      "get": {
         "operationId": "MetadataService_GetLabels",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataGetLabelsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/d.id_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "id.id_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "VERSIONING_REPOSITORY",
               "VERSIONING_COMMIT",
@@ -253,35 +253,35 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/d.int_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "id.int_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/d.string_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "id.string_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       },
       "delete": {
         "operationId": "MetadataService_DeleteLabels",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataDeleteLabelsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -289,29 +289,29 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/metadataDeleteLabelsRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       },
       "post": {
         "operationId": "MetadataService_UpdateLabels",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataAddLabelsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -319,29 +319,29 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/metadataAddLabelsRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       },
       "put": {
         "operationId": "MetadataService_AddLabels",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataAddLabelsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -349,42 +349,42 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/metadataAddLabelsRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       }
     },
-    "/v1/metadata/property": {
-      "/et": {
+    "/metadata/property": {
+      "get": {
         "operationId": "MetadataService_GetProperty",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataGetPropertyRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/d.id_type",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
-            "/num": [
+            "name": "id.id_type",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
               "UNKNOWN",
               "VERSIONING_REPOSITORY",
               "VERSIONING_COMMIT",
@@ -394,41 +394,41 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "/d.int_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "id.int_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/d.string_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "id.string_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "key",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       },
       "delete": {
         "operationId": "MetadataService_DeleteProperty",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataDeletePropertyRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -436,29 +436,29 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/metadataDeletePropertyRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       },
       "put": {
         "operationId": "MetadataService_AddProperty",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/metadataAddPropertyRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -466,14 +466,14 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/metadataAddPropertyRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "MetadataService"
         ]
       }
@@ -481,8 +481,8 @@
   },
   "definitions": {
     "IDTypeEnumIDType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "VERSIONING_REPOSITORY",
         "VERSIONING_COMMIT",
@@ -492,8 +492,8 @@
       "default": "UNKNOWN"
     },
     "OperatorEnumOperator": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "EQ",
         "NE",
         "GT",
@@ -508,234 +508,234 @@
       "default": "EQ"
     },
     "metadataAddKeyValuePropertiesRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
+        "id": {
           "$ref": "#/definitions/metadataIdentificationType"
         },
         "property_name": {
-          "/ype": "string"
+          "type": "string"
         },
         "key_value_property": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/metadataKeyValueStringProperty"
           }
         }
       }
     },
     "metadataAddKeyValuePropertiesRequestResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "metadataAddLabelsRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
+        "id": {
           "$ref": "#/definitions/metadataIdentificationType"
         },
         "labels": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
     "metadataAddLabelsRequestResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "metadataAddPropertyRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
+        "id": {
           "$ref": "#/definitions/metadataIdentificationType"
         },
         "key": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string"
+        "value": {
+          "type": "string"
         }
       }
     },
     "metadataAddPropertyRequestResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "metadataDeleteKeyValuePropertiesRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
+        "id": {
           "$ref": "#/definitions/metadataIdentificationType"
         },
         "property_name": {
-          "/ype": "string"
+          "type": "string"
         },
         "keys": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "deleteAll": {
-          "/ype": "boolean",
+          "type": "boolean",
           "format": "boolean"
         }
       },
-      "/itle": "if deleteAll flag is true ignores keys and deletes all key value properties corresponding to id and property_name"
+      "title": "if deleteAll flag is true ignores keys and deletes all key value properties corresponding to id and property_name"
     },
     "metadataDeleteKeyValuePropertiesRequestResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "metadataDeleteLabelsRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
+        "id": {
           "$ref": "#/definitions/metadataIdentificationType"
         },
         "labels": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "delete_all": {
-          "/ype": "boolean",
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "metadataDeleteLabelsRequestResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
     "metadataDeletePropertyRequest": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
+        "id": {
           "$ref": "#/definitions/metadataIdentificationType"
         },
         "key": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "metadataDeletePropertyRequestResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "metadataGenerateRandomNameRequestResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "name": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
     "metadataGetKeyValuePropertiesRequestResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "key_value_property": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/metadataKeyValueStringProperty"
           }
         }
       }
     },
     "metadataGetLabelIdsRequestResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ds": {
-          "/ype": "array",
-          "/tems": {
+        "ids": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/metadataIdentificationType"
           }
         }
       }
     },
     "metadataGetLabelsRequestResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "labels": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
     "metadataGetPropertyRequestResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/alue": {
-          "/ype": "string"
+        "value": {
+          "type": "string"
         }
       }
     },
     "metadataIdentificationType": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d_type": {
+        "id_type": {
           "$ref": "#/definitions/IDTypeEnumIDType"
         },
-        "/nt_id": {
-          "/ype": "string",
+        "int_id": {
+          "type": "string",
           "format": "uint64"
         },
-        "/tring_id": {
-          "/ype": "string"
+        "string_id": {
+          "type": "string"
         }
       }
     },
     "metadataKeyValueStringProperty": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "key": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string"
+        "value": {
+          "type": "string"
         }
       }
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string"
+        "type_url": {
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte"
         }
       }
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }

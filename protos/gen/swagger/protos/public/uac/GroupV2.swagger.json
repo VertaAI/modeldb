@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "uac/GroupV2.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "uac/GroupV2.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -13,57 +13,57 @@
   "paths": {
     "/v2/organization/{group.org_id}/groups": {
       "post": {
-        "/ummary": "Create or update a group",
+        "summary": "Create or update a group",
         "operationId": "GroupService_setGroup",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacSetGroupResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/roup.org_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "group.org_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacSetGroup"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "GroupService"
         ]
       }
     },
     "/v2/organization/{org_id}/groups": {
-      "/et": {
-        "/ummary": "Lists the groups that the provided user is a member of, or all groups if user isn't specified",
+      "get": {
+        "summary": "Lists the groups that the provided user is a member of, or all groups if user isn't specified",
         "operationId": "GroupService_searchGroups",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacSearchGroupsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -71,63 +71,63 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/earch_criteria.user_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "search_criteria.user_id",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "ascending",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "boolean",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
             "format": "boolean"
           },
           {
-            "name": "/ort_key",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "sort_key",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "GroupService"
         ]
       }
     },
     "/v2/organization/{org_id}/groups/{group_id}": {
-      "/et": {
-        "/ummary": "Gets information from a given group",
+      "get": {
+        "summary": "Gets information from a given group",
         "operationId": "GroupService_getGroupById",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacGetGroupByIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -135,34 +135,34 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/roup_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "GroupService"
         ]
       },
       "delete": {
-        "/ummary": "Delete an existing group",
+        "summary": "Delete an existing group",
         "operationId": "GroupService_deleteGroup",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacDeleteGroupResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -170,36 +170,36 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/roup_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "GroupService"
         ]
       }
     },
     "/v2/organization/{org_id}/groups/{group_id}/removeUsers": {
       "post": {
-        "/ummary": "Removes the given user from the group",
+        "summary": "Removes the given user from the group",
         "operationId": "GroupService_removeUsers",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacRemoveGroupUsersResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -207,44 +207,44 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/roup_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacRemoveGroupUsers"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "GroupService"
         ]
       }
     },
     "/v2/organization/{org_id}/groups/{group_id}/users": {
       "post": {
-        "/ummary": "Adds the given user to the group",
+        "summary": "Adds the given user to the group",
         "operationId": "GroupService_addUsers",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/uacAddGroupUsersResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -252,26 +252,26 @@
         "parameters": [
           {
             "name": "org_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/roup_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "group_id",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/uacAddGroupUsers"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "GroupService"
         ]
       }
@@ -279,8 +279,8 @@
   },
   "definitions": {
     "OperatorEnumOperator": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "EQ",
         "NE",
         "GT",
@@ -295,8 +295,8 @@
       "default": "EQ"
     },
     "ValueTypeEnumValueType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "STRING",
         "NUMBER",
         "LIST",
@@ -305,15 +305,15 @@
       "default": "STRING"
     },
     "commonKeyValueQuery": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "key": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "object"
+        "value": {
+          "type": "object"
         },
-        "/alue_type": {
+        "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType"
         },
         "operator": {
@@ -322,176 +322,176 @@
       }
     },
     "commonPagination": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "page_number": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "page_limit": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         }
       },
-      "/itle": "For pagination"
+      "title": "For pagination"
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string",
+        "type_url": {
+          "type": "string",
           "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte",
           "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
       },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"/.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
     "protobufNullValue": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacAddGroupUsers": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/roup_id": {
-          "/ype": "string"
+        "group_id": {
+          "type": "string"
         },
         "user_id": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
     "uacAddGroupUsersResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "uacDeleteGroupResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "uacGetGroupByIdResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/roup": {
+        "group": {
           "$ref": "#/definitions/uacGroupV2"
         }
       }
     },
     "uacGroupV2": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string"
+        "id": {
+          "type": "string"
         },
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
         "description": {
-          "/ype": "string"
+          "type": "string"
         },
         "built_in": {
-          "/ype": "boolean",
+          "type": "boolean",
           "format": "boolean",
           "description": "whether this group is one of the \"built-in\" and hence non-removable groups."
         },
         "member_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "created_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         },
         "updated_timestamp": {
-          "/ype": "string",
-          "format": "/nt64"
+          "type": "string",
+          "format": "int64"
         }
       }
     },
     "uacRemoveGroupUsers": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/roup_id": {
-          "/ype": "string"
+        "group_id": {
+          "type": "string"
         },
         "user_id": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
     "uacRemoveGroupUsersResponse": {
-      "/ype": "object"
+      "type": "object"
     },
     "uacSearchGroupCriteria": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "user_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "predicates": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/commonKeyValueQuery"
           }
         }
       }
     },
     "uacSearchGroupsResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/roups": {
-          "/ype": "array",
-          "/tems": {
+        "groups": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/uacGroupV2"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         },
         "pagination": {
           "$ref": "#/definitions/commonPagination"
@@ -499,17 +499,17 @@
       }
     },
     "uacSetGroup": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/roup": {
+        "group": {
           "$ref": "#/definitions/uacGroupV2"
         }
       }
     },
     "uacSetGroupResponse": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/roup": {
+        "group": {
           "$ref": "#/definitions/uacGroupV2"
         }
       }

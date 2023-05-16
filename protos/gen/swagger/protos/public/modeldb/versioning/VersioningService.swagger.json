@@ -1,8 +1,8 @@
 {
-  "/wagger": "2.0",
-  "/nfo": {
-    "/itle": "modeldb/versioning/VersioningService.proto",
-    "/ersion": "version not set"
+  "swagger": "2.0",
+  "info": {
+    "title": "modeldb/versioning/VersioningService.proto",
+    "version": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/v1/versioning/commitMultipartVersionedBlobArtifact": {
+    "/versioning/commitMultipartVersionedBlobArtifact": {
       "post": {
         "operationId": "VersioningService_commitMultipartVersionedBlobArtifact",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningCommitMultipartVersionedBlobArtifactResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,31 +31,31 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningCommitMultipartVersionedBlobArtifact"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/commitVersionedBlobArtifactPart": {
+    "/versioning/commitVersionedBlobArtifactPart": {
       "post": {
         "operationId": "VersioningService_commitVersionedBlobArtifactPart",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningCommitVersionedBlobArtifactPartResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,97 +63,97 @@
         "parameters": [
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningCommitVersionedBlobArtifactPart"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/getCommittedVersionedBlobArtifactParts": {
-      "/et": {
+    "/versioning/getCommittedVersionedBlobArtifactParts": {
+      "get": {
         "operationId": "VersioningService_getCommittedVersionedBlobArtifactParts",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetCommittedVersionedBlobArtifactPartsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_sha",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "location",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           },
           {
             "name": "path_dataset_component_blob_path",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories": {
-      "/et": {
-        "/ummary": "CRUD for repositories",
+    "/versioning/repositories": {
+      "get": {
+        "summary": "CRUD for repositories",
         "operationId": "VersioningService_ListRepositories2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListRepositoriesRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -161,2384 +161,2384 @@
         "parameters": [
           {
             "name": "workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{id.repo_id}": {
-      "/et": {
+    "/versioning/repositories/{id.repo_id}": {
+      "get": {
         "operationId": "VersioningService_GetRepository2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetRepositoryRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/d.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/d.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/d.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "put": {
         "operationId": "VersioningService_UpdateRepository2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningSetRepositoryResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/d.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningRepository"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}": {
+    "/versioning/repositories/{repository_id.repo_id}": {
       "delete": {
         "operationId": "VersioningService_DeleteRepository2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningDeleteRepositoryRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/branches": {
-      "/et": {
-        "/ummary": "CRUD for Branches",
+    "/versioning/repositories/{repository_id.repo_id}/branches": {
+      "get": {
+        "summary": "CRUD for Branches",
         "operationId": "VersioningService_ListBranches2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListBranchesRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}": {
-      "/et": {
+    "/versioning/repositories/{repository_id.repo_id}/branches/{branch}": {
+      "get": {
         "operationId": "VersioningService_GetBranch2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetBranchRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "branch",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "delete": {
         "operationId": "VersioningService_DeleteBranch2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningDeleteBranchRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "branch",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "put": {
-        "/ummary": "Unlike tags, branches can be updated. The API must verify that the new commit is a child of the current branch.",
+        "summary": "Unlike tags, branches can be updated. The API must verify that the new commit is a child of the current branch.",
         "operationId": "VersioningService_SetBranch2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningSetBranchRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "branch",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
-              "/ype": "string"
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/branches/{branch}/log": {
-      "/et": {
+    "/versioning/repositories/{repository_id.repo_id}/branches/{branch}/log": {
+      "get": {
         "operationId": "VersioningService_ListCommitsLog2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "branch",
             "description": "Pagination pagination = 2;",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "commit_sha",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/commits": {
-      "/et": {
-        "/ummary": "CRUD for commits",
+    "/versioning/repositories/{repository_id.repo_id}/commits": {
+      "get": {
+        "summary": "CRUD for commits",
         "operationId": "VersioningService_ListCommits2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListCommitsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "commit_base",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "commit_head",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "post": {
         "operationId": "VersioningService_CreateCommit2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningCreateCommitRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningCreateCommitRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}": {
-      "/et": {
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}": {
+      "get": {
         "operationId": "VersioningService_GetCommit2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetCommitRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "delete": {
         "operationId": "VersioningService_DeleteCommit2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningDeleteCommitRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blobs": {
-      "/et": {
-        "/ummary": "Getting blobs and folders in a commit",
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/blobs": {
+      "get": {
+        "summary": "Getting blobs and folders in a commit",
         "operationId": "VersioningService_ListCommitBlobs2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListCommitBlobsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_sha",
             "description": "Pagination pagination = 2;",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "location_prefix",
             "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForBlobVersioned": {
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/getUrlForBlobVersioned": {
       "post": {
         "operationId": "VersioningService_getUrlForBlobVersioned2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetUrlForBlobVersionedResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningGetUrlForBlobVersioned"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/log": {
-      "/et": {
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/log": {
+      "get": {
         "operationId": "VersioningService_ListCommitsLog4",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "branch",
             "description": "Pagination pagination = 2;.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path": {
-      "/et": {
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_sha}/path": {
+      "get": {
         "operationId": "VersioningService_GetCommitComponent2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetCommitComponentRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "location",
             "description": "List of folder names, with the last element being the name of the blob or tree\nthe last element determines if the response to be returned is Folder or Blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/commits/{commit_to_revert_sha}/revert": {
+    "/versioning/repositories/{repository_id.repo_id}/commits/{commit_to_revert_sha}/revert": {
       "post": {
         "operationId": "VersioningService_RevertRepositoryCommits2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningRevertRepositoryCommitsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_to_revert_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningRevertRepositoryCommitsRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/diff": {
-      "/et": {
-        "/ummary": "Git-like operations",
+    "/versioning/repositories/{repository_id.repo_id}/diff": {
+      "get": {
+        "summary": "Git-like operations",
         "operationId": "VersioningService_ComputeRepositoryDiff2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningComputeRepositoryDiffRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "commit_a",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "commit_b",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/eplace_a_with_common_ancestor",
+            "name": "replace_a_with_common_ancestor",
             "description": "Replace commit_a with the nearest common ancestor of commit_a and commit_b.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "boolean",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
             "format": "boolean"
           },
           {
             "name": "branch_a",
             "description": "for a or b only one of commit or branch should be populated.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "branch_b",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/merge": {
+    "/versioning/repositories/{repository_id.repo_id}/merge": {
       "post": {
         "operationId": "VersioningService_MergeRepositoryCommits2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningMergeRepositoryCommitsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningMergeRepositoryCommitsRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/tags": {
-      "/et": {
-        "/ummary": "CRUD for tags",
+    "/versioning/repositories/{repository_id.repo_id}/tags": {
+      "get": {
+        "summary": "CRUD for tags",
         "operationId": "VersioningService_ListTags2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListTagsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/repositories/{repository_id.repo_id}/tags/{tag}": {
-      "/et": {
+    "/versioning/repositories/{repository_id.repo_id}/tags/{tag}": {
+      "get": {
         "operationId": "VersioningService_GetTag2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetTagRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/ag",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "delete": {
         "operationId": "VersioningService_DeleteTag2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningDeleteTagRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/ag",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "put": {
-        "/ummary": "Can't update a tag. If someone tries to set one that exists, we should error.",
+        "summary": "Can't update a tag. If someone tries to set one that exists, we should error.",
         "operationId": "VersioningService_SetTag2",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningSetTagRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.repo_id",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "path",
+            "required": true,
+            "type": "string",
             "format": "uint64"
           },
           {
-            "name": "/ag",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
-              "/ype": "string"
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{id.named_id.workspace_name}/repositories": {
+    "/versioning/workspaces/{id.named_id.workspace_name}/repositories": {
       "post": {
         "operationId": "VersioningService_CreateRepository",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningSetRepositoryResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/d.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningRepository"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{id.named_id.workspace_name}/repositories/{id.named_id.name}": {
-      "/et": {
+    "/versioning/workspaces/{id.named_id.workspace_name}/repositories/{id.named_id.name}": {
+      "get": {
         "operationId": "VersioningService_GetRepository",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetRepositoryRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/d.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/d.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/d.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "put": {
         "operationId": "VersioningService_UpdateRepository",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningSetRepositoryResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/d.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/d.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningRepository"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}": {
       "delete": {
         "operationId": "VersioningService_DeleteRepository",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningDeleteRepositoryRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches": {
-      "/et": {
-        "/ummary": "CRUD for Branches",
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches": {
+      "get": {
+        "summary": "CRUD for Branches",
         "operationId": "VersioningService_ListBranches",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListBranchesRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}": {
-      "/et": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}": {
+      "get": {
         "operationId": "VersioningService_GetBranch",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetBranchRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "branch",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "delete": {
         "operationId": "VersioningService_DeleteBranch",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningDeleteBranchRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "branch",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "put": {
-        "/ummary": "Unlike tags, branches can be updated. The API must verify that the new commit is a child of the current branch.",
+        "summary": "Unlike tags, branches can be updated. The API must verify that the new commit is a child of the current branch.",
         "operationId": "VersioningService_SetBranch",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningSetBranchRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "branch",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
-              "/ype": "string"
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/log": {
-      "/et": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/branches/{branch}/log": {
+      "get": {
         "operationId": "VersioningService_ListCommitsLog",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "branch",
             "description": "Pagination pagination = 2;",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_sha",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits": {
-      "/et": {
-        "/ummary": "CRUD for commits",
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits": {
+      "get": {
+        "summary": "CRUD for commits",
         "operationId": "VersioningService_ListCommits",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListCommitsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "commit_base",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "commit_head",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "post": {
         "operationId": "VersioningService_CreateCommit",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningCreateCommitRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningCreateCommitRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}": {
-      "/et": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}": {
+      "get": {
         "operationId": "VersioningService_GetCommit",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetCommitRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "delete": {
         "operationId": "VersioningService_DeleteCommit",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningDeleteCommitRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blobs": {
-      "/et": {
-        "/ummary": "Getting blobs and folders in a commit",
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/blobs": {
+      "get": {
+        "summary": "Getting blobs and folders in a commit",
         "operationId": "VersioningService_ListCommitBlobs",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListCommitBlobsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "commit_sha",
             "description": "Pagination pagination = 2;",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "location_prefix",
             "description": "List of folder names (with the last element potentially representing the blob name)\nThis will be used to limit the search to scope just this location, like `git log /my/path` would do.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForBlobVersioned": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/getUrlForBlobVersioned": {
       "post": {
         "operationId": "VersioningService_getUrlForBlobVersioned",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetUrlForBlobVersionedResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningGetUrlForBlobVersioned"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/log": {
-      "/et": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/log": {
+      "get": {
         "operationId": "VersioningService_ListCommitsLog3",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListCommitsLogRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "branch",
             "description": "Pagination pagination = 2;.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path": {
-      "/et": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_sha}/path": {
+      "get": {
         "operationId": "VersioningService_GetCommitComponent",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetCommitComponentRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "commit_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "location",
             "description": "List of folder names, with the last element being the name of the blob or tree\nthe last element determines if the response to be returned is Folder or Blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "array",
-            "/tems": {
-              "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
             },
             "collectionFormat": "multi"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_to_revert_sha}/revert": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/commits/{commit_to_revert_sha}/revert": {
       "post": {
         "operationId": "VersioningService_RevertRepositoryCommits",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningRevertRepositoryCommitsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "commit_to_revert_sha",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningRevertRepositoryCommitsRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/diff": {
-      "/et": {
-        "/ummary": "Git-like operations",
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/diff": {
+      "get": {
+        "summary": "Git-like operations",
         "operationId": "VersioningService_ComputeRepositoryDiff",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningComputeRepositoryDiffRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           },
           {
             "name": "commit_a",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "commit_b",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
-            "name": "/eplace_a_with_common_ancestor",
+            "name": "replace_a_with_common_ancestor",
             "description": "Replace commit_a with the nearest common ancestor of commit_a and commit_b.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "boolean",
+            "in": "query",
+            "required": false,
+            "type": "boolean",
             "format": "boolean"
           },
           {
             "name": "branch_a",
             "description": "for a or b only one of commit or branch should be populated.",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           },
           {
             "name": "branch_b",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string"
+            "in": "query",
+            "required": false,
+            "type": "string"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/merge": {
       "post": {
         "operationId": "VersioningService_MergeRepositoryCommits",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningMergeRepositoryCommitsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningMergeRepositoryCommitsRequest"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags": {
-      "/et": {
-        "/ummary": "CRUD for tags",
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags": {
+      "get": {
+        "summary": "CRUD for tags",
         "operationId": "VersioningService_ListTags",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListTagsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}": {
-      "/et": {
+    "/versioning/workspaces/{repository_id.named_id.workspace_name}/repositories/{repository_id.named_id.name}/tags/{tag}": {
+      "get": {
         "operationId": "VersioningService_GetTag",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningGetTagRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/ag",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "delete": {
         "operationId": "VersioningService_DeleteTag",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningDeleteTagRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/ag",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.repo_id",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "string",
+            "name": "repository_id.repo_id",
+            "in": "query",
+            "required": false,
+            "type": "string",
             "format": "uint64"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       },
       "put": {
-        "/ummary": "Can't update a tag. If someone tries to set one that exists, we should error.",
+        "summary": "Can't update a tag. If someone tries to set one that exists, we should error.",
         "operationId": "VersioningService_SetTag",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningSetTagRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "/epository_id.named_id.workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.workspace_name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/epository_id.named_id.name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "repository_id.named_id.name",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
-            "name": "/ag",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "name": "tag",
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
-              "/ype": "string"
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "string"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{workspace_name}/findRepositories": {
+    "/versioning/workspaces/{workspace_name}/findRepositories": {
       "post": {
         "operationId": "VersioningService_findRepositories",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningFindRepositoriesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -2546,37 +2546,37 @@
         "parameters": [
           {
             "name": "workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningFindRepositories"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{workspace_name}/findRepositoriesBlobs": {
+    "/versioning/workspaces/{workspace_name}/findRepositoriesBlobs": {
       "post": {
         "operationId": "VersioningService_findRepositoriesBlobs",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningFindRepositoriesBlobsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -2584,38 +2584,38 @@
         "parameters": [
           {
             "name": "workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "body",
-            "/n": "body",
-            "/equired": true,
-            "/chema": {
+            "in": "body",
+            "required": true,
+            "schema": {
               "$ref": "#/definitions/versioningFindRepositoriesBlobs"
             }
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
     },
-    "/v1/versioning/workspaces/{workspace_name}/repositories": {
-      "/et": {
-        "/ummary": "CRUD for repositories",
+    "/versioning/workspaces/{workspace_name}/repositories": {
+      "get": {
+        "summary": "CRUD for repositories",
         "operationId": "VersioningService_ListRepositories",
-        "/esponses": {
+        "responses": {
           "200": {
             "description": "A successful response.",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/versioningListRepositoriesRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "/chema": {
+            "schema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -2623,26 +2623,26 @@
         "parameters": [
           {
             "name": "workspace_name",
-            "/n": "path",
-            "/equired": true,
-            "/ype": "string"
+            "in": "path",
+            "required": true,
+            "type": "string"
           },
           {
             "name": "pagination.page_number",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           },
           {
             "name": "pagination.page_limit",
-            "/n": "query",
-            "/equired": false,
-            "/ype": "integer",
-            "format": "/nt32"
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int32"
           }
         ],
-        "/ags": [
+        "tags": [
           "VersioningService"
         ]
       }
@@ -2650,16 +2650,16 @@
   },
   "definitions": {
     "CollaboratorTypeEnumCollaboratorType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "READ_ONLY",
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
     },
     "DiffStatusEnumDiffStatus": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ADDED",
         "DELETED",
@@ -2669,8 +2669,8 @@
       "default": "UNKNOWN"
     },
     "OperatorEnumOperator": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "EQ",
         "NE",
         "GT",
@@ -2685,8 +2685,8 @@
       "default": "EQ"
     },
     "RepositoryVisibilityEnumRepositoryVisibility": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "PRIVATE",
         "PUBLIC",
         "ORG_SCOPED_PUBLIC"
@@ -2694,8 +2694,8 @@
       "default": "PRIVATE"
     },
     "TernaryEnumTernary": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -2703,8 +2703,8 @@
       "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "STRING",
         "NUMBER",
         "LIST",
@@ -2713,8 +2713,8 @@
       "default": "STRING"
     },
     "WorkspaceTypeEnumWorkspaceType": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ORGANIZATION",
         "USER"
@@ -2722,53 +2722,53 @@
       "default": "UNKNOWN"
     },
     "commonArtifactPart": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "part_number": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
-        "/tag": {
-          "/ype": "string"
+        "etag": {
+          "type": "string"
         }
       }
     },
     "commonGroupId": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "org_id": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/roup_id": {
-          "/ype": "string"
+        "group_id": {
+          "type": "string"
         }
       }
     },
     "commonKeyValue": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "key": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "object"
+        "value": {
+          "type": "object"
         },
-        "/alue_type": {
+        "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
         }
       }
     },
     "commonKeyValueQuery": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "key": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "object"
+        "value": {
+          "type": "object"
         },
-        "/alue_type": {
+        "value_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType"
         },
         "operator": {
@@ -2777,62 +2777,62 @@
       }
     },
     "commonPagination": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "page_number": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "page_limit": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         }
       },
-      "/itle": "For pagination"
+      "title": "For pagination"
     },
     "protobufAny": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
-        "/ype_url": {
-          "/ype": "string"
+        "type_url": {
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string",
+        "value": {
+          "type": "string",
           "format": "byte"
         }
       }
     },
     "protobufNullValue": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "/untimeError": {
-      "/ype": "object",
+    "runtimeError": {
+      "type": "object",
       "properties": {
-        "/rror": {
-          "/ype": "string"
+        "error": {
+          "type": "string"
         },
         "code": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "message": {
-          "/ype": "string"
+          "type": "string"
         },
         "details": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacCollaboratorPermissions": {
-      "/ype": "object",
+      "type": "object",
       "properties": {
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
@@ -2846,8 +2846,8 @@
       }
     },
     "uacResourceVisibility": {
-      "/ype": "string",
-      "/num": [
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
@@ -2856,24 +2856,24 @@
       ],
       "default": "UNKNOWN"
     },
-    "/ersioningAptEnvironmentBlob": {
-      "/ype": "object",
+    "versioningAptEnvironmentBlob": {
+      "type": "object",
       "properties": {
         "packages": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
-    "/ersioningBlob": {
-      "/ype": "object",
+    "versioningBlob": {
+      "type": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/versioningDatasetBlob"
         },
-        "/nvironment": {
+        "environment": {
           "$ref": "#/definitions/versioningEnvironmentBlob"
         },
         "code": {
@@ -2884,23 +2884,23 @@
         }
       }
     },
-    "/ersioningBlobDiff": {
-      "/ype": "object",
+    "versioningBlobDiff": {
+      "type": "object",
       "properties": {
         "location": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "/itle": "List of folder names, with the last element being the name of the blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar"
+          "title": "List of folder names, with the last element being the name of the blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar"
         },
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "dataset": {
           "$ref": "#/definitions/versioningDatasetDiff"
         },
-        "/nvironment": {
+        "environment": {
           "$ref": "#/definitions/versioningEnvironmentDiff"
         },
         "code": {
@@ -2911,30 +2911,30 @@
         }
       }
     },
-    "/ersioningBlobExpanded": {
-      "/ype": "object",
+    "versioningBlobExpanded": {
+      "type": "object",
       "properties": {
         "location": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           },
-          "/itle": "List of folder names, with the last element being the name of the blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar"
+          "title": "List of folder names, with the last element being the name of the blob\nEach element goes one level deeper. So [\"foo\", \"bar\"] represents the same as /foo/bar"
         },
         "blob": {
           "$ref": "#/definitions/versioningBlob"
         },
         "attributes": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/commonKeyValue"
           }
         }
       }
     },
-    "/ersioningBlobType": {
-      "/ype": "string",
-      "/num": [
+    "versioningBlobType": {
+      "type": "string",
+      "enum": [
         "UNKNOWN",
         "DATASET_BLOB",
         "ENVIRONMENT_BLOB",
@@ -2943,10 +2943,10 @@
       ],
       "default": "UNKNOWN"
     },
-    "/ersioningCodeBlob": {
-      "/ype": "object",
+    "versioningCodeBlob": {
+      "type": "object",
       "properties": {
-        "/it": {
+        "git": {
           "$ref": "#/definitions/versioningGitCodeBlob"
         },
         "notebook": {
@@ -2954,10 +2954,10 @@
         }
       }
     },
-    "/ersioningCodeDiff": {
-      "/ype": "object",
+    "versioningCodeDiff": {
+      "type": "object",
       "properties": {
-        "/it": {
+        "git": {
           "$ref": "#/definitions/versioningGitCodeDiff"
         },
         "notebook": {
@@ -2965,218 +2965,218 @@
         }
       }
     },
-    "/ersioningCommandLineEnvironmentDiff": {
-      "/ype": "object",
+    "versioningCommandLineEnvironmentDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "B": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "C": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         }
       }
     },
-    "/ersioningCommit": {
-      "/ype": "object",
+    "versioningCommit": {
+      "type": "object",
       "properties": {
         "parent_shas": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           },
           "description": "ID of the parent commits."
         },
         "message": {
-          "/ype": "string",
+          "type": "string",
           "description": "Message associated with the commit."
         },
         "date_created": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64",
           "description": "Date associated with the commit.\nIt will be computed by the backend by default, but a feature flag should enable setting by the client."
         },
         "author": {
-          "/ype": "string",
+          "type": "string",
           "description": "ID of the user who created the commit."
         },
         "commit_sha": {
-          "/ype": "string"
+          "type": "string"
         },
         "date_updated": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64",
           "description": "Updated Date while create tags & attribute for the commit."
         },
-        "/ersion_number": {
-          "/ype": "string",
+        "version_number": {
+          "type": "string",
           "format": "uint64",
-          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       },
-      "/itle": "Base commit for the versioning system\nDO NOT USE TO COMPUTE SHA"
+      "title": "Base commit for the versioning system\nDO NOT USE TO COMPUTE SHA"
     },
-    "/ersioningCommitMultipartVersionedBlobArtifact": {
-      "/ype": "object",
+    "versioningCommitMultipartVersionedBlobArtifact": {
+      "type": "object",
       "properties": {
-        "/epository_id": {
+        "repository_id": {
           "$ref": "#/definitions/versioningRepositoryIdentification"
         },
         "commit_sha": {
-          "/ype": "string"
+          "type": "string"
         },
         "location": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "path_dataset_component_blob_path": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
-    "/ersioningCommitMultipartVersionedBlobArtifactResponse": {
-      "/ype": "object"
+    "versioningCommitMultipartVersionedBlobArtifactResponse": {
+      "type": "object"
     },
-    "/ersioningCommitVersionedBlobArtifactPart": {
-      "/ype": "object",
+    "versioningCommitVersionedBlobArtifactPart": {
+      "type": "object",
       "properties": {
-        "/epository_id": {
+        "repository_id": {
           "$ref": "#/definitions/versioningRepositoryIdentification"
         },
         "commit_sha": {
-          "/ype": "string"
+          "type": "string"
         },
         "location": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "path_dataset_component_blob_path": {
-          "/ype": "string"
+          "type": "string"
         },
         "artifact_part": {
           "$ref": "#/definitions/commonArtifactPart"
         }
       }
     },
-    "/ersioningCommitVersionedBlobArtifactPartResponse": {
-      "/ype": "object"
+    "versioningCommitVersionedBlobArtifactPartResponse": {
+      "type": "object"
     },
-    "/ersioningComputeRepositoryDiffRequestResponse": {
-      "/ype": "object",
+    "versioningComputeRepositoryDiffRequestResponse": {
+      "type": "object",
       "properties": {
         "diffs": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningBlobDiff"
           }
         }
       }
     },
-    "/ersioningConfigBlob": {
-      "/ype": "object",
+    "versioningConfigBlob": {
+      "type": "object",
       "properties": {
         "hyperparameter_set": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningHyperparameterSetConfigBlob"
           }
         },
         "hyperparameters": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningHyperparameterConfigBlob"
           }
         }
       }
     },
-    "/ersioningConfigDiff": {
-      "/ype": "object",
+    "versioningConfigDiff": {
+      "type": "object",
       "properties": {
         "hyperparameter_set": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningHyperparameterSetConfigDiff"
           }
         },
         "hyperparameters": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningHyperparameterConfigDiff"
           }
         }
       }
     },
-    "/ersioningContinuousHyperparameterSetConfigBlob": {
-      "/ype": "object",
+    "versioningContinuousHyperparameterSetConfigBlob": {
+      "type": "object",
       "properties": {
-        "/nterval_begin": {
+        "interval_begin": {
           "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
         },
-        "/nterval_end": {
+        "interval_end": {
           "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
         },
-        "/nterval_step": {
+        "interval_step": {
           "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
         }
       }
     },
-    "/ersioningCreateCommitRequest": {
-      "/ype": "object",
+    "versioningCreateCommitRequest": {
+      "type": "object",
       "properties": {
-        "/epository_id": {
+        "repository_id": {
           "$ref": "#/definitions/versioningRepositoryIdentification"
         },
         "commit": {
           "$ref": "#/definitions/versioningCommit"
         },
         "blobs": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningBlobExpanded"
           }
         },
         "commit_base": {
-          "/ype": "string",
-          "/itle": "Apply the diffs on top of commit_base\nIf a blob was added in the diff, add it on top of commit_base (doesn't matter if it was present already or not)\nIf a blob was deleted, delete if from commit_base if present\nIf a blob was modified, then:\n1) check that the type of the diff is consistent with the type of the blob. If they are different, raise an error saying so\n2) apply the diff to the blob as per the following logic:\n2a) if the field is atomic (e.g. python version, git repository), use the newer version (B) from the diff and overwrite what the commit_base has\n2b) if the field is not atomic (e.g. list of python requirements, dataset components), merge the lists by a) copying new values, b) deleting removed values, c) updating values that are already present based on some reasonable key"
+          "type": "string",
+          "title": "Apply the diffs on top of commit_base\nIf a blob was added in the diff, add it on top of commit_base (doesn't matter if it was present already or not)\nIf a blob was deleted, delete if from commit_base if present\nIf a blob was modified, then:\n1) check that the type of the diff is consistent with the type of the blob. If they are different, raise an error saying so\n2) apply the diff to the blob as per the following logic:\n2a) if the field is atomic (e.g. python version, git repository), use the newer version (B) from the diff and overwrite what the commit_base has\n2b) if the field is not atomic (e.g. list of python requirements, dataset components), merge the lists by a) copying new values, b) deleting removed values, c) updating values that are already present based on some reasonable key"
         },
         "diffs": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningBlobDiff"
           }
         }
       }
     },
-    "/ersioningCreateCommitRequestResponse": {
-      "/ype": "object",
+    "versioningCreateCommitRequestResponse": {
+      "type": "object",
       "properties": {
         "commit": {
           "$ref": "#/definitions/versioningCommit"
         }
       }
     },
-    "/ersioningDatasetBlob": {
-      "/ype": "object",
+    "versioningDatasetBlob": {
+      "type": "object",
       "properties": {
-        "/3": {
+        "s3": {
           "$ref": "#/definitions/versioningS3DatasetBlob"
         },
         "path": {
@@ -3187,10 +3187,10 @@
         }
       }
     },
-    "/ersioningDatasetDiff": {
-      "/ype": "object",
+    "versioningDatasetDiff": {
+      "type": "object",
       "properties": {
-        "/3": {
+        "s3": {
           "$ref": "#/definitions/versioningS3DatasetDiff"
         },
         "path": {
@@ -3201,53 +3201,53 @@
         }
       }
     },
-    "/ersioningDeleteBranchRequestResponse": {
-      "/ype": "object"
+    "versioningDeleteBranchRequestResponse": {
+      "type": "object"
     },
-    "/ersioningDeleteCommitRequestResponse": {
-      "/ype": "object"
+    "versioningDeleteCommitRequestResponse": {
+      "type": "object"
     },
-    "/ersioningDeleteRepositoryRequestResponse": {
-      "/ype": "object",
+    "versioningDeleteRepositoryRequestResponse": {
+      "type": "object",
       "properties": {
-        "/tatus": {
-          "/ype": "boolean",
+        "status": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
-    "/ersioningDeleteTagRequestResponse": {
-      "/ype": "object"
+    "versioningDeleteTagRequestResponse": {
+      "type": "object"
     },
-    "/ersioningDiscreteHyperparameterSetConfigBlob": {
-      "/ype": "object",
+    "versioningDiscreteHyperparameterSetConfigBlob": {
+      "type": "object",
       "properties": {
-        "/alues": {
-          "/ype": "array",
-          "/tems": {
+        "values": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
           }
         }
       }
     },
-    "/ersioningDockerEnvironmentBlob": {
-      "/ype": "object",
+    "versioningDockerEnvironmentBlob": {
+      "type": "object",
       "properties": {
-        "/epository": {
-          "/ype": "string"
+        "repository": {
+          "type": "string"
         },
-        "/ag": {
-          "/ype": "string"
+        "tag": {
+          "type": "string"
         },
-        "/ha": {
-          "/ype": "string"
+        "sha": {
+          "type": "string"
         }
       }
     },
-    "/ersioningDockerEnvironmentDiff": {
-      "/ype": "object",
+    "versioningDockerEnvironmentDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -3261,8 +3261,8 @@
         }
       }
     },
-    "/ersioningEnvironmentBlob": {
-      "/ype": "object",
+    "versioningEnvironmentBlob": {
+      "type": "object",
       "properties": {
         "python": {
           "$ref": "#/definitions/versioningPythonEnvironmentBlob"
@@ -3270,16 +3270,16 @@
         "docker": {
           "$ref": "#/definitions/versioningDockerEnvironmentBlob"
         },
-        "/nvironment_variables": {
-          "/ype": "array",
-          "/tems": {
+        "environment_variables": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
           }
         },
         "command_line": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "apt": {
@@ -3287,8 +3287,8 @@
         }
       }
     },
-    "/ersioningEnvironmentDiff": {
-      "/ype": "object",
+    "versioningEnvironmentDiff": {
+      "type": "object",
       "properties": {
         "python": {
           "$ref": "#/definitions/versioningPythonEnvironmentDiff"
@@ -3296,33 +3296,33 @@
         "docker": {
           "$ref": "#/definitions/versioningDockerEnvironmentDiff"
         },
-        "/nvironment_variables": {
-          "/ype": "array",
-          "/tems": {
+        "environment_variables": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningEnvironmentVariablesDiff"
           },
-          "/itle": "Should only contain environment variables unique to A/B (considering all fields)"
+          "title": "Should only contain environment variables unique to A/B (considering all fields)"
         },
         "command_line": {
           "$ref": "#/definitions/versioningCommandLineEnvironmentDiff"
         }
       }
     },
-    "/ersioningEnvironmentVariablesBlob": {
-      "/ype": "object",
+    "versioningEnvironmentVariablesBlob": {
+      "type": "object",
       "properties": {
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/alue": {
-          "/ype": "string"
+        "value": {
+          "type": "string"
         }
       }
     },
-    "/ersioningEnvironmentVariablesDiff": {
-      "/ype": "object",
+    "versioningEnvironmentVariablesDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -3336,156 +3336,156 @@
         }
       }
     },
-    "/ersioningFindRepositories": {
-      "/ype": "object",
+    "versioningFindRepositories": {
+      "type": "object",
       "properties": {
-        "/epo_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string",
+        "repo_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
             "format": "uint64"
           }
         },
         "workspace_name": {
-          "/ype": "string"
+          "type": "string"
         },
         "predicates": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
         "page_number": {
-          "/ype": "integer",
-          "format": "/nt32",
-          "/itle": "For pagination"
+          "type": "integer",
+          "format": "int32",
+          "title": "For pagination"
         },
         "page_limit": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         }
       },
-      "/itle": "If any of the request parameters are not set then backend will return all the repositories.\nthe query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC"
+      "title": "If any of the request parameters are not set then backend will return all the repositories.\nthe query like: FROM RepositoryEntity repo ORDER BY repo.date_updated DESC"
     },
-    "/ersioningFindRepositoriesBlobs": {
-      "/ype": "object",
+    "versioningFindRepositoriesBlobs": {
+      "type": "object",
       "properties": {
-        "/epo_ids": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string",
+        "repo_ids": {
+          "type": "array",
+          "items": {
+            "type": "string",
             "format": "uint64"
           }
         },
         "workspace_name": {
-          "/ype": "string"
+          "type": "string"
         },
         "location_prefix": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "blob_type": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningBlobType"
           }
         },
         "commits": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "page_number": {
-          "/ype": "integer",
-          "format": "/nt32",
-          "/itle": "For pagination"
+          "type": "integer",
+          "format": "int32",
+          "title": "For pagination"
         },
         "page_limit": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "predicates": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/commonKeyValueQuery"
           },
-          "/itle": "In future requirement\nbool ascending = 8;\nstring sort_key = 9;"
+          "title": "In future requirement\nbool ascending = 8;\nstring sort_key = 9;"
         }
       }
     },
-    "/ersioningFindRepositoriesBlobsResponse": {
-      "/ype": "object",
+    "versioningFindRepositoriesBlobsResponse": {
+      "type": "object",
       "properties": {
         "blobs": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningBlobExpanded"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
-    "/ersioningFindRepositoriesResponse": {
-      "/ype": "object",
+    "versioningFindRepositoriesResponse": {
+      "type": "object",
       "properties": {
-        "/epositories": {
-          "/ype": "array",
-          "/tems": {
+        "repositories": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningRepository"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
-    "/ersioningFolder": {
-      "/ype": "object",
+    "versioningFolder": {
+      "type": "object",
       "properties": {
         "blobs": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningFolderElement"
           },
-          "/itle": "Blobs, which correspond to direct entries/files"
+          "title": "Blobs, which correspond to direct entries/files"
         },
-        "/ub_folders": {
-          "/ype": "array",
-          "/tems": {
+        "sub_folders": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningFolderElement"
           },
-          "/itle": "Subfolders"
+          "title": "Subfolders"
         }
       },
-      "/itle": "DO NOT USE TO COMPUTE SHA"
+      "title": "DO NOT USE TO COMPUTE SHA"
     },
-    "/ersioningFolderElement": {
-      "/ype": "object",
+    "versioningFolderElement": {
+      "type": "object",
       "properties": {
-        "/lement_name": {
-          "/ype": "string",
+        "element_name": {
+          "type": "string",
           "description": "Name of the element inside the folder."
         }
       },
-      "/itle": "DO NOT USE TO COMPUTE SHA"
+      "title": "DO NOT USE TO COMPUTE SHA"
     },
-    "/ersioningGetBranchRequestResponse": {
-      "/ype": "object",
+    "versioningGetBranchRequestResponse": {
+      "type": "object",
       "properties": {
         "commit": {
           "$ref": "#/definitions/versioningCommit"
         }
       }
     },
-    "/ersioningGetCommitComponentRequestResponse": {
-      "/ype": "object",
+    "versioningGetCommitComponentRequestResponse": {
+      "type": "object",
       "properties": {
         "folder": {
           "$ref": "#/definitions/versioningFolder"
@@ -3494,112 +3494,112 @@
           "$ref": "#/definitions/versioningBlob"
         },
         "attributes": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/commonKeyValue"
           }
         }
       }
     },
-    "/ersioningGetCommitRequestResponse": {
-      "/ype": "object",
+    "versioningGetCommitRequestResponse": {
+      "type": "object",
       "properties": {
         "commit": {
           "$ref": "#/definitions/versioningCommit"
         }
       }
     },
-    "/ersioningGetCommittedVersionedBlobArtifactPartsResponse": {
-      "/ype": "object",
+    "versioningGetCommittedVersionedBlobArtifactPartsResponse": {
+      "type": "object",
       "properties": {
         "artifact_parts": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/commonArtifactPart"
           }
         }
       }
     },
-    "/ersioningGetRepositoryRequestResponse": {
-      "/ype": "object",
+    "versioningGetRepositoryRequestResponse": {
+      "type": "object",
       "properties": {
-        "/epository": {
+        "repository": {
           "$ref": "#/definitions/versioningRepository"
         }
       }
     },
-    "/ersioningGetTagRequestResponse": {
-      "/ype": "object",
+    "versioningGetTagRequestResponse": {
+      "type": "object",
       "properties": {
         "commit": {
           "$ref": "#/definitions/versioningCommit"
         }
       }
     },
-    "/ersioningGetUrlForBlobVersioned": {
-      "/ype": "object",
+    "versioningGetUrlForBlobVersioned": {
+      "type": "object",
       "properties": {
-        "/epository_id": {
+        "repository_id": {
           "$ref": "#/definitions/versioningRepositoryIdentification"
         },
         "commit_sha": {
-          "/ype": "string"
+          "type": "string"
         },
         "location": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
         "path_dataset_component_blob_path": {
-          "/ype": "string"
+          "type": "string"
         },
         "method": {
-          "/ype": "string"
+          "type": "string"
         },
         "part_number": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         }
       }
     },
-    "/ersioningGetUrlForBlobVersionedResponse": {
-      "/ype": "object",
+    "versioningGetUrlForBlobVersionedResponse": {
+      "type": "object",
       "properties": {
         "url": {
-          "/ype": "string"
+          "type": "string"
         },
         "multipart_upload_ok": {
-          "/ype": "boolean",
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
-    "/ersioningGitCodeBlob": {
-      "/ype": "object",
+    "versioningGitCodeBlob": {
+      "type": "object",
       "properties": {
-        "/epo": {
-          "/ype": "string"
+        "repo": {
+          "type": "string"
         },
         "hash": {
-          "/ype": "string"
+          "type": "string"
         },
         "branch": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/ag": {
-          "/ype": "string"
+        "tag": {
+          "type": "string"
         },
-        "/s_dirty": {
-          "/ype": "boolean",
+        "is_dirty": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
-    "/ersioningGitCodeDiff": {
-      "/ype": "object",
+    "versioningGitCodeDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -3613,21 +3613,21 @@
         }
       }
     },
-    "/ersioningHyperparameterConfigBlob": {
-      "/ype": "object",
+    "versioningHyperparameterConfigBlob": {
+      "type": "object",
       "properties": {
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/alue": {
+        "value": {
           "$ref": "#/definitions/versioningHyperparameterValuesConfigBlob"
         }
       }
     },
-    "/ersioningHyperparameterConfigDiff": {
-      "/ype": "object",
+    "versioningHyperparameterConfigDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -3641,11 +3641,11 @@
         }
       }
     },
-    "/ersioningHyperparameterSetConfigBlob": {
-      "/ype": "object",
+    "versioningHyperparameterSetConfigBlob": {
+      "type": "object",
       "properties": {
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
         "continuous": {
           "$ref": "#/definitions/versioningContinuousHyperparameterSetConfigBlob"
@@ -3655,10 +3655,10 @@
         }
       }
     },
-    "/ersioningHyperparameterSetConfigDiff": {
-      "/ype": "object",
+    "versioningHyperparameterSetConfigDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -3672,223 +3672,223 @@
         }
       }
     },
-    "/ersioningHyperparameterValuesConfigBlob": {
-      "/ype": "object",
+    "versioningHyperparameterValuesConfigBlob": {
+      "type": "object",
       "properties": {
-        "/nt_value": {
-          "/ype": "string",
-          "format": "/nt64"
+        "int_value": {
+          "type": "string",
+          "format": "int64"
         },
         "float_value": {
-          "/ype": "number",
+          "type": "number",
           "format": "float"
         },
-        "/tring_value": {
-          "/ype": "string"
+        "string_value": {
+          "type": "string"
         }
       }
     },
-    "/ersioningListBranchesRequestResponse": {
-      "/ype": "object",
+    "versioningListBranchesRequestResponse": {
+      "type": "object",
       "properties": {
         "branches": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
-    "/ersioningListCommitBlobsRequestResponse": {
-      "/ype": "object",
+    "versioningListCommitBlobsRequestResponse": {
+      "type": "object",
       "properties": {
         "blobs": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningBlobExpanded"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
-    "/ersioningListCommitsLogRequestResponse": {
-      "/ype": "object",
+    "versioningListCommitsLogRequestResponse": {
+      "type": "object",
       "properties": {
         "commits": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningCommit"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
-    "/ersioningListCommitsRequestResponse": {
-      "/ype": "object",
+    "versioningListCommitsRequestResponse": {
+      "type": "object",
       "properties": {
         "commits": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningCommit"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
-    "/ersioningListRepositoriesRequestResponse": {
-      "/ype": "object",
+    "versioningListRepositoriesRequestResponse": {
+      "type": "object",
       "properties": {
-        "/epositories": {
-          "/ype": "array",
-          "/tems": {
+        "repositories": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningRepository"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
-    "/ersioningListTagsRequestResponse": {
-      "/ype": "object",
+    "versioningListTagsRequestResponse": {
+      "type": "object",
       "properties": {
-        "/ags": {
-          "/ype": "array",
-          "/tems": {
-            "/ype": "string"
+        "tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
           }
         },
-        "/otal_records": {
-          "/ype": "string",
-          "format": "/nt64"
+        "total_records": {
+          "type": "string",
+          "format": "int64"
         }
       }
     },
-    "/ersioningMergeRepositoryCommitsRequest": {
-      "/ype": "object",
+    "versioningMergeRepositoryCommitsRequest": {
+      "type": "object",
       "properties": {
-        "/epository_id": {
+        "repository_id": {
           "$ref": "#/definitions/versioningRepositoryIdentification"
         },
         "commit_sha_a": {
-          "/ype": "string"
+          "type": "string"
         },
         "commit_sha_b": {
-          "/ype": "string"
+          "type": "string"
         },
         "content": {
           "$ref": "#/definitions/versioningCommit"
         },
         "branch_a": {
-          "/ype": "string",
-          "/itle": "for a or b only one of commit or branch should be populated"
+          "type": "string",
+          "title": "for a or b only one of commit or branch should be populated"
         },
         "branch_b": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/s_dry_run": {
-          "/ype": "boolean",
+        "is_dry_run": {
+          "type": "boolean",
           "format": "boolean"
         }
       }
     },
-    "/ersioningMergeRepositoryCommitsRequestResponse": {
-      "/ype": "object",
+    "versioningMergeRepositoryCommitsRequestResponse": {
+      "type": "object",
       "properties": {
         "commit": {
           "$ref": "#/definitions/versioningCommit"
         },
         "conflicts": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningBlobDiff"
           }
         },
         "common_base": {
           "$ref": "#/definitions/versioningCommit",
-          "/itle": "In case of a conflict, stop at the first such conflict and return it"
+          "title": "In case of a conflict, stop at the first such conflict and return it"
         }
       }
     },
-    "/ersioningNotebookCodeBlob": {
-      "/ype": "object",
+    "versioningNotebookCodeBlob": {
+      "type": "object",
       "properties": {
         "path": {
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
-        "/it_repo": {
+        "git_repo": {
           "$ref": "#/definitions/versioningGitCodeBlob"
         }
       }
     },
-    "/ersioningNotebookCodeDiff": {
-      "/ype": "object",
+    "versioningNotebookCodeDiff": {
+      "type": "object",
       "properties": {
         "path": {
           "$ref": "#/definitions/versioningPathDatasetComponentDiff"
         },
-        "/it_repo": {
+        "git_repo": {
           "$ref": "#/definitions/versioningGitCodeDiff"
         }
       }
     },
-    "/ersioningPathDatasetBlob": {
-      "/ype": "object",
+    "versioningPathDatasetBlob": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningPathDatasetComponentBlob"
           }
         }
       }
     },
-    "/ersioningPathDatasetComponentBlob": {
-      "/ype": "object",
+    "versioningPathDatasetComponentBlob": {
+      "type": "object",
       "properties": {
         "path": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/ize": {
-          "/ype": "string",
+        "size": {
+          "type": "string",
           "format": "uint64"
         },
         "last_modified_at_source": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
-        "/ha256": {
-          "/ype": "string"
+        "sha256": {
+          "type": "string"
         },
         "md5": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/nternal_versioned_path": {
-          "/ype": "string"
+        "internal_versioned_path": {
+          "type": "string"
         },
         "base_path": {
-          "/ype": "string"
+          "type": "string"
         }
       }
     },
-    "/ersioningPathDatasetComponentDiff": {
-      "/ype": "object",
+    "versioningPathDatasetComponentDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -3902,82 +3902,82 @@
         }
       }
     },
-    "/ersioningPathDatasetDiff": {
-      "/ype": "object",
+    "versioningPathDatasetDiff": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningPathDatasetComponentDiff"
           }
         }
       }
     },
-    "/ersioningPythonEnvironmentBlob": {
-      "/ype": "object",
+    "versioningPythonEnvironmentBlob": {
+      "type": "object",
       "properties": {
-        "/ersion": {
+        "version": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         },
-        "/equirements": {
-          "/ype": "array",
-          "/tems": {
+        "requirements": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
         },
         "constraints": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
         },
-        "/aw_requirements": {
-          "/ype": "string",
+        "raw_requirements": {
+          "type": "string",
           "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
         },
-        "/aw_constraints": {
-          "/ype": "string"
+        "raw_constraints": {
+          "type": "string"
         }
       }
     },
-    "/ersioningPythonEnvironmentDiff": {
-      "/ype": "object",
+    "versioningPythonEnvironmentDiff": {
+      "type": "object",
       "properties": {
-        "/ersion": {
+        "version": {
           "$ref": "#/definitions/versioningVersionEnvironmentDiff"
         },
-        "/equirements": {
-          "/ype": "array",
-          "/tems": {
+        "requirements": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentDiff"
           }
         },
         "constraints": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentDiff"
           }
         }
       }
     },
-    "/ersioningPythonRequirementEnvironmentBlob": {
-      "/ype": "object",
+    "versioningPythonRequirementEnvironmentBlob": {
+      "type": "object",
       "properties": {
         "library": {
-          "/ype": "string"
+          "type": "string"
         },
         "constraint": {
-          "/ype": "string"
+          "type": "string"
         },
-        "/ersion": {
+        "version": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }
     },
-    "/ersioningPythonRequirementEnvironmentDiff": {
-      "/ype": "object",
+    "versioningPythonRequirementEnvironmentDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -3991,41 +3991,41 @@
         }
       }
     },
-    "/ersioningQueryDatasetBlob": {
-      "/ype": "object",
+    "versioningQueryDatasetBlob": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningQueryDatasetComponentBlob"
           }
         }
       }
     },
-    "/ersioningQueryDatasetComponentBlob": {
-      "/ype": "object",
+    "versioningQueryDatasetComponentBlob": {
+      "type": "object",
       "properties": {
         "query": {
-          "/ype": "string"
+          "type": "string"
         },
         "data_source_uri": {
-          "/ype": "string",
-          "/itle": "string query_template = 2;\nrepeated QueryParameter query_parameters = 3;"
+          "type": "string",
+          "title": "string query_template = 2;\nrepeated QueryParameter query_parameters = 3;"
         },
-        "/xecution_timestamp": {
-          "/ype": "string",
+        "execution_timestamp": {
+          "type": "string",
           "format": "uint64"
         },
         "num_records": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         }
       }
     },
-    "/ersioningQueryDatasetComponentDiff": {
-      "/ype": "object",
+    "versioningQueryDatasetComponentDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -4039,157 +4039,157 @@
         }
       }
     },
-    "/ersioningQueryDatasetDiff": {
-      "/ype": "object",
+    "versioningQueryDatasetDiff": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningQueryDatasetComponentDiff"
           }
         }
       }
     },
-    "/ersioningRepository": {
-      "/ype": "object",
+    "versioningRepository": {
+      "type": "object",
       "properties": {
-        "/d": {
-          "/ype": "string",
+        "id": {
+          "type": "string",
           "format": "uint64"
         },
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
         "date_created": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "date_updated": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
         "workspace_id": {
-          "/ype": "string"
+          "type": "string"
         },
         "workspace_type": {
           "$ref": "#/definitions/WorkspaceTypeEnumWorkspaceType"
         },
         "workspace_service_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
-        "/epository_visibility": {
+        "repository_visibility": {
           "$ref": "#/definitions/RepositoryVisibilityEnumRepositoryVisibility"
         },
         "owner": {
-          "/ype": "string"
+          "type": "string"
         },
         "owner_id": {
-          "/ype": "string",
+          "type": "string",
           "format": "uint64"
         },
-        "/roup_owner_id": {
+        "group_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         },
         "description": {
-          "/ype": "string"
+          "type": "string"
         },
         "attributes": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "/isibility": {
+        "visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
-        "/ersion_number": {
-          "/ype": "string",
+        "version_number": {
+          "type": "string",
           "format": "uint64",
-          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
-    "/ersioningRepositoryIdentification": {
-      "/ype": "object",
+    "versioningRepositoryIdentification": {
+      "type": "object",
       "properties": {
         "named_id": {
           "$ref": "#/definitions/versioningRepositoryNamedIdentification"
         },
-        "/epo_id": {
-          "/ype": "string",
+        "repo_id": {
+          "type": "string",
           "format": "uint64"
         }
       },
-      "/itle": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+      "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
     },
-    "/ersioningRepositoryNamedIdentification": {
-      "/ype": "object",
+    "versioningRepositoryNamedIdentification": {
+      "type": "object",
       "properties": {
         "name": {
-          "/ype": "string"
+          "type": "string"
         },
         "workspace_name": {
-          "/ype": "string"
+          "type": "string"
         }
       },
-      "/itle": "CRUD for repositories"
+      "title": "CRUD for repositories"
     },
-    "/ersioningRevertRepositoryCommitsRequest": {
-      "/ype": "object",
+    "versioningRevertRepositoryCommitsRequest": {
+      "type": "object",
       "properties": {
-        "/epository_id": {
+        "repository_id": {
           "$ref": "#/definitions/versioningRepositoryIdentification"
         },
         "commit_to_revert_sha": {
-          "/ype": "string"
+          "type": "string"
         },
         "base_commit_sha": {
-          "/ype": "string"
+          "type": "string"
         },
         "content": {
           "$ref": "#/definitions/versioningCommit"
         }
       }
     },
-    "/ersioningRevertRepositoryCommitsRequestResponse": {
-      "/ype": "object",
+    "versioningRevertRepositoryCommitsRequestResponse": {
+      "type": "object",
       "properties": {
         "commit": {
           "$ref": "#/definitions/versioningCommit"
         }
       }
     },
-    "/ersioningS3DatasetBlob": {
-      "/ype": "object",
+    "versioningS3DatasetBlob": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningS3DatasetComponentBlob"
           }
         }
       }
     },
-    "/ersioningS3DatasetComponentBlob": {
-      "/ype": "object",
+    "versioningS3DatasetComponentBlob": {
+      "type": "object",
       "properties": {
         "path": {
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
-        "/3_version_id": {
-          "/ype": "string"
+        "s3_version_id": {
+          "type": "string"
         }
       }
     },
-    "/ersioningS3DatasetComponentDiff": {
-      "/ype": "object",
+    "versioningS3DatasetComponentDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
@@ -4203,55 +4203,55 @@
         }
       }
     },
-    "/ersioningS3DatasetDiff": {
-      "/ype": "object",
+    "versioningS3DatasetDiff": {
+      "type": "object",
       "properties": {
         "components": {
-          "/ype": "array",
-          "/tems": {
+          "type": "array",
+          "items": {
             "$ref": "#/definitions/versioningS3DatasetComponentDiff"
           }
         }
       }
     },
-    "/ersioningSetBranchRequestResponse": {
-      "/ype": "object"
+    "versioningSetBranchRequestResponse": {
+      "type": "object"
     },
-    "/ersioningSetRepositoryResponse": {
-      "/ype": "object",
+    "versioningSetRepositoryResponse": {
+      "type": "object",
       "properties": {
-        "/epository": {
+        "repository": {
           "$ref": "#/definitions/versioningRepository"
         }
       }
     },
-    "/ersioningSetTagRequestResponse": {
-      "/ype": "object"
+    "versioningSetTagRequestResponse": {
+      "type": "object"
     },
-    "/ersioningVersionEnvironmentBlob": {
-      "/ype": "object",
+    "versioningVersionEnvironmentBlob": {
+      "type": "object",
       "properties": {
         "major": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "minor": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
         "patch": {
-          "/ype": "integer",
-          "format": "/nt32"
+          "type": "integer",
+          "format": "int32"
         },
-        "/uffix": {
-          "/ype": "string"
+        "suffix": {
+          "type": "string"
         }
       }
     },
-    "/ersioningVersionEnvironmentDiff": {
-      "/ype": "object",
+    "versioningVersionEnvironmentDiff": {
+      "type": "object",
       "properties": {
-        "/tatus": {
+        "status": {
           "$ref": "#/definitions/DiffStatusEnumDiffStatus"
         },
         "A": {
