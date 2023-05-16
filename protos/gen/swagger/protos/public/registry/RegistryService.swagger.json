@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "registry/RegistryService.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "registry/RegistryService.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,20 +11,20 @@
     "application/json"
   ],
   "paths": {
-    "/registry/model_versions/find": {
+    "/v1/registry/model_versions/find": {
       "post": {
-        "summary": "CRUD for Model Version",
+        "/ummary": "CRUD for Model Version",
         "operationId": "RegistryService_FindModelVersion4",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryFindModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -32,177 +32,177 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryFindModelVersionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{id.model_version_id}": {
-      "get": {
+    "/v1/registry/model_versions/{id.model_version_id}": {
+      "/et": {
         "operationId": "RegistryService_GetModelVersion2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryGetModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
             "format": "uint64"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "delete": {
         "operationId": "RegistryService_DeleteModelVersion3",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryDeleteModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
             "format": "uint64"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{id.model_version_id}/lock": {
+    "/v1/registry/model_versions/{id.model_version_id}/lock": {
       "put": {
         "operationId": "RegistryService_SetLockModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetLockModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registrySetLockModelVersionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/commitArtifactPart": {
+    "/v1/registry/model_versions/{model_version_id}/commitArtifactPart": {
       "post": {
         "operationId": "RegistryService_commitArtifactPart",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryCommitArtifactPartResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -210,39 +210,39 @@
         "parameters": [
           {
             "name": "model_version_id",
-            "description": "id of model version",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "description": "/d of model version",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryCommitArtifactPart"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/commitMultipartArtifact": {
+    "/v1/registry/model_versions/{model_version_id}/commitMultipartArtifact": {
       "post": {
         "operationId": "RegistryService_commitMultipartArtifact",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryCommitMultipartArtifactResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -250,39 +250,39 @@
         "parameters": [
           {
             "name": "model_version_id",
-            "description": "id of model version",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "description": "/d of model version",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryCommitMultipartArtifact"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/getCommittedArtifactParts": {
-      "get": {
+    "/v1/registry/model_versions/{model_version_id}/getCommittedArtifactParts": {
+      "/et": {
         "operationId": "RegistryService_getCommittedArtifactParts",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryGetCommittedArtifactPartsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -290,38 +290,38 @@
         "parameters": [
           {
             "name": "model_version_id",
-            "description": "id of model version",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "description": "/d of model version",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "key",
             "description": "artifact key.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/getUrlForArtifact": {
+    "/v1/registry/model_versions/{model_version_id}/getUrlForArtifact": {
       "post": {
         "operationId": "RegistryService_getUrlForArtifact",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryGetUrlForArtifactResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -329,39 +329,39 @@
         "parameters": [
           {
             "name": "model_version_id",
-            "description": "id of model version",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "description": "/d of model version",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryGetUrlForArtifact"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logAttributes": {
+    "/v1/registry/model_versions/{model_version_id}/logAttributes": {
       "post": {
         "operationId": "RegistryService_logAttributesInModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryLogAttributesInModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -369,38 +369,38 @@
         "parameters": [
           {
             "name": "model_version_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryLogAttributesInModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion": {
+    "/v1/registry/model_versions/{model_version_id}/logCodeBlobInModelVersion": {
       "post": {
         "operationId": "RegistryService_logCodeBlobInModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryLogCodeBlobInModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -408,38 +408,38 @@
         "parameters": [
           {
             "name": "model_version_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryLogCodeBlobInModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logDatasets": {
+    "/v1/registry/model_versions/{model_version_id}/logDatasets": {
       "post": {
         "operationId": "RegistryService_logDatasetsInModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryLogDatasetsInModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -447,38 +447,38 @@
         "parameters": [
           {
             "name": "model_version_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryLogDatasetsInModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/model_versions/{model_version_id}/logDockerMetadata": {
+    "/v1/registry/model_versions/{model_version_id}/logDockerMetadata": {
       "post": {
         "operationId": "RegistryService_logDockerMetadataInModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryLogDockerMetadataInModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -486,38 +486,38 @@
         "parameters": [
           {
             "name": "model_version_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryLogDockerMetadataInModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/count": {
-      "get": {
+    "/v1/registry/registered_models/count": {
+      "/et": {
         "operationId": "RegistryService_GetRegisteredModelCount",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryGetRegisteredModelCountRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -525,30 +525,30 @@
         "parameters": [
           {
             "name": "project_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/find": {
+    "/v1/registry/registered_models/find": {
       "post": {
-        "summary": "CRUD for RegisteredModel",
+        "/ummary": "CRUD for RegisteredModel",
         "operationId": "RegistryService_FindRegisteredModel2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryFindRegisteredModelRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -556,31 +556,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryFindRegisteredModelRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/model_versions/external_deployments": {
+    "/v1/registry/registered_models/model_versions/external_deployments": {
       "post": {
         "operationId": "RegistryService_CreateExternalDeployment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryExternalDeploymentRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -588,29 +588,29 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryExternalDeployment"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "put": {
         "operationId": "RegistryService_UpdateExternalDeployment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryExternalDeploymentRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -618,1233 +618,1233 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryExternalDeployment"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/model_versions/external_deployments/{external_deployment_id}": {
-      "get": {
+    "/v1/registry/registered_models/model_versions/external_deployments/{external_deployment_id}": {
+      "/et": {
         "operationId": "RegistryService_GetExternalDeployment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryExternalDeploymentRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "name": "/xternal_deployment_id",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "delete": {
         "operationId": "RegistryService_DeleteExternalDeployment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/vertaregistryEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "external_deployment_id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "name": "/xternal_deployment_id",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/{id.model_id.registered_model_id}/model_versions": {
+    "/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions": {
       "post": {
         "operationId": "RegistryService_CreateModelVersion2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}": {
+    "/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}": {
       "delete": {
         "operationId": "RegistryService_DeleteModelVersion2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryDeleteModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "put": {
         "operationId": "RegistryService_UpdateModelVersion6",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "patch": {
         "operationId": "RegistryService_UpdateModelVersion2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}/full_body": {
+    "/v1/registry/registered_models/{id.model_id.registered_model_id}/model_versions/{id.model_version_id}/full_body": {
       "patch": {
         "operationId": "RegistryService_UpdateModelVersion4",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/{id.registered_model_id}": {
-      "get": {
+    "/v1/registry/registered_models/{id.registered_model_id}": {
+      "/et": {
         "operationId": "RegistryService_GetRegisteredModel2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryGetRegisteredModelRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.registered_model_id",
+            "name": "/d.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.named_id.name",
+            "name": "/d.named_id.name",
             "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "delete": {
         "operationId": "RegistryService_DeleteRegisteredModel2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryDeleteRegisteredModelRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.registered_model_id",
+            "name": "/d.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.named_id.name",
+            "name": "/d.named_id.name",
             "description": "Model Name.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName.",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "put": {
         "operationId": "RegistryService_UpdateRegisteredModel6",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModelResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.registered_model_id",
+            "name": "/d.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "patch": {
         "operationId": "RegistryService_UpdateRegisteredModel2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModelResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.registered_model_id",
+            "name": "/d.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/{id.registered_model_id}/full_body": {
+    "/v1/registry/registered_models/{id.registered_model_id}/full_body": {
       "patch": {
         "operationId": "RegistryService_UpdateRegisteredModel4",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModelResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.registered_model_id",
+            "name": "/d.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/registered_models/{id.registered_model_id}/model_versions/find": {
+    "/v1/registry/registered_models/{id.registered_model_id}/model_versions/find": {
       "post": {
-        "summary": "CRUD for Model Version",
+        "/ummary": "CRUD for Model Version",
         "operationId": "RegistryService_FindModelVersion2",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryFindModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.registered_model_id",
+            "name": "/d.registered_model_id",
             "description": "Model refered to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryFindModelVersionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions": {
+    "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions": {
       "post": {
         "operationId": "RegistryService_CreateModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}": {
-      "get": {
+    "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}": {
+      "/et": {
         "operationId": "RegistryService_GetModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryGetModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
             "format": "uint64"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "delete": {
         "operationId": "RegistryService_DeleteModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryDeleteModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
-            "name": "id.model_id.registered_model_id",
+            "name": "/d.model_id.registered_model_id",
             "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
             "format": "uint64"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "put": {
         "operationId": "RegistryService_UpdateModelVersion5",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "patch": {
         "operationId": "RegistryService_UpdateModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}/full_body": {
+    "/v1/registry/workspaces/{id.model_id.named_id.workspace_name}/registered_models/{id.model_id.named_id.name}/model_versions/{id.model_version_id}/full_body": {
       "patch": {
         "operationId": "RegistryService_UpdateModelVersion3",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.model_id.named_id.workspace_name",
+            "name": "/d.model_id.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_id.named_id.name",
+            "name": "/d.model_id.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.model_version_id",
+            "name": "/d.model_version_id",
             "description": "ModelVersion referred to by id",
-            "in": "path",
-            "required": true,
-            "type": "string",
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string",
             "format": "uint64"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registrySetModelVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/model_versions/find": {
+    "/v1/registry/workspaces/{id.named_id.workspace_name}/model_versions/find": {
       "post": {
-        "summary": "CRUD for Model Version",
+        "/ummary": "CRUD for Model Version",
         "operationId": "RegistryService_FindModelVersion3",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryFindModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryFindModelVersionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/registered_models": {
+    "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models": {
       "post": {
         "operationId": "RegistryService_CreateRegisteredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModelResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}": {
-      "get": {
+    "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}": {
+      "/et": {
         "operationId": "RegistryService_GetRegisteredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryGetRegisteredModelRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.named_id.name",
+            "name": "/d.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.registered_model_id",
+            "name": "/d.registered_model_id",
             "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
             "format": "uint64"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "delete": {
         "operationId": "RegistryService_DeleteRegisteredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryDeleteRegisteredModelRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.named_id.name",
+            "name": "/d.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.registered_model_id",
+            "name": "/d.registered_model_id",
             "description": "Model refered to by id.",
-            "in": "query",
-            "required": false,
-            "type": "string",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
             "format": "uint64"
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "put": {
         "operationId": "RegistryService_UpdateRegisteredModel5",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModelResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.named_id.name",
+            "name": "/d.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       },
       "patch": {
         "operationId": "RegistryService_UpdateRegisteredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModelResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.named_id.name",
+            "name": "/d.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryRegisteredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/full_body": {
+    "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/full_body": {
       "patch": {
         "operationId": "RegistryService_UpdateRegisteredModel3",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModelResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.named_id.name",
+            "name": "/d.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registrySetRegisteredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/model_versions/find": {
+    "/v1/registry/workspaces/{id.named_id.workspace_name}/registered_models/{id.named_id.name}/model_versions/find": {
       "post": {
-        "summary": "CRUD for Model Version",
+        "/ummary": "CRUD for Model Version",
         "operationId": "RegistryService_FindModelVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryFindModelVersionRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id.named_id.workspace_name",
+            "name": "/d.named_id.workspace_name",
             "description": "WorkspaceName",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
-            "name": "id.named_id.name",
+            "name": "/d.named_id.name",
             "description": "Model Name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryFindModelVersionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
     },
-    "/registry/workspaces/{workspace_name}/registered_models/find": {
+    "/v1/registry/workspaces/{workspace_name}/registered_models/find": {
       "post": {
-        "summary": "CRUD for RegisteredModel",
+        "/ummary": "CRUD for RegisteredModel",
         "operationId": "RegistryService_FindRegisteredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryFindRegisteredModelRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -1853,20 +1853,20 @@
           {
             "name": "workspace_name",
             "description": "User or organization name",
-            "in": "path",
-            "required": true,
-            "type": "string"
+            "/n": "path",
+            "/equired": true,
+            "/ype": "string"
           },
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryFindRegisteredModelRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RegistryService"
         ]
       }
@@ -1874,8 +1874,8 @@
   },
   "definitions": {
     "ActionTypeEnumActionType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OTHER",
         "CLASSIFICATION",
@@ -1888,8 +1888,8 @@
       "default": "UNKNOWN"
     },
     "ArtifactTypeEnumArtifactType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "IMAGE",
         "MODEL",
         "TENSORBOARD",
@@ -1902,16 +1902,16 @@
       "default": "IMAGE"
     },
     "CollaboratorTypeEnumCollaboratorType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "READ_ONLY",
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
     },
     "DataTypeEnumDataType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OTHER",
         "AUDIO",
@@ -1923,8 +1923,8 @@
       "default": "UNKNOWN"
     },
     "ModelVersionLockLevelEnumModelVersionLockLevel": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OPEN",
         "CLOSED",
@@ -1933,8 +1933,8 @@
       "default": "UNKNOWN"
     },
     "OperatorEnumOperator": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "EQ",
         "NE",
         "GT",
@@ -1949,8 +1949,8 @@
       "default": "EQ"
     },
     "StageEnumStage": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "DEVELOPMENT",
         "STAGING",
@@ -1961,8 +1961,8 @@
       "default": "UNKNOWN"
     },
     "TaskTypeEnumTaskType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OTHER",
         "CLASSIFICATION",
@@ -1975,8 +1975,8 @@
       "default": "UNKNOWN"
     },
     "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -1984,8 +1984,8 @@
       "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "STRING",
         "NUMBER",
         "LIST",
@@ -1994,87 +1994,87 @@
       "default": "STRING"
     },
     "VisibilityEnumVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "PRIVATE",
         "PUBLIC",
         "ORG_SCOPED_PUBLIC",
         "ORG_DEFAULT"
       ],
       "default": "PRIVATE",
-      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
+      "/itle": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
     },
     "commonArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
         "path": {
-          "type": "string"
+          "/ype": "string"
         },
         "path_only": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
         },
         "linked_artifact_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "filename_extension": {
-          "type": "string"
+          "/ype": "string"
         },
-        "serialization": {
-          "type": "string"
+        "/erialization": {
+          "/ype": "string"
         },
         "artifact_subtype": {
-          "type": "string"
+          "/ype": "string"
         },
         "upload_completed": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "commonArtifactPart": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "part_number": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "etag": {
-          "type": "string"
+        "/tag": {
+          "/ype": "string"
         }
       }
     },
     "commonKeyValue": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
         }
       }
     },
     "commonKeyValueQuery": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType"
         },
         "operator": {
@@ -2083,396 +2083,396 @@
       }
     },
     "commonPagination": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "page_number": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         }
       },
-      "title": "For pagination"
+      "/itle": "For pagination"
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
     "protobufFieldMask": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "paths": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
           "description": "The set of field mask paths."
         }
       },
-      "description": "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nIn order to reset a field's value to the default, the field must\nbe in the mask and set to the default value in the provided resource.\nHence, in order to reset all fields of a resource, provide a default\ninstance of the resource and set all fields in the mask, or do\nnot provide a mask as described below.\n\nIf a field mask is not present on update, the operation applies to\nall fields (as if a field mask of all fields has been specified).\nNote that in the presence of schema evolution, this may mean that\nfields the client does not know and has therefore not filled into\nthe request will be reset to their default. If this is unwanted\nbehavior, a specific service may require a client to always specify\na field mask, producing an error if not.\n\nAs with get operations, the location of the resource which\ndescribes the updated values in the request message depends on the\noperation kind. In any case, the effect of the field mask is\nrequired to be honored by the API.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"sub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable.",
-      "title": "`FieldMask` represents a set of symbolic field paths, for example:"
+      "description": "paths: \"f.a\"\n    paths: \"f.b.d\"\n\nHere `f` represents a field in some root message, `a` and `b`\nfields in the message found in `f`, and `d` a field found in the\nmessage in `f.b`.\n\nField masks are used to specify a subset of fields that should be\nreturned by a get operation or modified by an update operation.\nField masks also have a custom JSON encoding (see below).\n\n# Field Masks in Projections\n\nWhen used in the context of a projection, a response message or\nsub-message is filtered by the API to only contain those fields as\nspecified in the mask. For example, if the mask in the previous\nexample is applied to a response message as follows:\n\n    f {\n      a : 22\n      b {\n        d : 1\n        x : 2\n      }\n      y : 13\n    }\n    z: 8\n\nThe result will not contain specific values for fields x,y and z\n(their value will be set to the default, and omitted in proto text\noutput):\n\n\n    f {\n      a : 22\n      b {\n        d : 1\n      }\n    }\n\nA repeated field is not allowed except at the last position of a\npaths string.\n\nIf a FieldMask object is not present in a get operation, the\noperation applies to all fields (as if a FieldMask of all fields\nhad been specified).\n\nNote that a field mask does not necessarily apply to the\ntop-level response message. In case of a REST get operation, the\nfield mask applies directly to the response, but in case of a REST\nlist operation, the mask instead applies to each individual message\nin the returned resource list. In case of a REST custom method,\nother definitions may be used. Where the mask applies will be\nclearly documented together with its declaration in the API.  In\nany case, the effect on the returned resource/resources is required\nbehavior for APIs.\n\n# Field Masks in Update Operations\n\nA field mask in update operations specifies which fields of the\ntargeted resource are going to be updated. The API is required\nto only change the values of the fields as specified in the mask\nand leave the others untouched. If a resource is passed in to\ndescribe the updated values, the API ignores the values of all\nfields not covered by the mask.\n\nIf a repeated field is specified for an update operation, new values will\nbe appended to the existing repeated field in the target resource. Note that\na repeated field is only allowed in the last position of a `paths` string.\n\nIf a sub-message is specified in the last position of the field mask for an\nupdate operation, then new value will be merged into the existing sub-message\nin the target resource.\n\nFor example, given the target message:\n\n    f {\n      b {\n        d: 1\n        x: 2\n      }\n      c: [1]\n    }\n\nAnd an update message:\n\n    f {\n      b {\n        d: 10\n      }\n      c: [2]\n    }\n\nthen if the field mask is:\n\n paths: [\"f.b\", \"f.c\"]\n\nthen the result will be:\n\n    f {\n      b {\n        d: 10\n        x: 2\n      }\n      c: [1, 2]\n    }\n\nAn implementation may provide options to override this default behavior for\nrepeated and message fields.\n\nIn order to reset a field's value to the default, the field must\nbe in the mask and set to the default value in the provided resource.\nHence, in order to reset all fields of a resource, provide a default\ninstance of the resource and set all fields in the mask, or do\nnot provide a mask as described below.\n\nIf a field mask is not present on update, the operation applies to\nall fields (as if a field mask of all fields has been specified).\nNote that in the presence of schema evolution, this may mean that\nfields the client does not know and has therefore not filled into\nthe request will be reset to their default. If this is unwanted\nbehavior, a specific service may require a client to always specify\na field mask, producing an error if not.\n\nAs with get operations, the location of the resource which\ndescribes the updated values in the request message depends on the\noperation kind. In any case, the effect of the field mask is\nrequired to be honored by the API.\n\n## Considerations for HTTP REST\n\nThe HTTP kind of an update operation which uses a field mask must\nbe set to PATCH instead of PUT in order to satisfy HTTP semantics\n(PUT must only be used for full updates).\n\n# JSON Encoding of Field Masks\n\nIn JSON, a field mask is encoded as a single string where paths are\nseparated by a comma. Fields name in each path are converted\nto/from lower-camel naming conventions.\n\nAs an example, consider the following message declarations:\n\n    message Profile {\n      User user = 1;\n      Photo photo = 2;\n    }\n    message User {\n      string display_name = 1;\n      string address = 2;\n    }\n\nIn proto a field mask for `Profile` may look as such:\n\n    mask {\n      paths: \"user.display_name\"\n      paths: \"photo\"\n    }\n\nIn JSON, the same mask is represented as below:\n\n    {\n      mask: \"user.displayName,photo\"\n    }\n\n# Field Masks and Oneof Fields\n\nField masks treat fields in oneofs just as regular fields. Consider the\nfollowing message:\n\n    message SampleMessage {\n      oneof test_oneof {\n        string name = 4;\n        SubMessage sub_message = 9;\n      }\n    }\n\nThe field mask can be:\n\n    mask {\n      paths: \"name\"\n    }\n\nOr:\n\n    mask {\n      paths: \"/ub_message\"\n    }\n\nNote that oneof type names (\"test_oneof\" in this case) cannot be used in\npaths.\n\n## Field Mask Verification\n\nThe implementation of any API method which has a FieldMask type field in the\nrequest should verify the included field paths, and return an\n`INVALID_ARGUMENT` error if any path is unmappable.",
+      "/itle": "`FieldMask` represents a set of symbolic field paths, for example:"
     },
     "protobufNullValue": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "registryCommitArtifactPart": {
-      "type": "object",
+    "/egistryCommitArtifactPart": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "id of model version"
+          "/itle": "id of model version"
         },
         "key": {
-          "type": "string",
-          "title": "artifact key"
+          "/ype": "string",
+          "/itle": "artifact key"
         },
         "artifact_part": {
           "$ref": "#/definitions/commonArtifactPart"
         }
       }
     },
-    "registryCommitArtifactPartResponse": {
-      "type": "object"
+    "/egistryCommitArtifactPartResponse": {
+      "/ype": "object"
     },
-    "registryCommitMultipartArtifact": {
-      "type": "object",
+    "/egistryCommitMultipartArtifact": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "id of model version"
+          "/itle": "id of model version"
         },
         "key": {
-          "type": "string",
-          "title": "artifact key"
+          "/ype": "string",
+          "/itle": "artifact key"
         }
       }
     },
-    "registryCommitMultipartArtifactResponse": {
-      "type": "object"
+    "/egistryCommitMultipartArtifactResponse": {
+      "/ype": "object"
     },
-    "registryDeleteModelVersionRequestResponse": {
-      "type": "object"
+    "/egistryDeleteModelVersionRequestResponse": {
+      "/ype": "object"
     },
-    "registryDeleteRegisteredModelRequestResponse": {
-      "type": "object"
+    "/egistryDeleteRegisteredModelRequestResponse": {
+      "/ype": "object"
     },
-    "registryDockerMetadata": {
-      "type": "object",
+    "/egistryDockerMetadata": {
+      "/ype": "object",
       "properties": {
-        "request_port": {
-          "type": "integer",
-          "format": "int64"
+        "/equest_port": {
+          "/ype": "integer",
+          "format": "/nt64"
         },
-        "request_path": {
-          "type": "string"
+        "/equest_path": {
+          "/ype": "string"
         },
         "health_path": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "registryExternalDeployment": {
-      "type": "object",
+    "/egistryExternalDeployment": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "internal id"
+          "/itle": "internal id"
         },
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "id of the model this belongs to"
+          "/itle": "id of the model this belongs to"
         },
-        "time_created": {
-          "type": "string",
-          "format": "int64",
+        "/ime_created": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when this ``external_deployment`` was created."
         },
-        "time_updated": {
-          "type": "string",
-          "format": "int64",
+        "/ime_updated": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when metadata for this ``external_deployment`` was last updated."
         },
         "location_deployed": {
-          "type": "string",
-          "title": "Location where container will be deployed"
+          "/ype": "string",
+          "/itle": "Location where container will be deployed"
         },
         "url_path_title": {
-          "type": "string",
-          "title": "Deploy URL, path or title"
+          "/ype": "string",
+          "/itle": "Deploy URL, path or title"
         },
         "description": {
-          "type": "string",
-          "title": "Brief description"
+          "/ype": "string",
+          "/itle": "Brief description"
         }
       }
     },
-    "registryExternalDeploymentRequestResponse": {
-      "type": "object",
+    "/egistryExternalDeploymentRequestResponse": {
+      "/ype": "object",
       "properties": {
-        "external_deployment": {
+        "/xternal_deployment": {
           "$ref": "#/definitions/registryExternalDeployment"
         }
       }
     },
-    "registryFindModelVersionRequest": {
-      "type": "object",
+    "/egistryFindModelVersionRequest": {
+      "/ype": "object",
       "properties": {
-        "id": {
+        "/d": {
           "$ref": "#/definitions/registryRegisteredModelIdentification",
-          "title": "identity of parent registered model"
+          "/itle": "identity of parent registered model"
         },
         "predicates": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValueQuery"
           },
-          "title": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
+          "/itle": "Filtering supported on\n1. version\n2. labels\n3. description\n4. model_source\n5. experiment_run_id\n6. status\n7. archived status"
         },
         "pagination": {
           "$ref": "#/definitions/commonPagination",
-          "title": "If not present will default to page 1 page_size 10"
+          "/itle": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
-        "sort_key": {
-          "type": "string"
+        "/ort_key": {
+          "/ype": "string"
         },
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         }
       }
     },
-    "registryFindModelVersionRequestResponse": {
-      "type": "object",
+    "/egistryFindModelVersionRequestResponse": {
+      "/ype": "object",
       "properties": {
         "model_versions": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/registryModelVersion"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
-    "registryFindRegisteredModelRequest": {
-      "type": "object",
+    "/egistryFindRegisteredModelRequest": {
+      "/ype": "object",
       "properties": {
         "workspace_name": {
-          "type": "string",
-          "title": "User or organization name"
+          "/ype": "string",
+          "/itle": "User or organization name"
         },
         "predicates": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValueQuery"
           },
-          "title": "Filtering supported on\n1. name\n2. labels\n3. description"
+          "/itle": "Filtering supported on\n1. name\n2. labels\n3. description"
         },
         "pagination": {
           "$ref": "#/definitions/commonPagination",
-          "title": "If not present will default to page 1 page_size 10"
+          "/itle": "If not present will default to page 1 page_size 10"
         },
         "ascending": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
-        "sort_key": {
-          "type": "string"
+        "/ort_key": {
+          "/ype": "string"
         },
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         }
       },
-      "title": "CRUD for Registred Models"
+      "/itle": "CRUD for Registred Models"
     },
-    "registryFindRegisteredModelRequestResponse": {
-      "type": "object",
+    "/egistryFindRegisteredModelRequestResponse": {
+      "/ype": "object",
       "properties": {
-        "registered_models": {
-          "type": "array",
-          "items": {
+        "/egistered_models": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/registryRegisteredModel"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
-    "registryGetCommittedArtifactPartsResponse": {
-      "type": "object",
+    "/egistryGetCommittedArtifactPartsResponse": {
+      "/ype": "object",
       "properties": {
         "artifact_parts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifactPart"
           }
         }
       }
     },
-    "registryGetModelVersionRequestResponse": {
-      "type": "object",
+    "/egistryGetModelVersionRequestResponse": {
+      "/ype": "object",
       "properties": {
         "model_version": {
           "$ref": "#/definitions/registryModelVersion"
         }
       }
     },
-    "registryGetRegisteredModelCountRequestResponse": {
-      "type": "object",
+    "/egistryGetRegisteredModelCountRequestResponse": {
+      "/ype": "object",
       "properties": {
-        "registered_model_count": {
-          "type": "string",
-          "format": "int64"
+        "/egistered_model_count": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
-    "registryGetRegisteredModelRequestResponse": {
-      "type": "object",
+    "/egistryGetRegisteredModelRequestResponse": {
+      "/ype": "object",
       "properties": {
-        "registered_model": {
+        "/egistered_model": {
           "$ref": "#/definitions/registryRegisteredModel"
         }
       }
     },
-    "registryGetUrlForArtifact": {
-      "type": "object",
+    "/egistryGetUrlForArtifact": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "id of model version"
+          "/itle": "id of model version"
         },
         "key": {
-          "type": "string",
-          "title": "artifact key"
+          "/ype": "string",
+          "/itle": "artifact key"
         },
         "method": {
-          "type": "string",
-          "title": "GET or PUT"
+          "/ype": "string",
+          "/itle": "GET or PUT"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType",
-          "title": "type of artifact"
+          "/itle": "type of artifact"
         },
         "part_number": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "0 if the url is not required to be multi part"
+          "/itle": "0 if the url is not required to be multi part"
         }
       }
     },
-    "registryGetUrlForArtifactResponse": {
-      "type": "object",
+    "/egistryGetUrlForArtifactResponse": {
+      "/ype": "object",
       "properties": {
         "url": {
-          "type": "string",
-          "title": "URL based on action"
+          "/ype": "string",
+          "/itle": "URL based on action"
         },
         "multipart_upload_ok": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
         "fields": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
-            "type": "string"
+            "/ype": "string"
           }
         }
       }
     },
-    "registryLogAttributesInModelVersion": {
-      "type": "object",
+    "/egistryLogAttributesInModelVersion": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         }
       }
     },
-    "registryLogAttributesInModelVersionResponse": {
-      "type": "object"
+    "/egistryLogAttributesInModelVersionResponse": {
+      "/ype": "object"
     },
-    "registryLogCodeBlobInModelVersion": {
-      "type": "object",
+    "/egistryLogCodeBlobInModelVersion": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "code_blob_map": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
             "$ref": "#/definitions/versioningCodeBlob"
           }
         }
       }
     },
-    "registryLogCodeBlobInModelVersionResponse": {
-      "type": "object"
+    "/egistryLogCodeBlobInModelVersionResponse": {
+      "/ype": "object"
     },
-    "registryLogDatasetsInModelVersion": {
-      "type": "object",
+    "/egistryLogDatasetsInModelVersion": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "datasets": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         }
       }
     },
-    "registryLogDatasetsInModelVersionResponse": {
-      "type": "object"
+    "/egistryLogDatasetsInModelVersionResponse": {
+      "/ype": "object"
     },
-    "registryLogDockerMetadataInModelVersion": {
-      "type": "object",
+    "/egistryLogDockerMetadataInModelVersion": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "docker_metadata": {
@@ -2480,311 +2480,311 @@
         }
       }
     },
-    "registryLogDockerMetadataInModelVersionResponse": {
-      "type": "object"
+    "/egistryLogDockerMetadataInModelVersionResponse": {
+      "/ype": "object"
     },
-    "registryModelVersion": {
-      "type": "object",
+    "/egistryModelVersion": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "internal id"
+          "/itle": "internal id"
         },
-        "registered_model_id": {
-          "type": "string",
+        "/egistered_model_id": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "id of the model this belongs to"
+          "/itle": "id of the model this belongs to"
         },
-        "version": {
-          "type": "string",
-          "title": "Model's tag. Unique for a model nmae"
+        "/ersion": {
+          "/ype": "string",
+          "/itle": "Model's tag. Unique for a model nmae"
         },
-        "time_updated": {
-          "type": "string",
-          "format": "int64",
+        "/ime_updated": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when metadata for this ``model_version`` was last updated."
         },
-        "time_created": {
-          "type": "string",
-          "format": "int64",
+        "/ime_created": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when this ``model_version`` was created."
         },
         "description": {
-          "type": "string",
+          "/ype": "string",
           "description": "Description of this ``model_version``."
         },
-        "experiment_run_id": {
-          "type": "string"
+        "/xperiment_run_id": {
+          "/ype": "string"
         },
         "labels": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "Labels added to the registered models"
+          "/itle": "Labels added to the registered models"
         },
         "model": {
           "$ref": "#/definitions/commonArtifact",
-          "title": "Model"
+          "/itle": "Model"
         },
-        "environment": {
+        "/nvironment": {
           "$ref": "#/definitions/versioningEnvironmentBlob",
-          "title": "Requirement"
+          "/itle": "Requirement"
         },
         "docker_metadata": {
           "$ref": "#/definitions/registryDockerMetadata"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           },
-          "title": "Other artifacts"
+          "/itle": "Other artifacts"
         },
         "archived": {
           "$ref": "#/definitions/TernaryEnumTernary",
-          "title": "flag to archive a model version currently does nothing other than storing the information in DB"
+          "/itle": "flag to archive a model version currently does nothing other than storing the information in DB"
         },
-        "readme_text": {
-          "type": "string",
-          "title": "readme"
+        "/eadme_text": {
+          "/ype": "string",
+          "/itle": "readme"
         },
         "apis": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "APIs"
+          "/itle": "APIs"
         },
         "owner": {
-          "type": "string",
-          "title": "owner's verta_id"
+          "/ype": "string",
+          "/itle": "owner's verta_id"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           },
-          "title": "Other attributes"
+          "/itle": "Other attributes"
         },
-        "stage": {
+        "/tage": {
           "$ref": "#/definitions/StageEnumStage",
-          "title": "Stage of the model version. This field must be searchable as per our \"find\" operation"
+          "/itle": "Stage of the model version. This field must be searchable as per our \"find\" operation"
         },
         "lock_level": {
           "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel",
-          "title": "Current lock level for this model version"
+          "/itle": "Current lock level for this model version"
         },
         "datasets": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         },
         "code_blob_map": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
             "$ref": "#/definitions/versioningCodeBlob"
           }
         },
-        "readme_text_updated": {
-          "type": "boolean",
+        "/eadme_text_updated": {
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "Is true if the readme text has been updated at least once"
+          "/itle": "Is true if the readme text has been updated at least once"
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         },
-        "redirect_metadata": {
-          "type": "string",
-          "title": "Reference: https://vertaai.atlassian.net/browse/VRD-329"
+        "/edirect_metadata": {
+          "/ype": "string",
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/VRD-329"
         },
-        "input_description": {
-          "type": "string",
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        "/nput_description": {
+          "/ype": "string",
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
         "hide_input_label": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
         "output_description": {
-          "type": "string",
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+          "/ype": "string",
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
         "hide_output_label": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
-        "external_deployments": {
-          "type": "array",
-          "items": {
+        "/xternal_deployments": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/registryExternalDeployment"
           }
         }
       }
     },
-    "registryModelVersionIdentification": {
-      "type": "object",
+    "/egistryModelVersionIdentification": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "ModelVersion referred to by id"
+          "/itle": "ModelVersion referred to by id"
         },
         "model_id": {
           "$ref": "#/definitions/registryRegisteredModelIdentification",
-          "title": "Registered Model referred to by id"
+          "/itle": "Registered Model referred to by id"
         }
       }
     },
-    "registryRegisteredModel": {
-      "type": "object",
+    "/egistryRegisteredModel": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "internal id"
+          "/itle": "internal id"
         },
         "name": {
-          "type": "string",
+          "/ype": "string",
           "description": "Unique name for the model within the workspace."
         },
-        "time_created": {
-          "type": "string",
-          "format": "int64",
+        "/ime_created": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when this ``registered_model`` was created."
         },
-        "time_updated": {
-          "type": "string",
-          "format": "int64",
+        "/ime_updated": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when metadata for this ``registered_model`` was last updated."
         },
         "description": {
-          "type": "string",
+          "/ype": "string",
           "description": "Description of this ``registered_model``."
         },
         "labels": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "Labels added to the registered models"
+          "/itle": "Labels added to the registered models"
         },
-        "visibility": {
+        "/isibility": {
           "$ref": "#/definitions/VisibilityEnumVisibility",
-          "title": "Visibility of Registered Models"
+          "/itle": "Visibility of Registered Models"
         },
         "workspace_id": {
-          "type": "string",
-          "title": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
+          "/ype": "string",
+          "/itle": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
         },
-        "readme_text": {
-          "type": "string",
-          "title": "readme"
+        "/eadme_text": {
+          "/ype": "string",
+          "/itle": "readme"
         },
         "owner": {
-          "type": "string",
-          "title": "owner's verta_id"
+          "/ype": "string",
+          "/itle": "owner's verta_id"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           },
-          "title": "Other attributes"
+          "/itle": "Other attributes"
         },
         "workspace_service_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "resource_visibility": {
+        "/esource_visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           },
-          "title": "Other artifacts"
+          "/itle": "Other artifacts"
         },
-        "readme_text_updated": {
-          "type": "boolean",
+        "/eadme_text_updated": {
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "Is true if the readme text has been updated at least once"
+          "/itle": "Is true if the readme text has been updated at least once"
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         },
         "data_type": {
           "$ref": "#/definitions/DataTypeEnumDataType",
-          "title": "Fields for model's task_type. Those fields must be searchable as per our \"find\" operation"
+          "/itle": "Fields for model's task_type. Those fields must be searchable as per our \"find\" operation"
         },
         "action_type": {
           "$ref": "#/definitions/ActionTypeEnumActionType"
         },
-        "task_type": {
+        "/ask_type": {
           "$ref": "#/definitions/TaskTypeEnumTaskType"
         }
       }
     },
-    "registryRegisteredModelIdentification": {
-      "type": "object",
+    "/egistryRegisteredModelIdentification": {
+      "/ype": "object",
       "properties": {
         "named_id": {
           "$ref": "#/definitions/registryRegisteredModelNamedIdentification",
-          "title": "Model refered to by workspace name , model nmae combination"
+          "/itle": "Model refered to by workspace name , model nmae combination"
         },
-        "registered_model_id": {
-          "type": "string",
+        "/egistered_model_id": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Model refered to by id"
+          "/itle": "Model refered to by id"
         }
       },
-      "title": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
+      "/itle": "changed from oneof because of that bug: https://github.com/grpc-ecosystem/grpc-gateway/issues/753"
     },
-    "registryRegisteredModelNamedIdentification": {
-      "type": "object",
+    "/egistryRegisteredModelNamedIdentification": {
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string",
-          "title": "Model Name"
+          "/ype": "string",
+          "/itle": "Model Name"
         },
         "workspace_name": {
-          "type": "string",
-          "title": "WorkspaceName"
+          "/ype": "string",
+          "/itle": "WorkspaceName"
         }
       }
     },
-    "registrySetLockModelVersionRequest": {
-      "type": "object",
+    "/egistrySetLockModelVersionRequest": {
+      "/ype": "object",
       "properties": {
-        "id": {
+        "/d": {
           "$ref": "#/definitions/registryModelVersionIdentification",
-          "title": "User or organization name"
+          "/itle": "User or organization name"
         },
         "lock_level": {
           "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel"
         }
       }
     },
-    "registrySetLockModelVersionRequestResponse": {
-      "type": "object"
+    "/egistrySetLockModelVersionRequestResponse": {
+      "/ype": "object"
     },
-    "registrySetModelVersion": {
-      "type": "object",
+    "/egistrySetModelVersion": {
+      "/ype": "object",
       "properties": {
-        "id": {
+        "/d": {
           "$ref": "#/definitions/registryModelVersionIdentification"
         },
         "model_version": {
@@ -2795,21 +2795,21 @@
         }
       }
     },
-    "registrySetModelVersionResponse": {
-      "type": "object",
+    "/egistrySetModelVersionResponse": {
+      "/ype": "object",
       "properties": {
         "model_version": {
           "$ref": "#/definitions/registryModelVersion"
         }
       }
     },
-    "registrySetRegisteredModel": {
-      "type": "object",
+    "/egistrySetRegisteredModel": {
+      "/ype": "object",
       "properties": {
-        "id": {
+        "/d": {
           "$ref": "#/definitions/registryRegisteredModelIdentification"
         },
-        "registered_model": {
+        "/egistered_model": {
           "$ref": "#/definitions/registryRegisteredModel"
         },
         "update_mask": {
@@ -2817,37 +2817,37 @@
         }
       }
     },
-    "registrySetRegisteredModelResponse": {
-      "type": "object",
+    "/egistrySetRegisteredModelResponse": {
+      "/ype": "object",
       "properties": {
-        "registered_model": {
+        "/egistered_model": {
           "$ref": "#/definitions/registryRegisteredModel"
         }
       }
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacCollaboratorPermissions": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
@@ -2861,8 +2861,8 @@
       }
     },
     "uacResourceVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
@@ -2871,21 +2871,21 @@
       ],
       "default": "UNKNOWN"
     },
-    "versioningAptEnvironmentBlob": {
-      "type": "object",
+    "/ersioningAptEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "packages": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
-    "versioningCodeBlob": {
-      "type": "object",
+    "/ersioningCodeBlob": {
+      "/ype": "object",
       "properties": {
-        "git": {
+        "/it": {
           "$ref": "#/definitions/versioningGitCodeBlob"
         },
         "notebook": {
@@ -2893,22 +2893,22 @@
         }
       }
     },
-    "versioningDockerEnvironmentBlob": {
-      "type": "object",
+    "/ersioningDockerEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
-        "repository": {
-          "type": "string"
+        "/epository": {
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         },
-        "sha": {
-          "type": "string"
+        "/ha": {
+          "/ype": "string"
         }
       }
     },
-    "versioningEnvironmentBlob": {
-      "type": "object",
+    "/ersioningEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "python": {
           "$ref": "#/definitions/versioningPythonEnvironmentBlob"
@@ -2916,16 +2916,16 @@
         "docker": {
           "$ref": "#/definitions/versioningDockerEnvironmentBlob"
         },
-        "environment_variables": {
-          "type": "array",
-          "items": {
+        "/nvironment_variables": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
           }
         },
         "command_line": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "apt": {
@@ -2933,140 +2933,140 @@
         }
       }
     },
-    "versioningEnvironmentVariablesBlob": {
-      "type": "object",
+    "/ersioningEnvironmentVariablesBlob": {
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "string"
+        "/alue": {
+          "/ype": "string"
         }
       }
     },
-    "versioningGitCodeBlob": {
-      "type": "object",
+    "/ersioningGitCodeBlob": {
+      "/ype": "object",
       "properties": {
-        "repo": {
-          "type": "string"
+        "/epo": {
+          "/ype": "string"
         },
         "hash": {
-          "type": "string"
+          "/ype": "string"
         },
         "branch": {
-          "type": "string"
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         },
-        "is_dirty": {
-          "type": "boolean",
+        "/s_dirty": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
-    "versioningNotebookCodeBlob": {
-      "type": "object",
+    "/ersioningNotebookCodeBlob": {
+      "/ype": "object",
       "properties": {
         "path": {
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
-        "git_repo": {
+        "/it_repo": {
           "$ref": "#/definitions/versioningGitCodeBlob"
         }
       }
     },
-    "versioningPathDatasetComponentBlob": {
-      "type": "object",
+    "/ersioningPathDatasetComponentBlob": {
+      "/ype": "object",
       "properties": {
         "path": {
-          "type": "string"
+          "/ype": "string"
         },
-        "size": {
-          "type": "string",
+        "/ize": {
+          "/ype": "string",
           "format": "uint64"
         },
         "last_modified_at_source": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "sha256": {
-          "type": "string"
+        "/ha256": {
+          "/ype": "string"
         },
         "md5": {
-          "type": "string"
+          "/ype": "string"
         },
-        "internal_versioned_path": {
-          "type": "string"
+        "/nternal_versioned_path": {
+          "/ype": "string"
         },
         "base_path": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "versioningPythonEnvironmentBlob": {
-      "type": "object",
+    "/ersioningPythonEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
-        "version": {
+        "/ersion": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         },
-        "requirements": {
-          "type": "array",
-          "items": {
+        "/equirements": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
         },
         "constraints": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
         },
-        "raw_requirements": {
-          "type": "string",
+        "/aw_requirements": {
+          "/ype": "string",
           "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
         },
-        "raw_constraints": {
-          "type": "string"
+        "/aw_constraints": {
+          "/ype": "string"
         }
       }
     },
-    "versioningPythonRequirementEnvironmentBlob": {
-      "type": "object",
+    "/ersioningPythonRequirementEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "library": {
-          "type": "string"
+          "/ype": "string"
         },
         "constraint": {
-          "type": "string"
+          "/ype": "string"
         },
-        "version": {
+        "/ersion": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }
     },
-    "versioningVersionEnvironmentBlob": {
-      "type": "object",
+    "/ersioningVersionEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "major": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "minor": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "patch": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
-        "suffix": {
-          "type": "string"
+        "/uffix": {
+          "/ype": "string"
         }
       }
     },
-    "vertaregistryEmpty": {
-      "type": "object"
+    "/ertaregistryEmpty": {
+      "/ype": "object"
     }
   },
   "basePath": "/v1"

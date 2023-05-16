@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "modeldb/DatasetService.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "modeldb/DatasetService.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/dataset/addDatasetAttributes": {
+    "/v1/dataset/addDatasetAttributes": {
       "post": {
         "operationId": "DatasetService_addDatasetAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddDatasetAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,31 +31,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddDatasetAttributes"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/addDatasetTags": {
+    "/v1/dataset/addDatasetTags": {
       "post": {
         "operationId": "DatasetService_addDatasetTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddDatasetTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,31 +63,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddDatasetTags"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/createDataset": {
+    "/v1/dataset/createDataset": {
       "post": {
         "operationId": "DatasetService_createDataset",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbCreateDatasetResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,31 +95,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbCreateDataset"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/deleteDataset": {
+    "/v1/dataset/deleteDataset": {
       "delete": {
         "operationId": "DatasetService_deleteDataset",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteDatasetResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,31 +127,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteDataset"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/deleteDatasetAttributes": {
+    "/v1/dataset/deleteDatasetAttributes": {
       "delete": {
         "operationId": "DatasetService_deleteDatasetAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteDatasetAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -159,31 +159,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteDatasetAttributes"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/deleteDatasetTags": {
+    "/v1/dataset/deleteDatasetTags": {
       "delete": {
         "operationId": "DatasetService_deleteDatasetTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteDatasetTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -191,31 +191,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteDatasetTags"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/deleteDatasets": {
+    "/v1/dataset/deleteDatasets": {
       "delete": {
         "operationId": "DatasetService_deleteDatasets",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteDatasetsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -223,32 +223,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteDatasets"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/findDatasets": {
+    "/v1/dataset/findDatasets": {
       "post": {
-        "summary": "queries",
+        "/ummary": "queries",
         "operationId": "DatasetService_findDatasets",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbFindDatasetsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -256,31 +256,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbFindDatasets"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/getAllDatasets": {
-      "get": {
+    "/v1/dataset/getAllDatasets": {
+      "/et": {
         "operationId": "DatasetService_getAllDatasets",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetAllDatasetsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -289,86 +289,86 @@
           {
             "name": "page_number",
             "description": "For pagination.",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "boolean",
             "format": "boolean"
           },
           {
-            "name": "sort_key",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/ort_key",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/getDatasetById": {
-      "get": {
+    "/v1/dataset/getDatasetById": {
+      "/et": {
         "operationId": "DatasetService_getDatasetById",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetDatasetByIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/getDatasetByName": {
-      "get": {
+    "/v1/dataset/getDatasetByName": {
+      "/et": {
         "operationId": "DatasetService_getDatasetByName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetDatasetByNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -376,65 +376,65 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/getDatasetTags": {
-      "get": {
+    "/v1/dataset/getDatasetTags": {
+      "/et": {
         "operationId": "DatasetService_getDatasetTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/getExperimentRunByDataset": {
+    "/v1/dataset/getExperimentRunByDataset": {
       "post": {
         "operationId": "DatasetService_getExperimentRunByDataset",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetExperimentRunByDatasetResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -442,31 +442,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbGetExperimentRunByDataset"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/getLastExperimentByDatasetId": {
-      "get": {
+    "/v1/dataset/getLastExperimentByDatasetId": {
+      "/et": {
         "operationId": "DatasetService_getLastExperimentByDatasetId",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbLastExperimentByDatasetIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -474,29 +474,29 @@
         "parameters": [
           {
             "name": "dataset_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/updateDatasetAttributes": {
+    "/v1/dataset/updateDatasetAttributes": {
       "post": {
         "operationId": "DatasetService_updateDatasetAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateDatasetAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -504,31 +504,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateDatasetAttributes"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/updateDatasetDescription": {
+    "/v1/dataset/updateDatasetDescription": {
       "post": {
         "operationId": "DatasetService_updateDatasetDescription",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateDatasetDescriptionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -536,31 +536,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateDatasetDescription"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
     },
-    "/dataset/updateDatasetName": {
+    "/v1/dataset/updateDatasetName": {
       "post": {
         "operationId": "DatasetService_updateDatasetName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateDatasetNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -568,14 +568,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateDatasetName"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "DatasetService"
         ]
       }
@@ -583,8 +583,8 @@
   },
   "definitions": {
     "ArtifactTypeEnumArtifactType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "IMAGE",
         "MODEL",
         "TENSORBOARD",
@@ -597,16 +597,16 @@
       "default": "IMAGE"
     },
     "CollaboratorTypeEnumCollaboratorType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "READ_ONLY",
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
     },
     "DatasetTypeEnumDatasetType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "RAW",
         "PATH",
         "QUERY"
@@ -614,8 +614,8 @@
       "default": "RAW"
     },
     "DatasetVisibilityEnumDatasetVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "PRIVATE",
         "PUBLIC",
         "ORG_SCOPED_PUBLIC"
@@ -623,8 +623,8 @@
       "default": "PRIVATE"
     },
     "OperatorEnumOperator": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "EQ",
         "NE",
         "GT",
@@ -639,8 +639,8 @@
       "default": "EQ"
     },
     "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -648,8 +648,8 @@
       "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "STRING",
         "NUMBER",
         "LIST",
@@ -658,8 +658,8 @@
       "default": "STRING"
     },
     "WorkspaceTypeEnumWorkspaceType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ORGANIZATION",
         "USER"
@@ -667,111 +667,111 @@
       "default": "UNKNOWN"
     },
     "commonArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
         "path": {
-          "type": "string"
+          "/ype": "string"
         },
         "path_only": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
         },
         "linked_artifact_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "filename_extension": {
-          "type": "string"
+          "/ype": "string"
         },
-        "serialization": {
-          "type": "string"
+        "/erialization": {
+          "/ype": "string"
         },
         "artifact_subtype": {
-          "type": "string"
+          "/ype": "string"
         },
         "upload_completed": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "commonCodeVersion": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "git_snapshot": {
+        "/it_snapshot": {
           "$ref": "#/definitions/commonGitSnapshot"
         },
         "code_archive": {
           "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       },
-      "title": "code version"
+      "/itle": "code version"
     },
     "commonGitSnapshot": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "repo": {
-          "type": "string"
+        "/epo": {
+          "/ype": "string"
         },
         "hash": {
-          "type": "string"
+          "/ype": "string"
         },
-        "is_dirty": {
+        "/s_dirty": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
     "commonGroupId": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "org_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "group_id": {
-          "type": "string"
+        "/roup_id": {
+          "/ype": "string"
         }
       }
     },
     "commonKeyValue": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
         }
       }
     },
     "commonKeyValueQuery": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType"
         },
         "operator": {
@@ -780,21 +780,21 @@
       }
     },
     "modeldbAddDatasetAttributes": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         }
       }
     },
     "modeldbAddDatasetAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -802,21 +802,21 @@
       }
     },
     "modeldbAddDatasetTags": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbAddDatasetTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -824,23 +824,23 @@
       }
     },
     "modeldbCreateDataset": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
@@ -851,23 +851,23 @@
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "time_created": {
-          "type": "string",
+        "/ime_created": {
+          "/ype": "string",
           "format": "uint64"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "visibility": {
+        "/isibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
     "modeldbCreateDatasetResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -875,31 +875,31 @@
       }
     },
     "modeldbDataset": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "owner": {
-          "type": "string"
+          "/ype": "string"
         },
         "owner_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "group_owner_id": {
+        "/roup_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "dataset_visibility": {
@@ -909,71 +909,71 @@
           "$ref": "#/definitions/DatasetTypeEnumDatasetType"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
-        "time_created": {
-          "type": "string",
+        "/ime_created": {
+          "/ype": "string",
           "format": "uint64"
         },
-        "time_updated": {
-          "type": "string",
+        "/ime_updated": {
+          "/ype": "string",
           "format": "uint64"
         },
         "workspace_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "workspace_type": {
           "$ref": "#/definitions/WorkspaceTypeEnumWorkspaceType"
         },
         "workspace_service_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "visibility": {
+        "/isibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
     "modeldbDeleteDataset": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         }
       }
     },
     "modeldbDeleteDatasetAttributes": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "attribute_keys": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "delete_all": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteDatasetAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -981,34 +981,34 @@
       }
     },
     "modeldbDeleteDatasetResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteDatasetTags": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "delete_all": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteDatasetTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -1016,291 +1016,291 @@
       }
     },
     "modeldbDeleteDatasets": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbDeleteDatasetsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbExperiment": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "project_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
         "date_created": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
         "date_updated": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "owner": {
-          "type": "string"
+          "/ype": "string"
         },
         "owner_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "group_owner_id": {
+        "/roup_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         },
         "code_version_snapshot": {
           "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
     "modeldbExperimentRun": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "project_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "experiment_id": {
-          "type": "string"
+        "/xperiment_id": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
         "date_created": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
         "date_updated": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
-        "start_time": {
-          "type": "string",
-          "format": "int64"
+        "/tart_time": {
+          "/ype": "string",
+          "format": "/nt64"
         },
-        "end_time": {
-          "type": "string",
-          "format": "int64"
+        "/nd_time": {
+          "/ype": "string",
+          "format": "/nt64"
         },
         "code_version": {
-          "type": "string"
+          "/ype": "string"
         },
         "code_version_snapshot": {
           "$ref": "#/definitions/commonCodeVersion"
         },
         "parent_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "environment": {
+        "/nvironment": {
           "$ref": "#/definitions/versioningEnvironmentBlob",
-          "title": "Requirement"
+          "/itle": "Requirement"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
         "hyperparameters": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         },
         "datasets": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         },
         "metrics": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
         "observations": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbObservation"
           }
         },
         "features": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbFeature"
           }
         },
         "job_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "owner": {
-          "type": "string"
+          "/ype": "string"
         },
         "owner_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "group_owner_id": {
+        "/roup_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         },
-        "versioned_inputs": {
+        "/ersioned_inputs": {
           "$ref": "#/definitions/modeldbVersioningEntry"
         },
         "code_version_from_blob": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
             "$ref": "#/definitions/commonCodeVersion"
           }
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       },
-      "title": "ExperimentRun Entity"
+      "/itle": "ExperimentRun Entity"
     },
     "modeldbFeature": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbFindDatasets": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "predicates": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
-        "ids_only": {
-          "type": "boolean",
+        "/ds_only": {
+          "/ype": "boolean",
           "format": "boolean"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "For pagination"
+          "/ype": "integer",
+          "format": "/nt32",
+          "/itle": "For pagination"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "ascending": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
-        "sort_key": {
-          "type": "string"
+        "/ort_key": {
+          "/ype": "string"
         }
       }
     },
     "modeldbFindDatasetsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "datasets": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbDataset"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "modeldbGetAllDatasetsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "datasets": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbDataset"
           }
         },
-        "total_records": {
-          "type": "string",
+        "/otal_records": {
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "modeldbGetDatasetByIdResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -1308,59 +1308,59 @@
       }
     },
     "modeldbGetDatasetByNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset_by_user": {
           "$ref": "#/definitions/modeldbDataset"
         },
-        "shared_datasets": {
-          "type": "array",
-          "items": {
+        "/hared_datasets": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbDataset"
           }
         }
       }
     },
     "modeldbGetExperimentRunByDataset": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset_id": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbGetExperimentRunByDatasetResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment_runs": {
-          "type": "array",
-          "items": {
+        "/xperiment_runs": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbExperimentRun"
           }
         }
       }
     },
     "modeldbGetTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbLastExperimentByDatasetIdResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbObservation": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "attribute": {
           "$ref": "#/definitions/commonKeyValue"
@@ -1368,21 +1368,21 @@
         "artifact": {
           "$ref": "#/definitions/commonArtifact"
         },
-        "timestamp": {
-          "type": "string",
-          "format": "int64"
+        "/imestamp": {
+          "/ype": "string",
+          "format": "/nt64"
         },
-        "epoch_number": {
-          "type": "object"
+        "/poch_number": {
+          "/ype": "object"
         }
       },
-      "title": "observations with the same key are not overwritten, the are appended to a list"
+      "/itle": "observations with the same key are not overwritten, the are appended to a list"
     },
     "modeldbUpdateDatasetAttributes": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "attribute": {
           "$ref": "#/definitions/commonKeyValue"
@@ -1390,7 +1390,7 @@
       }
     },
     "modeldbUpdateDatasetAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -1398,18 +1398,18 @@
       }
     },
     "modeldbUpdateDatasetDescription": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbUpdateDatasetDescriptionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -1417,18 +1417,18 @@
       }
     },
     "modeldbUpdateDatasetName": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbUpdateDatasetNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset": {
           "$ref": "#/definitions/modeldbDataset"
@@ -1436,17 +1436,17 @@
       }
     },
     "modeldbVersioningEntry": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "repository_id": {
-          "type": "string",
+        "/epository_id": {
+          "/ype": "string",
           "format": "uint64"
         },
         "commit": {
-          "type": "string"
+          "/ype": "string"
         },
         "key_location_map": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
             "$ref": "#/definitions/vertamodeldbLocation"
           }
@@ -1454,48 +1454,48 @@
       }
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
     "protobufNullValue": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacCollaboratorPermissions": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
@@ -1509,8 +1509,8 @@
       }
     },
     "uacResourceVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
@@ -1519,33 +1519,33 @@
       ],
       "default": "UNKNOWN"
     },
-    "versioningAptEnvironmentBlob": {
-      "type": "object",
+    "/ersioningAptEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "packages": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
-    "versioningDockerEnvironmentBlob": {
-      "type": "object",
+    "/ersioningDockerEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
-        "repository": {
-          "type": "string"
+        "/epository": {
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         },
-        "sha": {
-          "type": "string"
+        "/ha": {
+          "/ype": "string"
         }
       }
     },
-    "versioningEnvironmentBlob": {
-      "type": "object",
+    "/ersioningEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "python": {
           "$ref": "#/definitions/versioningPythonEnvironmentBlob"
@@ -1553,16 +1553,16 @@
         "docker": {
           "$ref": "#/definitions/versioningDockerEnvironmentBlob"
         },
-        "environment_variables": {
-          "type": "array",
-          "items": {
+        "/nvironment_variables": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
           }
         },
         "command_line": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "apt": {
@@ -1570,85 +1570,85 @@
         }
       }
     },
-    "versioningEnvironmentVariablesBlob": {
-      "type": "object",
+    "/ersioningEnvironmentVariablesBlob": {
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "string"
+        "/alue": {
+          "/ype": "string"
         }
       }
     },
-    "versioningPythonEnvironmentBlob": {
-      "type": "object",
+    "/ersioningPythonEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
-        "version": {
+        "/ersion": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         },
-        "requirements": {
-          "type": "array",
-          "items": {
+        "/equirements": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
         },
         "constraints": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
         },
-        "raw_requirements": {
-          "type": "string",
+        "/aw_requirements": {
+          "/ype": "string",
           "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
         },
-        "raw_constraints": {
-          "type": "string"
+        "/aw_constraints": {
+          "/ype": "string"
         }
       }
     },
-    "versioningPythonRequirementEnvironmentBlob": {
-      "type": "object",
+    "/ersioningPythonRequirementEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "library": {
-          "type": "string"
+          "/ype": "string"
         },
         "constraint": {
-          "type": "string"
+          "/ype": "string"
         },
-        "version": {
+        "/ersion": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }
     },
-    "versioningVersionEnvironmentBlob": {
-      "type": "object",
+    "/ersioningVersionEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "major": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "minor": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "patch": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
-        "suffix": {
-          "type": "string"
+        "/uffix": {
+          "/ype": "string"
         }
       }
     },
-    "vertamodeldbLocation": {
-      "type": "object",
+    "/ertamodeldbLocation": {
+      "/ype": "object",
       "properties": {
         "location": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }

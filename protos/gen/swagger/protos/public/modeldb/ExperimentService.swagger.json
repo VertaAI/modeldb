@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "modeldb/ExperimentService.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "modeldb/ExperimentService.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/experiment/addAttribute": {
+    "/v1/experiment/addAttribute": {
       "post": {
         "operationId": "ExperimentService_addAttribute",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,31 +31,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddAttributes"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/addExperimentAttributes": {
+    "/v1/experiment/addExperimentAttributes": {
       "post": {
         "operationId": "ExperimentService_addExperimentAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddExperimentAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,31 +63,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddExperimentAttributes"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/addExperimentTag": {
+    "/v1/experiment/addExperimentTag": {
       "post": {
         "operationId": "ExperimentService_addExperimentTag",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddExperimentTagResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,31 +95,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddExperimentTag"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/addExperimentTags": {
+    "/v1/experiment/addExperimentTags": {
       "post": {
         "operationId": "ExperimentService_addExperimentTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddExperimentTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,31 +127,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddExperimentTags"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/createExperiment": {
+    "/v1/experiment/createExperiment": {
       "post": {
         "operationId": "ExperimentService_createExperiment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbCreateExperimentResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -159,31 +159,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbCreateExperiment"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/deleteArtifact": {
+    "/v1/experiment/deleteArtifact": {
       "delete": {
         "operationId": "ExperimentService_deleteArtifact",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentArtifactResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -191,31 +191,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentArtifact"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/deleteExperiment": {
+    "/v1/experiment/deleteExperiment": {
       "delete": {
         "operationId": "ExperimentService_deleteExperiment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -223,78 +223,78 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperiment"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/deleteExperimentAttributes": {
+    "/v1/experiment/deleteExperimentAttributes": {
       "delete": {
         "operationId": "ExperimentService_deleteExperimentAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "attribute_keys",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "array",
+            "/tems": {
+              "/ype": "string"
             },
             "collectionFormat": "multi"
           },
           {
             "name": "delete_all",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "boolean",
             "format": "boolean"
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/deleteExperimentTag": {
+    "/v1/experiment/deleteExperimentTag": {
       "delete": {
         "operationId": "ExperimentService_deleteExperimentTag",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentTagResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -302,31 +302,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentTag"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/deleteExperimentTags": {
+    "/v1/experiment/deleteExperimentTags": {
       "delete": {
         "operationId": "ExperimentService_deleteExperimentTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -334,31 +334,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentTags"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/deleteExperiments": {
+    "/v1/experiment/deleteExperiments": {
       "delete": {
         "operationId": "ExperimentService_deleteExperiments",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperimentsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -366,32 +366,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteExperiments"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/findExperiments": {
+    "/v1/experiment/findExperiments": {
       "post": {
-        "summary": "queries",
+        "/ummary": "queries",
         "operationId": "ExperimentService_findExperiments",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbFindExperimentsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -399,144 +399,144 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbFindExperiments"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/getArtifacts": {
-      "get": {
+    "/v1/experiment/getArtifacts": {
+      "/et": {
         "operationId": "ExperimentService_getArtifacts",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetArtifactsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "key",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/getExperimentAttributes": {
-      "get": {
+    "/v1/experiment/getExperimentAttributes": {
+      "/et": {
         "operationId": "ExperimentService_getExperimentAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "attribute_keys",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "array",
+            "/tems": {
+              "/ype": "string"
             },
             "collectionFormat": "multi"
           },
           {
-            "name": "get_all",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
+            "name": "/et_all",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "boolean",
             "format": "boolean"
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/getExperimentById": {
-      "get": {
+    "/v1/experiment/getExperimentById": {
+      "/et": {
         "operationId": "ExperimentService_getExperimentById",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetExperimentByIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/getExperimentByName": {
-      "get": {
+    "/v1/experiment/getExperimentByName": {
+      "/et": {
         "operationId": "ExperimentService_getExperimentByName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetExperimentByNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -544,95 +544,95 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "project_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/getExperimentCodeVersion": {
-      "get": {
+    "/v1/experiment/getExperimentCodeVersion": {
+      "/et": {
         "operationId": "ExperimentService_getExperimentCodeVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetExperimentCodeVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/getExperimentTags": {
-      "get": {
+    "/v1/experiment/getExperimentTags": {
+      "/et": {
         "operationId": "ExperimentService_getExperimentTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/getExperimentsInProject": {
-      "get": {
+    "/v1/experiment/getExperimentsInProject": {
+      "/et": {
         "operationId": "ExperimentService_getExperimentsInProject",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetExperimentsInProjectResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -640,57 +640,57 @@
         "parameters": [
           {
             "name": "project_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "boolean",
             "format": "boolean"
           },
           {
-            "name": "sort_key",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/ort_key",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/getUrlForArtifact": {
+    "/v1/experiment/getUrlForArtifact": {
       "post": {
-        "summary": "artifacts",
+        "/ummary": "artifacts",
         "operationId": "ExperimentService_getUrlForArtifact",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetUrlForArtifactResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -698,32 +698,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbGetUrlForArtifact"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/logArtifacts": {
+    "/v1/experiment/logArtifacts": {
       "post": {
-        "summary": "artifacts",
+        "/ummary": "artifacts",
         "operationId": "ExperimentService_logArtifacts",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbLogExperimentArtifactsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -731,32 +731,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbLogExperimentArtifacts"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/logExperimentCodeVersion": {
+    "/v1/experiment/logExperimentCodeVersion": {
       "post": {
-        "summary": "code version",
+        "/ummary": "code version",
         "operationId": "ExperimentService_logExperimentCodeVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbLogExperimentCodeVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -764,31 +764,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbLogExperimentCodeVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/updateExperimentDescription": {
+    "/v1/experiment/updateExperimentDescription": {
       "post": {
         "operationId": "ExperimentService_updateExperimentDescription",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateExperimentDescriptionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -796,31 +796,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateExperimentDescription"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/updateExperimentName": {
+    "/v1/experiment/updateExperimentName": {
       "post": {
         "operationId": "ExperimentService_updateExperimentName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateExperimentNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -828,31 +828,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateExperimentName"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
     },
-    "/experiment/updateExperimentNameOrDescription": {
+    "/v1/experiment/updateExperimentNameOrDescription": {
       "post": {
         "operationId": "ExperimentService_updateExperimentNameOrDescription",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateExperimentNameOrDescriptionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -860,14 +860,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateExperimentNameOrDescription"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ExperimentService"
         ]
       }
@@ -875,8 +875,8 @@
   },
   "definitions": {
     "ArtifactTypeEnumArtifactType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "IMAGE",
         "MODEL",
         "TENSORBOARD",
@@ -889,8 +889,8 @@
       "default": "IMAGE"
     },
     "OperatorEnumOperator": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "EQ",
         "NE",
         "GT",
@@ -905,8 +905,8 @@
       "default": "EQ"
     },
     "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -914,8 +914,8 @@
       "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "STRING",
         "NUMBER",
         "LIST",
@@ -924,111 +924,111 @@
       "default": "STRING"
     },
     "commonArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
         "path": {
-          "type": "string"
+          "/ype": "string"
         },
         "path_only": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
         },
         "linked_artifact_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "filename_extension": {
-          "type": "string"
+          "/ype": "string"
         },
-        "serialization": {
-          "type": "string"
+        "/erialization": {
+          "/ype": "string"
         },
         "artifact_subtype": {
-          "type": "string"
+          "/ype": "string"
         },
         "upload_completed": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "commonCodeVersion": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "git_snapshot": {
+        "/it_snapshot": {
           "$ref": "#/definitions/commonGitSnapshot"
         },
         "code_archive": {
           "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       },
-      "title": "code version"
+      "/itle": "code version"
     },
     "commonGitSnapshot": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "repo": {
-          "type": "string"
+        "/epo": {
+          "/ype": "string"
         },
         "hash": {
-          "type": "string"
+          "/ype": "string"
         },
-        "is_dirty": {
+        "/s_dirty": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
     "commonGroupId": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "org_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "group_id": {
-          "type": "string"
+        "/roup_id": {
+          "/ype": "string"
         }
       }
     },
     "commonKeyValue": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
         }
       }
     },
     "commonKeyValueQuery": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType"
         },
         "operator": {
@@ -1037,405 +1037,405 @@
       }
     },
     "modeldbAddAttributes": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "attribute": {
           "$ref": "#/definitions/commonKeyValue"
         }
       },
-      "title": "TODO: make this update attribute"
+      "/itle": "TODO: make this update attribute"
     },
     "modeldbAddAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbAddExperimentAttributes": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         }
       }
     },
     "modeldbAddExperimentAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbAddExperimentTag": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         }
       }
     },
     "modeldbAddExperimentTagResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbAddExperimentTags": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbAddExperimentTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbCreateExperiment": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
         "date_created": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
         "date_updated": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         }
       }
     },
     "modeldbCreateExperimentResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbDeleteExperiment": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         }
       }
     },
     "modeldbDeleteExperimentArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "key": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbDeleteExperimentArtifactResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbDeleteExperimentAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbDeleteExperimentResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteExperimentTag": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         }
       }
     },
     "modeldbDeleteExperimentTagResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbDeleteExperimentTags": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "delete_all": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteExperimentTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbDeleteExperiments": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbDeleteExperimentsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbExperiment": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "project_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
         "date_created": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
         "date_updated": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "owner": {
-          "type": "string"
+          "/ype": "string"
         },
         "owner_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "group_owner_id": {
+        "/roup_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         },
         "code_version_snapshot": {
           "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
     "modeldbFindExperiments": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "experiment_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/xperiment_ids": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "predicates": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
-        "ids_only": {
-          "type": "boolean",
+        "/ds_only": {
+          "/ype": "boolean",
           "format": "boolean"
         },
         "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "For pagination"
+          "/ype": "integer",
+          "format": "/nt32",
+          "/itle": "For pagination"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "ascending": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
-        "sort_key": {
-          "type": "string"
+        "/ort_key": {
+          "/ype": "string"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbFindExperimentsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiments": {
-          "type": "array",
-          "items": {
+        "/xperiments": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbExperiment"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "modeldbGetArtifactsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         }
       }
     },
     "modeldbGetAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         }
       }
     },
     "modeldbGetExperimentByIdResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbGetExperimentByNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbGetExperimentCodeVersionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "code_version": {
           "$ref": "#/definitions/commonCodeVersion"
@@ -1443,209 +1443,209 @@
       }
     },
     "modeldbGetExperimentsInProjectResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiments": {
-          "type": "array",
-          "items": {
+        "/xperiments": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbExperiment"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "modeldbGetTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbGetUrlForArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
         "method": {
-          "type": "string"
+          "/ype": "string"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
         },
         "part_number": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "modeldbGetUrlForArtifactResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "url": {
-          "type": "string"
+          "/ype": "string"
         },
         "fields": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
-            "type": "string"
+            "/ype": "string"
           }
         },
         "multipart_upload_ok": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbLogExperimentArtifacts": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         }
       },
-      "title": "artifacts"
+      "/itle": "artifacts"
     },
     "modeldbLogExperimentArtifactsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbLogExperimentCodeVersion": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "code_version": {
           "$ref": "#/definitions/commonCodeVersion"
         }
       },
-      "title": "code version"
+      "/itle": "code version"
     },
     "modeldbLogExperimentCodeVersionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbUpdateExperimentDescription": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbUpdateExperimentDescriptionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbUpdateExperimentName": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbUpdateExperimentNameOrDescription": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbUpdateExperimentNameOrDescriptionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "modeldbUpdateExperimentNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "experiment": {
+        "/xperiment": {
           "$ref": "#/definitions/modeldbExperiment"
         }
       }
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
     "protobufNullValue": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }

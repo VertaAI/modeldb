@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "monitoring/Alert.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "monitoring/Alert.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -14,16 +14,16 @@
     "/api/v1/monitoring/alerts/createAlert": {
       "post": {
         "operationId": "AlertService_createAlert",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringAlert"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,14 +31,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringCreateAlertRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -46,16 +46,16 @@
     "/api/v1/monitoring/alerts/createNotificationChannel": {
       "post": {
         "operationId": "AlertService_createNotificationChannel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringNotificationChannel"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,14 +63,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringCreateNotificationChannelRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -78,16 +78,16 @@
     "/api/v1/monitoring/alerts/deleteAlert": {
       "delete": {
         "operationId": "AlertService_deleteAlert",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,14 +95,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringDeleteAlertRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -110,16 +110,16 @@
     "/api/v1/monitoring/alerts/deleteNotificationChannel": {
       "delete": {
         "operationId": "AlertService_deleteNotificationChannel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,14 +127,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringDeleteNotificationChannelRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -142,16 +142,16 @@
     "/api/v1/monitoring/alerts/findAlert": {
       "post": {
         "operationId": "AlertService_findAlert",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringFindAlertRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -159,14 +159,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringFindAlertRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -174,16 +174,16 @@
     "/api/v1/monitoring/alerts/findNotificationChannel": {
       "post": {
         "operationId": "AlertService_findNotificationChannel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringFindNotificationChannelRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -191,14 +191,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringFindNotificationChannelRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -206,16 +206,16 @@
     "/api/v1/monitoring/alerts/listAlertHistory": {
       "post": {
         "operationId": "AlertService_listAlertHistory",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringListAlertHistoryRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -223,14 +223,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringListAlertHistoryRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -238,16 +238,16 @@
     "/api/v1/monitoring/alerts/updateAlert": {
       "post": {
         "operationId": "AlertService_updateAlert",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringAlert"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -255,14 +255,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringUpdateAlertRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -270,16 +270,16 @@
     "/api/v1/monitoring/alerts/updateAlertStatus": {
       "post": {
         "operationId": "AlertService_updateAlertStatus",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -287,14 +287,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringUpdateAlertStatusRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -302,16 +302,16 @@
     "/api/v1/monitoring/alerts/updateNotificationChannel": {
       "post": {
         "operationId": "AlertService_updateNotificationChannel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringNotificationChannel"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -319,14 +319,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringUpdateNotificationChannelRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "AlertService"
         ]
       }
@@ -334,8 +334,8 @@
   },
   "definitions": {
     "AggregationWindowEnumAggregationWindow": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "FIVE_MINUTES",
         "HOUR",
@@ -344,8 +344,8 @@
       "default": "UNKNOWN"
     },
     "AlertStatusEnumAlertStatus": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OK",
         "ALERTING",
@@ -355,8 +355,8 @@
       "default": "UNKNOWN"
     },
     "AlerterTypeEnumAlerterType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "FIXED",
         "REFERENCE",
@@ -365,8 +365,8 @@
       "default": "UNKNOWN"
     },
     "EvaluationFrequencyEnumEvaluationFrequency": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "FIVE_MINUTES",
         "HOUR",
@@ -375,16 +375,16 @@
       "default": "UNKNOWN"
     },
     "NotificationChannelTypeEnumNotificationChannelType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "SLACK"
       ],
       "default": "UNKNOWN"
     },
     "OperatorEnumOperator": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "EQ",
         "NE",
         "GT",
@@ -399,47 +399,47 @@
       "default": "EQ"
     },
     "monitoringAlert": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "monitored_entity_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "created_at_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "updated_at_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "last_evaluated_at_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "Add some robustness in case the alert isn't evaluated in a while"
+          "/itle": "Add some robustness in case the alert isn't evaluated in a while"
         },
         "notification_channels": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
-            "type": "boolean",
+            "/ype": "boolean",
             "format": "boolean"
           },
-          "title": "Use a map instead of a list to represent that this is a set"
+          "/itle": "Use a map instead of a list to represent that this is a set"
         },
-        "status": {
+        "/tatus": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus",
-          "title": "Current status of this alert"
+          "/itle": "Current status of this alert"
         },
         "alerter_type": {
           "$ref": "#/definitions/AlerterTypeEnumAlerterType",
-          "title": "Information about the alerter that should be used to evaluate this alert"
+          "/itle": "Information about the alerter that should be used to evaluate this alert"
         },
         "alerter_fixed": {
           "$ref": "#/definitions/monitoringAlertFixed"
@@ -450,38 +450,38 @@
         "alerter_range": {
           "$ref": "#/definitions/monitoringAlertRange"
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64"
         },
         "feature": {
-          "type": "string"
+          "/ype": "string"
         },
         "aggregation_window": {
           "$ref": "#/definitions/AggregationWindowEnumAggregationWindow"
         },
-        "evaluation_frequency": {
+        "/valuation_frequency": {
           "$ref": "#/definitions/EvaluationFrequencyEnumEvaluationFrequency"
         },
         "aggregation_type": {
-          "type": "string"
+          "/ype": "string"
         },
         "aggregation_algorithm": {
-          "type": "string"
+          "/ype": "string"
         },
-        "enabled": {
-          "type": "boolean",
+        "/nabled": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "monitoringAlertFixed": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "threshold": {
-          "type": "number",
+        "/hreshold": {
+          "/ype": "number",
           "format": "float",
-          "title": "Alert is fired if value is $operator $threshold"
+          "/itle": "Alert is fired if value is $operator $threshold"
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
@@ -489,29 +489,29 @@
       }
     },
     "monitoringAlertRange": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "lower_bound": {
-          "type": "number",
+          "/ype": "number",
           "format": "float"
         },
         "upper_bound": {
-          "type": "number",
+          "/ype": "number",
           "format": "float"
         },
         "alert_if_outside_range": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "monitoringAlertReference": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "threshold": {
-          "type": "number",
+        "/hreshold": {
+          "/ype": "number",
           "format": "float",
-          "title": "Alert is fired if value $operator $threshold"
+          "/itle": "Alert is fired if value $operator $threshold"
         },
         "operator": {
           "$ref": "#/definitions/OperatorEnumOperator"
@@ -519,7 +519,7 @@
       }
     },
     "monitoringCreateAlertRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "alert": {
           "$ref": "#/definitions/monitoringAlert"
@@ -527,277 +527,277 @@
       }
     },
     "monitoringCreateNotificationChannelRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "channel": {
           "$ref": "#/definitions/monitoringNotificationChannel"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "created_at_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "updated_at_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "type": {
+        "/ype": {
           "$ref": "#/definitions/NotificationChannelTypeEnumNotificationChannelType"
         },
-        "slack_webhook": {
+        "/lack_webhook": {
           "$ref": "#/definitions/monitoringNotificationChannelSlackWebhook"
         }
       },
-      "title": "Create a new notification channel. Names must be unique"
+      "/itle": "Create a new notification channel. Names must be unique"
     },
     "monitoringDeleteAlertRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         }
       }
     },
     "monitoringDeleteNotificationChannelRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         }
       },
-      "title": "Delete notification channels"
+      "/itle": "Delete notification channels"
     },
     "monitoringFindAlertRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "names": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "monitored_entity_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "last_evaluated_at_millis_after": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "Find alerts based on when they were last evaluated"
+          "/itle": "Find alerts based on when they were last evaluated"
         },
         "alerter_types": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/AlerterTypeEnumAlerterType"
           },
-          "title": "Allow alerters to filter to only their own types"
+          "/itle": "Allow alerters to filter to only their own types"
         },
-        "status": {
-          "type": "array",
-          "items": {
+        "/tatus": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/AlertStatusEnumAlertStatus"
           },
-          "title": "Allow filtering to see only failing alerts"
+          "/itle": "Allow filtering to see only failing alerts"
         },
-        "includeIfNoData": {
-          "type": "boolean",
+        "/ncludeIfNoData": {
+          "/ype": "boolean",
           "format": "boolean"
         },
         "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Pagination"
+          "/ype": "integer",
+          "format": "/nt32",
+          "/itle": "Pagination"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         }
       }
     },
     "monitoringFindAlertRequestResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "alerts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/monitoringAlert"
           }
         },
-        "total_records": {
-          "type": "integer",
-          "format": "int32"
+        "/otal_records": {
+          "/ype": "integer",
+          "format": "/nt32"
         }
       }
     },
     "monitoringFindNotificationChannelRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "names": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "types": {
-          "type": "array",
-          "items": {
+        "/ypes": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/monitoringNotificationChannelTypeEnum"
           }
         },
         "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Pagination"
+          "/ype": "integer",
+          "format": "/nt32",
+          "/itle": "Pagination"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         }
       },
-      "title": "Find an notification channel based on the different fields"
+      "/itle": "Find an notification channel based on the different fields"
     },
     "monitoringFindNotificationChannelRequestResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "channels": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/monitoringNotificationChannel"
           }
         },
-        "total_records": {
-          "type": "integer",
-          "format": "int32"
+        "/otal_records": {
+          "/ype": "integer",
+          "format": "/nt32"
         }
       }
     },
     "monitoringListAlertHistoryItem": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "event_time_millis": {
-          "type": "string",
+        "/vent_time_millis": {
+          "/ype": "string",
           "format": "uint64"
         },
-        "status": {
+        "/tatus": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus"
         },
-        "event_id": {
-          "type": "string",
-          "title": "Optional. ID of this item. Doesn't need to be output on the response"
+        "/vent_id": {
+          "/ype": "string",
+          "/itle": "Optional. ID of this item. Doesn't need to be output on the response"
         },
         "alert": {
           "$ref": "#/definitions/monitoringAlert"
         }
       },
-      "title": "Tracks previous calls to (UpdateAlertStatusRequest) based on its arguments"
+      "/itle": "Tracks previous calls to (UpdateAlertStatusRequest) based on its arguments"
     },
     "monitoringListAlertHistoryRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         }
       },
-      "title": "History of the status of the alerts"
+      "/itle": "History of the status of the alerts"
     },
     "monitoringListAlertHistoryRequestResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "history": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/monitoringListAlertHistoryItem"
           }
         }
       }
     },
     "monitoringNotificationChannel": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "created_at_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "updated_at_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "type": {
+        "/ype": {
           "$ref": "#/definitions/NotificationChannelTypeEnumNotificationChannelType"
         },
-        "slack_webhook": {
+        "/lack_webhook": {
           "$ref": "#/definitions/monitoringNotificationChannelSlackWebhook"
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       },
-      "title": "Content of an notification channel"
+      "/itle": "Content of an notification channel"
     },
     "monitoringNotificationChannelSlackWebhook": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "url": {
-          "type": "string"
+          "/ype": "string"
         }
       },
-      "title": "Configuration for an notification channel for slack webhooks"
+      "/itle": "Configuration for an notification channel for slack webhooks"
     },
     "monitoringNotificationChannelTypeEnum": {
-      "type": "object"
+      "/ype": "object"
     },
     "monitoringUpdateAlertRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "alert": {
           "$ref": "#/definitions/monitoringAlert"
@@ -805,66 +805,66 @@
       }
     },
     "monitoringUpdateAlertStatusRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "alert_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "event_time_millis": {
-          "type": "string",
+        "/vent_time_millis": {
+          "/ype": "string",
           "format": "uint64"
         },
-        "status": {
+        "/tatus": {
           "$ref": "#/definitions/AlertStatusEnumAlertStatus"
         }
       },
-      "title": "Allow the alerter to trigger an alert or change the status (most likely to OK if was triggering before)\nWe provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically"
+      "/itle": "Allow the alerter to trigger an alert or change the status (most likely to OK if was triggering before)\nWe provide this in addition to UpdateAlertRequest so that we can do the small change to this field atomically"
     },
     "monitoringUpdateNotificationChannelRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "channel": {
           "$ref": "#/definitions/monitoringNotificationChannel"
         }
       },
-      "title": "Updates an notification channel. The matching with a previous one happens from the id being the same"
+      "/itle": "Updates an notification channel. The matching with a previous one happens from the id being the same"
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
-    "vertamonitoringEmpty": {
-      "type": "object"
+    "/ertamonitoringEmpty": {
+      "/ype": "object"
     }
   },
   "basePath": "/v1"

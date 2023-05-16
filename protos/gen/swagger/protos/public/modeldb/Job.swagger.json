@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "modeldb/Job.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "modeldb/Job.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/job/createJob": {
+    "/v1/job/createJob": {
       "post": {
         "operationId": "JobService_createJob",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbCreateJobResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,114 +31,114 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbCreateJob"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "JobService"
         ]
       }
     },
-    "/job/deleteJob": {
-      "get": {
+    "/v1/job/deleteJob": {
+      "/et": {
         "operationId": "JobService_deleteJob",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteJobResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "JobService"
         ]
       }
     },
-    "/job/getJob": {
-      "get": {
+    "/v1/job/getJob": {
+      "/et": {
         "operationId": "JobService_getJob",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetJobResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "JobService"
         ]
       }
     },
-    "/job/updateJob": {
-      "get": {
+    "/v1/job/updateJob": {
+      "/et": {
         "operationId": "JobService_updateJob",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateJobResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "end_time",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/nd_time",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "job_status",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
+            "/num": [
               "NOT_STARTED",
               "IN_PROGRESS",
               "COMPLETED"
@@ -146,7 +146,7 @@
             "default": "NOT_STARTED"
           }
         ],
-        "tags": [
+        "/ags": [
           "JobService"
         ]
       }
@@ -154,8 +154,8 @@
   },
   "definitions": {
     "JobStatusEnumJobStatus": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "NOT_STARTED",
         "IN_PROGRESS",
         "COMPLETED"
@@ -163,15 +163,15 @@
       "default": "NOT_STARTED"
     },
     "JobTypeEnumJobType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "KUBERNETES_JOB"
       ],
       "default": "KUBERNETES_JOB"
     },
     "ValueTypeEnumValueType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "STRING",
         "NUMBER",
         "LIST",
@@ -180,46 +180,46 @@
       "default": "STRING"
     },
     "commonGroupId": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "org_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "group_id": {
-          "type": "string"
+        "/roup_id": {
+          "/ype": "string"
         }
       }
     },
     "commonKeyValue": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
         }
       }
     },
     "modeldbCreateJob": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
-        "start_time": {
-          "type": "string"
+        "/tart_time": {
+          "/ype": "string"
         },
-        "end_time": {
-          "type": "string"
+        "/nd_time": {
+          "/ype": "string"
         },
         "metadata": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
@@ -232,7 +232,7 @@
       }
     },
     "modeldbCreateJobResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "job": {
           "$ref": "#/definitions/modeldbJob"
@@ -240,16 +240,16 @@
       }
     },
     "modeldbDeleteJobResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbGetJobResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "job": {
           "$ref": "#/definitions/modeldbJob"
@@ -257,23 +257,23 @@
       }
     },
     "modeldbJob": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
-        "start_time": {
-          "type": "string"
+        "/tart_time": {
+          "/ype": "string"
         },
-        "end_time": {
-          "type": "string"
+        "/nd_time": {
+          "/ype": "string"
         },
         "metadata": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
@@ -284,19 +284,19 @@
           "$ref": "#/definitions/JobTypeEnumJobType"
         },
         "owner": {
-          "type": "string"
+          "/ype": "string"
         },
         "owner_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "group_owner_id": {
+        "/roup_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         }
       }
     },
     "modeldbUpdateJobResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "job": {
           "$ref": "#/definitions/modeldbJob"
@@ -304,41 +304,41 @@
       }
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
     "protobufNullValue": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }

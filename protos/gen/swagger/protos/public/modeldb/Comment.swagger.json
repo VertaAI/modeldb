@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "modeldb/Comment.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "modeldb/Comment.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/comment/addExperimentRunComment": {
+    "/v1/comment/addExperimentRunComment": {
       "post": {
         "operationId": "CommentService_addExperimentRunComment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddCommentResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,97 +31,97 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddComment"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "CommentService"
         ]
       }
     },
-    "/comment/deleteExperimentRunComment": {
+    "/v1/comment/deleteExperimentRunComment": {
       "delete": {
         "operationId": "CommentService_deleteExperimentRunComment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteCommentResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "entity_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/ntity_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "CommentService"
         ]
       }
     },
-    "/comment/getExperimentRunComments": {
-      "get": {
+    "/v1/comment/getExperimentRunComments": {
+      "/et": {
         "operationId": "CommentService_getExperimentRunComments",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetCommentsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "entity_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/ntity_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "CommentService"
         ]
       }
     },
-    "/comment/updateExperimentRunComment": {
+    "/v1/comment/updateExperimentRunComment": {
       "post": {
         "operationId": "CommentService_updateExperimentRunComment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateCommentResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -129,14 +129,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateComment"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "CommentService"
         ]
       }
@@ -144,8 +144,8 @@
   },
   "definitions": {
     "IdServiceProviderEnumIdServiceProvider": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "GITHUB",
         "BITBUCKET",
@@ -161,22 +161,22 @@
       "default": "UNKNOWN"
     },
     "modeldbAddComment": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "entity_id": {
-          "type": "string"
+        "/ntity_id": {
+          "/ype": "string"
         },
         "date_time": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbAddCommentResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "comment": {
           "$ref": "#/definitions/modeldbComment"
@@ -184,69 +184,69 @@
       }
     },
     "modeldbComment": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "user_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "date_time": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "user_info": {
           "$ref": "#/definitions/uacUserInfo"
         },
-        "verta_id": {
-          "type": "string"
+        "/erta_id": {
+          "/ype": "string"
         }
       }
     },
     "modeldbDeleteCommentResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbGetCommentsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "comments": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbComment"
           }
         }
       }
     },
     "modeldbUpdateComment": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "entity_id": {
-          "type": "string"
+        "/ntity_id": {
+          "/ype": "string"
         },
         "date_time": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbUpdateCommentResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "comment": {
           "$ref": "#/definitions/modeldbComment"
@@ -254,41 +254,41 @@
       }
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacFlagEnum": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNDEFINED",
         "TRUE",
         "FALSE"
@@ -296,84 +296,84 @@
       "default": "UNDEFINED"
     },
     "uacUserInfo": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "full_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "first_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "last_name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "email": {
-          "type": "string"
+        "/mail": {
+          "/ype": "string"
         },
-        "id_service_provider": {
+        "/d_service_provider": {
           "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
         },
-        "roles": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/oles": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "image_url": {
-          "type": "string"
+        "/mage_url": {
+          "/ype": "string"
         },
         "dev_key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "verta_info": {
+        "/erta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
         },
-        "secondary_dev_key": {
-          "type": "string"
+        "/econdary_dev_key": {
+          "/ype": "string"
         },
         "disabled": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacVertaUserInfo": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "individual_user": {
-          "type": "boolean",
+        "/ndividual_user": {
+          "/ype": "boolean",
           "format": "boolean"
         },
         "username": {
-          "type": "string"
+          "/ype": "string"
         },
-        "refresh_timestamp": {
-          "type": "string",
+        "/efresh_timestamp": {
+          "/ype": "string",
           "format": "uint64"
         },
         "last_login_timestamp": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "user_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
         },
         "workspace_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "default_workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+          "/itle": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     }

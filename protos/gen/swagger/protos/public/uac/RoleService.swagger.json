@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "uac/RoleService.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "uac/RoleService.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,41 +11,41 @@
     "application/json"
   ],
   "paths": {
-    "/collaborator/removeResources": {
+    "/v1/collaborator/removeResources": {
       "delete": {
         "operationId": "RoleService_removeResources",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacRemoveResourcesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "resource_ids",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
+            "name": "/esource_ids",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "array",
+            "/tems": {
+              "/ype": "string"
             },
             "collectionFormat": "multi"
           },
           {
-            "name": "resource_type.role_service_resource_type",
+            "name": "/esource_type.role_service_resource_type",
             "description": "Separate based on the service itself.",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
+            "/num": [
               "UNKNOWN",
               "ALL",
               "ROLE",
@@ -54,11 +54,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "resource_type.authz_service_resource_type",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
+            "name": "/esource_type.authz_service_resource_type",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
+            "/num": [
               "UNKNOWN",
               "ALL",
               "ORGANIZATION",
@@ -78,11 +78,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "resource_type.modeldb_service_resource_type",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
+            "name": "/esource_type.modeldb_service_resource_type",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
+            "/num": [
               "UNKNOWN",
               "ALL",
               "PROJECT",
@@ -110,11 +110,11 @@
             "default": "UNKNOWN"
           },
           {
-            "name": "resource_type.deployment_service_resource_type",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
+            "name": "/esource_type.deployment_service_resource_type",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string",
+            "/num": [
               "UNKNOWN",
               "ALL",
               "ENDPOINT",
@@ -123,24 +123,24 @@
             "default": "UNKNOWN"
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/deleteRole": {
+    "/v1/role/deleteRole": {
       "post": {
         "operationId": "RoleService_deleteRole",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacDeleteRoleResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -148,31 +148,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacDeleteRole"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/deleteRoleBinding": {
+    "/v1/role/deleteRoleBinding": {
       "post": {
         "operationId": "RoleService_deleteRoleBinding",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacDeleteRoleBindingResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -180,31 +180,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacDeleteRoleBinding"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/deleteRoleBindings": {
+    "/v1/role/deleteRoleBindings": {
       "post": {
         "operationId": "RoleService_deleteRoleBindings",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacDeleteRoleBindingsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -212,61 +212,61 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacDeleteRoleBindings"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/getRoleBindingById": {
-      "get": {
+    "/v1/role/getRoleBindingById": {
+      "/et": {
         "operationId": "RoleService_getBindingRoleById",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacGetRoleBindingByIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/getRoleBindingByName": {
-      "get": {
+    "/v1/role/getRoleBindingByName": {
+      "/et": {
         "operationId": "RoleService_getRoleBindingByName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacGetRoleBindingByNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -274,71 +274,71 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "scope.org_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/cope.org_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "scope.team_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/cope.team_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/getRoleById": {
-      "get": {
+    "/v1/role/getRoleById": {
+      "/et": {
         "operationId": "RoleService_getRoleById",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacGetRoleByIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/getRoleByName": {
-      "get": {
+    "/v1/role/getRoleByName": {
+      "/et": {
         "operationId": "RoleService_getRoleByName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacGetRoleByNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -346,97 +346,97 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "scope.org_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/cope.org_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "scope.team_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/cope.team_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/listRoleBindings": {
-      "get": {
+    "/v1/role/listRoleBindings": {
+      "/et": {
         "operationId": "RoleService_listRoleBindings",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacListRoleBindingsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "entity_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/ntity_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "scope.org_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/cope.org_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "scope.team_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/cope.team_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/listRoles": {
-      "get": {
+    "/v1/role/listRoles": {
+      "/et": {
         "operationId": "RoleService_listRoles",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacListRolesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -444,49 +444,49 @@
         "parameters": [
           {
             "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
-            "name": "scope.org_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/cope.org_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "scope.team_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/cope.team_id",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/setRole": {
+    "/v1/role/setRole": {
       "post": {
         "operationId": "RoleService_setRole",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacSetRoleResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -494,31 +494,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacSetRole"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
     },
-    "/role/setRoleBinding": {
+    "/v1/role/setRoleBinding": {
       "post": {
         "operationId": "RoleService_setRoleBinding",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacSetRoleBindingResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -526,14 +526,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacSetRoleBinding"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "RoleService"
         ]
       }
@@ -541,8 +541,8 @@
   },
   "definitions": {
     "AuthzActionEnumAuthzServiceActions": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "IS_ALLOWED",
@@ -560,8 +560,8 @@
       "default": "UNKNOWN"
     },
     "AuthzResourceEnumAuthzServiceResourceTypes": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "ORGANIZATION",
@@ -581,8 +581,8 @@
       "default": "UNKNOWN"
     },
     "DeploymentActionEnumDeploymentServiceActions": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "CREATE",
@@ -596,8 +596,8 @@
       "default": "UNKNOWN"
     },
     "DeploymentResourceEnumDeploymentServiceResourceTypes": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "ENDPOINT",
@@ -606,8 +606,8 @@
       "default": "UNKNOWN"
     },
     "ModelDBActionEnumModelDBServiceActions": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "CREATE",
@@ -633,8 +633,8 @@
       "default": "UNKNOWN"
     },
     "ModelDBResourceEnumModelDBServiceResourceTypes": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "PROJECT",
@@ -662,8 +662,8 @@
       "default": "UNKNOWN"
     },
     "RoleActionEnumRoleServiceActions": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "GET_BY_ID",
@@ -676,8 +676,8 @@
       "default": "UNKNOWN"
     },
     "RoleResourceEnumRoleServiceResourceTypes": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "ROLE",
@@ -686,8 +686,8 @@
       "default": "UNKNOWN"
     },
     "ServiceEnumService": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "ROLE_SERVICE",
@@ -700,62 +700,62 @@
       "default": "UNKNOWN"
     },
     "commonPagination": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "page_number": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         }
       },
-      "title": "For pagination"
+      "/itle": "For pagination"
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string",
+        "/ype_url": {
+          "/ype": "string",
           "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte",
           "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
       },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"/.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacAction": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "service": {
+        "/ervice": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "role_service_action": {
+        "/ole_service_action": {
           "$ref": "#/definitions/RoleActionEnumRoleServiceActions"
         },
         "authz_service_action": {
@@ -768,181 +768,181 @@
           "$ref": "#/definitions/DeploymentActionEnumDeploymentServiceActions"
         }
       },
-      "title": "An action describes a specific operation that can be performed on a service"
+      "/itle": "An action describes a specific operation that can be performed on a service"
     },
     "uacDeleteRole": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         }
       }
     },
     "uacDeleteRoleBinding": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         }
       }
     },
     "uacDeleteRoleBindingResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacDeleteRoleBindings": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "roleBindingNames": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/oleBindingNames": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "uacDeleteRoleBindingsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacDeleteRoleResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacEntities": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "org_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "team_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/eam_ids": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       },
       "description": "Entities that can be bound to a role. All users in all scopes given are considered a match."
     },
     "uacGetRoleBindingByIdResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role_binding": {
+        "/ole_binding": {
           "$ref": "#/definitions/uacRoleBinding"
         }
       }
     },
     "uacGetRoleBindingByNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role_binding": {
+        "/ole_binding": {
           "$ref": "#/definitions/uacRoleBinding"
         }
       }
     },
     "uacGetRoleByIdResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role": {
+        "/ole": {
           "$ref": "#/definitions/uacRole"
         }
       }
     },
     "uacGetRoleByNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role": {
+        "/ole": {
           "$ref": "#/definitions/uacRole"
         }
       }
     },
     "uacListRoleBindingsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role_bindings": {
-          "type": "array",
-          "items": {
+        "/ole_bindings": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacRoleBinding"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "uacListRolesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "roles": {
-          "type": "array",
-          "items": {
+        "/oles": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacRole"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "uacRemoveResourcesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacResourceActionGroup": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "resources": {
-          "type": "array",
-          "items": {
+        "/esources": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacResources"
           }
         },
         "actions": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacAction"
           }
         }
       },
-      "title": "Allows grouping multiple resources and actions for more descriptive permissions"
+      "/itle": "Allows grouping multiple resources and actions for more descriptive permissions"
     },
     "uacResourceType": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role_service_resource_type": {
+        "/ole_service_resource_type": {
           "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "title": "Separate based on the service itself"
+          "/itle": "Separate based on the service itself"
         },
         "authz_service_resource_type": {
           "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
@@ -956,129 +956,129 @@
       }
     },
     "uacResources": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "service": {
+        "/ervice": {
           "$ref": "#/definitions/ServiceEnumService"
         },
-        "resource_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/esource_ids": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
+          "/itle": "Internal ID for the resource in the service, whose meaning doesn't matter for other services"
         },
         "all_resource_ids": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
-        "resource_type": {
+        "/esource_type": {
           "$ref": "#/definitions/uacResourceType"
         }
       },
-      "title": "A resource describes a specific object in a service that can receive an action"
+      "/itle": "A resource describes a specific object in a service that can receive an action"
     },
     "uacRole": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "scope": {
+        "/cope": {
           "$ref": "#/definitions/uacRoleScope"
         },
-        "resource_action_groups": {
-          "type": "array",
-          "items": {
+        "/esource_action_groups": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacResourceActionGroup"
           },
-          "title": "Allow multiple combinations at the same time"
+          "/itle": "Allow multiple combinations at the same time"
         }
       },
-      "title": "Defines a role that can perform actions on resources"
+      "/itle": "Defines a role that can perform actions on resources"
     },
     "uacRoleBinding": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "scope": {
+        "/cope": {
           "$ref": "#/definitions/uacRoleScope"
         },
-        "entities": {
-          "type": "array",
-          "items": {
+        "/ntities": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacEntities"
           },
-          "title": "Binds all roles to all given entities"
+          "/itle": "Binds all roles to all given entities"
         },
-        "resources": {
-          "type": "array",
-          "items": {
+        "/esources": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacResources"
           },
-          "title": "We optionally allow a more specialized list of resources that the original one allowed by the roles"
+          "/itle": "We optionally allow a more specialized list of resources that the original one allowed by the roles"
         },
-        "role_id": {
-          "type": "string"
+        "/ole_id": {
+          "/ype": "string"
         },
-        "role_name": {
-          "type": "string"
+        "/ole_name": {
+          "/ype": "string"
         },
         "public": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       },
-      "title": "Binds a set of roles to a set of entities"
+      "/itle": "Binds a set of roles to a set of entities"
     },
     "uacRoleScope": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "org_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "team_id": {
-          "type": "string"
+        "/eam_id": {
+          "/ype": "string"
         }
       },
-      "title": "Roles can be scoped by organization/team or global\nThe uniqueness of the name is only ensured at the right scope\nBoth Roles and RoleBindings have a scope. The most restrictive one will be used when checking for permissions"
+      "/itle": "Roles can be scoped by organization/team or global\nThe uniqueness of the name is only ensured at the right scope\nBoth Roles and RoleBindings have a scope. The most restrictive one will be used when checking for permissions"
     },
     "uacSetRole": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role": {
+        "/ole": {
           "$ref": "#/definitions/uacRole"
         }
       }
     },
     "uacSetRoleBinding": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role_binding": {
+        "/ole_binding": {
           "$ref": "#/definitions/uacRoleBinding"
         }
       }
     },
     "uacSetRoleBindingResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role_binding": {
+        "/ole_binding": {
           "$ref": "#/definitions/uacRoleBinding"
         }
       }
     },
     "uacSetRoleResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role": {
+        "/ole": {
           "$ref": "#/definitions/uacRole"
         }
       }

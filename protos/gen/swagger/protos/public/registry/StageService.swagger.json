@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "registry/StageService.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "registry/StageService.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/registry/stage/approveTransition": {
+    "/v1/registry/stage/approveTransition": {
       "post": {
         "operationId": "StageService_ApproveTransition",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryActivity"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,31 +31,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryApproveTransitionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
     },
-    "/registry/stage/closeTransition": {
+    "/v1/registry/stage/closeTransition": {
       "post": {
         "operationId": "StageService_CloseTransition",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryActivity"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,32 +63,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryCloseTransitionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
     },
-    "/registry/stage/commitTransition": {
+    "/v1/registry/stage/commitTransition": {
       "post": {
-        "summary": "Only a transition that has been approved can be commited. The user must have RW permission\nSimilar to merging a PR",
+        "/ummary": "Only a transition that has been approved can be commited. The user must have RW permission\nSimilar to merging a PR",
         "operationId": "StageService_CommitTransition",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryActivity"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -96,31 +96,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryCommitTransitionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
     },
-    "/registry/stage/createComment": {
+    "/v1/registry/stage/createComment": {
       "post": {
         "operationId": "StageService_CreateComment",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryActivity"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -128,32 +128,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryCreateCommentRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
     },
-    "/registry/stage/createTransition": {
+    "/v1/registry/stage/createTransition": {
       "post": {
-        "summary": "Anyone with RW permission on the model version can do any of these\nNote that the author of the transition cannot approve or reject it themselves (like in github)",
+        "/ummary": "Anyone with RW permission on the model version can do any of these\nNote that the author of the transition cannot approve or reject it themselves (like in github)",
         "operationId": "StageService_CreateTransition",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryActivity"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -161,32 +161,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryCreateTransitionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
     },
-    "/registry/stage/findActivities": {
+    "/v1/registry/stage/findActivities": {
       "post": {
-        "summary": "List objects from the db. Similar to the PR history",
+        "/ummary": "List objects from the db. Similar to the PR history",
         "operationId": "StageService_FindActivities",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryFindActivitiesRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -194,32 +194,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryFindActivitiesRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
     },
-    "/registry/stage/findTransitions": {
+    "/v1/registry/stage/findTransitions": {
       "post": {
-        "summary": "Similar to listing PRs by state",
+        "/ummary": "Similar to listing PRs by state",
         "operationId": "StageService_FindTransitions",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryFindTransitionsRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -227,31 +227,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryFindTransitionsRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
     },
-    "/registry/stage/rejectTransition": {
+    "/v1/registry/stage/rejectTransition": {
       "post": {
         "operationId": "StageService_RejectTransition",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryActivity"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -259,32 +259,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryRejectTransitionRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
     },
-    "/registry/stage/updateStage": {
+    "/v1/registry/stage/updateStage": {
       "post": {
-        "summary": "Directly update the stage without going through approval. The user must have RW permission\nSimilar to merging to master directly",
+        "/ummary": "Directly update the stage without going through approval. The user must have RW permission\nSimilar to merging to master directly",
         "operationId": "StageService_UpdateStage",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/registryActivity"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -292,14 +292,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/registryUpdateStageRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "StageService"
         ]
       }
@@ -307,8 +307,8 @@
   },
   "definitions": {
     "StageEnumStage": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "DEVELOPMENT",
         "STAGING",
@@ -319,8 +319,8 @@
       "default": "UNKNOWN"
     },
     "TransitionStateEnumTransitionState": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "APPROVED",
         "REJECTED",
@@ -329,51 +329,51 @@
         "COMMITTED"
       ],
       "default": "UNKNOWN",
-      "title": "- APPROVED: It is approved only if it has one approval and no rejections\n - REJECTED: It is rejected if it has any rejection\n - PENDING: It is pending if there are no approvals or rejections\n - CLOSED: It is closed if the user has explicitly requested it to be closed\n - COMMITTED: It has been committed and people can't close, approve or reject anymore"
+      "/itle": "- APPROVED: It is approved only if it has one approval and no rejections\n - REJECTED: It is rejected if it has any rejection\n - PENDING: It is pending if there are no approvals or rejections\n - CLOSED: It is closed if the user has explicitly requested it to be closed\n - COMMITTED: It has been committed and people can't close, approve or reject anymore"
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
-    "registryActivity": {
-      "type": "object",
+    "/egistryActivity": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "author_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "time_created": {
-          "type": "string",
-          "format": "int64",
-          "title": "Track time"
+        "/ime_created": {
+          "/ype": "string",
+          "format": "/nt64",
+          "/itle": "Track time"
         },
         "comment": {
-          "type": "string",
-          "title": "Text provided by the user"
+          "/ype": "string",
+          "/itle": "Text provided by the user"
         },
-        "transition": {
+        "/ransition": {
           "$ref": "#/definitions/registryTransition",
-          "title": "Effective oneof for the following fields (all might be missing and that's fine too)"
+          "/itle": "Effective oneof for the following fields (all might be missing and that's fine too)"
         },
         "approval": {
           "$ref": "#/definitions/registryApprovalOfTransition"
         },
-        "rejection": {
+        "/ejection": {
           "$ref": "#/definitions/registryRejectionOfTransition"
         },
         "close": {
@@ -384,214 +384,214 @@
         },
         "activity_state": {
           "$ref": "#/definitions/TransitionStateEnumTransitionState",
-          "title": "Activity state while the transition happen"
+          "/itle": "Activity state while the transition happen"
         }
       }
     },
-    "registryApprovalOfTransition": {
-      "type": "object"
+    "/egistryApprovalOfTransition": {
+      "/ype": "object"
     },
-    "registryApproveTransitionRequest": {
-      "type": "object",
+    "/egistryApproveTransitionRequest": {
+      "/ype": "object",
       "properties": {
-        "transition_id": {
-          "type": "string",
+        "/ransition_id": {
+          "/ype": "string",
           "format": "uint64"
         },
         "comment": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "registryCloseOfTransition": {
-      "type": "object"
+    "/egistryCloseOfTransition": {
+      "/ype": "object"
     },
-    "registryCloseTransitionRequest": {
-      "type": "object",
+    "/egistryCloseTransitionRequest": {
+      "/ype": "object",
       "properties": {
-        "transition_id": {
-          "type": "string",
+        "/ransition_id": {
+          "/ype": "string",
           "format": "uint64"
         },
         "comment": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "registryCommitTransitionRequest": {
-      "type": "object",
+    "/egistryCommitTransitionRequest": {
+      "/ype": "object",
       "properties": {
-        "transition_id": {
-          "type": "string",
+        "/ransition_id": {
+          "/ype": "string",
           "format": "uint64"
         },
         "comment": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "registryCreateCommentRequest": {
-      "type": "object",
+    "/egistryCreateCommentRequest": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "comment": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "registryCreateTransitionRequest": {
-      "type": "object",
+    "/egistryCreateTransitionRequest": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "desired_stage": {
           "$ref": "#/definitions/StageEnumStage"
         },
         "comment": {
-          "type": "string"
+          "/ype": "string"
         }
       },
-      "title": "Actions"
+      "/itle": "Actions"
     },
-    "registryFindActivitiesRequest": {
-      "type": "object",
+    "/egistryFindActivitiesRequest": {
+      "/ype": "object",
       "properties": {
-        "registered_model_id": {
-          "type": "string",
+        "/egistered_model_id": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "At least one of the following needs to be provided"
+          "/itle": "At least one of the following needs to be provided"
         },
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
-    "registryFindActivitiesRequestResponse": {
-      "type": "object",
+    "/egistryFindActivitiesRequestResponse": {
+      "/ype": "object",
       "properties": {
         "activities": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/registryActivity"
           }
         }
       }
     },
-    "registryFindTransitionsRequest": {
-      "type": "object",
+    "/egistryFindTransitionsRequest": {
+      "/ype": "object",
       "properties": {
-        "registered_model_id": {
-          "type": "string",
+        "/egistered_model_id": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "At least one of the following needs to be provided"
+          "/itle": "At least one of the following needs to be provided"
         },
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "state": {
-          "type": "array",
-          "items": {
+        "/tate": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/TransitionStateEnumTransitionState"
           },
-          "title": "Current state. If empty, return in any state"
+          "/itle": "Current state. If empty, return in any state"
         }
       }
     },
-    "registryFindTransitionsRequestResponse": {
-      "type": "object",
+    "/egistryFindTransitionsRequestResponse": {
+      "/ype": "object",
       "properties": {
         "activities": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/registryActivity"
           },
-          "title": "Only things of type transition can be returned"
+          "/itle": "Only things of type transition can be returned"
         }
       }
     },
-    "registryRejectTransitionRequest": {
-      "type": "object",
+    "/egistryRejectTransitionRequest": {
+      "/ype": "object",
       "properties": {
-        "transition_id": {
-          "type": "string",
+        "/ransition_id": {
+          "/ype": "string",
           "format": "uint64"
         },
         "comment": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "registryRejectionOfTransition": {
-      "type": "object"
+    "/egistryRejectionOfTransition": {
+      "/ype": "object"
     },
-    "registryStageUpdate": {
-      "type": "object",
+    "/egistryStageUpdate": {
+      "/ype": "object",
       "properties": {
-        "stage": {
+        "/tage": {
           "$ref": "#/definitions/StageEnumStage"
         }
       }
     },
-    "registryTransition": {
-      "type": "object",
+    "/egistryTransition": {
+      "/ype": "object",
       "properties": {
-        "source_stage": {
+        "/ource_stage": {
           "$ref": "#/definitions/StageEnumStage",
-          "title": "Current stage. Automatically populated from the backend"
+          "/itle": "Current stage. Automatically populated from the backend"
         },
         "desired_stage": {
           "$ref": "#/definitions/StageEnumStage",
-          "title": "Desired stage sent as part of the transition request"
+          "/itle": "Desired stage sent as part of the transition request"
         },
-        "state": {
+        "/tate": {
           "$ref": "#/definitions/TransitionStateEnumTransitionState",
-          "title": "Current state of the transition"
+          "/itle": "Current state of the transition"
         },
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Transition Id, Automatically populated from the backend"
+          "/itle": "Transition Id, Automatically populated from the backend"
         }
       }
     },
-    "registryUpdateStageRequest": {
-      "type": "object",
+    "/egistryUpdateStageRequest": {
+      "/ype": "object",
       "properties": {
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "stage": {
+        "/tage": {
           "$ref": "#/definitions/StageEnumStage"
         },
         "comment": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }

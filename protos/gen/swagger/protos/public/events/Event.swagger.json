@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "events/Event.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "events/Event.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/events/createEvent": {
+    "/v1/events/createEvent": {
       "post": {
         "operationId": "EventService_createEvent",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/vertacommonEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,31 +31,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/eventsCreateEventRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "EventService"
         ]
       }
     },
-    "/events/createWebhook": {
+    "/v1/events/createWebhook": {
       "post": {
         "operationId": "EventService_createWebhook",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/eventsWebhook"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,31 +63,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/eventsCreateWebhookRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "EventService"
         ]
       }
     },
-    "/events/deleteWebhook": {
+    "/v1/events/deleteWebhook": {
       "delete": {
         "operationId": "EventService_deleteWebhook",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/vertacommonEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,31 +95,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/eventsDeleteWebhookRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "EventService"
         ]
       }
     },
-    "/events/findWebhook": {
+    "/v1/events/findWebhook": {
       "post": {
         "operationId": "EventService_findWebhook",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/eventsFindWebhookRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,31 +127,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/eventsFindWebhookRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "EventService"
         ]
       }
     },
-    "/events/findWebhookCall": {
+    "/v1/events/findWebhookCall": {
       "post": {
         "operationId": "EventService_findWebhookCall",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/eventsFindWebhookCallRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -159,31 +159,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/eventsFindWebhookCallRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "EventService"
         ]
       }
     },
-    "/events/retriggerWebhookCall": {
+    "/v1/events/retriggerWebhookCall": {
       "post": {
         "operationId": "EventService_retriggerWebhookCall",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/eventsWebhookCall"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -191,31 +191,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/eventsRetriggerWebhookCallRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "EventService"
         ]
       }
     },
-    "/events/triggerTest": {
+    "/v1/events/triggerTest": {
       "post": {
         "operationId": "EventService_triggerTest",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/eventsTestWebhookRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -223,31 +223,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/eventsTestWebhookRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "EventService"
         ]
       }
     },
-    "/events/updateWebhook": {
+    "/v1/events/updateWebhook": {
       "post": {
         "operationId": "EventService_updateWebhook",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/eventsWebhook"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -255,14 +255,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/eventsUpdateWebhookRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "EventService"
         ]
       }
@@ -270,8 +270,8 @@
   },
   "definitions": {
     "ActionTypeEnumActionType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OTHER",
         "CLASSIFICATION",
@@ -284,8 +284,8 @@
       "default": "UNKNOWN"
     },
     "ArtifactTypeEnumArtifactType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "IMAGE",
         "MODEL",
         "TENSORBOARD",
@@ -298,8 +298,8 @@
       "default": "IMAGE"
     },
     "AuthzResourceEnumAuthzServiceResourceTypes": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "ORGANIZATION",
@@ -319,16 +319,16 @@
       "default": "UNKNOWN"
     },
     "CollaboratorTypeEnumCollaboratorType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "READ_ONLY",
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
     },
     "CreateEventRequestEventType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "CREATE",
         "READ",
         "UPDATE",
@@ -339,8 +339,8 @@
       "default": "CREATE"
     },
     "DataTypeEnumDataType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OTHER",
         "AUDIO",
@@ -352,8 +352,8 @@
       "default": "UNKNOWN"
     },
     "DeploymentResourceEnumDeploymentServiceResourceTypes": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "ENDPOINT",
@@ -362,8 +362,8 @@
       "default": "UNKNOWN"
     },
     "ModelDBResourceEnumModelDBServiceResourceTypes": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "PROJECT",
@@ -391,8 +391,8 @@
       "default": "UNKNOWN"
     },
     "ModelVersionLockLevelEnumModelVersionLockLevel": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OPEN",
         "CLOSED",
@@ -401,8 +401,8 @@
       "default": "UNKNOWN"
     },
     "RoleResourceEnumRoleServiceResourceTypes": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ALL",
         "ROLE",
@@ -411,8 +411,8 @@
       "default": "UNKNOWN"
     },
     "StageEnumStage": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "DEVELOPMENT",
         "STAGING",
@@ -423,8 +423,8 @@
       "default": "UNKNOWN"
     },
     "TaskTypeEnumTaskType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "OTHER",
         "CLASSIFICATION",
@@ -437,8 +437,8 @@
       "default": "UNKNOWN"
     },
     "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -446,8 +446,8 @@
       "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "STRING",
         "NUMBER",
         "LIST",
@@ -456,19 +456,19 @@
       "default": "STRING"
     },
     "VisibilityEnumVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "PRIVATE",
         "PUBLIC",
         "ORG_SCOPED_PUBLIC",
         "ORG_DEFAULT"
       ],
       "default": "PRIVATE",
-      "title": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
+      "/itle": "- PRIVATE: Default to private\n - PUBLIC: Not supported\n - ORG_SCOPED_PUBLIC: Public to organization\n - ORG_DEFAULT: Default access for organization"
     },
     "WebhookCallStatus": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "SUCCESS",
         "FAILURE",
@@ -477,84 +477,84 @@
       "default": "UNKNOWN"
     },
     "commonArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
         "path": {
-          "type": "string"
+          "/ype": "string"
         },
         "path_only": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
         },
         "linked_artifact_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "filename_extension": {
-          "type": "string"
+          "/ype": "string"
         },
-        "serialization": {
-          "type": "string"
+        "/erialization": {
+          "/ype": "string"
         },
         "artifact_subtype": {
-          "type": "string"
+          "/ype": "string"
         },
         "upload_completed": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "commonKeyValue": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
         }
       }
     },
     "deploymentBuildExternalScanRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "buildId": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
-        "imageUrl": {
-          "type": "string"
+        "/mageUrl": {
+          "/ype": "string"
         }
       }
     },
-    "eventsCreateEventRequest": {
-      "type": "object",
+    "/ventsCreateEventRequest": {
+      "/ype": "object",
       "properties": {
-        "event_uuid": {
-          "type": "string"
+        "/vent_uuid": {
+          "/ype": "string"
         },
-        "event_type": {
+        "/vent_type": {
           "$ref": "#/definitions/CreateEventRequestEventType"
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "timestamp": {
-          "type": "string",
+        "/imestamp": {
+          "/ype": "string",
           "format": "uint64"
         },
-        "resource_type": {
+        "/esource_type": {
           "$ref": "#/definitions/uacResourceType"
         },
         "original_entity": {
@@ -565,626 +565,626 @@
         }
       }
     },
-    "eventsCreateWebhookRequest": {
-      "type": "object",
+    "/ventsCreateWebhookRequest": {
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "location": {
-          "type": "string"
+          "/ype": "string"
         },
         "mutual_secret": {
-          "type": "string"
+          "/ype": "string"
         },
-        "event_types": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/vent_types": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "all_events": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
-        "resource_types": {
-          "type": "array",
-          "items": {
+        "/esource_types": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacResourceType"
           }
         }
       }
     },
-    "eventsDeleteWebhookRequest": {
-      "type": "object",
+    "/ventsDeleteWebhookRequest": {
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         }
       }
     },
-    "eventsEventEntity": {
-      "type": "object",
+    "/ventsEventEntity": {
+      "/ype": "object",
       "properties": {
-        "registered_model": {
+        "/egistered_model": {
           "$ref": "#/definitions/registryRegisteredModel"
         },
         "model_version": {
           "$ref": "#/definitions/registryModelVersion"
         },
-        "scan_request": {
+        "/can_request": {
           "$ref": "#/definitions/deploymentBuildExternalScanRequest"
         },
-        "entity_workspace_id": {
-          "type": "string",
+        "/ntity_workspace_id": {
+          "/ype": "string",
           "format": "uint64"
         }
       },
       "description": "Lists all of the entity types that we support events for."
     },
-    "eventsFindWebhookCallRequest": {
-      "type": "object",
+    "/ventsFindWebhookCallRequest": {
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "webhook_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
-        "event_uuids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/vent_uuids": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "status": {
-          "type": "array",
-          "items": {
+        "/tatus": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/WebhookCallStatus"
           }
         }
       }
     },
-    "eventsFindWebhookCallRequestResponse": {
-      "type": "object",
+    "/ventsFindWebhookCallRequestResponse": {
+      "/ype": "object",
       "properties": {
         "calls": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/eventsWebhookCall"
           }
         }
       }
     },
-    "eventsFindWebhookRequest": {
-      "type": "object",
+    "/ventsFindWebhookRequest": {
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "names": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "workspace_id": {
-          "type": "array",
-          "items": {
-            "type": "string",
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
-        "resource_types": {
-          "type": "array",
-          "items": {
+        "/esource_types": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacResourceType"
           }
         }
       }
     },
-    "eventsFindWebhookRequestResponse": {
-      "type": "object",
+    "/ventsFindWebhookRequestResponse": {
+      "/ype": "object",
       "properties": {
         "webhooks": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/eventsWebhook"
           }
         }
       }
     },
-    "eventsRetriggerWebhookCallRequest": {
-      "type": "object",
+    "/ventsRetriggerWebhookCallRequest": {
+      "/ype": "object",
       "properties": {
         "call_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       },
-      "title": "The call returned for this has a completely new ID"
+      "/itle": "The call returned for this has a completely new ID"
     },
-    "eventsTestWebhookRequest": {
-      "type": "object",
+    "/ventsTestWebhookRequest": {
+      "/ype": "object",
       "properties": {
         "webhook_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
-    "eventsTestWebhookRequestResponse": {
-      "type": "object",
+    "/ventsTestWebhookRequestResponse": {
+      "/ype": "object",
       "properties": {
-        "status_code": {
-          "type": "string",
+        "/tatus_code": {
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
-    "eventsUpdateWebhookRequest": {
-      "type": "object",
+    "/ventsUpdateWebhookRequest": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "new_location": {
-          "type": "string"
+          "/ype": "string"
         },
         "mutual_secret": {
-          "type": "string"
+          "/ype": "string"
         },
         "add_event_types": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "delete_event_types": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "set_all_events": {
-          "type": "boolean",
+        "/et_all_events": {
+          "/ype": "boolean",
           "format": "boolean"
         },
         "clear_all_events": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
         "add_resource_types": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacResourceType"
           }
         },
         "delete_resource_types": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacResourceType"
           }
         }
       }
     },
-    "eventsWebhook": {
-      "type": "object",
+    "/ventsWebhook": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "location": {
-          "type": "string"
+          "/ype": "string"
         },
         "mutual_secret": {
-          "type": "string"
+          "/ype": "string"
         },
-        "event_types": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/vent_types": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "resource_types": {
-          "type": "array",
-          "items": {
+        "/esource_types": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacResourceType"
           }
         }
       }
     },
-    "eventsWebhookCall": {
-      "type": "object",
+    "/ventsWebhookCall": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "webhook_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "event_uuid": {
-          "type": "string"
+        "/vent_uuid": {
+          "/ype": "string"
         },
-        "status": {
+        "/tatus": {
           "$ref": "#/definitions/WebhookCallStatus"
         },
-        "response": {
+        "/esponse": {
           "$ref": "#/definitions/protobufAny"
         }
       },
-      "title": "Single call of a webhook to deliver a given event"
+      "/itle": "Single call of a webhook to deliver a given event"
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string",
+        "/ype_url": {
+          "/ype": "string",
           "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte",
           "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
       },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"/.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
     "protobufNullValue": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "registryDockerMetadata": {
-      "type": "object",
+    "/egistryDockerMetadata": {
+      "/ype": "object",
       "properties": {
-        "request_port": {
-          "type": "integer",
-          "format": "int64"
+        "/equest_port": {
+          "/ype": "integer",
+          "format": "/nt64"
         },
-        "request_path": {
-          "type": "string"
+        "/equest_path": {
+          "/ype": "string"
         },
         "health_path": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "registryExternalDeployment": {
-      "type": "object",
+    "/egistryExternalDeployment": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "internal id"
+          "/itle": "internal id"
         },
         "model_version_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "id of the model this belongs to"
+          "/itle": "id of the model this belongs to"
         },
-        "time_created": {
-          "type": "string",
-          "format": "int64",
+        "/ime_created": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when this ``external_deployment`` was created."
         },
-        "time_updated": {
-          "type": "string",
-          "format": "int64",
+        "/ime_updated": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when metadata for this ``external_deployment`` was last updated."
         },
         "location_deployed": {
-          "type": "string",
-          "title": "Location where container will be deployed"
+          "/ype": "string",
+          "/itle": "Location where container will be deployed"
         },
         "url_path_title": {
-          "type": "string",
-          "title": "Deploy URL, path or title"
+          "/ype": "string",
+          "/itle": "Deploy URL, path or title"
         },
         "description": {
-          "type": "string",
-          "title": "Brief description"
+          "/ype": "string",
+          "/itle": "Brief description"
         }
       }
     },
-    "registryModelVersion": {
-      "type": "object",
+    "/egistryModelVersion": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "internal id"
+          "/itle": "internal id"
         },
-        "registered_model_id": {
-          "type": "string",
+        "/egistered_model_id": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "id of the model this belongs to"
+          "/itle": "id of the model this belongs to"
         },
-        "version": {
-          "type": "string",
-          "title": "Model's tag. Unique for a model nmae"
+        "/ersion": {
+          "/ype": "string",
+          "/itle": "Model's tag. Unique for a model nmae"
         },
-        "time_updated": {
-          "type": "string",
-          "format": "int64",
+        "/ime_updated": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when metadata for this ``model_version`` was last updated."
         },
-        "time_created": {
-          "type": "string",
-          "format": "int64",
+        "/ime_created": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when this ``model_version`` was created."
         },
         "description": {
-          "type": "string",
+          "/ype": "string",
           "description": "Description of this ``model_version``."
         },
-        "experiment_run_id": {
-          "type": "string"
+        "/xperiment_run_id": {
+          "/ype": "string"
         },
         "labels": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "Labels added to the registered models"
+          "/itle": "Labels added to the registered models"
         },
         "model": {
           "$ref": "#/definitions/commonArtifact",
-          "title": "Model"
+          "/itle": "Model"
         },
-        "environment": {
+        "/nvironment": {
           "$ref": "#/definitions/versioningEnvironmentBlob",
-          "title": "Requirement"
+          "/itle": "Requirement"
         },
         "docker_metadata": {
           "$ref": "#/definitions/registryDockerMetadata"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           },
-          "title": "Other artifacts"
+          "/itle": "Other artifacts"
         },
         "archived": {
           "$ref": "#/definitions/TernaryEnumTernary",
-          "title": "flag to archive a model version currently does nothing other than storing the information in DB"
+          "/itle": "flag to archive a model version currently does nothing other than storing the information in DB"
         },
-        "readme_text": {
-          "type": "string",
-          "title": "readme"
+        "/eadme_text": {
+          "/ype": "string",
+          "/itle": "readme"
         },
         "apis": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "APIs"
+          "/itle": "APIs"
         },
         "owner": {
-          "type": "string",
-          "title": "owner's verta_id"
+          "/ype": "string",
+          "/itle": "owner's verta_id"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           },
-          "title": "Other attributes"
+          "/itle": "Other attributes"
         },
-        "stage": {
+        "/tage": {
           "$ref": "#/definitions/StageEnumStage",
-          "title": "Stage of the model version. This field must be searchable as per our \"find\" operation"
+          "/itle": "Stage of the model version. This field must be searchable as per our \"find\" operation"
         },
         "lock_level": {
           "$ref": "#/definitions/ModelVersionLockLevelEnumModelVersionLockLevel",
-          "title": "Current lock level for this model version"
+          "/itle": "Current lock level for this model version"
         },
         "datasets": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         },
         "code_blob_map": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
             "$ref": "#/definitions/versioningCodeBlob"
           }
         },
-        "readme_text_updated": {
-          "type": "boolean",
+        "/eadme_text_updated": {
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "Is true if the readme text has been updated at least once"
+          "/itle": "Is true if the readme text has been updated at least once"
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         },
-        "redirect_metadata": {
-          "type": "string",
-          "title": "Reference: https://vertaai.atlassian.net/browse/VRD-329"
+        "/edirect_metadata": {
+          "/ype": "string",
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/VRD-329"
         },
-        "input_description": {
-          "type": "string",
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+        "/nput_description": {
+          "/ype": "string",
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
         "hide_input_label": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
         "output_description": {
-          "type": "string",
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+          "/ype": "string",
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
         "hide_output_label": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
+          "/itle": "Reference: https://vertaai.atlassian.net/browse/CAT-84"
         },
-        "external_deployments": {
-          "type": "array",
-          "items": {
+        "/xternal_deployments": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/registryExternalDeployment"
           }
         }
       }
     },
-    "registryRegisteredModel": {
-      "type": "object",
+    "/egistryRegisteredModel": {
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "internal id"
+          "/itle": "internal id"
         },
         "name": {
-          "type": "string",
+          "/ype": "string",
           "description": "Unique name for the model within the workspace."
         },
-        "time_created": {
-          "type": "string",
-          "format": "int64",
+        "/ime_created": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when this ``registered_model`` was created."
         },
-        "time_updated": {
-          "type": "string",
-          "format": "int64",
+        "/ime_updated": {
+          "/ype": "string",
+          "format": "/nt64",
           "description": "Timestamp recorded when metadata for this ``registered_model`` was last updated."
         },
         "description": {
-          "type": "string",
+          "/ype": "string",
           "description": "Description of this ``registered_model``."
         },
         "labels": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "Labels added to the registered models"
+          "/itle": "Labels added to the registered models"
         },
-        "visibility": {
+        "/isibility": {
           "$ref": "#/definitions/VisibilityEnumVisibility",
-          "title": "Visibility of Registered Models"
+          "/itle": "Visibility of Registered Models"
         },
         "workspace_id": {
-          "type": "string",
-          "title": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
+          "/ype": "string",
+          "/itle": "id of the workspace this belongs to\nnot storing workspace_type uac should support https://github.com/VertaAI/protos-all/pull/19/files"
         },
-        "readme_text": {
-          "type": "string",
-          "title": "readme"
+        "/eadme_text": {
+          "/ype": "string",
+          "/itle": "readme"
         },
         "owner": {
-          "type": "string",
-          "title": "owner's verta_id"
+          "/ype": "string",
+          "/itle": "owner's verta_id"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           },
-          "title": "Other attributes"
+          "/itle": "Other attributes"
         },
         "workspace_service_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "resource_visibility": {
+        "/esource_visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           },
-          "title": "Other artifacts"
+          "/itle": "Other artifacts"
         },
-        "readme_text_updated": {
-          "type": "boolean",
+        "/eadme_text_updated": {
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "Is true if the readme text has been updated at least once"
+          "/itle": "Is true if the readme text has been updated at least once"
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         },
         "data_type": {
           "$ref": "#/definitions/DataTypeEnumDataType",
-          "title": "Fields for model's task_type. Those fields must be searchable as per our \"find\" operation"
+          "/itle": "Fields for model's task_type. Those fields must be searchable as per our \"find\" operation"
         },
         "action_type": {
           "$ref": "#/definitions/ActionTypeEnumActionType"
         },
-        "task_type": {
+        "/ask_type": {
           "$ref": "#/definitions/TaskTypeEnumTaskType"
         }
       }
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacCollaboratorPermissions": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
@@ -1198,11 +1198,11 @@
       }
     },
     "uacResourceType": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "role_service_resource_type": {
+        "/ole_service_resource_type": {
           "$ref": "#/definitions/RoleResourceEnumRoleServiceResourceTypes",
-          "title": "Separate based on the service itself"
+          "/itle": "Separate based on the service itself"
         },
         "authz_service_resource_type": {
           "$ref": "#/definitions/AuthzResourceEnumAuthzServiceResourceTypes"
@@ -1216,8 +1216,8 @@
       }
     },
     "uacResourceVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",
@@ -1226,21 +1226,21 @@
       ],
       "default": "UNKNOWN"
     },
-    "versioningAptEnvironmentBlob": {
-      "type": "object",
+    "/ersioningAptEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "packages": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
-    "versioningCodeBlob": {
-      "type": "object",
+    "/ersioningCodeBlob": {
+      "/ype": "object",
       "properties": {
-        "git": {
+        "/it": {
           "$ref": "#/definitions/versioningGitCodeBlob"
         },
         "notebook": {
@@ -1248,22 +1248,22 @@
         }
       }
     },
-    "versioningDockerEnvironmentBlob": {
-      "type": "object",
+    "/ersioningDockerEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
-        "repository": {
-          "type": "string"
+        "/epository": {
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         },
-        "sha": {
-          "type": "string"
+        "/ha": {
+          "/ype": "string"
         }
       }
     },
-    "versioningEnvironmentBlob": {
-      "type": "object",
+    "/ersioningEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "python": {
           "$ref": "#/definitions/versioningPythonEnvironmentBlob"
@@ -1271,16 +1271,16 @@
         "docker": {
           "$ref": "#/definitions/versioningDockerEnvironmentBlob"
         },
-        "environment_variables": {
-          "type": "array",
-          "items": {
+        "/nvironment_variables": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningEnvironmentVariablesBlob"
           }
         },
         "command_line": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "apt": {
@@ -1288,140 +1288,140 @@
         }
       }
     },
-    "versioningEnvironmentVariablesBlob": {
-      "type": "object",
+    "/ersioningEnvironmentVariablesBlob": {
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "string"
+        "/alue": {
+          "/ype": "string"
         }
       }
     },
-    "versioningGitCodeBlob": {
-      "type": "object",
+    "/ersioningGitCodeBlob": {
+      "/ype": "object",
       "properties": {
-        "repo": {
-          "type": "string"
+        "/epo": {
+          "/ype": "string"
         },
         "hash": {
-          "type": "string"
+          "/ype": "string"
         },
         "branch": {
-          "type": "string"
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         },
-        "is_dirty": {
-          "type": "boolean",
+        "/s_dirty": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
-    "versioningNotebookCodeBlob": {
-      "type": "object",
+    "/ersioningNotebookCodeBlob": {
+      "/ype": "object",
       "properties": {
         "path": {
           "$ref": "#/definitions/versioningPathDatasetComponentBlob"
         },
-        "git_repo": {
+        "/it_repo": {
           "$ref": "#/definitions/versioningGitCodeBlob"
         }
       }
     },
-    "versioningPathDatasetComponentBlob": {
-      "type": "object",
+    "/ersioningPathDatasetComponentBlob": {
+      "/ype": "object",
       "properties": {
         "path": {
-          "type": "string"
+          "/ype": "string"
         },
-        "size": {
-          "type": "string",
+        "/ize": {
+          "/ype": "string",
           "format": "uint64"
         },
         "last_modified_at_source": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "sha256": {
-          "type": "string"
+        "/ha256": {
+          "/ype": "string"
         },
         "md5": {
-          "type": "string"
+          "/ype": "string"
         },
-        "internal_versioned_path": {
-          "type": "string"
+        "/nternal_versioned_path": {
+          "/ype": "string"
         },
         "base_path": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "versioningPythonEnvironmentBlob": {
-      "type": "object",
+    "/ersioningPythonEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
-        "version": {
+        "/ersion": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         },
-        "requirements": {
-          "type": "array",
-          "items": {
+        "/equirements": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
         },
         "constraints": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/versioningPythonRequirementEnvironmentBlob"
           }
         },
-        "raw_requirements": {
-          "type": "string",
+        "/aw_requirements": {
+          "/ype": "string",
           "description": "These fields are only present if the parsed versions above are empty. That is, you cannot have both `requirements` and `raw_requirements` for example."
         },
-        "raw_constraints": {
-          "type": "string"
+        "/aw_constraints": {
+          "/ype": "string"
         }
       }
     },
-    "versioningPythonRequirementEnvironmentBlob": {
-      "type": "object",
+    "/ersioningPythonRequirementEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "library": {
-          "type": "string"
+          "/ype": "string"
         },
         "constraint": {
-          "type": "string"
+          "/ype": "string"
         },
-        "version": {
+        "/ersion": {
           "$ref": "#/definitions/versioningVersionEnvironmentBlob"
         }
       }
     },
-    "versioningVersionEnvironmentBlob": {
-      "type": "object",
+    "/ersioningVersionEnvironmentBlob": {
+      "/ype": "object",
       "properties": {
         "major": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "minor": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "patch": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
-        "suffix": {
-          "type": "string"
+        "/uffix": {
+          "/ype": "string"
         }
       }
     },
-    "vertacommonEmpty": {
-      "type": "object"
+    "/ertacommonEmpty": {
+      "/ype": "object"
     }
   },
   "basePath": "/v1"

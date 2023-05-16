@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "modeldb/ProjectService.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "modeldb/ProjectService.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,19 +11,19 @@
     "application/json"
   ],
   "paths": {
-    "/project/addProjectAttributes": {
+    "/v1/project/addProjectAttributes": {
       "post": {
         "operationId": "ProjectService_addProjectAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddProjectAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,31 +31,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddProjectAttributes"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/addProjectTag": {
+    "/v1/project/addProjectTag": {
       "post": {
         "operationId": "ProjectService_addProjectTag",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddProjectTagResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,31 +63,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddProjectTag"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/addProjectTags": {
+    "/v1/project/addProjectTags": {
       "post": {
         "operationId": "ProjectService_addProjectTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbAddProjectTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,31 +95,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbAddProjectTags"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/createProject": {
+    "/v1/project/createProject": {
       "post": {
         "operationId": "ProjectService_createProject",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbCreateProjectResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,31 +127,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbCreateProject"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/deepCopyProject": {
+    "/v1/project/deepCopyProject": {
       "post": {
         "operationId": "ProjectService_deepCopyProject",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeepCopyProjectResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -159,31 +159,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeepCopyProject"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/deleteArtifact": {
+    "/v1/project/deleteArtifact": {
       "delete": {
         "operationId": "ProjectService_deleteArtifact",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectArtifactResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -191,31 +191,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectArtifact"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/deleteProject": {
+    "/v1/project/deleteProject": {
       "delete": {
         "operationId": "ProjectService_deleteProject",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -223,31 +223,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProject"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/deleteProjectAttributes": {
+    "/v1/project/deleteProjectAttributes": {
       "delete": {
         "operationId": "ProjectService_deleteProjectAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -255,31 +255,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectAttributes"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/deleteProjectTag": {
+    "/v1/project/deleteProjectTag": {
       "delete": {
         "operationId": "ProjectService_deleteProjectTag",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectTagResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -287,31 +287,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectTag"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/deleteProjectTags": {
+    "/v1/project/deleteProjectTags": {
       "delete": {
         "operationId": "ProjectService_deleteProjectTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -319,31 +319,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectTags"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/deleteProjects": {
+    "/v1/project/deleteProjects": {
       "delete": {
         "operationId": "ProjectService_deleteProjects",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjectsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -351,32 +351,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbDeleteProjects"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/findProjects": {
+    "/v1/project/findProjects": {
       "post": {
-        "summary": "queries",
+        "/ummary": "queries",
         "operationId": "ProjectService_findProjects",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbFindProjectsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -384,144 +384,144 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbFindProjects"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getArtifacts": {
-      "get": {
+    "/v1/project/getArtifacts": {
+      "/et": {
         "operationId": "ProjectService_getArtifacts",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetArtifactsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "key",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjectAttributes": {
-      "get": {
+    "/v1/project/getProjectAttributes": {
+      "/et": {
         "operationId": "ProjectService_getProjectAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "attribute_keys",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "array",
+            "/tems": {
+              "/ype": "string"
             },
             "collectionFormat": "multi"
           },
           {
-            "name": "get_all",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
+            "name": "/et_all",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "boolean",
             "format": "boolean"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjectById": {
-      "get": {
+    "/v1/project/getProjectById": {
+      "/et": {
         "operationId": "ProjectService_getProjectById",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetProjectByIdResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjectByName": {
-      "get": {
+    "/v1/project/getProjectByName": {
+      "/et": {
         "operationId": "ProjectService_getProjectByName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetProjectByNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -529,65 +529,65 @@
         "parameters": [
           {
             "name": "name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjectCodeVersion": {
-      "get": {
+    "/v1/project/getProjectCodeVersion": {
+      "/et": {
         "operationId": "ProjectService_getProjectCodeVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetProjectCodeVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjectDatasetCount": {
-      "get": {
+    "/v1/project/getProjectDatasetCount": {
+      "/et": {
         "operationId": "ProjectService_getProjectDatasetCount",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetProjectDatasetCountResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -595,119 +595,119 @@
         "parameters": [
           {
             "name": "project_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjectReadme": {
-      "get": {
+    "/v1/project/getProjectReadme": {
+      "/et": {
         "operationId": "ProjectService_getProjectReadme",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetProjectReadmeResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjectShortName": {
-      "get": {
+    "/v1/project/getProjectShortName": {
+      "/et": {
         "operationId": "ProjectService_getProjectShortName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetProjectShortNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjectTags": {
-      "get": {
+    "/v1/project/getProjectTags": {
+      "/et": {
         "operationId": "ProjectService_getProjectTags",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetTagsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/d",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getProjects": {
-      "get": {
+    "/v1/project/getProjects": {
+      "/et": {
         "operationId": "ProjectService_getProjects",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetProjectsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -715,87 +715,87 @@
         "parameters": [
           {
             "name": "page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "ascending",
-            "in": "query",
-            "required": false,
-            "type": "boolean",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "boolean",
             "format": "boolean"
           },
           {
-            "name": "sort_key",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/ort_key",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "workspace_name",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getSummary": {
-      "get": {
+    "/v1/project/getSummary": {
+      "/et": {
         "operationId": "ProjectService_getSummary",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetSummaryResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
         "parameters": [
           {
-            "name": "entityId",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/ntityId",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/getUrlForArtifact": {
+    "/v1/project/getUrlForArtifact": {
       "post": {
-        "summary": "artifacts",
+        "/ummary": "artifacts",
         "operationId": "ProjectService_getUrlForArtifact",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbGetUrlForArtifactResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -803,32 +803,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbGetUrlForArtifact"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/logArtifacts": {
+    "/v1/project/logArtifacts": {
       "post": {
-        "summary": "artifacts",
+        "/ummary": "artifacts",
         "operationId": "ProjectService_logArtifacts",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbLogProjectArtifactsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -836,32 +836,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbLogProjectArtifacts"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/logProjectCodeVersion": {
+    "/v1/project/logProjectCodeVersion": {
       "post": {
-        "summary": "code version",
+        "/ummary": "code version",
         "operationId": "ProjectService_logProjectCodeVersion",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbLogProjectCodeVersionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -869,31 +869,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbLogProjectCodeVersion"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/setProjectReadme": {
+    "/v1/project/setProjectReadme": {
       "post": {
         "operationId": "ProjectService_setProjectReadme",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbSetProjectReadmeResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -901,31 +901,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbSetProjectReadme"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/setProjectShortName": {
+    "/v1/project/setProjectShortName": {
       "post": {
         "operationId": "ProjectService_setProjectShortName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbSetProjectShortNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -933,31 +933,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbSetProjectShortName"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/updateProjectAttributes": {
+    "/v1/project/updateProjectAttributes": {
       "post": {
         "operationId": "ProjectService_updateProjectAttributes",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateProjectAttributesResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -965,31 +965,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateProjectAttributes"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/updateProjectDescription": {
+    "/v1/project/updateProjectDescription": {
       "post": {
         "operationId": "ProjectService_updateProjectDescription",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateProjectDescriptionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -997,31 +997,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateProjectDescription"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/updateProjectName": {
+    "/v1/project/updateProjectName": {
       "post": {
         "operationId": "ProjectService_updateProjectName",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateProjectNameResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -1029,36 +1029,36 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/modeldbUpdateProjectName"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
     },
-    "/project/verifyConnection": {
-      "get": {
+    "/v1/project/verifyConnection": {
+      "/et": {
         "operationId": "ProjectService_verifyConnection",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/modeldbVerifyConnectionResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
-        "tags": [
+        "/ags": [
           "ProjectService"
         ]
       }
@@ -1066,8 +1066,8 @@
   },
   "definitions": {
     "ArtifactTypeEnumArtifactType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "IMAGE",
         "MODEL",
         "TENSORBOARD",
@@ -1080,16 +1080,16 @@
       "default": "IMAGE"
     },
     "CollaboratorTypeEnumCollaboratorType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "READ_ONLY",
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
     },
     "OperatorEnumOperator": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "EQ",
         "NE",
         "GT",
@@ -1104,8 +1104,8 @@
       "default": "EQ"
     },
     "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -1113,8 +1113,8 @@
       "default": "UNKNOWN"
     },
     "ValueTypeEnumValueType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "STRING",
         "NUMBER",
         "LIST",
@@ -1123,8 +1123,8 @@
       "default": "STRING"
     },
     "WorkspaceTypeEnumWorkspaceType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ORGANIZATION",
         "USER"
@@ -1132,111 +1132,111 @@
       "default": "UNKNOWN"
     },
     "commonArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
         "path": {
-          "type": "string"
+          "/ype": "string"
         },
         "path_only": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
         },
         "linked_artifact_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "filename_extension": {
-          "type": "string"
+          "/ype": "string"
         },
-        "serialization": {
-          "type": "string"
+        "/erialization": {
+          "/ype": "string"
         },
         "artifact_subtype": {
-          "type": "string"
+          "/ype": "string"
         },
         "upload_completed": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "commonCodeVersion": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "git_snapshot": {
+        "/it_snapshot": {
           "$ref": "#/definitions/commonGitSnapshot"
         },
         "code_archive": {
           "$ref": "#/definitions/commonArtifact"
         },
         "date_logged": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       },
-      "title": "code version"
+      "/itle": "code version"
     },
     "commonGitSnapshot": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "filepaths": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "repo": {
-          "type": "string"
+        "/epo": {
+          "/ype": "string"
         },
         "hash": {
-          "type": "string"
+          "/ype": "string"
         },
-        "is_dirty": {
+        "/s_dirty": {
           "$ref": "#/definitions/TernaryEnumTernary"
         }
       }
     },
     "commonGroupId": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "org_id": {
-          "type": "string"
+          "/ype": "string"
         },
-        "group_id": {
-          "type": "string"
+        "/roup_id": {
+          "/ype": "string"
         }
       }
     },
     "commonKeyValue": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType",
           "description": "As per documentation of proto buffer 3.\n  For enums, the default value is the first defined enum value, which must be 0."
         }
       }
     },
     "commonKeyValueQuery": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "value": {
-          "type": "object"
+        "/alue": {
+          "/ype": "object"
         },
-        "value_type": {
+        "/alue_type": {
           "$ref": "#/definitions/ValueTypeEnumValueType"
         },
         "operator": {
@@ -1245,21 +1245,21 @@
       }
     },
     "modeldbAddProjectAttributes": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         }
       }
     },
     "modeldbAddProjectAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1267,18 +1267,18 @@
       }
     },
     "modeldbAddProjectTag": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         }
       }
     },
     "modeldbAddProjectTagResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1286,21 +1286,21 @@
       }
     },
     "modeldbAddProjectTags": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbAddProjectTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1308,56 +1308,56 @@
       }
     },
     "modeldbCreateProject": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "readme_text": {
-          "type": "string"
+        "/eadme_text": {
+          "/ype": "string"
         },
         "project_visibility": {
           "$ref": "#/definitions/modeldbProjectVisibility"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "date_created": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "visibility": {
+        "/isibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         }
       }
     },
     "modeldbCreateProjectResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1365,15 +1365,15 @@
       }
     },
     "modeldbDeepCopyProject": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         }
       }
     },
     "modeldbDeepCopyProjectResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1381,26 +1381,26 @@
       }
     },
     "modeldbDeleteProject": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         }
       }
     },
     "modeldbDeleteProjectArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "key": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbDeleteProjectArtifactResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1408,25 +1408,25 @@
       }
     },
     "modeldbDeleteProjectAttributes": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "attribute_keys": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "delete_all": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteProjectAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1434,27 +1434,27 @@
       }
     },
     "modeldbDeleteProjectResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteProjectTag": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tag": {
-          "type": "string"
+        "/ag": {
+          "/ype": "string"
         }
       }
     },
     "modeldbDeleteProjectTagResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1462,25 +1462,25 @@
       }
     },
     "modeldbDeleteProjectTags": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "delete_all": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbDeleteProjectTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1488,104 +1488,104 @@
       }
     },
     "modeldbDeleteProjects": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbDeleteProjectsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbFindProjects": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "predicates": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValueQuery"
           }
         },
-        "ids_only": {
-          "type": "boolean",
+        "/ds_only": {
+          "/ype": "boolean",
           "format": "boolean"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "For pagination"
+          "/ype": "integer",
+          "format": "/nt32",
+          "/itle": "For pagination"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "ascending": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         },
-        "sort_key": {
-          "type": "string"
+        "/ort_key": {
+          "/ype": "string"
         }
       }
     },
     "modeldbFindProjectsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "projects": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbProject"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "modeldbGetArtifactsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         }
       }
     },
     "modeldbGetAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         }
       }
     },
     "modeldbGetProjectByIdResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1593,21 +1593,21 @@
       }
     },
     "modeldbGetProjectByNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project_by_user": {
           "$ref": "#/definitions/modeldbProject"
         },
-        "shared_projects": {
-          "type": "array",
-          "items": {
+        "/hared_projects": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbProject"
           }
         }
       }
     },
     "modeldbGetProjectCodeVersionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "code_version": {
           "$ref": "#/definitions/commonCodeVersion"
@@ -1615,153 +1615,153 @@
       }
     },
     "modeldbGetProjectDatasetCountResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "dataset_count": {
-          "type": "string",
-          "format": "int64"
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "modeldbGetProjectReadmeResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "readme_text": {
-          "type": "string"
+        "/eadme_text": {
+          "/ype": "string"
         }
       }
     },
     "modeldbGetProjectShortNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "short_name": {
-          "type": "string"
+        "/hort_name": {
+          "/ype": "string"
         }
       }
     },
     "modeldbGetProjectsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "projects": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbProject"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "modeldbGetSummaryResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "last_updated_time": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "total_experiment": {
-          "type": "string",
-          "format": "int64"
+        "/otal_experiment": {
+          "/ype": "string",
+          "format": "/nt64"
         },
-        "total_experiment_runs": {
-          "type": "string",
-          "format": "int64"
+        "/otal_experiment_runs": {
+          "/ype": "string",
+          "format": "/nt64"
         },
         "last_modified_experimentRun_summary": {
           "$ref": "#/definitions/modeldbLastModifiedExperimentRunSummary"
         },
         "metrics": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/modeldbMetricsSummary"
           }
         }
       }
     },
     "modeldbGetTagsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         }
       }
     },
     "modeldbGetUrlForArtifact": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
         "method": {
-          "type": "string"
+          "/ype": "string"
         },
         "artifact_type": {
           "$ref": "#/definitions/ArtifactTypeEnumArtifactType"
         },
         "part_number": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "modeldbGetUrlForArtifactResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "url": {
-          "type": "string"
+          "/ype": "string"
         },
         "fields": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
-            "type": "string"
+            "/ype": "string"
           }
         },
         "multipart_upload_ok": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "modeldbLastModifiedExperimentRunSummary": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "last_updated_time": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "modeldbLogProjectArtifacts": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         }
       },
-      "title": "artifacts"
+      "/itle": "artifacts"
     },
     "modeldbLogProjectArtifactsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1769,19 +1769,19 @@
       }
     },
     "modeldbLogProjectCodeVersion": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "code_version": {
           "$ref": "#/definitions/commonCodeVersion"
         }
       },
-      "title": "code version"
+      "/itle": "code version"
     },
     "modeldbLogProjectCodeVersionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1789,108 +1789,108 @@
       }
     },
     "modeldbMetricsSummary": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "key": {
-          "type": "string"
+          "/ype": "string"
         },
         "min_value": {
-          "type": "number",
+          "/ype": "number",
           "format": "double"
         },
         "max_value": {
-          "type": "number",
+          "/ype": "number",
           "format": "double"
         }
       }
     },
     "modeldbProject": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         },
         "date_created": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "date_updated": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "short_name": {
-          "type": "string"
+        "/hort_name": {
+          "/ype": "string"
         },
-        "readme_text": {
-          "type": "string"
+        "/eadme_text": {
+          "/ype": "string"
         },
         "project_visibility": {
           "$ref": "#/definitions/modeldbProjectVisibility"
         },
         "workspace_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "workspace_type": {
           "$ref": "#/definitions/WorkspaceTypeEnumWorkspaceType"
         },
         "workspace_service_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "visibility": {
+        "/isibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
         "attributes": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonKeyValue"
           }
         },
-        "tags": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/ags": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "owner": {
-          "type": "string"
+          "/ype": "string"
         },
         "owner_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
-        "group_owner_id": {
+        "/roup_owner_id": {
           "$ref": "#/definitions/commonGroupId"
         },
         "code_version_snapshot": {
           "$ref": "#/definitions/commonCodeVersion"
         },
         "artifacts": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/commonArtifact"
           }
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64",
-          "title": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
+          "/itle": "Doc for version_number https://github.com/VertaAI/docs/pull/53"
         }
       }
     },
     "modeldbProjectVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "PRIVATE",
         "PUBLIC",
         "ORG_SCOPED_PUBLIC"
@@ -1898,18 +1898,18 @@
       "default": "PRIVATE"
     },
     "modeldbSetProjectReadme": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "readme_text": {
-          "type": "string"
+        "/eadme_text": {
+          "/ype": "string"
         }
       }
     },
     "modeldbSetProjectReadmeResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1917,18 +1917,18 @@
       }
     },
     "modeldbSetProjectShortName": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "short_name": {
-          "type": "string"
+        "/hort_name": {
+          "/ype": "string"
         }
       }
     },
     "modeldbSetProjectShortNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1936,10 +1936,10 @@
       }
     },
     "modeldbUpdateProjectAttributes": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "attribute": {
           "$ref": "#/definitions/commonKeyValue"
@@ -1947,7 +1947,7 @@
       }
     },
     "modeldbUpdateProjectAttributesResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1955,18 +1955,18 @@
       }
     },
     "modeldbUpdateProjectDescription": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbUpdateProjectDescriptionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1974,18 +1974,18 @@
       }
     },
     "modeldbUpdateProjectName": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "modeldbUpdateProjectNameResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "project": {
           "$ref": "#/definitions/modeldbProject"
@@ -1993,57 +1993,57 @@
       }
     },
     "modeldbVerifyConnectionResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
     "protobufNullValue": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacCollaboratorPermissions": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
@@ -2057,8 +2057,8 @@
       }
     },
     "uacResourceVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",

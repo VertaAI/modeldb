@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "monitoring/MonitoredModel.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "monitoring/MonitoredModel.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -14,16 +14,16 @@
     "/api/v1/monitoring/model/createMonitoredModel": {
       "post": {
         "operationId": "MonitoredModelService_createMonitoredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringMonitoredModel"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,14 +31,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringCreateMonitoredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "MonitoredModelService"
         ]
       }
@@ -46,16 +46,16 @@
     "/api/v1/monitoring/model/deleteMonitoredModel": {
       "delete": {
         "operationId": "MonitoredModelService_deleteMonitoredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/vertamonitoringEmpty"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,14 +63,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringDeleteMonitoredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "MonitoredModelService"
         ]
       }
@@ -78,16 +78,16 @@
     "/api/v1/monitoring/model/findMonitoredModel": {
       "post": {
         "operationId": "MonitoredModelService_findMonitoredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringFindMonitoredModelsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,14 +95,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringFindMonitoredModels"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "MonitoredModelService"
         ]
       }
@@ -110,16 +110,16 @@
     "/api/v1/monitoring/model/updateMonitoredModel": {
       "post": {
         "operationId": "MonitoredModelService_updateMonitoredModel",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringMonitoredModel"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,14 +127,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringUpdateMonitoredModel"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "MonitoredModelService"
         ]
       }
@@ -142,102 +142,102 @@
   },
   "definitions": {
     "monitoringCreateMonitoredModel": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "json": {
-          "type": "string"
+          "/ype": "string"
         },
-        "type": {
-          "type": "string"
+        "/ype": {
+          "/ype": "string"
         },
-        "version": {
-          "type": "string"
+        "/ersion": {
+          "/ype": "string"
         },
         "workspaceName": {
-          "type": "string"
+          "/ype": "string"
         },
         "monitored_entity_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         }
       }
     },
     "monitoringDeleteMonitoredModel": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "modelId": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "monitoringFindMonitoredEntityRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "names": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "fuzzy_names": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "Add names to find with a fuzzy (non-exact) search"
+          "/itle": "Add names to find with a fuzzy (non-exact) search"
         },
-        "endpoint_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ndpoint_ids": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "model_version_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Pagination"
+          "/ype": "integer",
+          "format": "/nt32",
+          "/itle": "Pagination"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         }
       }
     },
     "monitoringFindMonitoredModels": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
@@ -247,53 +247,53 @@
       }
     },
     "monitoringFindMonitoredModelsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "models": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/monitoringMonitoredModel"
           }
         }
       }
     },
     "monitoringMonitoredModel": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "json": {
-          "type": "string"
+          "/ype": "string"
         },
-        "type": {
-          "type": "string"
+        "/ype": {
+          "/ype": "string"
         },
-        "version": {
-          "type": "string"
+        "/ersion": {
+          "/ype": "string"
         },
         "createdAtMillis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "workspaceName": {
-          "type": "string"
+          "/ype": "string"
         },
         "monitored_entity_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         }
       }
     },
     "monitoringUpdateMonitoredModel": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "model": {
           "$ref": "#/definitions/monitoringMonitoredModel"
@@ -301,40 +301,40 @@
       }
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
-    "vertamonitoringEmpty": {
-      "type": "object"
+    "/ertamonitoringEmpty": {
+      "/ype": "object"
     }
   },
   "basePath": "/v1"

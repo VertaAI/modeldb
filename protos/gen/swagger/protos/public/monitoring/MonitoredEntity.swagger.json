@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "monitoring/MonitoredEntity.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "monitoring/MonitoredEntity.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -14,16 +14,16 @@
     "/api/v1/monitoring/monitored_entity/createMonitoredEntity": {
       "post": {
         "operationId": "MonitoredEntityService_createMonitoredEntity",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringCreateMonitoredEntityRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -31,14 +31,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringCreateMonitoredEntityRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "MonitoredEntityService"
         ]
       }
@@ -46,16 +46,16 @@
     "/api/v1/monitoring/monitored_entity/deleteMonitoredEntity": {
       "delete": {
         "operationId": "MonitoredEntityService_deleteMonitoredEntity",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringDeleteMonitoredEntityRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -63,14 +63,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringDeleteMonitoredEntityRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "MonitoredEntityService"
         ]
       }
@@ -78,16 +78,16 @@
     "/api/v1/monitoring/monitored_entity/findMonitoredEntity": {
       "post": {
         "operationId": "MonitoredEntityService_findMonitoredEntity",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringFindMonitoredEntityRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -95,14 +95,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringFindMonitoredEntityRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "MonitoredEntityService"
         ]
       }
@@ -110,16 +110,16 @@
     "/api/v1/monitoring/monitored_entity/updateMonitoredEntity": {
       "patch": {
         "operationId": "MonitoredEntityService_updateMonitoredEntity",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/monitoringUpdateMonitoredEntityRequestResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -127,14 +127,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/monitoringUpdateMonitoredEntityRequest"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "MonitoredEntityService"
         ]
       }
@@ -142,16 +142,16 @@
   },
   "definitions": {
     "CollaboratorTypeEnumCollaboratorType": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "READ_ONLY",
         "READ_WRITE"
       ],
       "default": "READ_ONLY"
     },
     "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "TRUE",
         "FALSE"
@@ -159,39 +159,39 @@
       "default": "UNKNOWN"
     },
     "monitoringCreateMonitoredEntityRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "attributes": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
-            "type": "string"
+            "/ype": "string"
           }
         },
-        "resource_visibility": {
+        "/esource_visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "endpoint_id": {
-          "type": "string",
+        "/ndpoint_id": {
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "monitoringCreateMonitoredEntityRequestResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "monitored_entity": {
           "$ref": "#/definitions/monitoringMonitoredEntity"
@@ -199,162 +199,162 @@
       }
     },
     "monitoringDeleteMonitoredEntityRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "monitoringDeleteMonitoredEntityRequestResponse": {
-      "type": "object"
+      "/ype": "object"
     },
     "monitoringFindMonitoredEntityRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ds": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "names": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "fuzzy_names": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           },
-          "title": "Add names to find with a fuzzy (non-exact) search"
+          "/itle": "Add names to find with a fuzzy (non-exact) search"
         },
-        "endpoint_ids": {
-          "type": "array",
-          "items": {
-            "type": "string",
+        "/ndpoint_ids": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string",
             "format": "uint64"
           }
         },
         "model_version_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "workspace_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "page_number": {
-          "type": "integer",
-          "format": "int32",
-          "title": "Pagination"
+          "/ype": "integer",
+          "format": "/nt32",
+          "/itle": "Pagination"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         }
       }
     },
     "monitoringFindMonitoredEntityRequestResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "monitored_entities": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/monitoringMonitoredEntity"
           }
         },
-        "total_records": {
-          "type": "integer",
-          "format": "int32"
+        "/otal_records": {
+          "/ype": "integer",
+          "format": "/nt32"
         }
       }
     },
     "monitoringMonitoredEntity": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "created_at_timestamp_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "updated_at_timestamp_millis": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "attributes": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
-            "type": "string"
+            "/ype": "string"
           }
         },
         "owner": {
-          "type": "string",
-          "title": "owner's verta_id"
+          "/ype": "string",
+          "/itle": "owner's verta_id"
         },
-        "resource_visibility": {
+        "/esource_visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         },
-        "version_number": {
-          "type": "string",
+        "/ersion_number": {
+          "/ype": "string",
           "format": "uint64"
         },
-        "endpoint_id": {
-          "type": "string",
+        "/ndpoint_id": {
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "monitoringUpdateMonitoredEntityRequest": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
+        "/d": {
+          "/ype": "string",
           "format": "uint64"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         },
         "attributes": {
-          "type": "object",
+          "/ype": "object",
           "additionalProperties": {
-            "type": "string"
+            "/ype": "string"
           }
         },
-        "resource_visibility": {
+        "/esource_visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
         "custom_permission": {
           "$ref": "#/definitions/uacCollaboratorPermissions",
-          "title": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
+          "/itle": "The next field only makes sense when visibility == ORG_CUSTOM\nThey will be empty otherwise"
         }
       }
     },
     "monitoringUpdateMonitoredEntityRequestResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "monitored_entity": {
           "$ref": "#/definitions/monitoringMonitoredEntity"
@@ -362,40 +362,40 @@
       }
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string"
+        "/ype_url": {
+          "/ype": "string"
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte"
         }
       }
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacCollaboratorPermissions": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "collaborator_type": {
           "$ref": "#/definitions/CollaboratorTypeEnumCollaboratorType"
@@ -409,8 +409,8 @@
       }
     },
     "uacResourceVisibility": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "ORG_DEFAULT",
         "ORG_CUSTOM",

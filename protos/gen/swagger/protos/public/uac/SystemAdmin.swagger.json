@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "uac/SystemAdmin.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "uac/SystemAdmin.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,20 +11,20 @@
     "application/json"
   ],
   "paths": {
-    "/system_admin/addSystemAdmin": {
+    "/v1/system_admin/addSystemAdmin": {
       "post": {
-        "summary": "Adds the given user to the list of system administrators\nOnly available for system admins themselves",
+        "/ummary": "Adds the given user to the list of system administrators\nOnly available for system admins themselves",
         "operationId": "SystemAdminService_addSystemAdmin",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacAddSystemAdminResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -32,31 +32,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacAddSystemAdmin"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/createOrUpdateKafkaConfiguration": {
+    "/v1/system_admin/createOrUpdateKafkaConfiguration": {
       "post": {
         "operationId": "SystemAdminService_createOrUpdateKafkaConfiguration",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacKafkaConfiguration"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -64,31 +64,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacKafkaConfiguration"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/createOrUpdatePypiConfiguration": {
+    "/v1/system_admin/createOrUpdatePypiConfiguration": {
       "post": {
         "operationId": "SystemAdminService_createOrUpdatePypiConfiguration",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacPypiConfiguration"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -96,31 +96,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacPypiConfiguration"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/deleteKafkaConfiguration": {
+    "/v1/system_admin/deleteKafkaConfiguration": {
       "post": {
         "operationId": "SystemAdminService_deleteKafkaConfiguration",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacDeleteKafkaConfigurationResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -128,31 +128,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacDeleteKafkaConfiguration"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/deletePypiConfiguration": {
+    "/v1/system_admin/deletePypiConfiguration": {
       "post": {
         "operationId": "SystemAdminService_deletePypiConfiguration",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacDeletePypiConfigurationResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -160,31 +160,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacDeletePypiConfiguration"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/enableKafkaConfiguration": {
+    "/v1/system_admin/enableKafkaConfiguration": {
       "post": {
         "operationId": "SystemAdminService_enableKafkaConfiguration",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacEnableKafkaConfigurationResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -192,31 +192,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacEnableKafkaConfiguration"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/enablePypiConfiguration": {
+    "/v1/system_admin/enablePypiConfiguration": {
       "post": {
         "operationId": "SystemAdminService_enablePypiConfiguration",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacEnablePypiConfigurationResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -224,31 +224,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacEnablePypiConfiguration"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/listKafkaConfiguration": {
-      "get": {
+    "/v1/system_admin/listKafkaConfiguration": {
+      "/et": {
         "operationId": "SystemAdminService_listKafkaConfiguration",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacListKafkaConfigurationResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -256,37 +256,37 @@
         "parameters": [
           {
             "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/listPypiConfiguration": {
-      "get": {
+    "/v1/system_admin/listPypiConfiguration": {
+      "/et": {
         "operationId": "SystemAdminService_listPypiConfiguration",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacListPypiConfigurationResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -294,38 +294,38 @@
         "parameters": [
           {
             "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/listSystemAdmins": {
-      "get": {
-        "summary": "List system admins\nOnly available for system admins themselves",
+    "/v1/system_admin/listSystemAdmins": {
+      "/et": {
+        "/ummary": "List system admins\nOnly available for system admins themselves",
         "operationId": "SystemAdminService_listSystemAdmins",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacListSystemAdminsResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -333,38 +333,38 @@
         "parameters": [
           {
             "name": "pagination.page_number",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           },
           {
             "name": "pagination.page_limit",
-            "in": "query",
-            "required": false,
-            "type": "integer",
-            "format": "int32"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "integer",
+            "format": "/nt32"
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
     },
-    "/system_admin/removeSystemAdmin": {
+    "/v1/system_admin/removeSystemAdmin": {
       "post": {
-        "summary": "Removes the given user from the list of system administrators\nThe current user can never be removed\nThe root user (defined by email via config) can never be removed",
+        "/ummary": "Removes the given user from the list of system administrators\nThe current user can never be removed\nThe root user (defined by email via config) can never be removed",
         "operationId": "SystemAdminService_removeSystemAdmin",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacRemoveSystemAdminResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -372,14 +372,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacRemoveSystemAdmin"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "SystemAdminService"
         ]
       }
@@ -387,268 +387,268 @@
   },
   "definitions": {
     "KafkaConfigurationKerberos": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "enabled": {
-          "type": "boolean",
+        "/nabled": {
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "All fields below must be provided on an update, except when enabled=false"
+          "/itle": "All fields below must be provided on an update, except when enabled=false"
         },
         "conf": {
-          "type": "string"
+          "/ype": "string"
         },
         "keytab": {
-          "type": "string"
+          "/ype": "string"
         },
         "client_name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "service_name": {
-          "type": "string"
+        "/ervice_name": {
+          "/ype": "string"
         }
       }
     },
     "KafkaConfigurationTLS": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "enabled": {
-          "type": "boolean",
+        "/nabled": {
+          "/ype": "boolean",
           "format": "boolean",
-          "title": "All fields below must be provided on an update, except when enabled=false"
+          "/itle": "All fields below must be provided on an update, except when enabled=false"
         },
         "certificate": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "commonPagination": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "page_number": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         }
       },
-      "title": "For pagination"
+      "/itle": "For pagination"
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string",
+        "/ype_url": {
+          "/ype": "string",
           "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte",
           "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
       },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"/.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacAddSystemAdmin": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "share_with": {
-          "type": "string"
+        "/hare_with": {
+          "/ype": "string"
         }
       }
     },
     "uacAddSystemAdminResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacDeleteKafkaConfiguration": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         }
       }
     },
     "uacDeleteKafkaConfigurationResponse": {
-      "type": "object"
+      "/ype": "object"
     },
     "uacDeletePypiConfiguration": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         }
       }
     },
     "uacDeletePypiConfigurationResponse": {
-      "type": "object"
+      "/ype": "object"
     },
     "uacEnableKafkaConfiguration": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "new_enabled": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacEnableKafkaConfigurationResponse": {
-      "type": "object"
+      "/ype": "object"
     },
     "uacEnablePypiConfiguration": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
         "new_enabled": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacEnablePypiConfigurationResponse": {
-      "type": "object"
+      "/ype": "object"
     },
     "uacKafkaConfiguration": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string"
+        "/d": {
+          "/ype": "string"
         },
-        "tls": {
+        "/ls": {
           "$ref": "#/definitions/KafkaConfigurationTLS"
         },
         "kerberos": {
           "$ref": "#/definitions/KafkaConfigurationKerberos"
         },
         "brokerAddresses": {
-          "type": "string",
-          "title": "All fields below must be provided on an update"
+          "/ype": "string",
+          "/itle": "All fields below must be provided on an update"
         },
-        "enabled": {
-          "type": "boolean",
+        "/nabled": {
+          "/ype": "boolean",
           "format": "boolean"
         },
         "name": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "uacListKafkaConfigurationResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "configurations": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacKafkaConfiguration"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "uacListPypiConfigurationResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "configurations": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacPypiConfiguration"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "uacListSystemAdminsResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "uacPypiConfiguration": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "id": {
-          "type": "string",
-          "title": "Missing if create, present if update"
+        "/d": {
+          "/ype": "string",
+          "/itle": "Missing if create, present if update"
         },
         "name": {
-          "type": "string",
-          "title": "All fields below must be provided on an update"
+          "/ype": "string",
+          "/itle": "All fields below must be provided on an update"
         },
         "url": {
-          "type": "string"
+          "/ype": "string"
         },
         "username": {
-          "type": "string"
+          "/ype": "string"
         },
         "password": {
-          "type": "string"
+          "/ype": "string"
         },
-        "enabled": {
-          "type": "boolean",
+        "/nabled": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacRemoveSystemAdmin": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "share_with": {
-          "type": "string"
+        "/hare_with": {
+          "/ype": "string"
         }
       }
     },
     "uacRemoveSystemAdminResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }

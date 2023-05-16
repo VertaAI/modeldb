@@ -1,8 +1,8 @@
 {
-  "swagger": "2.0",
-  "info": {
-    "title": "uac/UACService.proto",
-    "version": "version not set"
+  "/wagger": "2.0",
+  "/nfo": {
+    "/itle": "uac/UACService.proto",
+    "/ersion": "version not set"
   },
   "consumes": [
     "application/json"
@@ -11,20 +11,20 @@
     "application/json"
   ],
   "paths": {
-    "/uac/addDevKey": {
+    "/v1/uac/addDevKey": {
       "post": {
-        "summary": "adds new user developer key",
+        "/ummary": "adds new user developer key",
         "operationId": "UACService_addDevKey",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUserInfo"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -32,32 +32,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/vertauacEmpty"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/addDevKeyForUser": {
+    "/v1/uac/addDevKeyForUser": {
       "post": {
-        "summary": "adds new user developer key",
+        "/ummary": "adds new user developer key",
         "operationId": "UACService_addDevKeyForUser",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUserInfo"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -65,32 +65,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacChangeDevKeyForUser"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/createUser": {
+    "/v1/uac/createUser": {
       "post": {
-        "summary": "For now, any user can create a new user",
+        "/ummary": "For now, any user can create a new user",
         "operationId": "UACService_createUser",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacCreateUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -98,32 +98,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacCreateUser"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/deletePrimaryDevKey": {
+    "/v1/uac/deletePrimaryDevKey": {
       "delete": {
-        "summary": "deletes primary developer key",
+        "/ummary": "deletes primary developer key",
         "operationId": "UACService_deletePrimaryDevKey",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUserInfo"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -131,32 +131,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/vertauacEmpty"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/deletePrimaryDevKeyForUser": {
+    "/v1/uac/deletePrimaryDevKeyForUser": {
       "delete": {
-        "summary": "deletes primary developer key",
+        "/ummary": "deletes primary developer key",
         "operationId": "UACService_deletePrimaryDevKeyForUser",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUserInfo"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -164,32 +164,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacChangeDevKeyForUser"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/deleteSecondaryDevKey": {
+    "/v1/uac/deleteSecondaryDevKey": {
       "delete": {
-        "summary": "deletes secondary developer key",
+        "/ummary": "deletes secondary developer key",
         "operationId": "UACService_deleteSecondaryDevKey",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUserInfo"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -197,32 +197,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/vertauacEmpty"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/deleteSecondaryDevKeyForUser": {
+    "/v1/uac/deleteSecondaryDevKeyForUser": {
       "delete": {
-        "summary": "deletes primary developer key",
+        "/ummary": "deletes primary developer key",
         "operationId": "UACService_deleteSecondaryDevKeyForUser",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUserInfo"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -230,32 +230,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacChangeDevKeyForUser"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/deleteUser": {
+    "/v1/uac/deleteUser": {
       "post": {
-        "summary": "Only current user can delete themselves",
+        "/ummary": "Only current user can delete themselves",
         "operationId": "UACService_deleteUser",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacDeleteUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -263,55 +263,55 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacDeleteUser"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/getCurrentUser": {
-      "get": {
-        "summary": "Get the current user information verifying JWT token",
+    "/v1/uac/getCurrentUser": {
+      "/et": {
+        "/ummary": "Get the current user information verifying JWT token",
         "operationId": "UACService_getCurrentUser",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUserInfo"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
         },
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/getUser": {
-      "get": {
-        "summary": "Get the current user information verifying JWT token",
+    "/v1/uac/getUser": {
+      "/et": {
+        "/ummary": "Get the current user information verifying JWT token",
         "operationId": "UACService_getUser",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUserInfo"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -319,41 +319,41 @@
         "parameters": [
           {
             "name": "user_id",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
-            "name": "email",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "name": "/mail",
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           },
           {
             "name": "username",
-            "in": "query",
-            "required": false,
-            "type": "string"
+            "/n": "query",
+            "/equired": false,
+            "/ype": "string"
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/getUsers": {
+    "/v1/uac/getUsers": {
       "post": {
         "operationId": "UACService_getUsers",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacGetUsersResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -361,31 +361,31 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacGetUsers"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/getUsersFuzzy": {
+    "/v1/uac/getUsersFuzzy": {
       "post": {
         "operationId": "UACService_getUsersFuzzy",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacGetUsersFuzzyResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -393,32 +393,32 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacGetUsersFuzzy"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
     },
-    "/uac/updateUser": {
+    "/v1/uac/updateUser": {
       "post": {
-        "summary": "Only current user can update themselves",
+        "/ummary": "Only current user can update themselves",
         "operationId": "UACService_updateUser",
-        "responses": {
+        "/esponses": {
           "200": {
             "description": "A successful response.",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/uacUpdateUserResponse"
             }
           },
           "default": {
             "description": "An unexpected error response",
-            "schema": {
+            "/chema": {
               "$ref": "#/definitions/runtimeError"
             }
           }
@@ -426,14 +426,14 @@
         "parameters": [
           {
             "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
+            "/n": "body",
+            "/equired": true,
+            "/chema": {
               "$ref": "#/definitions/uacUpdateUser"
             }
           }
         ],
-        "tags": [
+        "/ags": [
           "UACService"
         ]
       }
@@ -441,8 +441,8 @@
   },
   "definitions": {
     "IdServiceProviderEnumIdServiceProvider": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNKNOWN",
         "GITHUB",
         "BITBUCKET",
@@ -458,102 +458,102 @@
       "default": "UNKNOWN"
     },
     "commonPagination": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "page_number": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "page_limit": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         }
       },
-      "title": "For pagination"
+      "/itle": "For pagination"
     },
     "protobufAny": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "type_url": {
-          "type": "string",
+        "/ype_url": {
+          "/ype": "string",
           "description": "A URL/resource name that uniquely identifies the type of the serialized\nprotocol buffer message. This string must contain at least\none \"/\" character. The last segment of the URL's path must represent\nthe fully qualified name of the type (as in\n`path/google.protobuf.Duration`). The name should be in a canonical form\n(e.g., leading \".\" is not accepted).\n\nIn practice, teams usually precompile into the binary all types that they\nexpect it to use in the context of Any. However, for URLs which use the\nscheme `http`, `https`, or no scheme, one can optionally set up a type\nserver that maps type URLs to message definitions as follows:\n\n* If no scheme is provided, `https` is assumed.\n* An HTTP GET on the URL must yield a [google.protobuf.Type][]\n  value in binary format, or produce an error.\n* Applications are allowed to cache lookup results based on the\n  URL, or have them precompiled into a binary to avoid any\n  lookup. Therefore, binary compatibility needs to be preserved\n  on changes to types. (Use versioned type names to manage\n  breaking changes.)\n\nNote: this functionality is not currently available in the official\nprotobuf release, and it is not used for type URLs beginning with\ntype.googleapis.com.\n\nSchemes other than `http`, `https` (or the empty scheme) might be\nused with implementation specific semantics."
         },
-        "value": {
-          "type": "string",
+        "/alue": {
+          "/ype": "string",
           "format": "byte",
           "description": "Must be a valid serialized protocol buffer of the above specified type."
         }
       },
-      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"y.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
+      "description": "`Any` contains an arbitrary serialized protocol buffer message along with a\nURL that describes the type of the serialized message.\n\nProtobuf library provides support to pack/unpack Any values in the form\nof utility functions or additional generated methods of the Any type.\n\nExample 1: Pack and unpack a message in C++.\n\n    Foo foo = ...;\n    Any any;\n    any.PackFrom(foo);\n    ...\n    if (any.UnpackTo(&foo)) {\n      ...\n    }\n\nExample 2: Pack and unpack a message in Java.\n\n    Foo foo = ...;\n    Any any = Any.pack(foo);\n    ...\n    if (any.is(Foo.class)) {\n      foo = any.unpack(Foo.class);\n    }\n\n Example 3: Pack and unpack a message in Python.\n\n    foo = Foo(...)\n    any = Any()\n    any.Pack(foo)\n    ...\n    if any.Is(Foo.DESCRIPTOR):\n      any.Unpack(foo)\n      ...\n\n Example 4: Pack and unpack a message in Go\n\n     foo := &pb.Foo{...}\n     any, err := ptypes.MarshalAny(foo)\n     ...\n     foo := &pb.Foo{}\n     if err := ptypes.UnmarshalAny(any, foo); err != nil {\n       ...\n     }\n\nThe pack methods provided by protobuf library will by default use\n'type.googleapis.com/full.type.name' as the type URL and the unpack\nmethods only use the fully qualified type name after the last '/'\nin the type URL, for example \"foo.bar.com/x/y.z\" will yield type\nname \"/.z\".\n\n\nJSON\n====\nThe JSON representation of an `Any` value uses the regular\nrepresentation of the deserialized, embedded message, with an\nadditional field `@type` which contains the type URL. Example:\n\n    package google.profile;\n    message Person {\n      string first_name = 1;\n      string last_name = 2;\n    }\n\n    {\n      \"@type\": \"type.googleapis.com/google.profile.Person\",\n      \"firstName\": <string>,\n      \"lastName\": <string>\n    }\n\nIf the embedded message type is well-known and has a custom JSON\nrepresentation, that representation will be embedded adding a field\n`value` which holds the custom JSON in addition to the `@type`\nfield. Example (for message [google.protobuf.Duration][]):\n\n    {\n      \"@type\": \"type.googleapis.com/google.protobuf.Duration\",\n      \"value\": \"1.212s\"\n    }"
     },
-    "runtimeError": {
-      "type": "object",
+    "/untimeError": {
+      "/ype": "object",
       "properties": {
-        "error": {
-          "type": "string"
+        "/rror": {
+          "/ype": "string"
         },
         "code": {
-          "type": "integer",
-          "format": "int32"
+          "/ype": "integer",
+          "format": "/nt32"
         },
         "message": {
-          "type": "string"
+          "/ype": "string"
         },
         "details": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/protobufAny"
           }
         }
       }
     },
     "uacChangeDevKeyForUser": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_id": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "uacCreateUser": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "info": {
+        "/nfo": {
           "$ref": "#/definitions/uacUserInfo"
         },
         "password": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "uacCreateUserResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "info": {
+        "/nfo": {
           "$ref": "#/definitions/uacUserInfo"
         }
       }
     },
     "uacDeleteUser": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_id": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
     "uacDeleteUserResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "status": {
-          "type": "boolean",
+        "/tatus": {
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacFlagEnum": {
-      "type": "string",
-      "enum": [
+      "/ype": "string",
+      "/num": [
         "UNDEFINED",
         "TRUE",
         "FALSE"
@@ -561,24 +561,24 @@
       "default": "UNDEFINED"
     },
     "uacGetUsers": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_ids": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "emails": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/mails": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "usernames": {
-          "type": "array",
-          "items": {
-            "type": "string"
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
         "pagination": {
@@ -587,13 +587,13 @@
       }
     },
     "uacGetUsersFuzzy": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "email": {
-          "type": "string"
+        "/mail": {
+          "/ype": "string"
         },
         "username": {
-          "type": "string"
+          "/ype": "string"
         },
         "pagination": {
           "$ref": "#/definitions/commonPagination"
@@ -601,142 +601,142 @@
       }
     },
     "uacGetUsersFuzzyResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_infos": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacUserInfo"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "uacGetUsersResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_infos": {
-          "type": "array",
-          "items": {
+          "/ype": "array",
+          "/tems": {
             "$ref": "#/definitions/uacUserInfo"
           }
         },
-        "total_records": {
-          "type": "string",
-          "format": "int64"
+        "/otal_records": {
+          "/ype": "string",
+          "format": "/nt64"
         }
       }
     },
     "uacUpdateUser": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "info": {
+        "/nfo": {
           "$ref": "#/definitions/uacUserInfo"
         },
         "password": {
-          "type": "string"
+          "/ype": "string"
         },
         "default_workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         }
       }
     },
     "uacUpdateUserResponse": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "info": {
+        "/nfo": {
           "$ref": "#/definitions/uacUserInfo"
         }
       }
     },
     "uacUserInfo": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
         "user_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "full_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "first_name": {
-          "type": "string"
+          "/ype": "string"
         },
         "last_name": {
-          "type": "string"
+          "/ype": "string"
         },
-        "email": {
-          "type": "string"
+        "/mail": {
+          "/ype": "string"
         },
-        "id_service_provider": {
+        "/d_service_provider": {
           "$ref": "#/definitions/IdServiceProviderEnumIdServiceProvider"
         },
-        "roles": {
-          "type": "array",
-          "items": {
-            "type": "string"
+        "/oles": {
+          "/ype": "array",
+          "/tems": {
+            "/ype": "string"
           }
         },
-        "image_url": {
-          "type": "string"
+        "/mage_url": {
+          "/ype": "string"
         },
         "dev_key": {
-          "type": "string"
+          "/ype": "string"
         },
-        "verta_info": {
+        "/erta_info": {
           "$ref": "#/definitions/uacVertaUserInfo"
         },
-        "secondary_dev_key": {
-          "type": "string"
+        "/econdary_dev_key": {
+          "/ype": "string"
         },
         "disabled": {
-          "type": "boolean",
+          "/ype": "boolean",
           "format": "boolean"
         }
       }
     },
     "uacVertaUserInfo": {
-      "type": "object",
+      "/ype": "object",
       "properties": {
-        "individual_user": {
-          "type": "boolean",
+        "/ndividual_user": {
+          "/ype": "boolean",
           "format": "boolean"
         },
         "username": {
-          "type": "string"
+          "/ype": "string"
         },
-        "refresh_timestamp": {
-          "type": "string",
+        "/efresh_timestamp": {
+          "/ype": "string",
           "format": "uint64"
         },
         "last_login_timestamp": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64"
         },
         "user_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "publicProfile": {
           "$ref": "#/definitions/uacFlagEnum"
         },
         "workspace_id": {
-          "type": "string"
+          "/ype": "string"
         },
         "default_workspace_id": {
-          "type": "string",
+          "/ype": "string",
           "format": "uint64",
-          "title": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
+          "/itle": "Workspace that the user has selected as their default. Initializes to the user's personal workspace\nWhen the user is added to their _first_ org, the default workspace automatically switches to that if it was the default value\nThis should be empty if the user is not the current user"
         },
         "description": {
-          "type": "string"
+          "/ype": "string"
         }
       }
     },
-    "vertauacEmpty": {
-      "type": "object"
+    "/ertauacEmpty": {
+      "/ype": "object"
     }
   },
   "basePath": "/v1"
