@@ -82,7 +82,6 @@ This version of ModelDB is built upon its predecessor from [CSAIL, MIT](https://
 - [Documentation](#documentation)
 - [Community](#community)
 - [Architecture](#architecture)
-- [How to Contribute](#how-to-contribute)
 - [License](#license)
 - [Thanks to Our Contributors](#thanks)
 
