@@ -32,7 +32,7 @@
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <otel.core.version>1.24.0</otel.core.version>
         <otel.instrumentation.version>1.24.0-alpha</otel.instrumentation.version>
-        <otel.contrib.version>1.24.0-alpha</otel.contrib.version>
+        <otel.contrib.version>1.26.0-alpha</otel.contrib.version>
         <springframework.version>5.3.27</springframework.version>
         <lombok.version>1.18.26</lombok.version>
 
