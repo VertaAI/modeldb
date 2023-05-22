@@ -30,18 +30,14 @@
         <aws.version>1.12.444</aws.version>
         <jackson.version>2.14.2</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
-        <otel.core.version>1.24.0</otel.core.version>
-        <otel.instrumentation.version>1.24.0-alpha</otel.instrumentation.version>
-        <otel.contrib.version>1.24.0-alpha</otel.contrib.version>
+        <otel.core.version>1.26.0</otel.core.version>
+        <otel.instrumentation.version>1.26.0-alpha</otel.instrumentation.version>
+        <otel.contrib.version>1.26.0-alpha</otel.contrib.version>
         <springframework.version>5.3.27</springframework.version>
         <lombok.version>1.18.26</lombok.version>
 
         <junit-jupiter.version>5.9.3</junit-jupiter.version>
         <jacoco.version>0.8.10</jacoco.version>
-        <sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
-        <sonar.core.codeCoveragePlugin>jacoco</sonar.core.codeCoveragePlugin>
-        <sonar.coverage.jacoco.xmlReportPaths>${project.build.directory}/coverage-reports/jacoco.xml</sonar.coverage.jacoco.xmlReportPaths>
-        <sonar.language>java</sonar.language>
     </properties>
 
     <dependencyManagement>
@@ -178,12 +174,6 @@
                 <groupId>com.pholser</groupId>
                 <artifactId>junit-quickcheck-generators</artifactId>
                 <version>1.0</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/org.sonarsource.scanner.maven/sonar-maven-plugin -->
-            <dependency>
-                <groupId>org.sonarsource.scanner.maven</groupId>
-                <artifactId>sonar-maven-plugin</artifactId>
-                <version>3.9.1.2184</version>
             </dependency>
 
             <!-- HibernateFinal 5.4.1 -->
