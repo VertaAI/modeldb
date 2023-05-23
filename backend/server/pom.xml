@@ -306,6 +306,14 @@
                 <artifactId>jacoco-maven-plugin</artifactId>
                 <configuration>
                     <append>true</append>
+                    <excludes>
+                        <exclude>/ai/verta/uac/**</exclude>
+                        <exclude>/ai/verta/common/**</exclude>
+                        <exclude>/ai/verta/events/**</exclude>
+                        <exclude>/ai/verta/deployment/**</exclude>
+                        <exclude>/ai/verta/client/**</exclude>
+                        <exclude>/ai/verta/artifactstore/**</exclude>
+                    </excludes>
                 </configuration>
                 <executions>
                     <!-- Prepares the property pointing to the JaCoCo runtime agent which
@@ -336,6 +344,17 @@
                             <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
                             <!-- Sets the output directory for the code coverage report. -->
                             <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>verify</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data. -->
+                            <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
                         </configuration>
                     </execution>
                 </executions>
