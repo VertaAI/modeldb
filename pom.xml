@@ -27,7 +27,7 @@
         <grpc.version>1.54.0</grpc.version>
         <prometheus.version>0.16.0</prometheus.version>
         <protobuf.version>3.23.0</protobuf.version>
-        <aws.version>1.12.444</aws.version>
+        <aws.version>1.12.473</aws.version>
         <jackson.version>2.15.1</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <otel.core.version>1.26.0</otel.core.version>
