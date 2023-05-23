@@ -40,6 +40,19 @@
         <jacoco.version>0.8.10</jacoco.version>
     </properties>
 
+    <distributionManagement>
+        <repository>
+            <id>github-verta</id>
+            <name>GitHub VertaAI Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/VertaAI/modeldb</url>
+        </repository>
+        <snapshotRepository>
+            <id>github-verta</id>
+            <name>GitHub VertaAI Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/VertaAI/modeldb</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <dependencyManagement>
         <dependencies>
             <dependency>
