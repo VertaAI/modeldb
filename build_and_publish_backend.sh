@@ -33,8 +33,13 @@ fi
 export MAVEN_PARAMS="$LOCAL_MAVEN_SETTINGS_PARAM -DskipTests -Dmaven.compiler.showDeprecation=true -Djacoco.skip=true"
 mvn -B versions:set -DnewVersion=$PROJECT_VERSION > /dev/null
 mvn -B source:jar deploy $MAVEN_PARAMS || {
-    mvn -B versions:set -DnewVersion=$PROJECT_REVISION > /dev/null
+    if [ -z "$GITHUB_TOKEN" ]; then
+        mvn -B versions:set -DnewVersion=$PROJECT_REVISION > /dev/null
+    fi
     exit 1
 }
 
-mvn -B versions:set -DnewVersion=$PROJECT_REVISION > /dev/null
+# when running in CI leave revision for use by test step
+if [ -z "$GITHUB_TOKEN" ]; then
+    mvn -B versions:set -DnewVersion=$PROJECT_REVISION > /dev/null
+fi
