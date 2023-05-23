@@ -22,6 +22,7 @@
     </modules>
 
     <properties>
+        <revision>1.0-SNAPSHOT</revision>
         <hibernate.version>5.6.15.Final</hibernate.version>
         <log4j.version>2.20.0</log4j.version>
         <grpc.version>1.54.0</grpc.version>
