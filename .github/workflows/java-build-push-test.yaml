@@ -99,7 +99,6 @@ jobs:
           message: |
             Docker tag: ${{ steps.image_info.outputs.tag }}
           comment_tag: docker_tag
-          GITHUB_TOKEN: ${{ secrets.SRE_GH_PR_RW }}
 
       - name: Test
         env:
