@@ -25,12 +25,7 @@ if [[ "$BRANCH_NAME" =~ ^(main|release/[^/]+)$ ]]; then
     export PROJECT_VERSION=${PROJECT_VERSION/%-SNAPSHOT/-$COMMIT_INFO}
 fi
 
-LOCAL_MAVEN_SETTINGS_PARAM=""
-if [ -f "$LOCAL_MAVEN_SETTINGS" ]; then
-  LOCAL_MAVEN_SETTINGS_PARAM="-s $LOCAL_MAVEN_SETTINGS"
-fi
-
-export MAVEN_PARAMS="$LOCAL_MAVEN_SETTINGS_PARAM -DskipTests -Dmaven.compiler.showDeprecation=true -Djacoco.skip=true"
+export MAVEN_PARAMS="-DskipTests -Dmaven.compiler.showDeprecation=true -Djacoco.skip=true"
 mvn -B versions:set -DnewVersion=$PROJECT_VERSION > /dev/null
 mvn -B source:jar deploy $MAVEN_PARAMS || {
     if [ -z "$GITHUB_TOKEN" ]; then

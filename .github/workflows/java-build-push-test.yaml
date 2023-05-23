@@ -70,7 +70,6 @@ jobs:
           java-version: '11'
           cache: 'maven'
           server-id: github-verta # Value of the distributionManagement/repository/id field of the pom.xml
-          settings-path: ${{ github.workspace }} # location for the settings.xml file
 
       - name: Check formatting
         run: mvn spotless:check
@@ -79,7 +78,6 @@ jobs:
         run: ./build_and_publish_backend.sh
         env:
           GITHUB_TOKEN: ${{ github.token }}
-          LOCAL_MAVEN_SETTINGS: ${{ github.workspace }}/settings.xml
           BRANCH_NAME: ${{ steps.branch_names.outputs.current_branch }}
 
       - name: Comment Docker tag
