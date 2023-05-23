@@ -85,7 +85,7 @@ jobs:
         with:
           context: backend
           push: true
-          buildArgs: |
+          build-args: |
             BASE_IMAGE=493416687123.dkr.ecr.us-east-1.amazonaws.com/ops/containers/base/java:main-11-latest
           tags: |
             493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend:${{ steps.image_info.outputs.tag }}
