@@ -103,10 +103,12 @@ jobs:
 
       - name: Test
         env:
-          VERTA_REGISTRY_TEST_CONFIG: itconfig/config-test-h2.yaml
+          VERTA_MODELDB_TEST_CONFIG: itconfig/config-test-h2.yaml
           LIQUIBASE_MIGRATION: true
           RUN_LIQUIBASE_SEPARATE: false
-        run: JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 ./test.sh
+          LOG4J_CONFIGURATION_FILE: itconfig/log4j2.yaml
+          LOG4J_FORMAT_MSG_NO_LOOKUPS: true
+        run: JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 ./test_backend.sh
 
       - name: Upload Report
         uses: 'actions/upload-artifact@v2'
