@@ -119,35 +119,35 @@ jobs:
             Status: Testing
           comment_tag: docker_tag_${{ steps.image_info.outputs.tag }}
 
-      # - name: Test
-      #   env:
-      #     VERTA_MODELDB_TEST_CONFIG: itconfig/config-test-h2.yaml
-      #     LIQUIBASE_MIGRATION: true
-      #     RUN_LIQUIBASE_SEPARATE: false
-      #     LOG4J_CONFIGURATION_FILE: itconfig/log4j2.yaml
-      #     LOG4J_FORMAT_MSG_NO_LOOKUPS: true
-      #   run: JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 ./test_backend.sh
+      - name: Test
+        env:
+          VERTA_MODELDB_TEST_CONFIG: itconfig/config-test-h2.yaml
+          LIQUIBASE_MIGRATION: true
+          RUN_LIQUIBASE_SEPARATE: false
+          LOG4J_CONFIGURATION_FILE: itconfig/log4j2.yaml
+          LOG4J_FORMAT_MSG_NO_LOOKUPS: true
+        run: JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 ./test_backend.sh
 
-      # - name: Upload Report
-      #   uses: 'actions/upload-artifact@v2'
-      #   with:
-      #     name: report.xml
-      #     path: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
+      - name: Upload Report
+        uses: 'actions/upload-artifact@v2'
+        with:
+          name: report.xml
+          path: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
 
-      # - name: Jacoco Report to PR
-      #   id: jacoco
-      #   uses: madrapps/jacoco-report@v1.3
-      #   with:
-      #     paths: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
-      #     token: ${{ secrets.GITHUB_TOKEN }}
-      #     min-coverage-overall: 35
-      #     min-coverage-changed-files: 70
-      #     debug-mode: false
+      - name: Jacoco Report to PR
+        id: jacoco
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 35
+          min-coverage-changed-files: 70
+          debug-mode: false
 
-      # - name: Get the Coverage info
-      #   run: |
-      #     echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
-      #     echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
+      - name: Get the Coverage info
+        run: |
+          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
+          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
 
       - name: Comment Docker tag
         if: "(github.event_name == 'pull_request' && github.event.pull_request)"
