@@ -134,7 +134,7 @@ jobs:
             ${{ github.workspace }}/backend/common/target/site/jacoco/jacoco.xml
             ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
 
-      - name: Jacoco Report to PR
+      - name: Jacoco Report Common to PR
         id: jacoco-common
         uses: madrapps/jacoco-report@v1.3
         with:
@@ -145,7 +145,7 @@ jobs:
           debug-mode: false
           title: Common Code Coverage
 
-      - name: Jacoco Report to PR
+      - name: Jacoco Report Server to PR
         id: jacoco-server
         uses: madrapps/jacoco-report@v1.3
         with:
@@ -158,8 +158,11 @@ jobs:
 
       - name: Get the Coverage info
         run: |
-          echo "Total coverage ${{ steps.jacoco.outputs.coverage-overall }}"
-          echo "Changed Files coverage ${{ steps.jacoco.outputs.coverage-changed-files }}"
+          echo "Total coverage: ${{ steps.jacoco-common.outputs.coverage-overall }}"
+          echo "Changed Files: coverage ${{ steps.jacoco-common.outputs.coverage-changed-files }}"
+          echo "Total coverage: ${{ steps.jacoco-server.outputs.coverage-overall }}"
+          echo "Changed Files coverage: ${{ steps.jacoco-server.outputs.coverage-changed-files }}"
+
 
       - name: Comment Docker tag
         if: "(github.event_name == 'pull_request' && github.event.pull_request)"
