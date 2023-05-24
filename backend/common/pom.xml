@@ -308,9 +308,7 @@
                                 runtime agent. -->
                             <propertyName>surefireArgLine</propertyName>
                             <includes>
-                                     <include>ai/verta/modeldb/**</include>
-                                     <include>ai/verta/modeldb/common/*</include>
-                                     <include>ai/verta/modeldb/common/futures/*</include>
+                                     <include>ai/verta/modeldb/common/**</include>
                             </includes>
                         </configuration>
                     </execution>
