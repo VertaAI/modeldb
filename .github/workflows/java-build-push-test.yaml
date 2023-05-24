@@ -127,16 +127,29 @@ jobs:
         run: JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 ./test_backend.sh
 
       - name: Upload Report
-        uses: 'actions/upload-artifact@v2'
+        uses: 'actions/upload-artifact@v3'
         with:
-          name: report.xml
-          path: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
+          name: jacoco-reports
+          path: |
+            ${{ github.workspace }}/backend/common/target/site/jacoco/jacoco.xml
+            ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
 
       - name: Jacoco Report to PR
-        id: jacoco
+        id: jacoco-common
         uses: madrapps/jacoco-report@v1.3
         with:
-          paths: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml,${{ github.workspace }}/backend/common/target/site/jacoco/jacoco.xml
+          paths: ${{ github.workspace }}/backend/common/target/site/jacoco/jacoco.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          min-coverage-overall: 34
+          min-coverage-changed-files: 70
+          debug-mode: false
+          title: Common Code Coverage
+
+      - name: Jacoco Report to PR
+        id: jacoco-server
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           min-coverage-overall: 34
           min-coverage-changed-files: 70
