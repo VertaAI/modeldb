@@ -100,7 +100,7 @@ public abstract class CommonHibernateUtil extends CommonDBUtil {
         metaDataSrc.addAnnotatedClass(entity);
       }
 
-      LOGGER.info("Checking DB Connection");
+      LOGGER.debug("Checking DB Connection");
       boolean dbConnectionStatus = checkDBConnection(rdb, config.getTimeout());
       if (!dbConnectionStatus) {
         checkDBConnectionInLoop(config, true);
