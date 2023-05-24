@@ -158,10 +158,10 @@ jobs:
 
       - name: Get the Coverage info
         run: |
-          echo "Total coverage: ${{ steps.jacoco-common.outputs.coverage-overall }}"
-          echo "Changed Files: coverage ${{ steps.jacoco-common.outputs.coverage-changed-files }}"
-          echo "Total coverage: ${{ steps.jacoco-server.outputs.coverage-overall }}"
-          echo "Changed Files coverage: ${{ steps.jacoco-server.outputs.coverage-changed-files }}"
+          echo "Total coverage (common): ${{ steps.jacoco-common.outputs.coverage-overall }}"
+          echo "Changed Files coverage (common): coverage ${{ steps.jacoco-common.outputs.coverage-changed-files }}"
+          echo "Total coverage (server): ${{ steps.jacoco-server.outputs.coverage-overall }}"
+          echo "Changed Files coverage (server): ${{ steps.jacoco-server.outputs.coverage-changed-files }}"
 
 
       - name: Comment Docker tag
