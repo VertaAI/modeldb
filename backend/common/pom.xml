@@ -308,7 +308,7 @@
                                 runtime agent. -->
                             <propertyName>surefireArgLine</propertyName>
                             <includes>
-                                     <include>ai/verta/modeldb/common/**</include>
+                                     <include>ai/verta/modeldb/common/*</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -318,6 +318,11 @@
                         <goals>
                             <goal>report</goal>
                         </goals>
+                        <configuration>
+                            <includes>
+                                     <include>ai/verta/modeldb/common/*</include>
+                            </includes>
+                        </configuration>                        
                     </execution>
                 </executions>
             </plugin>                 
