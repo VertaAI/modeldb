@@ -54,11 +54,11 @@ public abstract class CommonDBUtil {
   }
 
   protected static boolean checkDBConnection(RdbConfig rdb, Integer timeout) {
-    LOGGER.info("Checking DB connection with timeout [{}]...", timeout);
+    LOGGER.debug("Checking DB connection with timeout [{}]...", timeout);
     try (var con = getDBConnection(rdb)) {
       LOGGER.debug("Got connection: {}", con);
       boolean valid = con.isValid(timeout);
-      LOGGER.info("DB Connection valid? : {}", valid);
+      LOGGER.debug("DB Connection valid? : {}", valid);
       return valid;
     } catch (Exception ex) {
       LOGGER.error("JdbiUtil checkDBConnection() got error ", ex);

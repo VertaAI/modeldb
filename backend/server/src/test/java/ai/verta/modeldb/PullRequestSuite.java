@@ -5,9 +5,6 @@ import org.junit.platform.suite.api.SelectPackages;
 import org.junit.platform.suite.api.Suite;
 
 @Suite
-@ExcludeClassNamePatterns({
-  "ai.verta.modeldb.metadata.MetadataTest",
-  ".*TestSequenceSuite",
-})
+@ExcludeClassNamePatterns({"ai.verta.modeldb.metadata.MetadataTest"})
 @SelectPackages({"ai.verta.modeldb"})
 public class PullRequestSuite {}
