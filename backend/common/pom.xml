@@ -291,7 +291,23 @@
                                 runtime agent. -->
                             <propertyName>surefireArgLine</propertyName>
                             <includes>
-                                     <include>ai/verta/modeldb/common/**</include>
+                                 <include>ai/verta/modeldb/common/**</include>
+                            </includes>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>post-unit-test</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                        <configuration>
+                            <!-- Sets the path to the file which contains the execution data. -->
+                            <dataFile>${project.build.directory}/coverage-reports/jacoco-ut.exec</dataFile>
+                            <!-- Sets the output directory for the code coverage report. -->
+                            <outputDirectory>${project.reporting.outputDirectory}/jacoco-ut</outputDirectory>
+                            <includes>
+                                <include>ai/verta/modeldb/common/**</include>
                             </includes>
                         </configuration>
                     </execution>
@@ -303,7 +319,7 @@
                         </goals>
                         <configuration>
                             <includes>
-                                     <include>ai/verta/modeldb/common/**</include>
+                                <include>ai/verta/modeldb/common/**</include>
                             </includes>
                         </configuration>                        
                     </execution>
