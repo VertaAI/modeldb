@@ -10,7 +10,7 @@ on:
 
 permissions:
   id-token: write # This is required for requesting the JWT
-  contents: read  # This is required for actions/checkout
+  contents: write  # Read is is required for actions/checkout, write is required to comment on commits
   pull-requests: write # This is needed for the coverage plugin to write comments to the PR
   packages: write
   statuses: write
@@ -58,7 +58,7 @@ jobs:
       - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
         with:
-          name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
+          name: "Tag: ${{ steps.image_info.outputs.tag }}"
           description: "Building..."
 
       - name: Set up JDK 11
@@ -81,7 +81,7 @@ jobs:
       - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
         with:
-          name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
+          name: "Tag: ${{ steps.image_info.outputs.tag }}"
           description: "Publishing..."
 
       - name: Inspect image to see if it already exists
@@ -103,16 +103,17 @@ jobs:
         env:
           ECR_REGISTRY: 493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend
 
-      - name: Docker image status update
-        uses: ouzi-dev/commit-status-updater@v2
-        with:
-          name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
-          status: success
-
       - name: Create commit comment
         uses: peter-evans/commit-comment@v2
         with:
           body: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
+
+      - name: Docker image status update
+        uses: ouzi-dev/commit-status-updater@v2
+        with:
+          name: "Tag: ${{ steps.image_info.outputs.tag }}"
+          url: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          status: success
 
       - name: Test
         env:
