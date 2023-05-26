@@ -142,6 +142,7 @@ jobs:
           min-coverage-overall: 10
           min-coverage-changed-files: 70
           debug-mode: false
+          update-comment: true
           title: Common Code Coverage
 
       - name: Jacoco Report Server to PR
@@ -153,6 +154,7 @@ jobs:
           min-coverage-overall: 34
           min-coverage-changed-files: 70
           debug-mode: false
+          update-comment: true
           title: Backend Code Coverage
 
       - name: Create Code Coverage comment
