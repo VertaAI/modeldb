@@ -53,6 +53,7 @@ jobs:
           pr_sha="${{ github.event.pull_request.head.sha }}"
           sha=${pr_sha:-$GITHUB_SHA}
           sha_details=$(TZ=UTC git show -s --format=%cd--%h --date='format-local:%Y-%m-%dT%H-%M-%S' --abbrev=7 $sha)
+          echo "sha=${sha}" >> $GITHUB_OUTPUT
           echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
 
       - name: Docker image status update
@@ -112,7 +113,7 @@ jobs:
         uses: ouzi-dev/commit-status-updater@v2
         with:
           name: "Tag: ${{ steps.image_info.outputs.tag }}"
-          url: ${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}
+          url: "${{ github.server_url }}/${{ github.repository }}/commit/${{ steps.image_info.outputs.sha }}#comments"
           status: success
 
       - name: Test
