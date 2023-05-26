@@ -55,21 +55,11 @@ jobs:
           sha_details=$(TZ=UTC git show -s --format=%cd--%h --date='format-local:%Y-%m-%dT%H-%M-%S' --abbrev=7 $sha)
           echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
 
-      - name: Docker image
+      - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
         with:
-          description: |
-            Docker tag: ${{ steps.image_info.outputs.tag }}
-            Status: Building
-
-      - name: Comment Docker tag
-        if: "(github.event_name == 'pull_request' && github.event.pull_request)"
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-            Docker tag: ${{ steps.image_info.outputs.tag }}
-            Status: Building
-          comment_tag: docker_tag_${{ steps.image_info.outputs.tag }}
+          name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
+          description: "Building..."
 
       - name: Set up JDK 11
         uses: actions/setup-java@v3
@@ -88,21 +78,11 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           BRANCH_NAME: ${{ steps.branch_names.outputs.current_branch }}
 
-      - name: Docker image
+      - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
         with:
-          description: |
-            Docker tag: ${{ steps.image_info.outputs.tag }}
-            Status: Publishing
-
-      - name: Comment Docker tag
-        if: "(github.event_name == 'pull_request' && github.event.pull_request)"
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-            Docker tag: ${{ steps.image_info.outputs.tag }}
-            Status: Publishing
-          comment_tag: docker_tag_${{ steps.image_info.outputs.tag }}
+          name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
+          description: "Publishing..."
 
       - name: Inspect image to see if it already exists
         id: inspect_image
@@ -123,22 +103,11 @@ jobs:
         env:
           ECR_REGISTRY: 493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend
 
-      - name: Docker image
+      - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
         with:
+          name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
           status: success
-          description: |
-            Docker tag: ${{ steps.image_info.outputs.tag }}
-            Status: Published
-
-      - name: Comment Docker tag
-        if: "(github.event_name == 'pull_request' && github.event.pull_request)"
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: |
-            Docker tag: ${{ steps.image_info.outputs.tag }}
-            Status: Testing
-          comment_tag: docker_tag_${{ steps.image_info.outputs.tag }}
 
       - name: Test
         env:
@@ -179,20 +148,15 @@ jobs:
           debug-mode: false
           title: Backend Code Coverage
 
-      - name: Get the Coverage info
-        run: |
-          echo "Total coverage (common): ${{ steps.jacoco-common.outputs.coverage-overall }}"
-          echo "Changed Files coverage (common): coverage ${{ steps.jacoco-common.outputs.coverage-changed-files }}"
-          echo "Total coverage (server): ${{ steps.jacoco-server.outputs.coverage-overall }}"
-          echo "Changed Files coverage (server): ${{ steps.jacoco-server.outputs.coverage-changed-files }}"
-
-
-      - name: Comment Docker tag
-        if: "(github.event_name == 'pull_request' && github.event.pull_request)"
-        uses: thollander/actions-comment-pull-request@v2
+      - name: Code Coverage
+        uses: ouzi-dev/commit-status-updater@v2
         with:
-          message: |
-            Docker tag: ${{ steps.image_info.outputs.tag }}
-            Status: Complete
-          comment_tag: docker_tag_${{ steps.image_info.outputs.tag }}
+          name: "Code Coverage (common -- server): ${{ steps.jacoco-common.outputs.coverage-overall }} -- ${{ steps.jacoco-server.outputs.coverage-overall }}"
+          status: success
+          description: |
+            Total coverage (common): ${{ steps.jacoco-common.outputs.coverage-overall }}
+            Total coverage (server): ${{ steps.jacoco-server.outputs.coverage-overall }}
+
+            Changed Files coverage (common): coverage ${{ steps.jacoco-common.outputs.coverage-changed-files }}
+            Changed Files coverage (server): ${{ steps.jacoco-server.outputs.coverage-changed-files }}
 
