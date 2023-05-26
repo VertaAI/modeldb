@@ -13,6 +13,7 @@ permissions:
   contents: read  # This is required for actions/checkout
   pull-requests: write # This is needed for the coverage plugin to write comments to the PR
   packages: write
+  statuses: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
@@ -54,6 +55,13 @@ jobs:
           sha_details=$(TZ=UTC git show -s --format=%cd--%h --date='format-local:%Y-%m-%dT%H-%M-%S' --abbrev=7 $sha)
           echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
 
+      - name: Docker image
+        uses: ouzi-dev/commit-status-updater@v2
+        with:
+          description: |
+            Docker tag: ${{ steps.image_info.outputs.tag }}
+            Status: Building
+
       - name: Comment Docker tag
         if: "(github.event_name == 'pull_request' && github.event.pull_request)"
         uses: thollander/actions-comment-pull-request@v2
@@ -79,6 +87,13 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
           BRANCH_NAME: ${{ steps.branch_names.outputs.current_branch }}
+
+      - name: Docker image
+        uses: ouzi-dev/commit-status-updater@v2
+        with:
+          description: |
+            Docker tag: ${{ steps.image_info.outputs.tag }}
+            Status: Publishing
 
       - name: Comment Docker tag
         if: "(github.event_name == 'pull_request' && github.event.pull_request)"
@@ -107,6 +122,14 @@ jobs:
             493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend:${{ steps.image_info.outputs.tag }}
         env:
           ECR_REGISTRY: 493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend
+
+      - name: Docker image
+        uses: ouzi-dev/commit-status-updater@v2
+        with:
+          status: success
+          description: |
+            Docker tag: ${{ steps.image_info.outputs.tag }}
+            Status: Published
 
       - name: Comment Docker tag
         if: "(github.event_name == 'pull_request' && github.event.pull_request)"
