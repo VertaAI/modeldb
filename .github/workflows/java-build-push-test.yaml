@@ -59,7 +59,6 @@ jobs:
         uses: ouzi-dev/commit-status-updater@v2
         with:
           name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
-          url: ${{ steps.image_info.outputs.tag }}
           description: "Building..."
 
       - name: Set up JDK 11
@@ -83,7 +82,6 @@ jobs:
         uses: ouzi-dev/commit-status-updater@v2
         with:
           name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
-          url: ${{ steps.image_info.outputs.tag }}
           description: "Publishing..."
 
       - name: Inspect image to see if it already exists
@@ -109,8 +107,12 @@ jobs:
         uses: ouzi-dev/commit-status-updater@v2
         with:
           name: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
-          url: ${{ steps.image_info.outputs.tag }}
           status: success
+
+      - name: Create commit comment
+        uses: peter-evans/commit-comment@v2
+        with:
+          body: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
 
       - name: Test
         env:
@@ -151,28 +153,13 @@ jobs:
           debug-mode: false
           title: Backend Code Coverage
 
-      - name: Code Coverage
-        uses: ouzi-dev/commit-status-updater@v2
+      - name: Create Code Coverage comment
+        uses: peter-evans/commit-comment@v2
         with:
-          name: "Code Coverage (common -- server): ${{ steps.jacoco-common.outputs.coverage-overall }} -- ${{ steps.jacoco-server.outputs.coverage-overall }}"
-          status: success
-          description: |
+          body: |
             Total coverage (common): ${{ steps.jacoco-common.outputs.coverage-overall }}
             Total coverage (server): ${{ steps.jacoco-server.outputs.coverage-overall }}
 
             Changed Files coverage (common): coverage ${{ steps.jacoco-common.outputs.coverage-changed-files }}
             Changed Files coverage (server): ${{ steps.jacoco-server.outputs.coverage-changed-files }}
-
-
-      - name: Total Code Coverage
-        uses: ouzi-dev/commit-status-updater@v2
-        with:
-          name: "Total Coverage - Common: ${{ steps.jacoco-common.outputs.coverage-overall }} / Server: ${{ steps.jacoco-server.outputs.coverage-overall }}"
-          status: success
-
-      - name: Total Code Coverage
-        uses: ouzi-dev/commit-status-updater@v2
-        with:
-          name: "Changed File Coverage - Common: ${{ steps.jacoco-common.outputs.coverage-overall }} / Server: ${{ steps.jacoco-server.outputs.coverage-overall }}"
-          status: success
 
