@@ -541,5 +541,5 @@
       "default": "SEARCH_OPTION_UNKNOWN"
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }
