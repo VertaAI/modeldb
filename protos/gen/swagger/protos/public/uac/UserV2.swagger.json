@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/v2/organization/{org_id}/serviceAccounts/{service_account_id}": {
+    "/organization/{org_id}/serviceAccounts/{service_account_id}": {
       "delete": {
         "summary": "Removes a service account from the organization",
         "operationId": "UserServiceV2_removeServiceAccount",
@@ -48,7 +48,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/user": {
+    "/organization/{org_id}/user": {
       "get": {
         "summary": "Get a user inside an organization, returning details",
         "operationId": "UserServiceV2_getUser",
@@ -91,7 +91,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/users": {
+    "/organization/{org_id}/users": {
       "get": {
         "summary": "List for users inside an organization, returning details",
         "operationId": "UserServiceV2_searchUsers",
@@ -215,7 +215,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/users/{user_id}": {
+    "/organization/{org_id}/users/{user_id}": {
       "delete": {
         "summary": "Removes the given user to the organization",
         "operationId": "UserServiceV2_removeUser",
@@ -252,7 +252,7 @@
         ]
       }
     },
-    "/v2/organization/{service_account.org_id}/serviceAccounts": {
+    "/organization/{service_account.org_id}/serviceAccounts": {
       "post": {
         "summary": "Adds a service account to the organization",
         "operationId": "UserServiceV2_addServiceAccount",
@@ -541,5 +541,5 @@
       "default": "SEARCH_OPTION_UNKNOWN"
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }

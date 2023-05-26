@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/v2/organization/{org_id}/roles": {
+    "/organization/{org_id}/roles": {
       "get": {
         "operationId": "RoleServiceV2_searchRoles",
         "responses": {
@@ -55,7 +55,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/roles/{role_id}": {
+    "/organization/{org_id}/roles/{role_id}": {
       "get": {
         "operationId": "RoleServiceV2_getRole",
         "responses": {
@@ -125,7 +125,7 @@
         ]
       }
     },
-    "/v2/organization/{role.org_id}/roles": {
+    "/organization/{role.org_id}/roles": {
       "post": {
         "operationId": "RoleServiceV2_setRole",
         "responses": {
@@ -333,5 +333,5 @@
       }
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }

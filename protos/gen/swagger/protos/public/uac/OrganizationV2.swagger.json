@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/v2/organization": {
+    "/organization": {
       "get": {
         "summary": "Lists the organizations that the current user can access",
         "operationId": "OrganizationServiceV2_listOrganizations",
@@ -81,7 +81,7 @@
         ]
       }
     },
-    "/v2/organization/getOrganizationByName": {
+    "/organization/getOrganizationByName": {
       "get": {
         "summary": "Gets information from a given organization",
         "operationId": "OrganizationServiceV2_getOrganizationByName",
@@ -112,7 +112,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}": {
+    "/organization/{org_id}": {
       "get": {
         "summary": "Gets information from a given organization",
         "operationId": "OrganizationServiceV2_getOrganizationById",
@@ -330,5 +330,5 @@
       }
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }

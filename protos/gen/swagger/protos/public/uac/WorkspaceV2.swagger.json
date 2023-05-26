@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/v2/organization/{org_id}/workspace/{workspace_id}": {
+    "/organization/{org_id}/workspace/{workspace_id}": {
       "delete": {
         "operationId": "WorkspaceServiceV2_deleteWorkspace",
         "responses": {
@@ -48,7 +48,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/workspaces": {
+    "/organization/{org_id}/workspaces": {
       "get": {
         "operationId": "WorkspaceServiceV2_searchWorkspaces",
         "responses": {
@@ -92,7 +92,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/workspaces/{workspace_id}": {
+    "/organization/{org_id}/workspaces/{workspace_id}": {
       "get": {
         "operationId": "WorkspaceServiceV2_getWorkspace",
         "responses": {
@@ -129,7 +129,7 @@
         ]
       }
     },
-    "/v2/organization/{workspace.org_id}/workspaces": {
+    "/organization/{workspace.org_id}/workspaces": {
       "post": {
         "operationId": "WorkspaceServiceV2_setWorkspace",
         "responses": {
@@ -317,5 +317,5 @@
       }
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }

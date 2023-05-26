@@ -337,5 +337,5 @@
       "type": "object"
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }

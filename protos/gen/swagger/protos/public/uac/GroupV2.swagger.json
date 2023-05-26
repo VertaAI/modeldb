@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/v2/organization/{group.org_id}/groups": {
+    "/organization/{group.org_id}/groups": {
       "post": {
         "summary": "Create or update a group",
         "operationId": "GroupService_setGroup",
@@ -50,7 +50,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/groups": {
+    "/organization/{org_id}/groups": {
       "get": {
         "summary": "Lists the groups that the provided user is a member of, or all groups if user isn't specified",
         "operationId": "GroupService_searchGroups",
@@ -114,7 +114,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/groups/{group_id}": {
+    "/organization/{org_id}/groups/{group_id}": {
       "get": {
         "summary": "Gets information from a given group",
         "operationId": "GroupService_getGroupById",
@@ -186,7 +186,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/groups/{group_id}/removeUsers": {
+    "/organization/{org_id}/groups/{group_id}/removeUsers": {
       "post": {
         "summary": "Removes the given user from the group",
         "operationId": "GroupService_removeUsers",
@@ -231,7 +231,7 @@
         ]
       }
     },
-    "/v2/organization/{org_id}/groups/{group_id}/users": {
+    "/organization/{org_id}/groups/{group_id}/users": {
       "post": {
         "summary": "Adds the given user to the group",
         "operationId": "GroupService_addUsers",
@@ -515,5 +515,5 @@
       }
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }

@@ -843,5 +843,5 @@
       "title": "A resource describes a specific object in a service that can receive an action"
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }

@@ -11,7 +11,7 @@
     "application/json"
   ],
   "paths": {
-    "/v2/resources": {
+    "/resources": {
       "post": {
         "operationId": "ResourceServiceV2_getResources",
         "responses": {
@@ -134,5 +134,5 @@
       }
     }
   },
-  "basePath": "/v1"
+  "basePath": "/v2"
 }
