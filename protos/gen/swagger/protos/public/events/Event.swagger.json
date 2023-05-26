@@ -1424,5 +1424,5 @@
       "type": "object"
     }
   },
-  "basePath": "/v2"
+  "basePath": "/v1"
 }
