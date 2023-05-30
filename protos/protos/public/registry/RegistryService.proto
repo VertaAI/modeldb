@@ -10,6 +10,8 @@ import "google/protobuf/field_mask.proto";
 import "common/CommonService.proto";
 import "modeldb/versioning/Environment.proto";
 import "modeldb/versioning/Code.proto";
+import "registry/ChecklistService.proto";
+import "registry/CustomAttributeService.proto";
 import "registry/StageService.proto";
 import "uac/Collaborator.proto";
 
@@ -84,6 +86,10 @@ message RegisteredModel {
 
     //owner's verta_id
     string owner = 10;
+    oneof owner_tracking {
+        uint64 owner_id = 21;
+        common.GroupId group_owner_id = 22;
+    }
 
     // Other attributes
     repeated common.KeyValue attributes = 11;
@@ -107,6 +113,11 @@ message RegisteredModel {
     DataTypeEnum.DataType data_type = 18;
     ActionTypeEnum.ActionType action_type = 19 [deprecated = true];
     TaskTypeEnum.TaskType task_type = 20;
+
+    repeated CustomAttributeValue custom_attribute_values = 23;
+
+    // Is true if the model accepts pii as input
+    bool pii = 24;
 }
 
 //CRUD for Registred Models
@@ -237,6 +248,10 @@ message ModelVersion {
 
     //owner's verta_id
     string owner = 16;
+    oneof owner_tracking {
+        uint64 owner_id = 31;
+        common.GroupId group_owner_id = 32;
+    }
 
     // Other attributes
     repeated common.KeyValue attributes = 17;
@@ -272,6 +287,11 @@ message ModelVersion {
     bool hide_output_label = 29;
 
     repeated ExternalDeployment external_deployments = 30;
+
+    // Reference: https://vertaai.atlassian.net/browse/CAT-173
+    repeated ChecklistItemValue checklist_item_values = 33;
+
+    repeated CustomAttributeValue custom_attribute_values = 34;
 }
 
 message DockerMetadata {
@@ -425,7 +445,16 @@ message LogDockerMetadataInModelVersion {
     message Response { }
 }
 
-message ExternalDeployment {
+message LocationTypeEnum {
+  enum LocationType {
+    UNKNOWN = 0;
+    CLOUD_PROVIDER = 1;
+    INTERNAL_PRIVATE_NETWORK = 2;
+    DEVICE = 3;
+  }
+}
+
+message ExternalDeployment {    
     // internal id
     uint64 id = 1;
 
@@ -446,9 +475,15 @@ message ExternalDeployment {
 
     // Brief description
     string description = 7;
-}
 
-message ExternalDeploymentRequest {
+    // Location Type
+    LocationTypeEnum.LocationType location_type = 8;
+
+    // Cloud Provider
+    string cloud_provider = 9;
+}   
+
+message ExternalDeploymentRequest {    
     uint64 external_deployment_id = 1;
 
     message Response {
@@ -457,6 +492,11 @@ message ExternalDeploymentRequest {
 }
 
 message Empty {
+}
+
+message DeleteModelVersionArtifactRequest {
+    uint64 model_version_id = 1;
+    string artifact_key = 2;
 }
 
 service RegistryService {
@@ -645,6 +685,12 @@ service RegistryService {
         };
     };
 
+    rpc DeleteModelVersionArtifact(DeleteModelVersionArtifactRequest) returns (Empty) {
+        option (google.api.http) = {
+            delete: "/v1/registry/model_versions/{model_version_id}/artifacts/{artifact_key}"
+        };
+    }
+
     rpc logDatasetsInModelVersion(LogDatasetsInModelVersion) returns (LogDatasetsInModelVersion.Response) {
         option (google.api.http) = {
             post: "/v1/registry/model_versions/{model_version_id}/logDatasets"
@@ -672,7 +718,7 @@ service RegistryService {
             body: "*"
         };
     };
-
+    
     rpc GetExternalDeployment(ExternalDeploymentRequest) returns (ExternalDeploymentRequest.Response) {
         option (google.api.http) = {
             get: "/v1/registry/registered_models/model_versions/external_deployments/{external_deployment_id}"

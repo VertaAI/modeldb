@@ -31,7 +31,7 @@ jobs:
           fetch-depth: 2
 
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@master
+        uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::493416687123:role/github-actions
           aws-region: us-east-1
@@ -42,7 +42,7 @@ jobs:
 
       - name: Get branch names
         id: branch_names
-        uses: tj-actions/branch-names@v6
+        uses: tj-actions/branch-names@v7
 
       - name: Get docker image tag
         id: image_info
@@ -86,14 +86,15 @@ jobs:
           description: "Publishing..."
 
       - name: Inspect image to see if it already exists
-        id: inspect_image
-        continue-on-error: true
+        id: should_publish
         run: |
-          docker manifest inspect 493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend:${{ steps.image_info.outputs.tag }}
+          TARGETS=""
+          docker manifest inspect 493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend:${{ steps.image_info.outputs.tag }} || TARGETS="modeldb"
+          echo "targets=${TARGETS}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image to ECR
         uses: docker/build-push-action@v4
-        if: "!(steps.inspect_image.outcome == 'success')"
+        if: "!(steps.should_publish.outputs.targets == '')"
         with:
           context: backend
           push: true
@@ -106,6 +107,7 @@ jobs:
 
       - name: Create commit comment
         uses: peter-evans/commit-comment@v2
+        if: "!(steps.should_publish.outputs.targets == '')"
         with:
           body: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
 
@@ -135,7 +137,7 @@ jobs:
 
       - name: Jacoco Report Common to PR
         id: jacoco-common
-        uses: madrapps/jacoco-report@v1.3
+        uses: madrapps/jacoco-report@7ce0d588f6d00dd4a7b63a597383332e0c5c72d0 # Using specific commit until new release available
         with:
           paths: ${{ github.workspace }}/backend/common/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -147,7 +149,7 @@ jobs:
 
       - name: Jacoco Report Server to PR
         id: jacoco-server
-        uses: madrapps/jacoco-report@v1.3
+        uses: madrapps/jacoco-report@7ce0d588f6d00dd4a7b63a597383332e0c5c72d0 # Using specific commit until new release available
         with:
           paths: ${{ github.workspace }}/backend/server/target/site/jacoco/jacoco.xml
           token: ${{ secrets.GITHUB_TOKEN }}

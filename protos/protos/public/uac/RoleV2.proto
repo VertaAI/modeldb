@@ -37,6 +37,13 @@ message RoleResourceActions {
     repeated ActionTypeV2 allowed_actions = 3;
 }
 
+message GetEnabledActions {
+    string org_id = 1;
+    message Response {
+        repeated RoleResourceActions enabled_actions = 1;
+    }
+}
+
 message RoleV2 {
     string org_id = 1;
     string id = 2;
@@ -82,6 +89,15 @@ message GetRoleV2 {
     }
 }
 
+message GetSelfAllowedActionsBatchForWorkspace {
+    string org_id = 1;
+    uint64 workspace_id = 2;
+    ResourceTypeV2 resource_type = 3;
+    message Response {
+        RoleResourceActions allowed_actions = 1;
+    }
+}
+
 service RoleServiceV2 {
     rpc setRole (SetRoleV2) returns (SetRoleV2.Response) {
         option (google.api.http) = {
@@ -107,4 +123,17 @@ service RoleServiceV2 {
             get: "/v2/organization/{org_id}/roles/{role_id}"
         };
     }
+
+    rpc getEnabledActions (GetEnabledActions) returns (GetEnabledActions.Response) {
+        option (google.api.http) = {
+            get: "/v2/organization/{org_id}/getEnabledActions"
+        };
+    }
+
+    rpc getSelfAllowedActionsBatchForWorkspace (GetSelfAllowedActionsBatchForWorkspace) returns (GetSelfAllowedActionsBatchForWorkspace.Response) {
+        option (google.api.http) = {
+            post : "/v2/organization/{org_id}/getSelfAllowedActionsBatchForWorkspace"
+            body : "*"
+        };
+    };
 }
