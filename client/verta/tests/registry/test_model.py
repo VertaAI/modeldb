@@ -132,6 +132,23 @@ class TestModel:
         registered_model.set_description(desc)
         assert desc == registered_model.get_description()
 
+    def test_pii(self, client, created_entities):
+        # Test setting on creation
+        registered_model = client.get_or_create_registered_model(pii=True)
+        created_entities.append(registered_model)
+        assert registered_model.get_pii()
+        registered_model = client.create_registered_model(pii=True)
+        created_entities.append(registered_model)
+        assert registered_model.get_pii()
+
+        registered_model = client.get_or_create_registered_model()
+        created_entities.append(registered_model)
+        registered_model.set_pii(True)
+        assert registered_model.get_pii()
+        registered_model.set_pii(False)
+        assert not registered_model.get_pii()
+
+
 
 class TestTaskTypes:
     @pytest.mark.parametrize(
