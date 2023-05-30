@@ -193,11 +193,6 @@
             <version>5.15.0</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>io.opentelemetry</groupId>
-            <artifactId>opentelemetry-sdk-testing</artifactId>
-            <scope>test</scope>
-        </dependency>
         <!-- Snyk abatement -->
         <dependency>
             <groupId>com.google.code.gson</groupId>
