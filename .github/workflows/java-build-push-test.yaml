@@ -10,7 +10,7 @@ on:
 
 permissions:
   id-token: write # This is required for requesting the JWT
-  contents: write  # Read is is required for actions/checkout, write is required to comment on commits
+  contents: write  # Read is required for actions/checkout, write is required to comment on commits
   pull-requests: write # This is needed for the coverage plugin to write comments to the PR
   packages: write
   statuses: write
