@@ -1092,6 +1092,9 @@ class RegisteredModel(_entity._ModelDBEntity):
     RegisteredModelMessage = _RegistryService.RegisteredModel
 
     def set_pii(self, pii):
+        """
+        Note that you *MUST* update any live endpoints running this model in order to propagate this change.
+        """
         self._update(self.RegisteredModelMessage(pii=pii))
 
     def get_pii(self):
