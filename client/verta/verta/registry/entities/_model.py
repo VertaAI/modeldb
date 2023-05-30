@@ -1091,8 +1091,12 @@ class RegisteredModel(_entity._ModelDBEntity):
     def set_pii(self, pii):
         """
         Updates the PII value of this Registered Model.
-        
-        ``True`` indicates that the model ingests personally identifiable information.
+
+
+        Parameters
+        ----------
+        pii : bool
+            ``True`` indicates that the model ingests personally identifiable information.
 
         Warnings
         --------
@@ -1104,6 +1108,15 @@ class RegisteredModel(_entity._ModelDBEntity):
         self._update(self._msg, method="PUT")
 
     def get_pii(self):
+        """
+        Returns the PII value of this Registered Model.
+
+        Returns
+        -------
+        bool
+            ``True`` indicates that the model ingests personally identifiable information.
+
+        """
         self._refresh_cache()
         return self._msg.pii
 
