@@ -55,7 +55,7 @@ jobs:
           sha_details=$(TZ=UTC git show -s --format=%cd--%h --date='format-local:%Y-%m-%dT%H-%M-%S' --abbrev=7 $sha)
           echo "sha=${sha}" >> $GITHUB_OUTPUT
           echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
-          echo "registry=493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend" >> $GITHUB_OUTPUT
+          echo "registry_root=493416687123.dkr.ecr.us-east-1.amazonaws.com" >> $GITHUB_OUTPUT
           
       - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
@@ -90,7 +90,7 @@ jobs:
         id: should_publish
         run: |
           TARGETS=""
-          docker manifest inspect ${{ steps.image_info.outputs.registry }}:${{ steps.image_info.outputs.tag }} || TARGETS="modeldb"
+          docker manifest inspect ${{ steps.image_info.outputs.registry_root }}/services/oss/modeldb/backend:${{ steps.image_info.outputs.tag }} || TARGETS="modeldb"
           echo "targets=${TARGETS}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image to ECR
@@ -100,14 +100,14 @@ jobs:
           context: backend
           push: true
           build-args: |
-            BASE_IMAGE=493416687123.dkr.ecr.us-east-1.amazonaws.com/ops/containers/base/java:main-11-latest
+            BASE_IMAGE=${{ steps.image_info.outputs.registry_root }}/ops/containers/base/java:main-11-latest
           tags: |
-            ${{ steps.image_info.outputs.registry }}:${{ steps.image_info.outputs.tag }}
+            ${{ steps.image_info.outputs.registry_root }}/services/oss/modeldb/backend:${{ steps.image_info.outputs.tag }}
         env:
-          ECR_REGISTRY: ${{ steps.image_info.outputs.registry }}
+          ECR_REGISTRY: ${{ steps.image_info.outputs.registry_root }}/services/oss/modeldb/backend
 
       - name: Configure AWS credentials
-        if: startsWith( 'refs/heads/release/', github.ref) ||  startsWith( 'refs/heads/gha', github.ref)
+        if: startsWith( 'release/', steps.branch_names.outputs.current_branch) ||  startsWith( 'gha', steps.branch_names.outputs.current_branch)
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::493416687123:role/github-actions
@@ -115,14 +115,14 @@ jobs:
 
       - name: Inspect image to see if it already exists
         id: mirror-release
-        if: startsWith( 'refs/heads/release/', github.ref) ||  startsWith( 'refs/heads/gha', github.ref)
+        if: startsWith( 'release/', steps.branch_names.outputs.current_branch) ||  startsWith( 'gha', steps.branch_names.outputs.current_branch)
         env:
-          ECR_REGISTRY: ${{ steps.image_info.outputs.registry }}
+          ECR_REGISTRY: ${{ steps.image_info.outputs.registry_root }}/services/oss/modeldb/backend
         shell: bash
         run: |
           TARGET_REGISTRY=${ECR_REGISTRY/us-east-1/us-west-2}
           docker manifest inspect ${TARGET_REGISTRY}:${{ steps.image_info.outputs.tag }} || \
-            docker tag ${{ steps.image_info.outputs.registry }}:${{ steps.image_info.outputs.tag }} ${TARGET_REGISTRY}:${{ steps.image_info.outputs.tag }} && \
+            docker tag ${ECR_REGISTRY}:${{ steps.image_info.outputs.tag }} ${TARGET_REGISTRY}:${{ steps.image_info.outputs.tag }} && \
             docker push ${TARGET_REGISTRY}:${{ steps.image_info.outputs.tag }}
 
       - name: Create commit comment
