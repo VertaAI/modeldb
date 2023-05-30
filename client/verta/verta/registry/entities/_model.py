@@ -1090,7 +1090,9 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def set_pii(self, pii):
         """
-        Updates the PII value of this Registered Model. True indicates that the model ingests PII.
+        Updates the PII value of this Registered Model.
+        
+        ``True`` indicates that the model ingests personally identifiable information.
 
         Warnings
         --------
