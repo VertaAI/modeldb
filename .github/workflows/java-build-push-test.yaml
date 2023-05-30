@@ -55,7 +55,7 @@ jobs:
           sha_details=$(TZ=UTC git show -s --format=%cd--%h --date='format-local:%Y-%m-%dT%H-%M-%S' --abbrev=7 $sha)
           echo "sha=${sha}" >> $GITHUB_OUTPUT
           echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
-          echo "registry=493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend"
+          echo "registry=493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend" >> $GITHUB_OUTPUT
           
       - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
