@@ -19,13 +19,13 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  VERTA_ECR_REGISTRY: "493416687123.dkr.ecr.us-east-1.amazonaws.com"
+  ECR_REPOSITORY: "493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend"
+
 jobs:
   build-push-test:
     runs-on: ubuntu-latest
-
-    env:
-      VERTA_ECR_REGISTRY: "493416687123.dkr.ecr.us-east-1.amazonaws.com"
-      ECR_REPOSITORY: "${{ env.VERTA_ECR_REGISTRY }}/services/oss/modeldb/backend"
 
     steps:
       - name: Checkout repository
@@ -59,7 +59,7 @@ jobs:
           sha_details=$(TZ=UTC git show -s --format=%cd--%h --date='format-local:%Y-%m-%dT%H-%M-%S' --abbrev=7 $sha)
           echo "sha=${sha}" >> $GITHUB_OUTPUT
           echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
-          
+
       - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
         with:
