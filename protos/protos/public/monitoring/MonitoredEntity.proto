@@ -8,31 +8,11 @@ option java_multiple_files = true;
 import "uac/Collaborator.proto";
 import "google/api/annotations.proto";
 import "google/protobuf/struct.proto";
+import "common/CommonService.proto";
 
 // Common
 
 message Empty {}
-
-message KeyValue {
-  string key = 1;
-  google.protobuf.Value value = 2;
-
-  /*
-  *   As per documentation of proto buffer 3.
-  *   For enums, the default value is the first defined enum value, which must be 0.
-  */
-  ValueTypeEnum.ValueType value_type = 3;
-}
-
-message ValueTypeEnum {
-  enum ValueType {
-    STRING = 0;
-    NUMBER = 1;
-    LIST = 2;
-    BLOB = 3;
-  }
-}
-
 
 // Monitored entity
 
@@ -46,12 +26,19 @@ message MonitoredEntity {
   map<string, string> attributes = 8;
   //owner's verta_id
   string owner = 9;
+  oneof owner_tracking {
+    uint64 owner_id = 16;
+    common.GroupId group_owner_id = 17;
+  }
   uac.ResourceVisibility resource_visibility = 10;
   // The next field only makes sense when visibility == ORG_CUSTOM
   // They will be empty otherwise
   uac.CollaboratorPermissions custom_permission = 11;
   uint64 version_number = 12;
   uint64 endpoint_id = 13;
+  string datasource_name = 14;
+  // a tag that says where the data for this monitored entity comes from. eg. "endpoint" or "batch"
+  string origin = 15;
 }
 
 message CreateMonitoredEntityRequest {
@@ -68,7 +55,10 @@ message CreateMonitoredEntityRequest {
   // The next field only makes sense when visibility == ORG_CUSTOM
   // They will be empty otherwise
   uac.CollaboratorPermissions custom_permission = 8;
+  // Optional.  If the data originates from a Verta endpoint, set this to the endpoint id.
   uint64 endpoint_id = 9;
+  // a tag that says where the data for this monitored entity comes from. eg. "endpoint" or "batch"
+  string origin = 10;
 
   message Response {
     MonitoredEntity monitored_entity = 1;

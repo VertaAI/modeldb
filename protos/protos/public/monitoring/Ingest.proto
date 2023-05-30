@@ -9,15 +9,76 @@ import "google/api/annotations.proto";
 
 import "modeldb/versioning/Dataset.proto";
 
-message BatchIngestRequest {
-    message SourceTypeEnum {
-        enum SourceType {
-            UNKNOWN = 0; // Error
-            REFERENCE = 1;
-            GROUND_TRUTH = 2;
-            PREDICTION = 3;
+message SourceTypeEnum {
+    enum SourceType {
+        UNKNOWN = 0; // Error
+        REFERENCE = 1;
+        GROUND_TRUTH = 2;
+        PREDICTION = 3;
+    }
+}
+
+
+message ColumnSpec {
+    // Name of the column that is associated with the monitoring system. Used to enable datasets to have different column names.
+    // Equivalent to x-verta-monitoring-name in the model API.
+    // Optional (will default to the original column name).
+    string monitoring_name = 1;
+
+    message IOTypeEnum {
+        enum IOType {
+            UNKNOWN = 0;
+            INPUT = 1;
+            OUTPUT = 2;
+            GROUND_TRUTH = 3;
         }
     }
+    // Type of the IO entry so that it can be mapped correctly.
+    IOTypeEnum.IOType io_type = 2;
+
+    // Name of the "monitoring_name" entry that this column corresponds to a confidence for.
+    // Equivalent to x-verta-monitoring-confidence-for in the model API.
+    // Optional.
+    string confidence_for = 3;
+
+    // Name of the "monitoring_name" entry that this column corresponds to the ground truth for.
+    // Optional.
+    string ground_truth_for = 4;
+}
+
+message IngestData {
+    string name = 1;
+    oneof value {
+        string string_value = 2;
+        uint64 long_value = 3;
+        float float_value = 4;
+        bool bool_value = 5;
+    }
+}
+
+message IngestRequest {
+    SourceTypeEnum.SourceType source_type = 1;
+
+    oneof origin {
+        uint64 endpoint_id = 2;
+        uint64 monitored_entity_id = 3;
+    }
+
+    // Name of the column in the data that can be used as the prediction id.
+    // Required for ground truth and predictions.
+    string id_column_name = 4;
+
+    uint64 timestamp = 5;
+
+    map<string,ColumnSpec> ingest_columns = 6;
+    repeated IngestData ingest_data = 7;
+
+    uint64 model_version_id = 8; // Optional, will be resolved from the monitored entity if not provided
+
+    message Response {}
+}
+
+message BatchIngestRequest {
     SourceTypeEnum.SourceType source_type = 1;
 
     // Name of the column in the data that can be used as the prediction id.
@@ -42,32 +103,6 @@ message BatchIngestRequest {
         ai.verta.modeldb.versioning.DatasetBlob config = 7;
     }
 
-    message ColumnSpec {
-        // Name of the column that is associated with the monitoring system. Used to enable datasets to have different column names.
-        // Equivalent to x-verta-monitoring-name in the model API.
-        // Optional (will default to the original column name).
-        string monitoring_name = 1;
-
-        message IOTypeEnum {
-            enum IOType {
-                UNKNOWN = 0;
-                INPUT = 1;
-                OUTPUT = 2;
-                GROUND_TRUTH = 3;
-            }
-        }
-        // Type of the IO entry so that it can be mapped correctly.
-        IOTypeEnum.IOType io_type = 2;
-
-        // Name of the "monitoring_name" entry that this column corresponds to a confidence for.
-        // Equivalent to x-verta-monitoring-confidence-for in the model API.
-        // Optional.
-        string confidence_for = 3;
-
-        // Name of the "monitoring_name" entry that this column corresponds to the ground truth for.
-        // Optional.
-        string ground_truth_for = 4;
-    }
 
     // Map from name of the column in the original data to a specification of how to ingest it.
     map<string,ColumnSpec> ingest_columns = 8;
@@ -105,6 +140,13 @@ message BatchIngestRequest {
 }
 
 service IngestService {
+    rpc ingest(IngestRequest) returns (IngestRequest.Response) {
+        option (google.api.http) = {
+            post: "/api/v1/monitoring/ingest"
+            body: "*"
+        };
+    };
+
     rpc batchIngest(BatchIngestRequest) returns (BatchIngestRequest.Response) {
         option (google.api.http) = {
             post: "/api/v1/monitoring/ingest/batchIngest"
