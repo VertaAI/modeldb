@@ -114,6 +114,11 @@ jobs:
           role-to-assume: arn:aws:iam::493416687123:role/github-actions
           aws-region: us-west-2
 
+      - name: Login to Amazon ECR for release
+        id: login-ecr-release
+        if: startsWith( steps.branch_names.outputs.current_branch, 'release/' ) ||  startsWith( steps.branch_names.outputs.current_branch, 'gha/')
+        uses: aws-actions/amazon-ecr-login@v1
+
       - name: Mirror Docker image to release registry
         id: mirror-release
         if: startsWith( steps.branch_names.outputs.current_branch, 'release/' ) ||  startsWith( steps.branch_names.outputs.current_branch, 'gha/')
