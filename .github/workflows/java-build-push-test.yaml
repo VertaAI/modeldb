@@ -19,6 +19,10 @@ concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  VERTA_ECR_REGISTRY: 493416687123.dkr.ecr.us-east-1.amazonaws.com
+  ECR_REPOSITORY: ${{ env.VERTA_ECR_REGISTRY }}/services/oss/modeldb/backend
+
 jobs:
   build-push-test:
     runs-on: ubuntu-latest
@@ -55,8 +59,6 @@ jobs:
           sha_details=$(TZ=UTC git show -s --format=%cd--%h --date='format-local:%Y-%m-%dT%H-%M-%S' --abbrev=7 $sha)
           echo "sha=${sha}" >> $GITHUB_OUTPUT
           echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
-          echo "registry_root=493416687123.dkr.ecr.us-east-1.amazonaws.com" >> $GITHUB_OUTPUT
-          echo "registry=493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend" >> $GITHUB_OUTPUT
           
       - name: Docker image status update
         uses: ouzi-dev/commit-status-updater@v2
@@ -91,7 +93,7 @@ jobs:
         id: should_publish
         run: |
           TARGETS=""
-          docker manifest inspect ${{ steps.image_info.outputs.registry }}:${{ steps.image_info.outputs.tag }} || TARGETS="modeldb"
+          docker manifest inspect $ECR_REPOSITORY:${{ steps.image_info.outputs.tag }} || TARGETS="modeldb"
           echo "targets=${TARGETS}" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image to ECR
@@ -101,35 +103,31 @@ jobs:
           context: backend
           push: true
           build-args: |
-            BASE_IMAGE=${{ steps.image_info.outputs.registry_root }}/ops/containers/base/java:main-11-latest
+            BASE_IMAGE=${{ env.VERTA_ECR_REGISTRY }}/ops/containers/base/java:main-11-latest
           tags: |
-            ${{ steps.image_info.outputs.registry }}:${{ steps.image_info.outputs.tag }}
-        env:
-          ECR_REGISTRY: ${{ steps.image_info.outputs.registry }}
+            ${{ env.ECR_REPOSITORY }}:${{ steps.image_info.outputs.tag }}
 
-      - name: Configure AWS credentials for release
+      - name: Configure AWS credentials for us-west-2
         if: startsWith( steps.branch_names.outputs.current_branch, 'release/' ) ||  startsWith( steps.branch_names.outputs.current_branch, 'gha/')
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::493416687123:role/github-actions
           aws-region: us-west-2
 
-      - name: Login to Amazon ECR for release
+      - name: Login to Amazon ECR for us-west-2
         id: login-ecr-release
         if: startsWith( steps.branch_names.outputs.current_branch, 'release/' ) ||  startsWith( steps.branch_names.outputs.current_branch, 'gha/')
         uses: aws-actions/amazon-ecr-login@v1
 
-      - name: Mirror Docker image to release registry
+      - name: Mirror Docker image to us-west-2 registry
         id: mirror-release
         if: startsWith( steps.branch_names.outputs.current_branch, 'release/' ) ||  startsWith( steps.branch_names.outputs.current_branch, 'gha/')
-        env:
-          SOURCE_REGISTRY: ${{ steps.image_info.outputs.registry }}
         shell: bash
         run: |
-          export ECR_REGISTRY=${SOURCE_REGISTRY/us-east-1/us-west-2}
-          docker manifest inspect ${ECR_REGISTRY}:${{ steps.image_info.outputs.tag }} || \
-            docker tag ${SOURCE_REGISTRY}:${{ steps.image_info.outputs.tag }} ${ECR_REGISTRY}:${{ steps.image_info.outputs.tag }} && \
-            docker push ${ECR_REGISTRY}:${{ steps.image_info.outputs.tag }}
+          export TARGET_REPOSITORY=${ECR_REPOSITORY/us-east-1/us-west-2}
+          docker manifest inspect ${TARGET_REPOSITORY}:${{ steps.image_info.outputs.tag }} || \
+            docker tag ${ECR_REPOSITORY}:${{ steps.image_info.outputs.tag }} ${TARGET_REPOSITORY}:${{ steps.image_info.outputs.tag }} && \
+            docker push ${TARGET_REPOSITORY}:${{ steps.image_info.outputs.tag }}
 
       - name: Create commit comment
         uses: peter-evans/commit-comment@v2
