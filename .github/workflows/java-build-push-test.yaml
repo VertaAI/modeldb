@@ -15,19 +15,17 @@ permissions:
   packages: write
   statuses: write
 
+env:
+  VERTA_ECR_REGISTRY: "493416687123.dkr.ecr.us-east-1.amazonaws.com"
+  ECR_REPOSITORY: "${{ env.VERTA_ECR_REGISTRY }}/services/oss/modeldb/backend"
+
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
-env:
-  VERTA_ECR_REGISTRY: 493416687123.dkr.ecr.us-east-1.amazonaws.com
-
 jobs:
   build-push-test:
     runs-on: ubuntu-latest
-    
-    env:
-      ECR_REPOSITORY: ${{ env.VERTA_ECR_REGISTRY }}/services/oss/modeldb/backend
     
     steps:
       - name: Checkout repository
