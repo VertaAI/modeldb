@@ -1285,8 +1285,8 @@ class Client(object):
             Task type of the registered_model.
         data_type : :mod:`~verta.registry.data_type`, optional
             Data type of the registered_model.
-        pii : :mod:`~verta.registry.pii`, optional
-            Whether the registered_model contains personally identifiable information.
+        pii : bool, default False
+            Whether the registered_model ingests personally identifiable information.
 
         Returns
         -------

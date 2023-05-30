@@ -37,7 +37,7 @@ class RegisteredModel(_entity._ModelDBEntity):
     versions : iterable of :class:`~verta.registry.entities.RegisteredModelVersion`
         Versions of this RegisteredModel.
     pii: bool
-        True when this RegisteredModel ingests personally identifiable information.
+         Whether the registered_model ingests personally identifiable information.
 
     """
 
