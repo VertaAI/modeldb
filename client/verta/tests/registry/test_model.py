@@ -134,18 +134,18 @@ class TestModel:
 
     def test_pii(self, client, created_entities):
         # Test setting on creation
-        # registered_model = client.get_or_create_registered_model(pii=True)
-        # created_entities.append(registered_model)
-        # assert registered_model.get_pii()
-        # registered_model = client.create_registered_model(pii=True)
-        # created_entities.append(registered_model)
-        # assert registered_model.get_pii()
-
         registered_model = client.get_or_create_registered_model(pii=True)
-        # created_entities.append(registered_model)
-        # registered_model.set_pii(True)
-        # assert registered_model.get_pii()
-        print(f"setting false for {registered_model.id}")
+        created_entities.append(registered_model)
+        assert registered_model.get_pii()
+        registered_model = client.create_registered_model(pii=True)
+        created_entities.append(registered_model)
+        assert registered_model.get_pii()
+
+        # Test updating
+        registered_model = client.get_or_create_registered_model()
+        created_entities.append(registered_model)
+        registered_model.set_pii(True)
+        assert registered_model.get_pii()
         registered_model.set_pii(False)
         assert registered_model.get_pii() is False
 

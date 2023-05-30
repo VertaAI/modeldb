@@ -1097,7 +1097,9 @@ class RegisteredModel(_entity._ModelDBEntity):
         """
         Note that you *MUST* update any live endpoints running this model in order to propagate this change.
         """
-        self._update(self.RegisteredModelMessage(pii=pii))
+        self._fetch_with_no_cache()
+        self._msg.pii = pii
+        self._update(self._msg, method="PUT")
 
     def get_pii(self):
         self._refresh_cache()
