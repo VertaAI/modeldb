@@ -107,24 +107,24 @@ jobs:
         env:
           ECR_REGISTRY: ${{ steps.image_info.outputs.registry }}
 
-      - name: Configure AWS credentials
+      - name: Configure AWS credentials for release
         if: startsWith( steps.branch_names.outputs.current_branch, 'release/' ) ||  startsWith( steps.branch_names.outputs.current_branch, 'gha/')
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::493416687123:role/github-actions
           aws-region: us-west-2
 
-      - name: Inspect image to see if it already exists
+      - name: Mirror Docker image to release registry
         id: mirror-release
         if: startsWith( steps.branch_names.outputs.current_branch, 'release/' ) ||  startsWith( steps.branch_names.outputs.current_branch, 'gha/')
         env:
-          ECR_REGISTRY: ${{ steps.image_info.outputs.registry }}
+          SOURCE_REGISTRY: ${{ steps.image_info.outputs.registry }}
         shell: bash
         run: |
-          TARGET_REGISTRY=${ECR_REGISTRY/us-east-1/us-west-2}
-          docker manifest inspect ${TARGET_REGISTRY}:${{ steps.image_info.outputs.tag }} || \
-            docker tag ${ECR_REGISTRY}:${{ steps.image_info.outputs.tag }} ${TARGET_REGISTRY}:${{ steps.image_info.outputs.tag }} && \
-            docker push ${TARGET_REGISTRY}:${{ steps.image_info.outputs.tag }}
+          export ECR_REGISTRY=${SOURCE_REGISTRY/us-east-1/us-west-2}
+          docker manifest inspect ${ECR_REGISTRY}:${{ steps.image_info.outputs.tag }} || \
+            docker tag ${SOURCE_REGISTRY}:${{ steps.image_info.outputs.tag }} ${ECR_REGISTRY}:${{ steps.image_info.outputs.tag }} && \
+            docker push ${ECR_REGISTRY}:${{ steps.image_info.outputs.tag }}
 
       - name: Create commit comment
         uses: peter-evans/commit-comment@v2
