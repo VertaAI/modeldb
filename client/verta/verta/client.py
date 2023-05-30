@@ -780,7 +780,7 @@ class Client(object):
         id=None,
         task_type=None,
         data_type=None,
-        pii=None,
+        pii=False,
     ):
         """
         Attaches a registered_model to this Client.
