@@ -90,11 +90,6 @@ class RegisteredModel(_entity._ModelDBEntity):
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
 
-    @property
-    def pii(self):
-        self._refresh_cache()
-        return self._msg.pii
-
     def get_or_create_version(
         self,
         name=None,
