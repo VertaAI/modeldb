@@ -21,12 +21,14 @@ concurrency:
 
 env:
   VERTA_ECR_REGISTRY: 493416687123.dkr.ecr.us-east-1.amazonaws.com
-  ECR_REPOSITORY: ${{ env.VERTA_ECR_REGISTRY }}/services/oss/modeldb/backend
 
 jobs:
   build-push-test:
     runs-on: ubuntu-latest
-
+    
+    env:
+      ECR_REPOSITORY: ${{ env.VERTA_ECR_REGISTRY }}/services/oss/modeldb/backend
+    
     steps:
       - name: Checkout repository
         uses: actions/checkout@v3
