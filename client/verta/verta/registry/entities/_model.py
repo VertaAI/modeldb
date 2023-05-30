@@ -36,6 +36,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         Verta web app URL.
     versions : iterable of :class:`~verta.registry.entities.RegisteredModelVersion`
         Versions of this RegisteredModel.
+    pii: bool
+         Whether the registered_model ingests personally identifiable information.
 
     """
 
@@ -61,6 +63,7 @@ class RegisteredModel(_entity._ModelDBEntity):
                 "description: {}".format(msg.description),
                 "labels: {}".format(msg.labels),
                 "id: {}".format(msg.id),
+                "pii: {}".format(msg.pii),
             )
         )
 
@@ -1034,6 +1037,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         visibility=None,
         task_type=None,
         data_type=None,
+        pii=None,
     ):
         if task_type is None:
             task_type = task_type_module._Unknown()
@@ -1048,6 +1052,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             time_updated=date_created,
             task_type=task_type._as_proto(),
             data_type=data_type._as_proto(),
+            pii=pii,
         )
         if (
             public_within_org
@@ -1082,6 +1087,18 @@ class RegisteredModel(_entity._ModelDBEntity):
         return registered_model
 
     RegisteredModelMessage = _RegistryService.RegisteredModel
+
+    def set_pii(self, pii):
+        """
+        Note that you *MUST* update any live endpoints running this model in order to propagate this change.
+        """
+        self._fetch_with_no_cache()
+        self._msg.pii = pii
+        self._update(self._msg, method="PUT")
+
+    def get_pii(self):
+        self._refresh_cache()
+        return self._msg.pii
 
     def set_description(self, desc):
         if not desc:
