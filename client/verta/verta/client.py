@@ -1254,7 +1254,7 @@ class Client(object):
         visibility=None,
         task_type=None,
         data_type=None,
-        pii=None,
+        pii=False,
     ):
         """
         Creates a new Registered Model.
