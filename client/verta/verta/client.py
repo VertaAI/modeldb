@@ -780,7 +780,7 @@ class Client(object):
         id=None,
         task_type=None,
         data_type=None,
-        pii=None,
+        pii=False,
     ):
         """
         Attaches a registered_model to this Client.
@@ -816,7 +816,7 @@ class Client(object):
             Task type of the registered_model.
         data_type : :mod:`~verta.registry.data_type`, optional
             Data type of the registered_model.
-        pii : :mod:`~verta.registry.pii`, optional
+        pii : bool, default False
             Whether the registered_model ingests personally identifiable information.
 
         Returns
