@@ -36,6 +36,8 @@ class RegisteredModel(_entity._ModelDBEntity):
         Verta web app URL.
     versions : iterable of :class:`~verta.registry.entities.RegisteredModelVersion`
         Versions of this RegisteredModel.
+    pii: bool
+        True when this RegisteredModel ingests personally identifiable information.
 
     """
 
@@ -61,6 +63,7 @@ class RegisteredModel(_entity._ModelDBEntity):
                 "description: {}".format(msg.description),
                 "labels: {}".format(msg.labels),
                 "id: {}".format(msg.id),
+                "pii: {}".format(msg.pii),
             )
         )
 
@@ -86,6 +89,11 @@ class RegisteredModel(_entity._ModelDBEntity):
             return self._conn.get_workspace_name_from_id(self._msg.workspace_id)
         else:
             return self._conn._OSS_DEFAULT_WORKSPACE
+
+    @property
+    def pii(self):
+        self._refresh_cache()
+        return self._msg.pii
 
     def get_or_create_version(
         self,
@@ -1082,6 +1090,13 @@ class RegisteredModel(_entity._ModelDBEntity):
         return registered_model
 
     RegisteredModelMessage = _RegistryService.RegisteredModel
+
+    def set_pii(self, pii):
+        self._update(self.RegisteredModelMessage(pii=pii))
+
+    def get_pii(self):
+        self._refresh_cache()
+        return self._msg.pii
 
     def set_description(self, desc):
         if not desc:
