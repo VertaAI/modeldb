@@ -14,6 +14,11 @@ class IngestServiceStub(object):
     Args:
       channel: A grpc.Channel.
     """
+    self.ingest = channel.unary_unary(
+        '/ai.verta.monitoring.IngestService/ingest',
+        request_serializer=monitoring_dot_Ingest__pb2.IngestRequest.SerializeToString,
+        response_deserializer=monitoring_dot_Ingest__pb2.IngestRequest.Response.FromString,
+        )
     self.batchIngest = channel.unary_unary(
         '/ai.verta.monitoring.IngestService/batchIngest',
         request_serializer=monitoring_dot_Ingest__pb2.BatchIngestRequest.SerializeToString,
@@ -25,6 +30,13 @@ class IngestServiceServicer(object):
   # missing associated documentation comment in .proto file
   pass
 
+  def ingest(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
   def batchIngest(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -35,6 +47,11 @@ class IngestServiceServicer(object):
 
 def add_IngestServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
+      'ingest': grpc.unary_unary_rpc_method_handler(
+          servicer.ingest,
+          request_deserializer=monitoring_dot_Ingest__pb2.IngestRequest.FromString,
+          response_serializer=monitoring_dot_Ingest__pb2.IngestRequest.Response.SerializeToString,
+      ),
       'batchIngest': grpc.unary_unary_rpc_method_handler(
           servicer.batchIngest,
           request_deserializer=monitoring_dot_Ingest__pb2.BatchIngestRequest.FromString,

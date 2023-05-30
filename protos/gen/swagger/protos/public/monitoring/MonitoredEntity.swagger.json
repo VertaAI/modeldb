@@ -158,6 +158,17 @@
       ],
       "default": "UNKNOWN"
     },
+    "commonGroupId": {
+      "type": "object",
+      "properties": {
+        "org_id": {
+          "type": "string"
+        },
+        "group_id": {
+          "type": "string"
+        }
+      }
+    },
     "monitoringCreateMonitoredEntityRequest": {
       "type": "object",
       "properties": {
@@ -186,7 +197,12 @@
         },
         "endpoint_id": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "description": "Optional.  If the data originates from a Verta endpoint, set this to the endpoint id."
+        },
+        "origin": {
+          "type": "string",
+          "title": "a tag that says where the data for this monitored entity comes from. eg. \"endpoint\" or \"batch\""
         }
       }
     },
@@ -311,6 +327,13 @@
           "type": "string",
           "title": "owner's verta_id"
         },
+        "owner_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "group_owner_id": {
+          "$ref": "#/definitions/commonGroupId"
+        },
         "resource_visibility": {
           "$ref": "#/definitions/uacResourceVisibility"
         },
@@ -325,6 +348,13 @@
         "endpoint_id": {
           "type": "string",
           "format": "uint64"
+        },
+        "datasource_name": {
+          "type": "string"
+        },
+        "origin": {
+          "type": "string",
+          "title": "a tag that says where the data for this monitored entity comes from. eg. \"endpoint\" or \"batch\""
         }
       }
     },
