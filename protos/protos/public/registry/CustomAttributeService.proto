@@ -1,0 +1,135 @@
+syntax = "proto3";
+
+package ai.verta.registry;
+
+import "common/CommonService.proto";
+import "google/api/annotations.proto";
+import "registry/StageService.proto";
+
+option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry";
+option java_multiple_files = true;
+
+message CustomAttributeTypeEnum {
+  enum CustomAttributeType {
+    UNKNOWN = 0;
+    USER = 1;
+    CUSTOM_LIST = 2;
+    GROUP = 3;
+    TEXT = 4;
+  }
+}
+
+message CustomAttributeTargetTypeEnum {
+  enum CustomAttributeTargetType {
+    UNKNOWN = 0;
+    REGISTERED_MODEL = 1;
+    REGISTERED_MODEL_VERSION = 2;
+  }
+}
+
+message CustomAttributeDefinition {
+  uint64 id = 1;
+  string organization_id = 2;
+  CustomAttributeTypeEnum.CustomAttributeType attribute_type = 3;
+  CustomAttributeTargetTypeEnum.CustomAttributeTargetType target_type = 4;
+  string name = 5;
+  string icon = 6;
+  int64 time_created = 7;
+  int64 time_updated = 8;
+  uint64 created_by_id = 9;
+  uint64 updated_by_id = 10;
+  uint64 sort = 11;
+  repeated CustomAttributeListOption customAttributeListOption = 12;
+}
+
+message CustomAttributeValue {
+  uint64 id = 1;
+  uint64 custom_attribute_definition_id = 2;
+  string target_id = 3;
+  CustomAttributeTargetTypeEnum.CustomAttributeTargetType target_type = 4;
+  string selected_value = 5;
+  int64 time_created = 6;
+  int64 time_updated = 7;
+  uint64 created_by_id = 8;
+  uint64 updated_by_id = 9;
+}
+
+message CustomAttributeListOption {
+  string id = 1;
+  string custom_attribute_definition_id = 2;
+  string name = 3;
+  int64 sort = 4;
+}
+
+message SearchCustomAttributeDefinitions {
+  // internal id optional
+  uint64 custom_attribute_definition_id = 1;
+
+  // organization id required
+  string organization_id = 2;
+
+  // target type (optional)
+  CustomAttributeTargetTypeEnum.CustomAttributeTargetType target_type = 3;
+
+  message Response {
+    repeated CustomAttributeDefinition custom_attribute_definitions = 1;
+  }
+}
+
+message SetCustomAttributeDefinition {
+  CustomAttributeDefinition custom_attribute_definition = 1;
+
+  message Response {
+    CustomAttributeDefinition custom_attribute_definition = 1;
+  }
+}
+
+message DeleteCustomAttributeDefinition {
+  // internal id
+  uint64 custom_attribute_definition_id = 1;
+}
+
+message SearchCustomAttributeValues {
+  // identity of parent registered model or version
+  // use target or parent to search
+  string target_id = 1;
+  CustomAttributeTargetTypeEnum.CustomAttributeTargetType target_type = 2;
+  // custom_attribute_definition_id is optional
+  uint64 custom_attribute_definition_id = 3;
+
+  message Response {
+    repeated CustomAttributeValue custom_attribute_values = 1;
+  }
+}
+
+service CustomAttributeService {
+  rpc searchCustomAttributeDefinitions(SearchCustomAttributeDefinitions)
+      returns (SearchCustomAttributeDefinitions.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/custom_attribute_definitions/search"
+      body: "*"
+    };
+  };
+
+  rpc setCustomAttributeDefinition(SetCustomAttributeDefinition)
+      returns (SetCustomAttributeDefinition.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/custom_attribute_definitions"
+      body: "*"
+    };
+  };
+
+  rpc deleteCustomAttributeDefinition(DeleteCustomAttributeDefinition) returns (common.Empty) {
+    option (google.api.http) = {
+      delete: "/v1/registry/custom_attribute_definitions/{custom_attribute_definition_id}"
+    };
+  };
+
+  rpc searchCustomAttributeValues(SearchCustomAttributeValues)
+      returns (SearchCustomAttributeValues.Response) {
+    option (google.api.http) = {
+      post: "/v1/registry/custom_attribute_values/search"
+      body: "*"
+    };
+  };
+}

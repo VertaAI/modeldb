@@ -20,7 +20,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.uac',
   syntax='proto3',
   serialized_options=b'P\001Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac',
-  serialized_pb=b'\n\x15uac/WorkspaceV2.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"/\n\nPermission\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07role_id\x18\x03 \x01(\t\"\xd6\x01\n\x0bWorkspaceV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\x04\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12-\n\x0bpermissions\x18\x05 \x03(\x0b\x32\x18.ai.verta.uac.Permission\x12\x19\n\x11\x63reated_timestamp\x18\x07 \x01(\x03\x12\x19\n\x11updated_timestamp\x18\x08 \x01(\x03\x12\x11\n\tnamespace\x18\t \x01(\t\x12\x10\n\x08\x62uilt_in\x18\n \x01(\x08\"x\n\x0eSetWorkspaceV2\x12,\n\tworkspace\x18\x02 \x01(\x0b\x32\x19.ai.verta.uac.WorkspaceV2\x1a\x38\n\x08Response\x12,\n\tworkspace\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.WorkspaceV2\"p\n\x0eGetWorkspaceV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x02 \x01(\x04\x1a\x38\n\x08Response\x12,\n\tworkspace\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.WorkspaceV2\"\xd9\x01\n\x12SearchWorkspacesV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1a\x81\x01\n\x08Response\x12-\n\nworkspaces\x18\x01 \x03(\x0b\x32\x19.ai.verta.uac.WorkspaceV2\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\"E\n\x11\x44\x65leteWorkspaceV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x02 \x01(\x04\x1a\n\n\x08Response2\xe3\x04\n\x12WorkspaceServiceV2\x12\x8e\x01\n\x0csetWorkspace\x12\x1c.ai.verta.uac.SetWorkspaceV2\x1a%.ai.verta.uac.SetWorkspaceV2.Response\"9\x82\xd3\xe4\x93\x02\x33\"./v2/organization/{workspace.org_id}/workspaces:\x01*\x12\x90\x01\n\x0cgetWorkspace\x12\x1c.ai.verta.uac.GetWorkspaceV2\x1a%.ai.verta.uac.GetWorkspaceV2.Response\";\x82\xd3\xe4\x93\x02\x35\x12\x33/v2/organization/{org_id}/workspaces/{workspace_id}\x12\x98\x01\n\x0f\x64\x65leteWorkspace\x12\x1f.ai.verta.uac.DeleteWorkspaceV2\x1a(.ai.verta.uac.DeleteWorkspaceV2.Response\":\x82\xd3\xe4\x93\x02\x34*2/v2/organization/{org_id}/workspace/{workspace_id}\x12\x8d\x01\n\x10searchWorkspaces\x12 .ai.verta.uac.SearchWorkspacesV2\x1a).ai.verta.uac.SearchWorkspacesV2.Response\",\x82\xd3\xe4\x93\x02&\x12$/v2/organization/{org_id}/workspacesB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
+  serialized_pb=b'\n\x15uac/WorkspaceV2.proto\x12\x0c\x61i.verta.uac\x1a\x1cgoogle/api/annotations.proto\x1a\x1a\x63ommon/CommonService.proto\"/\n\nPermission\x12\x10\n\x08group_id\x18\x02 \x01(\t\x12\x0f\n\x07role_id\x18\x03 \x01(\t\"\xd6\x01\n\x0bWorkspaceV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\n\n\x02id\x18\x02 \x01(\x04\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x04 \x01(\t\x12-\n\x0bpermissions\x18\x05 \x03(\x0b\x32\x18.ai.verta.uac.Permission\x12\x19\n\x11\x63reated_timestamp\x18\x07 \x01(\x03\x12\x19\n\x11updated_timestamp\x18\x08 \x01(\x03\x12\x11\n\tnamespace\x18\t \x01(\t\x12\x10\n\x08\x62uilt_in\x18\n \x01(\x08\"x\n\x0eSetWorkspaceV2\x12,\n\tworkspace\x18\x02 \x01(\x0b\x32\x19.ai.verta.uac.WorkspaceV2\x1a\x38\n\x08Response\x12,\n\tworkspace\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.WorkspaceV2\"\x90\x01\n\x0eGetWorkspaceV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x16\n\x0cworkspace_id\x18\x02 \x01(\x04H\x00\x12\x0e\n\x04name\x18\x03 \x01(\tH\x00\x1a\x38\n\x08Response\x12,\n\tworkspace\x18\x01 \x01(\x0b\x32\x19.ai.verta.uac.WorkspaceV2B\x0c\n\nidentifier\"\xd9\x01\n\x12SearchWorkspacesV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12/\n\npagination\x18\x02 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\x1a\x81\x01\n\x08Response\x12-\n\nworkspaces\x18\x01 \x03(\x0b\x32\x19.ai.verta.uac.WorkspaceV2\x12\x15\n\rtotal_records\x18\x02 \x01(\x03\x12/\n\npagination\x18\x03 \x01(\x0b\x32\x1b.ai.verta.common.Pagination\"E\n\x11\x44\x65leteWorkspaceV2\x12\x0e\n\x06org_id\x18\x01 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x02 \x01(\x04\x1a\n\n\x08Response2\xe3\x04\n\x12WorkspaceServiceV2\x12\x8e\x01\n\x0csetWorkspace\x12\x1c.ai.verta.uac.SetWorkspaceV2\x1a%.ai.verta.uac.SetWorkspaceV2.Response\"9\x82\xd3\xe4\x93\x02\x33\"./v2/organization/{workspace.org_id}/workspaces:\x01*\x12\x90\x01\n\x0cgetWorkspace\x12\x1c.ai.verta.uac.GetWorkspaceV2\x1a%.ai.verta.uac.GetWorkspaceV2.Response\";\x82\xd3\xe4\x93\x02\x35\x12\x33/v2/organization/{org_id}/workspaces/{workspace_id}\x12\x98\x01\n\x0f\x64\x65leteWorkspace\x12\x1f.ai.verta.uac.DeleteWorkspaceV2\x1a(.ai.verta.uac.DeleteWorkspaceV2.Response\":\x82\xd3\xe4\x93\x02\x34*2/v2/organization/{org_id}/workspace/{workspace_id}\x12\x8d\x01\n\x10searchWorkspaces\x12 .ai.verta.uac.SearchWorkspacesV2\x1a).ai.verta.uac.SearchWorkspacesV2.Response\",\x82\xd3\xe4\x93\x02&\x12$/v2/organization/{org_id}/workspacesB>P\x01Z:github.com/VertaAI/modeldb/protos/gen/go/protos/public/uacb\x06proto3'
   ,
   dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
@@ -264,6 +264,13 @@ _GETWORKSPACEV2 = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='name', full_name='ai.verta.uac.GetWorkspaceV2.name', index=2,
+      number=3, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -275,9 +282,12 @@ _GETWORKSPACEV2 = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
+    _descriptor.OneofDescriptor(
+      name='identifier', full_name='ai.verta.uac.GetWorkspaceV2.identifier',
+      index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=485,
-  serialized_end=597,
+  serialized_start=486,
+  serialized_end=630,
 )
 
 
@@ -321,8 +331,8 @@ _SEARCHWORKSPACESV2_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=688,
-  serialized_end=817,
+  serialized_start=721,
+  serialized_end=850,
 )
 
 _SEARCHWORKSPACESV2 = _descriptor.Descriptor(
@@ -358,8 +368,8 @@ _SEARCHWORKSPACESV2 = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=600,
-  serialized_end=817,
+  serialized_start=633,
+  serialized_end=850,
 )
 
 
@@ -419,8 +429,8 @@ _DELETEWORKSPACEV2 = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=819,
-  serialized_end=888,
+  serialized_start=852,
+  serialized_end=921,
 )
 
 _WORKSPACEV2.fields_by_name['permissions'].message_type = _PERMISSION
@@ -429,6 +439,12 @@ _SETWORKSPACEV2_RESPONSE.containing_type = _SETWORKSPACEV2
 _SETWORKSPACEV2.fields_by_name['workspace'].message_type = _WORKSPACEV2
 _GETWORKSPACEV2_RESPONSE.fields_by_name['workspace'].message_type = _WORKSPACEV2
 _GETWORKSPACEV2_RESPONSE.containing_type = _GETWORKSPACEV2
+_GETWORKSPACEV2.oneofs_by_name['identifier'].fields.append(
+  _GETWORKSPACEV2.fields_by_name['workspace_id'])
+_GETWORKSPACEV2.fields_by_name['workspace_id'].containing_oneof = _GETWORKSPACEV2.oneofs_by_name['identifier']
+_GETWORKSPACEV2.oneofs_by_name['identifier'].fields.append(
+  _GETWORKSPACEV2.fields_by_name['name'])
+_GETWORKSPACEV2.fields_by_name['name'].containing_oneof = _GETWORKSPACEV2.oneofs_by_name['identifier']
 _SEARCHWORKSPACESV2_RESPONSE.fields_by_name['workspaces'].message_type = _WORKSPACEV2
 _SEARCHWORKSPACESV2_RESPONSE.fields_by_name['pagination'].message_type = common_dot_CommonService__pb2._PAGINATION
 _SEARCHWORKSPACESV2_RESPONSE.containing_type = _SEARCHWORKSPACESV2
@@ -525,8 +541,8 @@ _WORKSPACESERVICEV2 = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=891,
-  serialized_end=1502,
+  serialized_start=924,
+  serialized_end=1535,
   methods=[
   _descriptor.MethodDescriptor(
     name='setWorkspace',
