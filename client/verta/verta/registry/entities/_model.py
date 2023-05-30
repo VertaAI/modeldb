@@ -1042,6 +1042,7 @@ class RegisteredModel(_entity._ModelDBEntity):
         visibility=None,
         task_type=None,
         data_type=None,
+        pii=None,
     ):
         if task_type is None:
             task_type = task_type_module._Unknown()
@@ -1056,6 +1057,7 @@ class RegisteredModel(_entity._ModelDBEntity):
             time_updated=date_created,
             task_type=task_type._as_proto(),
             data_type=data_type._as_proto(),
+            pii=pii,
         )
         if (
             public_within_org
