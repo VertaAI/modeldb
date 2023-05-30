@@ -1090,7 +1090,12 @@ class RegisteredModel(_entity._ModelDBEntity):
 
     def set_pii(self, pii):
         """
-        Note that you *MUST* update any live endpoints running this model in order to propagate this change.
+        Updates the PII value of this Registered Model. True indicates that the model ingests PII.
+
+        Warnings
+        --------
+        You *MUST* update any live endpoints running this model in order to propagate this change.
+        A simple no-op update is sufficient.
         """
         self._fetch_with_no_cache()
         self._msg.pii = pii
