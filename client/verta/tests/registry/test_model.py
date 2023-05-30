@@ -139,7 +139,7 @@ class TestModel:
         assert registered_model.get_pii()
         registered_model = client.create_registered_model(pii=True)
         created_entities.append(registered_model)
-        assert registered_model.get_pii()
+        assert registered_model.get_pii() is True
 
         # Test updating
         registered_model = client.get_or_create_registered_model()
