@@ -108,7 +108,7 @@ jobs:
             ${{ env.ECR_REPOSITORY }}:${{ steps.image_info.outputs.tag }}
 
       - name: Configure AWS credentials for us-west-2
-        if: startsWith( steps.branch_names.outputs.current_branch, 'release/' )
+        if: startsWith( github.ref, 'refs/heads/release/' )
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: arn:aws:iam::493416687123:role/github-actions
@@ -116,12 +116,12 @@ jobs:
 
       - name: Login to Amazon ECR for us-west-2
         id: login-ecr-release
-        if: startsWith( steps.branch_names.outputs.current_branch, 'release/' )
+        if: startsWith( github.ref, 'refs/heads/release/' )
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Mirror Docker image to us-west-2
         id: mirror-release
-        if: startsWith( steps.branch_names.outputs.current_branch, 'release/' )
+        if: startsWith( github.ref, 'refs/heads/release/' )
         shell: bash
         run: |
           export TARGET_REPOSITORY=${ECR_REPOSITORY/us-east-1/us-west-2}
