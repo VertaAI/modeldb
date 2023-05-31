@@ -34,6 +34,16 @@ class RoleServiceV2Stub(object):
         request_serializer=uac_dot_RoleV2__pb2.GetRoleV2.SerializeToString,
         response_deserializer=uac_dot_RoleV2__pb2.GetRoleV2.Response.FromString,
         )
+    self.getEnabledActions = channel.unary_unary(
+        '/ai.verta.uac.RoleServiceV2/getEnabledActions',
+        request_serializer=uac_dot_RoleV2__pb2.GetEnabledActions.SerializeToString,
+        response_deserializer=uac_dot_RoleV2__pb2.GetEnabledActions.Response.FromString,
+        )
+    self.getSelfAllowedActionsBatchForWorkspace = channel.unary_unary(
+        '/ai.verta.uac.RoleServiceV2/getSelfAllowedActionsBatchForWorkspace',
+        request_serializer=uac_dot_RoleV2__pb2.GetSelfAllowedActionsBatchForWorkspace.SerializeToString,
+        response_deserializer=uac_dot_RoleV2__pb2.GetSelfAllowedActionsBatchForWorkspace.Response.FromString,
+        )
 
 
 class RoleServiceV2Servicer(object):
@@ -68,6 +78,20 @@ class RoleServiceV2Servicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getEnabledActions(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
+  def getSelfAllowedActionsBatchForWorkspace(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_RoleServiceV2Servicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -90,6 +114,16 @@ def add_RoleServiceV2Servicer_to_server(servicer, server):
           servicer.getRole,
           request_deserializer=uac_dot_RoleV2__pb2.GetRoleV2.FromString,
           response_serializer=uac_dot_RoleV2__pb2.GetRoleV2.Response.SerializeToString,
+      ),
+      'getEnabledActions': grpc.unary_unary_rpc_method_handler(
+          servicer.getEnabledActions,
+          request_deserializer=uac_dot_RoleV2__pb2.GetEnabledActions.FromString,
+          response_serializer=uac_dot_RoleV2__pb2.GetEnabledActions.Response.SerializeToString,
+      ),
+      'getSelfAllowedActionsBatchForWorkspace': grpc.unary_unary_rpc_method_handler(
+          servicer.getSelfAllowedActionsBatchForWorkspace,
+          request_deserializer=uac_dot_RoleV2__pb2.GetSelfAllowedActionsBatchForWorkspace.FromString,
+          response_serializer=uac_dot_RoleV2__pb2.GetSelfAllowedActionsBatchForWorkspace.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

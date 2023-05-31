@@ -91,12 +91,14 @@ message UserInfo {
     VertaUserInfo verta_info = 10;
     string secondary_dev_key = 11;
     bool disabled = 12;
+    string job_title = 13;
+    string company = 14;
+    uint64 created_at = 15;
 }
 
 message CreateUser {
     UserInfo info = 1;
     string password = 2; // If empty, create one.
-
     message Response {
         UserInfo info = 1;
     }

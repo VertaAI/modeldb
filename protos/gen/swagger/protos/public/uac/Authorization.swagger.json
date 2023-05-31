@@ -562,6 +562,12 @@
           "items": {
             "type": "string"
           }
+        },
+        "group_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "description": "Entities that can be bound to a role. All users in all scopes given are considered a match."

@@ -63,6 +63,7 @@ message EntitiesEnum {
         ORGANIZATION = 1;
         TEAM = 2;
         USER = 3;
+        GROUP = 4;
     }
 };
 

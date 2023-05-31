@@ -1141,7 +1141,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -1197,7 +1198,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -1253,7 +1255,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -1309,7 +1312,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -1365,7 +1369,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -1421,7 +1426,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -1477,7 +1483,8 @@
               "UNKNOWN",
               "ORGANIZATION",
               "TEAM",
-              "USER"
+              "USER",
+              "GROUP"
             ],
             "default": "UNKNOWN"
           }
@@ -1642,7 +1649,8 @@
         "UNKNOWN",
         "ORGANIZATION",
         "TEAM",
-        "USER"
+        "USER",
+        "GROUP"
       ],
       "default": "UNKNOWN"
     },
@@ -2403,6 +2411,16 @@
         "disabled": {
           "type": "boolean",
           "format": "boolean"
+        },
+        "job_title": {
+          "type": "string"
+        },
+        "company": {
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },

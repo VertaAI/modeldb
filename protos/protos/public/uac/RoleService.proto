@@ -192,6 +192,7 @@ message Entities {
     repeated string user_ids = 1;
     repeated string org_ids = 2;
     repeated string team_ids = 3;
+    repeated string group_ids = 4;
 };
 
 // Binds a set of roles to a set of entities

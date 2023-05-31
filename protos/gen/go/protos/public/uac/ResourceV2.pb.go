@@ -9,7 +9,6 @@ package uac
 import (
 	context "context"
 	_ "github.com/VertaAI/modeldb/protos/gen/go/protos/public/common"
-	uac "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
@@ -32,9 +31,9 @@ type ResourceV2 struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id             string             `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
-	OrganizationId string             `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	ResourceType   uac.ResourceTypeV2 `protobuf:"varint,3,opt,name=resource_type,json=resourceType,proto3,enum=ai.verta.uac.ResourceTypeV2" json:"resource_type,omitempty"`
+	Id             string         `protobuf:"bytes,1,opt,name=id,proto3" json:"id,omitempty"`
+	OrganizationId string         `protobuf:"bytes,2,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	ResourceType   ResourceTypeV2 `protobuf:"varint,3,opt,name=resource_type,json=resourceType,proto3,enum=ai.verta.uac.ResourceTypeV2" json:"resource_type,omitempty"`
 }
 
 func (x *ResourceV2) Reset() {
@@ -83,11 +82,11 @@ func (x *ResourceV2) GetOrganizationId() string {
 	return ""
 }
 
-func (x *ResourceV2) GetResourceType() uac.ResourceTypeV2 {
+func (x *ResourceV2) GetResourceType() ResourceTypeV2 {
 	if x != nil {
 		return x.ResourceType
 	}
-	return uac.ResourceTypeV2(0)
+	return ResourceTypeV2_RESOURCE_TYPE_UNKNOWN
 }
 
 type GetResourcesV2 struct {
@@ -95,8 +94,8 @@ type GetResourcesV2 struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Id           []string           `protobuf:"bytes,1,rep,name=id,proto3" json:"id,omitempty"`
-	ResourceType uac.ResourceTypeV2 `protobuf:"varint,2,opt,name=resource_type,json=resourceType,proto3,enum=ai.verta.uac.ResourceTypeV2" json:"resource_type,omitempty"`
+	Id           []string       `protobuf:"bytes,1,rep,name=id,proto3" json:"id,omitempty"`
+	ResourceType ResourceTypeV2 `protobuf:"varint,2,opt,name=resource_type,json=resourceType,proto3,enum=ai.verta.uac.ResourceTypeV2" json:"resource_type,omitempty"`
 }
 
 func (x *GetResourcesV2) Reset() {
@@ -138,11 +137,11 @@ func (x *GetResourcesV2) GetId() []string {
 	return nil
 }
 
-func (x *GetResourcesV2) GetResourceType() uac.ResourceTypeV2 {
+func (x *GetResourcesV2) GetResourceType() ResourceTypeV2 {
 	if x != nil {
 		return x.ResourceType
 	}
-	return uac.ResourceTypeV2(0)
+	return ResourceTypeV2_RESOURCE_TYPE_UNKNOWN
 }
 
 type GetResourcesV2_Response struct {
@@ -235,11 +234,11 @@ var file_uac_ResourceV2_proto_rawDesc = []byte{
 	0x74, 0x52, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x73, 0x56, 0x32, 0x2e, 0x52, 0x65, 0x73,
 	0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x18, 0x82, 0xd3, 0xe4, 0x93, 0x02, 0x12, 0x22, 0x0d, 0x2f,
 	0x76, 0x32, 0x2f, 0x72, 0x65, 0x73, 0x6f, 0x75, 0x72, 0x63, 0x65, 0x73, 0x3a, 0x01, 0x2a, 0x42,
-	0x41, 0x50, 0x01, 0x5a, 0x3d, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
-	0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2d, 0x61,
-	0x6c, 0x6c, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f,
-	0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x75,
-	0x61, 0x63, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x3e, 0x50, 0x01, 0x5a, 0x3a, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f,
+	0x56, 0x65, 0x72, 0x74, 0x61, 0x41, 0x49, 0x2f, 0x6d, 0x6f, 0x64, 0x65, 0x6c, 0x64, 0x62, 0x2f,
+	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x67, 0x65, 0x6e, 0x2f, 0x67, 0x6f, 0x2f, 0x70, 0x72,
+	0x6f, 0x74, 0x6f, 0x73, 0x2f, 0x70, 0x75, 0x62, 0x6c, 0x69, 0x63, 0x2f, 0x75, 0x61, 0x63, 0x62,
+	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -259,7 +258,7 @@ var file_uac_ResourceV2_proto_goTypes = []interface{}{
 	(*ResourceV2)(nil),              // 0: ai.verta.uac.ResourceV2
 	(*GetResourcesV2)(nil),          // 1: ai.verta.uac.GetResourcesV2
 	(*GetResourcesV2_Response)(nil), // 2: ai.verta.uac.GetResourcesV2.Response
-	(uac.ResourceTypeV2)(0),         // 3: ai.verta.uac.ResourceTypeV2
+	(ResourceTypeV2)(0),             // 3: ai.verta.uac.ResourceTypeV2
 }
 var file_uac_ResourceV2_proto_depIdxs = []int32{
 	3, // 0: ai.verta.uac.ResourceV2.resource_type:type_name -> ai.verta.uac.ResourceTypeV2
@@ -279,6 +278,11 @@ func file_uac_ResourceV2_proto_init() {
 	if File_uac_ResourceV2_proto != nil {
 		return
 	}
+	file_uac_UACService_proto_init()
+	file_uac_Organization_proto_init()
+	file_uac_Team_proto_init()
+	file_uac_RoleService_proto_init()
+	file_uac_RoleV2_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_uac_ResourceV2_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*ResourceV2); i {
