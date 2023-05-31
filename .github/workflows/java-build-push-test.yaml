@@ -1,0 +1,153 @@
+name: Java Build, Push, Test
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  push:
+    branches:
+      - main
+      - 'release/*'
+
+permissions:
+  id-token: write # This is required for requesting the JWT
+  contents: write  # Read is required for actions/checkout, write is required to comment on commits
+  pull-requests: write # This is needed for the coverage plugin to write comments to the PR
+  packages: write
+  statuses: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  VERTA_ECR_REGISTRY: "493416687123.dkr.ecr.us-east-1.amazonaws.com"
+  ECR_REPOSITORY: "493416687123.dkr.ecr.us-east-1.amazonaws.com/services/oss/modeldb/backend"
+
+jobs:
+  build-push-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          # need previous commit to find PR head commit info
+          fetch-depth: 2
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::493416687123:role/github-actions
+          aws-region: us-east-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Get branch names
+        id: branch_names
+        uses: tj-actions/branch-names@v7
+
+      - name: Get docker image tag
+        id: image_info
+        run: |
+          branch=$(echo ${{ steps.branch_names.outputs.current_branch }} | sed 's,/,_,g')
+          # PRs checkout a merge of PR head with target. Branches checkout current head of branch.
+          # When in a PR, use the PR head commit sha instead of the checkout commit sha.
+          pr_sha="${{ github.event.pull_request.head.sha }}"
+          sha=${pr_sha:-$GITHUB_SHA}
+          sha_details=$(TZ=UTC git show -s --format=%cd--%h --date='format-local:%Y-%m-%dT%H-%M-%S' --abbrev=7 $sha)
+          echo "sha=${sha}" >> $GITHUB_OUTPUT
+          echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
+
+      - name: Docker image status update
+        uses: ouzi-dev/commit-status-updater@v2
+        with:
+          name: "Tag: ${{ steps.image_info.outputs.tag }}"
+          description: "Building..."
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'zulu'
+          java-version: '11'
+          cache: 'maven'
+          server-id: github-verta # Value of the distributionManagement/repository/id field of the pom.xml
+
+      - name: Check formatting
+        run: mvn spotless:check
+
+      - name: Build and Publish to GitHub Packages Apache Maven
+        run: ./build_and_publish_backend.sh
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          BRANCH_NAME: ${{ steps.branch_names.outputs.current_branch }}
+
+      - name: Docker image status update
+        uses: ouzi-dev/commit-status-updater@v2
+        with:
+          name: "Tag: ${{ steps.image_info.outputs.tag }}"
+          description: "Publishing..."
+
+      - name: Inspect image to see if it already exists
+        id: should_publish
+        run: |
+          TARGETS=""
+          docker manifest inspect $ECR_REPOSITORY:${{ steps.image_info.outputs.tag }} || TARGETS="modeldb"
+          echo "targets=${TARGETS}" >> $GITHUB_OUTPUT
+
+      - name: Build and push Docker image to ECR
+        uses: docker/build-push-action@v4
+        if: "!(steps.should_publish.outputs.targets == '')"
+        with:
+          context: backend
+          push: true
+          build-args: |
+            BASE_IMAGE=${{ env.VERTA_ECR_REGISTRY }}/ops/containers/base/java:main-11-latest
+          tags: |
+            ${{ env.ECR_REPOSITORY }}:${{ steps.image_info.outputs.tag }}
+
+      - name: Configure AWS credentials for us-west-2
+        if: startsWith( github.ref, 'refs/heads/release/' )
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::493416687123:role/github-actions
+          aws-region: us-west-2
+
+      - name: Login to Amazon ECR for us-west-2
+        id: login-ecr-release
+        if: startsWith( github.ref, 'refs/heads/release/' )
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Mirror Docker image to us-west-2
+        id: mirror-release
+        if: startsWith( github.ref, 'refs/heads/release/' )
+        shell: bash
+        run: |
+          export TARGET_REPOSITORY=${ECR_REPOSITORY/us-east-1/us-west-2}
+          docker manifest inspect ${TARGET_REPOSITORY}:${{ steps.image_info.outputs.tag }} || \
+            docker tag ${ECR_REPOSITORY}:${{ steps.image_info.outputs.tag }} ${TARGET_REPOSITORY}:${{ steps.image_info.outputs.tag }} && \
+            docker push ${TARGET_REPOSITORY}:${{ steps.image_info.outputs.tag }}
+
+      - name: Create commit comment
+        uses: peter-evans/commit-comment@v2
+        if: "!(steps.should_publish.outputs.targets == '')"
+        with:
+          body: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
+
+      - name: Docker image status update
+        uses: ouzi-dev/commit-status-updater@v2
+        with:
+          name: "Tag: ${{ steps.image_info.outputs.tag }}"
+          url: "${{ github.server_url }}/${{ github.repository }}/commit/${{ steps.image_info.outputs.sha }}#comments"
+          status: success
+
+      - name: Test
+        env:
+          VERTA_MODELDB_TEST_CONFIG: itconfig/config-test-h2.yaml
+          LIQUIBASE_MIGRATION: true
+          RUN_LIQUIBASE_SEPARATE: false
+          LOG4J_CONFIGURATION_FILE: itconfig/log4j2.yaml
+          LOG4J_FORMAT_MSG_NO_LOOKUPS: true
+        run: JAVA_TOOL_OPTIONS=-Dfile.encoding=UTF8 ./test_backend.sh
+
