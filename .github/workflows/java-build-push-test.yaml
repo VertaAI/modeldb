@@ -60,7 +60,7 @@ jobs:
           echo "sha=${sha}" >> $GITHUB_OUTPUT
           echo "tag=${branch}-${sha_details}" >> $GITHUB_OUTPUT
 
-      - name: Docker image status update
+      - name: Update commit status with Docker image status
         uses: ouzi-dev/commit-status-updater@v2
         with:
           name: "Tag: ${{ steps.image_info.outputs.tag }}"
@@ -83,7 +83,7 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           BRANCH_NAME: ${{ steps.branch_names.outputs.current_branch }}
 
-      - name: Docker image status update
+      - name: Update commit status with Docker image status
         uses: ouzi-dev/commit-status-updater@v2
         with:
           name: "Tag: ${{ steps.image_info.outputs.tag }}"
@@ -135,7 +135,7 @@ jobs:
         with:
           body: "Docker Tag: ${{ steps.image_info.outputs.tag }}"
 
-      - name: Docker image status update
+      - name: Update commit status with Docker image status
         uses: ouzi-dev/commit-status-updater@v2
         with:
           name: "Tag: ${{ steps.image_info.outputs.tag }}"
