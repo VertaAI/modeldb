@@ -1,6 +1,4 @@
 syntax = "proto3";
-
-option java_package = "ai.verta.deployment";
 option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/deployment";
 
 message CommitObjectUpdate {

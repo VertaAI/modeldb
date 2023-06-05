@@ -19,9 +19,6 @@ message UserDetails {
     string full_name = 10;
     string first_name = 11;
     string last_name = 12;
-    string job_title = 13;
-    string company = 14;
-    string org_id = 15;
 
     message UserGroup {
         string group_id = 1;
@@ -78,7 +75,6 @@ message AddUserV2 {
         string email = 2;
         string user_id = 3;
     }
-    string password = 4;
 
     message Response {
     }
@@ -128,19 +124,6 @@ message GetUserV2 {
     }
 }
 
-message UserExists {
-    string email = 1;
-
-    message Response {
-        bool exists = 1;
-    }
-}
-
-message ChangeCurrentUserPassword {
-    string old_password = 1;
-    string new_password = 2;
-}
-
 service UserServiceV2 {
     // List for users inside an organization, returning details
     rpc searchUsers (SearchUsers) returns (SearchUsers.Response) {
@@ -183,24 +166,6 @@ service UserServiceV2 {
     rpc getUser (GetUserV2) returns (GetUserV2.Response) {
         option (google.api.http) = {
             get: "/v2/organization/{org_id}/user"
-        };
-    }
-
-    rpc getCurrentUser(Empty) returns (UserDetails) {
-
-    }
-
-    rpc userExists (UserExists) returns (UserExists.Response) {
-        option (google.api.http) = {
-            post: "/v2/userExists"
-            body: "*"
-        };
-    }
-
-    rpc changeCurrentUserPassword (ChangeCurrentUserPassword) returns (Empty) {
-        option (google.api.http) = {
-            post: "/v2/changeCurrentUserPassword"
-            body: "*"
         };
     }
 }

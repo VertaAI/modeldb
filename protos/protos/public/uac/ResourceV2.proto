@@ -1,7 +1,7 @@
 syntax = "proto3";
 
 package ai.verta.uac;
-option go_package = "github.com/VertaAI/modeldb/protos/gen/go/protos/public/uac";
+option go_package = "github.com/VertaAI/protos-all/protos/gen/go/protos/public/uac";
 
 option java_multiple_files = true;
 

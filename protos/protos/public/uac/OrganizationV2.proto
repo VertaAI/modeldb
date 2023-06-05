@@ -12,14 +12,6 @@ message OrgAdminV2 {
     string email = 1;
 }
 
-message ContainerRegistryConfiguration {
-    uint64 id = 1;
-    string base = 2; // Unique per workspace
-    string username = 3;
-    string secret_key = 4; // Should be hidden from non-admins
-    string org_id = 6;
-}
-
 message OrganizationV2 {
     string id = 1;
     string name = 2;
@@ -28,16 +20,6 @@ message OrganizationV2 {
 
     int64 created_timestamp = 4;
     int64 updated_timestamp = 5;
-
-    repeated ContainerRegistryConfiguration container_registries = 7;
-    bool current_user_is_admin = 8;
-}
-
-message OrganizationStats {
-    string org_id = 1;
-    int32 num_users = 2;
-    int32 num_registered_models = 3;
-    int32 num_endpoints = 4;
 }
 
 message GetOrganizationByIdV2 {
@@ -58,12 +40,10 @@ message GetOrganizationByNameV2 {
 
 message ListOrganizationsV2 {
     common.Pagination pagination = 1;
-    common.TernaryEnum.Ternary current_user_is_admin = 2;
     message Response {
         repeated OrganizationV2 organizations = 1;
         int64 total_records = 2;
         common.Pagination pagination = 3;
-        repeated OrganizationStats organization_stats = 4;
     }
 }
 
@@ -118,20 +98,6 @@ service OrganizationServiceV2 {
         option (google.api.http) = {
             delete: "/v2/organization/{org_id}"
             body: "*"
-        };
-    };
-
-    rpc createOrUpdateContainerRegistryConfiguration (ContainerRegistryConfiguration) returns (ContainerRegistryConfiguration) {
-        option (google.api.http) = {
-            post : "/v2/organization/{org_id}/createOrUpdateContainerRegistryConfiguration"
-            body : "*"
-        };
-    };
-
-    rpc deleteContainerRegistryConfiguration (ContainerRegistryConfiguration) returns (Empty) {
-        option (google.api.http) = {
-            post : "/v2/organization/{org_id}/workspace/deleteContainerRegistryConfiguration"
-            body : "*"
         };
     };
 }

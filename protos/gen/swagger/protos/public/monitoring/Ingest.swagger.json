@@ -11,38 +11,6 @@
     "application/json"
   ],
   "paths": {
-    "/api/v1/monitoring/ingest": {
-      "post": {
-        "operationId": "IngestService_ingest",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/monitoringIngestRequestResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/monitoringIngestRequest"
-            }
-          }
-        ],
-        "tags": [
-          "IngestService"
-        ]
-      }
-    },
     "/api/v1/monitoring/ingest/batchIngest": {
       "post": {
         "operationId": "IngestService_batchIngest",
@@ -77,6 +45,27 @@
     }
   },
   "definitions": {
+    "BatchIngestRequestColumnSpec": {
+      "type": "object",
+      "properties": {
+        "monitoring_name": {
+          "type": "string",
+          "description": "Name of the column that is associated with the monitoring system. Used to enable datasets to have different column names.\nEquivalent to x-verta-monitoring-name in the model API.\nOptional (will default to the original column name)."
+        },
+        "io_type": {
+          "$ref": "#/definitions/IOTypeEnumIOType",
+          "description": "Type of the IO entry so that it can be mapped correctly."
+        },
+        "confidence_for": {
+          "type": "string",
+          "description": "Name of the \"monitoring_name\" entry that this column corresponds to a confidence for.\nEquivalent to x-verta-monitoring-confidence-for in the model API.\nOptional."
+        },
+        "ground_truth_for": {
+          "type": "string",
+          "description": "Name of the \"monitoring_name\" entry that this column corresponds to the ground truth for.\nOptional."
+        }
+      }
+    },
     "CompressionTypeEnumCompressionType": {
       "type": "string",
       "enum": [
@@ -150,7 +139,7 @@
         "ingest_columns": {
           "type": "object",
           "additionalProperties": {
-            "$ref": "#/definitions/monitoringColumnSpec"
+            "$ref": "#/definitions/BatchIngestRequestColumnSpec"
           },
           "description": "Map from name of the column in the original data to a specification of how to ingest it."
         },
@@ -177,93 +166,6 @@
       }
     },
     "monitoringBatchIngestRequestResponse": {
-      "type": "object"
-    },
-    "monitoringColumnSpec": {
-      "type": "object",
-      "properties": {
-        "monitoring_name": {
-          "type": "string",
-          "description": "Name of the column that is associated with the monitoring system. Used to enable datasets to have different column names.\nEquivalent to x-verta-monitoring-name in the model API.\nOptional (will default to the original column name)."
-        },
-        "io_type": {
-          "$ref": "#/definitions/IOTypeEnumIOType",
-          "description": "Type of the IO entry so that it can be mapped correctly."
-        },
-        "confidence_for": {
-          "type": "string",
-          "description": "Name of the \"monitoring_name\" entry that this column corresponds to a confidence for.\nEquivalent to x-verta-monitoring-confidence-for in the model API.\nOptional."
-        },
-        "ground_truth_for": {
-          "type": "string",
-          "description": "Name of the \"monitoring_name\" entry that this column corresponds to the ground truth for.\nOptional."
-        }
-      }
-    },
-    "monitoringIngestData": {
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "string_value": {
-          "type": "string"
-        },
-        "long_value": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "float_value": {
-          "type": "number",
-          "format": "float"
-        },
-        "bool_value": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
-    },
-    "monitoringIngestRequest": {
-      "type": "object",
-      "properties": {
-        "source_type": {
-          "$ref": "#/definitions/SourceTypeEnumSourceType"
-        },
-        "endpoint_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "monitored_entity_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "id_column_name": {
-          "type": "string",
-          "description": "Name of the column in the data that can be used as the prediction id.\nRequired for ground truth and predictions."
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "ingest_columns": {
-          "type": "object",
-          "additionalProperties": {
-            "$ref": "#/definitions/monitoringColumnSpec"
-          }
-        },
-        "ingest_data": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/monitoringIngestData"
-          }
-        },
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
-    "monitoringIngestRequestResponse": {
       "type": "object"
     },
     "protobufAny": {

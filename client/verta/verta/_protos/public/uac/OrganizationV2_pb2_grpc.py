@@ -2,7 +2,6 @@
 import grpc
 
 from ..uac import OrganizationV2_pb2 as uac_dot_OrganizationV2__pb2
-from ..uac import UACService_pb2 as uac_dot_UACService__pb2
 
 
 class OrganizationServiceV2Stub(object):
@@ -39,16 +38,6 @@ class OrganizationServiceV2Stub(object):
         '/ai.verta.uac.OrganizationServiceV2/deleteOrganization',
         request_serializer=uac_dot_OrganizationV2__pb2.DeleteOrganizationV2.SerializeToString,
         response_deserializer=uac_dot_OrganizationV2__pb2.DeleteOrganizationV2.Response.FromString,
-        )
-    self.createOrUpdateContainerRegistryConfiguration = channel.unary_unary(
-        '/ai.verta.uac.OrganizationServiceV2/createOrUpdateContainerRegistryConfiguration',
-        request_serializer=uac_dot_OrganizationV2__pb2.ContainerRegistryConfiguration.SerializeToString,
-        response_deserializer=uac_dot_OrganizationV2__pb2.ContainerRegistryConfiguration.FromString,
-        )
-    self.deleteContainerRegistryConfiguration = channel.unary_unary(
-        '/ai.verta.uac.OrganizationServiceV2/deleteContainerRegistryConfiguration',
-        request_serializer=uac_dot_OrganizationV2__pb2.ContainerRegistryConfiguration.SerializeToString,
-        response_deserializer=uac_dot_UACService__pb2.Empty.FromString,
         )
 
 
@@ -92,20 +81,6 @@ class OrganizationServiceV2Servicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def createOrUpdateContainerRegistryConfiguration(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def deleteContainerRegistryConfiguration(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
 
 def add_OrganizationServiceV2Servicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -133,16 +108,6 @@ def add_OrganizationServiceV2Servicer_to_server(servicer, server):
           servicer.deleteOrganization,
           request_deserializer=uac_dot_OrganizationV2__pb2.DeleteOrganizationV2.FromString,
           response_serializer=uac_dot_OrganizationV2__pb2.DeleteOrganizationV2.Response.SerializeToString,
-      ),
-      'createOrUpdateContainerRegistryConfiguration': grpc.unary_unary_rpc_method_handler(
-          servicer.createOrUpdateContainerRegistryConfiguration,
-          request_deserializer=uac_dot_OrganizationV2__pb2.ContainerRegistryConfiguration.FromString,
-          response_serializer=uac_dot_OrganizationV2__pb2.ContainerRegistryConfiguration.SerializeToString,
-      ),
-      'deleteContainerRegistryConfiguration': grpc.unary_unary_rpc_method_handler(
-          servicer.deleteContainerRegistryConfiguration,
-          request_deserializer=uac_dot_OrganizationV2__pb2.ContainerRegistryConfiguration.FromString,
-          response_serializer=uac_dot_UACService__pb2.Empty.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

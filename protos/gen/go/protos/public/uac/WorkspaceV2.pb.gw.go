@@ -101,10 +101,6 @@ func local_request_WorkspaceServiceV2_SetWorkspace_0(ctx context.Context, marsha
 
 }
 
-var (
-	filter_WorkspaceServiceV2_GetWorkspace_0 = &utilities.DoubleArray{Encoding: map[string]int{"org_id": 0, "workspace_id": 1}, Base: []int{1, 1, 2, 0, 0}, Check: []int{0, 1, 1, 2, 3}}
-)
-
 func request_WorkspaceServiceV2_GetWorkspace_0(ctx context.Context, marshaler runtime.Marshaler, client WorkspaceServiceV2Client, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq GetWorkspaceV2
 	var metadata runtime.ServerMetadata
@@ -132,22 +128,10 @@ func request_WorkspaceServiceV2_GetWorkspace_0(ctx context.Context, marshaler ru
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "workspace_id")
 	}
 
-	if protoReq.Identifier == nil {
-		protoReq.Identifier = &GetWorkspaceV2_WorkspaceId{}
-	} else if _, ok := protoReq.Identifier.(*GetWorkspaceV2_WorkspaceId); !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "expect type: *GetWorkspaceV2_WorkspaceId, but: %t\n", protoReq.Identifier)
-	}
-	protoReq.Identifier.(*GetWorkspaceV2_WorkspaceId).WorkspaceId, err = runtime.Uint64(val)
+	protoReq.WorkspaceId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "workspace_id", err)
-	}
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WorkspaceServiceV2_GetWorkspace_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := client.GetWorkspace(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
@@ -182,22 +166,10 @@ func local_request_WorkspaceServiceV2_GetWorkspace_0(ctx context.Context, marsha
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "workspace_id")
 	}
 
-	if protoReq.Identifier == nil {
-		protoReq.Identifier = &GetWorkspaceV2_WorkspaceId{}
-	} else if _, ok := protoReq.Identifier.(*GetWorkspaceV2_WorkspaceId); !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "expect type: *GetWorkspaceV2_WorkspaceId, but: %t\n", protoReq.Identifier)
-	}
-	protoReq.Identifier.(*GetWorkspaceV2_WorkspaceId).WorkspaceId, err = runtime.Uint64(val)
+	protoReq.WorkspaceId, err = runtime.Uint64(val)
 
 	if err != nil {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "workspace_id", err)
-	}
-
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
-	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_WorkspaceServiceV2_GetWorkspace_0); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
 	msg, err := server.GetWorkspace(ctx, &protoReq)

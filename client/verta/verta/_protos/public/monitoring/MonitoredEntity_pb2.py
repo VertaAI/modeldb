@@ -14,7 +14,6 @@ _sym_db = _symbol_database.Default()
 from ..uac import Collaborator_pb2 as uac_dot_Collaborator__pb2
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from google.protobuf import struct_pb2 as google_dot_protobuf_dot_struct__pb2
-from ..common import CommonService_pb2 as common_dot_CommonService__pb2
 
 
 DESCRIPTOR = _descriptor.FileDescriptor(
@@ -22,11 +21,41 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.monitoring',
   syntax='proto3',
   serialized_options=b'P\001ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoring',
-  serialized_pb=b'\n monitoring/MonitoredEntity.proto\x12\x13\x61i.verta.monitoring\x1a\x16uac/Collaborator.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\x1a\x1a\x63ommon/CommonService.proto\"\x07\n\x05\x45mpty\"\xd4\x04\n\x0fMonitoredEntity\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x05 \x01(\x04\x12#\n\x1b\x63reated_at_timestamp_millis\x18\x06 \x01(\x04\x12#\n\x1bupdated_at_timestamp_millis\x18\x07 \x01(\x04\x12H\n\nattributes\x18\x08 \x03(\x0b\x32\x34.ai.verta.monitoring.MonitoredEntity.AttributesEntry\x12\r\n\x05owner\x18\t \x01(\t\x12\x12\n\x08owner_id\x18\x10 \x01(\x04H\x00\x12\x32\n\x0egroup_owner_id\x18\x11 \x01(\x0b\x32\x18.ai.verta.common.GroupIdH\x00\x12=\n\x13resource_visibility\x18\n \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\x0b \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x12\x16\n\x0eversion_number\x18\x0c \x01(\x04\x12\x13\n\x0b\x65ndpoint_id\x18\r \x01(\x04\x12\x17\n\x0f\x64\x61tasource_name\x18\x0e \x01(\t\x12\x0e\n\x06origin\x18\x0f \x01(\t\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x42\x10\n\x0eowner_trackingJ\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05\"\xfe\x03\n\x1c\x43reateMonitoredEntityRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0cworkspace_id\x18\x04 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x05 \x01(\tH\x00\x12U\n\nattributes\x18\x06 \x03(\x0b\x32\x41.ai.verta.monitoring.CreateMonitoredEntityRequest.AttributesEntry\x12=\n\x13resource_visibility\x18\x07 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\x08 \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x12\x13\n\x0b\x65ndpoint_id\x18\t \x01(\x04\x12\x0e\n\x06origin\x18\n \x01(\t\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1aJ\n\x08Response\x12>\n\x10monitored_entity\x18\x01 \x01(\x0b\x32$.ai.verta.monitoring.MonitoredEntityB\x16\n\x14workspace_identifierJ\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04\"\x95\x03\n\x1cUpdateMonitoredEntityRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12U\n\nattributes\x18\x07 \x03(\x0b\x32\x41.ai.verta.monitoring.UpdateMonitoredEntityRequest.AttributesEntry\x12=\n\x13resource_visibility\x18\x08 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\t \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1aJ\n\x08Response\x12>\n\x10monitored_entity\x18\x01 \x01(\x0b\x32$.ai.verta.monitoring.MonitoredEntityJ\x04\x08\x04\x10\x07\"\xd6\x02\n\x1a\x46indMonitoredEntityRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x13\n\x0b\x66uzzy_names\x18\x07 \x03(\t\x12\x14\n\x0c\x65ndpoint_ids\x18\x08 \x03(\x04\x12\x19\n\x11model_version_ids\x18\t \x03(\t\x12\x16\n\x0cworkspace_id\x18\x03 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x06 \x01(\tH\x00\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x1a\x63\n\x08Response\x12@\n\x12monitored_entities\x18\x01 \x03(\x0b\x32$.ai.verta.monitoring.MonitoredEntity\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x42\x16\n\x14workspace_identifier\"6\n\x1c\x44\x65leteMonitoredEntityRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\n\n\x08Response2\xcc\x06\n\x16MonitoredEntityService\x12\xcc\x01\n\x15\x63reateMonitoredEntity\x12\x31.ai.verta.monitoring.CreateMonitoredEntityRequest\x1a:.ai.verta.monitoring.CreateMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>\"9/api/v1/monitoring/monitored_entity/createMonitoredEntity:\x01*\x12\xcc\x01\n\x15updateMonitoredEntity\x12\x31.ai.verta.monitoring.UpdateMonitoredEntityRequest\x1a:.ai.verta.monitoring.UpdateMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>29/api/v1/monitoring/monitored_entity/updateMonitoredEntity:\x01*\x12\xc4\x01\n\x13\x66indMonitoredEntity\x12/.ai.verta.monitoring.FindMonitoredEntityRequest\x1a\x38.ai.verta.monitoring.FindMonitoredEntityRequest.Response\"B\x82\xd3\xe4\x93\x02<\"7/api/v1/monitoring/monitored_entity/findMonitoredEntity:\x01*\x12\xcc\x01\n\x15\x64\x65leteMonitoredEntity\x12\x31.ai.verta.monitoring.DeleteMonitoredEntityRequest\x1a:.ai.verta.monitoring.DeleteMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>*9/api/v1/monitoring/monitored_entity/deleteMonitoredEntity:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
+  serialized_pb=b'\n monitoring/MonitoredEntity.proto\x12\x13\x61i.verta.monitoring\x1a\x16uac/Collaborator.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1cgoogle/protobuf/struct.proto\"\x07\n\x05\x45mpty\"\x80\x01\n\x08KeyValue\x12\x0b\n\x03key\x18\x01 \x01(\t\x12%\n\x05value\x18\x02 \x01(\x0b\x32\x16.google.protobuf.Value\x12@\n\nvalue_type\x18\x03 \x01(\x0e\x32,.ai.verta.monitoring.ValueTypeEnum.ValueType\"H\n\rValueTypeEnum\"7\n\tValueType\x12\n\n\x06STRING\x10\x00\x12\n\n\x06NUMBER\x10\x01\x12\x08\n\x04LIST\x10\x02\x12\x08\n\x04\x42LOB\x10\x03\"\xd1\x03\n\x0fMonitoredEntity\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x14\n\x0cworkspace_id\x18\x05 \x01(\x04\x12#\n\x1b\x63reated_at_timestamp_millis\x18\x06 \x01(\x04\x12#\n\x1bupdated_at_timestamp_millis\x18\x07 \x01(\x04\x12H\n\nattributes\x18\x08 \x03(\x0b\x32\x34.ai.verta.monitoring.MonitoredEntity.AttributesEntry\x12\r\n\x05owner\x18\t \x01(\t\x12=\n\x13resource_visibility\x18\n \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\x0b \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x12\x16\n\x0eversion_number\x18\x0c \x01(\x04\x12\x13\n\x0b\x65ndpoint_id\x18\r \x01(\x04\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01J\x04\x08\x03\x10\x04J\x04\x08\x04\x10\x05\"\xee\x03\n\x1c\x43reateMonitoredEntityRequest\x12\x0c\n\x04name\x18\x01 \x01(\t\x12\x16\n\x0cworkspace_id\x18\x04 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x05 \x01(\tH\x00\x12U\n\nattributes\x18\x06 \x03(\x0b\x32\x41.ai.verta.monitoring.CreateMonitoredEntityRequest.AttributesEntry\x12=\n\x13resource_visibility\x18\x07 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\x08 \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x12\x13\n\x0b\x65ndpoint_id\x18\t \x01(\x04\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1aJ\n\x08Response\x12>\n\x10monitored_entity\x18\x01 \x01(\x0b\x32$.ai.verta.monitoring.MonitoredEntityB\x16\n\x14workspace_identifierJ\x04\x08\x02\x10\x03J\x04\x08\x03\x10\x04\"\x95\x03\n\x1cUpdateMonitoredEntityRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12U\n\nattributes\x18\x07 \x03(\x0b\x32\x41.ai.verta.monitoring.UpdateMonitoredEntityRequest.AttributesEntry\x12=\n\x13resource_visibility\x18\x08 \x01(\x0e\x32 .ai.verta.uac.ResourceVisibility\x12@\n\x11\x63ustom_permission\x18\t \x01(\x0b\x32%.ai.verta.uac.CollaboratorPermissions\x1a\x31\n\x0f\x41ttributesEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\x1aJ\n\x08Response\x12>\n\x10monitored_entity\x18\x01 \x01(\x0b\x32$.ai.verta.monitoring.MonitoredEntityJ\x04\x08\x04\x10\x07\"\xd6\x02\n\x1a\x46indMonitoredEntityRequest\x12\x0b\n\x03ids\x18\x01 \x03(\x04\x12\r\n\x05names\x18\x02 \x03(\t\x12\x13\n\x0b\x66uzzy_names\x18\x07 \x03(\t\x12\x14\n\x0c\x65ndpoint_ids\x18\x08 \x03(\x04\x12\x19\n\x11model_version_ids\x18\t \x03(\t\x12\x16\n\x0cworkspace_id\x18\x03 \x01(\x04H\x00\x12\x18\n\x0eworkspace_name\x18\x06 \x01(\tH\x00\x12\x13\n\x0bpage_number\x18\x04 \x01(\x05\x12\x12\n\npage_limit\x18\x05 \x01(\x05\x1a\x63\n\x08Response\x12@\n\x12monitored_entities\x18\x01 \x03(\x0b\x32$.ai.verta.monitoring.MonitoredEntity\x12\x15\n\rtotal_records\x18\x02 \x01(\x05\x42\x16\n\x14workspace_identifier\"6\n\x1c\x44\x65leteMonitoredEntityRequest\x12\n\n\x02id\x18\x01 \x01(\x04\x1a\n\n\x08Response2\xcc\x06\n\x16MonitoredEntityService\x12\xcc\x01\n\x15\x63reateMonitoredEntity\x12\x31.ai.verta.monitoring.CreateMonitoredEntityRequest\x1a:.ai.verta.monitoring.CreateMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>\"9/api/v1/monitoring/monitored_entity/createMonitoredEntity:\x01*\x12\xcc\x01\n\x15updateMonitoredEntity\x12\x31.ai.verta.monitoring.UpdateMonitoredEntityRequest\x1a:.ai.verta.monitoring.UpdateMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>29/api/v1/monitoring/monitored_entity/updateMonitoredEntity:\x01*\x12\xc4\x01\n\x13\x66indMonitoredEntity\x12/.ai.verta.monitoring.FindMonitoredEntityRequest\x1a\x38.ai.verta.monitoring.FindMonitoredEntityRequest.Response\"B\x82\xd3\xe4\x93\x02<\"7/api/v1/monitoring/monitored_entity/findMonitoredEntity:\x01*\x12\xcc\x01\n\x15\x64\x65leteMonitoredEntity\x12\x31.ai.verta.monitoring.DeleteMonitoredEntityRequest\x1a:.ai.verta.monitoring.DeleteMonitoredEntityRequest.Response\"D\x82\xd3\xe4\x93\x02>*9/api/v1/monitoring/monitored_entity/deleteMonitoredEntity:\x01*BEP\x01ZAgithub.com/VertaAI/modeldb/protos/gen/go/protos/public/monitoringb\x06proto3'
   ,
-  dependencies=[uac_dot_Collaborator__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
+  dependencies=[uac_dot_Collaborator__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,google_dot_protobuf_dot_struct__pb2.DESCRIPTOR,])
 
 
+
+_VALUETYPEENUM_VALUETYPE = _descriptor.EnumDescriptor(
+  name='ValueType',
+  full_name='ai.verta.monitoring.ValueTypeEnum.ValueType',
+  filename=None,
+  file=DESCRIPTOR,
+  values=[
+    _descriptor.EnumValueDescriptor(
+      name='STRING', index=0, number=0,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='NUMBER', index=1, number=1,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='LIST', index=2, number=2,
+      serialized_options=None,
+      type=None),
+    _descriptor.EnumValueDescriptor(
+      name='BLOB', index=3, number=3,
+      serialized_options=None,
+      type=None),
+  ],
+  containing_type=None,
+  serialized_options=None,
+  serialized_start=298,
+  serialized_end=353,
+)
+_sym_db.RegisterEnumDescriptor(_VALUETYPEENUM_VALUETYPE)
 
 
 _EMPTY = _descriptor.Descriptor(
@@ -48,8 +77,78 @@ _EMPTY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=169,
-  serialized_end=176,
+  serialized_start=141,
+  serialized_end=148,
+)
+
+
+_KEYVALUE = _descriptor.Descriptor(
+  name='KeyValue',
+  full_name='ai.verta.monitoring.KeyValue',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='key', full_name='ai.verta.monitoring.KeyValue.key', index=0,
+      number=1, type=9, cpp_type=9, label=1,
+      has_default_value=False, default_value=b"".decode('utf-8'),
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value', full_name='ai.verta.monitoring.KeyValue.value', index=1,
+      number=2, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='value_type', full_name='ai.verta.monitoring.KeyValue.value_type', index=2,
+      number=3, type=14, cpp_type=8, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=151,
+  serialized_end=279,
+)
+
+
+_VALUETYPEENUM = _descriptor.Descriptor(
+  name='ValueTypeEnum',
+  full_name='ai.verta.monitoring.ValueTypeEnum',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  fields=[
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+    _VALUETYPEENUM_VALUETYPE,
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=281,
+  serialized_end=353,
 )
 
 
@@ -86,8 +185,8 @@ _MONITOREDENTITY_ATTRIBUTESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=696,
-  serialized_end=745,
+  serialized_start=760,
+  serialized_end=809,
 )
 
 _MONITOREDENTITY = _descriptor.Descriptor(
@@ -147,58 +246,30 @@ _MONITOREDENTITY = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='owner_id', full_name='ai.verta.monitoring.MonitoredEntity.owner_id', index=7,
-      number=16, type=4, cpp_type=4, label=1,
-      has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='group_owner_id', full_name='ai.verta.monitoring.MonitoredEntity.group_owner_id', index=8,
-      number=17, type=11, cpp_type=10, label=1,
-      has_default_value=False, default_value=None,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='resource_visibility', full_name='ai.verta.monitoring.MonitoredEntity.resource_visibility', index=9,
+      name='resource_visibility', full_name='ai.verta.monitoring.MonitoredEntity.resource_visibility', index=7,
       number=10, type=14, cpp_type=8, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='custom_permission', full_name='ai.verta.monitoring.MonitoredEntity.custom_permission', index=10,
+      name='custom_permission', full_name='ai.verta.monitoring.MonitoredEntity.custom_permission', index=8,
       number=11, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='version_number', full_name='ai.verta.monitoring.MonitoredEntity.version_number', index=11,
+      name='version_number', full_name='ai.verta.monitoring.MonitoredEntity.version_number', index=9,
       number=12, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
     _descriptor.FieldDescriptor(
-      name='endpoint_id', full_name='ai.verta.monitoring.MonitoredEntity.endpoint_id', index=12,
+      name='endpoint_id', full_name='ai.verta.monitoring.MonitoredEntity.endpoint_id', index=10,
       number=13, type=4, cpp_type=4, label=1,
       has_default_value=False, default_value=0,
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='datasource_name', full_name='ai.verta.monitoring.MonitoredEntity.datasource_name', index=13,
-      number=14, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='origin', full_name='ai.verta.monitoring.MonitoredEntity.origin', index=14,
-      number=15, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
@@ -213,12 +284,9 @@ _MONITOREDENTITY = _descriptor.Descriptor(
   syntax='proto3',
   extension_ranges=[],
   oneofs=[
-    _descriptor.OneofDescriptor(
-      name='owner_tracking', full_name='ai.verta.monitoring.MonitoredEntity.owner_tracking',
-      index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=179,
-  serialized_end=775,
+  serialized_start=356,
+  serialized_end=821,
 )
 
 
@@ -255,8 +323,8 @@ _CREATEMONITOREDENTITYREQUEST_ATTRIBUTESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=696,
-  serialized_end=745,
+  serialized_start=760,
+  serialized_end=809,
 )
 
 _CREATEMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
@@ -285,8 +353,8 @@ _CREATEMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1178,
-  serialized_end=1252,
+  serialized_start=1208,
+  serialized_end=1282,
 )
 
 _CREATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
@@ -345,13 +413,6 @@ _CREATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
-    _descriptor.FieldDescriptor(
-      name='origin', full_name='ai.verta.monitoring.CreateMonitoredEntityRequest.origin', index=7,
-      number=10, type=9, cpp_type=9, label=1,
-      has_default_value=False, default_value=b"".decode('utf-8'),
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -367,8 +428,8 @@ _CREATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
       name='workspace_identifier', full_name='ai.verta.monitoring.CreateMonitoredEntityRequest.workspace_identifier',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=778,
-  serialized_end=1288,
+  serialized_start=824,
+  serialized_end=1318,
 )
 
 
@@ -405,8 +466,8 @@ _UPDATEMONITOREDENTITYREQUEST_ATTRIBUTESENTRY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=696,
-  serialized_end=745,
+  serialized_start=760,
+  serialized_end=809,
 )
 
 _UPDATEMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
@@ -435,8 +496,8 @@ _UPDATEMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1178,
-  serialized_end=1252,
+  serialized_start=1208,
+  serialized_end=1282,
 )
 
 _UPDATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
@@ -493,8 +554,8 @@ _UPDATEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1291,
-  serialized_end=1696,
+  serialized_start=1321,
+  serialized_end=1726,
 )
 
 
@@ -531,8 +592,8 @@ _FINDMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1918,
-  serialized_end=2017,
+  serialized_start=1948,
+  serialized_end=2047,
 )
 
 _FINDMONITOREDENTITYREQUEST = _descriptor.Descriptor(
@@ -620,8 +681,8 @@ _FINDMONITOREDENTITYREQUEST = _descriptor.Descriptor(
       name='workspace_identifier', full_name='ai.verta.monitoring.FindMonitoredEntityRequest.workspace_identifier',
       index=0, containing_type=None, fields=[]),
   ],
-  serialized_start=1699,
-  serialized_end=2041,
+  serialized_start=1729,
+  serialized_end=2071,
 )
 
 
@@ -644,8 +705,8 @@ _DELETEMONITOREDENTITYREQUEST_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1178,
-  serialized_end=1188,
+  serialized_start=1208,
+  serialized_end=1218,
 )
 
 _DELETEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
@@ -674,21 +735,17 @@ _DELETEMONITOREDENTITYREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2043,
-  serialized_end=2097,
+  serialized_start=2073,
+  serialized_end=2127,
 )
 
+_KEYVALUE.fields_by_name['value'].message_type = google_dot_protobuf_dot_struct__pb2._VALUE
+_KEYVALUE.fields_by_name['value_type'].enum_type = _VALUETYPEENUM_VALUETYPE
+_VALUETYPEENUM_VALUETYPE.containing_type = _VALUETYPEENUM
 _MONITOREDENTITY_ATTRIBUTESENTRY.containing_type = _MONITOREDENTITY
 _MONITOREDENTITY.fields_by_name['attributes'].message_type = _MONITOREDENTITY_ATTRIBUTESENTRY
-_MONITOREDENTITY.fields_by_name['group_owner_id'].message_type = common_dot_CommonService__pb2._GROUPID
 _MONITOREDENTITY.fields_by_name['resource_visibility'].enum_type = uac_dot_Collaborator__pb2._RESOURCEVISIBILITY
 _MONITOREDENTITY.fields_by_name['custom_permission'].message_type = uac_dot_Collaborator__pb2._COLLABORATORPERMISSIONS
-_MONITOREDENTITY.oneofs_by_name['owner_tracking'].fields.append(
-  _MONITOREDENTITY.fields_by_name['owner_id'])
-_MONITOREDENTITY.fields_by_name['owner_id'].containing_oneof = _MONITOREDENTITY.oneofs_by_name['owner_tracking']
-_MONITOREDENTITY.oneofs_by_name['owner_tracking'].fields.append(
-  _MONITOREDENTITY.fields_by_name['group_owner_id'])
-_MONITOREDENTITY.fields_by_name['group_owner_id'].containing_oneof = _MONITOREDENTITY.oneofs_by_name['owner_tracking']
 _CREATEMONITOREDENTITYREQUEST_ATTRIBUTESENTRY.containing_type = _CREATEMONITOREDENTITYREQUEST
 _CREATEMONITOREDENTITYREQUEST_RESPONSE.fields_by_name['monitored_entity'].message_type = _MONITOREDENTITY
 _CREATEMONITOREDENTITYREQUEST_RESPONSE.containing_type = _CREATEMONITOREDENTITYREQUEST
@@ -717,6 +774,8 @@ _FINDMONITOREDENTITYREQUEST.oneofs_by_name['workspace_identifier'].fields.append
 _FINDMONITOREDENTITYREQUEST.fields_by_name['workspace_name'].containing_oneof = _FINDMONITOREDENTITYREQUEST.oneofs_by_name['workspace_identifier']
 _DELETEMONITOREDENTITYREQUEST_RESPONSE.containing_type = _DELETEMONITOREDENTITYREQUEST
 DESCRIPTOR.message_types_by_name['Empty'] = _EMPTY
+DESCRIPTOR.message_types_by_name['KeyValue'] = _KEYVALUE
+DESCRIPTOR.message_types_by_name['ValueTypeEnum'] = _VALUETYPEENUM
 DESCRIPTOR.message_types_by_name['MonitoredEntity'] = _MONITOREDENTITY
 DESCRIPTOR.message_types_by_name['CreateMonitoredEntityRequest'] = _CREATEMONITOREDENTITYREQUEST
 DESCRIPTOR.message_types_by_name['UpdateMonitoredEntityRequest'] = _UPDATEMONITOREDENTITYREQUEST
@@ -730,6 +789,20 @@ Empty = _reflection.GeneratedProtocolMessageType('Empty', (_message.Message,), {
   # @@protoc_insertion_point(class_scope:ai.verta.monitoring.Empty)
   })
 _sym_db.RegisterMessage(Empty)
+
+KeyValue = _reflection.GeneratedProtocolMessageType('KeyValue', (_message.Message,), {
+  'DESCRIPTOR' : _KEYVALUE,
+  '__module__' : 'monitoring.MonitoredEntity_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.KeyValue)
+  })
+_sym_db.RegisterMessage(KeyValue)
+
+ValueTypeEnum = _reflection.GeneratedProtocolMessageType('ValueTypeEnum', (_message.Message,), {
+  'DESCRIPTOR' : _VALUETYPEENUM,
+  '__module__' : 'monitoring.MonitoredEntity_pb2'
+  # @@protoc_insertion_point(class_scope:ai.verta.monitoring.ValueTypeEnum)
+  })
+_sym_db.RegisterMessage(ValueTypeEnum)
 
 MonitoredEntity = _reflection.GeneratedProtocolMessageType('MonitoredEntity', (_message.Message,), {
 
@@ -834,8 +907,8 @@ _MONITOREDENTITYSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2100,
-  serialized_end=2944,
+  serialized_start=2130,
+  serialized_end=2974,
   methods=[
   _descriptor.MethodDescriptor(
     name='createMonitoredEntity',

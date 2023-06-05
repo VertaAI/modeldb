@@ -43,18 +43,6 @@
             "required": false,
             "type": "integer",
             "format": "int32"
-          },
-          {
-            "name": "current_user_is_admin",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "enum": [
-              "UNKNOWN",
-              "TRUE",
-              "FALSE"
-            ],
-            "default": "UNKNOWN"
           }
         ],
         "tags": [
@@ -191,94 +179,9 @@
           "OrganizationServiceV2"
         ]
       }
-    },
-    "/v2/organization/{org_id}/createOrUpdateContainerRegistryConfiguration": {
-      "post": {
-        "operationId": "OrganizationServiceV2_createOrUpdateContainerRegistryConfiguration",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacContainerRegistryConfiguration"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacContainerRegistryConfiguration"
-            }
-          }
-        ],
-        "tags": [
-          "OrganizationServiceV2"
-        ]
-      }
-    },
-    "/v2/organization/{org_id}/workspace/deleteContainerRegistryConfiguration": {
-      "post": {
-        "operationId": "OrganizationServiceV2_deleteContainerRegistryConfiguration",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacContainerRegistryConfiguration"
-            }
-          }
-        ],
-        "tags": [
-          "OrganizationServiceV2"
-        ]
-      }
     }
   },
   "definitions": {
-    "TernaryEnumTernary": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "TRUE",
-        "FALSE"
-      ],
-      "default": "UNKNOWN"
-    },
     "commonPagination": {
       "type": "object",
       "properties": {
@@ -329,27 +232,6 @@
         }
       }
     },
-    "uacContainerRegistryConfiguration": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "base": {
-          "type": "string"
-        },
-        "username": {
-          "type": "string"
-        },
-        "secret_key": {
-          "type": "string"
-        },
-        "org_id": {
-          "type": "string"
-        }
-      }
-    },
     "uacDeleteOrganizationV2": {
       "type": "object",
       "properties": {
@@ -392,12 +274,6 @@
         },
         "pagination": {
           "$ref": "#/definitions/commonPagination"
-        },
-        "organization_stats": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacOrganizationStats"
-          }
         }
       }
     },
@@ -406,26 +282,6 @@
       "properties": {
         "email": {
           "type": "string"
-        }
-      }
-    },
-    "uacOrganizationStats": {
-      "type": "object",
-      "properties": {
-        "org_id": {
-          "type": "string"
-        },
-        "num_users": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "num_registered_models": {
-          "type": "integer",
-          "format": "int32"
-        },
-        "num_endpoints": {
-          "type": "integer",
-          "format": "int32"
         }
       }
     },
@@ -454,16 +310,6 @@
         "updated_timestamp": {
           "type": "string",
           "format": "int64"
-        },
-        "container_registries": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacContainerRegistryConfiguration"
-          }
-        },
-        "current_user_is_admin": {
-          "type": "boolean",
-          "format": "boolean"
         }
       }
     },
@@ -482,9 +328,6 @@
           "$ref": "#/definitions/uacOrganizationV2"
         }
       }
-    },
-    "vertauacEmpty": {
-      "type": "object"
     }
   },
   "basePath": "/v1"

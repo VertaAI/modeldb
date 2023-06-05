@@ -11,38 +11,6 @@
     "application/json"
   ],
   "paths": {
-    "/v2/changeCurrentUserPassword": {
-      "post": {
-        "operationId": "UserServiceV2_changeCurrentUserPassword",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/vertauacEmpty"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacChangeCurrentUserPassword"
-            }
-          }
-        ],
-        "tags": [
-          "UserServiceV2"
-        ]
-      }
-    },
     "/v2/organization/{org_id}/serviceAccounts/{service_account_id}": {
       "delete": {
         "summary": "Removes a service account from the organization",
@@ -322,38 +290,6 @@
           "UserServiceV2"
         ]
       }
-    },
-    "/v2/userExists": {
-      "post": {
-        "operationId": "UserServiceV2_userExists",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacUserExistsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacUserExists"
-            }
-          }
-        ],
-        "tags": [
-          "UserServiceV2"
-        ]
-      }
     }
   },
   "definitions": {
@@ -456,25 +392,11 @@
         },
         "user_id": {
           "type": "string"
-        },
-        "password": {
-          "type": "string"
         }
       }
     },
     "uacAddUserV2Response": {
       "type": "object"
-    },
-    "uacChangeCurrentUserPassword": {
-      "type": "object",
-      "properties": {
-        "old_password": {
-          "type": "string"
-        },
-        "new_password": {
-          "type": "string"
-        }
-      }
     },
     "uacGetUserV2Response": {
       "type": "object",
@@ -595,15 +517,6 @@
         "last_name": {
           "type": "string"
         },
-        "job_title": {
-          "type": "string"
-        },
-        "company": {
-          "type": "string"
-        },
-        "org_id": {
-          "type": "string"
-        },
         "groups": {
           "type": "array",
           "items": {
@@ -618,23 +531,6 @@
         }
       }
     },
-    "uacUserExists": {
-      "type": "object",
-      "properties": {
-        "email": {
-          "type": "string"
-        }
-      }
-    },
-    "uacUserExistsResponse": {
-      "type": "object",
-      "properties": {
-        "exists": {
-          "type": "boolean",
-          "format": "boolean"
-        }
-      }
-    },
     "uacUserSearchOptions": {
       "type": "string",
       "enum": [
@@ -643,9 +539,6 @@
         "ONLY_ADMINS"
       ],
       "default": "SEARCH_OPTION_UNKNOWN"
-    },
-    "vertauacEmpty": {
-      "type": "object"
     }
   },
   "basePath": "/v1"

@@ -11,74 +11,6 @@
     "application/json"
   ],
   "paths": {
-    "/v2/organization/{org_id}/getEnabledActions": {
-      "get": {
-        "operationId": "RoleServiceV2_getEnabledActions",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacGetEnabledActionsResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          }
-        ],
-        "tags": [
-          "RoleServiceV2"
-        ]
-      }
-    },
-    "/v2/organization/{org_id}/getSelfAllowedActionsBatchForWorkspace": {
-      "post": {
-        "operationId": "RoleServiceV2_getSelfAllowedActionsBatchForWorkspace",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/uacGetSelfAllowedActionsBatchForWorkspaceResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response",
-            "schema": {
-              "$ref": "#/definitions/runtimeError"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "org_id",
-            "in": "path",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/uacGetSelfAllowedActionsBatchForWorkspace"
-            }
-          }
-        ],
-        "tags": [
-          "RoleServiceV2"
-        ]
-      }
-    },
     "/v2/organization/{org_id}/roles": {
       "get": {
         "operationId": "RoleServiceV2_searchRoles",
@@ -301,45 +233,11 @@
     "uacDeleteRoleV2Response": {
       "type": "object"
     },
-    "uacGetEnabledActionsResponse": {
-      "type": "object",
-      "properties": {
-        "enabled_actions": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/uacRoleResourceActions"
-          }
-        }
-      }
-    },
     "uacGetRoleV2Response": {
       "type": "object",
       "properties": {
         "role": {
           "$ref": "#/definitions/uacRoleV2"
-        }
-      }
-    },
-    "uacGetSelfAllowedActionsBatchForWorkspace": {
-      "type": "object",
-      "properties": {
-        "org_id": {
-          "type": "string"
-        },
-        "workspace_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "resource_type": {
-          "$ref": "#/definitions/uacResourceTypeV2"
-        }
-      }
-    },
-    "uacGetSelfAllowedActionsBatchForWorkspaceResponse": {
-      "type": "object",
-      "properties": {
-        "allowed_actions": {
-          "$ref": "#/definitions/uacRoleResourceActions"
         }
       }
     },

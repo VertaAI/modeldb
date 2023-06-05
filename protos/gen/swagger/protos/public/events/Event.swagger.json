@@ -338,15 +338,6 @@
       ],
       "default": "CREATE"
     },
-    "CustomAttributeTargetTypeEnumCustomAttributeTargetType": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "REGISTERED_MODEL",
-        "REGISTERED_MODEL_VERSION"
-      ],
-      "default": "UNKNOWN"
-    },
     "DataTypeEnumDataType": {
       "type": "string",
       "enum": [
@@ -367,16 +358,6 @@
         "ALL",
         "ENDPOINT",
         "BUILD"
-      ],
-      "default": "UNKNOWN"
-    },
-    "LocationTypeEnumLocationType": {
-      "type": "string",
-      "enum": [
-        "UNKNOWN",
-        "CLOUD_PROVIDER",
-        "INTERNAL_PRIVATE_NETWORK",
-        "DEVICE"
       ],
       "default": "UNKNOWN"
     },
@@ -526,17 +507,6 @@
         "upload_completed": {
           "type": "boolean",
           "format": "boolean"
-        }
-      }
-    },
-    "commonGroupId": {
-      "type": "object",
-      "properties": {
-        "org_id": {
-          "type": "string"
-        },
-        "group_id": {
-          "type": "string"
         }
       }
     },
@@ -899,98 +869,6 @@
       "default": "NULL_VALUE",
       "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
-    "registryChecklistItemValue": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "internal id"
-        },
-        "completed": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "value corresponds to if the item was marked as completed"
-        },
-        "evidence": {
-          "type": "string",
-          "title": "value corresponds to user given evidence"
-        },
-        "model_version_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of the model version this belongs to"
-        },
-        "checklist_template_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of the template(UAC) this is related to"
-        },
-        "checklist_template_item_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of the template item (UAC) this is related to"
-        },
-        "time_created": {
-          "type": "string",
-          "format": "int64",
-          "title": "Timestamp recorded when this entity was created"
-        },
-        "time_updated": {
-          "type": "string",
-          "format": "int64",
-          "title": "Timestamp recorded when metadata for this entity was last updated"
-        },
-        "created_by_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of user(UAC) that created this entity"
-        },
-        "updated_by_id": {
-          "type": "string",
-          "format": "uint64",
-          "title": "id of user(UAC) that updated this entity"
-        }
-      }
-    },
-    "registryCustomAttributeValue": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "custom_attribute_definition_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "target_id": {
-          "type": "string"
-        },
-        "target_type": {
-          "$ref": "#/definitions/CustomAttributeTargetTypeEnumCustomAttributeTargetType"
-        },
-        "selected_value": {
-          "type": "string"
-        },
-        "time_created": {
-          "type": "string",
-          "format": "int64"
-        },
-        "time_updated": {
-          "type": "string",
-          "format": "int64"
-        },
-        "created_by_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "updated_by_id": {
-          "type": "string",
-          "format": "uint64"
-        }
-      }
-    },
     "registryDockerMetadata": {
       "type": "object",
       "properties": {
@@ -1040,14 +918,6 @@
         "description": {
           "type": "string",
           "title": "Brief description"
-        },
-        "location_type": {
-          "$ref": "#/definitions/LocationTypeEnumLocationType",
-          "title": "Location Type"
-        },
-        "cloud_provider": {
-          "type": "string",
-          "title": "Cloud Provider"
         }
       }
     },
@@ -1129,13 +999,6 @@
           "type": "string",
           "title": "owner's verta_id"
         },
-        "owner_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "group_owner_id": {
-          "$ref": "#/definitions/commonGroupId"
-        },
         "attributes": {
           "type": "array",
           "items": {
@@ -1200,19 +1063,6 @@
           "items": {
             "$ref": "#/definitions/registryExternalDeployment"
           }
-        },
-        "checklist_item_values": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/registryChecklistItemValue"
-          },
-          "title": "Reference: https://vertaai.atlassian.net/browse/CAT-173"
-        },
-        "custom_attribute_values": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/registryCustomAttributeValue"
-          }
         }
       }
     },
@@ -1265,13 +1115,6 @@
           "type": "string",
           "title": "owner's verta_id"
         },
-        "owner_id": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "group_owner_id": {
-          "$ref": "#/definitions/commonGroupId"
-        },
         "attributes": {
           "type": "array",
           "items": {
@@ -1316,17 +1159,6 @@
         },
         "task_type": {
           "$ref": "#/definitions/TaskTypeEnumTaskType"
-        },
-        "custom_attribute_values": {
-          "type": "array",
-          "items": {
-            "$ref": "#/definitions/registryCustomAttributeValue"
-          }
-        },
-        "pii": {
-          "type": "boolean",
-          "format": "boolean",
-          "title": "Is true if the model accepts pii as input"
         }
       }
     },

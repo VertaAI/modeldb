@@ -38,10 +38,7 @@ message SetWorkspaceV2 {
 
 message GetWorkspaceV2 {
   string org_id = 1;
-  oneof identifier {
-    uint64 workspace_id = 2;
-    string name = 3;
-  }
+  uint64 workspace_id = 2;
 
   message Response {
     WorkspaceV2 workspace = 1;
