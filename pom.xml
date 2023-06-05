@@ -35,6 +35,8 @@
         <otel.instrumentation.version>1.26.0-alpha</otel.instrumentation.version>
         <otel.contrib.version>1.26.0-alpha</otel.contrib.version>
         <springframework.version>5.3.27</springframework.version>
+        <!-- Note: downgraded from the latest version of mockito because of a conflict with spring's bytebuddy version -->
+        <mockito.version>5.3.1</mockito.version>
         <lombok.version>1.18.26</lombok.version>
 
         <junit-jupiter.version>5.9.3</junit-jupiter.version>
@@ -84,8 +86,22 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom-alpha</artifactId>
+                <version>${otel.instrumentation.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-spring-webmvc-3.1</artifactId>
                 <version>${otel.instrumentation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-bom</artifactId>
+                <version>${mockito.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- PRISMA-2022-0239 - https://github.com/square/okhttp/issues/6738 -->
