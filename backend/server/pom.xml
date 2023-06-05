@@ -23,6 +23,11 @@
     </dependencyManagement>
 
     <dependencies>
+        <dependency>
+            <groupId>ai.verta.common</groupId>
+            <artifactId>common</artifactId>
+            <version>${project.version}</version>
+        </dependency>
 
         <!-- https://mvnrepository.com/artifact/junit/junit -->
         <dependency>
@@ -35,48 +40,6 @@
             <artifactId>snakeyaml</artifactId>
         </dependency>
 
-        <!-- The main transport implementation based on Netty, for both the client
-            and the server (https://grpc.io/grpc-java/javadoc/io/grpc/netty/package-summary.html) -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty-shaded</artifactId>
-        </dependency>
-        <!-- API for gRPC over Protocol Buffers, including tools for serializing
-            and de-serializing protobuf messages (https://grpc.io/grpc-java/javadoc/io/grpc/protobuf/package-summary.html) -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-protobuf</artifactId>
-        </dependency>
-        <!-- API for the Stub layer (https://grpc.io/grpc-java/javadoc/io/grpc/stub/package-summary.html) -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-stub</artifactId>
-        </dependency>
-        <dependency> <!-- necessary for Java 9+ -->
-            <groupId>org.apache.tomcat</groupId>
-            <artifactId>annotations-api</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/io.grpc/grpc-services -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-services</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/com.google.api.grpc/googleapis-common-protos -->
-        <dependency>
-            <groupId>com.google.api.grpc</groupId>
-            <artifactId>googleapis-common-protos</artifactId>
-        </dependency>
-        <!-- Provide Utils for grpc like using jsonFormat this utils you can convert
-            json to protobuf object. (https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) -->
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java</artifactId>
-        </dependency>
         <!-- Use for read .yaml file configuration (site : https://yaml.org/) -->
         <dependency>
             <groupId>com.pholser</groupId>
@@ -192,11 +155,6 @@
         <dependency>
             <groupId>com.microsoft.sqlserver</groupId>
             <artifactId>mssql-jdbc</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>ai.verta.common</groupId>
-            <artifactId>common</artifactId>
-            <version>${project.version}</version>
         </dependency>
 
         <!-- otel dependencies-->

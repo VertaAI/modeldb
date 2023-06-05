@@ -26,9 +26,7 @@
         <verta-protos.version>1.0-ln-protos-publish-SNAPSHOT</verta-protos.version>
         <hibernate.version>5.6.15.Final</hibernate.version>
         <log4j.version>2.20.0</log4j.version>
-        <grpc.version>1.55.1</grpc.version>
         <prometheus.version>0.16.0</prometheus.version>
-        <protobuf.version>3.23.2</protobuf.version>
         <aws.version>1.12.477</aws.version>
         <jackson.version>2.15.2</jackson.version>
         <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
@@ -163,57 +161,6 @@
                 <groupId>org.yaml</groupId>
                 <artifactId>snakeyaml</artifactId>
                 <version>2.0</version>
-            </dependency>
-            <!-- PRISMA-2022-0239 -->
-            <!-- The main transport implementation based on Netty, for both the client
-                and the server (https://grpc.io/grpc-java/javadoc/io/grpc/netty/package-summary.html) -->
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-netty-shaded</artifactId>
-                <version>${grpc.version}</version>
-            </dependency>
-            <!-- API for gRPC over Protocol Buffers, including tools for serializing
-                and de-serializing protobuf messages (https://grpc.io/grpc-java/javadoc/io/grpc/protobuf/package-summary.html) -->
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-protobuf</artifactId>
-                <version>${grpc.version}</version>
-            </dependency>
-            <!-- API for the Stub layer (https://grpc.io/grpc-java/javadoc/io/grpc/stub/package-summary.html) -->
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-stub</artifactId>
-                <version>${grpc.version}</version>
-            </dependency>
-            <dependency> <!-- necessary for Java 9+ -->
-                <groupId>org.apache.tomcat</groupId>
-                <artifactId>annotations-api</artifactId>
-                <version>6.0.53</version>
-                <scope>provided</scope>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/io.grpc/grpc-services -->
-            <dependency>
-                <groupId>io.grpc</groupId>
-                <artifactId>grpc-services</artifactId>
-                <version>${grpc.version}</version>
-            </dependency>
-            <!-- https://mvnrepository.com/artifact/com.google.api.grpc/googleapis-common-protos -->
-            <dependency>
-                <groupId>com.google.api.grpc</groupId>
-                <artifactId>googleapis-common-protos</artifactId>
-                <version>0.0.3</version>
-            </dependency>
-            <!-- Provide Utils for grpc like using jsonFormat this utils you can convert
-                json to protobuf object. (https://mvnrepository.com/artifact/com.google.protobuf/protobuf-java-util) -->
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java-util</artifactId>
-                <version>${protobuf.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.google.protobuf</groupId>
-                <artifactId>protobuf-java</artifactId>
-                <version>${protobuf.version}</version>
             </dependency>
             <!-- Use for read .yaml file configuration (site : https://yaml.org/) -->
             <dependency>
@@ -445,17 +392,6 @@
                 </plugin>
             </plugins>
         </pluginManagement>
-
-        <!-- follow gRPC git repo URL link for plugin (kr.motd.maven, protobuf-maven-plugin)
-            https://github.com/grpc/grpc-java At the maven build time this plugin converted
-            .proto implementation of service to java code. -->
-        <extensions>
-            <extension>
-                <groupId>kr.motd.maven</groupId>
-                <artifactId>os-maven-plugin</artifactId>
-                <version>${os-maven-plugin.version}</version>
-            </extension>
-        </extensions>
     </build>
 
     <profiles>
