@@ -23,6 +23,7 @@
 
     <properties>
         <revision>1.0-SNAPSHOT</revision>
+        <verta-protos.version>1.0-ln-protos-publish-SNAPSHOT</verta-protos.version>
         <hibernate.version>5.6.15.Final</hibernate.version>
         <log4j.version>2.20.0</log4j.version>
         <grpc.version>1.55.1</grpc.version>
@@ -55,6 +56,20 @@
             <url>https://maven.pkg.github.com/VertaAI/modeldb</url>
         </snapshotRepository>
     </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+            <id>github-verta</id>
+            <url>https://maven.pkg.github.com/VertaAI/.github</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencyManagement>
         <dependencies>
@@ -102,6 +117,13 @@
                 <version>${mockito.version}</version>
                 <type>pom</type>
                 <scope>import</scope>
+            </dependency>
+
+
+            <dependency>
+                <groupId>ai.verta</groupId>
+                <artifactId>protos</artifactId>
+                <version>${verta-protos.version}</version>
             </dependency>
 
             <!-- PRISMA-2022-0239 - https://github.com/square/okhttp/issues/6738 -->
@@ -350,25 +372,6 @@
     <build>
         <pluginManagement>
             <plugins>
-                <plugin>
-                    <groupId>org.xolstice.maven.plugins</groupId>
-                    <artifactId>protobuf-maven-plugin</artifactId>
-                    <version>0.6.1</version>
-                    <configuration>
-                        <protocArtifact>com.google.protobuf:protoc:${protobuf.version}:exe:${os.detected.classifier}</protocArtifact>
-                        <pluginId>grpc-java</pluginId>
-                        <pluginArtifact>io.grpc:protoc-gen-grpc-java:${grpc.version}:exe:${os.detected.classifier}</pluginArtifact>
-                        <checkStaleness>true</checkStaleness>
-                    </configuration>
-                    <executions>
-                        <execution>
-                            <goals>
-                                <goal>compile</goal>
-                                <goal>compile-custom</goal>
-                            </goals>
-                        </execution>
-                    </executions>
-                </plugin>
                 <plugin>
                     <groupId>com.diffplug.spotless</groupId>
                     <artifactId>spotless-maven-plugin</artifactId>
