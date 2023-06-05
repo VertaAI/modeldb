@@ -75,13 +75,16 @@ jobs:
           server-id: github-verta # Value of the distributionManagement/repository/id field of the pom.xml
 
       - name: Check formatting
-        run: mvn spotless:check
+        run: mvn -B spotless:check
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
       - name: Build and Publish to GitHub Packages Apache Maven
         run: ./build_and_publish_backend.sh
         env:
           GITHUB_TOKEN: ${{ github.token }}
           BRANCH_NAME: ${{ steps.branch_names.outputs.current_branch }}
+          SHA: ${{ steps.image_info.outputs.sha }}
 
       - name: Update commit status with Docker image status
         uses: ouzi-dev/commit-status-updater@v2
