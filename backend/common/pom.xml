@@ -16,6 +16,11 @@
     <url>http://maven.apache.org</url>
     <properties>
     </properties>
+    <dependencyManagement>
+        <dependencies>
+        </dependencies>
+    </dependencyManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.yaml</groupId>
