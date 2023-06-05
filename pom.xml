@@ -35,6 +35,8 @@
         <otel.instrumentation.version>1.26.0-alpha</otel.instrumentation.version>
         <otel.contrib.version>1.26.0-alpha</otel.contrib.version>
         <springframework.version>5.3.27</springframework.version>
+        <!-- Note: downgraded from the latest version of mockito because of a conflict with spring's bytebuddy version -->
+        <mockito.version>5.3.1</mockito.version>
         <lombok.version>1.18.26</lombok.version>
 
         <junit-jupiter.version>5.9.3</junit-jupiter.version>
@@ -84,8 +86,22 @@
             </dependency>
             <dependency>
                 <groupId>io.opentelemetry.instrumentation</groupId>
+                <artifactId>opentelemetry-instrumentation-bom-alpha</artifactId>
+                <version>${otel.instrumentation.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+            <dependency>
+                <groupId>io.opentelemetry.instrumentation</groupId>
                 <artifactId>opentelemetry-spring-webmvc-3.1</artifactId>
                 <version>${otel.instrumentation.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>org.mockito</groupId>
+                <artifactId>mockito-bom</artifactId>
+                <version>${mockito.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
             </dependency>
 
             <!-- PRISMA-2022-0239 - https://github.com/square/okhttp/issues/6738 -->
@@ -395,6 +411,11 @@
                 </plugin>
                 <plugin>
                     <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.1.0</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>3.1.0</version>
                 </plugin>
@@ -433,4 +454,59 @@
             </extension>
         </extensions>
     </build>
+
+    <profiles>
+        <profile>
+            <id>spotless-apply</id>
+            <activation>
+                <property>
+                    <name>spotless-apply</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.diffplug.spotless</groupId>
+                        <artifactId>spotless-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>spotless-apply</id>
+                                <goals>
+                                    <!-- can be disabled using -Dspotless.check.skip=true -->
+                                    <goal>apply</goal>
+                                </goals>
+                                <phase>process-sources</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+        <profile>
+            <id>spotless-check</id>
+            <activation>
+                <property>
+                    <name>spotless-check</name>
+                </property>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.diffplug.spotless</groupId>
+                        <artifactId>spotless-maven-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>spotless-check</id>
+                                <goals>
+                                    <!-- can be disabled using -Dspotless.check.skip=true -->
+                                    <goal>check</goal>
+                                </goals>
+                                <phase>compile</phase>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
