@@ -23,13 +23,12 @@
 
     <properties>
         <revision>1.0-SNAPSHOT</revision>
-        <verta-protos.version>1.0-ln-protos-publish-SNAPSHOT</verta-protos.version>
+        <verta-protos.version>0.90.0-ln-protos-publish-SNAPSHOT</verta-protos.version>
         <hibernate.version>5.6.15.Final</hibernate.version>
         <log4j.version>2.20.0</log4j.version>
         <prometheus.version>0.16.0</prometheus.version>
         <aws.version>1.12.477</aws.version>
         <jackson.version>2.15.2</jackson.version>
-        <os-maven-plugin.version>1.7.1</os-maven-plugin.version>
         <otel.core.version>1.26.0</otel.core.version>
         <otel.instrumentation.version>1.26.0-alpha</otel.instrumentation.version>
         <otel.contrib.version>1.26.0-alpha</otel.contrib.version>
