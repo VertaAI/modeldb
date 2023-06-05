@@ -21,10 +21,27 @@
         </dependencies>
     </dependencyManagement>
 
+    <repositories>
+        <repository>
+            <id>central</id>
+            <url>https://repo1.maven.org/maven2</url>
+        </repository>
+        <repository>
+            <id>github-verta</id>
+            <url>https://maven.pkg.github.com/VertaAI/.github</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
+
+
     <dependencies>
+
         <dependency>
             <groupId>ai.verta</groupId>
             <artifactId>protos</artifactId>
+            <version>${verta-protos.version}</version>
         </dependency>
 
         <dependency>

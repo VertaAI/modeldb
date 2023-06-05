@@ -116,13 +116,6 @@
                 <scope>import</scope>
             </dependency>
 
-
-            <dependency>
-                <groupId>ai.verta</groupId>
-                <artifactId>protos</artifactId>
-                <version>${verta-protos.version}</version>
-            </dependency>
-
             <!-- PRISMA-2022-0239 - https://github.com/square/okhttp/issues/6738 -->
             <dependency>
                 <groupId>com.squareup.okhttp3</groupId>
