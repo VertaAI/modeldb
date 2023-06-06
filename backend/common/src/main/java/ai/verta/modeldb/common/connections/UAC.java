@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.connections;
 
+import ai.verta.events.EventServiceGrpc;
 import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.config.Config;

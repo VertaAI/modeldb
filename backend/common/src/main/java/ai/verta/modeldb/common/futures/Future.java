@@ -437,8 +437,15 @@ public class Future<T> {
   }
 
   public T blockAndGet() throws Exception {
+    return blockAndGet(0, null);
+  }
+
+  public T blockAndGet(long timeout, TimeUnit units) throws Exception {
     try {
-      return stage.toCompletableFuture().get();
+      if (units == null) {
+        return stage.toCompletableFuture().get();
+      }
+      return stage.toCompletableFuture().get(timeout, units);
     } catch (ExecutionException ex) {
       Throwable cause = ex.getCause();
       if (cause instanceof Exception) {
