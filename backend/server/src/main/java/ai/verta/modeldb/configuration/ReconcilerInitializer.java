@@ -1,12 +1,10 @@
 package ai.verta.modeldb.configuration;
 
-import ai.verta.modeldb.DAOSet;
 import ai.verta.modeldb.ServiceSet;
 import ai.verta.modeldb.common.configuration.RunLiquibaseSeparately.RunLiquibaseWithMainService;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.reconcilers.ReconcilerConfig;
-import ai.verta.modeldb.common.reconcilers.SendEventsWithCleanUp;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.config.TestConfig;
 import ai.verta.modeldb.reconcilers.SoftDeleteExperimentRuns;
@@ -39,14 +37,12 @@ public class ReconcilerInitializer {
   @JsonProperty private UpdateRepositoryTimestampReconcile updateRepositoryTimestampReconcile;
   @JsonProperty private UpdateExperimentTimestampReconcile updateExperimentTimestampReconcile;
   @JsonProperty private UpdateProjectTimestampReconcile updateProjectTimestampReconcile;
-  @JsonProperty private SendEventsWithCleanUp sendEventsWithCleanUp;
 
   @Bean
   @Conditional({RunLiquibaseWithMainService.class})
   public ReconcilerInitializer initialize(
       MDBConfig config,
       ServiceSet services,
-      DAOSet daos,
       FutureExecutor executor,
       FutureJdbi futureJdbi,
       OpenTelemetry openTelemetry) {
@@ -88,17 +84,6 @@ public class ReconcilerInitializer {
             reconcilerConfig, futureJdbi, executor, openTelemetry);
     updateProjectTimestampReconcile =
         new UpdateProjectTimestampReconcile(reconcilerConfig, futureJdbi, executor, openTelemetry);
-
-    if (config.isEvent_system_enabled()) {
-      sendEventsWithCleanUp =
-          new SendEventsWithCleanUp(
-              reconcilerConfig,
-              services.getUac(),
-              daos.getFutureEventDAO(),
-              futureJdbi,
-              executor,
-              openTelemetry);
-    }
 
     LOGGER.info("Exit from ReconcilerUtils: initialize()");
     return this;

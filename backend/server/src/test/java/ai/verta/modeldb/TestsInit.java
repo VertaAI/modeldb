@@ -143,8 +143,7 @@ public class TestsInit {
     new CronJobUtils().initializeCronJobs(testConfig, services);
     reconcilerInitializer =
         new ReconcilerInitializer()
-            .initialize(
-                testConfig, services, daos, handleExecutor, futureJdbi, OpenTelemetry.noop());
+            .initialize(testConfig, services, handleExecutor, futureJdbi, OpenTelemetry.noop());
 
     if (testConfig.getTestUsers() != null && !testConfig.getTestUsers().isEmpty()) {
       authClientInterceptor = new AuthClientInterceptor(testConfig);
