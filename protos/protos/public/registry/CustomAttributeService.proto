@@ -24,6 +24,7 @@ message CustomAttributeTargetTypeEnum {
     UNKNOWN = 0;
     REGISTERED_MODEL = 1;
     REGISTERED_MODEL_VERSION = 2;
+    CHECKLIST_TEMPLATE = 3;
   }
 }
 

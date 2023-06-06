@@ -8,19 +8,8 @@ import "google/api/annotations.proto";
 import "uac/RoleService.proto";
 import "common/CommonService.proto";
 
-// Answers the question "is any of `entities` allowed to perform any of `actions` on any of `resources`?"
-// This allows sending a single query for a user+his teams and a resource+parents
-// If the user wants more granularity, they should make multiple requests
-message IsAllowed {
-    repeated Entities entities = 1;
-    repeated Action actions = 2;
-    repeated Resources resources = 3;
-    message Response {
-        bool allowed = 1;
-    }
-};
-
-// Same as above, but lists all entities that are allowed to perform a certain action on certain resources
+// Answers the question "what `entities` are allowed to perform any of `actions` on any of `resources`?"
+// Lists all entities that are allowed to perform a certain action on certain resources
 message GetAllowedEntities {
     repeated Action actions = 1;
     repeated Resources resources = 2;
@@ -32,35 +21,10 @@ message GetAllowedEntities {
     };
 };
 
-message GetAllowedEntitiesWithActions {
-    repeated Action actions = 1;
-    repeated Resources resources = 2;
-
-    message Response {
-        repeated GetAllowedEntitiesWithActionsResponseItem entitiesWithActions = 1;
-    };
-};
-
 message GetAllowedEntitiesWithActionsResponseItem {
     repeated Entities entities = 1;
     Action actions = 2;
 }
-
-// Same as above, but lists the resources on which actions can be performed by entities
-// If all possible resources combinations are allowed returns:
-// Resources({Resource(service: service, resource_ids:{}, resource_type:resource_type)})
-message GetAllowedResources {
-    repeated Entities entities = 1;
-    repeated Action actions = 2;
-    ResourceType resource_type = 3;
-    ServiceEnum.Service service = 4;
-    common.Pagination pagination = 5;
-
-    message Response {
-        repeated Resources resources = 1;
-        int64 total_records = 2;
-    };
-};
 
 // Same as IsAllowed, but infers entities from the current logged user
 message IsSelfAllowed {
@@ -97,33 +61,9 @@ message GetSelfAllowedActionsBatch {
 };
 
 service AuthzService {
-    rpc isAllowed (IsAllowed) returns (IsAllowed.Response) {
-        option (google.api.http) = {
-            post : "/v1/authz/isAllowed"
-            body : "*"
-        };
-    };
     rpc getAllowedEntities (GetAllowedEntities) returns (GetAllowedEntities.Response) {
         option (google.api.http) = {
             post : "/v1/authz/getAllowedEntities"
-            body : "*"
-        };
-    };
-    rpc getAllowedEntitiesWithActions (GetAllowedEntitiesWithActions) returns (GetAllowedEntitiesWithActions.Response) {
-        option (google.api.http) = {
-            post : "/v1/authz/getAllowedEntitiesWithActions"
-            body : "*"
-        };
-    };
-    rpc getAllowedResources (GetAllowedResources) returns (GetAllowedResources.Response) {
-        option (google.api.http) = {
-            post : "/v1/authz/getAllowedResources"
-            body : "*"
-        };
-    };
-    rpc getDireclyAllowedResources (GetAllowedResources) returns (GetAllowedResources.Response) {
-        option (google.api.http) = {
-            post : "/v1/authz/getDirectlyAllowedResources"
             body : "*"
         };
     };
@@ -136,12 +76,6 @@ service AuthzService {
     rpc getSelfAllowedResources (GetSelfAllowedResources) returns (GetSelfAllowedResources.Response) {
         option (google.api.http) = {
             post : "/v1/authz/getSelfAllowedResources"
-            body : "*"
-        };
-    };
-    rpc getSelfDirectlyAllowedResources (GetSelfAllowedResources) returns (GetSelfAllowedResources.Response) {
-        option (google.api.http) = {
-            post : "/v1/authz/getSelfDirectlyAllowedResources"
             body : "*"
         };
     };
