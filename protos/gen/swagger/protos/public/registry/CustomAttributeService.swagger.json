@@ -146,7 +146,8 @@
       "enum": [
         "UNKNOWN",
         "REGISTERED_MODEL",
-        "REGISTERED_MODEL_VERSION"
+        "REGISTERED_MODEL_VERSION",
+        "CHECKLIST_TEMPLATE"
       ],
       "default": "UNKNOWN"
     },

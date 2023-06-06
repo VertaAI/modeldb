@@ -255,6 +255,16 @@
       ],
       "default": "UNKNOWN"
     },
+    "CustomAttributeTargetTypeEnumCustomAttributeTargetType": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "REGISTERED_MODEL",
+        "REGISTERED_MODEL_VERSION",
+        "CHECKLIST_TEMPLATE"
+      ],
+      "default": "UNKNOWN"
+    },
     "EditableEnumEditable": {
       "type": "string",
       "enum": [
@@ -412,7 +422,14 @@
           "items": {
             "$ref": "#/definitions/registryChecklistTemplateItem"
           },
-          "title": "ChecklistTemplateItem"
+          "title": "Checklist template item"
+        },
+        "custom_attribute_values": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/registryCustomAttributeValue"
+          },
+          "description": "Checklist template value. This is used to apply checklists to only RMVs that have the values. optional."
         }
       }
     },
@@ -486,6 +503,44 @@
         }
       }
     },
+    "registryCustomAttributeValue": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "custom_attribute_definition_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "target_id": {
+          "type": "string"
+        },
+        "target_type": {
+          "$ref": "#/definitions/CustomAttributeTargetTypeEnumCustomAttributeTargetType"
+        },
+        "selected_value": {
+          "type": "string"
+        },
+        "time_created": {
+          "type": "string",
+          "format": "int64"
+        },
+        "time_updated": {
+          "type": "string",
+          "format": "int64"
+        },
+        "created_by_id": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "updated_by_id": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
     "registrySearchChecklistItemValues": {
       "type": "object",
       "properties": {
@@ -527,6 +582,11 @@
         "organization_id": {
           "type": "string",
           "title": "organization id"
+        },
+        "model_version_id": {
+          "type": "string",
+          "format": "uint64",
+          "title": "model version id.  optional"
         }
       }
     },
