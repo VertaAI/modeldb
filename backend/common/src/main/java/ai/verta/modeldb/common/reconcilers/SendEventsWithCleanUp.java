@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.reconcilers;
 
+import ai.verta.events.CreateEventRequest;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.event.FutureEventDAO;
@@ -7,8 +8,6 @@ import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.FutureUtil;
 import ai.verta.modeldb.common.futures.InternalFuture;
-import ai.verta.uac.CreateEventRequest;
-import com.google.protobuf.Any;
 import com.google.protobuf.Value;
 import io.opentelemetry.api.OpenTelemetry;
 import java.util.ArrayList;
@@ -46,9 +45,9 @@ public class SendEventsWithCleanUp extends Reconciler<CreateEventRequest> {
                           rs.getString("event_metadata"), valueBuilder);
                       return CreateEventRequest.newBuilder()
                           .setEventUuid(rs.getString("event_uuid"))
-                          .setEventType(rs.getString("event_type"))
+                          .setEventType(
+                              CreateEventRequest.EventType.valueOf(rs.getString("event_type")))
                           .setWorkspaceId(rs.getLong("workspace_id"))
-                          .setEventMetadata(Any.pack(valueBuilder.build()))
                           .build();
                     })
                 .stream()

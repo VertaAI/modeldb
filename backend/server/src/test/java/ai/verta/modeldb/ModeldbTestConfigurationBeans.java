@@ -2,6 +2,7 @@ package ai.verta.modeldb;
 
 import static org.mockito.Mockito.*;
 
+import ai.verta.events.EventServiceGrpc;
 import ai.verta.modeldb.common.authservice.AuthServiceChannel;
 import ai.verta.modeldb.common.config.Config;
 import ai.verta.modeldb.common.config.GrpcServerConfig;
