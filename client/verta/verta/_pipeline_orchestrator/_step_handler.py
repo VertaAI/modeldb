@@ -12,7 +12,7 @@ class _StepHandlerBase(abc.ABC):
         self._name = name
 
     @abc.abstractmethod
-    def __call__(self, input: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
 
     @property
@@ -30,7 +30,7 @@ class ModelContainerStepHandler(_StepHandlerBase):
         self._session = http_session.init_session(retry=http_session.retry_config())
         self._prediction_url = prediction_url
 
-    def __call__(self, input: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
         body = json.dumps(
             _utils.to_builtin(input),
             allow_nan=True,
@@ -53,5 +53,5 @@ class ModelObjectStepHandler(_StepHandlerBase):
         super().__init__(name)
         self._model = model_cls(model_artifacts)
 
-    def __call__(self, input: Dict[str, Any]) -> Dict[str, Any]:
+    def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
         return self._model.predict(input)
