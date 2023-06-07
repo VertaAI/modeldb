@@ -2,9 +2,11 @@
 
 import abc
 import json
-from typing import Any, Dict, Type
+from typing import Any, Dict, List, Optional, Type
 
 from verta._internal_utils import _utils, http_session
+from verta.registry.entities import RegisteredModelVersion
+from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 
 
 class _StepHandlerBase(abc.ABC):
@@ -47,11 +49,30 @@ class ModelObjectStepHandler(_StepHandlerBase):
     def __init__(
         self,
         name: str,
-        model_cls: Type[Any],
-        model_artifacts: Dict[str, Any],
+        conn: _utils.Connection,
+        model_version_id: int,
     ):
         super().__init__(name)
-        self._model = model_cls(model_artifacts)
+        self._model = self._init_model(conn, model_version_id)
+
+    @staticmethod
+    def _init_model(conn: _utils.Connection, model_version_id: int) -> Any:
+        model_ver = RegisteredModelVersion._get_by_id(
+            conn,
+            _utils.Configuration(),
+            model_version_id,
+        )
+
+        model_cls: Type[Any] = model_ver.get_model()
+
+        model_artifacts: Optional[Dict[str, str]] = None
+        model_artifacts_keys: Optional[List[str]] = model_ver.get_attributes().get(
+            _MODEL_ARTIFACTS_ATTR_KEY,
+        )
+        if model_artifacts_keys is not None:
+            model_artifacts = model_ver.fetch_artifacts(model_artifacts_keys)
+
+        return model_cls(artifacts=model_artifacts)
 
     def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
         return self._model.predict(input)
