@@ -173,7 +173,7 @@
         </dependency>
         <dependency>
             <groupId>ai.verta</groupId>
-            <artifactId>protos</artifactId>
+            <artifactId>protos-public</artifactId>
             <version>${project.version}</version>
         </dependency>
 
