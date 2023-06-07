@@ -23,31 +23,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.yaml</groupId>
-            <artifactId>snakeyaml</artifactId>
+            <groupId>ai.verta</groupId>
+            <artifactId>protos</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
-        <!-- The main transport implementation based on Netty, for both the client
-            and the server (https://grpc.io/grpc-java/javadoc/io/grpc/netty/package-summary.html) -->
         <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty-shaded</artifactId>
-        </dependency>
-        <!-- API for gRPC over Protocol Buffers, including tools for serializing
-            and de-serializing protobuf messages (https://grpc.io/grpc-java/javadoc/io/grpc/protobuf/package-summary.html) -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-protobuf</artifactId>
-        </dependency>
-        <!-- API for the Stub layer (https://grpc.io/grpc-java/javadoc/io/grpc/stub/package-summary.html) -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-stub</artifactId>
-        </dependency>
-        <!-- https://mvnrepository.com/artifact/io.grpc/grpc-services -->
-        <dependency>
-            <groupId>io.grpc</groupId>
-            <artifactId>grpc-services</artifactId>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
         </dependency>
 
         <dependency>
@@ -236,24 +219,10 @@
 
     <build>
         <finalName>modeldb-${project.version}-common-module-build</finalName>
-        <!-- follow gRPC git repo URL link for plugin (kr.motd.maven, protobuf-maven-plugin)
-            https://github.com/grpc/grpc-java At the maven build time this plugin converted
-            .proto implementation of service to java code. -->
         <plugins>
-            <plugin>
-                <groupId>org.xolstice.maven.plugins</groupId>
-                <artifactId>protobuf-maven-plugin</artifactId>
-                <configuration>
-                    <protoSourceRoot>../../protos/protos/public</protoSourceRoot>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>com.diffplug.spotless</groupId>
                 <artifactId>spotless-maven-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -310,10 +279,10 @@
                             <includes>
                                 <include>ai/verta/modeldb/common/**</include>
                             </includes>
-                        </configuration>                        
+                        </configuration>
                     </execution>
                 </executions>
-            </plugin>                 
+            </plugin>
         </plugins>
     </build>
 </project>

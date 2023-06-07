@@ -18,6 +18,7 @@
     <url>http://maven.apache.org</url>
 
     <modules>
+        <module>protos</module>
         <module>backend</module>
     </modules>
 
