@@ -4,7 +4,6 @@ import ai.verta.modeldb.common.CommonMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import com.fasterxml.jackson.annotation.JsonProperty;
 import io.grpc.ClientInterceptor;
 import io.grpc.ServerInterceptor;
 import io.opentelemetry.api.OpenTelemetry;
@@ -21,26 +20,24 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-@Getter
 @Setter(AccessLevel.NONE)
-@SuppressWarnings({"squid:S116", "squid:S100"})
 public abstract class Config {
-  @JsonProperty private ServiceConfig authService;
-  @JsonProperty private Map<String, CronJobConfig> cron_job = new HashMap<>();
-  @JsonProperty private boolean populateConnectionsBasedOnPrivileges = false;
-  @JsonProperty private DatabaseConfig database;
-  @JsonProperty private boolean enableTrace = false;
-  @JsonProperty private GrpcServerConfig grpcServer;
-  @JsonProperty private SpringServerConfig springServer;
-  @JsonProperty private ServiceUserConfig service_user;
-  @JsonProperty private int jdbi_retry_time = 100; // Time in ms
-  @JsonProperty private boolean event_system_enabled = false;
-  @JsonProperty private ServerInterceptor tracingServerInterceptor = null;
-  @JsonProperty private ClientInterceptor tracingClientInterceptor = null;
-  @JsonProperty private OpenTelemetry openTelemetry;
-  @JsonProperty private ArtifactStoreConfig artifactStoreConfig;
+  private ServiceConfig authService;
+  private Map<String, CronJobConfig> cron_job = new HashMap<>();
+  private boolean populateConnectionsBasedOnPrivileges = false;
+  private DatabaseConfig database;
+  private boolean enableTrace = false;
+  private GrpcServerConfig grpcServer;
+  private SpringServerConfig springServer;
+  private ServiceUserConfig service_user;
+  private int jdbi_retry_time = 100; // Time in ms
+  @Deprecated(forRemoval = true) private boolean event_system_enabled = false;
+  private ServerInterceptor tracingServerInterceptor = null;
+  private ClientInterceptor tracingClientInterceptor = null;
+  private OpenTelemetry openTelemetry;
+  private ArtifactStoreConfig artifactStoreConfig;
 
-  @JsonProperty private boolean permissionV2Enabled = false;
+  private boolean permissionV2Enabled = false;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {
