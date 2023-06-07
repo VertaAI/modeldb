@@ -6,7 +6,6 @@ import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAO;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAODisabled;
 import ai.verta.modeldb.common.artifactStore.ArtifactStoreDAORdbImpl;
 import ai.verta.modeldb.common.artifactStore.storageservice.NoopArtifactStoreService;
-import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.config.MDBConfig;
@@ -24,7 +23,6 @@ import ai.verta.modeldb.versioning.CommitDAO;
 import ai.verta.modeldb.versioning.CommitDAORdbImpl;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.modeldb.versioning.RepositoryDAORdbImpl;
-import ai.verta.uac.ServiceEnum;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
@@ -49,7 +47,6 @@ public class DAOSet {
   @JsonProperty private LineageDAO lineageDAO;
   @JsonProperty private MetadataDAO metadataDAO;
   @JsonProperty private RepositoryDAO repositoryDAO;
-  @JsonProperty private FutureEventDAO futureEventDAO;
 
   public static DAOSet fromServices(
       ServiceSet services,
@@ -102,8 +99,6 @@ public class DAOSet {
             set.futureExperimentRunDAO,
             services.getUacApisUtil(),
             reconcilerInitializer);
-    set.futureEventDAO =
-        new FutureEventDAO(executor, jdbi, mdbConfig, ServiceEnum.Service.MODELDB_SERVICE.name());
     set.futureExperimentDAO =
         new FutureExperimentDAO(executor, jdbi, services.getUac(), mdbConfig, set, services);
 

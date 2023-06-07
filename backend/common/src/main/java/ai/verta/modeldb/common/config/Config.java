@@ -34,7 +34,6 @@ public abstract class Config {
   @JsonProperty private SpringServerConfig springServer;
   @JsonProperty private ServiceUserConfig service_user;
   @JsonProperty private int jdbi_retry_time = 100; // Time in ms
-  @JsonProperty private boolean event_system_enabled = false;
   @JsonProperty private ServerInterceptor tracingServerInterceptor = null;
   @JsonProperty private ClientInterceptor tracingClientInterceptor = null;
   @JsonProperty private OpenTelemetry openTelemetry;
