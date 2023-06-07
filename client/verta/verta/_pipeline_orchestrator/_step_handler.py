@@ -10,8 +10,13 @@ from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 
 
 class _StepHandlerBase(abc.ABC):
-    def __init__(self, name: str):
+    def __init__(
+        self,
+        name: str,
+        model_version_id: int,
+    ):
         self._name = name
+        self._model_version_id = model_version_id
 
     @abc.abstractmethod
     def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
@@ -26,9 +31,10 @@ class ModelContainerStepHandler(_StepHandlerBase):
     def __init__(
         self,
         name: str,
+        model_version_id: int,
         prediction_url: str,
     ):
-        super().__init__(name)
+        super().__init__(name=name, model_version_id=model_version_id)
         self._session = http_session.init_session(retry=http_session.retry_config())
         self._prediction_url = prediction_url
 
@@ -52,15 +58,14 @@ class ModelObjectStepHandler(_StepHandlerBase):
         conn: _utils.Connection,
         model_version_id: int,
     ):
-        super().__init__(name)
-        self._model = self._init_model(conn, model_version_id)
+        super().__init__(name=name, model_version_id=model_version_id)
+        self._model = self._init_model(conn)
 
-    @staticmethod
-    def _init_model(conn: _utils.Connection, model_version_id: int) -> Any:
+    def _init_model(self, conn: _utils.Connection) -> Any:
         model_ver = RegisteredModelVersion._get_by_id(
             conn,
             _utils.Configuration(),
-            model_version_id,
+            self._model_version_id,
         )
 
         model_cls: Type[Any] = model_ver.get_model()
