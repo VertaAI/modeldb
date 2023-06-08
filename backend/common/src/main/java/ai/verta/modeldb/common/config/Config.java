@@ -31,10 +31,6 @@ public abstract class Config {
   private SpringServerConfig springServer;
   private ServiceUserConfig service_user;
   private int jdbi_retry_time = 100; // Time in ms
-
-  @Deprecated(forRemoval = true)
-  private boolean event_system_enabled = false;
-
   private ServerInterceptor tracingServerInterceptor = null;
   private ClientInterceptor tracingClientInterceptor = null;
   private OpenTelemetry openTelemetry;
