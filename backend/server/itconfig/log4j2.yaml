@@ -6,12 +6,14 @@ Configuration:
     Console:
       name: STDOUT
       target: SYSTEM_OUT
-      JsonTemplateLayout:
-        eventTemplateUri: "classpath:log-template.json"
-        locationInfoEnabled: true
-        EventTemplateAdditionalField:
-          key: "hostName"
-          value: "${env:hostName:-}"
+#      JsonTemplateLayout:
+#        eventTemplateUri: "classpath:log-template.json"
+#        locationInfoEnabled: true
+#        EventTemplateAdditionalField:
+#          key: "hostName"
+#          value: "${env:hostName:-}"
+      PatternLayout:
+        pattern: "[%-5level] %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
   Loggers:
     logger:
       - name: io.grpc.netty

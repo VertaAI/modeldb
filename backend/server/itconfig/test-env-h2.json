@@ -1,5 +1,8 @@
 {
   "VERTA_MODELDB_TEST_CONFIG": "itconfig/config-test-h2.yaml",
   "LIQUIBASE_MIGRATION": "true",
-  "RUN_LIQUIBASE_SEPARATE": "false"
+  "RUN_LIQUIBASE_SEPARATE": "false",
+  "JAVA_TOOL_OPTIONS": "-Dfile.encoding=UTF8",
+  "LOG4J_FORMAT_MSG_NO_LOOKUPS": "true",
+  "LOG4J_CONFIGURATION_FILE": "itconfig/log4j2.yaml"
 }

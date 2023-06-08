@@ -589,7 +589,7 @@ public class RoleServiceUtils implements RoleService {
     try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
       LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
 
-      // TODO: try using futur stub than blocking stub
+      // TODO: try using future stub than blocking stub
       var deleteRoleBindingResponse =
           authServiceChannel
               .getRoleServiceBlockingStubForServiceUser()

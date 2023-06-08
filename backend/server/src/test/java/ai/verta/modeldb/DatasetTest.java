@@ -112,7 +112,11 @@ public class DatasetTest extends ModeldbTestSetup {
                       .setVisibility(ResourceVisibility.PRIVATE)
                       .build())
               .build();
-      when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      try {
+        when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      } catch (Exception e) {
+        when(collaboratorBlockingMock.getResources(any())).thenReturn(resourcesResponse);
+      }
     }
 
     // Create two dataset of above dataset
