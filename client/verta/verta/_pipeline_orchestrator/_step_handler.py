@@ -2,7 +2,7 @@
 
 import abc
 import json
-from typing import Any, Dict, List, Optional, Type
+from typing import Any, Dict, List, Optional, Set, Type
 
 from verta._internal_utils import _utils, http_session
 from verta.registry.entities import RegisteredModelVersion
@@ -14,17 +14,27 @@ class _StepHandlerBase(abc.ABC):
         self,
         name: str,
         model_version_id: int,
+        predecessors: Set[int],
     ):
         self._name = name
         self._model_version_id = model_version_id
+        self._predecessors = predecessors
 
     @abc.abstractmethod
     def run(self, input: Dict[str, Any]) -> Dict[str, Any]:
         raise NotImplementedError
 
     @property
+    def model_version_id(self) -> int:
+        return self._model_version_id
+
+    @property
     def name(self) -> str:
         return self._name
+
+    @property
+    def predecessors(self) -> Set[int]:
+        return self._predecessors
 
 
 class ModelContainerStepHandler(_StepHandlerBase):
@@ -32,9 +42,14 @@ class ModelContainerStepHandler(_StepHandlerBase):
         self,
         name: str,
         model_version_id: int,
+        predecessors: Set[int],
         prediction_url: str,
     ):
-        super().__init__(name=name, model_version_id=model_version_id)
+        super().__init__(
+            name=name,
+            model_version_id=model_version_id,
+            predecessors=predecessors,
+        )
         self._session = http_session.init_session(retry=http_session.retry_config())
         self._prediction_url = prediction_url
 
@@ -55,17 +70,26 @@ class ModelObjectStepHandler(_StepHandlerBase):
     def __init__(
         self,
         name: str,
+        model_version_id: int,
+        predecessors: Set[int],
+        model: Any,
+    ):
+        super().__init__(
+            name=name,
+            model_version_id=model_version_id,
+            predecessors=predecessors,
+        )
+        self._model = model
+
+    @staticmethod
+    def _init_model(
         conn: _utils.Connection,
         model_version_id: int,
-    ):
-        super().__init__(name=name, model_version_id=model_version_id)
-        self._model = self._init_model(conn)
-
-    def _init_model(self, conn: _utils.Connection) -> Any:
+    ) -> Any:
         model_ver = RegisteredModelVersion._get_by_id(
             conn,
             _utils.Configuration(),
-            self._model_version_id,
+            model_version_id,
         )
 
         model_cls: Type[Any] = model_ver.get_model()
