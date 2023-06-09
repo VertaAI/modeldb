@@ -16,11 +16,6 @@ import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.protobuf.Value;
 import io.grpc.Status;
 import io.grpc.stub.StreamObserver;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase {
 
@@ -60,10 +55,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
           futureExperimentRunDAO
               .deleteExperimentRuns(
                   DeleteExperimentRuns.newBuilder().addIds(request.getId()).build())
-              .thenCompose(
-                  unused ->
-                      loggedDeleteExperimentRunEvents(Collections.singletonList(request.getId())),
-                  executor)
               .thenApply(
                   unused -> DeleteExperimentRun.Response.newBuilder().setStatus(true).build(),
                   executor);
@@ -71,32 +62,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
-  }
-
-  private InternalFuture<List<Void>> loggedDeleteExperimentRunEvents(List<String> runIds) {
-    // Add succeeded event in local DB
-    List<InternalFuture<Void>> futureList = new ArrayList<>();
-    Map<String, String> cacheMap = new ConcurrentHashMap<>();
-    InternalFuture<String> projectIdFuture;
-    for (String runId : runIds) {
-      if (cacheMap.containsKey(runId)) {
-        projectIdFuture = InternalFuture.completedInternalFuture(cacheMap.get(runId));
-      } else {
-        projectIdFuture =
-            futureExperimentRunDAO
-                .getProjectIdByExperimentRunId(runId)
-                .thenApply(
-                    projectId -> {
-                      cacheMap.put(runId, projectId);
-                      return projectId;
-                    },
-                    executor);
-      }
-
-      InternalFuture<Void> eventFuture = projectIdFuture.thenCompose(projectId -> null, executor);
-      futureList.add(eventFuture);
-    }
-    return InternalFuture.sequence(futureList, executor);
   }
 
   @Override
@@ -941,8 +906,6 @@ public class FutureExperimentRunServiceImpl extends ExperimentRunServiceImplBase
       final var response =
           futureExperimentRunDAO
               .deleteExperimentRuns(request)
-              .thenCompose(
-                  unused -> loggedDeleteExperimentRunEvents(request.getIdsList()), executor)
               .thenApply(
                   unused -> DeleteExperimentRuns.Response.newBuilder().setStatus(true).build(),
                   executor);

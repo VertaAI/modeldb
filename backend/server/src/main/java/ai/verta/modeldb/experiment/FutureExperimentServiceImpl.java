@@ -19,7 +19,6 @@ import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
 
@@ -608,7 +607,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                       futureExperimentDAO.deleteExperiments(
                           DeleteExperiments.newBuilder().addIds(request.getId()).build()),
                   executor)
-              .thenApply(this::loggedDeleteExperimentEvents, executor)
               .thenApply(
                   unused -> DeleteExperiment.Response.newBuilder().setStatus(true).build(),
                   executor);
@@ -815,7 +813,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       final var response =
           requestValidationFuture
               .thenCompose(unused -> futureExperimentDAO.deleteExperiments(request), executor)
-              .thenApply(this::loggedDeleteExperimentEvents, executor)
               .thenApply(
                   unused -> DeleteExperiments.Response.newBuilder().setStatus(true).build(),
                   executor);
@@ -823,13 +820,5 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
-  }
-
-  private InternalFuture<List<Void>> loggedDeleteExperimentEvents(
-      Map<String, String> experimentIdsMap) {
-    // Add succeeded event in local DB
-    List<InternalFuture<Void>> futureList = new ArrayList<>();
-
-    return InternalFuture.sequence(futureList, executor);
   }
 }
