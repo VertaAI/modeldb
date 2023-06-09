@@ -22,6 +22,7 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 @AllArgsConstructor
 @Setter(AccessLevel.NONE)
 public abstract class Config {
+
   private ServiceConfig authService;
   private Map<String, CronJobConfig> cron_job = new HashMap<>();
   private boolean populateConnectionsBasedOnPrivileges = false;
@@ -31,10 +32,6 @@ public abstract class Config {
   private SpringServerConfig springServer;
   private ServiceUserConfig service_user;
   private int jdbi_retry_time = 100; // Time in ms
-
-  @Deprecated(forRemoval = true)
-  private boolean event_system_enabled = false;
-
   private ServerInterceptor tracingServerInterceptor = null;
   private ClientInterceptor tracingClientInterceptor = null;
   private OpenTelemetry openTelemetry;

@@ -1,44 +1,10 @@
 package ai.verta.modeldb.experiment;
 
-import ai.verta.common.Artifact;
-import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
-import ai.verta.common.ModelDBResourceEnum;
-import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
-import ai.verta.modeldb.AddAttributes;
-import ai.verta.modeldb.AddExperimentAttributes;
-import ai.verta.modeldb.AddExperimentTag;
-import ai.verta.modeldb.AddExperimentTags;
-import ai.verta.modeldb.App;
-import ai.verta.modeldb.CreateExperiment;
-import ai.verta.modeldb.DAOSet;
-import ai.verta.modeldb.DeleteExperiment;
-import ai.verta.modeldb.DeleteExperimentArtifact;
-import ai.verta.modeldb.DeleteExperimentAttributes;
+import ai.verta.modeldb.*;
 import ai.verta.modeldb.DeleteExperimentAttributes.Response;
-import ai.verta.modeldb.DeleteExperimentTag;
-import ai.verta.modeldb.DeleteExperimentTags;
-import ai.verta.modeldb.DeleteExperiments;
 import ai.verta.modeldb.ExperimentServiceGrpc.ExperimentServiceImplBase;
-import ai.verta.modeldb.FindExperiments;
-import ai.verta.modeldb.GetArtifacts;
-import ai.verta.modeldb.GetAttributes;
-import ai.verta.modeldb.GetExperimentById;
-import ai.verta.modeldb.GetExperimentByName;
-import ai.verta.modeldb.GetExperimentCodeVersion;
-import ai.verta.modeldb.GetExperimentsInProject;
-import ai.verta.modeldb.GetTags;
-import ai.verta.modeldb.GetUrlForArtifact;
-import ai.verta.modeldb.LogExperimentArtifacts;
-import ai.verta.modeldb.LogExperimentCodeVersion;
-import ai.verta.modeldb.ModelDBConstants;
-import ai.verta.modeldb.ServiceSet;
-import ai.verta.modeldb.UpdateExperimentDescription;
-import ai.verta.modeldb.UpdateExperimentName;
-import ai.verta.modeldb.UpdateExperimentNameOrDescription;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.authservice.UACApisUtil;
-import ai.verta.modeldb.common.event.FutureEventDAO;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
@@ -47,89 +13,24 @@ import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.FutureGrpc;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.project.FutureProjectDAO;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import io.grpc.stub.StreamObserver;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
 
-  private static final Logger LOGGER = LogManager.getLogger(FutureExperimentServiceImpl.class);
-  private static final String UPDATE_EVENT_TYPE =
-      "update.resource.experiment.update_experiment_succeeded";
-  private static final String DELETE_EXPERIMENT_EVENT_TYPE =
-      "delete.resource.experiment.delete_experiment_succeeded";
   private final FutureExecutor executor;
   private final FutureProjectDAO futureProjectDAO;
   private final FutureExperimentDAO futureExperimentDAO;
-  private final FutureEventDAO futureEventDAO;
-  private final UACApisUtil uacApisUtil;
 
   public FutureExperimentServiceImpl(
       DAOSet daoSet, ServiceSet serviceSet, FutureExecutor executor) {
     this.executor = executor;
     this.futureProjectDAO = daoSet.getFutureProjectDAO();
     this.futureExperimentDAO = daoSet.getFutureExperimentDAO();
-    this.futureEventDAO = daoSet.getFutureEventDAO();
-    this.uacApisUtil = serviceSet.getUacApisUtil();
-  }
-
-  private InternalFuture<Void> addEvent(
-      String entityId,
-      String projectId,
-      String eventType,
-      Optional<String> updatedField,
-      Map<String, Object> extraFieldsMap,
-      String eventMessage) {
-
-    if (!App.getInstance().mdbConfig.isEvent_system_enabled()) {
-      return InternalFuture.completedInternalFuture(null);
-    }
-
-    // Add succeeded event in local DB
-    JsonObject eventMetadata = new JsonObject();
-    eventMetadata.addProperty("entity_id", entityId);
-    eventMetadata.addProperty("project_id", projectId);
-    if (updatedField.isPresent() && !updatedField.get().isEmpty()) {
-      eventMetadata.addProperty("updated_field", updatedField.get());
-    }
-    if (extraFieldsMap != null && !extraFieldsMap.isEmpty()) {
-      JsonObject updatedFieldValue = new JsonObject();
-      extraFieldsMap.forEach(
-          (key, value) -> {
-            if (value instanceof JsonElement) {
-              updatedFieldValue.add(key, (JsonElement) value);
-            } else {
-              updatedFieldValue.addProperty(key, String.valueOf(value));
-            }
-          });
-      eventMetadata.add("updated_field_value", updatedFieldValue);
-    }
-    eventMetadata.addProperty("message", eventMessage);
-
-    return uacApisUtil
-        .getEntityResource(projectId, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-        .thenCompose(
-            projectResource ->
-                futureEventDAO.addLocalEventWithAsync(
-                    ModelDBServiceResourceTypes.EXPERIMENT.name(),
-                    eventType,
-                    projectResource.getWorkspaceId(),
-                    eventMetadata),
-            executor);
   }
 
   @Override
@@ -139,17 +40,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       final var futureResponse =
           futureExperimentDAO
               .createExperiment(request)
-              .thenCompose(
-                  createdExperiment ->
-                      addEvent(
-                              createdExperiment.getId(),
-                              createdExperiment.getProjectId(),
-                              "add.resource.experiment.add_experiment_succeeded",
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "experiment logged successfully")
-                          .thenApply(eventLoggedStatus -> createdExperiment, executor),
-                  executor)
               .thenApply(
                   createdExperiment ->
                       CreateExperiment.Response.newBuilder()
@@ -328,17 +218,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
               .thenCompose(
                   unused -> futureExperimentDAO.updateExperimentNameOrDescription(request),
                   executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.empty(),
-                              Collections.emptyMap(),
-                              "experiment updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
               .thenApply(
                   experiment ->
                       UpdateExperimentNameOrDescription.Response.newBuilder()
@@ -368,17 +247,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       final var response =
           requestValidationFuture
               .thenCompose(unused -> futureExperimentDAO.updateExperimentName(request), executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("name"),
-                              Collections.singletonMap("name", updatedExperiment.getName()),
-                              "experiment name updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
               .thenApply(
                   experiment ->
                       UpdateExperimentName.Response.newBuilder().setExperiment(experiment).build(),
@@ -408,17 +276,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
           requestValidationFuture
               .thenCompose(
                   unused -> futureExperimentDAO.updateExperimentDescription(request), executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("description"),
-                              Collections.emptyMap(),
-                              "experiment description updated successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
               .thenApply(
                   experiment ->
                       UpdateExperimentDescription.Response.newBuilder()
@@ -452,23 +309,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
               .thenCompose(
                   unused -> futureExperimentDAO.addTags(request.getId(), request.getTagsList()),
                   executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getTagsList(),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment tags added successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
-                  executor)
               .thenApply(
                   experiment ->
                       AddExperimentTags.Response.newBuilder().setExperiment(experiment).build(),
@@ -501,23 +341,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                   unused ->
                       futureExperimentDAO.addTags(
                           request.getId(), Collections.singletonList(request.getTag())),
-                  executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getTag()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment tag added successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
                   executor)
               .thenApply(
                   experiment ->
@@ -583,30 +406,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                       futureExperimentDAO.deleteTags(
                           request.getId(), request.getTagsList(), request.getDeleteAll()),
                   executor)
-              .thenCompose(
-                  updatedExperiment -> {
-                    Map<String, Object> extraField = new HashMap<>();
-                    if (request.getDeleteAll()) {
-                      extraField.put("tags_delete_all", true);
-                    } else {
-                      extraField.put(
-                          "tags",
-                          new Gson()
-                              .toJsonTree(
-                                  request.getTagsList(),
-                                  new TypeToken<ArrayList<String>>() {}.getType()));
-                    }
-                    // Add succeeded event in local DB
-                    return addEvent(
-                            updatedExperiment.getId(),
-                            updatedExperiment.getProjectId(),
-                            UPDATE_EVENT_TYPE,
-                            Optional.of("tags"),
-                            extraField,
-                            "experiment tags deleted successfully")
-                        .thenApply(unused -> updatedExperiment, executor);
-                  },
-                  executor)
               .thenApply(
                   experiment ->
                       DeleteExperimentTags.Response.newBuilder().setExperiment(experiment).build(),
@@ -646,23 +445,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                       futureExperimentDAO.deleteTags(
                           request.getId(), Collections.singletonList(request.getTag()), false),
                   executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("tags"),
-                              Collections.singletonMap(
-                                  "tags",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getTag()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment tag deleted successfully")
-                          .thenApply(unused -> updatedExperiment, executor),
-                  executor)
               .thenApply(
                   experiment ->
                       DeleteExperimentTag.Response.newBuilder().setExperiment(experiment).build(),
@@ -692,24 +474,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                   unused ->
                       futureExperimentDAO.logAttributes(
                           request.getId(), Collections.singletonList(request.getAttribute())),
-                  executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                          updatedExperiment.getId(),
-                          updatedExperiment.getProjectId(),
-                          UPDATE_EVENT_TYPE,
-                          Optional.of(ModelDBConstants.ATTRIBUTES),
-                          Collections.singletonMap(
-                              ModelDBConstants.ATTRIBUTE_KEYS,
-                              new Gson()
-                                  .toJsonTree(
-                                      Stream.of(request.getAttribute())
-                                          .map(KeyValue::getKey)
-                                          .collect(Collectors.toSet()),
-                                      new TypeToken<ArrayList<String>>() {}.getType())),
-                          "experiment attribute added successfully"),
                   executor)
               .thenApply(
                   unused -> AddAttributes.Response.newBuilder().setStatus(true).build(), executor);
@@ -749,25 +513,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                   unused ->
                       futureExperimentDAO.logAttributes(
                           request.getId(), request.getAttributesList()),
-                  executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of(ModelDBConstants.ATTRIBUTES),
-                              Collections.singletonMap(
-                                  ModelDBConstants.ATTRIBUTE_KEYS,
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getAttributesList().stream()
-                                              .map(KeyValue::getKey)
-                                              .collect(Collectors.toSet()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment attributes added successfully")
-                          .thenApply(eventLoggedStatus -> updatedExperiment, executor),
                   executor)
               .thenApply(
                   experiment ->
@@ -830,32 +575,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       final var response =
           requestValidationFuture
               .thenCompose(unused -> futureExperimentDAO.deleteAttributes(request), executor)
-              .thenCompose(
-                  updatedExperiment ->
-                  // Add succeeded event in local DB
-                  {
-                    // Add succeeded event in local DB
-                    Map<String, Object> extraFieldValue = new HashMap<>();
-                    if (request.getDeleteAll()) {
-                      extraFieldValue.put("attributes_deleted_all", true);
-                    } else {
-                      extraFieldValue.put(
-                          ModelDBConstants.ATTRIBUTE_KEYS,
-                          new Gson()
-                              .toJsonTree(
-                                  request.getAttributeKeysList(),
-                                  new TypeToken<ArrayList<String>>() {}.getType()));
-                    }
-                    return addEvent(
-                            updatedExperiment.getId(),
-                            updatedExperiment.getProjectId(),
-                            UPDATE_EVENT_TYPE,
-                            Optional.of(ModelDBConstants.ATTRIBUTES),
-                            extraFieldValue,
-                            "Experiment attributes deleted successfully")
-                        .thenApply(unused -> updatedExperiment, executor);
-                  },
-                  executor)
               .thenApply(
                   experiment ->
                       DeleteExperimentAttributes.Response.newBuilder()
@@ -888,7 +607,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
                       futureExperimentDAO.deleteExperiments(
                           DeleteExperiments.newBuilder().addIds(request.getId()).build()),
                   executor)
-              .thenApply(this::loggedDeleteExperimentEvents, executor)
               .thenApply(
                   unused -> DeleteExperiment.Response.newBuilder().setStatus(true).build(),
                   executor);
@@ -915,18 +633,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       final var response =
           requestValidationFuture
               .thenCompose(unused -> futureExperimentDAO.logCodeVersion(request), executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of("code_version"),
-                              Collections.emptyMap(),
-                              "experiment code_version added successfully")
-                          .thenApply(unused -> updatedExperiment, executor),
-                  executor)
               .thenApply(
                   updatedExperiment ->
                       LogExperimentCodeVersion.Response.newBuilder()
@@ -1021,25 +727,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       final var futureResponse =
           requestValidationFuture
               .thenCompose(unused -> futureExperimentDAO.logArtifacts(request), executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of(ModelDBConstants.ARTIFACTS),
-                              Collections.singletonMap(
-                                  ModelDBConstants.ARTIFACTS,
-                                  new Gson()
-                                      .toJsonTree(
-                                          request.getArtifactsList().stream()
-                                              .map(Artifact::getKey)
-                                              .collect(Collectors.toSet()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment artifacts added successfully")
-                          .thenApply(unused -> updatedExperiment, executor),
-                  executor)
               .thenApply(
                   experiment ->
                       LogExperimentArtifacts.Response.newBuilder()
@@ -1098,23 +785,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       final var futureResponse =
           requestValidationFuture
               .thenCompose(unused -> futureExperimentDAO.deleteArtifacts(request), executor)
-              .thenCompose(
-                  updatedExperiment ->
-                      // Add succeeded event in local DB
-                      addEvent(
-                              updatedExperiment.getId(),
-                              updatedExperiment.getProjectId(),
-                              UPDATE_EVENT_TYPE,
-                              Optional.of(ModelDBConstants.ARTIFACTS),
-                              Collections.singletonMap(
-                                  "artifact_keys",
-                                  new Gson()
-                                      .toJsonTree(
-                                          Collections.singletonList(request.getKey()),
-                                          new TypeToken<ArrayList<String>>() {}.getType())),
-                              "experiment artifact deleted successfully")
-                          .thenApply(unused -> updatedExperiment, executor),
-                  executor)
               .thenApply(
                   experiment ->
                       DeleteExperimentArtifact.Response.newBuilder()
@@ -1143,7 +813,6 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
       final var response =
           requestValidationFuture
               .thenCompose(unused -> futureExperimentDAO.deleteExperiments(request), executor)
-              .thenApply(this::loggedDeleteExperimentEvents, executor)
               .thenApply(
                   unused -> DeleteExperiments.Response.newBuilder().setStatus(true).build(),
                   executor);
@@ -1151,21 +820,5 @@ public class FutureExperimentServiceImpl extends ExperimentServiceImplBase {
     } catch (Exception e) {
       CommonUtils.observeError(responseObserver, e);
     }
-  }
-
-  private InternalFuture<List<Void>> loggedDeleteExperimentEvents(
-      Map<String, String> experimentIdsMap) {
-    // Add succeeded event in local DB
-    List<InternalFuture<Void>> futureList = new ArrayList<>();
-    for (var entry : experimentIdsMap.entrySet()) {
-      addEvent(
-          entry.getKey(),
-          entry.getValue(),
-          DELETE_EXPERIMENT_EVENT_TYPE,
-          Optional.empty(),
-          Collections.emptyMap(),
-          "experiment deleted successfully");
-    }
-    return InternalFuture.sequence(futureList, executor);
   }
 }
