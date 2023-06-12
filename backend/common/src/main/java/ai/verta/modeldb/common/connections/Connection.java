@@ -10,6 +10,15 @@ import java.util.Optional;
 import java.util.function.Supplier;
 
 public abstract class Connection {
+  public static final Metadata.Key<String> EMAIL_GRPC_METADATA_KEY =
+      Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
+  public static final Metadata.Key<String> DEV_KEY_GRPC_METADATA_KEY =
+      Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
+  public static final Metadata.Key<String> DEV_KEY_WITH_HYPHEN_GRPC_METADATA_KEY =
+      Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+  public static final Metadata.Key<String> SOURCE_GRPC_METADATA_KEY =
+      Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+
   private final Optional<ClientInterceptor> tracingClientInterceptor;
 
   protected Connection(Optional<ClientInterceptor> tracingClientInterceptor) {
@@ -64,15 +73,11 @@ public abstract class Connection {
 
   protected static Metadata getServiceUserMetadata(ServiceUserConfig config) {
     var requestHeaders = new Metadata();
-    var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-    var devKey = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-    var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
-    var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
 
-    requestHeaders.put(emailKey, config.getEmail());
-    requestHeaders.put(devKey, config.getDevKey());
-    requestHeaders.put(devKeyHyphen, config.getDevKey());
-    requestHeaders.put(sourceKey, "PythonClient");
+    requestHeaders.put(EMAIL_GRPC_METADATA_KEY, config.getEmail());
+    requestHeaders.put(DEV_KEY_GRPC_METADATA_KEY, config.getDevKey());
+    requestHeaders.put(DEV_KEY_WITH_HYPHEN_GRPC_METADATA_KEY, config.getDevKey());
+    requestHeaders.put(SOURCE_GRPC_METADATA_KEY, "PythonClient");
     return requestHeaders;
   }
 }

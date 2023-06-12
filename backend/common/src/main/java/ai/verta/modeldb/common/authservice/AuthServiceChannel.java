@@ -52,15 +52,10 @@ public class AuthServiceChannel extends Connection implements AutoCloseable {
 
   private Metadata getServiceUserMetadataHeaders() {
     var requestHeaders = new Metadata();
-    var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-    var devKey = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-    var devKeyHyphen = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
-    var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
-
-    requestHeaders.put(emailKey, this.serviceUserEmail);
-    requestHeaders.put(devKey, this.serviceUserDevKey);
-    requestHeaders.put(devKeyHyphen, this.serviceUserDevKey);
-    requestHeaders.put(sourceKey, "PythonClient");
+    requestHeaders.put(Connection.EMAIL_GRPC_METADATA_KEY, this.serviceUserEmail);
+    requestHeaders.put(Connection.DEV_KEY_GRPC_METADATA_KEY, this.serviceUserDevKey);
+    requestHeaders.put(Connection.DEV_KEY_WITH_HYPHEN_GRPC_METADATA_KEY, this.serviceUserDevKey);
+    requestHeaders.put(Connection.SOURCE_GRPC_METADATA_KEY, "PythonClient");
     return requestHeaders;
   }
 

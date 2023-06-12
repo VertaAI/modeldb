@@ -1,5 +1,6 @@
 package ai.verta.modeldb.common.authservice;
 
+import ai.verta.modeldb.common.connections.Connection;
 import io.grpc.Context;
 import io.grpc.Contexts;
 import io.grpc.ForwardingServerCallListener;
@@ -34,14 +35,14 @@ public class AuthInterceptor implements ServerInterceptor {
         || methodName.equals("grpc.health.v1.Health/Check")
         || methodName.equals("grpc.health.v1.Health/Watch"))) {
       // validate empty headers from user request
-      var emailKey = Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-      var devKeyUnderscore = Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-      var devKey = Metadata.Key.of("developer-key", Metadata.ASCII_STRING_MARSHALLER);
+      var emailKey = Connection.EMAIL_GRPC_METADATA_KEY;
+      var devKeyUnderscore = Connection.DEV_KEY_GRPC_METADATA_KEY;
+      var devKey = Connection.DEV_KEY_WITH_HYPHEN_GRPC_METADATA_KEY;
       var bearerAccessToken =
           Metadata.Key.of("bearer_access_token", Metadata.ASCII_STRING_MARSHALLER);
       var sessionId = Metadata.Key.of("sessionId", Metadata.ASCII_STRING_MARSHALLER);
       var sessionIdSig = Metadata.Key.of("sessionIdSig", Metadata.ASCII_STRING_MARSHALLER);
-      var sourceKey = Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+      var sourceKey = Connection.SOURCE_GRPC_METADATA_KEY;
 
       var parameterMissing = false;
       if (!requestHeaders.containsKey(sourceKey)) {
