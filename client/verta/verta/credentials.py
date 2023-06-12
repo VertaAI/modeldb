@@ -46,14 +46,17 @@ class EmailCredentials(Credentials):
         A user email address.
     dev_key : str
         A dev key to use for authentication.
+    organization_id : str, optional
+        An organization ID to use for authentication.
     """
 
     EMAIL_ENV = "VERTA_EMAIL"
     DEV_KEY_ENV = "VERTA_DEV_KEY"
 
-    def __init__(self, email, dev_key):
+    def __init__(self, email, dev_key, organization_id=None):
         self.email = email
         self.dev_key = dev_key
+        self.organization_id = organization_id
 
     def export_env_vars_to_os(self):
         os.environ[self.EMAIL_ENV] = self.email
@@ -67,11 +70,12 @@ class EmailCredentials(Credentials):
             # without underscore, for NGINX support
             # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
             "developer-key": self.dev_key,
+            "organization-id": self.organization_id or "",
         }
 
     def __repr__(self):
         key = self.dev_key[:8] + re.sub(r"[^-]", "*", self.dev_key[8:])
-        return "EmailCredentials({}, {})".format(self.email, key)
+        return "EmailCredentials({}, {}, {})".format(self.email, key, self.organization_id)
 
     @classmethod
     def load_from_os_env(cls):
@@ -92,14 +96,17 @@ class JWTCredentials(Credentials):
         A jwt token.
     jwt_token_sig : str
         A jwt token signature.
+    organization_id : str, optional
+        An organization ID to use for authentication.
     """
 
     JWT_TOKEN_ENV = "VERTA_JWT_TOKEN"
     JWT_TOKEN_SIG_ENV = "VERTA_JWT_TOKEN_SIG"
 
-    def __init__(self, jwt_token, jwt_token_sig):
+    def __init__(self, jwt_token, jwt_token_sig, organization_id=None):
         self.jwt_token = jwt_token
         self.jwt_token_sig = jwt_token_sig
+        self.organization_id = organization_id
 
     def export_env_vars_to_os(self):
         os.environ[self.JWT_TOKEN_ENV] = self.jwt_token
@@ -113,6 +120,7 @@ class JWTCredentials(Credentials):
             # without underscore, for NGINX support
             # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
             "bearer-access-token": self.jwt_token,
+            "organization-id": self.organization_id or "",
         }
         if self.jwt_token_sig:
             headers["bearer_access_token_sig"] = headers[
@@ -122,7 +130,7 @@ class JWTCredentials(Credentials):
 
     def __repr__(self):
         token = self.jwt_token[:8] + re.sub(r"[^-]", "*", self.jwt_token[8:])
-        return "JWTCredentials({}, {})".format(token, self.jwt_token_sig)
+        return "JWTCredentials({}, {}, {})".format(token, self.jwt_token_sig, self.organization_id)
 
     @classmethod
     def load_from_os_env(cls):
@@ -152,11 +160,11 @@ def load_from_os_env():
     return credentials
 
 
-def _build(email=None, dev_key=None, jwt_token=None, jwt_token_sig=None):
+def _build(email=None, dev_key=None, jwt_token=None, jwt_token_sig=None, organization_id=None):
     if email and dev_key:
-        return EmailCredentials(email, dev_key)
+        return EmailCredentials(email, dev_key, organization_id=organization_id)
     elif jwt_token:
-        return JWTCredentials(jwt_token, jwt_token_sig)
+        return JWTCredentials(jwt_token, jwt_token_sig, organization_id=organization_id)
     elif email or dev_key:
         raise ValueError("`email` and `dev_key` must be provided together")
     else:

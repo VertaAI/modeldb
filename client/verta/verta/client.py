@@ -94,6 +94,8 @@ class Client(object):
         Whether to print extra verbose information to aid in debugging.
     extra_auth_headers : dict, default {}
         Extra headers to include on requests, like to permit traffic through a restrictive application load balancer
+    organization_id : str, optional
+        (alpha) Organization to use for the client calls. If not provided, the default organization will be used.
     _connect : str, default True
         Whether to connect to server (``False`` for unit tests).
 
@@ -142,6 +144,7 @@ class Client(object):
         extra_auth_headers={},
         jwt_token=None,
         jwt_token_sig=None,
+        organization_id=None,
         _connect=True,
     ):
         self._load_config()
@@ -170,6 +173,7 @@ class Client(object):
             dev_key=dev_key,
             jwt_token=jwt_token,
             jwt_token_sig=jwt_token_sig,
+            organization_id=organization_id, # TODO: add organization_name as parameter and resolve that
         )
         self._workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
 
