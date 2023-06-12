@@ -1,6 +1,7 @@
 package ai.verta.modeldb;
 
 import ai.verta.modeldb.common.config.ServiceUserConfig;
+import ai.verta.modeldb.common.connections.Connection;
 import ai.verta.modeldb.config.TestConfig;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import io.grpc.*;
@@ -83,12 +84,9 @@ public class AuthClientInterceptor {
         @Override
         public void start(Listener<RespT> responseListener, Metadata headers) {
           // TODO: Here set request metadata
-          Metadata.Key<String> email_key =
-              Metadata.Key.of("email", Metadata.ASCII_STRING_MARSHALLER);
-          Metadata.Key<String> dev_key =
-              Metadata.Key.of("developer_key", Metadata.ASCII_STRING_MARSHALLER);
-          Metadata.Key<String> source_key =
-              Metadata.Key.of("source", Metadata.ASCII_STRING_MARSHALLER);
+          Metadata.Key<String> email_key = Connection.EMAIL_GRPC_METADATA_KEY;
+          Metadata.Key<String> dev_key = Connection.DEV_KEY_GRPC_METADATA_KEY;
+          Metadata.Key<String> source_key = Connection.SOURCE_GRPC_METADATA_KEY;
 
           headers.put(email_key, clientEmail);
           headers.put(dev_key, clientDevKey);
