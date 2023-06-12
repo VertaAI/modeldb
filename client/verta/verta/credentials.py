@@ -63,15 +63,17 @@ class EmailCredentials(Credentials):
         os.environ[self.DEV_KEY_ENV] = self.dev_key
 
     def headers(self):
-        return {
+        headers = {
             "source": "PythonClient",
             "email": self.email,
             "developer_key": self.dev_key,
             # without underscore, for NGINX support
             # https://www.nginx.com/resources/wiki/start/topics/tutorials/config_pitfalls#missing-disappearing-http-headers
             "developer-key": self.dev_key,
-            "organization-id": self.organization_id or "",
         }
+        if self.organization_id:
+            headers["organization-id"] = self.organization_id
+        return headers
 
     def __repr__(self):
         key = self.dev_key[:8] + re.sub(r"[^-]", "*", self.dev_key[8:])
@@ -126,6 +128,8 @@ class JWTCredentials(Credentials):
             headers["bearer_access_token_sig"] = headers[
                 "bearer-access-token-sig"
             ] = self.jwt_token_sig
+        if self.organization_id:
+            headers["organization-id"] = self.organization_id
         return headers
 
     def __repr__(self):
