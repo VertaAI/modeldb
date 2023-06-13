@@ -526,13 +526,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         if model_type or model_api:  # only if provided or model is deployable
             if model_api is None:
                 model_api = utils.ModelAPI()
-            if "model_packaging" not in model_api:
-                # add model serialization info to model_api
-                model_api["model_packaging"] = {
-                    "python_version": _utils.get_python_version(),
-                    "type": model_type,
-                    "deserialization": method,
-                }
             self.log_artifact(
                 _artifact_utils.MODEL_API_KEY, model_api, overwrite, "json"
             )

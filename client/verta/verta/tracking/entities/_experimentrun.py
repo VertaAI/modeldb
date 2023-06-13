@@ -1320,13 +1320,6 @@ class ExperimentRun(_DeployableEntity):
         if model_type or model_api:  # only if provided or model is deployable
             if model_api is None:
                 model_api = utils.ModelAPI()
-            if "model_packaging" not in model_api:
-                # add model serialization info to model_api
-                model_api["model_packaging"] = {
-                    "python_version": _utils.get_python_version(),
-                    "type": model_type,
-                    "deserialization": method,
-                }
             if self._conf.debug:
                 print("[DEBUG] model API is:")
                 pprint.pprint(model_api.to_dict())
