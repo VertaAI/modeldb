@@ -28,16 +28,6 @@ from verta.environment import Python
 pytestmark = pytest.mark.not_oss
 
 
-@pytest.fixture
-def model_packaging():
-    """Additional items added to model API in log_model()."""
-    return {
-        "python_version": _utils.get_python_version(),
-        "type": "sklearn",
-        "deserialization": "cloudpickle",
-    }
-
-
 class TestLogModel:
     def test_model(self, deployable_entity, model_for_deployment):
         deployable_entity.log_model(model_for_deployment["model"])
@@ -108,32 +98,24 @@ class TestLogModel:
                 map(os.path.basename, zipf.namelist())
             )
 
-    def test_model_api(self, deployable_entity, model_for_deployment, model_packaging):
+    def test_model_api(self, deployable_entity, model_for_deployment):
         deployable_entity.log_model(
             model_for_deployment["model"],
             model_api=model_for_deployment["model_api"],
         )
 
         model_api = model_for_deployment["model_api"].to_dict()
-        model_api.update(
-            {
-                "model_packaging": model_packaging,
-            }
-        )
         assert model_api == json.loads(
             six.ensure_str(
                 deployable_entity.get_artifact(_artifact_utils.MODEL_API_KEY).read()
             )
         )
 
-    def test_no_model_api(
-        self, deployable_entity, model_for_deployment, model_packaging
-    ):
+    def test_no_model_api(self, deployable_entity, model_for_deployment):
         deployable_entity.log_model(model_for_deployment["model"])
 
         model_api = {
             "version": "v1",
-            "model_packaging": model_packaging,
         }
         assert model_api == json.loads(
             six.ensure_str(
@@ -145,11 +127,6 @@ class TestLogModel:
         deployable_entity.log_model(model_for_deployment["model"].__class__)
 
         assert model_for_deployment["model"].__class__ == deployable_entity.get_model()
-
-        retrieved_model_api = verta.utils.ModelAPI.from_file(
-            deployable_entity.get_artifact(_artifact_utils.MODEL_API_KEY)
-        )
-        assert retrieved_model_api.to_dict()["model_packaging"]["type"] == "class"
 
     def test_artifacts(self, deployable_entity, model_for_deployment, strs, flat_dicts):
         for key, artifact in zip(strs, flat_dicts):
