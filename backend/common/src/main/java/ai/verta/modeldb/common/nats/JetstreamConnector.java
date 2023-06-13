@@ -16,10 +16,10 @@ import lombok.extern.log4j.Log4j2;
 @Log4j2
 public class JetstreamConnector {
   private static final Duration RECONNECT_WAIT_INTERVAL = Duration.ofSeconds(2L);
-  public static final int MEGABYTE = 1024 * 1024;
-  public static final int MAX_STREAM_BYTES = 100 * MEGABYTE;
-  public static final int MAX_STREAM_MESSAGES = 10000;
-  public final int maxMessageReplicas;
+  private static final int MEGABYTE = 1024 * 1024;
+  private static final int MAX_STREAM_BYTES = 100 * MEGABYTE;
+  private static final int MAX_STREAM_MESSAGES = 10000;
+  private final int maxMessageReplicas;
   private final Map<String, JetStream> jetStreamMap = new HashMap<>();
   private final JetstreamConfig config;
   private final Supplier<Collection<String>> streamNamesToManage;
