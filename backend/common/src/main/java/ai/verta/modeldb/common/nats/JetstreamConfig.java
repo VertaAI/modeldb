@@ -11,5 +11,9 @@ public class JetstreamConfig {
   private boolean enabled = false;
   private String host = "";
   private int port = 0;
-  private int maxMessageReplicas;
+  private Integer maxMessageReplicas;
+
+  public Integer getMaxMessageReplicas() {
+    return ((maxMessageReplicas == null) || (maxMessageReplicas <= 0)) ? 2 : maxMessageReplicas;
+  }
 }

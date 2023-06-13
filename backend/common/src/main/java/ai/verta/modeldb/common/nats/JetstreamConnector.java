@@ -29,11 +29,7 @@ public class JetstreamConnector {
       JetstreamConfig config, Supplier<Collection<String>> streamNamesToManage) {
     this.config = config;
     this.streamNamesToManage = streamNamesToManage;
-    if (config.getMaxMessageReplicas() > 0) {
-      maxMessageReplicas = config.getMaxMessageReplicas();
-    } else {
-      maxMessageReplicas = 2;
-    }
+    this.maxMessageReplicas = config.getMaxMessageReplicas();
   }
 
   public JetStream getJetStream(String streamName) {
@@ -87,7 +83,7 @@ public class JetstreamConnector {
     }
   }
 
-  private void verifyStreams() {
+  public void verifyStreams() {
     streamNamesToManage.get().forEach(name -> jetStreamMap.put(name, ensureStreamExists(name)));
   }
 
