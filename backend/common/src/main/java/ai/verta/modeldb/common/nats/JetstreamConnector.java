@@ -18,21 +18,25 @@ public class JetstreamConnector {
   private static final Duration RECONNECT_WAIT_INTERVAL = Duration.ofSeconds(2L);
   public static final int MEGABYTE = 1024 * 1024;
   public static final int MAX_STREAM_BYTES = 100 * MEGABYTE;
-  public static int MAX_MESSAGE_REPLICAS = 2;
   public static final int MAX_STREAM_MESSAGES = 10000;
-  private Connection natsConnection;
+  public final int maxMessageReplicas;
   private final Map<String, JetStream> jetStreamMap = new HashMap<>();
   private final JetstreamConfig config;
-
   private final Supplier<Collection<String>> streamNamesToManage;
+  private Connection natsConnection;
 
   public JetstreamConnector(
       JetstreamConfig config, Supplier<Collection<String>> streamNamesToManage) {
     this.config = config;
     this.streamNamesToManage = streamNamesToManage;
+    if (config.getMaxMessageReplicas() > 0) {
+      maxMessageReplicas = config.getMaxMessageReplicas();
+    } else {
+      maxMessageReplicas = 2;
+    }
   }
 
-  public JetStream getJetStream(String streamName) throws IOException, InterruptedException {
+  public JetStream getJetStream(String streamName) {
     log.info("Getting JetStream for stream {}", streamName);
     checkNatsConnection();
     return jetStreamMap.get(streamName);
@@ -111,7 +115,7 @@ public class JetstreamConnector {
               .maxMessages(MAX_STREAM_MESSAGES)
               .maxBytes(MAX_STREAM_BYTES)
               .discardPolicy(DiscardPolicy.Old)
-              .replicas(MAX_MESSAGE_REPLICAS)
+              .replicas(maxMessageReplicas)
               .storageType(StorageType.File)
               .build();
 
