@@ -38,11 +38,12 @@ public class JetstreamConnector {
     return jetStreamMap.get(streamName);
   }
 
-  private void checkNatsConnection() {
+  public void checkNatsConnection() {
     log.info("Checking NATS connection");
     if (natsConnection == null || natsConnection.getStatus() == Connection.Status.CLOSED) {
       log.info("Getting new connection");
       natsConnection = getConnection();
+      verifyStreams();
     }
     log.info("Ensuring stream exists");
   }
@@ -100,6 +101,7 @@ public class JetstreamConnector {
   }
 
   private JetStream ensureStreamExists(String streamName) {
+    checkNatsConnection();
     try {
       log.info("Ensuring stream with name {} exists", streamName);
       JetStreamManagement jsm = natsConnection.jetStreamManagement();
@@ -184,10 +186,75 @@ public class JetstreamConnector {
   }
 
   public static void closeConnection(Connection connection) {
+    if (connection == null) {
+      return;
+    }
     try {
       connection.close();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
+      throw new RuntimeException(e);
+    }
+  }
+
+  public void close() {
+    log.info("Shutting down nats.");
+    closeConnection(natsConnection);
+    log.info("Shutdown nats JetStream.");
+  }
+
+  public Dispatcher createDispatcher() {
+    return natsConnection.createDispatcher();
+  }
+
+  public Optional<ConsumerInfo> existingConsumer(
+      String streamName, ConsumerConfiguration consumerConfiguration) {
+    log.info(
+        "fetching existing consumer group "
+            + consumerConfiguration.getDurable()
+            + " for stream "
+            + streamName);
+    try {
+      var jsm = natsConnection.jetStreamManagement();
+      var existing = existingConsumerInfo(streamName, consumerConfiguration, jsm);
+      if (existing != null && existing.isPushBound()) {
+        log.debug(
+            "found push-bound consumer group definition for " + consumerConfiguration.getDurable());
+        return Optional.of(existing);
+      }
+      if (existing != null) {
+        log.debug(
+            consumerConfiguration.getDurable()
+                + " consumer definition is not push-bound, deleting it.");
+        var success = jsm.deleteConsumer(streamName, consumerConfiguration.getDurable());
+        log.debug(
+            (success ? "successfully deleted" : "failed to delete")
+                + " invalid consumer "
+                + consumerConfiguration.getDurable());
+      } else {
+        log.debug("consumer group does not exist");
+      }
+    } catch (IOException | JetStreamApiException e) {
+      throw new ModelDBException(e);
+    }
+    return Optional.empty();
+  }
+
+  private static ConsumerInfo existingConsumerInfo(
+      String streamName, ConsumerConfiguration consumerConfiguration, JetStreamManagement jsm)
+      throws IOException, JetStreamApiException {
+    if (consumerExists(streamName, consumerConfiguration, jsm)) {
+      return jsm.getConsumerInfo(streamName, consumerConfiguration.getDurable());
+    }
+    return null;
+  }
+
+  private static boolean consumerExists(
+      String streamName, ConsumerConfiguration consumerConfiguration, JetStreamManagement jsm) {
+    var consumer = consumerConfiguration.getDurable();
+    try {
+      return jsm.getConsumerNames(streamName).stream().anyMatch(consumer::equals);
+    } catch (IOException | JetStreamApiException e) {
       throw new RuntimeException(e);
     }
   }
