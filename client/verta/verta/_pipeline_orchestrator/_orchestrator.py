@@ -13,6 +13,8 @@ from ._step_handler import (
 
 
 class _OrchestratorBase(abc.ABC):
+    """Abstract base class for inference pipeline orchestrators."""
+
     def __init__(
         self,
         pipeline_spec: Dict[str, Any],
@@ -22,6 +24,19 @@ class _OrchestratorBase(abc.ABC):
         self._step_handlers = step_handlers
 
     def get_dag(self) -> TopologicalSorter:
+        """Validate and return this orchestrator's pipeline graph.
+
+        Returns
+        -------
+        graphlib.TopologicalSorter
+            Pipeline graph. Each node is a model version ID.
+
+        Raises
+        ------
+        graphlib.CycleError
+            If the pipeline graph has cycles.
+
+        """
         dag = TopologicalSorter(self._pipeline_spec["graph"]["inputs"])
         dag.prepare()
         # TODO: assert one input node
@@ -30,7 +45,20 @@ class _OrchestratorBase(abc.ABC):
     def run(
         self,
         input: Any,
-    ):
+    ) -> Any:
+        """Run this orchestrator's pipeline.
+
+        Parameters
+        ----------
+        input : object
+            Input for the pipeline's input node.
+
+        Return
+        ------
+        object
+            Output from the pipeline's output node.
+
+        """
         dag = self.get_dag()
 
         # run input node
@@ -44,7 +72,7 @@ class _OrchestratorBase(abc.ABC):
             for model_version_id in dag.get_ready():
                 step_handler = self._step_handlers[model_version_id]
                 outputs[model_version_id] = step_handler.run(  # TODO: async?
-                    outputs[step_handler.predecessors[0]]  # TEST
+                    outputs[step_handler.predecessors[0]]  # just to test
                     # {
                     #     predecessor_id: outputs[predecessor_id]
                     #     for predecessor_id in step_handler.predecessors
@@ -58,17 +86,27 @@ class _OrchestratorBase(abc.ABC):
 
 
 class DeployedOrchestrator(_OrchestratorBase):
+    """Inference pipeline orchestrator using HTTP server models."""
+
     def __init__(
         self,
         pipeline_spec: Dict[str, Any],
     ):
         raise NotImplementedError
-        super().__init__(
-            pipeline_spec=pipeline_spec,
-        )
 
 
 class LocalOrchestrator(_OrchestratorBase):
+    """Inference pipeline orchestrator using locally-instantiated models.
+
+    Paremeters
+    ----------
+    conn : :class:`~verta._internal_utils._utils.Connection`
+        Verta client connection.
+    pipeline_spec : dict
+        Pipeline specification.
+
+    """
+
     def __init__(
         self,
         conn: _utils.Connection,
@@ -84,6 +122,21 @@ class LocalOrchestrator(_OrchestratorBase):
         conn: _utils.Connection,
         pipeline_spec: Dict[str, Any],
     ) -> Dict[int, ModelObjectStepHandler]:
+        """Return initialized step handlers.
+
+        Parameters
+        ----------
+        conn : :class:`~verta._internal_utils._utils.Connection`
+            Verta client connection.
+        pipeline_spec : dict
+            Pipeline specification.
+
+        Returns
+        -------
+        dict of int to :class:`~verta._pipeline_orchestrator._step_handler.ModelObjectStepHandler`
+            Mapping of model version IDs to their step handlers.
+
+        """
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
             model_version_id = step["rmvId"]
