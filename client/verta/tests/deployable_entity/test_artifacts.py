@@ -22,6 +22,27 @@ from verta._internal_utils import (
 from .. import utils
 
 
+def assert_model_packaging(deployable_entity, serialization, framework):
+    """Validate model serialization fields in Artifact proto.
+
+    For TestModels and TestArbitraryModels.
+
+    """
+    model_msg = deployable_entity._get_artifact_msg(
+        deployable_entity._MODEL_KEY,
+    )
+
+    if not serialization:
+        assert not model_msg.serialization
+    else:
+        assert model_msg.serialization == serialization
+
+    if not framework:
+        assert not model_msg.artifact_subtype
+    else:
+        assert model_msg.artifact_subtype == framework
+
+
 class TestUtils:
     def test_calc_sha256(self):
         FILE_SIZE = 6 * 10**6  # 6 MB
@@ -267,6 +288,11 @@ class TestModels:
         pipeline.fit(X, y)
 
         deployable_entity.log_model(pipeline)
+        assert_model_packaging(
+            deployable_entity,
+            serialization="cloudpickle",
+            framework="sklearn",
+        )
         retrieved_pipeline = deployable_entity.get_model()
 
         assert np.allclose(pipeline.predict(X), retrieved_pipeline.predict(X))
@@ -320,6 +346,11 @@ class TestModels:
             optimizer.step()
 
         deployable_entity.log_model(net)
+        assert_model_packaging(
+            deployable_entity,
+            serialization="cloudpickle",
+            framework="torch",
+        )
         retrieved_net = deployable_entity.get_model()
 
         assert torch.allclose(net(X), retrieved_net(X))
@@ -398,6 +429,11 @@ class TestModels:
         net.fit(X, y, epochs=5)
 
         deployable_entity.log_model(net)
+        assert_model_packaging(
+            deployable_entity,
+            serialization="keras",
+            framework="tensorflow",
+        )
         retrieved_net = deployable_entity.get_model()
 
         assert np.allclose(net.predict(X), retrieved_net.predict(X))
@@ -419,6 +455,11 @@ class TestModels:
             return (args, kwargs)
 
         deployable_entity.log_model(func)
+        assert_model_packaging(
+            deployable_entity,
+            serialization="cloudpickle",
+            framework="callable",
+        )
         assert deployable_entity.get_model().__defaults__ == func.__defaults__
         assert deployable_entity.get_model()(*func_args, **func_kwargs) == func(
             *func_args, **func_kwargs
@@ -440,6 +481,11 @@ class TestModels:
         custom = Custom(*init_args, **init_kwargs)
 
         deployable_entity.log_model(custom)
+        assert_model_packaging(
+            deployable_entity,
+            serialization="cloudpickle",
+            framework="custom",
+        )
         assert deployable_entity.get_model().__dict__ == custom.__dict__
         assert deployable_entity.get_model().predict(strs) == custom.predict(strs)
 
@@ -480,6 +526,11 @@ class TestModels:
         # log model
         model = LogisticRegression().fit(df)
         deployable_entity.log_model(model, custom_modules=[])
+        assert_model_packaging(
+            deployable_entity,
+            serialization="cloudpickle",
+            framework=None,
+        )
 
         # get model
         with zipfile.ZipFile(deployable_entity.get_model()) as zipf:
@@ -521,6 +572,11 @@ class TestArbitraryModels:
             f.seek(0)
 
             deployable_entity.log_model(f)
+        assert_model_packaging(
+            deployable_entity,
+            serialization=None,
+            framework=None,
+        )
 
         assert deployable_entity.get_model().read() == random_data
 
@@ -530,6 +586,11 @@ class TestArbitraryModels:
         dirpath, filepaths = dir_and_files
 
         deployable_entity.log_model(dirpath)
+        assert_model_packaging(
+            deployable_entity,
+            serialization=_artifact_utils.ZIP_EXTENSION,
+            framework=None,
+        )
 
         with zipfile.ZipFile(deployable_entity.get_model(), "r") as zipf:
             assert set(zipf.namelist()) == filepaths
@@ -540,6 +601,11 @@ class TestArbitraryModels:
         model = {"a": 1}
 
         deployable_entity.log_model(model)
+        assert_model_packaging(
+            deployable_entity,
+            serialization="cloudpickle",
+            framework=None,
+        )
 
         assert deployable_entity.get_model() == model
 
