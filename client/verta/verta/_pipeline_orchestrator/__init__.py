@@ -2,13 +2,13 @@
 
 from verta._internal_utils import documentation
 
-from ._step_handler import ModelContainerStepHandler, ModelObjectStepHandler
+from ._orchestrator import DeployedOrchestrator, LocalOrchestrator
 
 
 documentation.reassign_module(
     [
-        ModelContainerStepHandler,
-        ModelObjectStepHandler,
+        DeployedOrchestrator,
+        LocalOrchestrator,
     ],
     module_name=__name__,
 )
