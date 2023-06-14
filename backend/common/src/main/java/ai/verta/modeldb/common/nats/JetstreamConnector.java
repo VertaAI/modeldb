@@ -1,7 +1,6 @@
 package ai.verta.modeldb.common.nats;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import com.google.common.annotations.VisibleForTesting;
 import io.nats.client.*;
 import io.nats.client.api.*;
 import java.io.IOException;
@@ -88,8 +87,7 @@ public class JetstreamConnector {
     streamNamesToManage.get().forEach(name -> jetStreamMap.put(name, ensureStreamExists(name)));
   }
 
-  @VisibleForTesting
-  Connection connect(Options options) {
+  private Connection connect(Options options) {
     try {
       return Nats.connect(options);
     } catch (IOException e) {
@@ -156,6 +154,7 @@ public class JetstreamConnector {
       String durableName,
       String deliverGroupName)
       throws StreamNotFoundException {
+    ensureStreamExists(streamName);
     natsConnection = getConnection();
     Dispatcher dispatcher = natsConnection.createDispatcher();
     try {
