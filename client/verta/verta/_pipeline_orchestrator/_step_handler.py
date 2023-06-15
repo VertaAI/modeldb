@@ -2,7 +2,7 @@
 
 import abc
 import json
-from typing import Any, Dict, List, Optional, Set, Type
+from typing import Any, Dict, Iterable, List, Optional, Set, Type
 
 from verta._internal_utils import _utils, http_session
 from verta.registry.entities import RegisteredModelVersion
@@ -15,10 +15,10 @@ class _StepHandlerBase(abc.ABC):
     def __init__(
         self,
         name: str,
-        predecessors: Set[str],
+        predecessors: Iterable[str],
     ):
         self._name = name
-        self._predecessors = predecessors
+        self._predecessors = set(predecessors)
 
     @abc.abstractmethod
     def run(self, input: Any) -> Any:
@@ -55,7 +55,7 @@ class ModelContainerStepHandler(_StepHandlerBase):
     ----------
     name : str
         Name of this step.
-    predecessors : set of str
+    predecessors : iterable of str
         Names of this steps' predecessors
     prediction_url : str
         REST endpoint for model predictions.
@@ -70,7 +70,7 @@ class ModelContainerStepHandler(_StepHandlerBase):
     def __init__(
         self,
         name: str,
-        predecessors: Set[str],
+        predecessors: Iterable[str],
         prediction_url: str,
     ):
         super().__init__(
@@ -100,7 +100,7 @@ class ModelObjectStepHandler(_StepHandlerBase):
     ----------
     name : str
         Name of this step.
-    predecessors : set of str
+    predecessors : iterable of str
         Names of this steps' predecessors
     model : object
         Instantiated model ready for predictions.
@@ -115,7 +115,7 @@ class ModelObjectStepHandler(_StepHandlerBase):
     def __init__(
         self,
         name: str,
-        predecessors: Set[str],
+        predecessors: Iterable[str],
         model: Any,
     ):
         super().__init__(
