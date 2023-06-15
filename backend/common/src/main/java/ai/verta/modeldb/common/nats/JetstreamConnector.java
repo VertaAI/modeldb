@@ -147,7 +147,7 @@ public class JetstreamConnector {
     }
   }
 
-  public void subscribeToStream(
+  public JetStreamSubscription subscribeToStream(
       String streamName,
       String subject,
       MessageHandler handler,
@@ -165,7 +165,7 @@ public class JetstreamConnector {
               .durable(durableName)
               .deliverGroup(deliverGroupName)
               .build();
-      jetStream.subscribe(subject, dispatcher, handler, false, options);
+      return jetStream.subscribe(subject, dispatcher, handler, false, options);
     } catch (JetStreamApiException e) {
       // todo: is there a better way to detect this?
       // TODO: don't close connection if there is a failure, since we still might need the
