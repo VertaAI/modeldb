@@ -54,7 +54,8 @@ class TopologicalSorter:
                 self.add(node, *predecessors)
 
     def _get_nodeinfo(self, node):
-        if (result := self._node2info.get(node)) is None:
+        result = self._node2info.get(node)
+        if result is None:
             self._node2info[node] = result = _NodeInfo(node)
         return result
 
