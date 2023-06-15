@@ -12,6 +12,8 @@ Configuration:
         EventTemplateAdditionalField:
           key: "hostName"
           value: "${env:hostName:-}"
+#      PatternLayout:
+#        pattern: "[%-5level] traceId=%X{trace_id} %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
   Loggers:
     logger:
       - name: io.grpc.netty
