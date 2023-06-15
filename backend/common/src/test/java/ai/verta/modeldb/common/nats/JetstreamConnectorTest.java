@@ -75,16 +75,17 @@ class JetstreamConnectorTest {
   @Test
   void publishAndSubscribe() throws Exception {
     AtomicReference<String> message = new AtomicReference<>();
-    connector.subscribeToStream(
-        "cheese",
-        "cheese.>",
-        msg -> {
-          msg.ack();
-          message.set(new String(msg.getData()));
-        },
-        "testDurable",
-        "testGroup");
-
+    var subscription =
+        connector.subscribeToStream(
+            "cheese",
+            "cheese.>",
+            msg -> {
+              msg.ack();
+              message.set(new String(msg.getData()));
+            },
+            "testDurable",
+            "testGroup");
+    assertThat(subscription).isNotNull();
     JetStream cheeseStream = connector.getJetStream("cheese");
     cheeseStream.publish("cheese.create", "Swiss".getBytes(StandardCharsets.UTF_8));
 
@@ -150,8 +151,9 @@ class JetstreamConnectorTest {
     assertThat(connector.existingConsumer("wine", expectedConfiguration)).isEmpty();
 
     // now re-subscribe
-    connector.subscribeToStream("wine", "wine.>", Message::ack, "testDurable", "testGroup");
-
+    var subscription =
+        connector.subscribeToStream("wine", "wine.>", Message::ack, "testDurable", "testGroup");
+    assertThat(subscription).isNotNull();
     // now it should exist
     assertThat(connector.existingConsumer("wine", expectedConfiguration)).isPresent();
   }
