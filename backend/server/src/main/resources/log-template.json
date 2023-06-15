@@ -22,9 +22,18 @@
     "$resolver": "source",
     "field": "lineNumber"
   },
+  "trace_id": {
+    "$resolver": "mdc",
+    "key": "trace_id"
+  },
   "message": {
     "$resolver": "message",
     "stringified": true
+  },
+  "mapMessage": {
+    "$resolver": "map",
+    "flatten": true,
+    "pattern": ".*(?<!message)"
   },
   "exception": {
     "exception_class": {
