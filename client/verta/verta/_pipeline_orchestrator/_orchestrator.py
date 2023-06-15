@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import abc
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 from verta._internal_utils import _utils
 from verta.external.cpython.graphlib import TopologicalSorter
@@ -22,9 +22,50 @@ class _OrchestratorBase(abc.ABC):
     ):
         self._pipeline_spec = pipeline_spec
         self._step_handlers = step_handlers
+        self._dag: Optional[TopologicalSorter] = None
 
-    def get_dag(self) -> TopologicalSorter:
-        """Validate and return this orchestrator's pipeline graph.
+    def _run_step(
+        self,
+        model_version_id: int,
+        input: Any,
+    ) -> Any:
+        """Run a pipeline step.
+
+        Parameters
+        ----------
+        model_version_id : int
+            ID of the step's model version.
+        input : object
+            Step input.
+
+        Returns
+        -------
+        object
+            Step output.
+
+        """
+        if self._dag is None:
+            raise RuntimeError("DAG not initialized")
+
+        step_handler = self._step_handlers[model_version_id]
+
+
+        output = step_handler.run(input)
+
+
+        self._dag.done(model_version_id)
+        return output
+
+    @staticmethod
+    def _init_dag(
+        pipeline_spec: Dict[str, Any],
+    ) -> TopologicalSorter:
+        """Validate and return a pipeline graph.
+
+        Parameters
+        ----------
+        pipeline_spec : dict
+            Pipeline specification.
 
         Returns
         -------
@@ -37,9 +78,10 @@ class _OrchestratorBase(abc.ABC):
             If the pipeline graph has cycles.
 
         """
-        dag = TopologicalSorter(self._pipeline_spec["graph"]["inputs"])
+        dag = TopologicalSorter(pipeline_spec["graph"]["inputs"])
         dag.prepare()
         # TODO: assert one input node
+        # TODO: assert one output node
         return dag
 
     def run(
@@ -59,17 +101,23 @@ class _OrchestratorBase(abc.ABC):
             Output from the pipeline's output node.
 
         """
-        dag = self.get_dag()
+        self._dag = self._init_dag(self._pipeline_spec)
 
         # run input node
         # NOTE: assumes only one input node
-        model_version_id = dag.get_ready()[0]
-        step_handler = self._step_handlers[model_version_id]
-        outputs = {model_version_id: step_handler.run(input)}
-        dag.done(model_version_id)
+        model_version_id: int = self._dag.get_ready()[0]
+        outputs = {
+            model_version_id: self._run_step(model_version_id, input),
+        }
 
-        while dag.is_active():
-            for model_version_id in dag.get_ready():
+        while self._dag.is_active():
+            for model_version_id in self._dag.get_ready():
+                input =
+
+                self._run_step(
+                    model_version_id,
+                )
+
                 step_handler = self._step_handlers[model_version_id]
                 outputs[model_version_id] = step_handler.run(  # TODO: async?
                     outputs[step_handler.predecessors[0]]  # just to test
@@ -78,7 +126,6 @@ class _OrchestratorBase(abc.ABC):
                     #     for predecessor_id in step_handler.predecessors
                     # }
                 )
-                dag.done(model_version_id)  # TODO: callback?
 
         # return output from final node
         # NOTE: assumes only one leaf node
@@ -122,7 +169,7 @@ class LocalOrchestrator(_OrchestratorBase):
         conn: _utils.Connection,
         pipeline_spec: Dict[str, Any],
     ) -> Dict[int, ModelObjectStepHandler]:
-        """Return initialized step handlers.
+        """Instantiate and return step handlers.
 
         Parameters
         ----------

@@ -149,7 +149,7 @@ class ModelObjectStepHandler(_StepHandlerBase):
         conn: _utils.Connection,
         model_version_id: int,
     ) -> Any:
-        """Return an instantiated model from `model_version_id`.
+        """Instantiate and return the model from `model_version_id`.
 
         Parameters
         ----------
