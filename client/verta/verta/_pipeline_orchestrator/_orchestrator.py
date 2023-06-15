@@ -22,53 +22,19 @@ class _OrchestratorBase(abc.ABC):
     ):
         self._pipeline_spec = pipeline_spec
         self._step_handlers = step_handlers
+
+        # DAG nodes are step names
         self._dag: Optional[TopologicalSorter] = None
+        # mapping of step names to outputs
+        self._outputs: Dict[str, Any] = dict()
 
-    def _run_step(
-        self,
-        name: str,
-        input: Any,
-    ) -> Any:
-        """Run a pipeline step.
-
-        Parameters
-        ----------
-        name : str
-            Step name.
-        input : object
-            Step input.
-
-        Returns
-        -------
-        object
-            Step output.
-
-        """
-        if self._dag is None:
-            raise RuntimeError("DAG not initialized")
-
-        step_handler = self._step_handlers[name]
-
-        output = step_handler.run(input)
-
-        self._dag.done(name)
-        return output
-
-    @staticmethod
-    def _init_dag(
-        pipeline_spec: Dict[str, Any],
-    ) -> TopologicalSorter:
-        """Validate and return a pipeline graph.
+    def _prepare_pipeline(self) -> TopologicalSorter:
+        """Initialize ``self._dag`` and ``self._outputs``.
 
         Parameters
         ----------
         pipeline_spec : dict
             Pipeline specification.
-
-        Returns
-        -------
-        :class:`~graphlib.TopologicalSorter`
-            Pipeline graph. Each node is a step name.
 
         Raises
         ------
@@ -76,11 +42,64 @@ class _OrchestratorBase(abc.ABC):
             If the pipeline graph has cycles.
 
         """
-        dag = TopologicalSorter(pipeline_spec["graph"]["inputs"])
+        dag = TopologicalSorter(self._pipeline_spec["graph"]["inputs"])
         dag.prepare()
         # TODO: assert one input node
         # TODO: assert one output node
-        return dag
+
+        self._dag = dag
+        self._outputs = dict()
+
+    def _run_step(
+        self,
+        name: str,
+        input: Optional[Any] = None,
+    ):
+        """Run a pipeline step.
+
+        This method stores the step output in ``self._outputs`` and marks it
+        as done in ``self._dag``. Given that step names are unique within a
+        pipeline, this method is expected to be thread safe.
+
+        Parameters
+        ----------
+        name : str
+            Step name.
+        input : object, optional
+            Step input. If not provided, output(s) from the step's
+            predecessor(s) will be fetched from ``self._outputs``.
+
+        """
+        if self._dag is None:
+            raise RuntimeError(
+                "DAG not initialized; call run() instead of using this method directly",
+            )
+
+        step_handler = self._step_handlers[name]
+        if input is None:
+            predecessors = step_handler.predecessors
+            if not predecessors:
+                raise ValueError(
+                    f"unexpected error: step {name} has no predecessors, but no input was provided",
+                )
+            if not predecessors <= self._outputs.keys():
+                raise RuntimeError(
+                    f"unexpected error: step {name}'s predecessors' outputs not found",
+                )
+
+            # TODO: figure out how we actually want to collect upstream outputs
+            if len(predecessors) == 1:
+                input = self._outputs[list(predecessors)[0]]
+            else:
+                # TODO: figure out how to orchestrate complex pipelines
+                raise ValueError("multiple inputs not yet supported")
+                # input = {
+                #     predecessor: self._outputs[predecessor]
+                #     for predecessor in predecessors
+                # }
+
+        self._outputs[name] = step_handler.run(input)
+        self._dag.done(name)
 
     def run(
         self,
@@ -99,43 +118,24 @@ class _OrchestratorBase(abc.ABC):
             Output from the pipeline's output node.
 
         """
-        self._dag = self._init_dag(self._pipeline_spec)
+        self._prepare_pipeline()
 
         # run input node
         # NOTE: assumes only one input node
         step_name: str = self._dag.get_ready()[0]
-        outputs = {
-            step_name: self._run_step(step_name, input),
-        }
+        self._run_step(step_name, input)
 
         while self._dag.is_active():
             for step_name in self._dag.get_ready():
-                input = None
-
-                self._run_step(step_name, input)
-
-                step_handler = self._step_handlers[step_name]
-                outputs[step_name] = step_handler.run(  # TODO: async?
-                    outputs[step_handler.predecessors[0]]  # just to test
-                    # {
-                    #     predecessor_id: outputs[predecessor_id]
-                    #     for predecessor_id in step_handler.predecessors
-                    # }
-                )
+                self._run_step(step_name)  # TODO: figure out async
 
         # return output from final node
         # NOTE: assumes only one leaf node
-        return outputs[step_handler.name]
+        return self._outputs[step_name]
 
 
-class DeployedOrchestrator(_OrchestratorBase):
+class DeployedOrchestrator(_OrchestratorBase):  # TODO
     """Inference pipeline orchestrator using HTTP server models."""
-
-    def __init__(
-        self,
-        pipeline_spec: Dict[str, Any],
-    ):
-        raise NotImplementedError
 
 
 class LocalOrchestrator(_OrchestratorBase):

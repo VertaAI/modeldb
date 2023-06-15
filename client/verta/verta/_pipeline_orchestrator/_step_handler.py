@@ -18,9 +18,6 @@ class _StepHandlerBase(abc.ABC):
         predecessors: Set[str],
     ):
         self._name = name
-        if len(predecessors) > 1:
-            # TODO: figure out how to orchestrate complex pipelines
-            raise ValueError("multiple inputs is not yet supported")
         self._predecessors = predecessors
 
     @abc.abstractmethod
