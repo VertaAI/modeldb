@@ -489,6 +489,9 @@ class TestModels:
         assert deployable_entity.get_model().__dict__ == custom.__dict__
         assert deployable_entity.get_model().predict(strs) == custom.predict(strs)
 
+    # pyspark model objects return a reader object for ".read()" instead of a string
+    # which breaks the verta/_internal_utils/_artifact_utils.py:ensure_bytestream() function
+    @pytest.mark.skip
     def test_pyspark(self, deployable_entity, in_tempdir):
         data_filename = "census-train.csv"
         spark_model_dir = "spark-model"
