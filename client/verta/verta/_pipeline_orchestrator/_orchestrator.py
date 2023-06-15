@@ -148,6 +148,15 @@ class LocalOrchestrator(_OrchestratorBase):
     pipeline_spec : dict
         Pipeline specification.
 
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta._pipeline_orchestrator import LocalOrchestrator
+
+        orchestrator = LocalOrchestrator(client._conn, pipeline_spec)
+        pipeline_output = orchestrator.run(pipeline_input)
+
     """
 
     def __init__(
