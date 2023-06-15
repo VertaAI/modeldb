@@ -18,7 +18,7 @@ class _OrchestratorBase(abc.ABC):
     def __init__(
         self,
         pipeline_spec: Dict[str, Any],
-        step_handlers: Dict[int, _StepHandlerBase],
+        step_handlers: Dict[str, _StepHandlerBase],
     ):
         self._pipeline_spec = pipeline_spec
         self._step_handlers = step_handlers
@@ -26,15 +26,15 @@ class _OrchestratorBase(abc.ABC):
 
     def _run_step(
         self,
-        model_version_id: int,
+        name: str,
         input: Any,
     ) -> Any:
         """Run a pipeline step.
 
         Parameters
         ----------
-        model_version_id : int
-            ID of the step's model version.
+        name : str
+            Step name.
         input : object
             Step input.
 
@@ -47,13 +47,11 @@ class _OrchestratorBase(abc.ABC):
         if self._dag is None:
             raise RuntimeError("DAG not initialized")
 
-        step_handler = self._step_handlers[model_version_id]
-
+        step_handler = self._step_handlers[name]
 
         output = step_handler.run(input)
 
-
-        self._dag.done(model_version_id)
+        self._dag.done(name)
         return output
 
     @staticmethod
@@ -70,7 +68,7 @@ class _OrchestratorBase(abc.ABC):
         Returns
         -------
         :class:`~graphlib.TopologicalSorter`
-            Pipeline graph. Each node is a model version ID.
+            Pipeline graph. Each node is a step name.
 
         Raises
         ------
@@ -105,21 +103,19 @@ class _OrchestratorBase(abc.ABC):
 
         # run input node
         # NOTE: assumes only one input node
-        model_version_id: int = self._dag.get_ready()[0]
+        step_name: str = self._dag.get_ready()[0]
         outputs = {
-            model_version_id: self._run_step(model_version_id, input),
+            step_name: self._run_step(step_name, input),
         }
 
         while self._dag.is_active():
-            for model_version_id in self._dag.get_ready():
-                input =
+            for step_name in self._dag.get_ready():
+                input = None
 
-                self._run_step(
-                    model_version_id,
-                )
+                self._run_step(step_name, input)
 
-                step_handler = self._step_handlers[model_version_id]
-                outputs[model_version_id] = step_handler.run(  # TODO: async?
+                step_handler = self._step_handlers[step_name]
+                outputs[step_name] = step_handler.run(  # TODO: async?
                     outputs[step_handler.predecessors[0]]  # just to test
                     # {
                     #     predecessor_id: outputs[predecessor_id]
@@ -129,7 +125,7 @@ class _OrchestratorBase(abc.ABC):
 
         # return output from final node
         # NOTE: assumes only one leaf node
-        return outputs[step_handler.model_version_id]
+        return outputs[step_handler.name]
 
 
 class DeployedOrchestrator(_OrchestratorBase):
@@ -168,7 +164,7 @@ class LocalOrchestrator(_OrchestratorBase):
     def _init_step_handlers(
         conn: _utils.Connection,
         pipeline_spec: Dict[str, Any],
-    ) -> Dict[int, ModelObjectStepHandler]:
+    ) -> Dict[str, ModelObjectStepHandler]:
         """Instantiate and return step handlers.
 
         Parameters
@@ -180,17 +176,16 @@ class LocalOrchestrator(_OrchestratorBase):
 
         Returns
         -------
-        dict of int to :class:`~verta._pipeline_orchestrator._step_handler.ModelObjectStepHandler`
-            Mapping of model version IDs to their step handlers.
+        dict of str to :class:`~verta._pipeline_orchestrator._step_handler.ModelObjectStepHandler`
+            Mapping of step names to their handlers.
 
         """
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
-            model_version_id = step["rmvId"]
-            step_handlers[model_version_id] = ModelObjectStepHandler(
-                name=step["attributes"]["name"],
-                model_version_id=model_version_id,
-                predecessors=pipeline_spec["graph"]["inputs"].get(model_version_id, []),
-                model=ModelObjectStepHandler._init_model(conn, model_version_id),
+            step_name = step["attributes"]["name"]
+            step_handlers[step_name] = ModelObjectStepHandler(
+                name=step_name,
+                predecessors=pipeline_spec["graph"]["inputs"].get(step_name, []),
+                model=ModelObjectStepHandler._init_model(conn, step["rmvId"]),
             )
         return step_handlers

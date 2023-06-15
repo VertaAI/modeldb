@@ -15,11 +15,9 @@ class _StepHandlerBase(abc.ABC):
     def __init__(
         self,
         name: str,
-        model_version_id: int,
-        predecessors: Set[int],
+        predecessors: Set[str],
     ):
         self._name = name
-        self._model_version_id = model_version_id
         if len(predecessors) > 1:
             # TODO: figure out how to orchestrate complex pipelines
             raise ValueError("multiple inputs is not yet supported")
@@ -43,18 +41,13 @@ class _StepHandlerBase(abc.ABC):
         raise NotImplementedError
 
     @property
-    def model_version_id(self) -> int:
-        """Return the ID of the model version associated with this step."""
-        return self._model_version_id
-
-    @property
     def name(self) -> str:
         """Return the name of this step."""
         return self._name
 
     @property
-    def predecessors(self) -> Set[int]:
-        """Return the model version IDs of this step's predecessors."""
+    def predecessors(self) -> Set[str]:
+        """Return the names of this step's predecessors."""
         return self._predecessors
 
 
@@ -65,16 +58,13 @@ class ModelContainerStepHandler(_StepHandlerBase):
     ----------
     name : str
         Name of this step.
-    model_version_id : int
-        ID of the model version associated with this step.
-    predecessors : set of int
-        Model version IDs of this steps' predecessors
+    predecessors : set of str
+        Names of this steps' predecessors
     prediction_url : str
         REST endpoint for model predictions.
 
     Attributes
     ----------
-    model_version_id
     name
     predecessors
 
@@ -83,13 +73,11 @@ class ModelContainerStepHandler(_StepHandlerBase):
     def __init__(
         self,
         name: str,
-        model_version_id: int,
-        predecessors: Set[int],
+        predecessors: Set[str],
         prediction_url: str,
     ):
         super().__init__(
             name=name,
-            model_version_id=model_version_id,
             predecessors=predecessors,
         )
         self._session = http_session.init_session(retry=http_session.retry_config())
@@ -115,16 +103,13 @@ class ModelObjectStepHandler(_StepHandlerBase):
     ----------
     name : str
         Name of this step.
-    model_version_id : int
-        ID of the model version associated with this step.
-    predecessors : set of int
-        Model version IDs of this steps' predecessors
+    predecessors : set of str
+        Names of this steps' predecessors
     model : object
         Instantiated model ready for predictions.
 
     Attributes
     ----------
-    model_version_id
     name
     predecessors
 
@@ -133,13 +118,11 @@ class ModelObjectStepHandler(_StepHandlerBase):
     def __init__(
         self,
         name: str,
-        model_version_id: int,
-        predecessors: Set[int],
+        predecessors: Set[str],
         model: Any,
     ):
         super().__init__(
             name=name,
-            model_version_id=model_version_id,
             predecessors=predecessors,
         )
         self._model = model
