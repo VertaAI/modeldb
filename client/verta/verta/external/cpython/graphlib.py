@@ -170,7 +170,8 @@ class TopologicalSorter:
 
         for node in nodes:
             # Check if we know about this node (it was added previously using add()
-            if (nodeinfo := n2i.get(node)) is None:
+            nodeinfo = n2i.get(node)
+            if nodeinfo is None:
                 raise ValueError(f"node {node!r} was not added using add()")
 
             # If the node has not being returned (marked as ready) previously, inform the user.
