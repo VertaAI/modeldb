@@ -69,12 +69,12 @@ class _OrchestratorBase(abc.ABC):
 
         Returns
         -------
-        graphlib.TopologicalSorter
+        :class:`~graphlib.TopologicalSorter`
             Pipeline graph. Each node is a model version ID.
 
         Raises
         ------
-        graphlib.CycleError
+        :exc:`~graphlib.CycleError`
             If the pipeline graph has cycles.
 
         """
