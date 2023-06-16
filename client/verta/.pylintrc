@@ -50,7 +50,7 @@ ignore=CVS,
        # everything below was added by @convoliution
        _swagger,
        _protos,
-       external,
+       _vendored,
 
 # Add files or directories matching the regular expressions patterns to the
 # ignore-list. The regex matches against paths and can be in Posix or Windows
