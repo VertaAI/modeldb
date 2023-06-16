@@ -9,7 +9,7 @@ from .._protos.public.modeldb.versioning import (
     VersioningService_pb2 as _VersioningService,
 )
 
-from ..external import six
+from .._vendored import six
 
 from .._internal_utils import _artifact_utils
 from .._internal_utils import _file_utils

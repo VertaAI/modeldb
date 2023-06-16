@@ -22,7 +22,7 @@ Examples
 
 """
 
-from ...external import six
+from ..._vendored import six
 
 from sklearn import (  # pylint: disable=import-error
     linear_model,
@@ -36,7 +36,7 @@ from sklearn import (  # pylint: disable=import-error
     kernel_ridge,
 )
 
-from ...external import gorilla
+from ..._vendored import gorilla
 
 from ..._internal_utils import _utils
 

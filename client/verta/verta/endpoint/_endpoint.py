@@ -7,7 +7,7 @@ from urllib.parse import urlparse
 import json
 import yaml
 
-from verta.external import six
+from verta._vendored import six
 
 from verta.deployment import DeployedModel
 from verta._internal_utils import _utils, arg_handler, kafka

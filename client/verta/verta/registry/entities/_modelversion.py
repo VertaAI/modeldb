@@ -25,7 +25,7 @@ from verta._protos.public.registry import (
     StageService_pb2 as _StageService,
 )
 
-from verta.external import six
+from verta._vendored import six
 
 from verta._internal_utils import (
     _artifact_utils,
@@ -1658,7 +1658,7 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 )
 
         raise KeyError("no dataset found with key {}".format(key))
-    
+
     def get_dataset_versions(self):
         """
         Gets all DatasetVersions associated with this Model Version.

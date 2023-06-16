@@ -4,7 +4,7 @@
 import abc
 import re
 
-from ..external import six
+from .._vendored import six
 
 
 class Resources(object):

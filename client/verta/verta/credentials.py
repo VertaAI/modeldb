@@ -9,7 +9,7 @@ import abc
 import os
 import re
 
-from verta.external import six
+from verta._vendored import six
 
 
 @six.add_metaclass(abc.ABCMeta)
@@ -77,7 +77,11 @@ class EmailCredentials(Credentials):
 
     def __repr__(self):
         key = self.dev_key[:8] + re.sub(r"[^-]", "*", self.dev_key[8:])
-        return "EmailCredentials({}, {}, {})".format(self.email, key, self.organization_id)
+        return "EmailCredentials({}, {}, {})".format(
+            self.email,
+            key,
+            self.organization_id,
+        )
 
     @classmethod
     def load_from_os_env(cls):
@@ -134,7 +138,11 @@ class JWTCredentials(Credentials):
 
     def __repr__(self):
         token = self.jwt_token[:8] + re.sub(r"[^-]", "*", self.jwt_token[8:])
-        return "JWTCredentials({}, {}, {})".format(token, self.jwt_token_sig, self.organization_id)
+        return "JWTCredentials({}, {}, {})".format(
+            token,
+            self.jwt_token_sig,
+            self.organization_id,
+        )
 
     @classmethod
     def load_from_os_env(cls):
@@ -164,7 +172,13 @@ def load_from_os_env():
     return credentials
 
 
-def _build(email=None, dev_key=None, jwt_token=None, jwt_token_sig=None, organization_id=None):
+def _build(
+    email=None,
+    dev_key=None,
+    jwt_token=None,
+    jwt_token_sig=None,
+    organization_id=None,
+):
     if email and dev_key:
         return EmailCredentials(email, dev_key, organization_id=organization_id)
     elif jwt_token:

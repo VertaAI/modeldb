@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import warnings
 
-from verta.external import six
+from verta._vendored import six
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.modeldb import (

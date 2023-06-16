@@ -1,6 +1,6 @@
 import abc
 
-from ..external import six
+from .._vendored import six
 
 from .._protos.public.uac import Collaborator_pb2
 from .._protos.public.common import CommonService_pb2

@@ -9,7 +9,7 @@ import zipfile
 
 import cloudpickle
 
-from ..external import six
+from .._vendored import six
 
 from .. import __about__
 

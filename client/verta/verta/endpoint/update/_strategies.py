@@ -2,7 +2,7 @@
 
 import abc
 
-from ...external import six
+from ..._vendored import six
 from .rules import _UpdateRule
 
 

@@ -7,7 +7,7 @@ import numbers
 import os
 import warnings
 
-from .external import six
+from ._vendored import six
 
 from ._internal_utils import (
     _utils,

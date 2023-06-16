@@ -2,7 +2,7 @@
 
 from __future__ import print_function
 
-from ..external import six
+from .._vendored import six
 
 from .._protos.public.modeldb.versioning import (
     VersioningService_pb2 as _VersioningService,

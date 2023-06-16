@@ -4,7 +4,7 @@ import abc
 import copy
 import re
 
-from verta.external import six
+from verta._vendored import six
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._internal_utils import _utils
 

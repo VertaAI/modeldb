@@ -1,6 +1,6 @@
 import abc
 
-from ...external import six
+from ..._vendored import six
 
 
 @six.add_metaclass(abc.ABCMeta)

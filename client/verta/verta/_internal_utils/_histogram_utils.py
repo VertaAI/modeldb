@@ -8,7 +8,7 @@ Utilities for generating histograms from pandas DataFrames.
 
 """
 
-from ..external import six
+from .._vendored import six
 
 
 def calculate_histograms(df):

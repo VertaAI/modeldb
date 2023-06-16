@@ -2,7 +2,7 @@
 
 import logging
 
-from verta.external import six
+from verta._vendored import six
 
 from verta._protos.public.modeldb.versioning import (
     VersioningService_pb2 as _VersioningService,

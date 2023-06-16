@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """TensorFlow and TensorBoard integrations for automatic experiment run logging."""
 
-from ...external import six
+from ..._vendored import six
 
 import numbers
 import os

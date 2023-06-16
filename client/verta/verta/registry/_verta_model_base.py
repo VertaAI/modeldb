@@ -2,7 +2,7 @@
 
 import abc
 
-from verta.external import six
+from verta._vendored import six
 
 
 @six.add_metaclass(abc.ABCMeta)

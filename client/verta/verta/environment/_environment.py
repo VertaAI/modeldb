@@ -6,7 +6,7 @@ import collections.abc
 import os
 import sys
 
-from verta.external import six
+from verta._vendored import six
 from verta import _blob
 
 from .._protos.public.modeldb.versioning import VersioningService_pb2
