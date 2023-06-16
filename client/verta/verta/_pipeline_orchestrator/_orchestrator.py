@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import abc
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Set
 
 from verta._internal_utils import _utils
 from verta.external.cpython.graphlib import TopologicalSorter
@@ -77,7 +77,7 @@ class _OrchestratorBase(abc.ABC):
 
         step_handler = self._step_handlers[name]
         if input is None:
-            predecessors = step_handler.predecessors
+            predecessors: Set[str] = step_handler.predecessors
             if not predecessors:
                 raise ValueError(
                     f"unexpected error: step {name} has no predecessors, but no input was provided",
