@@ -12,7 +12,7 @@ from verta import credentials
 from .._internal_utils import _utils, http_session, importer
 from .._internal_utils._utils import Connection
 from .._internal_utils.access_token import AccessToken
-from ..external import six
+from .._vendored import six
 
 
 # NOTE: DeployedModel's mechanism for making requests is independent from the

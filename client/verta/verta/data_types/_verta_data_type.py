@@ -2,7 +2,7 @@
 
 import abc
 
-from ..external import six
+from .._vendored import six
 
 from .._internal_utils import _file_utils
 

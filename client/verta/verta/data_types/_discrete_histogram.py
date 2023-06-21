@@ -4,7 +4,7 @@ from __future__ import division
 
 from collections import defaultdict
 
-from ..external import six
+from .._vendored import six
 
 from .._internal_utils.importer import maybe_dependency
 from .._internal_utils import arg_handler

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """XGBoost callback for automatic experiment run logging."""
 
-from ...external import six
+from ..._vendored import six
 
 import xgboost as xgb  # pylint: disable=import-error
 

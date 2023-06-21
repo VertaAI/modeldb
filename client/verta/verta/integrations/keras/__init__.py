@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """Keras callback for automatic experiment run logging."""
 
-from ...external import six
+from ..._vendored import six
 
 # TODO: use `keras` module imported in calling scope
 try:

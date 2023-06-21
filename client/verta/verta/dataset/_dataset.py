@@ -9,7 +9,7 @@ import hashlib
 import os
 import pathlib
 
-from verta.external import six
+from verta._vendored import six
 from verta import _blob
 
 from .._protos.public.modeldb.versioning import Dataset_pb2 as _DatasetService

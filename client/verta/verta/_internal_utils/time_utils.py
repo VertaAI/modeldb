@@ -5,7 +5,7 @@ import time
 import warnings
 
 import pytimeparse
-from verta.external import six
+from verta._vendored import six
 
 
 UNIX_EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)

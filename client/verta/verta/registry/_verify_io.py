@@ -4,7 +4,7 @@ import functools
 import itertools
 import json
 
-from verta.external import six
+from verta._vendored import six
 
 
 _ALLOWED_INPUT_TYPES = (

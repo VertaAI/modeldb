@@ -13,7 +13,7 @@ from ._internal_utils._utils import check_unnecessary_params_warning
 from ._internal_utils import kafka
 from ._uac._organization import OrganizationV2
 
-from .external import six
+from ._vendored import six
 
 from ._internal_utils import (
     _config_utils,
@@ -173,7 +173,7 @@ class Client(object):
             dev_key=dev_key,
             jwt_token=jwt_token,
             jwt_token_sig=jwt_token_sig,
-            organization_id=organization_id, # TODO: add organization_name as parameter and resolve that
+            organization_id=organization_id,  # TODO: add organization_name as parameter and resolve that
         )
         self._workspace = self._get_with_fallback(None, env_var="VERTA_WORKSPACE")
 
@@ -1751,7 +1751,13 @@ class Client(object):
 
         return datasets
 
-    def _create_workspace(self, org_id, workspace_name, resource_action_groups, namespace=""):
+    def _create_workspace(
+        self,
+        org_id,
+        workspace_name,
+        resource_action_groups,
+        namespace="",
+    ):
         """
         creates a workspace with a custom role for all users.
 
@@ -1801,7 +1807,6 @@ class Client(object):
             namespace,
         )
 
-
     def get_kafka_topics(self) -> List[str]:
         """
         Get available topics for the current Kafka configuration, for associating
@@ -1819,7 +1824,9 @@ class Client(object):
         HTTPError
             If no valid Kafka configuration can be found.
         """
-        kafka_configs: List[Dict[str, Any]] = kafka.list_kafka_configurations(self._conn)
+        kafka_configs: List[Dict[str, Any]] = kafka.list_kafka_configurations(
+            self._conn
+        )
         if kafka_configs:
             return kafka.list_kafka_topics(self._conn, kafka_configs[0])
         return []

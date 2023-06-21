@@ -5,7 +5,7 @@ from __future__ import print_function
 import os
 import subprocess
 
-from ..external import six
+from .._vendored import six
 
 
 def get_git_commit_hash(ref="HEAD"):

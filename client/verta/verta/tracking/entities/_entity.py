@@ -9,7 +9,7 @@ import zipfile
 
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 
-from verta.external import six
+from verta._vendored import six
 
 from verta import data_types
 from verta.visibility import (

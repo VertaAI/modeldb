@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """PyTorch module hook for automatic experiment run logging."""
 
-from ...external import six
+from ..._vendored import six
 
 import torch  # pylint: disable=import-error
 

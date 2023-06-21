@@ -4,7 +4,7 @@ from __future__ import print_function
 
 import abc
 
-from verta.external import six
+from verta._vendored import six
 
 
 @six.add_metaclass(abc.ABCMeta)

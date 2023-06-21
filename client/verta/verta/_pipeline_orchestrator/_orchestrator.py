@@ -4,7 +4,7 @@ import abc
 from typing import Any, Dict, Optional, Set
 
 from verta._internal_utils import _utils
-from verta.external.cpython.graphlib import TopologicalSorter
+from verta._vendored.cpython.graphlib import TopologicalSorter
 
 from ._step_handler import (
     _StepHandlerBase,

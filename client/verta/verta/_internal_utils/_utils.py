@@ -26,7 +26,7 @@ from urllib3.util.retry import Retry
 from google.protobuf import json_format
 from google.protobuf.struct_pb2 import Value, ListValue, Struct, NULL_VALUE
 
-from ..external import six
+from .._vendored import six
 
 from verta.credentials import EmailCredentials
 

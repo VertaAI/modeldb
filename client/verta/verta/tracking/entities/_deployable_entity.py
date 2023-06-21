@@ -24,7 +24,7 @@ from verta._internal_utils.custom_modules import CustomModules
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta.environment import _Environment
 
-from verta.external import six
+from verta._vendored import six
 
 from ._entity import _ModelDBEntity
 

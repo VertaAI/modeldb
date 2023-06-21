@@ -8,7 +8,7 @@ from verta._protos.public.common import CommonService_pb2 as _CommonCommonServic
 from verta._protos.public.modeldb import ProjectService_pb2 as _ProjectService
 from verta._protos.public.uac import Collaborator_pb2 as _Collaborator
 
-from verta.external import six
+from verta._vendored import six
 
 from verta._internal_utils import _utils
 

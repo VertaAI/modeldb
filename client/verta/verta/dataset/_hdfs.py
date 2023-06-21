@@ -6,7 +6,7 @@ import hashlib
 
 from ._path import Path
 
-from ..external import six
+from .._vendored import six
 
 from . import _dataset
 

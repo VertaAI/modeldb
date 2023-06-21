@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from verta.external import six
+from verta._vendored import six
 
 from verta._protos.public.registry import RegistryService_pb2
 
