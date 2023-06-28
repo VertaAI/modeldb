@@ -205,7 +205,9 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> attributeHandler.getKeyValues(projectId, keys, getAll), executor);
+        .thenCompose(
+            unused -> attributeHandler.getKeyValues(projectId, keys, getAll).toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<Void> logAttributes(LogAttributes request) {
@@ -341,7 +343,7 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> tagsHandler.getTags(projectId), executor);
+        .thenSupply(() -> tagsHandler.getTags(projectId).toInternalFuture(), executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String projectId, Long now) {
@@ -573,7 +575,9 @@ public class FutureProjectDAO {
 
                                                   // Get tags
                                                   final var futureTags =
-                                                      tagsHandler.getTagsMap(ids);
+                                                      tagsHandler
+                                                          .getTagsMap(ids)
+                                                          .toInternalFuture();
                                                   futureBuildersStream =
                                                       futureBuildersStream.thenCombine(
                                                           futureTags,
@@ -587,7 +591,9 @@ public class FutureProjectDAO {
 
                                                   // Get attributes
                                                   final var futureAttributes =
-                                                      attributeHandler.getKeyValuesMap(ids);
+                                                      attributeHandler
+                                                          .getKeyValuesMap(ids)
+                                                          .toInternalFuture();
                                                   futureBuildersStream =
                                                       futureBuildersStream.thenCombine(
                                                           futureAttributes,

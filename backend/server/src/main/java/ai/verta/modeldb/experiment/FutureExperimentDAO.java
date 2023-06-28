@@ -258,7 +258,8 @@ public class FutureExperimentDAO {
                                             .collect(Collectors.toSet());
 
                                     // Get tags
-                                    final var futureTags = tagsHandler.getTagsMap(ids);
+                                    final var futureTags =
+                                        tagsHandler.getTagsMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureTags,
@@ -271,7 +272,7 @@ public class FutureExperimentDAO {
 
                                     // Get attributes
                                     final var futureAttributes =
-                                        attributeHandler.getKeyValuesMap(ids);
+                                        attributeHandler.getKeyValuesMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureAttributes,
@@ -621,7 +622,7 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> tagsHandler.getTags(expId), executor)
+        .thenSupply(() -> tagsHandler.getTags(expId).toInternalFuture(), executor)
         .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
   }
 
@@ -680,7 +681,9 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> attributeHandler.getKeyValues(expId, keys, getAll), executor)
+        .thenCompose(
+            unused -> attributeHandler.getKeyValues(expId, keys, getAll).toInternalFuture(),
+            executor)
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
             executor);

@@ -14,7 +14,7 @@ import java.util.AbstractMap;
 public class KeyValueBaseHandler extends KeyValueHandler<String> {
   public KeyValueBaseHandler(
       FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
-    super(executor, jdbi, fieldType, entityName);
+    super(jdbi, fieldType, entityName);
   }
 
   @Override
