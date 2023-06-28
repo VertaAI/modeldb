@@ -49,10 +49,7 @@ import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.InternalFuture;
+import ai.verta.modeldb.common.futures.*;
 import ai.verta.modeldb.common.query.QueryFilterContext;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.configuration.ReconcilerInitializer;
@@ -453,7 +450,7 @@ public class FutureProjectDAO {
             uac.getUACService().getCurrentUser(ai.verta.uac.Empty.newBuilder().build()), executor)
         .thenCompose(
             userInfo -> {
-              InternalFuture<List<GetResourcesResponseItem>> resourcesFuture;
+              Future<List<GetResourcesResponseItem>> resourcesFuture;
               if (isPermissionV2) {
                 resourcesFuture =
                     uacApisUtil.getResourceItemsForWorkspace(
@@ -480,188 +477,197 @@ public class FutureProjectDAO {
                 }
               }
 
-              return resourcesFuture.thenCompose(
-                  getResourceItems -> {
-                    Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
-                    Set<String> accessibleResourceIdsWithCollaborator =
-                        getResourceItems.stream()
-                            .peek(
-                                responseItem ->
-                                    getResourcesMap.put(responseItem.getResourceId(), responseItem))
-                            .map(GetResourcesResponseItem::getResourceId)
-                            .collect(Collectors.toSet());
+              return resourcesFuture
+                  .toInternalFuture()
+                  .thenCompose(
+                      getResourceItems -> {
+                        Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
+                        Set<String> accessibleResourceIdsWithCollaborator =
+                            getResourceItems.stream()
+                                .peek(
+                                    responseItem ->
+                                        getResourcesMap.put(
+                                            responseItem.getResourceId(), responseItem))
+                                .map(GetResourcesResponseItem::getResourceId)
+                                .collect(Collectors.toSet());
 
-                    if (accessibleResourceIdsWithCollaborator.isEmpty()) {
-                      LOGGER.debug("Accessible Project Ids not found, size 0");
-                      return InternalFuture.completedInternalFuture(
-                          FindProjects.Response.newBuilder().build());
-                    }
+                        if (accessibleResourceIdsWithCollaborator.isEmpty()) {
+                          LOGGER.debug("Accessible Project Ids not found, size 0");
+                          return InternalFuture.completedInternalFuture(
+                              FindProjects.Response.newBuilder().build());
+                        }
 
-                    final InternalFuture<QueryFilterContext> futureLocalContext =
-                        getFutureLocalContext();
+                        final InternalFuture<QueryFilterContext> futureLocalContext =
+                            getFutureLocalContext();
 
-                    // futurePredicatesContext
-                    final var futurePredicatesContext =
-                        predicatesHandler.processPredicates(request.getPredicatesList(), executor);
+                        // futurePredicatesContext
+                        final var futurePredicatesContext =
+                            predicatesHandler.processPredicates(
+                                request.getPredicatesList(), executor);
 
-                    // futureSortingContext
-                    final var futureSortingContext =
-                        sortingHandler.processSort(request.getSortKey(), request.getAscending());
+                        // futureSortingContext
+                        final var futureSortingContext =
+                            sortingHandler.processSort(
+                                request.getSortKey(), request.getAscending());
 
-                    var futureProjectIdsContext =
-                        getFutureProjectIdsContext(request, accessibleResourceIdsWithCollaborator);
+                        var futureProjectIdsContext =
+                            getFutureProjectIdsContext(
+                                request, accessibleResourceIdsWithCollaborator);
 
-                    final var futureProjects =
-                        InternalFuture.sequence(
-                                Arrays.asList(
-                                    futureLocalContext,
-                                    futurePredicatesContext,
-                                    futureSortingContext,
-                                    futureProjectIdsContext),
-                                executor)
-                            .thenApply(QueryFilterContext::combine, executor)
-                            .thenCompose(
-                                queryContext ->
-                                    jdbi.withHandle(
-                                            handle -> {
-                                              var sql =
-                                                  "select p.id, p.date_created, p.date_updated, p.name, p.description, p.owner, "
-                                                      + "p.short_name, p.project_visibility, p.readme_text, "
-                                                      + "p.deleted, p.version_number from project p ";
+                        final var futureProjects =
+                            InternalFuture.sequence(
+                                    Arrays.asList(
+                                        futureLocalContext,
+                                        futurePredicatesContext,
+                                        futureSortingContext,
+                                        futureProjectIdsContext),
+                                    executor)
+                                .thenApply(QueryFilterContext::combine, executor)
+                                .thenCompose(
+                                    queryContext ->
+                                        jdbi.withHandle(
+                                                handle -> {
+                                                  var sql =
+                                                      "select p.id, p.date_created, p.date_updated, p.name, p.description, p.owner, "
+                                                          + "p.short_name, p.project_visibility, p.readme_text, "
+                                                          + "p.deleted, p.version_number from project p ";
 
-                                              try (Query query =
-                                                  CommonUtils.buildQueryFromQueryContext(
-                                                      "p",
-                                                      Pagination.newBuilder()
-                                                          .setPageLimit(request.getPageLimit())
-                                                          .setPageNumber(request.getPageNumber())
-                                                          .build(),
-                                                      queryContext,
-                                                      handle,
-                                                      sql,
-                                                      isMssql)) {
-                                                Map<Long, Workspace> cacheWorkspaceMap =
-                                                    new HashMap<>();
-                                                return query
-                                                    .map(
-                                                        (rs, ctx) ->
-                                                            buildProjectBuilderFromResultSet(
-                                                                getResourcesMap,
-                                                                cacheWorkspaceMap,
-                                                                rs))
-                                                    .list();
-                                              }
-                                            })
-                                        .thenCompose(
-                                            builders -> {
-                                              if (builders == null || builders.isEmpty()) {
-                                                return InternalFuture.completedInternalFuture(
-                                                    new LinkedList<Project>());
-                                              }
+                                                  try (Query query =
+                                                      CommonUtils.buildQueryFromQueryContext(
+                                                          "p",
+                                                          Pagination.newBuilder()
+                                                              .setPageLimit(request.getPageLimit())
+                                                              .setPageNumber(
+                                                                  request.getPageNumber())
+                                                              .build(),
+                                                          queryContext,
+                                                          handle,
+                                                          sql,
+                                                          isMssql)) {
+                                                    Map<Long, Workspace> cacheWorkspaceMap =
+                                                        new HashMap<>();
+                                                    return query
+                                                        .map(
+                                                            (rs, ctx) ->
+                                                                buildProjectBuilderFromResultSet(
+                                                                    getResourcesMap,
+                                                                    cacheWorkspaceMap,
+                                                                    rs))
+                                                        .list();
+                                                  }
+                                                })
+                                            .thenCompose(
+                                                builders -> {
+                                                  if (builders == null || builders.isEmpty()) {
+                                                    return InternalFuture.completedInternalFuture(
+                                                        new LinkedList<Project>());
+                                                  }
 
-                                              var futureBuildersStream =
-                                                  InternalFuture.completedInternalFuture(
-                                                      builders.stream());
-                                              final var ids =
-                                                  builders.stream()
-                                                      .map(Project.Builder::getId)
-                                                      .collect(Collectors.toSet());
+                                                  var futureBuildersStream =
+                                                      InternalFuture.completedInternalFuture(
+                                                          builders.stream());
+                                                  final var ids =
+                                                      builders.stream()
+                                                          .map(Project.Builder::getId)
+                                                          .collect(Collectors.toSet());
 
-                                              // Get tags
-                                              final var futureTags = tagsHandler.getTagsMap(ids);
-                                              futureBuildersStream =
-                                                  futureBuildersStream.thenCombine(
-                                                      futureTags,
-                                                      (stream, tags) ->
-                                                          stream.map(
-                                                              builder ->
-                                                                  builder.addAllTags(
-                                                                      tags.get(builder.getId()))),
+                                                  // Get tags
+                                                  final var futureTags =
+                                                      tagsHandler.getTagsMap(ids);
+                                                  futureBuildersStream =
+                                                      futureBuildersStream.thenCombine(
+                                                          futureTags,
+                                                          (stream, tags) ->
+                                                              stream.map(
+                                                                  builder ->
+                                                                      builder.addAllTags(
+                                                                          tags.get(
+                                                                              builder.getId()))),
+                                                          executor);
+
+                                                  // Get attributes
+                                                  final var futureAttributes =
+                                                      attributeHandler.getKeyValuesMap(ids);
+                                                  futureBuildersStream =
+                                                      futureBuildersStream.thenCombine(
+                                                          futureAttributes,
+                                                          (stream, attributes) ->
+                                                              stream.map(
+                                                                  builder ->
+                                                                      builder.addAllAttributes(
+                                                                          attributes.get(
+                                                                              builder.getId()))),
+                                                          executor);
+
+                                                  // Get artifacts
+                                                  final var futureArtifacts =
+                                                      artifactHandler
+                                                          .getArtifactsMap(ids)
+                                                          .toInternalFuture();
+                                                  futureBuildersStream =
+                                                      futureBuildersStream.thenCombine(
+                                                          futureArtifacts,
+                                                          (stream, artifacts) ->
+                                                              stream.map(
+                                                                  builder ->
+                                                                      builder.addAllArtifacts(
+                                                                          artifacts.get(
+                                                                              builder.getId()))),
+                                                          executor);
+
+                                                  final var futureCodeVersions =
+                                                      codeVersionHandler.getCodeVersionMap(
+                                                          new ArrayList<>(ids));
+                                                  futureBuildersStream =
+                                                      futureBuildersStream.thenCombine(
+                                                          futureCodeVersions,
+                                                          (stream, codeVersionMap) ->
+                                                              stream.map(
+                                                                  builder -> {
+                                                                    if (codeVersionMap.containsKey(
+                                                                        builder.getId())) {
+                                                                      return builder
+                                                                          .setCodeVersionSnapshot(
+                                                                              codeVersionMap.get(
+                                                                                  builder.getId()));
+                                                                    } else {
+                                                                      return builder;
+                                                                    }
+                                                                  }),
+                                                          executor);
+
+                                                  return futureBuildersStream.thenApply(
+                                                      projectBuilders ->
+                                                          projectBuilders
+                                                              .map(Project.Builder::build)
+                                                              .collect(Collectors.toList()),
                                                       executor);
+                                                },
+                                                executor),
+                                    executor);
 
-                                              // Get attributes
-                                              final var futureAttributes =
-                                                  attributeHandler.getKeyValuesMap(ids);
-                                              futureBuildersStream =
-                                                  futureBuildersStream.thenCombine(
-                                                      futureAttributes,
-                                                      (stream, attributes) ->
-                                                          stream.map(
-                                                              builder ->
-                                                                  builder.addAllAttributes(
-                                                                      attributes.get(
-                                                                          builder.getId()))),
-                                                      executor);
+                        final var futureCount =
+                            InternalFuture.sequence(
+                                    Arrays.asList(
+                                        futureLocalContext,
+                                        futurePredicatesContext,
+                                        futureProjectIdsContext),
+                                    executor)
+                                .thenApply(QueryFilterContext::combine, executor)
+                                .thenCompose(this::getProjectCountBasedOnQueryFilter, executor);
 
-                                              // Get artifacts
-                                              final var futureArtifacts =
-                                                  artifactHandler
-                                                      .getArtifactsMap(ids)
-                                                      .toInternalFuture();
-                                              futureBuildersStream =
-                                                  futureBuildersStream.thenCombine(
-                                                      futureArtifacts,
-                                                      (stream, artifacts) ->
-                                                          stream.map(
-                                                              builder ->
-                                                                  builder.addAllArtifacts(
-                                                                      artifacts.get(
-                                                                          builder.getId()))),
-                                                      executor);
-
-                                              final var futureCodeVersions =
-                                                  codeVersionHandler.getCodeVersionMap(
-                                                      new ArrayList<>(ids));
-                                              futureBuildersStream =
-                                                  futureBuildersStream.thenCombine(
-                                                      futureCodeVersions,
-                                                      (stream, codeVersionMap) ->
-                                                          stream.map(
-                                                              builder -> {
-                                                                if (codeVersionMap.containsKey(
-                                                                    builder.getId())) {
-                                                                  return builder
-                                                                      .setCodeVersionSnapshot(
-                                                                          codeVersionMap.get(
-                                                                              builder.getId()));
-                                                                } else {
-                                                                  return builder;
-                                                                }
-                                                              }),
-                                                      executor);
-
-                                              return futureBuildersStream.thenApply(
-                                                  projectBuilders ->
-                                                      projectBuilders
-                                                          .map(Project.Builder::build)
-                                                          .collect(Collectors.toList()),
-                                                  executor);
-                                            },
-                                            executor),
+                        return futureProjects
+                            .thenApply(this::sortProjectFields, executor)
+                            .thenCombine(
+                                futureCount,
+                                (projects, count) ->
+                                    FindProjects.Response.newBuilder()
+                                        .addAllProjects(projects)
+                                        .setTotalRecords(count)
+                                        .build(),
                                 executor);
-
-                    final var futureCount =
-                        InternalFuture.sequence(
-                                Arrays.asList(
-                                    futureLocalContext,
-                                    futurePredicatesContext,
-                                    futureProjectIdsContext),
-                                executor)
-                            .thenApply(QueryFilterContext::combine, executor)
-                            .thenCompose(this::getProjectCountBasedOnQueryFilter, executor);
-
-                    return futureProjects
-                        .thenApply(this::sortProjectFields, executor)
-                        .thenCombine(
-                            futureCount,
-                            (projects, count) ->
-                                FindProjects.Response.newBuilder()
-                                    .addAllProjects(projects)
-                                    .setTotalRecords(count)
-                                    .build(),
-                            executor);
-                  },
-                  executor);
+                      },
+                      executor);
             },
             executor);
   }
@@ -854,11 +860,13 @@ public class FutureProjectDAO {
             executor)
         .thenCompose(
             allowedProjectIds ->
-                uacApisUtil.getResourceItemsForWorkspace(
-                    Optional.empty(),
-                    Optional.of(allowedProjectIds),
-                    Optional.empty(),
-                    ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT),
+                uacApisUtil
+                    .getResourceItemsForWorkspace(
+                        Optional.empty(),
+                        Optional.of(allowedProjectIds),
+                        Optional.empty(),
+                        ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                    .toInternalFuture(),
             executor)
         .thenCompose(
             allowedProjectResources ->
@@ -897,6 +905,7 @@ public class FutureProjectDAO {
     return uacApisUtil
         .getAllowedEntitiesByResourceType(
             modelDBServiceActions, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+        .toInternalFuture()
         .thenApply(
             getAllowedResourcesResponse -> {
               LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
@@ -1031,6 +1040,7 @@ public class FutureProjectDAO {
                       Optional.empty(),
                       Optional.of(request.getName()),
                       ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                  .toInternalFuture()
                   .thenCompose(
                       responseItem -> {
                         if (responseItem.size() == 0) {
@@ -1638,7 +1648,7 @@ public class FutureProjectDAO {
       Optional<String> workspaceName,
       Workspace workspace,
       Project.Builder projectBuilder) {
-    InternalFuture<List<GetResourcesResponseItem>> getResourcesFuture;
+    Future<List<GetResourcesResponseItem>> getResourcesFuture;
     if (isPermissionV2) {
       getResourcesFuture =
           uacApisUtil.getResourceItemsForWorkspace(
@@ -1654,54 +1664,56 @@ public class FutureProjectDAO {
               Optional.of(Collections.singletonList(createdProject.getId())),
               ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT);
     }
-    return getResourcesFuture.thenApply(
-        getResourcesResponseItems -> {
-          Optional<GetResourcesResponseItem> responseItem =
-              getResourcesResponseItems.stream().findFirst();
-          GetResourcesResponseItem projectResource =
-              responseItem.orElseThrow(
-                  () ->
-                      new NotFoundException(
-                          String.format(
-                              "Failed to locate Project resources in UAC for ID : %s",
-                              createdProject.getId())));
+    return getResourcesFuture
+        .toInternalFuture()
+        .thenApply(
+            getResourcesResponseItems -> {
+              Optional<GetResourcesResponseItem> responseItem =
+                  getResourcesResponseItems.stream().findFirst();
+              GetResourcesResponseItem projectResource =
+                  responseItem.orElseThrow(
+                      () ->
+                          new NotFoundException(
+                              String.format(
+                                  "Failed to locate Project resources in UAC for ID : %s",
+                                  createdProject.getId())));
 
-          projectBuilder.setVisibility(projectResource.getVisibility());
-          projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
-          if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
-            projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
-            projectBuilder.setOwner("");
-          } else {
-            projectBuilder.setOwnerId(projectResource.getOwnerId());
-            projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
-          }
-          projectBuilder.setCustomPermission(projectResource.getCustomPermission());
+              projectBuilder.setVisibility(projectResource.getVisibility());
+              projectBuilder.setWorkspaceServiceId(projectResource.getWorkspaceId());
+              if (projectResource.getOwnerTrackingCase() == OwnerTrackingCase.GROUP_OWNER_ID) {
+                projectBuilder.setGroupOwnerId(projectResource.getGroupOwnerId());
+                projectBuilder.setOwner("");
+              } else {
+                projectBuilder.setOwnerId(projectResource.getOwnerId());
+                projectBuilder.setOwner(String.valueOf(projectResource.getOwnerId()));
+              }
+              projectBuilder.setCustomPermission(projectResource.getCustomPermission());
 
-          switch (workspace.getInternalIdCase()) {
-            case ORG_ID:
-              projectBuilder.setWorkspaceId(workspace.getOrgId());
-              projectBuilder.setWorkspaceTypeValue(
-                  WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
-              break;
-            case USER_ID:
-              projectBuilder.setWorkspaceId(workspace.getUserId());
-              projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
-              break;
-            default:
-              // Do nothing
-              break;
-          }
+              switch (workspace.getInternalIdCase()) {
+                case ORG_ID:
+                  projectBuilder.setWorkspaceId(workspace.getOrgId());
+                  projectBuilder.setWorkspaceTypeValue(
+                      WorkspaceTypeEnum.WorkspaceType.ORGANIZATION_VALUE);
+                  break;
+                case USER_ID:
+                  projectBuilder.setWorkspaceId(workspace.getUserId());
+                  projectBuilder.setWorkspaceTypeValue(WorkspaceTypeEnum.WorkspaceType.USER_VALUE);
+                  break;
+                default:
+                  // Do nothing
+                  break;
+              }
 
-          ProjectVisibility visibility =
-              (ProjectVisibility)
-                  ModelDBUtils.getOldVisibility(
-                      ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
-                      projectResource.getVisibility());
-          projectBuilder.setProjectVisibility(visibility);
+              ProjectVisibility visibility =
+                  (ProjectVisibility)
+                      ModelDBUtils.getOldVisibility(
+                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT,
+                          projectResource.getVisibility());
+              projectBuilder.setProjectVisibility(visibility);
 
-          return projectBuilder.build();
-        },
-        executor);
+              return projectBuilder.build();
+            },
+            executor);
   }
 
   private InternalFuture<Void> updateProjectAsCreated(Project createdProject) {
