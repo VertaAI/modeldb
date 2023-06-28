@@ -13,6 +13,7 @@ _sym_db = _symbol_database.Default()
 
 from google.api import annotations_pb2 as google_dot_api_dot_annotations__pb2
 from ..registry import StageService_pb2 as registry_dot_StageService__pb2
+from ..registry import CustomAttributeService_pb2 as registry_dot_CustomAttributeService__pb2
 from ..common import CommonService_pb2 as common_dot_CommonService__pb2
 
 
@@ -21,9 +22,9 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.registry',
   syntax='proto3',
   serialized_options=b'P\001Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry',
-  serialized_pb=b'\n\x1fregistry/ChecklistService.proto\x12\x11\x61i.verta.registry\x1a\x1cgoogle/api/annotations.proto\x1a\x1bregistry/StageService.proto\x1a\x1a\x63ommon/CommonService.proto\"H\n\rRiskLevelEnum\"7\n\tRiskLevel\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03LOW\x10\x01\x12\n\n\x06MEDIUM\x10\x02\x12\x08\n\x04HIGH\x10\x03\"q\n\x1d\x43hecklistTemplateItemTypeEnum\"P\n\x19\x43hecklistTemplateItemType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06SYSTEM\x10\x01\x12\x0c\n\x08\x43HECKBOX\x10\x02\x12\x0c\n\x08WORKFLOW\x10\x03\"]\n\x0c\x45\x64itableEnum\"M\n\x08\x45\x64itable\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cNOT_EDITABLE\x10\x01\x12\x14\n\x10PARTIAL_EDITABLE\x10\x02\x12\x0c\n\x08\x45\x44ITABLE\x10\x03\"\x99\x03\n\x11\x43hecklistTemplate\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x62locks_deployment\x18\x03 \x01(\x08\x12\x39\n\rdesired_stage\x18\x04 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12G\n\x13\x61pply_to_risk_level\x18\x05 \x01(\x0e\x32*.ai.verta.registry.RiskLevelEnum.RiskLevel\x12\x17\n\x0forganization_id\x18\x06 \x01(\t\x12\x14\n\x0ctime_created\x18\x07 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x08 \x01(\x03\x12\x15\n\rcreated_by_id\x18\t \x01(\x04\x12\x15\n\rupdated_by_id\x18\n \x01(\x04\x12\x0c\n\x04sort\x18\x0b \x01(\x03\x12J\n\x18\x63hecklist_template_items\x18\x0c \x03(\x0b\x32(.ai.verta.registry.ChecklistTemplateItem\"\xab\x03\n\x15\x43hecklistTemplateItem\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12]\n\titem_type\x18\x04 \x01(\x0e\x32J.ai.verta.registry.ChecklistTemplateItemTypeEnum.ChecklistTemplateItemType\x12:\n\x08\x65\x64itable\x18\x05 \x01(\x0e\x32(.ai.verta.registry.EditableEnum.Editable\x12\x10\n\x08required\x18\x06 \x01(\x08\x12\x18\n\x10require_evidence\x18\x07 \x01(\x08\x12\x15\n\ruser_group_id\x18\x08 \x01(\t\x12\x1d\n\x15\x63hecklist_template_id\x18\t \x01(\x04\x12\x14\n\x0ctime_created\x18\n \x01(\x03\x12\x14\n\x0ctime_updated\x18\x0b \x01(\x03\x12\x15\n\rcreated_by_id\x18\x0c \x01(\x04\x12\x15\n\rupdated_by_id\x18\r \x01(\x04\x12\x0c\n\x04sort\x18\x0e \x01(\x03\"\xfc\x01\n\x12\x43hecklistItemValue\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\tcompleted\x18\x02 \x01(\x08\x12\x10\n\x08\x65vidence\x18\x03 \x01(\t\x12\x18\n\x10model_version_id\x18\x04 \x01(\x04\x12\x1d\n\x15\x63hecklist_template_id\x18\x05 \x01(\x04\x12\"\n\x1a\x63hecklist_template_item_id\x18\x06 \x01(\x04\x12\x14\n\x0ctime_created\x18\x07 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x08 \x01(\x03\x12\x15\n\rcreated_by_id\x18\t \x01(\x04\x12\x15\n\rupdated_by_id\x18\n \x01(\x04\"\xca\x01\n\x16SetChecklistItemValues\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x44\n\x15\x63hecklist_item_values\x18\x02 \x03(\x0b\x32%.ai.verta.registry.ChecklistItemValue\x1aP\n\x08Response\x12\x44\n\x15\x63hecklist_item_values\x18\x01 \x03(\x0b\x32%.ai.verta.registry.ChecklistItemValue\"\x87\x01\n\x19SearchChecklistItemValues\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x1aP\n\x08Response\x12\x44\n\x15\x63hecklist_item_values\x18\x01 \x03(\x0b\x32%.ai.verta.registry.ChecklistItemValue\"\xcf\x01\n\x18SearchChecklistTemplates\x12\x1d\n\x15\x63hecklist_template_id\x18\x01 \x01(\x04\x12\x14\n\x0cworkspace_id\x18\x02 \x01(\x04\x12\x16\n\x0eworkspace_name\x18\x03 \x01(\t\x12\x17\n\x0forganization_id\x18\x04 \x01(\t\x1aM\n\x08Response\x12\x41\n\x13\x63hecklist_templates\x18\x01 \x03(\x0b\x32$.ai.verta.registry.ChecklistTemplate\"\xa6\x01\n\x14SetChecklistTemplate\x12@\n\x12\x63hecklist_template\x18\x01 \x01(\x0b\x32$.ai.verta.registry.ChecklistTemplate\x1aL\n\x08Response\x12@\n\x12\x63hecklist_template\x18\x01 \x01(\x0b\x32$.ai.verta.registry.ChecklistTemplate\"8\n\x17\x44\x65leteChecklistTemplate\x12\x1d\n\x15\x63hecklist_template_id\x18\x01 \x01(\x04\x32\xf5\x08\n\x10\x43hecklistService\x12\x8a\x02\n\x19searchChecklistItemValues\x12,.ai.verta.registry.SearchChecklistItemValues\x1a\x35.ai.verta.registry.SearchChecklistItemValues.Response\"\x87\x01\x82\xd3\xe4\x93\x02\x80\x01\")/v1/registry/checklist_item_values/search:\x01*ZP\"K/v1/registry/model_versions/{model_version_id}/checklist_item_values/search:\x01*\x12\xb1\x01\n\x18searchChecklistTemplates\x12+.ai.verta.registry.SearchChecklistTemplates\x1a\x34.ai.verta.registry.SearchChecklistTemplates.Response\"2\x82\xd3\xe4\x93\x02,\"\'/v2/registry/checklist_templates/search:\x01*\x12\xb3\x01\n\x1asearchChecklistTemplatesV1\x12+.ai.verta.registry.SearchChecklistTemplates\x1a\x34.ai.verta.registry.SearchChecklistTemplates.Response\"2\x82\xd3\xe4\x93\x02,\"\'/v1/registry/checklist_templates/search:\x01*\x12\xa6\x01\n\x16setChecklistItemValues\x12).ai.verta.registry.SetChecklistItemValues\x1a\x32.ai.verta.registry.SetChecklistItemValues.Response\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/registry/checklist_item_values:\x01*\x12\x9e\x01\n\x14setChecklistTemplate\x12\'.ai.verta.registry.SetChecklistTemplate\x1a\x30.ai.verta.registry.SetChecklistTemplate.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/registry/checklist_templates:\x01*\x12\x9f\x01\n\x17\x64\x65leteChecklistTemplate\x12*.ai.verta.registry.DeleteChecklistTemplate\x1a\x16.ai.verta.common.Empty\"@\x82\xd3\xe4\x93\x02:*8/v1/registry/checklist_templates/{checklist_template_id}BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
+  serialized_pb=b'\n\x1fregistry/ChecklistService.proto\x12\x11\x61i.verta.registry\x1a\x1cgoogle/api/annotations.proto\x1a\x1bregistry/StageService.proto\x1a%registry/CustomAttributeService.proto\x1a\x1a\x63ommon/CommonService.proto\"H\n\rRiskLevelEnum\"7\n\tRiskLevel\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x07\n\x03LOW\x10\x01\x12\n\n\x06MEDIUM\x10\x02\x12\x08\n\x04HIGH\x10\x03\"q\n\x1d\x43hecklistTemplateItemTypeEnum\"P\n\x19\x43hecklistTemplateItemType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\n\n\x06SYSTEM\x10\x01\x12\x0c\n\x08\x43HECKBOX\x10\x02\x12\x0c\n\x08WORKFLOW\x10\x03\"]\n\x0c\x45\x64itableEnum\"M\n\x08\x45\x64itable\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x10\n\x0cNOT_EDITABLE\x10\x01\x12\x14\n\x10PARTIAL_EDITABLE\x10\x02\x12\x0c\n\x08\x45\x44ITABLE\x10\x03\"\xe3\x03\n\x11\x43hecklistTemplate\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x19\n\x11\x62locks_deployment\x18\x03 \x01(\x08\x12\x39\n\rdesired_stage\x18\x04 \x01(\x0e\x32\".ai.verta.registry.StageEnum.Stage\x12G\n\x13\x61pply_to_risk_level\x18\x05 \x01(\x0e\x32*.ai.verta.registry.RiskLevelEnum.RiskLevel\x12\x17\n\x0forganization_id\x18\x06 \x01(\t\x12\x14\n\x0ctime_created\x18\x07 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x08 \x01(\x03\x12\x15\n\rcreated_by_id\x18\t \x01(\x04\x12\x15\n\rupdated_by_id\x18\n \x01(\x04\x12\x0c\n\x04sort\x18\x0b \x01(\x03\x12J\n\x18\x63hecklist_template_items\x18\x0c \x03(\x0b\x32(.ai.verta.registry.ChecklistTemplateItem\x12H\n\x17\x63ustom_attribute_values\x18\r \x03(\x0b\x32\'.ai.verta.registry.CustomAttributeValue\"\xab\x03\n\x15\x43hecklistTemplateItem\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x0c\n\x04name\x18\x02 \x01(\t\x12\x13\n\x0b\x64\x65scription\x18\x03 \x01(\t\x12]\n\titem_type\x18\x04 \x01(\x0e\x32J.ai.verta.registry.ChecklistTemplateItemTypeEnum.ChecklistTemplateItemType\x12:\n\x08\x65\x64itable\x18\x05 \x01(\x0e\x32(.ai.verta.registry.EditableEnum.Editable\x12\x10\n\x08required\x18\x06 \x01(\x08\x12\x18\n\x10require_evidence\x18\x07 \x01(\x08\x12\x15\n\ruser_group_id\x18\x08 \x01(\t\x12\x1d\n\x15\x63hecklist_template_id\x18\t \x01(\x04\x12\x14\n\x0ctime_created\x18\n \x01(\x03\x12\x14\n\x0ctime_updated\x18\x0b \x01(\x03\x12\x15\n\rcreated_by_id\x18\x0c \x01(\x04\x12\x15\n\rupdated_by_id\x18\r \x01(\x04\x12\x0c\n\x04sort\x18\x0e \x01(\x03\"\xfc\x01\n\x12\x43hecklistItemValue\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x11\n\tcompleted\x18\x02 \x01(\x08\x12\x10\n\x08\x65vidence\x18\x03 \x01(\t\x12\x18\n\x10model_version_id\x18\x04 \x01(\x04\x12\x1d\n\x15\x63hecklist_template_id\x18\x05 \x01(\x04\x12\"\n\x1a\x63hecklist_template_item_id\x18\x06 \x01(\x04\x12\x14\n\x0ctime_created\x18\x07 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x08 \x01(\x03\x12\x15\n\rcreated_by_id\x18\t \x01(\x04\x12\x15\n\rupdated_by_id\x18\n \x01(\x04\"\xca\x01\n\x16SetChecklistItemValues\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x12\x44\n\x15\x63hecklist_item_values\x18\x02 \x03(\x0b\x32%.ai.verta.registry.ChecklistItemValue\x1aP\n\x08Response\x12\x44\n\x15\x63hecklist_item_values\x18\x01 \x03(\x0b\x32%.ai.verta.registry.ChecklistItemValue\"\x87\x01\n\x19SearchChecklistItemValues\x12\x18\n\x10model_version_id\x18\x01 \x01(\x04\x1aP\n\x08Response\x12\x44\n\x15\x63hecklist_item_values\x18\x01 \x03(\x0b\x32%.ai.verta.registry.ChecklistItemValue\"\xe9\x01\n\x18SearchChecklistTemplates\x12\x1d\n\x15\x63hecklist_template_id\x18\x01 \x01(\x04\x12\x14\n\x0cworkspace_id\x18\x02 \x01(\x04\x12\x16\n\x0eworkspace_name\x18\x03 \x01(\t\x12\x17\n\x0forganization_id\x18\x04 \x01(\t\x12\x18\n\x10model_version_id\x18\x05 \x01(\x04\x1aM\n\x08Response\x12\x41\n\x13\x63hecklist_templates\x18\x01 \x03(\x0b\x32$.ai.verta.registry.ChecklistTemplate\"\xa6\x01\n\x14SetChecklistTemplate\x12@\n\x12\x63hecklist_template\x18\x01 \x01(\x0b\x32$.ai.verta.registry.ChecklistTemplate\x1aL\n\x08Response\x12@\n\x12\x63hecklist_template\x18\x01 \x01(\x0b\x32$.ai.verta.registry.ChecklistTemplate\"8\n\x17\x44\x65leteChecklistTemplate\x12\x1d\n\x15\x63hecklist_template_id\x18\x01 \x01(\x04\x32\xf5\x08\n\x10\x43hecklistService\x12\x8a\x02\n\x19searchChecklistItemValues\x12,.ai.verta.registry.SearchChecklistItemValues\x1a\x35.ai.verta.registry.SearchChecklistItemValues.Response\"\x87\x01\x82\xd3\xe4\x93\x02\x80\x01\")/v1/registry/checklist_item_values/search:\x01*ZP\"K/v1/registry/model_versions/{model_version_id}/checklist_item_values/search:\x01*\x12\xb1\x01\n\x18searchChecklistTemplates\x12+.ai.verta.registry.SearchChecklistTemplates\x1a\x34.ai.verta.registry.SearchChecklistTemplates.Response\"2\x82\xd3\xe4\x93\x02,\"\'/v2/registry/checklist_templates/search:\x01*\x12\xb3\x01\n\x1asearchChecklistTemplatesV1\x12+.ai.verta.registry.SearchChecklistTemplates\x1a\x34.ai.verta.registry.SearchChecklistTemplates.Response\"2\x82\xd3\xe4\x93\x02,\"\'/v1/registry/checklist_templates/search:\x01*\x12\xa6\x01\n\x16setChecklistItemValues\x12).ai.verta.registry.SetChecklistItemValues\x1a\x32.ai.verta.registry.SetChecklistItemValues.Response\"-\x82\xd3\xe4\x93\x02\'\"\"/v1/registry/checklist_item_values:\x01*\x12\x9e\x01\n\x14setChecklistTemplate\x12\'.ai.verta.registry.SetChecklistTemplate\x1a\x30.ai.verta.registry.SetChecklistTemplate.Response\"+\x82\xd3\xe4\x93\x02%\" /v1/registry/checklist_templates:\x01*\x12\x9f\x01\n\x17\x64\x65leteChecklistTemplate\x12*.ai.verta.registry.DeleteChecklistTemplate\x1a\x16.ai.verta.common.Empty\"@\x82\xd3\xe4\x93\x02:*8/v1/registry/checklist_templates/{checklist_template_id}BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
   ,
-  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,registry_dot_StageService__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
+  dependencies=[google_dot_api_dot_annotations__pb2.DESCRIPTOR,registry_dot_StageService__pb2.DESCRIPTOR,registry_dot_CustomAttributeService__pb2.DESCRIPTOR,common_dot_CommonService__pb2.DESCRIPTOR,])
 
 
 
@@ -52,8 +53,8 @@ _RISKLEVELENUM_RISKLEVEL = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=158,
-  serialized_end=213,
+  serialized_start=197,
+  serialized_end=252,
 )
 _sym_db.RegisterEnumDescriptor(_RISKLEVELENUM_RISKLEVEL)
 
@@ -82,8 +83,8 @@ _CHECKLISTTEMPLATEITEMTYPEENUM_CHECKLISTTEMPLATEITEMTYPE = _descriptor.EnumDescr
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=248,
-  serialized_end=328,
+  serialized_start=287,
+  serialized_end=367,
 )
 _sym_db.RegisterEnumDescriptor(_CHECKLISTTEMPLATEITEMTYPEENUM_CHECKLISTTEMPLATEITEMTYPE)
 
@@ -112,8 +113,8 @@ _EDITABLEENUM_EDITABLE = _descriptor.EnumDescriptor(
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=346,
-  serialized_end=423,
+  serialized_start=385,
+  serialized_end=462,
 )
 _sym_db.RegisterEnumDescriptor(_EDITABLEENUM_EDITABLE)
 
@@ -138,8 +139,8 @@ _RISKLEVELENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=141,
-  serialized_end=213,
+  serialized_start=180,
+  serialized_end=252,
 )
 
 
@@ -163,8 +164,8 @@ _CHECKLISTTEMPLATEITEMTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=215,
-  serialized_end=328,
+  serialized_start=254,
+  serialized_end=367,
 )
 
 
@@ -188,8 +189,8 @@ _EDITABLEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=330,
-  serialized_end=423,
+  serialized_start=369,
+  serialized_end=462,
 )
 
 
@@ -284,6 +285,13 @@ _CHECKLISTTEMPLATE = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='custom_attribute_values', full_name='ai.verta.registry.ChecklistTemplate.custom_attribute_values', index=12,
+      number=13, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -296,8 +304,8 @@ _CHECKLISTTEMPLATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=426,
-  serialized_end=835,
+  serialized_start=465,
+  serialized_end=948,
 )
 
 
@@ -418,8 +426,8 @@ _CHECKLISTTEMPLATEITEM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=838,
-  serialized_end=1265,
+  serialized_start=951,
+  serialized_end=1378,
 )
 
 
@@ -512,8 +520,8 @@ _CHECKLISTITEMVALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1268,
-  serialized_end=1520,
+  serialized_start=1381,
+  serialized_end=1633,
 )
 
 
@@ -543,8 +551,8 @@ _SETCHECKLISTITEMVALUES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1645,
-  serialized_end=1725,
+  serialized_start=1758,
+  serialized_end=1838,
 )
 
 _SETCHECKLISTITEMVALUES = _descriptor.Descriptor(
@@ -580,8 +588,8 @@ _SETCHECKLISTITEMVALUES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1523,
-  serialized_end=1725,
+  serialized_start=1636,
+  serialized_end=1838,
 )
 
 
@@ -611,8 +619,8 @@ _SEARCHCHECKLISTITEMVALUES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1645,
-  serialized_end=1725,
+  serialized_start=1758,
+  serialized_end=1838,
 )
 
 _SEARCHCHECKLISTITEMVALUES = _descriptor.Descriptor(
@@ -641,8 +649,8 @@ _SEARCHCHECKLISTITEMVALUES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1728,
-  serialized_end=1863,
+  serialized_start=1841,
+  serialized_end=1976,
 )
 
 
@@ -672,8 +680,8 @@ _SEARCHCHECKLISTTEMPLATES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1996,
-  serialized_end=2073,
+  serialized_start=2135,
+  serialized_end=2212,
 )
 
 _SEARCHCHECKLISTTEMPLATES = _descriptor.Descriptor(
@@ -711,6 +719,13 @@ _SEARCHCHECKLISTTEMPLATES = _descriptor.Descriptor(
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR),
+    _descriptor.FieldDescriptor(
+      name='model_version_id', full_name='ai.verta.registry.SearchChecklistTemplates.model_version_id', index=4,
+      number=5, type=4, cpp_type=4, label=1,
+      has_default_value=False, default_value=0,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR),
   ],
   extensions=[
   ],
@@ -723,8 +738,8 @@ _SEARCHCHECKLISTTEMPLATES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1866,
-  serialized_end=2073,
+  serialized_start=1979,
+  serialized_end=2212,
 )
 
 
@@ -754,8 +769,8 @@ _SETCHECKLISTTEMPLATE_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2166,
-  serialized_end=2242,
+  serialized_start=2305,
+  serialized_end=2381,
 )
 
 _SETCHECKLISTTEMPLATE = _descriptor.Descriptor(
@@ -784,8 +799,8 @@ _SETCHECKLISTTEMPLATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2076,
-  serialized_end=2242,
+  serialized_start=2215,
+  serialized_end=2381,
 )
 
 
@@ -815,8 +830,8 @@ _DELETECHECKLISTTEMPLATE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2244,
-  serialized_end=2300,
+  serialized_start=2383,
+  serialized_end=2439,
 )
 
 _RISKLEVELENUM_RISKLEVEL.containing_type = _RISKLEVELENUM
@@ -825,6 +840,7 @@ _EDITABLEENUM_EDITABLE.containing_type = _EDITABLEENUM
 _CHECKLISTTEMPLATE.fields_by_name['desired_stage'].enum_type = registry_dot_StageService__pb2._STAGEENUM_STAGE
 _CHECKLISTTEMPLATE.fields_by_name['apply_to_risk_level'].enum_type = _RISKLEVELENUM_RISKLEVEL
 _CHECKLISTTEMPLATE.fields_by_name['checklist_template_items'].message_type = _CHECKLISTTEMPLATEITEM
+_CHECKLISTTEMPLATE.fields_by_name['custom_attribute_values'].message_type = registry_dot_CustomAttributeService__pb2._CUSTOMATTRIBUTEVALUE
 _CHECKLISTTEMPLATEITEM.fields_by_name['item_type'].enum_type = _CHECKLISTTEMPLATEITEMTYPEENUM_CHECKLISTTEMPLATEITEMTYPE
 _CHECKLISTTEMPLATEITEM.fields_by_name['editable'].enum_type = _EDITABLEENUM_EDITABLE
 _SETCHECKLISTITEMVALUES_RESPONSE.fields_by_name['checklist_item_values'].message_type = _CHECKLISTITEMVALUE
@@ -968,8 +984,8 @@ _CHECKLISTSERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2303,
-  serialized_end=3444,
+  serialized_start=2442,
+  serialized_end=3583,
   methods=[
   _descriptor.MethodDescriptor(
     name='searchChecklistItemValues',

@@ -21,7 +21,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   package='ai.verta.registry',
   syntax='proto3',
   serialized_options=b'P\001Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registry',
-  serialized_pb=b'\n%registry/CustomAttributeService.proto\x12\x11\x61i.verta.registry\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bregistry/StageService.proto\"m\n\x17\x43ustomAttributeTypeEnum\"R\n\x13\x43ustomAttributeType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04USER\x10\x01\x12\x0f\n\x0b\x43USTOM_LIST\x10\x02\x12\t\n\x05GROUP\x10\x03\x12\x08\n\x04TEXT\x10\x04\"}\n\x1d\x43ustomAttributeTargetTypeEnum\"\\\n\x19\x43ustomAttributeTargetType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x14\n\x10REGISTERED_MODEL\x10\x01\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\x02\"\xce\x03\n\x19\x43ustomAttributeDefinition\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x17\n\x0forganization_id\x18\x02 \x01(\t\x12V\n\x0e\x61ttribute_type\x18\x03 \x01(\x0e\x32>.ai.verta.registry.CustomAttributeTypeEnum.CustomAttributeType\x12_\n\x0btarget_type\x18\x04 \x01(\x0e\x32J.ai.verta.registry.CustomAttributeTargetTypeEnum.CustomAttributeTargetType\x12\x0c\n\x04name\x18\x05 \x01(\t\x12\x0c\n\x04icon\x18\x06 \x01(\t\x12\x14\n\x0ctime_created\x18\x07 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x08 \x01(\x03\x12\x15\n\rcreated_by_id\x18\t \x01(\x04\x12\x15\n\rupdated_by_id\x18\n \x01(\x04\x12\x0c\n\x04sort\x18\x0b \x01(\x04\x12O\n\x19\x63ustomAttributeListOption\x18\x0c \x03(\x0b\x32,.ai.verta.registry.CustomAttributeListOption\"\xb0\x02\n\x14\x43ustomAttributeValue\x12\n\n\x02id\x18\x01 \x01(\x04\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x02 \x01(\x04\x12\x11\n\ttarget_id\x18\x03 \x01(\t\x12_\n\x0btarget_type\x18\x04 \x01(\x0e\x32J.ai.verta.registry.CustomAttributeTargetTypeEnum.CustomAttributeTargetType\x12\x16\n\x0eselected_value\x18\x05 \x01(\t\x12\x14\n\x0ctime_created\x18\x06 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x07 \x01(\x03\x12\x15\n\rcreated_by_id\x18\x08 \x01(\x04\x12\x15\n\rupdated_by_id\x18\t \x01(\x04\"k\n\x19\x43ustomAttributeListOption\x12\n\n\x02id\x18\x01 \x01(\t\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x0c\n\x04sort\x18\x04 \x01(\x03\"\xa4\x02\n SearchCustomAttributeDefinitions\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x01 \x01(\x04\x12\x17\n\x0forganization_id\x18\x02 \x01(\t\x12_\n\x0btarget_type\x18\x03 \x01(\x0e\x32J.ai.verta.registry.CustomAttributeTargetTypeEnum.CustomAttributeTargetType\x1a^\n\x08Response\x12R\n\x1c\x63ustom_attribute_definitions\x18\x01 \x03(\x0b\x32,.ai.verta.registry.CustomAttributeDefinition\"\xd0\x01\n\x1cSetCustomAttributeDefinition\x12Q\n\x1b\x63ustom_attribute_definition\x18\x01 \x01(\x0b\x32,.ai.verta.registry.CustomAttributeDefinition\x1a]\n\x08Response\x12Q\n\x1b\x63ustom_attribute_definition\x18\x01 \x01(\x0b\x32,.ai.verta.registry.CustomAttributeDefinition\"I\n\x1f\x44\x65leteCustomAttributeDefinition\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x01 \x01(\x04\"\x8f\x02\n\x1bSearchCustomAttributeValues\x12\x11\n\ttarget_id\x18\x01 \x01(\t\x12_\n\x0btarget_type\x18\x02 \x01(\x0e\x32J.ai.verta.registry.CustomAttributeTargetTypeEnum.CustomAttributeTargetType\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x03 \x01(\x04\x1aT\n\x08Response\x12H\n\x17\x63ustom_attribute_values\x18\x01 \x03(\x0b\x32\'.ai.verta.registry.CustomAttributeValue2\xb4\x06\n\x16\x43ustomAttributeService\x12\xd2\x01\n searchCustomAttributeDefinitions\x12\x33.ai.verta.registry.SearchCustomAttributeDefinitions\x1a<.ai.verta.registry.SearchCustomAttributeDefinitions.Response\";\x82\xd3\xe4\x93\x02\x35\"0/v1/registry/custom_attribute_definitions/search:\x01*\x12\xbf\x01\n\x1csetCustomAttributeDefinition\x12/.ai.verta.registry.SetCustomAttributeDefinition\x1a\x38.ai.verta.registry.SetCustomAttributeDefinition.Response\"4\x82\xd3\xe4\x93\x02.\")/v1/registry/custom_attribute_definitions:\x01*\x12\xc1\x01\n\x1f\x64\x65leteCustomAttributeDefinition\x12\x32.ai.verta.registry.DeleteCustomAttributeDefinition\x1a\x16.ai.verta.common.Empty\"R\x82\xd3\xe4\x93\x02L*J/v1/registry/custom_attribute_definitions/{custom_attribute_definition_id}\x12\xbe\x01\n\x1bsearchCustomAttributeValues\x12..ai.verta.registry.SearchCustomAttributeValues\x1a\x37.ai.verta.registry.SearchCustomAttributeValues.Response\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/registry/custom_attribute_values/search:\x01*BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
+  serialized_pb=b'\n%registry/CustomAttributeService.proto\x12\x11\x61i.verta.registry\x1a\x1a\x63ommon/CommonService.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x1bregistry/StageService.proto\"m\n\x17\x43ustomAttributeTypeEnum\"R\n\x13\x43ustomAttributeType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x08\n\x04USER\x10\x01\x12\x0f\n\x0b\x43USTOM_LIST\x10\x02\x12\t\n\x05GROUP\x10\x03\x12\x08\n\x04TEXT\x10\x04\"\x95\x01\n\x1d\x43ustomAttributeTargetTypeEnum\"t\n\x19\x43ustomAttributeTargetType\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x14\n\x10REGISTERED_MODEL\x10\x01\x12\x1c\n\x18REGISTERED_MODEL_VERSION\x10\x02\x12\x16\n\x12\x43HECKLIST_TEMPLATE\x10\x03\"\xce\x03\n\x19\x43ustomAttributeDefinition\x12\n\n\x02id\x18\x01 \x01(\x04\x12\x17\n\x0forganization_id\x18\x02 \x01(\t\x12V\n\x0e\x61ttribute_type\x18\x03 \x01(\x0e\x32>.ai.verta.registry.CustomAttributeTypeEnum.CustomAttributeType\x12_\n\x0btarget_type\x18\x04 \x01(\x0e\x32J.ai.verta.registry.CustomAttributeTargetTypeEnum.CustomAttributeTargetType\x12\x0c\n\x04name\x18\x05 \x01(\t\x12\x0c\n\x04icon\x18\x06 \x01(\t\x12\x14\n\x0ctime_created\x18\x07 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x08 \x01(\x03\x12\x15\n\rcreated_by_id\x18\t \x01(\x04\x12\x15\n\rupdated_by_id\x18\n \x01(\x04\x12\x0c\n\x04sort\x18\x0b \x01(\x04\x12O\n\x19\x63ustomAttributeListOption\x18\x0c \x03(\x0b\x32,.ai.verta.registry.CustomAttributeListOption\"\xb0\x02\n\x14\x43ustomAttributeValue\x12\n\n\x02id\x18\x01 \x01(\x04\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x02 \x01(\x04\x12\x11\n\ttarget_id\x18\x03 \x01(\t\x12_\n\x0btarget_type\x18\x04 \x01(\x0e\x32J.ai.verta.registry.CustomAttributeTargetTypeEnum.CustomAttributeTargetType\x12\x16\n\x0eselected_value\x18\x05 \x01(\t\x12\x14\n\x0ctime_created\x18\x06 \x01(\x03\x12\x14\n\x0ctime_updated\x18\x07 \x01(\x03\x12\x15\n\rcreated_by_id\x18\x08 \x01(\x04\x12\x15\n\rupdated_by_id\x18\t \x01(\x04\"k\n\x19\x43ustomAttributeListOption\x12\n\n\x02id\x18\x01 \x01(\t\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x02 \x01(\t\x12\x0c\n\x04name\x18\x03 \x01(\t\x12\x0c\n\x04sort\x18\x04 \x01(\x03\"\xa4\x02\n SearchCustomAttributeDefinitions\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x01 \x01(\x04\x12\x17\n\x0forganization_id\x18\x02 \x01(\t\x12_\n\x0btarget_type\x18\x03 \x01(\x0e\x32J.ai.verta.registry.CustomAttributeTargetTypeEnum.CustomAttributeTargetType\x1a^\n\x08Response\x12R\n\x1c\x63ustom_attribute_definitions\x18\x01 \x03(\x0b\x32,.ai.verta.registry.CustomAttributeDefinition\"\xd0\x01\n\x1cSetCustomAttributeDefinition\x12Q\n\x1b\x63ustom_attribute_definition\x18\x01 \x01(\x0b\x32,.ai.verta.registry.CustomAttributeDefinition\x1a]\n\x08Response\x12Q\n\x1b\x63ustom_attribute_definition\x18\x01 \x01(\x0b\x32,.ai.verta.registry.CustomAttributeDefinition\"I\n\x1f\x44\x65leteCustomAttributeDefinition\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x01 \x01(\x04\"\x8f\x02\n\x1bSearchCustomAttributeValues\x12\x11\n\ttarget_id\x18\x01 \x01(\t\x12_\n\x0btarget_type\x18\x02 \x01(\x0e\x32J.ai.verta.registry.CustomAttributeTargetTypeEnum.CustomAttributeTargetType\x12&\n\x1e\x63ustom_attribute_definition_id\x18\x03 \x01(\x04\x1aT\n\x08Response\x12H\n\x17\x63ustom_attribute_values\x18\x01 \x03(\x0b\x32\'.ai.verta.registry.CustomAttributeValue2\xb4\x06\n\x16\x43ustomAttributeService\x12\xd2\x01\n searchCustomAttributeDefinitions\x12\x33.ai.verta.registry.SearchCustomAttributeDefinitions\x1a<.ai.verta.registry.SearchCustomAttributeDefinitions.Response\";\x82\xd3\xe4\x93\x02\x35\"0/v1/registry/custom_attribute_definitions/search:\x01*\x12\xbf\x01\n\x1csetCustomAttributeDefinition\x12/.ai.verta.registry.SetCustomAttributeDefinition\x1a\x38.ai.verta.registry.SetCustomAttributeDefinition.Response\"4\x82\xd3\xe4\x93\x02.\")/v1/registry/custom_attribute_definitions:\x01*\x12\xc1\x01\n\x1f\x64\x65leteCustomAttributeDefinition\x12\x32.ai.verta.registry.DeleteCustomAttributeDefinition\x1a\x16.ai.verta.common.Empty\"R\x82\xd3\xe4\x93\x02L*J/v1/registry/custom_attribute_definitions/{custom_attribute_definition_id}\x12\xbe\x01\n\x1bsearchCustomAttributeValues\x12..ai.verta.registry.SearchCustomAttributeValues\x1a\x37.ai.verta.registry.SearchCustomAttributeValues.Response\"6\x82\xd3\xe4\x93\x02\x30\"+/v1/registry/custom_attribute_values/search:\x01*BCP\x01Z?github.com/VertaAI/modeldb/protos/gen/go/protos/public/registryb\x06proto3'
   ,
   dependencies=[common_dot_CommonService__pb2.DESCRIPTOR,google_dot_api_dot_annotations__pb2.DESCRIPTOR,registry_dot_StageService__pb2.DESCRIPTOR,])
 
@@ -79,11 +79,15 @@ _CUSTOMATTRIBUTETARGETTYPEENUM_CUSTOMATTRIBUTETARGETTYPE = _descriptor.EnumDescr
       name='REGISTERED_MODEL_VERSION', index=2, number=2,
       serialized_options=None,
       type=None),
+    _descriptor.EnumValueDescriptor(
+      name='CHECKLIST_TEMPLATE', index=3, number=3,
+      serialized_options=None,
+      type=None),
   ],
   containing_type=None,
   serialized_options=None,
-  serialized_start=291,
-  serialized_end=383,
+  serialized_start=292,
+  serialized_end=408,
 )
 _sym_db.RegisterEnumDescriptor(_CUSTOMATTRIBUTETARGETTYPEENUM_CUSTOMATTRIBUTETARGETTYPE)
 
@@ -133,8 +137,8 @@ _CUSTOMATTRIBUTETARGETTYPEENUM = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=258,
-  serialized_end=383,
+  serialized_start=259,
+  serialized_end=408,
 )
 
 
@@ -241,8 +245,8 @@ _CUSTOMATTRIBUTEDEFINITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=386,
-  serialized_end=848,
+  serialized_start=411,
+  serialized_end=873,
 )
 
 
@@ -328,8 +332,8 @@ _CUSTOMATTRIBUTEVALUE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=851,
-  serialized_end=1155,
+  serialized_start=876,
+  serialized_end=1180,
 )
 
 
@@ -380,8 +384,8 @@ _CUSTOMATTRIBUTELISTOPTION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1157,
-  serialized_end=1264,
+  serialized_start=1182,
+  serialized_end=1289,
 )
 
 
@@ -411,8 +415,8 @@ _SEARCHCUSTOMATTRIBUTEDEFINITIONS_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1465,
-  serialized_end=1559,
+  serialized_start=1490,
+  serialized_end=1584,
 )
 
 _SEARCHCUSTOMATTRIBUTEDEFINITIONS = _descriptor.Descriptor(
@@ -455,8 +459,8 @@ _SEARCHCUSTOMATTRIBUTEDEFINITIONS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1267,
-  serialized_end=1559,
+  serialized_start=1292,
+  serialized_end=1584,
 )
 
 
@@ -486,8 +490,8 @@ _SETCUSTOMATTRIBUTEDEFINITION_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1677,
-  serialized_end=1770,
+  serialized_start=1702,
+  serialized_end=1795,
 )
 
 _SETCUSTOMATTRIBUTEDEFINITION = _descriptor.Descriptor(
@@ -516,8 +520,8 @@ _SETCUSTOMATTRIBUTEDEFINITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1562,
-  serialized_end=1770,
+  serialized_start=1587,
+  serialized_end=1795,
 )
 
 
@@ -547,8 +551,8 @@ _DELETECUSTOMATTRIBUTEDEFINITION = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1772,
-  serialized_end=1845,
+  serialized_start=1797,
+  serialized_end=1870,
 )
 
 
@@ -578,8 +582,8 @@ _SEARCHCUSTOMATTRIBUTEVALUES_RESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=2035,
-  serialized_end=2119,
+  serialized_start=2060,
+  serialized_end=2144,
 )
 
 _SEARCHCUSTOMATTRIBUTEVALUES = _descriptor.Descriptor(
@@ -622,8 +626,8 @@ _SEARCHCUSTOMATTRIBUTEVALUES = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1848,
-  serialized_end=2119,
+  serialized_start=1873,
+  serialized_end=2144,
 )
 
 _CUSTOMATTRIBUTETYPEENUM_CUSTOMATTRIBUTETYPE.containing_type = _CUSTOMATTRIBUTETYPEENUM
@@ -748,8 +752,8 @@ _CUSTOMATTRIBUTESERVICE = _descriptor.ServiceDescriptor(
   file=DESCRIPTOR,
   index=0,
   serialized_options=None,
-  serialized_start=2122,
-  serialized_end=2942,
+  serialized_start=2147,
+  serialized_end=2967,
   methods=[
   _descriptor.MethodDescriptor(
     name='searchCustomAttributeDefinitions',
