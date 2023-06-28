@@ -381,6 +381,7 @@ public class FutureExperimentDAO {
           .getAllowedEntitiesByResourceType(
               ModelDBActionEnum.ModelDBServiceActions.READ,
               ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+          .toInternalFuture()
           .thenApply(
               resources -> {
                 boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
@@ -402,6 +403,7 @@ public class FutureExperimentDAO {
       // futureProjectIds based on workspace
       return uacApisUtil
           .getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
+          .toInternalFuture()
           .thenApply(
               accessibleProjectIds -> {
                 if (accessibleProjectIds.isEmpty()) {
@@ -721,6 +723,7 @@ public class FutureExperimentDAO {
                         Optional.of(new ArrayList<>(projectIdFromExperimentMap.values())),
                         Optional.empty(),
                         ModelDBServiceResourceTypes.PROJECT)
+                    .toInternalFuture()
                     .thenCompose(unused -> deleteExperiments(experimentIds), executor)
                     .thenApply(unused -> projectIdFromExperimentMap, executor),
             executor);

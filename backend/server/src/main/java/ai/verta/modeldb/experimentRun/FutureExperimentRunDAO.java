@@ -1256,6 +1256,7 @@ public class FutureExperimentRunDAO {
       return uacApisUtil
           .getAllowedEntitiesByResourceType(
               ModelDBActionEnum.ModelDBServiceActions.READ, ModelDBServiceResourceTypes.PROJECT)
+          .toInternalFuture()
           .thenApply(
               resources -> {
                 boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
@@ -1277,6 +1278,7 @@ public class FutureExperimentRunDAO {
       // futureProjectIds based on workspace
       return uacApisUtil
           .getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
+          .toInternalFuture()
           .thenApply(
               accessibleProjectIds -> {
                 if (accessibleProjectIds.isEmpty()) {
@@ -1345,9 +1347,11 @@ public class FutureExperimentRunDAO {
               // If populateConnectionsBasedOnPrivileges = true then fetch all accessible
               // repositories from UAC
               if (populateConnectionsBasedOnPrivileges) {
-                return uacApisUtil.getAllowedEntitiesByResourceType(
-                    ModelDBActionEnum.ModelDBServiceActions.READ,
-                    ModelDBServiceResourceTypes.REPOSITORY);
+                return uacApisUtil
+                    .getAllowedEntitiesByResourceType(
+                        ModelDBActionEnum.ModelDBServiceActions.READ,
+                        ModelDBServiceResourceTypes.REPOSITORY)
+                    .toInternalFuture();
               } else {
                 // return empty list if populateConnectionsBasedOnPrivileges = false
                 return InternalFuture.completedInternalFuture(new ArrayList<>());

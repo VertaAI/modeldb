@@ -626,6 +626,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
       userInfoListFuture =
           uacApisUtil
               .getFuzzyUserInfoList(predicate.getValue().getStringValue())
+              .toInternalFuture()
               .thenApply(UserInfoPaginationDTO::getUserInfoList, executor);
     } else {
       var ownerIdsArrString = predicate.getValue().getStringValue();
@@ -639,6 +640,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
           uacApisUtil
               .getUserInfoFromAuthServer(
                   new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList(), false)
+              .toInternalFuture()
               .thenApply(userInfoMap -> new ArrayList<>(userInfoMap.values()), executor);
     }
 
@@ -656,6 +658,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                           isPermissionV2 ? userInfo.getVertaInfo().getDefaultWorkspaceId() : null,
                           Optional.empty(),
                           ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+                      .toInternalFuture()
                       .thenApply(
                           accessibleAllWorkspaceItems ->
                               accessibleAllWorkspaceItems.stream()
