@@ -147,13 +147,7 @@ public class FutureProjectDAO {
     DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName, mdbConfig);
     artifactHandler =
         new ArtifactHandler(
-            executor,
-            jdbi,
-            entityName,
-            codeVersionHandler,
-            datasetHandler,
-            artifactStoreDAO,
-            mdbConfig);
+            jdbi, entityName, codeVersionHandler, datasetHandler, artifactStoreDAO, mdbConfig);
     predicatesHandler =
         new PredicatesHandler(
             executor, "project", "p", uacApisUtil, mdbConfig.isPermissionV2Enabled());
@@ -446,7 +440,7 @@ public class FutureProjectDAO {
     }
 
     return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request), executor);
+        unused -> artifactHandler.getUrlForArtifact(request).toInternalFuture(), executor);
   }
 
   public InternalFuture<VerifyConnectionResponse> verifyConnection() {
@@ -601,7 +595,9 @@ public class FutureProjectDAO {
 
                                               // Get artifacts
                                               final var futureArtifacts =
-                                                  artifactHandler.getArtifactsMap(ids);
+                                                  artifactHandler
+                                                      .getArtifactsMap(ids)
+                                                      .toInternalFuture();
                                               futureBuildersStream =
                                                   futureBuildersStream.thenCombine(
                                                       futureArtifacts,
@@ -1138,7 +1134,9 @@ public class FutureProjectDAO {
             unused ->
                 checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> artifactHandler.getArtifacts(projectId, maybeKey), executor);
+        .thenCompose(
+            unused -> artifactHandler.getArtifacts(projectId, maybeKey).toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<Void> deleteArtifacts(DeleteProjectArtifact request) {
@@ -1151,7 +1149,9 @@ public class FutureProjectDAO {
     Optional<List<String>> optionalKeys = keys.isEmpty() ? Optional.empty() : Optional.of(keys);
 
     return checkProjectPermission(projectId, ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.deleteArtifacts(projectId, optionalKeys), executor)
+        .thenCompose(
+            unused -> artifactHandler.deleteArtifacts(projectId, optionalKeys).toInternalFuture(),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(projectId, now), executor)
         .thenCompose(unused -> updateVersionNumber(projectId), executor);
   }

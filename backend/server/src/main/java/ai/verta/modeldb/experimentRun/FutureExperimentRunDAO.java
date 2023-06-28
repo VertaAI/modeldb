@@ -178,7 +178,6 @@ public class FutureExperimentRunDAO {
     datasetHandler = new DatasetHandler(executor, jdbi, EXPERIMENT_RUN_ENTITY_NAME, config);
     artifactHandler =
         new ArtifactHandler(
-            executor,
             jdbi,
             EXPERIMENT_RUN_ENTITY_NAME,
             codeVersionHandler,
@@ -622,7 +621,8 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getArtifacts(runId, maybeKey), executor);
+        .thenCompose(
+            unused -> artifactHandler.getArtifacts(runId, maybeKey).toInternalFuture(), executor);
   }
 
   public InternalFuture<ExperimentRun> deleteArtifacts(DeleteArtifact request) {
@@ -636,7 +636,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.deleteArtifacts(runId, optionalKeys), executor)
+        .thenCompose(
+            unused -> artifactHandler.deleteArtifacts(runId, optionalKeys).toInternalFuture(),
+            executor)
         .thenCompose(unused -> updateModifiedTimestamp(runId, now), executor)
         .thenCompose(unused -> updateVersionNumber(runId), executor)
         .thenCompose(unused -> getExperimentRunById(runId), executor);
@@ -670,7 +672,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> datasetHandler.getArtifacts(runId, Optional.empty()), executor);
+        .thenCompose(
+            unused -> datasetHandler.getArtifacts(runId, Optional.empty()).toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<ExperimentRun> logCodeVersion(LogExperimentRunCodeVersion request) {
@@ -712,7 +716,7 @@ public class FutureExperimentRunDAO {
     }
 
     return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request), executor);
+        unused -> artifactHandler.getUrlForArtifact(request).toInternalFuture(), executor);
   }
 
   public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
@@ -721,7 +725,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> artifactHandler.getCommittedArtifactParts(request), executor);
+        .thenCompose(
+            unused -> artifactHandler.getCommittedArtifactParts(request).toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<Void> commitArtifactPart(CommitArtifactPart request) {
@@ -729,7 +735,8 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.commitArtifactPart(request), executor);
+        .thenCompose(
+            unused -> artifactHandler.commitArtifactPart(request).toInternalFuture(), executor);
   }
 
   public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
@@ -737,7 +744,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.UPDATE)
-        .thenCompose(unused -> artifactHandler.commitMultipartArtifact(request), executor);
+        .thenCompose(
+            unused -> artifactHandler.commitMultipartArtifact(request).toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<FindExperimentRuns.Response> findExperimentRuns(
@@ -985,7 +994,7 @@ public class FutureExperimentRunDAO {
 
                                     // Get artifacts
                                     final var futureArtifacts =
-                                        artifactHandler.getArtifactsMap(ids);
+                                        artifactHandler.getArtifactsMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureArtifacts,
@@ -998,7 +1007,7 @@ public class FutureExperimentRunDAO {
 
                                     // Get datasets
                                     final var futureDatasetsMap =
-                                        datasetHandler.getArtifactsMap(ids);
+                                        datasetHandler.getArtifactsMap(ids).toInternalFuture();
                                     final var filterDatasetsMap =
                                         futureDatasetsMap.thenCompose(
                                             artifactMapSubtypes -> {
