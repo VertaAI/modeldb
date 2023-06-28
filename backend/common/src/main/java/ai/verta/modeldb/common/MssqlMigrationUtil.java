@@ -1,9 +1,9 @@
 package ai.verta.modeldb.common;
 
 import ai.verta.modeldb.common.exceptions.ModelDBException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,8 +22,8 @@ public class MssqlMigrationUtil {
   private MssqlMigrationUtil() {}
 
   public static void migrateToUTF16ForMssql(FutureJdbi futureJdbi) {
-    InternalFuture<Void> result =
-        futureJdbi.useTransaction(
+    Future<Void> result =
+        futureJdbi.transaction(
             handle -> {
               LOGGER.debug("Fetching column to change column type");
               List<Map<String, Object>> returnResults = fetchChangeColumnsListForMSSQL(handle);

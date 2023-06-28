@@ -4,28 +4,19 @@ import ai.verta.common.KeyValue;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.exceptions.AlreadyExistsException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.Handle;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import com.google.protobuf.Value;
 import com.google.rpc.Code;
 import java.math.BigDecimal;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.AbstractMap;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 public abstract class KeyValueHandler<T> {
-  private static final Logger LOGGER = LogManager.getLogger(KeyValueHandler.class);
   protected static final String ENTITY_ID_PARAM_QUERY = "entity_id";
   private static final String FIELD_TYPE_QUERY_PARAM = "field_type";
   private static final String ENTITY_NAME_QUERY_PARAM = "entity_name";
@@ -33,7 +24,6 @@ public abstract class KeyValueHandler<T> {
   private static final String VALUE_QUERY_PARAM = "value";
   private static final String TYPE_QUERY_PARAM = "type";
 
-  private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final String fieldType;
   private final String entityName;
@@ -55,18 +45,15 @@ public abstract class KeyValueHandler<T> {
     return CommonUtils.getStringFromProtoObject(kv.getValue());
   }
 
-  public KeyValueHandler(
-      FutureExecutor executor, FutureJdbi jdbi, String fieldType, String entityName) {
-    this.executor = executor;
+  public KeyValueHandler(FutureJdbi jdbi, String fieldType, String entityName) {
     this.jdbi = jdbi;
     this.fieldType = fieldType;
     this.entityName = entityName;
     setEntityIdReferenceColumn(entityName);
   }
 
-  public InternalFuture<List<KeyValue>> getKeyValues(
-      T entityId, List<String> attrKeys, boolean getAll) {
-    return jdbi.withHandle(
+  public Future<List<KeyValue>> getKeyValues(T entityId, List<String> attrKeys, boolean getAll) {
+    return jdbi.call(
             handle -> {
               var queryString =
                   String.format(
@@ -96,16 +83,16 @@ public abstract class KeyValueHandler<T> {
                               .build())
                   .list();
             })
-        .thenApply(
+        .thenCompose(
             attributes ->
-                attributes.stream()
-                    .sorted(Comparator.comparing(KeyValue::getKey))
-                    .collect(Collectors.toList()),
-            executor);
+                Future.of(
+                    attributes.stream()
+                        .sorted(Comparator.comparing(KeyValue::getKey))
+                        .collect(Collectors.toList())));
   }
 
-  public InternalFuture<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
-    return jdbi.withHandle(
+  public Future<MapSubtypes<T, KeyValue>> getKeyValuesMap(Set<T> entityIds) {
+    return jdbi.call(
             handle -> {
               try (var query =
                   handle.createQuery(
@@ -120,13 +107,13 @@ public abstract class KeyValueHandler<T> {
                     .list();
               }
             })
-        .thenApply(
+        .thenCompose(
             simpleEntries ->
-                simpleEntries.stream()
-                    .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
-                    .collect(Collectors.toList()),
-            executor)
-        .thenApply(MapSubtypes::from, executor);
+                Future.of(
+                    simpleEntries.stream()
+                        .sorted(Comparator.comparing(entry -> entry.getValue().getKey()))
+                        .collect(Collectors.toList())))
+        .thenCompose(entries -> Future.of(MapSubtypes.from(entries)));
   }
 
   protected abstract AbstractMap.SimpleEntry<T, KeyValue> getSimpleEntryFromResultSet(ResultSet rs)

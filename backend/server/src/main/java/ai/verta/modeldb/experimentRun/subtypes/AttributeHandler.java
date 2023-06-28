@@ -13,7 +13,7 @@ import java.util.AbstractMap;
 
 public class AttributeHandler extends KeyValueHandler<String> {
   public AttributeHandler(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
-    super(executor, jdbi, "attributes", entityName);
+    super(jdbi, "attributes", entityName);
   }
 
   @Override

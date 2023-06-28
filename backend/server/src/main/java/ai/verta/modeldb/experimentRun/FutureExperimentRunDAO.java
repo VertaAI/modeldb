@@ -339,7 +339,11 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> metricsHandler.getKeyValues(runId, Collections.emptyList(), true), executor);
+            unused ->
+                metricsHandler
+                    .getKeyValues(runId, Collections.emptyList(), true)
+                    .toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<List<KeyValue>> getHyperparameters(GetHyperparameters request) {
@@ -348,7 +352,10 @@ public class FutureExperimentRunDAO {
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
         .thenCompose(
-            unused -> hyperparametersHandler.getKeyValues(runId, Collections.emptyList(), true),
+            unused ->
+                hyperparametersHandler
+                    .getKeyValues(runId, Collections.emptyList(), true)
+                    .toInternalFuture(),
             executor);
   }
 
@@ -359,7 +366,9 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> attributeHandler.getKeyValues(runId, keys, getAll), executor);
+        .thenCompose(
+            unused -> attributeHandler.getKeyValues(runId, keys, getAll).toInternalFuture(),
+            executor);
   }
 
   public InternalFuture<ExperimentRun> logMetrics(LogMetrics request) {
@@ -451,7 +460,7 @@ public class FutureExperimentRunDAO {
 
     return checkPermission(
             Collections.singletonList(runId), ModelDBActionEnum.ModelDBServiceActions.READ)
-        .thenCompose(unused -> tagsHandler.getTags(runId), executor);
+        .thenSupply(() -> tagsHandler.getTags(runId).toInternalFuture(), executor);
   }
 
   private InternalFuture<Void> updateModifiedTimestamp(String runId, Long now) {
@@ -905,7 +914,8 @@ public class FutureExperimentRunDAO {
                                             .collect(Collectors.toSet());
 
                                     // Get tags
-                                    final var futureTags = tagsHandler.getTagsMap(ids);
+                                    final var futureTags =
+                                        tagsHandler.getTagsMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureTags,
@@ -918,7 +928,9 @@ public class FutureExperimentRunDAO {
 
                                     // Get hyperparams
                                     final var futureHyperparams =
-                                        hyperparametersHandler.getKeyValuesMap(ids);
+                                        hyperparametersHandler
+                                            .getKeyValuesMap(ids)
+                                            .toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureHyperparams,
@@ -968,7 +980,8 @@ public class FutureExperimentRunDAO {
                                             executor);
 
                                     // Get metrics
-                                    final var futureMetrics = metricsHandler.getKeyValuesMap(ids);
+                                    final var futureMetrics =
+                                        metricsHandler.getKeyValuesMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureMetrics,
@@ -981,7 +994,7 @@ public class FutureExperimentRunDAO {
 
                                     // Get attributes
                                     final var futureAttributes =
-                                        attributeHandler.getKeyValuesMap(ids);
+                                        attributeHandler.getKeyValuesMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureAttributes,
