@@ -105,22 +105,12 @@ public class PublicMDBRoleServiceUtils implements MDBRoleService {
   }
 
   @Override
-  public List<Resources> getAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      CollaboratorBase collaboratorBase) {
-    return Collections.emptyList();
-  }
-
-  @Override
   public GeneratedMessageV3 getOrgById(String orgId) {
     return null;
   }
 
   @Override
   public Collection<String> getAccessibleResourceIds(
-      CollaboratorBase hostUserInfo,
-      CollaboratorBase currentLoginUserInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Collection<String> requestedResourceIds) {
     return requestedResourceIds;
