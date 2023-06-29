@@ -51,15 +51,8 @@ public interface RoleService {
       String roleName, String resourceId, String userId, String resourceTypeName);
 
   Collection<String> getAccessibleResourceIds(
-      CollaboratorBase hostUserInfo,
-      CollaboratorBase currentLoginUserInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Collection<String> requestedResourceIds);
-
-  List<Resources> getAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      CollaboratorBase collaboratorBase);
 
   List<Resources> getSelfAllowedResources(
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,

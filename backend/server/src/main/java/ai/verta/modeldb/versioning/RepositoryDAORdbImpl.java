@@ -9,7 +9,6 @@ import ai.verta.modeldb.Dataset;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
-import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InternalErrorException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.config.MDBConfig;
@@ -1094,8 +1093,6 @@ public class RepositoryDAORdbImpl implements RepositoryDAO {
         Set<String> accessibleResourceIdsWithCollaborator =
             new HashSet<>(
                 mdbRoleService.getAccessibleResourceIds(
-                    null,
-                    new CollaboratorUser(uacApisUtil, currentLoginUserInfo),
                     ModelDBServiceResourceTypes.REPOSITORY,
                     request.getRepoIdsList().stream()
                         .map(String::valueOf)
