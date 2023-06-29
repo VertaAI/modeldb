@@ -34,6 +34,11 @@ class AuthzServiceStub(object):
         request_serializer=uac_dot_Authorization__pb2.GetSelfAllowedActionsBatch.SerializeToString,
         response_deserializer=uac_dot_Authorization__pb2.GetSelfAllowedActionsBatch.Response.FromString,
         )
+    self.getAllowedResources = channel.unary_unary(
+        '/ai.verta.uac.AuthzService/getAllowedResources',
+        request_serializer=uac_dot_Authorization__pb2.GetAllowedResources.SerializeToString,
+        response_deserializer=uac_dot_Authorization__pb2.GetAllowedResources.Response.FromString,
+        )
 
 
 class AuthzServiceServicer(object):
@@ -68,6 +73,13 @@ class AuthzServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
+  def getAllowedResources(self, request, context):
+    # missing associated documentation comment in .proto file
+    pass
+    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+    context.set_details('Method not implemented!')
+    raise NotImplementedError('Method not implemented!')
+
 
 def add_AuthzServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
@@ -90,6 +102,11 @@ def add_AuthzServiceServicer_to_server(servicer, server):
           servicer.getSelfAllowedActionsBatch,
           request_deserializer=uac_dot_Authorization__pb2.GetSelfAllowedActionsBatch.FromString,
           response_serializer=uac_dot_Authorization__pb2.GetSelfAllowedActionsBatch.Response.SerializeToString,
+      ),
+      'getAllowedResources': grpc.unary_unary_rpc_method_handler(
+          servicer.getAllowedResources,
+          request_deserializer=uac_dot_Authorization__pb2.GetAllowedResources.FromString,
+          response_serializer=uac_dot_Authorization__pb2.GetAllowedResources.Response.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(

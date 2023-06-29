@@ -43,6 +43,38 @@
         ]
       }
     },
+    "/authz/getAllowedResources": {
+      "post": {
+        "operationId": "AuthzService_getAllowedResources",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedResourcesResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response",
+            "schema": {
+              "$ref": "#/definitions/runtimeError"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/uacGetAllowedResources"
+            }
+          }
+        ],
+        "tags": [
+          "AuthzService"
+        ]
+      }
+    },
     "/authz/getSelfAllowedActionsBatch": {
       "post": {
         "operationId": "AuthzService_getSelfAllowedActionsBatch",
@@ -440,6 +472,47 @@
           "type": "array",
           "items": {
             "$ref": "#/definitions/uacEntities"
+          }
+        },
+        "total_records": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "uacGetAllowedResources": {
+      "type": "object",
+      "properties": {
+        "entities": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacEntities"
+          }
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacAction"
+          }
+        },
+        "resource_type": {
+          "$ref": "#/definitions/uacResourceType"
+        },
+        "service": {
+          "$ref": "#/definitions/ServiceEnumService"
+        },
+        "pagination": {
+          "$ref": "#/definitions/commonPagination"
+        }
+      }
+    },
+    "uacGetAllowedResourcesResponse": {
+      "type": "object",
+      "properties": {
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/uacResources"
           }
         },
         "total_records": {
