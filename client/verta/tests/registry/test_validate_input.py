@@ -51,6 +51,7 @@ class TestValidateInput:
 
         # Create tmp model_schema file
         model_schema = tmp_path / "model_schema.json"
+
         @validate_input
         def predict(self, input):
             return input
