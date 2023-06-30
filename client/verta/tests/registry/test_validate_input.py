@@ -10,13 +10,14 @@ class TestValidateInput:
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
         deadline=timedelta(milliseconds=50),
     )
-    @hypothesis.given(value=json_strategy, input_schema=input_class())
+    @hypothesis.given(input_value=input_class())
     def test_validate_input_allow(
-        self, make_model_schema_file, value, input_schema
+        self, make_model_schema_file, input_value
     ):
 
         @validate_input
         def predict(self, input):
             return input
 
-        predict(None, value)
+        print(input_value.dict())
+        predict(None, input_value.dict())

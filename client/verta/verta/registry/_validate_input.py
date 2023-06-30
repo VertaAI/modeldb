@@ -7,7 +7,6 @@ import jsonschema
 # for use like: `if getattr(model.predict, _DECORATED_FLAG, False)`
 _VALIDATE_DECORATED_FLAG = "_verta_validate_input"
 _MODEL_SCHEMA_PATH_ENV_VAR = "VERTA_MODEL_SCHEMA_PATH"
-_MODEL_SCHEMA_PATH = os.environ.get(_MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json")
 
 
 def validate_input(f):
@@ -18,9 +17,9 @@ def validate_input(f):
         # accepts dict input
         # TODO: validate length of args and type
         prediction_input = args[0]
+        model_schema_path = os.environ.get(_MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json")
         try:
-            print("path: {}".format(_MODEL_SCHEMA_PATH))
-            with open(_MODEL_SCHEMA_PATH, "r") as file:
+            with open(model_schema_path, "r") as file:
                 # Load the JSON data into a variable
                 schema = json.load(file)
         except FileNotFoundError as e:
@@ -28,7 +27,12 @@ def validate_input(f):
                 "no schema found for model. Did you remember to `set_schema`?"
             ) from e
         input_schema = schema["input"]
-        jsonschema.validate(instance=prediction_input, schema=input_schema)
+        try:
+            jsonschema.validate(instance=prediction_input, schema=input_schema)
+        except jsonschema.exceptions.ValidationError as e:
+            raise jsonschema.exceptions.ValidationError(
+                "failed schema validation"
+            ) from e
 
         output = f(self, *args, **kwargs)
         return output

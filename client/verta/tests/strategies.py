@@ -98,10 +98,8 @@ def env_vars(draw):
 
 @st.composite
 def validate_input_inner_class(draw):
-    h_dict = draw(json_strategy.filter(lambda d: d is not None))
     i_list_str = draw(st.lists(st.text()))
     return InnerInputClass(
-        h_dict,
         i_list_str,
     )
 
@@ -113,7 +111,6 @@ def input_class(draw):
     c_float = draw(st.floats())
     d_bool = draw(st.booleans())
     e_list_int = draw(st.lists(st.integers()))
-    f_dict = draw(json_strategy.filter(lambda d: d is not None))
     g_inner_input_class = draw(validate_input_inner_class())
 
     return InputClass(
@@ -122,6 +119,5 @@ def input_class(draw):
         c_float,
         d_bool,
         e_list_int,
-        f_dict,
         g_inner_input_class,
     )
