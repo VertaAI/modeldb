@@ -5,7 +5,7 @@ import os
 import jsonschema
 
 # for use like: `if getattr(model.predict, _DECORATED_FLAG, False)`
-_DECORATED_FLAG = "_verta_validate_input"
+_VALIDATE_DECORATED_FLAG = "_verta_validate_input"
 _MODEL_SCHEMA_PATH = os.environ.get("VERTA_MODEL_SCHEMA_PATH", "/app/model_schema.json")
 
 
@@ -31,5 +31,5 @@ def validate_input(f):
         output = f(self, *args, **kwargs)
         return output
 
-    setattr(wrapper, _DECORATED_FLAG, True)
+    setattr(wrapper, _VALIDATE_DECORATED_FLAG, True)
     return wrapper
