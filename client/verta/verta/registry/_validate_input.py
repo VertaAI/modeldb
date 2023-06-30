@@ -22,7 +22,9 @@ def validate_input(f):
                 # Load the JSON data into a variable
                 schema = json.load(file)
         except FileNotFoundError:
-            raise Exception("No schema found for model. Did you remember to `set_schema`?")
+            raise Exception(
+                "No schema found for model. Did you remember to `set_schema`?"
+            )
         input_schema = schema["input"]
         jsonschema.validate(instance=prediction_input, schema=input_schema)
 
