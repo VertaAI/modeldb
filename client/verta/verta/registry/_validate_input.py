@@ -1,17 +1,16 @@
 import functools
 import json
+import os
 
 import jsonschema
 
 # for use like: `if getattr(model.predict, _DECORATED_FLAG, False)`
 _DECORATED_FLAG = "_verta_validate_input"
-_INPUT_SCHEMA_PATH = "/app/model_schema.json"
+_MODEL_SCHEMA_PATH = os.environ.get("VERTA_MODEL_SCHEMA_PATH", "/app/model_schema.json")
 
 
 def validate_input(f):
-    """Decorator to validate prediction input against previously provided schema.
-
-    """
+    """Decorator to validate prediction input against previously provided schema."""
 
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
@@ -19,10 +18,10 @@ def validate_input(f):
         # TODO: validate length of args and type
         prediction_input = args[0]
         try:
-            with open(_INPUT_SCHEMA_PATH, 'r') as file:
+            with open(_MODEL_SCHEMA_PATH, "r") as file:
                 # Load the JSON data into a variable
                 schema = json.load(file)
-                input_schema = schema['input']
+                input_schema = schema["input"]
                 jsonschema.validate(instance=prediction_input, schema=input_schema)
 
             output = f(self, *args, **kwargs)
