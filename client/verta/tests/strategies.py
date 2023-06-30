@@ -9,7 +9,7 @@ import warnings
 import hypothesis
 import hypothesis.strategies as st
 
-from tests.registry.test_validate_input import InnerInputClass, InputClass
+from tests.registry.pydantic_models import InnerInputClass, InputClass
 from verta._internal_utils.time_utils import duration_millis
 
 
