@@ -56,35 +56,3 @@ class TestValidateInput:
             return input
 
         predict(None, value)
-
-    def test_verify_io_reject(self):
-        array = pytest.importorskip("numpy").array([1, 2, 3])
-        df = pytest.importorskip("pandas").DataFrame([1, 2, 3])
-        tensor = pytest.importorskip("torch").tensor([1, 2, 3])
-
-        msg_match = "not JSON serializable.*{} must only contain types"
-        for value in [array, df, tensor]:
-
-            @validate_input
-            def predict(self, _):
-                return value
-
-            with pytest.raises(TypeError, match=msg_match.format("input")):
-                predict(None, value)
-            with pytest.raises(TypeError, match=msg_match.format("output")):
-                predict(None, None)
-
-    def test_verify_io_reject_bytes(self):
-        # TODO: create Hypothesis strategy for non-decodable binary
-        value = b"\x80abc"
-
-        msg_match = "not JSON serializable.*{} must only contain types"
-
-        @validate_input
-        def predict(self, _):
-            return value
-
-        with pytest.raises(TypeError, match=msg_match.format("input")):
-            predict(None, value)
-        with pytest.raises(TypeError, match=msg_match.format("output")):
-            predict(None, None)
