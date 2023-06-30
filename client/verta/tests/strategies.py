@@ -8,6 +8,8 @@ import warnings
 
 import hypothesis
 import hypothesis.strategies as st
+
+from tests.registry.test_validate_input import InnerInputClass, InputClass
 from verta._internal_utils.time_utils import duration_millis
 
 
@@ -90,4 +92,25 @@ def env_vars(draw):
                 values=st.text(min_size=1),
             ),
         )
+    )
+
+
+@st.composite
+def validate_input_inner_class(draw):
+    return InnerInputClass(
+        json_strategy,
+        st.lists(st.text()),
+    )
+
+
+@st.composite
+def input_class(draw):
+    return InputClass(
+        st.integers(),
+        st.text(),
+        st.floats(),
+        st.booleans(),
+        st.lists(st.integers()),
+        json_strategy,
+        validate_input_inner_class,
     )
