@@ -18,6 +18,7 @@ def validate_input(f):
         # TODO: validate length of args and type
         prediction_input = args[0]
         try:
+            print("path: {}".format(_MODEL_SCHEMA_PATH))
             with open(_MODEL_SCHEMA_PATH, "r") as file:
                 # Load the JSON data into a variable
                 schema = json.load(file)

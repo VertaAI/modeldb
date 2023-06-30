@@ -8,6 +8,7 @@ import warnings
 
 import hypothesis
 import hypothesis.strategies as st
+from hypothesis import given
 
 from tests.registry.pydantic_models import InnerInputClass, InputClass
 from verta._internal_utils.time_utils import duration_millis
@@ -27,7 +28,7 @@ millis_uint64_strategy = millis_timedelta_strategy.map(duration_millis_ignore_wa
 json_strategy = st.recursive(
     st.none() | st.booleans() | st.floats() | st.text(string.printable),
     lambda children: st.lists(children)
-    | st.dictionaries(st.text(string.printable), children),
+                     | st.dictionaries(st.text(string.printable), children),
     max_leaves=500,
 )
 
@@ -97,20 +98,30 @@ def env_vars(draw):
 
 @st.composite
 def validate_input_inner_class(draw):
+    h_dict = draw(json_strategy.filter(lambda d: d is not None))
+    i_list_str = draw(st.lists(st.text()))
     return InnerInputClass(
-        json_strategy,
-        st.lists(st.text()),
+        h_dict,
+        i_list_str,
     )
 
 
 @st.composite
 def input_class(draw):
+    a_int = draw(st.integers())
+    b_str = draw(st.text())
+    c_float = draw(st.floats())
+    d_bool = draw(st.booleans())
+    e_list_int = draw(st.lists(st.integers()))
+    f_dict = draw(json_strategy.filter(lambda d: d is not None))
+    g_inner_input_class = draw(validate_input_inner_class())
+
     return InputClass(
-        st.integers(),
-        st.text(),
-        st.floats(),
-        st.booleans(),
-        st.lists(st.integers()),
-        json_strategy,
-        validate_input_inner_class,
+        a_int,
+        b_str,
+        c_float,
+        d_bool,
+        e_list_int,
+        f_dict,
+        g_inner_input_class,
     )

@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
+import os
+from types import FunctionType
 
 import pytest
 
+from tests.registry.pydantic_models import InputClass
 from verta.registry import DockerImage
 
 
@@ -17,4 +21,9 @@ def docker_image():
     )
 
 
-
+@pytest.fixture
+def make_model_schema_file(tmp_path, monkeypatch):
+    path = tmp_path / "model_schema.json"
+    schema = {"input": InputClass.schema()}
+    path.write_text(json.dumps(schema))
+    monkeypatch.setenv("VERTA_MODEL_SCHEMA_PATH", str(path))
