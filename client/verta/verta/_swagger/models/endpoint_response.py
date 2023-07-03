@@ -33,7 +33,8 @@ class EndpointResponse(object):
         'date_updated': 'datetime',
         'owner_id': 'str',
         'workspace_id': 'int',
-        'creator_request': 'EndpointCreate'
+        'creator_request': 'EndpointCreate',
+        'full_url': 'str'
     }
 
     attribute_map = {
@@ -42,10 +43,11 @@ class EndpointResponse(object):
         'date_updated': 'date_updated',
         'owner_id': 'owner_id',
         'workspace_id': 'workspace_id',
-        'creator_request': 'creator_request'
+        'creator_request': 'creator_request',
+        'full_url': 'full_url'
     }
 
-    def __init__(self, id=None, date_created=None, date_updated=None, owner_id=None, workspace_id=None, creator_request=None):  # noqa: E501
+    def __init__(self, id=None, date_created=None, date_updated=None, owner_id=None, workspace_id=None, creator_request=None, full_url=None):  # noqa: E501
         """EndpointResponse - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._date_created = None
@@ -53,6 +55,7 @@ class EndpointResponse(object):
         self._owner_id = None
         self._workspace_id = None
         self._creator_request = None
+        self._full_url = None
         self.discriminator = None
         if id is not None:
             self.id = id
@@ -66,6 +69,8 @@ class EndpointResponse(object):
             self.workspace_id = workspace_id
         if creator_request is not None:
             self.creator_request = creator_request
+        if full_url is not None:
+            self.full_url = full_url
 
     @property
     def id(self):
@@ -192,6 +197,27 @@ class EndpointResponse(object):
         """
 
         self._creator_request = creator_request
+
+    @property
+    def full_url(self):
+        """Gets the full_url of this EndpointResponse.  # noqa: E501
+
+
+        :return: The full_url of this EndpointResponse.  # noqa: E501
+        :rtype: str
+        """
+        return self._full_url
+
+    @full_url.setter
+    def full_url(self, full_url):
+        """Sets the full_url of this EndpointResponse.
+
+
+        :param full_url: The full_url of this EndpointResponse.  # noqa: E501
+        :type: str
+        """
+
+        self._full_url = full_url
 
     def to_dict(self):
         """Returns the model properties as a dict"""

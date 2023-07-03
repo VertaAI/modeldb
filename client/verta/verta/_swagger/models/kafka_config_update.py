@@ -28,26 +28,40 @@ class KafkaConfigUpdate(object):
                             and the value is json key in definition.
     """
     swagger_types = {
+        'cluster_config_id': 'str',
         'input_topic': 'str',
         'output_topic': 'str',
         'error_topic': 'str',
-        'disabled': 'bool'
+        'disabled': 'bool',
+        'reprocess_from_scratch': 'bool',
+        'reprocess_from_index': 'int',
+        'reprocess_from_timestamp': 'str'
     }
 
     attribute_map = {
+        'cluster_config_id': 'cluster_config_id',
         'input_topic': 'input_topic',
         'output_topic': 'output_topic',
         'error_topic': 'error_topic',
-        'disabled': 'disabled'
+        'disabled': 'disabled',
+        'reprocess_from_scratch': 'reprocess_from_scratch',
+        'reprocess_from_index': 'reprocess_from_index',
+        'reprocess_from_timestamp': 'reprocess_from_timestamp'
     }
 
-    def __init__(self, input_topic=None, output_topic=None, error_topic=None, disabled=False):  # noqa: E501
+    def __init__(self, cluster_config_id=None, input_topic=None, output_topic=None, error_topic=None, disabled=False, reprocess_from_scratch=None, reprocess_from_index=None, reprocess_from_timestamp=None):  # noqa: E501
         """KafkaConfigUpdate - a model defined in Swagger"""  # noqa: E501
+        self._cluster_config_id = None
         self._input_topic = None
         self._output_topic = None
         self._error_topic = None
         self._disabled = None
+        self._reprocess_from_scratch = None
+        self._reprocess_from_index = None
+        self._reprocess_from_timestamp = None
         self.discriminator = None
+        if cluster_config_id is not None:
+            self.cluster_config_id = cluster_config_id
         if input_topic is not None:
             self.input_topic = input_topic
         if output_topic is not None:
@@ -56,6 +70,33 @@ class KafkaConfigUpdate(object):
             self.error_topic = error_topic
         if disabled is not None:
             self.disabled = disabled
+        if reprocess_from_scratch is not None:
+            self.reprocess_from_scratch = reprocess_from_scratch
+        if reprocess_from_index is not None:
+            self.reprocess_from_index = reprocess_from_index
+        if reprocess_from_timestamp is not None:
+            self.reprocess_from_timestamp = reprocess_from_timestamp
+
+    @property
+    def cluster_config_id(self):
+        """Gets the cluster_config_id of this KafkaConfigUpdate.  # noqa: E501
+
+
+        :return: The cluster_config_id of this KafkaConfigUpdate.  # noqa: E501
+        :rtype: str
+        """
+        return self._cluster_config_id
+
+    @cluster_config_id.setter
+    def cluster_config_id(self, cluster_config_id):
+        """Sets the cluster_config_id of this KafkaConfigUpdate.
+
+
+        :param cluster_config_id: The cluster_config_id of this KafkaConfigUpdate.  # noqa: E501
+        :type: str
+        """
+
+        self._cluster_config_id = cluster_config_id
 
     @property
     def input_topic(self):
@@ -140,6 +181,69 @@ class KafkaConfigUpdate(object):
         """
 
         self._disabled = disabled
+
+    @property
+    def reprocess_from_scratch(self):
+        """Gets the reprocess_from_scratch of this KafkaConfigUpdate.  # noqa: E501
+
+
+        :return: The reprocess_from_scratch of this KafkaConfigUpdate.  # noqa: E501
+        :rtype: bool
+        """
+        return self._reprocess_from_scratch
+
+    @reprocess_from_scratch.setter
+    def reprocess_from_scratch(self, reprocess_from_scratch):
+        """Sets the reprocess_from_scratch of this KafkaConfigUpdate.
+
+
+        :param reprocess_from_scratch: The reprocess_from_scratch of this KafkaConfigUpdate.  # noqa: E501
+        :type: bool
+        """
+
+        self._reprocess_from_scratch = reprocess_from_scratch
+
+    @property
+    def reprocess_from_index(self):
+        """Gets the reprocess_from_index of this KafkaConfigUpdate.  # noqa: E501
+
+
+        :return: The reprocess_from_index of this KafkaConfigUpdate.  # noqa: E501
+        :rtype: int
+        """
+        return self._reprocess_from_index
+
+    @reprocess_from_index.setter
+    def reprocess_from_index(self, reprocess_from_index):
+        """Sets the reprocess_from_index of this KafkaConfigUpdate.
+
+
+        :param reprocess_from_index: The reprocess_from_index of this KafkaConfigUpdate.  # noqa: E501
+        :type: int
+        """
+
+        self._reprocess_from_index = reprocess_from_index
+
+    @property
+    def reprocess_from_timestamp(self):
+        """Gets the reprocess_from_timestamp of this KafkaConfigUpdate.  # noqa: E501
+
+
+        :return: The reprocess_from_timestamp of this KafkaConfigUpdate.  # noqa: E501
+        :rtype: str
+        """
+        return self._reprocess_from_timestamp
+
+    @reprocess_from_timestamp.setter
+    def reprocess_from_timestamp(self, reprocess_from_timestamp):
+        """Sets the reprocess_from_timestamp of this KafkaConfigUpdate.
+
+
+        :param reprocess_from_timestamp: The reprocess_from_timestamp of this KafkaConfigUpdate.  # noqa: E501
+        :type: str
+        """
+
+        self._reprocess_from_timestamp = reprocess_from_timestamp
 
     def to_dict(self):
         """Returns the model properties as a dict"""

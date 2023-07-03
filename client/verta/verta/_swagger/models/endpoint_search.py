@@ -29,6 +29,7 @@ class EndpointSearch(object):
     """
     swagger_types = {
         'workspace_name': 'str',
+        'ids': 'list[int]',
         'exact_paths': 'list[str]',
         'fuzzy_paths': 'list[str]',
         'labels': 'list[str]'
@@ -36,19 +37,24 @@ class EndpointSearch(object):
 
     attribute_map = {
         'workspace_name': 'workspaceName',
+        'ids': 'ids',
         'exact_paths': 'exactPaths',
         'fuzzy_paths': 'fuzzyPaths',
         'labels': 'labels'
     }
 
-    def __init__(self, workspace_name=None, exact_paths=None, fuzzy_paths=None, labels=None):  # noqa: E501
+    def __init__(self, workspace_name=None, ids=None, exact_paths=None, fuzzy_paths=None, labels=None):  # noqa: E501
         """EndpointSearch - a model defined in Swagger"""  # noqa: E501
         self._workspace_name = None
+        self._ids = None
         self._exact_paths = None
         self._fuzzy_paths = None
         self._labels = None
         self.discriminator = None
-        self.workspace_name = workspace_name
+        if workspace_name is not None:
+            self.workspace_name = workspace_name
+        if ids is not None:
+            self.ids = ids
         if exact_paths is not None:
             self.exact_paths = exact_paths
         if fuzzy_paths is not None:
@@ -76,10 +82,29 @@ class EndpointSearch(object):
         :param workspace_name: The workspace_name of this EndpointSearch.  # noqa: E501
         :type: str
         """
-        if workspace_name is None:
-            raise ValueError("Invalid value for `workspace_name`, must not be `None`")  # noqa: E501
 
         self._workspace_name = workspace_name
+
+    @property
+    def ids(self):
+        """Gets the ids of this EndpointSearch.  # noqa: E501
+
+
+        :return: The ids of this EndpointSearch.  # noqa: E501
+        :rtype: list[int]
+        """
+        return self._ids
+
+    @ids.setter
+    def ids(self, ids):
+        """Sets the ids of this EndpointSearch.
+
+
+        :param ids: The ids of this EndpointSearch.  # noqa: E501
+        :type: list[int]
+        """
+
+        self._ids = ids
 
     @property
     def exact_paths(self):

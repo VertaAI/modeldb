@@ -33,7 +33,8 @@ class StageUpdateRequest(object):
         'canary_strategy': 'CanaryStrategy',
         'resources': 'StageUpdateRequestResources',
         'env': 'list[StageUpdateRequestEnv]',
-        'autoscaling': 'AutoscalingRequest'
+        'autoscaling': 'AutoscalingRequest',
+        'isolation_level': 'IsolationLevel'
     }
 
     attribute_map = {
@@ -42,10 +43,11 @@ class StageUpdateRequest(object):
         'canary_strategy': 'canary_strategy',
         'resources': 'resources',
         'env': 'env',
-        'autoscaling': 'autoscaling'
+        'autoscaling': 'autoscaling',
+        'isolation_level': 'isolation_level'
     }
 
-    def __init__(self, strategy=None, build_id=None, canary_strategy=None, resources=None, env=None, autoscaling=None):  # noqa: E501
+    def __init__(self, strategy=None, build_id=None, canary_strategy=None, resources=None, env=None, autoscaling=None, isolation_level=None):  # noqa: E501
         """StageUpdateRequest - a model defined in Swagger"""  # noqa: E501
         self._strategy = None
         self._build_id = None
@@ -53,6 +55,7 @@ class StageUpdateRequest(object):
         self._resources = None
         self._env = None
         self._autoscaling = None
+        self._isolation_level = None
         self.discriminator = None
         if strategy is not None:
             self.strategy = strategy
@@ -66,6 +69,8 @@ class StageUpdateRequest(object):
             self.env = env
         if autoscaling is not None:
             self.autoscaling = autoscaling
+        if isolation_level is not None:
+            self.isolation_level = isolation_level
 
     @property
     def strategy(self):
@@ -198,6 +203,27 @@ class StageUpdateRequest(object):
         """
 
         self._autoscaling = autoscaling
+
+    @property
+    def isolation_level(self):
+        """Gets the isolation_level of this StageUpdateRequest.  # noqa: E501
+
+
+        :return: The isolation_level of this StageUpdateRequest.  # noqa: E501
+        :rtype: IsolationLevel
+        """
+        return self._isolation_level
+
+    @isolation_level.setter
+    def isolation_level(self, isolation_level):
+        """Sets the isolation_level of this StageUpdateRequest.
+
+
+        :param isolation_level: The isolation_level of this StageUpdateRequest.  # noqa: E501
+        :type: IsolationLevel
+        """
+
+        self._isolation_level = isolation_level
 
     def to_dict(self):
         """Returns the model properties as a dict"""

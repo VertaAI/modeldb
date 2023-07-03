@@ -31,22 +31,31 @@ class BuildCreate(object):
         'run_id': 'str',
         'model_version_id': 'int',
         'self_contained': 'bool',
-        'external_location': 'str'
+        'external_location': 'str',
+        'requires_root': 'bool',
+        'uses_flask': 'bool',
+        'scan_external': 'bool'
     }
 
     attribute_map = {
         'run_id': 'run_id',
         'model_version_id': 'model_version_id',
         'self_contained': 'self_contained',
-        'external_location': 'external_location'
+        'external_location': 'external_location',
+        'requires_root': 'requires_root',
+        'uses_flask': 'uses_flask',
+        'scan_external': 'scan_external'
     }
 
-    def __init__(self, run_id=None, model_version_id=None, self_contained=None, external_location=None):  # noqa: E501
+    def __init__(self, run_id=None, model_version_id=None, self_contained=None, external_location=None, requires_root=False, uses_flask=False, scan_external=False):  # noqa: E501
         """BuildCreate - a model defined in Swagger"""  # noqa: E501
         self._run_id = None
         self._model_version_id = None
         self._self_contained = None
         self._external_location = None
+        self._requires_root = None
+        self._uses_flask = None
+        self._scan_external = None
         self.discriminator = None
         if run_id is not None:
             self.run_id = run_id
@@ -56,6 +65,12 @@ class BuildCreate(object):
             self.self_contained = self_contained
         if external_location is not None:
             self.external_location = external_location
+        if requires_root is not None:
+            self.requires_root = requires_root
+        if uses_flask is not None:
+            self.uses_flask = uses_flask
+        if scan_external is not None:
+            self.scan_external = scan_external
 
     @property
     def run_id(self):
@@ -140,6 +155,69 @@ class BuildCreate(object):
         """
 
         self._external_location = external_location
+
+    @property
+    def requires_root(self):
+        """Gets the requires_root of this BuildCreate.  # noqa: E501
+
+
+        :return: The requires_root of this BuildCreate.  # noqa: E501
+        :rtype: bool
+        """
+        return self._requires_root
+
+    @requires_root.setter
+    def requires_root(self, requires_root):
+        """Sets the requires_root of this BuildCreate.
+
+
+        :param requires_root: The requires_root of this BuildCreate.  # noqa: E501
+        :type: bool
+        """
+
+        self._requires_root = requires_root
+
+    @property
+    def uses_flask(self):
+        """Gets the uses_flask of this BuildCreate.  # noqa: E501
+
+
+        :return: The uses_flask of this BuildCreate.  # noqa: E501
+        :rtype: bool
+        """
+        return self._uses_flask
+
+    @uses_flask.setter
+    def uses_flask(self, uses_flask):
+        """Sets the uses_flask of this BuildCreate.
+
+
+        :param uses_flask: The uses_flask of this BuildCreate.  # noqa: E501
+        :type: bool
+        """
+
+        self._uses_flask = uses_flask
+
+    @property
+    def scan_external(self):
+        """Gets the scan_external of this BuildCreate.  # noqa: E501
+
+
+        :return: The scan_external of this BuildCreate.  # noqa: E501
+        :rtype: bool
+        """
+        return self._scan_external
+
+    @scan_external.setter
+    def scan_external(self, scan_external):
+        """Sets the scan_external of this BuildCreate.
+
+
+        :param scan_external: The scan_external of this BuildCreate.  # noqa: E501
+        :type: bool
+        """
+
+        self._scan_external = scan_external
 
     def to_dict(self):
         """Returns the model properties as a dict"""

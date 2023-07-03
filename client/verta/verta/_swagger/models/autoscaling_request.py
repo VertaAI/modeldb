@@ -28,24 +28,50 @@ class AutoscalingRequest(object):
                             and the value is json key in definition.
     """
     swagger_types = {
+        'scale_to_zero': 'AutoscalingRequestScaleToZero',
         'quantities': 'AutoscalingRequestQuantities',
         'metrics': 'list[AutoscalingRequestMetrics]'
     }
 
     attribute_map = {
+        'scale_to_zero': 'scale_to_zero',
         'quantities': 'quantities',
         'metrics': 'metrics'
     }
 
-    def __init__(self, quantities=None, metrics=None):  # noqa: E501
+    def __init__(self, scale_to_zero=None, quantities=None, metrics=None):  # noqa: E501
         """AutoscalingRequest - a model defined in Swagger"""  # noqa: E501
+        self._scale_to_zero = None
         self._quantities = None
         self._metrics = None
         self.discriminator = None
+        if scale_to_zero is not None:
+            self.scale_to_zero = scale_to_zero
         if quantities is not None:
             self.quantities = quantities
         if metrics is not None:
             self.metrics = metrics
+
+    @property
+    def scale_to_zero(self):
+        """Gets the scale_to_zero of this AutoscalingRequest.  # noqa: E501
+
+
+        :return: The scale_to_zero of this AutoscalingRequest.  # noqa: E501
+        :rtype: AutoscalingRequestScaleToZero
+        """
+        return self._scale_to_zero
+
+    @scale_to_zero.setter
+    def scale_to_zero(self, scale_to_zero):
+        """Sets the scale_to_zero of this AutoscalingRequest.
+
+
+        :param scale_to_zero: The scale_to_zero of this AutoscalingRequest.  # noqa: E501
+        :type: AutoscalingRequestScaleToZero
+        """
+
+        self._scale_to_zero = scale_to_zero
 
     @property
     def quantities(self):

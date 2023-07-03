@@ -34,7 +34,9 @@ class BuildResponse(object):
         'date_created': 'datetime',
         'date_updated': 'datetime',
         'creator_request': 'BuildCreate',
-        'location': 'str'
+        'location': 'str',
+        'scan_external_results': 'BuildScanExternalResults',
+        'config_files': 'list[BuildResponseConfigFiles]'
     }
 
     attribute_map = {
@@ -44,10 +46,12 @@ class BuildResponse(object):
         'date_created': 'date_created',
         'date_updated': 'date_updated',
         'creator_request': 'creator_request',
-        'location': 'location'
+        'location': 'location',
+        'scan_external_results': 'scan_external_results',
+        'config_files': 'config_files'
     }
 
-    def __init__(self, id=None, status=None, message=None, date_created=None, date_updated=None, creator_request=None, location=None):  # noqa: E501
+    def __init__(self, id=None, status=None, message=None, date_created=None, date_updated=None, creator_request=None, location=None, scan_external_results=None, config_files=None):  # noqa: E501
         """BuildResponse - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._status = None
@@ -56,6 +60,8 @@ class BuildResponse(object):
         self._date_updated = None
         self._creator_request = None
         self._location = None
+        self._scan_external_results = None
+        self._config_files = None
         self.discriminator = None
         if id is not None:
             self.id = id
@@ -71,6 +77,10 @@ class BuildResponse(object):
             self.creator_request = creator_request
         if location is not None:
             self.location = location
+        if scan_external_results is not None:
+            self.scan_external_results = scan_external_results
+        if config_files is not None:
+            self.config_files = config_files
 
     @property
     def id(self):
@@ -218,6 +228,48 @@ class BuildResponse(object):
         """
 
         self._location = location
+
+    @property
+    def scan_external_results(self):
+        """Gets the scan_external_results of this BuildResponse.  # noqa: E501
+
+
+        :return: The scan_external_results of this BuildResponse.  # noqa: E501
+        :rtype: BuildScanExternalResults
+        """
+        return self._scan_external_results
+
+    @scan_external_results.setter
+    def scan_external_results(self, scan_external_results):
+        """Sets the scan_external_results of this BuildResponse.
+
+
+        :param scan_external_results: The scan_external_results of this BuildResponse.  # noqa: E501
+        :type: BuildScanExternalResults
+        """
+
+        self._scan_external_results = scan_external_results
+
+    @property
+    def config_files(self):
+        """Gets the config_files of this BuildResponse.  # noqa: E501
+
+
+        :return: The config_files of this BuildResponse.  # noqa: E501
+        :rtype: list[BuildResponseConfigFiles]
+        """
+        return self._config_files
+
+    @config_files.setter
+    def config_files(self, config_files):
+        """Sets the config_files of this BuildResponse.
+
+
+        :param config_files: The config_files of this BuildResponse.  # noqa: E501
+        :type: list[BuildResponseConfigFiles]
+        """
+
+        self._config_files = config_files
 
     def to_dict(self):
         """Returns the model properties as a dict"""

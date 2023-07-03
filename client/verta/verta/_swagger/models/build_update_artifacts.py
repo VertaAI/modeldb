@@ -30,26 +30,36 @@ class BuildUpdateArtifacts(object):
     swagger_types = {
         'run_id': 'str',
         'model_version_id': 'int',
-        'base_image': 'str'
+        'base_image': 'str',
+        'self_contained': 'bool',
+        'delete_all_base_artifacts': 'bool'
     }
 
     attribute_map = {
         'run_id': 'run_id',
         'model_version_id': 'model_version_id',
-        'base_image': 'base_image'
+        'base_image': 'base_image',
+        'self_contained': 'self_contained',
+        'delete_all_base_artifacts': 'delete_all_base_artifacts'
     }
 
-    def __init__(self, run_id=None, model_version_id=None, base_image=None):  # noqa: E501
+    def __init__(self, run_id=None, model_version_id=None, base_image=None, self_contained=None, delete_all_base_artifacts=None):  # noqa: E501
         """BuildUpdateArtifacts - a model defined in Swagger"""  # noqa: E501
         self._run_id = None
         self._model_version_id = None
         self._base_image = None
+        self._self_contained = None
+        self._delete_all_base_artifacts = None
         self.discriminator = None
         if run_id is not None:
             self.run_id = run_id
         if model_version_id is not None:
             self.model_version_id = model_version_id
         self.base_image = base_image
+        if self_contained is not None:
+            self.self_contained = self_contained
+        if delete_all_base_artifacts is not None:
+            self.delete_all_base_artifacts = delete_all_base_artifacts
 
     @property
     def run_id(self):
@@ -115,6 +125,48 @@ class BuildUpdateArtifacts(object):
             raise ValueError("Invalid value for `base_image`, must not be `None`")  # noqa: E501
 
         self._base_image = base_image
+
+    @property
+    def self_contained(self):
+        """Gets the self_contained of this BuildUpdateArtifacts.  # noqa: E501
+
+
+        :return: The self_contained of this BuildUpdateArtifacts.  # noqa: E501
+        :rtype: bool
+        """
+        return self._self_contained
+
+    @self_contained.setter
+    def self_contained(self, self_contained):
+        """Sets the self_contained of this BuildUpdateArtifacts.
+
+
+        :param self_contained: The self_contained of this BuildUpdateArtifacts.  # noqa: E501
+        :type: bool
+        """
+
+        self._self_contained = self_contained
+
+    @property
+    def delete_all_base_artifacts(self):
+        """Gets the delete_all_base_artifacts of this BuildUpdateArtifacts.  # noqa: E501
+
+
+        :return: The delete_all_base_artifacts of this BuildUpdateArtifacts.  # noqa: E501
+        :rtype: bool
+        """
+        return self._delete_all_base_artifacts
+
+    @delete_all_base_artifacts.setter
+    def delete_all_base_artifacts(self, delete_all_base_artifacts):
+        """Sets the delete_all_base_artifacts of this BuildUpdateArtifacts.
+
+
+        :param delete_all_base_artifacts: The delete_all_base_artifacts of this BuildUpdateArtifacts.  # noqa: E501
+        :type: bool
+        """
+
+        self._delete_all_base_artifacts = delete_all_base_artifacts
 
     def to_dict(self):
         """Returns the model properties as a dict"""

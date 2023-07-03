@@ -34,7 +34,8 @@ class BuildScanResponse(object):
         'scanner': 'str',
         'date_updated': 'datetime',
         'details': 'list[BuildScanDetail]',
-        'creator_request': 'BuildScanCreate'
+        'creator_request': 'BuildScanCreate',
+        'scan_external_results': 'BuildScanExternalResults'
     }
 
     attribute_map = {
@@ -44,10 +45,11 @@ class BuildScanResponse(object):
         'scanner': 'scanner',
         'date_updated': 'date_updated',
         'details': 'details',
-        'creator_request': 'creator_request'
+        'creator_request': 'creator_request',
+        'scan_external_results': 'scan_external_results'
     }
 
-    def __init__(self, id=None, scan_status=None, safety_status=None, scanner=None, date_updated=None, details=None, creator_request=None):  # noqa: E501
+    def __init__(self, id=None, scan_status=None, safety_status=None, scanner=None, date_updated=None, details=None, creator_request=None, scan_external_results=None):  # noqa: E501
         """BuildScanResponse - a model defined in Swagger"""  # noqa: E501
         self._id = None
         self._scan_status = None
@@ -56,6 +58,7 @@ class BuildScanResponse(object):
         self._date_updated = None
         self._details = None
         self._creator_request = None
+        self._scan_external_results = None
         self.discriminator = None
         if id is not None:
             self.id = id
@@ -71,6 +74,8 @@ class BuildScanResponse(object):
             self.details = details
         if creator_request is not None:
             self.creator_request = creator_request
+        if scan_external_results is not None:
+            self.scan_external_results = scan_external_results
 
     @property
     def id(self):
@@ -218,6 +223,27 @@ class BuildScanResponse(object):
         """
 
         self._creator_request = creator_request
+
+    @property
+    def scan_external_results(self):
+        """Gets the scan_external_results of this BuildScanResponse.  # noqa: E501
+
+
+        :return: The scan_external_results of this BuildScanResponse.  # noqa: E501
+        :rtype: BuildScanExternalResults
+        """
+        return self._scan_external_results
+
+    @scan_external_results.setter
+    def scan_external_results(self, scan_external_results):
+        """Sets the scan_external_results of this BuildScanResponse.
+
+
+        :param scan_external_results: The scan_external_results of this BuildScanResponse.  # noqa: E501
+        :type: BuildScanExternalResults
+        """
+
+        self._scan_external_results = scan_external_results
 
     def to_dict(self):
         """Returns the model properties as a dict"""

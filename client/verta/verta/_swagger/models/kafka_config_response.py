@@ -30,20 +30,23 @@ class KafkaConfigResponse(object):
     swagger_types = {
         'update_request': 'KafkaConfigUpdate',
         'status': 'KafkaStatusEnum',
-        'message': 'str'
+        'message': 'str',
+        'cluster_config': 'KafkaClusterConfig'
     }
 
     attribute_map = {
         'update_request': 'update_request',
         'status': 'status',
-        'message': 'message'
+        'message': 'message',
+        'cluster_config': 'cluster_config'
     }
 
-    def __init__(self, update_request=None, status=None, message=None):  # noqa: E501
+    def __init__(self, update_request=None, status=None, message=None, cluster_config=None):  # noqa: E501
         """KafkaConfigResponse - a model defined in Swagger"""  # noqa: E501
         self._update_request = None
         self._status = None
         self._message = None
+        self._cluster_config = None
         self.discriminator = None
         if update_request is not None:
             self.update_request = update_request
@@ -51,6 +54,8 @@ class KafkaConfigResponse(object):
             self.status = status
         if message is not None:
             self.message = message
+        if cluster_config is not None:
+            self.cluster_config = cluster_config
 
     @property
     def update_request(self):
@@ -114,6 +119,27 @@ class KafkaConfigResponse(object):
         """
 
         self._message = message
+
+    @property
+    def cluster_config(self):
+        """Gets the cluster_config of this KafkaConfigResponse.  # noqa: E501
+
+
+        :return: The cluster_config of this KafkaConfigResponse.  # noqa: E501
+        :rtype: KafkaClusterConfig
+        """
+        return self._cluster_config
+
+    @cluster_config.setter
+    def cluster_config(self, cluster_config):
+        """Sets the cluster_config of this KafkaConfigResponse.
+
+
+        :param cluster_config: The cluster_config of this KafkaConfigResponse.  # noqa: E501
+        :type: KafkaClusterConfig
+        """
+
+        self._cluster_config = cluster_config
 
     def to_dict(self):
         """Returns the model properties as a dict"""
