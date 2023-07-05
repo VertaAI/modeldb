@@ -5,7 +5,7 @@ import pytest
 
 from tests.registry.pydantic_models import AClass
 from verta.registry import DockerImage
-from verta.registry._validate_input import _MODEL_SCHEMA_PATH_ENV_VAR
+from verta.registry._validate_schema import _MODEL_SCHEMA_PATH_ENV_VAR
 
 
 @pytest.fixture(scope="session")
