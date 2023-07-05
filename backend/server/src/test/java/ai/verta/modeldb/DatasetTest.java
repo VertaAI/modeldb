@@ -1,6 +1,7 @@
 package ai.verta.modeldb;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.boot.test.context.SpringBootTest.WebEnvironment.DEFINED_PORT;
@@ -42,6 +43,7 @@ import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -49,6 +51,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+@SuppressWarnings("ResultOfMethodCallIgnored")
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(classes = App.class, webEnvironment = DEFINED_PORT)
 @ContextConfiguration(classes = {ModeldbTestConfigurationBeans.class})
@@ -139,9 +142,9 @@ public class DatasetTest extends ModeldbTestSetup {
     dataset1 = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
     assertEquals(
-        "Dataset name not match with expected Dataset name",
         createDatasetRequest.getName(),
-        dataset1.getName());
+        dataset1.getName(),
+        "Dataset name not match with expected Dataset name");
 
     // dataset2 of above dataset
     createDatasetRequest = getDatasetRequest("Dataset-2-" + new Date().getTime());
@@ -167,9 +170,9 @@ public class DatasetTest extends ModeldbTestSetup {
     dataset2 = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
     assertEquals(
-        "Dataset name not match with expected Dataset name",
         createDatasetRequest.getName(),
-        dataset2.getName());
+        dataset2.getName(),
+        "Dataset name not match with expected Dataset name");
 
     // dataset3 of above dataset
     createDatasetRequest = getDatasetRequest("Dataset-3-" + new Date().getTime());
@@ -192,9 +195,9 @@ public class DatasetTest extends ModeldbTestSetup {
     dataset3 = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
     assertEquals(
-        "Dataset name not match with expected Dataset name",
         createDatasetRequest.getName(),
-        dataset3.getName());
+        dataset3.getName(),
+        "Dataset name not match with expected Dataset name");
 
     // dataset4 of above dataset
     createDatasetRequest = getDatasetRequest("Dataset-4-" + new Date().getTime());
@@ -219,10 +222,7 @@ public class DatasetTest extends ModeldbTestSetup {
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
     dataset4 = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
-    assertEquals(
-        "Dataset name not match with expected Dataset name",
-        createDatasetRequest.getName(),
-        dataset4.getName());
+    assertEquals(createDatasetRequest.getName(), dataset4.getName());
 
     datasetMap.put(dataset1.getId(), dataset1);
     datasetMap.put(dataset2.getId(), dataset2);
@@ -246,10 +246,7 @@ public class DatasetTest extends ModeldbTestSetup {
         path += "." + filenameExtension;
       }
 
-      assertEquals(
-          "Dataset artifact path not match with expected artifact path",
-          path,
-          responseArtifact.getPath());
+      assertEquals(path, responseArtifact.getPath());
     }
   }
 
@@ -369,17 +366,16 @@ public class DatasetTest extends ModeldbTestSetup {
               .build();
 
       GetAllDatasets.Response datasetResponse = datasetServiceStub.getAllDatasets(getAllDatasets);
-      if (datasetResponse.getDatasetsList() != null
-          && datasetResponse.getDatasetsList().size() > 0) {
+      if (!datasetResponse.getDatasetsList().isEmpty()) {
         isExpectedResultFound = true;
         LOGGER.info("GetAllDataset Response : " + datasetResponse.getDatasetsCount());
         Dataset resDataset = null;
         for (Dataset dataset : datasetResponse.getDatasetsList()) {
           if (datasetMap.containsKey(dataset.getId())) {
             assertEquals(
-                "Dataset not match with expected Dataset",
                 datasetMap.get(dataset.getId()),
-                dataset);
+                dataset,
+                "Dataset not match with expected Dataset");
             resDataset = datasetResponse.getDatasets(0);
           }
         }
@@ -390,14 +386,14 @@ public class DatasetTest extends ModeldbTestSetup {
         if (datasetMap.containsKey(resDataset.getId())) {
           if (actualPageNumber == 1) {
             assertEquals(
-                "Dataset not match with expected Dataset",
                 datasetMap.get(resDataset.getId()),
-                dataset4);
+                dataset4,
+                "Dataset not match with expected Dataset");
           } else if (actualPageNumber == 3) {
             assertEquals(
-                "Dataset not match with expected Dataset",
                 datasetMap.get(resDataset.getId()),
-                dataset2);
+                dataset2,
+                "Dataset not match with expected Dataset");
           }
         }
         actualPageNumber = actualPageNumber + 1;
@@ -406,7 +402,7 @@ public class DatasetTest extends ModeldbTestSetup {
           LOGGER.warn("More Dataset not found in database");
           assertTrue(true);
         } else {
-          fail("Expected Dataset not found in response");
+          Assertions.fail("Expected Dataset not found in response");
         }
         break;
       }
@@ -421,14 +417,14 @@ public class DatasetTest extends ModeldbTestSetup {
       if (datasetMap.containsKey(dataset.getId())) {
         if (index == 0) {
           assertEquals(
-              "Dataset name not match with expected dataset name",
               dataset4.getName(),
-              dataset.getName());
+              dataset.getName(),
+              "Dataset name not match with expected dataset name");
         } else if (index == 1) {
           assertEquals(
-              "Dataset name not match with expected dataset name",
               dataset3.getName(),
-              dataset.getName());
+              dataset.getName(),
+              "Dataset name not match with expected dataset name");
         }
       }
     }
@@ -448,7 +444,7 @@ public class DatasetTest extends ModeldbTestSetup {
     GetDatasetById.Response getDatasetByIdResponse =
         datasetServiceStub.getDatasetById(getDatasetById);
     assertEquals(
-        "Dataset not match with expected dataset", dataset1, getDatasetByIdResponse.getDataset());
+        dataset1, getDatasetByIdResponse.getDataset(), "Dataset not match with expected dataset");
 
     LOGGER.info("Get Dataset by Id test stop................................");
   }
@@ -468,9 +464,9 @@ public class DatasetTest extends ModeldbTestSetup {
     Dataset dataset = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset.getName());
+        dataset.getName(),
+        "Dataset name not match with expected dataset name");
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser2);
@@ -494,9 +490,9 @@ public class DatasetTest extends ModeldbTestSetup {
       LOGGER.info("Response DatasetByUser of Dataset : " + response.getDatasetByUser());
       LOGGER.info("Response SharedDatasetsList of Datasets : " + response.getSharedDatasetsList());
       assertEquals(
-          "Dataset name not match", dataset.getName(), response.getDatasetByUser().getName());
+          dataset.getName(), response.getDatasetByUser().getName(), "Dataset name not match");
       for (Dataset sharedDataset : response.getSharedDatasetsList()) {
-        assertEquals("Shared dataset name not match", dataset.getName(), sharedDataset.getName());
+        assertEquals(dataset.getName(), sharedDataset.getName(), "Shared dataset name not match");
       }
 
       if (testConfig.hasAuth()) {
@@ -527,11 +523,10 @@ public class DatasetTest extends ModeldbTestSetup {
             "Response SharedDatasetsList of Datasets : "
                 + getDatasetByNameResponse.getSharedDatasetsList());
         assertTrue(
-            "Dataset name not match",
-            getDatasetByNameResponse.getDatasetByUser() == null
-                || getDatasetByNameResponse.getDatasetByUser().getId().isEmpty());
+            getDatasetByNameResponse.getDatasetByUser().getId().isEmpty(),
+            "Dataset name not match");
         for (Dataset sharedDataset : getDatasetByNameResponse.getSharedDatasetsList()) {
-          assertEquals("Shared dataset name not match", dataset.getName(), sharedDataset.getName());
+          assertEquals(dataset.getName(), sharedDataset.getName(), "Shared dataset name not match");
         }
 
         // Create dataset
@@ -540,9 +535,9 @@ public class DatasetTest extends ModeldbTestSetup {
         Dataset selfDataset = createDatasetResponse.getDataset();
         LOGGER.info("Dataset created successfully");
         assertEquals(
-            "Dataset name not match with expected dataset name",
             createDatasetRequest.getName(),
-            selfDataset.getName());
+            selfDataset.getName(),
+            "Dataset name not match with expected dataset name");
         if (isRunningIsolated()) {
           mockGetResourcesForAllDatasets(Map.of(selfDataset.getId(), selfDataset), testUser1);
         }
@@ -556,12 +551,12 @@ public class DatasetTest extends ModeldbTestSetup {
               "Response SharedDatasetsList of Datasets : "
                   + getDatasetByNameResponse.getSharedDatasetsList());
           assertEquals(
-              "Dataset name not match",
               selfDataset.getName(),
-              getDatasetByNameResponse.getDatasetByUser().getName());
+              getDatasetByNameResponse.getDatasetByUser().getName(),
+              "Dataset name not match");
           for (Dataset sharedDataset : getDatasetByNameResponse.getSharedDatasetsList()) {
             assertEquals(
-                "Shared dataset name not match", selfDataset.getName(), sharedDataset.getName());
+                selfDataset.getName(), sharedDataset.getName(), "Shared dataset name not match");
           }
         } finally {
           DeleteDataset deleteDataset =
@@ -652,9 +647,9 @@ public class DatasetTest extends ModeldbTestSetup {
     Dataset dataset = createDatasetResponse.getDataset();
     LOGGER.info("Dataset created successfully");
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset.getName());
+        dataset.getName(),
+        "Dataset name not match with expected dataset name");
     try {
 
       if (isRunningIsolated()) {
@@ -687,9 +682,9 @@ public class DatasetTest extends ModeldbTestSetup {
       Dataset selfDataset = createDatasetResponse.getDataset();
       LOGGER.info("Dataset created successfully");
       assertEquals(
-          "Dataset name not match with expected dataset name",
           createDatasetRequest.getName(),
-          selfDataset.getName());
+          selfDataset.getName(),
+          "Dataset name not match with expected dataset name");
 
       try {
         if (isRunningIsolated()) {
@@ -715,11 +710,10 @@ public class DatasetTest extends ModeldbTestSetup {
             "Response SharedDatasetsList of Datasets : "
                 + getDatasetByNameResponse.getSharedDatasetsList());
         assertTrue(
-            "Dataset name not match",
-            getDatasetByNameResponse.getDatasetByUser() == null
-                || getDatasetByNameResponse.getDatasetByUser().getId().isEmpty());
+            getDatasetByNameResponse.getDatasetByUser().getId().isEmpty(),
+            "Dataset name not match");
         for (Dataset sharedDataset : getDatasetByNameResponse.getSharedDatasetsList()) {
-          assertEquals("Shared dataset name not match", dataset.getName(), sharedDataset.getName());
+          assertEquals(dataset.getName(), sharedDataset.getName(), "Shared dataset name not match");
         }
 
         if (isRunningIsolated()) {
@@ -744,12 +738,10 @@ public class DatasetTest extends ModeldbTestSetup {
         LOGGER.info(
             "Response SharedDatasetsList of Datasets : "
                 + getDatasetByNameResponse.getSharedDatasetsList());
-        assertTrue(
-            "Dataset name not match",
-            getDatasetByNameResponse.getDatasetByUser() != null
-                && getDatasetByNameResponse.getDatasetByUser().equals(selfDataset));
+        assertEquals(
+            getDatasetByNameResponse.getDatasetByUser(), selfDataset, "Dataset name not match");
         for (Dataset sharedDataset : getDatasetByNameResponse.getSharedDatasetsList()) {
-          assertEquals("Shared dataset name not match", dataset.getName(), sharedDataset.getName());
+          assertEquals(dataset.getName(), sharedDataset.getName(), "Shared dataset name not match");
         }
       } finally {
         if (isRunningIsolated()) {
@@ -792,7 +784,7 @@ public class DatasetTest extends ModeldbTestSetup {
     try {
       GetDatasetByName getDataset = GetDatasetByName.newBuilder().setName("test").build();
       datasetServiceStub.getDatasetByName(getDataset);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -815,13 +807,13 @@ public class DatasetTest extends ModeldbTestSetup {
         datasetServiceStub.updateDatasetName(updateDatasetNameRequest);
     LOGGER.info("UpdateDatasetName Response : " + response.getDataset());
     assertEquals(
-        "Dataset name not match with expected dataset name",
         updateDatasetNameRequest.getName(),
-        response.getDataset().getName());
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+        response.getDataset().getName(),
+        "Dataset name not match with expected dataset name");
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -834,9 +826,9 @@ public class DatasetTest extends ModeldbTestSetup {
     response = datasetServiceStub.updateDatasetName(updateDatasetNameRequest);
     LOGGER.info("UpdateDatasetName Response : " + response.getDataset());
     assertEquals(
-        "Dataset name not match with expected dataset name",
         updateDatasetNameRequest.getName(),
-        response.getDataset().getName());
+        response.getDataset().getName(),
+        "Dataset name not match with expected dataset name");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -852,7 +844,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.updateDatasetName(updateDatasetNameRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -887,13 +879,13 @@ public class DatasetTest extends ModeldbTestSetup {
         datasetServiceStub.updateDatasetDescription(updateDescriptionRequest);
     LOGGER.info("UpdateDatasetDescription Response : " + response.getDataset());
     assertEquals(
-        "Dataset description not match with expected dataset description",
         updateDescriptionRequest.getDescription(),
-        response.getDataset().getDescription());
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+        response.getDataset().getDescription(),
+        "Dataset description not match with expected dataset description");
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -906,13 +898,13 @@ public class DatasetTest extends ModeldbTestSetup {
     response = datasetServiceStub.updateDatasetDescription(updateDescriptionRequest);
     LOGGER.info("UpdateDatasetDescription Response : " + response.getDataset());
     assertEquals(
-        "Dataset description not match with expected dataset description",
         updateDescriptionRequest.getDescription(),
-        response.getDataset().getDescription());
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+        response.getDataset().getDescription(),
+        "Dataset description not match with expected dataset description");
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -922,13 +914,13 @@ public class DatasetTest extends ModeldbTestSetup {
     response = datasetServiceStub.updateDatasetDescription(updateDescriptionRequest);
     LOGGER.info("UpdateDatasetDescription Response : " + response.getDataset());
     assertEquals(
-        "Dataset description not match with expected dataset description",
         updateDescriptionRequest.getDescription(),
-        response.getDataset().getDescription());
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+        response.getDataset().getDescription(),
+        "Dataset description not match with expected dataset description");
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -948,7 +940,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.updateDatasetDescription(updateDescriptionRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -973,10 +965,10 @@ public class DatasetTest extends ModeldbTestSetup {
     Dataset checkDataset = response.getDataset();
     assertEquals(dataset1.getTagsCount() + tagsList.size(), checkDataset.getTagsCount());
     assertEquals(dataset1.getTagsCount() + tagsList.size(), checkDataset.getTagsList().size());
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        checkDataset.getTimeUpdated());
+        checkDataset.getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -988,10 +980,10 @@ public class DatasetTest extends ModeldbTestSetup {
 
     response = datasetServiceStub.addDatasetTags(addDatasetTagsRequest);
 
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+    Assertions.assertNotEquals(
         checkDataset.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
 
     checkDataset = response.getDataset();
     assertEquals(dataset1.getTagsCount() + 1, checkDataset.getTagsCount());
@@ -1004,7 +996,7 @@ public class DatasetTest extends ModeldbTestSetup {
       addDatasetTagsRequest =
           AddDatasetTags.newBuilder().setId(dataset1.getId()).addTags(tag52).build();
       datasetServiceStub.addDatasetTags(addDatasetTagsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1025,7 +1017,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.addDatasetTags(addDatasetTagsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1037,7 +1029,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.addDatasetTags(addDatasetTagsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       checkEqualsAssert(e);
     }
@@ -1051,9 +1043,9 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       List<String> removableTags = dataset1.getTagsList();
-      if (removableTags.size() == 0) {
+      if (removableTags.isEmpty()) {
         LOGGER.info("Dataset Tags not found in database ");
-        fail();
+        Assertions.fail();
         return;
       }
       if (dataset1.getTagsList().size() > 1) {
@@ -1066,31 +1058,31 @@ public class DatasetTest extends ModeldbTestSetup {
           datasetServiceStub.deleteDatasetTags(deleteDatasetTagsRequest);
       LOGGER.info("Tags deleted in server : " + response.getDataset().getTagsList());
       assertTrue(response.getDataset().getTagsList().size() <= 1);
-      assertNotEquals(
-          "Dataset date_updated field not update on database",
+      Assertions.assertNotEquals(
           dataset1.getTimeUpdated(),
-          response.getDataset().getTimeUpdated());
+          response.getDataset().getTimeUpdated(),
+          "Dataset date_updated field not update on database");
       dataset1 = response.getDataset();
       datasetMap.put(dataset1.getId(), dataset1);
 
-      if (response.getDataset().getTagsList().size() > 0) {
+      if (!response.getDataset().getTagsList().isEmpty()) {
         deleteDatasetTagsRequest =
             DeleteDatasetTags.newBuilder().setId(dataset1.getId()).setDeleteAll(true).build();
 
         response = datasetServiceStub.deleteDatasetTags(deleteDatasetTagsRequest);
         LOGGER.info("Tags deleted in server : " + response.getDataset().getTagsList());
         assertEquals(0, response.getDataset().getTagsList().size());
-        assertNotEquals(
-            "Dataset date_updated field not update on database",
+        Assertions.assertNotEquals(
             dataset1.getTimeUpdated(),
-            response.getDataset().getTimeUpdated());
+            response.getDataset().getTimeUpdated(),
+            "Dataset date_updated field not update on database");
         dataset1 = response.getDataset();
         datasetMap.put(dataset1.getId(), dataset1);
       }
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
-      fail();
+      Assertions.fail();
     }
 
     LOGGER.info("Delete Dataset tags test stop................................");
@@ -1104,7 +1096,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.deleteDatasetTags(deleteDatasetTagsRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1157,10 +1149,10 @@ public class DatasetTest extends ModeldbTestSetup {
         datasetServiceStub.addDatasetAttributes(addDatasetAttributesRequest);
     LOGGER.info("Added Dataset Attributes: \n" + response.getDataset());
     assertTrue(response.getDataset().getAttributesList().containsAll(attributeList));
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -1195,7 +1187,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.addDatasetAttributes(addDatasetAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       Status status = Status.fromThrowable(e);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1230,10 +1222,10 @@ public class DatasetTest extends ModeldbTestSetup {
         datasetServiceStub.updateDatasetAttributes(updateDatasetAttributesRequest);
     LOGGER.info("Updated Dataset : \n" + response.getDataset());
     assertTrue(response.getDataset().getAttributesList().contains(keyValue));
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -1251,10 +1243,10 @@ public class DatasetTest extends ModeldbTestSetup {
     response = datasetServiceStub.updateDatasetAttributes(updateDatasetAttributesRequest);
     LOGGER.info("Updated Dataset : \n" + response.getDataset());
     assertTrue(response.getDataset().getAttributesList().contains(keyValue));
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
@@ -1274,10 +1266,10 @@ public class DatasetTest extends ModeldbTestSetup {
     response = datasetServiceStub.updateDatasetAttributes(updateDatasetAttributesRequest);
     LOGGER.info("Updated Dataset : \n" + response.getDataset());
     assertTrue(response.getDataset().getAttributesList().contains(keyValue));
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
     LOGGER.info("Update Dataset Attributes test stop................................");
@@ -1301,7 +1293,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.updateDatasetAttributes(updateDatasetAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1315,7 +1307,7 @@ public class DatasetTest extends ModeldbTestSetup {
             .build();
     try {
       datasetServiceStub.updateDatasetAttributes(updateDatasetAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException e) {
       checkEqualsAssert(e);
     }
@@ -1325,7 +1317,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.updateDatasetAttributes(updateDatasetAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1363,14 +1355,14 @@ public class DatasetTest extends ModeldbTestSetup {
         datasetServiceStub.deleteDatasetAttributes(deleteDatasetAttributesRequest);
     LOGGER.info("Attributes deleted in server : " + response.getDataset());
     assertEquals(1, response.getDataset().getAttributesList().size());
-    assertNotEquals(
-        "Dataset date_updated field not update on database",
+    Assertions.assertNotEquals(
         dataset1.getTimeUpdated(),
-        response.getDataset().getTimeUpdated());
+        response.getDataset().getTimeUpdated(),
+        "Dataset date_updated field not update on database");
     dataset1 = response.getDataset();
     datasetMap.put(dataset1.getId(), dataset1);
 
-    if (response.getDataset().getAttributesList().size() != 0) {
+    if (!response.getDataset().getAttributesList().isEmpty()) {
       deleteDatasetAttributesRequest =
           DeleteDatasetAttributes.newBuilder().setId(dataset1.getId()).setDeleteAll(true).build();
       response = datasetServiceStub.deleteDatasetAttributes(deleteDatasetAttributesRequest);
@@ -1378,14 +1370,13 @@ public class DatasetTest extends ModeldbTestSetup {
           "All the Attributes deleted from server. Attributes count : "
               + response.getDataset().getAttributesCount());
       assertEquals(0, response.getDataset().getAttributesList().size());
-      assertNotEquals(
-          "Dataset date_updated field not update on database",
+      Assertions.assertNotEquals(
           dataset1.getTimeUpdated(),
-          response.getDataset().getTimeUpdated());
+          response.getDataset().getTimeUpdated(),
+          "Dataset date_updated field not update on database");
       dataset1 = response.getDataset();
       datasetMap.put(dataset1.getId(), dataset1);
     }
-
     LOGGER.info("Delete Dataset Attributes test stop................................");
   }
 
@@ -1398,7 +1389,7 @@ public class DatasetTest extends ModeldbTestSetup {
 
     try {
       datasetServiceStub.deleteDatasetAttributes(deleteDatasetAttributesRequest);
-      fail();
+      Assertions.fail();
     } catch (StatusRuntimeException ex) {
       Status status = Status.fromThrowable(ex);
       LOGGER.warn("Error Code : " + status.getCode() + " Description : " + status.getDescription());
@@ -1425,9 +1416,9 @@ public class DatasetTest extends ModeldbTestSetup {
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
 
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        createDatasetResponse.getDataset().getName());
+        createDatasetResponse.getDataset().getName(),
+        "Dataset name not match with expected dataset name");
 
     createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
@@ -1436,9 +1427,9 @@ public class DatasetTest extends ModeldbTestSetup {
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
 
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        createDatasetResponse.getDataset().getName());
+        createDatasetResponse.getDataset().getName(),
+        "Dataset name not match with expected dataset name");
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllDatasets(datasetMap, testUser1);
@@ -1466,9 +1457,9 @@ public class DatasetTest extends ModeldbTestSetup {
     Project project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
     assertEquals(
-        "Project name not match with expected project name",
         createProjectRequest.getName(),
-        project.getName());
+        project.getName(),
+        "Project name not match with expected project name");
 
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
@@ -1476,9 +1467,9 @@ public class DatasetTest extends ModeldbTestSetup {
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
     Dataset dataset = createDatasetResponse.getDataset();
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset.getName());
+        dataset.getName(),
+        "Dataset name not match with expected dataset name");
 
     if (isRunningIsolated()) {
       mockGetResourcesForAllProjects(Map.of(project.getId(), project), testUser1);
@@ -1496,9 +1487,9 @@ public class DatasetTest extends ModeldbTestSetup {
       Experiment experiment1 = createExperimentResponse.getExperiment();
       LOGGER.info("Experiment created successfully");
       assertEquals(
-          "Experiment name not match with expected Experiment name",
           createExperimentRequest.getName(),
-          experiment1.getName());
+          experiment1.getName(),
+          "Experiment name not match with expected Experiment name");
 
       createExperimentRequest =
           ExperimentTest.getCreateExperimentRequestForOtherTests(
@@ -1507,9 +1498,9 @@ public class DatasetTest extends ModeldbTestSetup {
       Experiment experiment2 = createExperimentResponse.getExperiment();
       LOGGER.info("Experiment created successfully");
       assertEquals(
-          "Experiment name not match with expected Experiment name",
           createExperimentRequest.getName(),
-          experiment2.getName());
+          experiment2.getName(),
+          "Experiment name not match with expected Experiment name");
 
       CreateExperimentRun createExperimentRunRequest =
           ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
@@ -1519,9 +1510,9 @@ public class DatasetTest extends ModeldbTestSetup {
       ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun.getName());
+          experimentRun.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       createExperimentRunRequest =
           ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
@@ -1531,9 +1522,9 @@ public class DatasetTest extends ModeldbTestSetup {
       ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun2.getName());
+          experimentRun2.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       if (isRunningIsolated()) {
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
@@ -1546,9 +1537,9 @@ public class DatasetTest extends ModeldbTestSetup {
       DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
       LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
       assertEquals(
-          "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
           dataset.getId(),
-          datasetVersion1.getDatasetId());
+          datasetVersion1.getDatasetId(),
+          "DatasetVersion datsetId not match with expected DatasetVersion datsetId");
 
       createDatasetVersionRequest = DatasetVersionTest.getDatasetVersionRequest(dataset.getId());
       createDatasetVersionResponse =
@@ -1556,9 +1547,9 @@ public class DatasetTest extends ModeldbTestSetup {
       DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
       LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion2);
       assertEquals(
-          "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
           dataset.getId(),
-          datasetVersion2.getDatasetId());
+          datasetVersion2.getDatasetId(),
+          "DatasetVersion datsetId not match with expected DatasetVersion datsetId");
 
       Artifact artifact =
           Artifact.newBuilder()
@@ -1598,12 +1589,12 @@ public class DatasetTest extends ModeldbTestSetup {
               .map(Artifact::getKey)
               .collect(Collectors.toList());
       assertTrue(
-          "Experiment dataset not match with expected dataset", keys.contains(artifact.getKey()));
+          keys.contains(artifact.getKey()), "Experiment dataset not match with expected dataset");
 
-      assertNotEquals(
-          "ExperimentRun date_updated field not update on database",
+      Assertions.assertNotEquals(
           experimentRun2.getDateUpdated(),
-          response.getExperimentRun().getDateUpdated());
+          response.getExperimentRun().getDateUpdated(),
+          "ExperimentRun date_updated field not update on database");
 
       artifact =
           Artifact.newBuilder()
@@ -1635,12 +1626,12 @@ public class DatasetTest extends ModeldbTestSetup {
               .map(Artifact::getKey)
               .collect(Collectors.toList());
       assertTrue(
-          "Experiment dataset not match with expected dataset", keys.contains(artifact.getKey()));
+          keys.contains(artifact.getKey()), "Experiment dataset not match with expected dataset");
 
-      assertNotEquals(
-          "ExperimentRun date_updated field not update on database",
+      Assertions.assertNotEquals(
           experimentRun.getDateUpdated(),
-          response.getExperimentRun().getDateUpdated());
+          response.getExperimentRun().getDateUpdated(),
+          "ExperimentRun date_updated field not update on database");
 
       updateTimestampOfResources();
 
@@ -1660,9 +1651,9 @@ public class DatasetTest extends ModeldbTestSetup {
       LastExperimentByDatasetId.Response lastExperimentResponse =
           datasetServiceStub.getLastExperimentByDatasetId(lastExperimentByDatasetId);
       assertEquals(
-          "Last updated Experiment not match with expected last updated Experiment",
           experiment1.getId(),
-          lastExperimentResponse.getExperiment().getId());
+          lastExperimentResponse.getExperiment().getId(),
+          "Last updated Experiment not match with expected last updated Experiment");
 
       KeyValueQuery keyValueQuery =
           KeyValueQuery.newBuilder()
@@ -1728,9 +1719,9 @@ public class DatasetTest extends ModeldbTestSetup {
     Project project = createProjectResponse.getProject();
     LOGGER.info("Project created successfully");
     assertEquals(
-        "Project name not match with expected project name",
         createProjectRequest.getName(),
-        project.getName());
+        project.getName(),
+        "Project name not match with expected project name");
 
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     CreateDataset.Response createDatasetResponse =
@@ -1738,9 +1729,9 @@ public class DatasetTest extends ModeldbTestSetup {
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
     Dataset dataset = createDatasetResponse.getDataset();
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset.getName());
+        dataset.getName(),
+        "Dataset name not match with expected dataset name");
 
     try {
       // Create two experiment of above project
@@ -1752,9 +1743,9 @@ public class DatasetTest extends ModeldbTestSetup {
       Experiment experiment1 = createExperimentResponse.getExperiment();
       LOGGER.info("Experiment created successfully");
       assertEquals(
-          "Experiment name not match with expected Experiment name",
           createExperimentRequest.getName(),
-          experiment1.getName());
+          experiment1.getName(),
+          "Experiment name not match with expected Experiment name");
 
       createExperimentRequest =
           ExperimentTest.getCreateExperimentRequestForOtherTests(
@@ -1763,9 +1754,9 @@ public class DatasetTest extends ModeldbTestSetup {
       Experiment experiment2 = createExperimentResponse.getExperiment();
       LOGGER.info("Experiment created successfully");
       assertEquals(
-          "Experiment name not match with expected Experiment name",
           createExperimentRequest.getName(),
-          experiment2.getName());
+          experiment2.getName(),
+          "Experiment name not match with expected Experiment name");
 
       if (isRunningIsolated()) {
         mockGetSelfAllowedResources(
@@ -1784,9 +1775,9 @@ public class DatasetTest extends ModeldbTestSetup {
       ExperimentRun experimentRun = createExperimentRunResponse.getExperimentRun();
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun.getName());
+          experimentRun.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       createExperimentRunRequest =
           ExperimentRunTest.getCreateExperimentRunRequestForOtherTests(
@@ -1796,9 +1787,9 @@ public class DatasetTest extends ModeldbTestSetup {
       ExperimentRun experimentRun2 = createExperimentRunResponse.getExperimentRun();
       LOGGER.info("ExperimentRun created successfully");
       assertEquals(
-          "ExperimentRun name not match with expected ExperimentRun name",
           createExperimentRunRequest.getName(),
-          experimentRun2.getName());
+          experimentRun2.getName(),
+          "ExperimentRun name not match with expected ExperimentRun name");
 
       CreateDatasetVersion createDatasetVersionRequest =
           DatasetVersionTest.getDatasetVersionRequest(dataset.getId());
@@ -1807,9 +1798,9 @@ public class DatasetTest extends ModeldbTestSetup {
       DatasetVersion datasetVersion1 = createDatasetVersionResponse.getDatasetVersion();
       LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion1);
       assertEquals(
-          "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
           dataset.getId(),
-          datasetVersion1.getDatasetId());
+          datasetVersion1.getDatasetId(),
+          "DatasetVersion datsetId not match with expected DatasetVersion datsetId");
 
       createDatasetVersionRequest = DatasetVersionTest.getDatasetVersionRequest(dataset.getId());
       createDatasetVersionResponse =
@@ -1817,9 +1808,9 @@ public class DatasetTest extends ModeldbTestSetup {
       DatasetVersion datasetVersion2 = createDatasetVersionResponse.getDatasetVersion();
       LOGGER.info("CreateDatasetVersion Response : \n" + datasetVersion2);
       assertEquals(
-          "DatasetVersion datsetId not match with expected DatasetVersion datsetId",
           dataset.getId(),
-          datasetVersion2.getDatasetId());
+          datasetVersion2.getDatasetId(),
+          "DatasetVersion datsetId not match with expected DatasetVersion datsetId");
 
       Artifact artifact =
           Artifact.newBuilder()
@@ -1853,12 +1844,12 @@ public class DatasetTest extends ModeldbTestSetup {
               .map(Artifact::getKey)
               .collect(Collectors.toList());
       assertTrue(
-          "Experiment dataset not match with expected dataset", keys.contains(artifact.getKey()));
+          keys.contains(artifact.getKey()), "Experiment dataset not match with expected dataset");
 
-      assertNotEquals(
-          "ExperimentRun date_updated field not update on database",
+      Assertions.assertNotEquals(
           experimentRun2.getDateUpdated(),
-          response.getExperimentRun().getDateUpdated());
+          response.getExperimentRun().getDateUpdated(),
+          "ExperimentRun date_updated field not update on database");
 
       artifact =
           Artifact.newBuilder()
@@ -1890,12 +1881,12 @@ public class DatasetTest extends ModeldbTestSetup {
               .map(Artifact::getKey)
               .collect(Collectors.toList());
       assertTrue(
-          "Experiment dataset not match with expected dataset", keys.contains(artifact.getKey()));
+          keys.contains(artifact.getKey()), "Experiment dataset not match with expected dataset");
 
-      assertNotEquals(
-          "ExperimentRun date_updated field not update on database",
+      Assertions.assertNotEquals(
           experimentRun.getDateUpdated(),
-          response.getExperimentRun().getDateUpdated());
+          response.getExperimentRun().getDateUpdated(),
+          "ExperimentRun date_updated field not update on database");
 
       if (isRunningIsolated()) {
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
@@ -1913,19 +1904,19 @@ public class DatasetTest extends ModeldbTestSetup {
       GetExperimentRunByDataset.Response getExperimentRunByDatasetResponse =
           datasetServiceStub.getExperimentRunByDataset(getExperimentRunByDatasetRequest);
       assertEquals(
-          "ExperimentRun count not match with expected ExperimentRun count",
           2,
-          getExperimentRunByDatasetResponse.getExperimentRunsCount());
+          getExperimentRunByDatasetResponse.getExperimentRunsCount(),
+          "ExperimentRun count not match with expected ExperimentRun count");
 
       assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
           experimentRun.getId(),
-          getExperimentRunByDatasetResponse.getExperimentRuns(0).getId());
+          getExperimentRunByDatasetResponse.getExperimentRuns(0).getId(),
+          "ExperimentRun not match with expected ExperimentRun");
 
       assertEquals(
-          "ExperimentRun not match with expected ExperimentRun",
           experimentRun2.getId(),
-          getExperimentRunByDatasetResponse.getExperimentRuns(1).getId());
+          getExperimentRunByDatasetResponse.getExperimentRuns(1).getId(),
+          "ExperimentRun not match with expected ExperimentRun");
 
       KeyValueQuery keyValueQuery =
           KeyValueQuery.newBuilder()
@@ -1994,9 +1985,9 @@ public class DatasetTest extends ModeldbTestSetup {
     LOGGER.info("CreateDataset Response : \n" + createDatasetResponse.getDataset());
 
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        createDatasetResponse.getDataset().getName());
+        createDatasetResponse.getDataset().getName(),
+        "Dataset name not match with expected dataset name");
 
     if (isRunningIsolated()) {
       var dataset = createDatasetResponse.getDataset();
@@ -2030,9 +2021,9 @@ public class DatasetTest extends ModeldbTestSetup {
     Dataset dataset1 = createDatasetResponse.getDataset();
     LOGGER.info("CreateDataset Response : \n" + dataset1);
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset1.getName());
+        dataset1.getName(),
+        "Dataset name not match with expected dataset name");
 
     createDatasetRequest =
         getDatasetRequest("Dataset/ colons test dataset-" + new Date().getTime());
@@ -2040,9 +2031,9 @@ public class DatasetTest extends ModeldbTestSetup {
     Dataset dataset2 = createDatasetResponse.getDataset();
     LOGGER.info("CreateDataset Response : \n" + dataset2);
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset2.getName());
+        dataset2.getName(),
+        "Dataset name not match with expected dataset name");
 
     createDatasetRequest =
         getDatasetRequest("Dataset\\\\ colons test dataset-" + new Date().getTime());
@@ -2050,9 +2041,9 @@ public class DatasetTest extends ModeldbTestSetup {
     Dataset dataset3 = createDatasetResponse.getDataset();
     LOGGER.info("CreateDataset Response : \n" + dataset3);
     assertEquals(
-        "Dataset name not match with expected dataset name",
         createDatasetRequest.getName(),
-        dataset3.getName());
+        dataset3.getName(),
+        "Dataset name not match with expected dataset name");
 
     for (Dataset dataset : new Dataset[] {dataset1, dataset2, dataset3}) {
       if (isRunningIsolated()) {
