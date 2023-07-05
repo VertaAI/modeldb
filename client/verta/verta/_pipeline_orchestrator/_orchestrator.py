@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import abc
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from verta._internal_utils import _utils
 from verta._vendored.cpython.graphlib import TopologicalSorter
 
 from ._step_handler import (
     _StepHandlerBase,
+    ModelContainerStepHandler,
     ModelObjectStepHandler,
 )
 
@@ -28,6 +29,25 @@ class _OrchestratorBase(abc.ABC):
         # mapping of step names to outputs
         self._outputs: Dict[str, Any] = dict()
 
+    @staticmethod
+    def _get_step_inputs(
+        pipeline_spec: Dict[str, Any],
+    ) -> Dict[str, List[str]]:
+        """Get steps' inputs from a pipeline specification.
+
+        Parameters
+        ----------
+        pipeline_spec : dict
+            Pipeline specification.
+
+        Returns
+        -------
+        dict of str to list of str
+            Mapping between step names and their inputs' names.
+
+        """
+        return {node["name"]: node["inputs"] for node in pipeline_spec["graph"]}
+
     def _prepare_pipeline(self) -> TopologicalSorter:
         """Initialize ``self._dag`` and ``self._outputs``.
 
@@ -42,11 +62,7 @@ class _OrchestratorBase(abc.ABC):
             If the pipeline graph has cycles.
 
         """
-        step_inputs = {
-            node["name"]: node["inputs"] for node in self._pipeline_spec["graph"]
-        }
-
-        dag = TopologicalSorter(step_inputs)
+        dag = TopologicalSorter(self._get_step_inputs(self._pipeline_spec))
         dag.prepare()
         # TODO: assert one input node
         # TODO: assert one output node
@@ -105,6 +121,7 @@ class _OrchestratorBase(abc.ABC):
         self._outputs[name] = step_handler.run(input)
         self._dag.done(name)
 
+    # TODO: make this async?
     def run(
         self,
         input: Any,
@@ -116,8 +133,8 @@ class _OrchestratorBase(abc.ABC):
         input : object
             Input for the pipeline's input node.
 
-        Return
-        ------
+        Returns
+        -------
         object
             Output from the pipeline's output node.
 
@@ -139,13 +156,73 @@ class _OrchestratorBase(abc.ABC):
 
 
 class DeployedOrchestrator(_OrchestratorBase):  # TODO
-    """Inference pipeline orchestrator using HTTP server models."""
+    """Inference pipeline orchestrator using HTTP server models.
+
+    Parameters
+    ----------
+    step_ports : dict of str to int
+        Mapping between step names and their ``localhost`` ports.
+    pipeline_spec : dict
+        Pipeline specification.
+
+    Examples
+    --------
+    .. code-block:: python
+
+        from verta._pipeline_orchestrator import DeployedOrchestrator
+
+        orchestrator = DeployedOrchestrator(step_ports, pipeline_spec)
+        pipeline_output = orchestrator.run(pipeline_input)
+
+    """
+
+    def __init__(
+        self,
+        step_ports: Dict[str, int],
+        pipeline_spec: Dict[str, Any],
+    ):
+        super().__init__(
+            pipeline_spec=pipeline_spec,
+            step_handlers=self._init_step_handlers(step_ports, pipeline_spec),
+        )
+
+    @classmethod
+    def _init_step_handlers(
+        cls,
+        step_ports: Dict[str, int],
+        pipeline_spec: Dict[str, Any],
+    ) -> Dict[str, ModelContainerStepHandler]:
+        """Instantiate and return step handlers.
+
+        Parameters
+        ----------
+        step_ports : dict of str to int
+            Mapping between step names and their ``localhost`` ports.
+        pipeline_spec : dict
+            Pipeline specification.
+
+        Returns
+        -------
+        dict of str to :class:`~verta._pipeline_orchestrator._step_handler.ModelContainerStepHandler`
+            Mapping of step names to their handlers.
+
+        """
+        step_inputs = cls._get_step_inputs(pipeline_spec["graph"])
+
+        step_handlers = dict()
+        for step in pipeline_spec["steps"]:
+            step_handlers[step["name"]] = ModelContainerStepHandler(
+                name=step["name"],
+                predecessors=step_inputs.get(step["name"], []),
+                prediction_url=f"http://localhost:{step_ports[step['name']]}/predict_json",
+            )
+        return step_handlers
 
 
 class LocalOrchestrator(_OrchestratorBase):
     """Inference pipeline orchestrator using locally-instantiated models.
 
-    Paremeters
+    Parameters
     ----------
     conn : :class:`~verta._internal_utils._utils.Connection`
         Verta client connection.
@@ -173,8 +250,9 @@ class LocalOrchestrator(_OrchestratorBase):
             step_handlers=self._init_step_handlers(conn, pipeline_spec),
         )
 
-    @staticmethod
+    @classmethod
     def _init_step_handlers(
+        cls,
         conn: _utils.Connection,
         pipeline_spec: Dict[str, Any],
     ) -> Dict[str, ModelObjectStepHandler]:
@@ -193,7 +271,7 @@ class LocalOrchestrator(_OrchestratorBase):
             Mapping of step names to their handlers.
 
         """
-        step_inputs = {node["name"]: node["inputs"] for node in pipeline_spec["graph"]}
+        step_inputs = cls._get_step_inputs(pipeline_spec["graph"])
 
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
