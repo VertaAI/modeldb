@@ -45,6 +45,7 @@ class _OrchestratorBase(abc.ABC):
         step_inputs = {
             node["name"]: node["inputs"] for node in self._pipeline_spec["graph"]
         }
+
         dag = TopologicalSorter(step_inputs)
         dag.prepare()
         # TODO: assert one input node
@@ -193,6 +194,7 @@ class LocalOrchestrator(_OrchestratorBase):
 
         """
         step_inputs = {node["name"]: node["inputs"] for node in pipeline_spec["graph"]}
+
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
             step_handlers[step["name"]] = ModelObjectStepHandler(
