@@ -5,11 +5,11 @@ import os
 import jsonschema
 
 # for use like: `if getattr(model.predict, _DECORATED_FLAG, False)`
-_VALIDATE_DECORATED_FLAG = "_verta_validate_input"
+_VALIDATE_DECORATED_FLAG = "_verta_validate_schema"
 _MODEL_SCHEMA_PATH_ENV_VAR = "VERTA_MODEL_SCHEMA_PATH"
 
 
-def validate_input(f):
+def validate_schema(f):
     """Decorator to validate prediction input against previously provided schema."""
 
     @functools.wraps(f)
