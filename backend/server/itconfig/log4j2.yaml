@@ -6,6 +6,7 @@ Configuration:
     Console:
       name: STDOUT
       target: SYSTEM_OUT
+# swap out this JsonTemplateLayout for the PatternLayout below it if you want to see json logs like they are in production.
 #      JsonTemplateLayout:
 #        eventTemplateUri: "classpath:log-template.json"
 #        locationInfoEnabled: true
