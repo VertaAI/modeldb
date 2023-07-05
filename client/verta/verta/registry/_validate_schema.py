@@ -19,7 +19,9 @@ def validate_schema(f):
         # TODO: validate length of args and type
         # Fetch schema
         prediction_input = args[0]
-        model_schema_path = os.environ.get(_MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json")
+        model_schema_path = os.environ.get(
+            _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json"
+        )
         try:
             with open(model_schema_path, "r") as file:
                 # Load the JSON data into a variable

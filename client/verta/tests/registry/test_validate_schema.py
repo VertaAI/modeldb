@@ -13,9 +13,16 @@ class TestValidateInput:
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
         deadline=timedelta(milliseconds=50),
     )
-    @hypothesis.given(matching_input_value=generate_object(), matching_output_value=generate_another_object())
+    @hypothesis.given(
+        matching_input_value=generate_object(),
+        matching_output_value=generate_another_object(),
+    )
     def test_validate_schema_allow(
-        self, recwarn, make_model_schema_file, matching_input_value, matching_output_value
+        self,
+        recwarn,
+        make_model_schema_file,
+        matching_input_value,
+        matching_output_value,
     ):
         @validate_schema
         def predict(self, input):
@@ -23,7 +30,7 @@ class TestValidateInput:
 
         predict(None, matching_input_value.dict())
         # verify there were no warnings
-        assert(len(recwarn) == 0)
+        assert len(recwarn) == 0
 
     @hypothesis.settings(
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
@@ -40,9 +47,7 @@ class TestValidateInput:
         with pytest.raises(ValidationError):
             predict(None, non_matching_input_value.dict())
 
-    def test_validate_schema_deny_not_json(
-        self, make_model_schema_file
-    ):
+    def test_validate_schema_deny_not_json(self, make_model_schema_file):
         array = pytest.importorskip("numpy").array([1, 2, 3])
 
         @validate_schema
@@ -53,9 +58,7 @@ class TestValidateInput:
         with pytest.raises(ValidationError):
             predict(None, array)
 
-    def test_validate_schema_deny_verify_io_first(
-        self, make_model_schema_file
-    ):
+    def test_validate_schema_deny_verify_io_first(self, make_model_schema_file):
         array = pytest.importorskip("numpy").array([1, 2, 3])
 
         @verify_io
@@ -80,6 +83,6 @@ class TestValidateInput:
             return input  # note that this does not match the output schema
 
         predict(None, matching_input_value.dict())
-        assert(len(recwarn) == 1)
+        assert len(recwarn) == 1
         w = recwarn.pop(UserWarning)
         assert str(w.message).startswith("output failed schema validation")
