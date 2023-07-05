@@ -42,7 +42,10 @@ class _OrchestratorBase(abc.ABC):
             If the pipeline graph has cycles.
 
         """
-        dag = TopologicalSorter(self._pipeline_spec["graph"]["inputs"])
+        step_inputs = {
+            node["name"]: node["inputs"] for node in self._pipeline_spec["graph"]
+        }
+        dag = TopologicalSorter(step_inputs)
         dag.prepare()
         # TODO: assert one input node
         # TODO: assert one output node
@@ -189,12 +192,14 @@ class LocalOrchestrator(_OrchestratorBase):
             Mapping of step names to their handlers.
 
         """
+        step_inputs = {node["name"]: node["inputs"] for node in pipeline_spec["graph"]}
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
-            step_name = step["attributes"]["name"]
-            step_handlers[step_name] = ModelObjectStepHandler(
-                name=step_name,
-                predecessors=pipeline_spec["graph"]["inputs"].get(step_name, []),
-                model=ModelObjectStepHandler._init_model(conn, step["rmvId"]),
+            step_handlers[step["name"]] = ModelObjectStepHandler(
+                name=step["name"],
+                predecessors=step_inputs.get(step["name"], []),
+                model=ModelObjectStepHandler._init_model(
+                    conn, step["model_version_id"]
+                ),
             )
         return step_handlers
