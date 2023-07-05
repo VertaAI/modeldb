@@ -530,6 +530,17 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
                 _artifact_utils.MODEL_API_KEY, model_api, overwrite, "json"
             )
 
+        # create and upload model_schema
+        if model_type:  # only if provided or model is deployable
+            model_schema = {
+                "input": {'title': 'TestClass', 'type': 'object', 'properties': {'name': {'title': 'Name', 'type': 'string'}, 'price': {'title': 'Price', 'type': 'number'}, 'inner': {'$ref': '#/definitions/InnerTestClass'}}, 'required': ['name', 'price', 'inner'], 'definitions': {'InnerTestClass': {'title': 'InnerTestClass', 'type': 'object', 'properties': {'color': {'title': 'Color', 'type': 'string'}, 'size': {'title': 'Size', 'type': 'string'}, 'amount': {'title': 'Amount', 'type': 'integer'}}, 'required': ['color', 'size', 'amount']}}},
+                "output": {'title': 'OutputClass', 'type': 'object', 'properties': {'average': {'title': 'Average', 'type': 'number'}}, 'required': ['average']}
+            }
+            model_schema_str = six.StringIO(json.dumps(model_schema))
+            self.log_artifact(
+                "model_schema.json", model_schema_str, overwrite, "json"
+            )
+
         # create and upload custom modules
         if model_type or custom_modules:  # only if provided or model is deployable
             # Log modules:
