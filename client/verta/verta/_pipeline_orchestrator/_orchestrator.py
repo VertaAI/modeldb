@@ -207,7 +207,7 @@ class DeployedOrchestrator(_OrchestratorBase):  # TODO
             Mapping of step names to their handlers.
 
         """
-        step_inputs = cls._get_step_inputs(pipeline_spec["graph"])
+        step_inputs = cls._get_step_inputs(pipeline_spec)
 
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
@@ -271,7 +271,7 @@ class LocalOrchestrator(_OrchestratorBase):
             Mapping of step names to their handlers.
 
         """
-        step_inputs = cls._get_step_inputs(pipeline_spec["graph"])
+        step_inputs = cls._get_step_inputs(pipeline_spec)
 
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
