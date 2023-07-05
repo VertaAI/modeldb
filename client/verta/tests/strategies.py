@@ -10,7 +10,7 @@ import hypothesis
 import hypothesis.strategies as st
 from hypothesis import given
 
-from tests.registry.pydantic_models import InnerInputClass, InputClass
+from tests.registry.pydantic_models import AnInnerClass, AClass, AnotherClass
 from verta._internal_utils.time_utils import duration_millis
 
 
@@ -24,11 +24,12 @@ millis_timedelta_strategy = st.timedeltas(min_value=timedelta(milliseconds=1))
 
 millis_uint64_strategy = millis_timedelta_strategy.map(duration_millis_ignore_warn)
 
+
 # from https://hypothesis.readthedocs.io/en/latest/data.html#recursive-data
 json_strategy = st.recursive(
     st.none() | st.booleans() | st.floats() | st.text(string.printable),
     lambda children: st.lists(children)
-                     | st.dictionaries(st.text(string.printable), children),
+    | st.dictionaries(st.text(string.printable), children),
     max_leaves=500,
 )
 
@@ -97,27 +98,44 @@ def env_vars(draw):
 
 
 @st.composite
-def validate_input_inner_class(draw):
+def generate_inner_object(draw):
+    h_dict = draw(st.dictionaries(st.text(), st.integers()))
     i_list_str = draw(st.lists(st.text()))
-    return InnerInputClass(
+    return AnInnerClass(
+        h_dict,
         i_list_str,
     )
 
 
 @st.composite
-def input_class(draw):
+def generate_object(draw):
     a_int = draw(st.integers())
     b_str = draw(st.text())
     c_float = draw(st.floats())
     d_bool = draw(st.booleans())
     e_list_int = draw(st.lists(st.integers()))
-    g_inner_input_class = draw(validate_input_inner_class())
+    f_dict = draw(st.dictionaries(st.text(), st.text()))
+    g_inner_input_class = draw(generate_inner_object())
 
-    return InputClass(
+    return AClass(
         a_int,
         b_str,
         c_float,
         d_bool,
         e_list_int,
+        f_dict,
         g_inner_input_class,
+    )
+
+
+@st.composite
+def generate_another_object(draw):
+    j_bool = draw(st.booleans())
+    k_list_list_int = draw(st.lists(st.lists(st.integers())))
+    l_str = draw(st.text())
+
+    return AnotherClass(
+        j_bool,
+        k_list_list_int,
+        l_str,
     )
