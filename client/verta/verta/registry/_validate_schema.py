@@ -13,9 +13,56 @@ _MODEL_SCHEMA_PATH_ENV_VAR = "VERTA_MODEL_SCHEMA_PATH"
 def validate_schema(f):
     """Decorator to validate prediction input and output against previously provided schema.
 
-    Validation is done with the ``jsonschema`` library [#]_.
+    Validation is done with the ``jsonschema`` library [#]_. If no schema has been provided, an exception is raised.
 
+    Note that an input schema is required but output is not. If the output schema was not set, then the output will
+    not be validated.
 
+    Examples
+    --------
+    .. code-block:: python
+        from pydantic import BaseModel
+        from verta.registry import validate_schema, VertaModelBase
+        from verta import Client
+        from verta.environment import Python
+
+        class Input(BaseModel):
+            a: int
+            b: int
+
+        class Output(BaseModel):
+            c: int
+            d: int
+
+        class MyModel(VertaModelBase):
+            def __init__(self, artifacts=None):
+                pass
+
+            @validate_schema
+            def predict(self, input):
+                return {'c': 3, 'd': 4}
+
+        def main():
+            client = Client()
+
+            # Register
+            model_ver = client.get_or_create_registered_model("My Model").create_standard_model(
+                MyModel,
+                environment=Python([]),
+            )
+            model_ver.set_schema(input=Input.schema(), output=Output.schema())
+
+            # Deploy
+            endpoint = client.get_or_create_endpoint("my-model")
+            endpoint.update(model_ver, wait=True)
+            deployed_model = endpoint.get_deployed_model()
+
+            # succeeds; input matches previously provided schema
+            input = Input(a=1, b=2)
+            output = deployed_model.predict(input.dict())
+
+            # fails; a list will be given to the deployed model as-is
+            deployed_model.predict({"something": "random"})
 
     References
     ----------
@@ -46,9 +93,7 @@ def validate_schema(f):
 
         # Validate input
         if not isinstance(prediction_input, dict):
-            raise TypeError(
-                "input must be a dict. Did you remember to call `.dict()`?"
-            )
+            raise TypeError("input must be a dict. Did you remember to call `.dict()`?")
         try:
             jsonschema.validate(instance=prediction_input, schema=input_schema)
         except jsonschema.exceptions.ValidationError as e:
