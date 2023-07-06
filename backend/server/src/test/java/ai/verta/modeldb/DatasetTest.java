@@ -626,8 +626,7 @@ public class DatasetTest extends ModeldbTestSetup {
               organizationId,
               groupIdUser1,
               roleIdUser1,
-              testUser2.getVertaInfo().getUsername(),
-              Optional.empty());
+              testUser2.getVertaInfo().getUsername());
       workspaceNameUser2 = organizationId + "/" + testUser1Workspace.getName();
     }
 

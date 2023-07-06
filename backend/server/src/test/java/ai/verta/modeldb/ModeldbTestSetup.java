@@ -17,63 +17,11 @@ import ai.verta.modeldb.reconcilers.SoftDeleteExperiments;
 import ai.verta.modeldb.reconcilers.SoftDeleteProjects;
 import ai.verta.modeldb.versioning.Repository;
 import ai.verta.modeldb.versioning.VersioningServiceGrpc;
-import ai.verta.uac.Action;
-import ai.verta.uac.ActionTypeV2;
-import ai.verta.uac.Actions;
-import ai.verta.uac.AddUserV2;
-import ai.verta.uac.AuthzServiceGrpc;
-import ai.verta.uac.CollaboratorServiceGrpc;
-import ai.verta.uac.DeleteOrganizationV2;
-import ai.verta.uac.DeleteResources;
-import ai.verta.uac.Entities;
-import ai.verta.uac.GetAllowedEntities;
-import ai.verta.uac.GetResources;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.GetSelfAllowedActionsBatch;
-import ai.verta.uac.GetSelfAllowedResources;
-import ai.verta.uac.GetUser;
-import ai.verta.uac.GetUsers;
-import ai.verta.uac.GetUsersFuzzy;
-import ai.verta.uac.GetWorkspaceById;
-import ai.verta.uac.GetWorkspaceByName;
-import ai.verta.uac.GroupServiceGrpc;
-import ai.verta.uac.GroupV2;
-import ai.verta.uac.IsSelfAllowed;
-import ai.verta.uac.ListMyOrganizations;
+import ai.verta.uac.*;
 import ai.verta.uac.ModelDBActionEnum.ModelDBServiceActions;
-import ai.verta.uac.OrgAdminV2;
-import ai.verta.uac.OrganizationServiceGrpc;
-import ai.verta.uac.OrganizationServiceV2Grpc;
-import ai.verta.uac.OrganizationV2;
-import ai.verta.uac.Permission;
-import ai.verta.uac.ResourceType;
-import ai.verta.uac.ResourceTypeV2;
-import ai.verta.uac.ResourceVisibility;
-import ai.verta.uac.Resources;
-import ai.verta.uac.RoleResourceActions;
-import ai.verta.uac.RoleServiceGrpc;
-import ai.verta.uac.RoleServiceV2Grpc;
-import ai.verta.uac.RoleV2;
 import ai.verta.uac.ServiceEnum.Service;
-import ai.verta.uac.SetGroup;
-import ai.verta.uac.SetOrganizationV2;
-import ai.verta.uac.SetResource;
-import ai.verta.uac.SetRoleBinding;
-import ai.verta.uac.SetRoleV2;
-import ai.verta.uac.SetWorkspaceV2;
-import ai.verta.uac.UACServiceGrpc;
-import ai.verta.uac.UserInfo;
-import ai.verta.uac.UserServiceV2Grpc;
-import ai.verta.uac.VertaUserInfo;
-import ai.verta.uac.Workspace;
-import ai.verta.uac.WorkspaceServiceGrpc;
-import ai.verta.uac.WorkspaceServiceV2Grpc;
-import ai.verta.uac.WorkspaceV2;
 import com.google.common.util.concurrent.Futures;
-import io.grpc.Context;
-import io.grpc.ManagedChannel;
-import io.grpc.ManagedChannelBuilder;
-import io.grpc.Metadata;
+import io.grpc.*;
 import java.util.Date;
 import java.util.List;
 import java.util.Map;
@@ -107,6 +55,7 @@ public abstract class ModeldbTestSetup {
   protected WorkspaceV2 testUser1Workspace;
 
   protected String organizationId;
+  private OrganizationV2 organizationV2;
   protected String groupIdUser1;
   protected String roleIdUser1;
 
@@ -277,7 +226,8 @@ public abstract class ModeldbTestSetup {
                 .build();
         organizationServiceV2BlockingStub =
             OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
-        organizationId = createAndGetOrganization();
+        organizationV2 = createAndGetOrganization();
+        organizationId = organizationV2.getId();
 
         addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
 
@@ -298,8 +248,7 @@ public abstract class ModeldbTestSetup {
                 organizationId,
                 groupIdUser1,
                 roleIdUser1,
-                testUser1.getVertaInfo().getUsername(),
-                Optional.empty());
+                testUser1.getVertaInfo().getUsername());
       }
     } else {
       serviceAccountUser =
@@ -350,7 +299,18 @@ public abstract class ModeldbTestSetup {
     LOGGER.trace("Test service infrastructure config complete.");
   }
 
-  protected String createAndGetOrganization() {
+  protected OrganizationV2 createAndGetOrganization() {
+    if (!isRunningIsolated()) {
+      try {
+        GetOrganizationByNameV2.Response existingVertaOrg =
+            organizationServiceV2BlockingStub.getOrganizationByName(
+                GetOrganizationByNameV2.newBuilder().setOrgName("Verta").build());
+        return existingVertaOrg.getOrganization();
+      } catch (Exception e) {
+        LOGGER.info("Verta org does not exist...creating new organization to test with");
+      }
+    }
+
     var organizationResponse =
         organizationServiceV2BlockingStub.setOrganization(
             SetOrganizationV2.newBuilder()
@@ -363,27 +323,23 @@ public abstract class ModeldbTestSetup {
                                 .build())
                         .build())
                 .build());
-    return organizationResponse.getOrganization().getId();
+    return organizationResponse.getOrganization();
   }
 
   private void removeOrganizationFromUAC() {
-    organizationServiceV2BlockingStub.deleteOrganization(
-        DeleteOrganizationV2.newBuilder().setOrgId(organizationId).build());
+    if (!organizationV2.getName().equals("Verta")) {
+      organizationServiceV2BlockingStub.deleteOrganization(
+          DeleteOrganizationV2.newBuilder().setOrgId(organizationId).build());
+    }
   }
 
   private void addTestUsersInOrganization(
       ManagedChannel authServiceChannelServiceUser, String organizationId) {
     var userStub = UserServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
     userStub.addUser(
-        AddUserV2.newBuilder()
-            .setOrgId(organizationId)
-            .setUserId(testUser1.getVertaInfo().getUserId())
-            .build());
+        AddUserV2.newBuilder().setOrgId(organizationId).setEmail(testUser1.getEmail()).build());
     userStub.addUser(
-        AddUserV2.newBuilder()
-            .setOrgId(organizationId)
-            .setUserId(testUser2.getVertaInfo().getUserId())
-            .build());
+        AddUserV2.newBuilder().setOrgId(organizationId).setEmail(testUser2.getEmail()).build());
   }
 
   protected String createAndGetGroup(
@@ -432,16 +388,25 @@ public abstract class ModeldbTestSetup {
       String organizationId,
       String groupId,
       String roleId,
-      String username,
-      Optional<Long> workspaceId) {
+      String username) {
     WorkspaceV2.Builder workspaceBuilder =
         WorkspaceV2.newBuilder()
             .setName(username)
             .setOrgId(organizationId)
             .setNamespace("namespace")
             .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build());
-    workspaceId.ifPresent(workspaceBuilder::setId);
     var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+    Optional<WorkspaceV2> existingWorkspace =
+        workspaceStub
+            .searchWorkspaces(SearchWorkspacesV2.newBuilder().setOrgId(organizationId).build())
+            .getWorkspacesList()
+            .stream()
+            .filter(workspaceV2 -> workspaceV2.getName().equals(username))
+            .findFirst();
+    if (existingWorkspace.isPresent()) {
+      return existingWorkspace.get();
+    }
+
     var testUserWorkspace =
         workspaceStub
             .setWorkspace(
