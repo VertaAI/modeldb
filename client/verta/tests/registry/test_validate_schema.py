@@ -94,8 +94,9 @@ class TestValidateSchema:
     @hypothesis.given(
         matching_input_value=generate_object(),
     )
-    def test_validate_schema_no_output(self, make_model_schema_file_no_output, matching_input_value):
-
+    def test_validate_schema_no_output(
+        self, make_model_schema_file_no_output, matching_input_value
+    ):
         @validate_schema
         def predict(self, input):
             return input  # irrelevant
@@ -109,8 +110,9 @@ class TestValidateSchema:
     @hypothesis.given(
         matching_input_value=generate_object(),
     )
-    def test_validate_schema_deny_output_not_json(self, make_model_schema_file, matching_input_value):
-
+    def test_validate_schema_deny_output_not_json(
+        self, make_model_schema_file, matching_input_value
+    ):
         @validate_schema
         def predict(self, input):
             array = pytest.importorskip("numpy").array([1, 2, 3])
