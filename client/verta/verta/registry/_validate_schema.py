@@ -17,6 +17,8 @@ def validate_schema(f):
 
     Note that an input schema is required but output is not. If the output schema was not set, then the output will
     not be validated.
+    
+    Can safely be used with @verify_io.
 
     Examples
     --------
