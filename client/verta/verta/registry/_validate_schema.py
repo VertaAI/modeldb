@@ -17,12 +17,13 @@ def validate_schema(f):
 
     Note that an input schema is required but output is not. If the output schema was not set, then the output will
     not be validated.
-    
+
     Can safely be used with @verify_io.
 
     Examples
     --------
     .. code-block:: python
+    
         from pydantic import BaseModel
         from verta.registry import validate_schema, VertaModelBase
         from verta import Client
