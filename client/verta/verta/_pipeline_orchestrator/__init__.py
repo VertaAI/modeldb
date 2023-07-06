@@ -4,12 +4,11 @@
 
 from verta._internal_utils import documentation
 
-from ._orchestrator import DeployedOrchestrator, LocalOrchestrator
+from ._orchestrator import LocalOrchestrator
 
 
 documentation.reassign_module(
     [
-        DeployedOrchestrator,
         LocalOrchestrator,
     ],
     module_name=__name__,

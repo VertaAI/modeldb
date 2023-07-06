@@ -8,7 +8,6 @@ from verta._vendored.cpython.graphlib import TopologicalSorter
 
 from ._step_handler import (
     _StepHandlerBase,
-    ModelContainerStepHandler,
     ModelObjectStepHandler,
 )
 
@@ -163,92 +162,6 @@ class _OrchestratorBase(abc.ABC):
         # return output from final node
         # NOTE: assumes only one leaf node
         return self._outputs[step_name]
-
-
-class DeployedOrchestrator(_OrchestratorBase):  # TODO
-    """Inference pipeline orchestrator using HTTP server models.
-
-    Parameters
-    ----------
-    step_ports : dict of str to int
-        Mapping between step names and their ``localhost`` ports.
-    pipeline_spec : dict
-        Pipeline specification.
-
-    Examples
-    --------
-    .. code-block:: python
-
-        from verta._pipeline_orchestrator import DeployedOrchestrator
-
-        orchestrator = DeployedOrchestrator(step_ports, pipeline_spec)
-        pipeline_output = orchestrator.run(pipeline_input)
-
-    """
-
-    def __init__(
-        self,
-        step_ports: Dict[str, int],
-        pipeline_spec: Dict[str, Any],
-    ):
-        super().__init__(
-            pipeline_spec=pipeline_spec,
-            step_handlers=self._init_step_handlers(step_ports, pipeline_spec),
-        )
-
-        # model data logs
-        self._logs: Dict[str, Any] = dict()
-
-    @classmethod
-    def _init_step_handlers(
-        cls,
-        step_ports: Dict[str, int],
-        pipeline_spec: Dict[str, Any],
-    ) -> Dict[str, ModelContainerStepHandler]:
-        """Instantiate and return step handlers.
-
-        Parameters
-        ----------
-        step_ports : dict of str to int
-            Mapping between step names and their ``localhost`` ports.
-        pipeline_spec : dict
-            Pipeline specification.
-
-        Returns
-        -------
-        dict of str to :class:`~verta._pipeline_orchestrator._step_handler.ModelContainerStepHandler`
-            Mapping of step names to their handlers.
-
-        """
-        step_inputs = cls._get_step_inputs(pipeline_spec)
-
-        step_handlers = dict()
-        for step in pipeline_spec["steps"]:
-            step_handlers[step["name"]] = ModelContainerStepHandler(
-                name=step["name"],
-                predecessors=step_inputs.get(step["name"], []),
-                prediction_url=f"http://localhost:{step_ports[step['name']]}/predict_json",
-            )
-        return step_handlers
-
-    def _prepare_pipeline(self):
-        super()._prepare_pipeline()
-
-        self._logs = dict()
-
-    def _run_step_inner(
-        self,
-        name: str,
-        input: Any,
-    ) -> Any:
-        output = super()._run_step_inner(name, {"input": input})
-        self._logs.update(output["kv"])
-        return output["outputs"]
-
-    def get_logs(self) -> Dict[str, Any]:
-        """TODO"""
-        # TODO: raise if DAG hasn't been run
-        return self._logs.copy()
 
 
 class LocalOrchestrator(_OrchestratorBase):
