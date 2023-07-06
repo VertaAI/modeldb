@@ -30,7 +30,7 @@ class _OrchestratorBase(abc.ABC):
         self._outputs: Dict[str, Any] = dict()
 
     @staticmethod
-    def _get_step_inputs(
+    def _get_step_inputs(  # TODO: rename this
         pipeline_spec: Dict[str, Any],
     ) -> Dict[str, List[str]]:
         """Get steps' inputs from a pipeline specification.
@@ -48,7 +48,7 @@ class _OrchestratorBase(abc.ABC):
         """
         return {node["name"]: node["inputs"] for node in pipeline_spec["graph"]}
 
-    def _prepare_pipeline(self) -> TopologicalSorter:
+    def _prepare_pipeline(self):
         """Initialize ``self._dag`` and ``self._outputs``.
 
         Parameters
@@ -70,6 +70,41 @@ class _OrchestratorBase(abc.ABC):
         self._dag = dag
         self._outputs = dict()
 
+    def _get_step_input(
+        self,
+        name: str,
+    ) -> Any:
+        """TODO"""
+        predecessors: Set[str] = self._step_handlers[name].predecessors
+        if not predecessors:
+            raise ValueError(
+                f"unexpected error: step {name} has no predecessors, but no input was provided",
+            )
+        if not predecessors <= self._outputs.keys():
+            raise RuntimeError(
+                f"unexpected error: step {name}'s predecessors' outputs not found",
+            )
+
+        # TODO: figure out how we actually want to collect upstream outputs
+        if len(predecessors) == 1:
+            return self._outputs[list(predecessors)[0]]
+        else:
+            # TODO: figure out how to orchestrate complex pipelines
+            raise ValueError("multiple inputs not yet supported")
+            # input = {
+            #     predecessor: self._outputs[predecessor]
+            #     for predecessor in predecessors
+            # }
+
+    def _run_step_inner(
+        self,
+        name: str,
+        input: Any,
+    ) -> Any:
+        """TODO"""
+        step_handler = self._step_handlers[name]
+        return step_handler.run(input)
+
     def _run_step(
         self,
         name: str,
@@ -90,35 +125,10 @@ class _OrchestratorBase(abc.ABC):
             predecessor(s) will be fetched from ``self._outputs``.
 
         """
-        if self._dag is None:
-            raise RuntimeError(
-                "DAG not initialized; call run() instead of using this method directly",
-            )
-
-        step_handler = self._step_handlers[name]
         if input is None:
-            predecessors: Set[str] = step_handler.predecessors
-            if not predecessors:
-                raise ValueError(
-                    f"unexpected error: step {name} has no predecessors, but no input was provided",
-                )
-            if not predecessors <= self._outputs.keys():
-                raise RuntimeError(
-                    f"unexpected error: step {name}'s predecessors' outputs not found",
-                )
+            input = self._get_step_input(name)
 
-            # TODO: figure out how we actually want to collect upstream outputs
-            if len(predecessors) == 1:
-                input = self._outputs[list(predecessors)[0]]
-            else:
-                # TODO: figure out how to orchestrate complex pipelines
-                raise ValueError("multiple inputs not yet supported")
-                # input = {
-                #     predecessor: self._outputs[predecessor]
-                #     for predecessor in predecessors
-                # }
-
-        self._outputs[name] = step_handler.run(input)
+        self._outputs[name] = self._run_step_inner(name, input)
         self._dag.done(name)
 
     # TODO: make this async?
@@ -186,6 +196,9 @@ class DeployedOrchestrator(_OrchestratorBase):  # TODO
             step_handlers=self._init_step_handlers(step_ports, pipeline_spec),
         )
 
+        # model data logs
+        self._logs: Dict[str, Any] = dict()
+
     @classmethod
     def _init_step_handlers(
         cls,
@@ -217,6 +230,25 @@ class DeployedOrchestrator(_OrchestratorBase):  # TODO
                 prediction_url=f"http://localhost:{step_ports[step['name']]}/predict_json",
             )
         return step_handlers
+
+    def _prepare_pipeline(self):
+        super()._prepare_pipeline()
+
+        self._logs = dict()
+
+    def _run_step_inner(
+        self,
+        name: str,
+        input: Any,
+    ) -> Any:
+        output = super()._run_step_inner(name, {"input": input})
+        self._logs.update(output["kv"])
+        return output["outputs"]
+
+    def get_logs(self) -> Dict[str, Any]:
+        """TODO"""
+        # TODO: raise if DAG hasn't been run
+        return self._logs.copy()
 
 
 class LocalOrchestrator(_OrchestratorBase):

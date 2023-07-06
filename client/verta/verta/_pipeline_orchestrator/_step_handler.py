@@ -77,12 +77,13 @@ class ModelContainerStepHandler(_StepHandlerBase):
             name=name,
             predecessors=predecessors,
         )
+        # TODO: check defaults
         self._session = http_session.init_session(retry=http_session.retry_config())
         self._prediction_url = prediction_url
 
     def run(self, input: Any) -> Any:
         body = json.dumps(
-            _utils.to_builtin(input),
+            _utils.to_builtin(input),  # TODO: maybe skip to_builtin()
             allow_nan=True,
         )
         response = self._session.post(
