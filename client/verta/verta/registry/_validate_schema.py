@@ -11,7 +11,16 @@ _MODEL_SCHEMA_PATH_ENV_VAR = "VERTA_MODEL_SCHEMA_PATH"
 
 
 def validate_schema(f):
-    """Decorator to validate prediction input against previously provided schema."""
+    """Decorator to validate prediction input and output against previously provided schema.
+
+    Validation is done with the ``jsonschema`` library [#]_.
+
+
+
+    References
+    ----------
+    .. [#] https://python-jsonschema.readthedocs.io/en/stable/
+    """
 
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
@@ -31,9 +40,15 @@ def validate_schema(f):
                 "no schema found for model. Did you remember to `set_schema`?"
             ) from e
         input_schema = schema["input"]
-        output_schema = schema["output"]
+        output_schema = None
+        if "output" in schema:
+            output_schema = schema["output"]
 
         # Validate input
+        if not isinstance(prediction_input, dict):
+            raise TypeError(
+                "input must be a dict. Did you remember to call `.dict()`?"
+            )
         try:
             jsonschema.validate(instance=prediction_input, schema=input_schema)
         except jsonschema.exceptions.ValidationError as e:
@@ -41,8 +56,16 @@ def validate_schema(f):
                 "input failed schema validation"
             ) from e
 
-        # Run function and validate output
+        # Run function
         output = f(self, *args, **kwargs)
+        if output_schema is None:
+            return output
+
+        # Validate output
+        if not isinstance(output, dict):
+            raise TypeError(
+                "output must be a dict. Did you remember to call `.dict()` in your model?"
+            )
         try:
             jsonschema.validate(instance=output, schema=output_schema)
         except jsonschema.exceptions.ValidationError as e:

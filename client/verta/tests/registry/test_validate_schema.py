@@ -8,7 +8,7 @@ from tests.strategies import generate_object, generate_another_object
 from verta.registry import validate_schema, verify_io
 
 
-class TestValidateInput:
+class TestValidateSchema:
     @hypothesis.settings(
         suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
         deadline=timedelta(milliseconds=50),
@@ -55,7 +55,7 @@ class TestValidateInput:
         def predict(self, input):
             return input
 
-        with pytest.raises(ValidationError):
+        with pytest.raises(TypeError, match="input must be a dict.*"):
             predict(None, array)
 
     def test_validate_schema_deny_verify_io_first(self, make_model_schema_file):
@@ -86,3 +86,35 @@ class TestValidateInput:
         assert len(recwarn) == 1
         w = recwarn.pop(UserWarning)
         assert str(w.message).startswith("output failed schema validation")
+
+    @hypothesis.settings(
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+        deadline=timedelta(milliseconds=50),
+    )
+    @hypothesis.given(
+        matching_input_value=generate_object(),
+    )
+    def test_validate_schema_no_output(self, make_model_schema_file_no_output, matching_input_value):
+
+        @validate_schema
+        def predict(self, input):
+            return input  # irrelevant
+
+        predict(None, matching_input_value.dict())
+
+    @hypothesis.settings(
+        suppress_health_check=[hypothesis.HealthCheck.function_scoped_fixture],
+        deadline=timedelta(milliseconds=50),
+    )
+    @hypothesis.given(
+        matching_input_value=generate_object(),
+    )
+    def test_validate_schema_deny_output_not_json(self, make_model_schema_file, matching_input_value):
+
+        @validate_schema
+        def predict(self, input):
+            array = pytest.importorskip("numpy").array([1, 2, 3])
+            return array
+
+        with pytest.raises(TypeError, match="output must be a dict.*"):
+            predict(None, matching_input_value.dict())
