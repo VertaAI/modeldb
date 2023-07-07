@@ -10,7 +10,6 @@ import ai.verta.modeldb.PathLocationTypeEnum.PathLocationType;
 import ai.verta.modeldb.authservice.MDBRoleService;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
-import ai.verta.modeldb.common.collaborator.CollaboratorUser;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.handlers.TagsHandlerBase;
@@ -995,8 +994,6 @@ public class CommitDAORdbImpl implements CommitDAO {
     Set<String> accessibleResourceIds =
         new HashSet<>(
             mdbRoleService.getAccessibleResourceIds(
-                null,
-                new CollaboratorUser(uacApisUtil, currentLoginUserInfo),
                 modelDBServiceResourceTypes,
                 request.getRepoIdsList().stream()
                     .map(String::valueOf)

@@ -7,6 +7,6 @@ import ai.verta.modeldb.config.MDBConfig;
 public class DatasetHandler extends ArtifactHandlerBase {
   public DatasetHandler(
       FutureExecutor executor, FutureJdbi jdbi, String entityName, MDBConfig mdbConfig) {
-    super(executor, jdbi, "datasets", entityName, mdbConfig.getArtifactStoreConfig());
+    super(jdbi, "datasets", entityName, mdbConfig.getArtifactStoreConfig());
   }
 }

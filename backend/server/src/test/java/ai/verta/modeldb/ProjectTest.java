@@ -1857,8 +1857,7 @@ public class ProjectTest extends ModeldbTestSetup {
                 organizationId,
                 groupIdUser,
                 roleIdUser,
-                testUser2.getVertaInfo().getUsername(),
-                Optional.empty());
+                testUser2.getVertaInfo().getUsername());
         createProjectRequest =
             createProjectRequest.toBuilder()
                 .setWorkspaceName(organizationId + "/" + testUserWorkspace.getName())

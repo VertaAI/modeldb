@@ -6,15 +6,20 @@ Configuration:
     Console:
       name: STDOUT
       target: SYSTEM_OUT
-      JsonTemplateLayout:
-        eventTemplateUri: "classpath:log-template.json"
-        locationInfoEnabled: true
-        EventTemplateAdditionalField:
-          key: "hostName"
-          value: "${env:hostName:-}"
-#      PatternLayout:
-#        pattern: "[%-5level] traceId=%X{trace_id} %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
+# swap out this JsonTemplateLayout for the PatternLayout below it if you want to see json logs like they are in production.
+#      JsonTemplateLayout:
+#        eventTemplateUri: "classpath:log-template.json"
+#        locationInfoEnabled: true
+#        EventTemplateAdditionalField:
+#          key: "hostName"
+#          value: "${env:hostName:-}"
+      PatternLayout:
+        pattern: "[%-5level] traceId=%X{trace_id} %d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %c{1} - %msg%n"
   Loggers:
+    Root:
+      level: debug
+      AppenderRef:
+        ref: STDOUT
     logger:
       - name: io.grpc.netty
         level: warn
@@ -46,6 +51,11 @@ Configuration:
         additivity: false
         AppenderRef:
           ref: STDOUT
+      - name: org.hibernate
+        level: warn
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
       - name: com.zaxxer.hikari
         level: warn
         additivity: false
@@ -56,12 +66,8 @@ Configuration:
         additivity: false
         AppenderRef:
           ref: STDOUT
-      - name: ai.verta.registry
-        level: debug
+      - name: ai.verta.modeldb.common.CommonDBUtil
+        level: warn
         additivity: false
         AppenderRef:
           ref: STDOUT
-    Root:
-      level: debug
-      AppenderRef:
-        ref: STDOUT

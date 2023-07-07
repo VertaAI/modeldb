@@ -179,7 +179,7 @@ public class ModeldbTestConfigurationBeans {
   private static class TestAuthServiceChannel extends AuthServiceChannel {
 
     private final RoleServiceGrpc.RoleServiceBlockingStub roleServiceBlockingStub =
-        mock(RoleServiceGrpc.RoleServiceBlockingStub.class);
+        mock(RoleServiceGrpc.RoleServiceBlockingStub.class, RETURNS_DEEP_STUBS);
     private final AuthzServiceGrpc.AuthzServiceBlockingStub authzServiceBlockingStub =
         mock(AuthzServiceGrpc.AuthzServiceBlockingStub.class);
     private final CollaboratorServiceGrpc.CollaboratorServiceBlockingStub

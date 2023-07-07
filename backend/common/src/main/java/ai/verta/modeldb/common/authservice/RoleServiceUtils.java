@@ -80,9 +80,7 @@ public class RoleServiceUtils implements RoleService {
         setResourcesBuilder.setCanDeploy(permissions.getCanDeploy());
       }
 
-      if (ownerId.isPresent()) {
-        setResourcesBuilder.setOwnerId(ownerId.get());
-      }
+      ownerId.ifPresent(setResourcesBuilder::setOwnerId);
       workspaceId.ifPresent(setResourcesBuilder::setWorkspaceId);
       workspaceName.ifPresent(setResourcesBuilder::setWorkspaceName);
 
@@ -160,14 +158,14 @@ public class RoleServiceUtils implements RoleService {
       if (responseItem.isPresent()) {
         return responseItem.get();
       } else {
-        StringBuilder errorMessage =
-            new StringBuilder("Failed to locate ")
-                .append(modelDBServiceResourceTypes.name())
-                .append(" resources in UAC for ")
-                .append(modelDBServiceResourceTypes.name())
-                .append(" ID ")
-                .append(entityId);
-        throw new NotFoundException(errorMessage.toString());
+        String errorMessage =
+            "Failed to locate "
+                + modelDBServiceResourceTypes.name()
+                + " resources in UAC for "
+                + modelDBServiceResourceTypes.name()
+                + " ID "
+                + entityId;
+        throw new NotFoundException(errorMessage);
       }
     } catch (StatusRuntimeException ex) {
       LOGGER.trace(ex);
@@ -215,13 +213,8 @@ public class RoleServiceUtils implements RoleService {
       var getOrgByIdResponse = blockingStub.getOrganizationById(getOrgById);
       return getOrgByIdResponse.getOrganization();
     } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                  retry1 -> getOrgById(retry1, orgId, isServiceUser),
-              timeout);
+      return CommonUtils.retryOrThrowException(
+          ex, retry, shouldRetry -> getOrgById(shouldRetry, orgId, isServiceUser), timeout);
     }
   }
 
@@ -291,19 +284,10 @@ public class RoleServiceUtils implements RoleService {
 
   @Override
   public Collection<String> getAccessibleResourceIds(
-      CollaboratorBase hostUserInfo,
-      CollaboratorBase currentLoginUserInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes,
       Collection<String> requestedResourceIds) {
-    List<Resources> accessibleResources;
-    if (hostUserInfo != null) {
-      accessibleResources =
-          getReadOnlyAccessibleResourceIds(true, hostUserInfo, modelDBServiceResourceTypes);
-    } else {
-      accessibleResources =
-          getReadOnlyAccessibleResourceIds(
-              false, currentLoginUserInfo, modelDBServiceResourceTypes);
-    }
+    List<Resources> accessibleResources =
+        getReadOnlyAccessibleResourceIds(modelDBServiceResourceTypes);
 
     return getAccessibleResourceIdsFromAllowedResources(requestedResourceIds, accessibleResources);
   }
@@ -324,87 +308,16 @@ public class RoleServiceUtils implements RoleService {
   }
 
   private List<Resources> getReadOnlyAccessibleResourceIds(
-      boolean isHostUser,
-      CollaboratorBase userInfo,
       ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
 
-    Set<Resources> resourceIdsSet = new HashSet<>();
-    if (userInfo != null && userInfo.getVertaId() != null) {
-      List<Resources> accessibleResourceIds;
-      if (isHostUser) {
-        accessibleResourceIds =
-            getAllowedResources(
-                modelDBServiceResourceTypes,
-                ModelDBActionEnum.ModelDBServiceActions.READ,
-                userInfo);
-      } else {
-        accessibleResourceIds =
-            getSelfAllowedResources(
-                modelDBServiceResourceTypes, ModelDBActionEnum.ModelDBServiceActions.READ);
-      }
-      resourceIdsSet.addAll(accessibleResourceIds);
-      LOGGER.debug(
-          "Accessible {} Ids size is {}",
-          modelDBServiceResourceTypes,
-          accessibleResourceIds.size());
-    }
+    List<Resources> accessibleResourceIds;
+    accessibleResourceIds =
+        getSelfAllowedResources(modelDBServiceResourceTypes, ModelDBServiceActions.READ);
+    Set<Resources> resourceIdsSet = new HashSet<>(accessibleResourceIds);
+    LOGGER.debug(
+        "Accessible {} Ids size is {}", modelDBServiceResourceTypes, accessibleResourceIds.size());
 
     return new ArrayList<>(resourceIdsSet);
-  }
-
-  @Override
-  public List<Resources> getAllowedResources(
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      CollaboratorBase collaboratorBase) {
-    return getAllowedResources(
-        true, modelDBServiceResourceTypes, modelDBServiceActions, collaboratorBase);
-  }
-
-  private List<Resources> getAllowedResources(
-      boolean retry,
-      ModelDBServiceResourceTypes modelDBServiceResourceTypes,
-      ModelDBServiceActions modelDBServiceActions,
-      CollaboratorBase collaboratorBase) {
-    var action =
-        Action.newBuilder()
-            .setService(Service.MODELDB_SERVICE)
-            .setModeldbServiceAction(modelDBServiceActions)
-            .build();
-    var entity = collaboratorBase.getEntities();
-    var getAllowedResourcesRequest =
-        GetAllowedResources.newBuilder()
-            .addActions(action)
-            .addEntities(entity)
-            .setResourceType(
-                ResourceType.newBuilder()
-                    .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-            .setService(Service.MODELDB_SERVICE)
-            .build();
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      LOGGER.trace(CommonMessages.CALL_TO_ROLE_SERVICE_MSG);
-      var getAllowedResourcesResponse =
-          authServiceChannel
-              .getAuthzServiceBlockingStub()
-              .getAllowedResources(getAllowedResourcesRequest);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_MSG);
-      LOGGER.trace(CommonMessages.ROLE_SERVICE_RES_RECEIVED_TRACE_MSG, getAllowedResourcesResponse);
-
-      return getAllowedResourcesResponse.getResourcesList();
-    } catch (StatusRuntimeException ex) {
-      return (List<Resources>)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<List<Resources>>)
-                  retry1 ->
-                      getAllowedResources(
-                          retry1,
-                          modelDBServiceResourceTypes,
-                          modelDBServiceActions,
-                          collaboratorBase),
-              timeout);
-    }
   }
 
   @Override
@@ -442,15 +355,13 @@ public class RoleServiceUtils implements RoleService {
 
       return getAllowedResourcesResponse.getResourcesList();
     } catch (StatusRuntimeException ex) {
-      return (List<Resources>)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<List<Resources>>)
-                  retry1 ->
-                      getSelfAllowedResources(
-                          retry1, modelDBServiceResourceTypes, modelDBServiceActions),
-              timeout);
+      return CommonUtils.retryOrThrowException(
+          ex,
+          retry,
+          shouldRetry ->
+              getSelfAllowedResources(
+                  shouldRetry, modelDBServiceResourceTypes, modelDBServiceActions),
+          timeout);
     }
   }
 
@@ -599,50 +510,11 @@ public class RoleServiceUtils implements RoleService {
 
       return deleteRoleBindingResponse.getStatus();
     } catch (StatusRuntimeException ex) {
-      return (Boolean)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<Boolean>)
-                  retry1 -> deleteRoleBindingsUsingServiceUser(retry1, roleBindingNames),
-              timeout);
-    }
-  }
-
-  private GeneratedMessageV3 getTeamByName(boolean retry, String orgId, String teamName) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      var getTeamByName = GetTeamByName.newBuilder().setTeamName(teamName).setOrgId(orgId).build();
-      var getTeamByNameResponse =
-          authServiceChannel.getTeamServiceBlockingStub().getTeamByName(getTeamByName);
-      return getTeamByNameResponse.getTeam();
-    } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                  retry1 -> getTeamByName(retry1, orgId, teamName),
-              timeout);
-    }
-  }
-
-  private GeneratedMessageV3 getOrgByName(boolean retry, String name) {
-    try (var authServiceChannel = uac.getBlockingAuthServiceChannel()) {
-      GetOrganizationByName getOrgByName =
-          GetOrganizationByName.newBuilder().setOrgName(name).build();
-      var getOrgByNameResponse =
-          authServiceChannel
-              .getOrganizationServiceBlockingStub()
-              .getOrganizationByName(getOrgByName);
-      return getOrgByNameResponse.getOrganization();
-    } catch (StatusRuntimeException ex) {
-      return (GeneratedMessageV3)
-          CommonUtils.retryOrThrowException(
-              ex,
-              retry,
-              (CommonUtils.RetryCallInterface<GeneratedMessageV3>)
-                  retry1 -> getOrgByName(retry1, name),
-              timeout);
+      return CommonUtils.retryOrThrowException(
+          ex,
+          retry,
+          shouldRetry -> deleteRoleBindingsUsingServiceUser(shouldRetry, roleBindingNames),
+          timeout);
     }
   }
 
@@ -660,8 +532,7 @@ public class RoleServiceUtils implements RoleService {
               .listMyOrganizations(listMyOrganizations);
       return listMyOrganizationsResponse.getOrganizationsList();
     } catch (StatusRuntimeException ex) {
-      return (List<Organization>)
-          CommonUtils.retryOrThrowException(ex, retry, this::listMyOrganizations, timeout);
+      return CommonUtils.retryOrThrowException(ex, retry, this::listMyOrganizations, timeout);
     }
   }
 }

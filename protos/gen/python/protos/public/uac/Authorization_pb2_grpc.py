@@ -14,30 +14,10 @@ class AuthzServiceStub(object):
     Args:
       channel: A grpc.Channel.
     """
-    self.isAllowed = channel.unary_unary(
-        '/ai.verta.uac.AuthzService/isAllowed',
-        request_serializer=uac_dot_Authorization__pb2.IsAllowed.SerializeToString,
-        response_deserializer=uac_dot_Authorization__pb2.IsAllowed.Response.FromString,
-        )
     self.getAllowedEntities = channel.unary_unary(
         '/ai.verta.uac.AuthzService/getAllowedEntities',
         request_serializer=uac_dot_Authorization__pb2.GetAllowedEntities.SerializeToString,
         response_deserializer=uac_dot_Authorization__pb2.GetAllowedEntities.Response.FromString,
-        )
-    self.getAllowedEntitiesWithActions = channel.unary_unary(
-        '/ai.verta.uac.AuthzService/getAllowedEntitiesWithActions',
-        request_serializer=uac_dot_Authorization__pb2.GetAllowedEntitiesWithActions.SerializeToString,
-        response_deserializer=uac_dot_Authorization__pb2.GetAllowedEntitiesWithActions.Response.FromString,
-        )
-    self.getAllowedResources = channel.unary_unary(
-        '/ai.verta.uac.AuthzService/getAllowedResources',
-        request_serializer=uac_dot_Authorization__pb2.GetAllowedResources.SerializeToString,
-        response_deserializer=uac_dot_Authorization__pb2.GetAllowedResources.Response.FromString,
-        )
-    self.getDireclyAllowedResources = channel.unary_unary(
-        '/ai.verta.uac.AuthzService/getDireclyAllowedResources',
-        request_serializer=uac_dot_Authorization__pb2.GetAllowedResources.SerializeToString,
-        response_deserializer=uac_dot_Authorization__pb2.GetAllowedResources.Response.FromString,
         )
     self.isSelfAllowed = channel.unary_unary(
         '/ai.verta.uac.AuthzService/isSelfAllowed',
@@ -46,11 +26,6 @@ class AuthzServiceStub(object):
         )
     self.getSelfAllowedResources = channel.unary_unary(
         '/ai.verta.uac.AuthzService/getSelfAllowedResources',
-        request_serializer=uac_dot_Authorization__pb2.GetSelfAllowedResources.SerializeToString,
-        response_deserializer=uac_dot_Authorization__pb2.GetSelfAllowedResources.Response.FromString,
-        )
-    self.getSelfDirectlyAllowedResources = channel.unary_unary(
-        '/ai.verta.uac.AuthzService/getSelfDirectlyAllowedResources',
         request_serializer=uac_dot_Authorization__pb2.GetSelfAllowedResources.SerializeToString,
         response_deserializer=uac_dot_Authorization__pb2.GetSelfAllowedResources.Response.FromString,
         )
@@ -65,35 +40,7 @@ class AuthzServiceServicer(object):
   # missing associated documentation comment in .proto file
   pass
 
-  def isAllowed(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def getAllowedEntities(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getAllowedEntitiesWithActions(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getAllowedResources(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
-  def getDireclyAllowedResources(self, request, context):
     # missing associated documentation comment in .proto file
     pass
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
@@ -114,13 +61,6 @@ class AuthzServiceServicer(object):
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def getSelfDirectlyAllowedResources(self, request, context):
-    # missing associated documentation comment in .proto file
-    pass
-    context.set_code(grpc.StatusCode.UNIMPLEMENTED)
-    context.set_details('Method not implemented!')
-    raise NotImplementedError('Method not implemented!')
-
   def getSelfAllowedActionsBatch(self, request, context):
     # missing associated documentation comment in .proto file
     pass
@@ -131,30 +71,10 @@ class AuthzServiceServicer(object):
 
 def add_AuthzServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
-      'isAllowed': grpc.unary_unary_rpc_method_handler(
-          servicer.isAllowed,
-          request_deserializer=uac_dot_Authorization__pb2.IsAllowed.FromString,
-          response_serializer=uac_dot_Authorization__pb2.IsAllowed.Response.SerializeToString,
-      ),
       'getAllowedEntities': grpc.unary_unary_rpc_method_handler(
           servicer.getAllowedEntities,
           request_deserializer=uac_dot_Authorization__pb2.GetAllowedEntities.FromString,
           response_serializer=uac_dot_Authorization__pb2.GetAllowedEntities.Response.SerializeToString,
-      ),
-      'getAllowedEntitiesWithActions': grpc.unary_unary_rpc_method_handler(
-          servicer.getAllowedEntitiesWithActions,
-          request_deserializer=uac_dot_Authorization__pb2.GetAllowedEntitiesWithActions.FromString,
-          response_serializer=uac_dot_Authorization__pb2.GetAllowedEntitiesWithActions.Response.SerializeToString,
-      ),
-      'getAllowedResources': grpc.unary_unary_rpc_method_handler(
-          servicer.getAllowedResources,
-          request_deserializer=uac_dot_Authorization__pb2.GetAllowedResources.FromString,
-          response_serializer=uac_dot_Authorization__pb2.GetAllowedResources.Response.SerializeToString,
-      ),
-      'getDireclyAllowedResources': grpc.unary_unary_rpc_method_handler(
-          servicer.getDireclyAllowedResources,
-          request_deserializer=uac_dot_Authorization__pb2.GetAllowedResources.FromString,
-          response_serializer=uac_dot_Authorization__pb2.GetAllowedResources.Response.SerializeToString,
       ),
       'isSelfAllowed': grpc.unary_unary_rpc_method_handler(
           servicer.isSelfAllowed,
@@ -163,11 +83,6 @@ def add_AuthzServiceServicer_to_server(servicer, server):
       ),
       'getSelfAllowedResources': grpc.unary_unary_rpc_method_handler(
           servicer.getSelfAllowedResources,
-          request_deserializer=uac_dot_Authorization__pb2.GetSelfAllowedResources.FromString,
-          response_serializer=uac_dot_Authorization__pb2.GetSelfAllowedResources.Response.SerializeToString,
-      ),
-      'getSelfDirectlyAllowedResources': grpc.unary_unary_rpc_method_handler(
-          servicer.getSelfDirectlyAllowedResources,
           request_deserializer=uac_dot_Authorization__pb2.GetSelfAllowedResources.FromString,
           response_serializer=uac_dot_Authorization__pb2.GetSelfAllowedResources.Response.SerializeToString,
       ),

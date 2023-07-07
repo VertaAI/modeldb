@@ -11,7 +11,7 @@ import java.util.*;
 public class TagsHandler extends TagsHandlerBase<String> {
 
   public TagsHandler(FutureExecutor executor, FutureJdbi jdbi, String entityName) {
-    super(executor, jdbi, entityName);
+    super(jdbi, entityName);
   }
 
   @Override

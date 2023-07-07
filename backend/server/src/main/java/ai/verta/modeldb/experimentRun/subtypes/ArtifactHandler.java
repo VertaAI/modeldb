@@ -7,9 +7,8 @@ import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
-import ai.verta.modeldb.common.futures.FutureExecutor;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureJdbi;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.config.MDBConfig;
 import ai.verta.modeldb.entities.ArtifactEntity;
 import ai.verta.modeldb.entities.ArtifactPartEntity;
@@ -25,7 +24,7 @@ import org.hibernate.LockMode;
 import org.hibernate.Session;
 
 public class ArtifactHandler extends ArtifactHandlerBase {
-  private static Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
+  private static final Logger LOGGER = LogManager.getLogger(ArtifactHandler.class);
   private static final String KEY_S_NOT_LOGGED_ERROR = "Key %s not logged";
 
   private final CodeVersionHandler codeVersionHandler;
@@ -38,31 +37,34 @@ public class ArtifactHandler extends ArtifactHandlerBase {
   private final int artifactEntityType;
 
   public ArtifactHandler(
-      FutureExecutor executor,
       FutureJdbi jdbi,
       String entityName,
       CodeVersionHandler codeVersionHandler,
       DatasetHandler datasetHandler,
       ArtifactStoreDAO artifactStoreDAO,
       MDBConfig mdbConfig) {
-    super(executor, jdbi, "artifacts", entityName, mdbConfig.getArtifactStoreConfig());
+    super(jdbi, "artifacts", entityName, mdbConfig.getArtifactStoreConfig());
     this.codeVersionHandler = codeVersionHandler;
     this.datasetHandler = datasetHandler;
     this.artifactStoreDAO = artifactStoreDAO;
 
-    if (entityName.equals("ProjectEntity")) {
-      this.artifactEntityType = ArtifactPartEntity.PROJECT_ARTIFACT;
-    } else if (entityName.equals("ExperimentEntity")) {
-      this.artifactEntityType = ArtifactPartEntity.EXPERIMENT_ARTIFACT;
-    } else if (entityName.equals("ExperimentRunEntity")) {
-      this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
-    } else {
-      throw new ModelDBException("Invalid entity type for ArtifactPart", Code.INTERNAL);
+    switch (entityName) {
+      case "ProjectEntity":
+        this.artifactEntityType = ArtifactPartEntity.PROJECT_ARTIFACT;
+        break;
+      case "ExperimentEntity":
+        this.artifactEntityType = ArtifactPartEntity.EXPERIMENT_ARTIFACT;
+        break;
+      case "ExperimentRunEntity":
+        this.artifactEntityType = ArtifactPartEntity.EXP_RUN_ARTIFACT;
+        break;
+      default:
+        throw new ModelDBException("Invalid entity type for ArtifactPart", Code.INTERNAL);
     }
   }
 
-  public InternalFuture<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
-    return InternalFuture.runAsync(
+  public Future<GetUrlForArtifact.Response> getUrlForArtifact(GetUrlForArtifact request) {
+    return Future.runAsync(
             () -> {
               String errorMessage = null;
               if (request.getKey().isEmpty()) {
@@ -74,11 +76,10 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               if (errorMessage != null) {
                 throw new InvalidArgumentException(errorMessage);
               }
-            },
-            executor)
+            })
         .thenCompose(
             unused -> {
-              final InternalFuture<Map.Entry<String, String>> urlInfo;
+              final Future<Map.Entry<String, String>> urlInfo;
               String errorMessage;
 
               /*Process code*/
@@ -87,7 +88,8 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                     String.format("Code versioning artifact not found at %s level", entityName);
                 urlInfo =
                     getUrlForCode(request)
-                        .thenApply(s3Key -> new AbstractMap.SimpleEntry<>(s3Key, null), executor);
+                        .thenCompose(
+                            s3Key -> Future.of(new AbstractMap.SimpleEntry<>(s3Key, null)));
               } else if (request.getArtifactType() == ArtifactTypeEnum.ArtifactType.DATA) {
                 errorMessage = "Data versioning artifact not found";
                 urlInfo = getUrlForData(request);
@@ -109,26 +111,25 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               }
 
               String finalErrorMessage = errorMessage;
-              return urlInfo.thenApply(
+              return urlInfo.thenCompose(
                   info -> {
                     final var s3Key = info.getKey();
                     final var uploadId = info.getValue();
                     if (s3Key == null) {
-                      throw new NotFoundException(finalErrorMessage);
+                      return Future.failedStage(new NotFoundException(finalErrorMessage));
                     }
 
-                    return artifactStoreDAO.getUrlForArtifactMultipart(
-                        s3Key, request.getMethod(), request.getPartNumber(), uploadId);
-                  },
-                  executor);
-            },
-            executor);
+                    return Future.of(
+                        artifactStoreDAO.getUrlForArtifactMultipart(
+                            s3Key, request.getMethod(), request.getPartNumber(), uploadId));
+                  });
+            });
   }
 
-  private InternalFuture<Map.Entry<String, String>> getEntityArtifactS3PathAndMultipartUploadID(
+  private Future<Map.Entry<String, String>> getEntityArtifactS3PathAndMultipartUploadID(
       String entityId, String key, long partNumber, S3KeyFunction initializeMultipart) {
     return getArtifactId(entityId, key)
-        .thenApply(
+        .thenCompose(
             maybeId -> {
               final var id =
                   maybeId.orElseThrow(
@@ -137,11 +138,11 @@ public class ArtifactHandler extends ArtifactHandlerBase {
               try (var session = modelDBHibernateUtil.getSessionFactory().openSession()) {
                 final var artifactEntity =
                     session.get(ArtifactEntity.class, id, LockMode.PESSIMISTIC_WRITE);
-                return getS3PathAndMultipartUploadId(
-                    session, artifactEntity, partNumber != 0, initializeMultipart);
+                return Future.of(
+                    getS3PathAndMultipartUploadId(
+                        session, artifactEntity, partNumber != 0, initializeMultipart));
               }
-            },
-            executor);
+            });
   }
 
   private AbstractMap.SimpleEntry<String, String> getS3PathAndMultipartUploadId(
@@ -184,43 +185,42 @@ public class ArtifactHandler extends ArtifactHandlerBase {
     return new AbstractMap.SimpleEntry<>(artifactEntity.getPath(), uploadId);
   }
 
-  private InternalFuture<Map.Entry<String, String>> getUrlForData(GetUrlForArtifact request) {
-    return InternalFuture.runAsync(
+  private Future<Map.Entry<String, String>> getUrlForData(GetUrlForArtifact request) {
+    return Future.runAsync(
             () -> {
               if (request.getKey().isEmpty()) {
                 throw new InvalidArgumentException("Key must be provided");
               }
-            },
-            executor)
-        .thenCompose(
-            unused ->
+            })
+        .thenSupply(
+            () ->
                 datasetHandler
                     .getArtifacts(request.getId(), Optional.of(request.getKey()))
-                    .thenApply(
+                    .thenCompose(
                         artifacts -> {
                           if (artifacts.isEmpty()) {
                             throw new InvalidArgumentException(
                                 String.format(KEY_S_NOT_LOGGED_ERROR, request.getKey()));
                           }
                           throw new InvalidArgumentException("Not supported yet");
-                        },
-                        executor),
-            executor);
+                        }));
   }
 
-  private InternalFuture<String> getUrlForCode(GetUrlForArtifact request) {
+  private Future<String> getUrlForCode(GetUrlForArtifact request) {
     return codeVersionHandler
         .getCodeVersion(request.getId())
-        .thenApply(
+        .toFuture()
+        .thenCompose(
             maybeCodeVersion ->
-                maybeCodeVersion
-                    .map(codeVersion -> codeVersion.getCodeArchive().getPath())
-                    .orElseThrow(
-                        () -> new InvalidArgumentException("Code version has not been logged")),
-            executor);
+                Future.of(
+                    maybeCodeVersion
+                        .map(codeVersion -> codeVersion.getCodeArchive().getPath())
+                        .orElseThrow(
+                            () ->
+                                new InvalidArgumentException("Code version has not been logged"))));
   }
 
-  public InternalFuture<Void> commitArtifactPart(CommitArtifactPart request) {
+  public Future<Void> commitArtifactPart(CommitArtifactPart request) {
     return getArtifactId(request.getId(), request.getKey())
         .thenAccept(
             maybeId -> {
@@ -238,14 +238,13 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                     String.valueOf(artifactEntity.getId()),
                     this.artifactEntityType);
               }
-            },
-            executor);
+            });
   }
 
-  public InternalFuture<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
+  public Future<GetCommittedArtifactParts.Response> getCommittedArtifactParts(
       GetCommittedArtifactParts request) {
     return getArtifactId(request.getId(), request.getKey())
-        .thenApply(
+        .thenCompose(
             maybeId -> {
               final var id =
                   maybeId.orElseThrow(
@@ -262,13 +261,12 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                 var response = GetCommittedArtifactParts.Response.newBuilder();
                 artifactPartEntities.forEach(
                     artifactPartEntity -> response.addArtifactParts(artifactPartEntity.toProto()));
-                return response.build();
+                return Future.of(response.build());
               }
-            },
-            executor);
+            });
   }
 
-  public InternalFuture<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
+  public Future<Void> commitMultipartArtifact(CommitMultipartArtifact request) {
     return getArtifactId(request.getId(), request.getKey())
         .thenAccept(
             maybeId -> {
@@ -299,7 +297,6 @@ public class ArtifactHandler extends ArtifactHandlerBase {
                 artifactEntity.setUploadId(null);
                 session.getTransaction().commit();
               }
-            },
-            executor);
+            });
   }
 }

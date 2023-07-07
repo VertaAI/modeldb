@@ -37,7 +37,7 @@ public abstract class Config {
   private OpenTelemetry openTelemetry;
   private ArtifactStoreConfig artifactStoreConfig;
 
-  private boolean permissionV2Enabled = false;
+  private boolean permissionV2Enabled = true;
 
   public static <T> T getInstance(Class<T> configType, String configFile)
       throws InternalErrorException {

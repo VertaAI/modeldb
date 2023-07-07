@@ -120,10 +120,10 @@ public class CommonUtils {
     T retryCall(boolean retry);
   }
 
-  public static Object retryOrThrowException(
+  public static <T> T retryOrThrowException(
       StatusRuntimeException ex,
       boolean retry,
-      RetryCallInterface<?> retryCallInterface,
+      RetryCallInterface<T> retryCallInterface,
       Integer requestTimeout) {
     String errorMessage = ex.getMessage();
     LOGGER.debug(errorMessage);

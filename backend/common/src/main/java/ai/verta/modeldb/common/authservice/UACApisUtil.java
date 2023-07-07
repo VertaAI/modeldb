@@ -9,9 +9,8 @@ import ai.verta.modeldb.common.connections.UAC;
 import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.NotFoundException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
-import ai.verta.modeldb.common.futures.FutureUtil;
-import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.uac.Action;
 import ai.verta.uac.Empty;
 import ai.verta.uac.GetResources;
@@ -52,10 +51,10 @@ public class UACApisUtil {
     this.uac = uac;
   }
 
-  public InternalFuture<List<Resources>> getAllowedEntitiesByResourceType(
+  public Future<List<Resources>> getAllowedEntitiesByResourceType(
       ModelDBActionEnum.ModelDBServiceActions action,
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
-    return FutureUtil.clientRequest(
+    return Future.fromListenableFuture(
             uac.getAuthzService()
                 .getSelfAllowedResources(
                     GetSelfAllowedResources.newBuilder()
@@ -67,12 +66,12 @@ public class UACApisUtil {
                         .setResourceType(
                             ResourceType.newBuilder()
                                 .setModeldbServiceResourceType(modelDBServiceResourceTypes))
-                        .build()),
-            executor)
-        .thenApply(GetSelfAllowedResources.Response::getResourcesList, executor);
+                        .build()))
+        .thenCompose(
+            (GetSelfAllowedResources.Response response) -> Future.of(response.getResourcesList()));
   }
 
-  public InternalFuture<List<GetResourcesResponseItem>> getAllowedResourceItems(
+  public Future<List<GetResourcesResponseItem>> getAllowedResourceItems(
       Optional<List<String>> resourceIds,
       Long workspaceId,
       ModelDBResourceEnum.ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
@@ -94,16 +93,15 @@ public class UACApisUtil {
     return getResources(builder);
   }
 
-  public InternalFuture<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
+  public Future<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
       String workspaceName, Optional<String> projectId) {
     var requestProjectIds = new ArrayList<String>();
     if (projectId.isPresent() && !projectId.get().isEmpty()) {
       requestProjectIds.add(projectId.get());
     }
-    return FutureUtil.clientRequest(
+    return Future.fromListenableFuture(
             uac.getWorkspaceService()
-                .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
-            executor)
+                .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()))
         .thenCompose(
             workspace ->
                 getAllowedResourceItems(
@@ -112,29 +110,25 @@ public class UACApisUtil {
                         ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
                     .thenCompose(
                         getResourcesItems ->
-                            InternalFuture.completedInternalFuture(
+                            Future.of(
                                 getResourcesItems.stream()
                                     .map(GetResourcesResponseItem::getResourceId)
-                                    .collect(Collectors.toList())),
-                        executor),
-            executor);
+                                    .collect(Collectors.toList()))));
   }
 
-  public InternalFuture<Workspace> getWorkspaceById(long workspaceId) {
-    return FutureUtil.clientRequest(
+  public Future<Workspace> getWorkspaceById(long workspaceId) {
+    return Future.fromListenableFuture(
         uac.getWorkspaceService()
-            .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()),
-        executor);
+            .getWorkspaceById(GetWorkspaceById.newBuilder().setId(workspaceId).build()));
   }
 
-  public InternalFuture<Workspace> getWorkspaceByName(String workspaceName) {
-    return FutureUtil.clientRequest(
+  public Future<Workspace> getWorkspaceByName(String workspaceName) {
+    return Future.fromListenableFuture(
         uac.getWorkspaceService()
-            .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()),
-        executor);
+            .getWorkspaceByName(GetWorkspaceByName.newBuilder().setName(workspaceName).build()));
   }
 
-  public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
+  public Future<List<GetResourcesResponseItem>> getResourceItemsForLoginUserWorkspace(
       Optional<String> workspaceName,
       Long workspaceId,
       Optional<List<String>> resourceIdsOptional,
@@ -156,13 +150,12 @@ public class UACApisUtil {
     if (workspaceId != null) {
       builder.setWorkspaceId(workspaceId);
     }
-    return FutureUtil.clientRequest(
-            uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()),
-            executor)
-        .thenApply(GetResources.Response::getItemList, executor);
+    return Future.fromListenableFuture(
+            uac.getCollaboratorService().getResourcesSpecialPersonalWorkspace(builder.build()))
+        .thenCompose((GetResources.Response response) -> Future.of(response.getItemList()));
   }
 
-  public InternalFuture<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
+  public Future<List<GetResourcesResponseItem>> getResourceItemsForWorkspace(
       Optional<String> workspaceName,
       Optional<Collection<String>> resourceIdsOptional,
       Optional<String> resourceName,
@@ -185,37 +178,33 @@ public class UACApisUtil {
     return getResources(builder);
   }
 
-  private InternalFuture<List<GetResourcesResponseItem>> getResources(
-      GetResources.Builder builder) {
-    return FutureUtil.clientRequest(
-            uac.getCollaboratorService().getResources(builder.build()), executor)
-        .thenApply(GetResources.Response::getItemList, executor);
+  private Future<List<GetResourcesResponseItem>> getResources(GetResources.Builder builder) {
+    return Future.fromListenableFuture(uac.getCollaboratorService().getResources(builder.build()))
+        .thenCompose((GetResources.Response response) -> Future.of(response.getItemList()));
   }
 
-  public InternalFuture<UserInfoPaginationDTO> getFuzzyUserInfoList(String usernameChar) {
+  public Future<UserInfoPaginationDTO> getFuzzyUserInfoList(String usernameChar) {
     LOGGER.trace("usernameChar : {}", usernameChar);
     if (usernameChar.isEmpty()) {
       var paginationDTO = new UserInfoPaginationDTO();
       paginationDTO.setUserInfoList(Collections.emptyList());
       paginationDTO.setTotalRecords(0L);
-      return InternalFuture.completedInternalFuture(paginationDTO);
+      return Future.of(paginationDTO);
     }
-    return FutureUtil.clientRequest(
+    return Future.fromListenableFuture(
             uac.getUACService()
-                .getUsersFuzzy(GetUsersFuzzy.newBuilder().setUsername(usernameChar).build()),
-            executor)
-        .thenApply(
+                .getUsersFuzzy(GetUsersFuzzy.newBuilder().setUsername(usernameChar).build()))
+        .thenCompose(
             response -> {
               LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
               var paginationDTO = new UserInfoPaginationDTO();
               paginationDTO.setUserInfoList(response.getUserInfosList());
               paginationDTO.setTotalRecords(response.getTotalRecords());
-              return paginationDTO;
-            },
-            executor);
+              return Future.of(paginationDTO);
+            });
   }
 
-  public InternalFuture<Map<String, UserInfo>> getUserInfoFromAuthServer(
+  public Future<Map<String, UserInfo>> getUserInfoFromAuthServer(
       Set<String> vertaIdList,
       Set<String> emailIdList,
       List<String> usernameList,
@@ -231,9 +220,8 @@ public class UACApisUtil {
     LOGGER.trace("email Id List : {}", emailIdList);
     LOGGER.trace("username Id List : {}", usernameList);
     // Get the user info from the Context
-    return FutureUtil.clientRequest(
-            uac.getUACService().getUsers(getUserRequestBuilder.build()), executor)
-        .thenApply(
+    return Future.fromListenableFuture(uac.getUACService().getUsers(getUserRequestBuilder.build()))
+        .thenCompose(
             response -> {
               LOGGER.trace(CommonMessages.AUTH_SERVICE_RES_RECEIVED_MSG);
               List<UserInfo> userInfoList = response.getUserInfosList();
@@ -242,19 +230,18 @@ public class UACApisUtil {
               for (UserInfo userInfo : userInfoList) {
                 useInfoMap.put(userInfo.getVertaInfo().getUserId(), userInfo);
               }
-              return useInfoMap;
-            },
-            executor);
+              return Future.of(useInfoMap);
+            });
   }
 
-  public InternalFuture<GetResourcesResponseItem> getEntityResource(
+  public Future<GetResourcesResponseItem> getEntityResource(
       String entityId, ModelDBServiceResourceTypes modelDBServiceResourceTypes) {
     return getResourceItemsForWorkspace(
             Optional.empty(),
             Optional.of(Collections.singletonList(entityId)),
             Optional.empty(),
             modelDBServiceResourceTypes)
-        .thenApply(
+        .thenCompose(
             responseItems -> {
               if (responseItems.size() > 1) {
                 var mdbServiceTypeName = modelDBServiceResourceTypes.name();
@@ -267,7 +254,7 @@ public class UACApisUtil {
               }
               Optional<GetResourcesResponseItem> responseItem = responseItems.stream().findFirst();
               if (responseItem.isPresent()) {
-                return responseItem.get();
+                return Future.of(responseItem.get());
               } else {
                 StringBuilder errorMessage =
                     new StringBuilder("Failed to locate ")
@@ -276,18 +263,17 @@ public class UACApisUtil {
                         .append(modelDBServiceResourceTypes.name())
                         .append(" ID ")
                         .append(entityId);
-                throw new NotFoundException(errorMessage.toString());
+                return Future.failedStage(new NotFoundException(errorMessage.toString()));
               }
-            },
-            executor);
+            });
   }
 
-  public InternalFuture<UserInfo> getCurrentLoginUserInfo() {
-    return FutureUtil.clientRequest(
-        uac.getUACService().getCurrentUser(Empty.newBuilder().build()), executor);
+  public Future<UserInfo> getCurrentLoginUserInfo() {
+    return Future.fromListenableFuture(
+        uac.getUACService().getCurrentUser(Empty.newBuilder().build()));
   }
 
-  public InternalFuture<UserInfo> getUserInfo(String vertaId, UserIdentifier vertaIdentifier) {
+  public Future<UserInfo> getUserInfo(String vertaId, UserIdentifier vertaIdentifier) {
     GetUser getUserRequest;
     if (vertaIdentifier == UserIdentifier.EMAIL_ID) {
       getUserRequest = GetUser.newBuilder().setEmail(vertaId).build();
@@ -299,15 +285,15 @@ public class UACApisUtil {
 
     LOGGER.trace(CommonMessages.AUTH_SERVICE_REQ_SENT_MSG);
     // Get the user info from the Context
-    return FutureUtil.clientRequest(uac.getUACService().getUser(getUserRequest), executor)
-        .thenApply(
+    return Future.fromListenableFuture(uac.getUACService().getUser(getUserRequest))
+        .thenCompose(
             userInfo -> {
               if (userInfo == null) {
-                throw new NotFoundException("User not found with the provided metadata");
+                return Future.failedStage(
+                    new NotFoundException("User not found with the provided metadata"));
               }
-              return userInfo;
-            },
-            executor);
+              return Future.of(userInfo);
+            });
   }
 
   public String getVertaIdFromUserInfo(UserInfo userInfo) {
@@ -339,17 +325,17 @@ public class UACApisUtil {
       boolean isHQL,
       boolean isResourceIdNumber) {
     var operator = predicate.getOperator();
-    InternalFuture<List<String>> ownerIdsFuture;
+    Future<List<String>> ownerIdsFuture;
     if (operator.equals(OperatorEnum.Operator.CONTAIN)
         || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
       ownerIdsFuture =
           getFuzzyUserInfoList(predicate.getValue().getStringValue())
-              .thenApply(
+              .thenCompose(
                   userInfoPaginationDTO ->
-                      userInfoPaginationDTO.getUserInfoList().stream()
-                          .map(userInfo -> userInfo.getVertaInfo().getUserId())
-                          .collect(Collectors.toList()),
-                  executor);
+                      Future.of(
+                          userInfoPaginationDTO.getUserInfoList().stream()
+                              .map(userInfo -> userInfo.getVertaInfo().getUserId())
+                              .collect(Collectors.toList())));
     } else {
       var ownerIdsArrString = predicate.getValue().getStringValue();
       List<String> ownerIds = new ArrayList<>();
@@ -358,74 +344,65 @@ public class UACApisUtil {
       } else {
         ownerIds.add(ownerIdsArrString);
       }
-      ownerIdsFuture = InternalFuture.completedInternalFuture(ownerIds);
+      ownerIdsFuture = Future.of(ownerIds);
     }
 
     var sqlFuture =
-        ownerIdsFuture
-            .thenCompose(
-                userInfoList -> {
-                  if (userInfoList != null && !userInfoList.isEmpty()) {
-                    var resourceType =
-                        ResourceType.newBuilder()
-                            .setModeldbServiceResourceType(resourceTypes)
-                            .build();
-                    Resources.Builder resources =
-                        Resources.newBuilder()
-                            .setResourceType(resourceType)
-                            .setService(ServiceEnum.Service.MODELDB_SERVICE);
+        ownerIdsFuture.thenCompose(
+            userInfoList -> {
+              if (userInfoList != null && !userInfoList.isEmpty()) {
+                var resourceType =
+                    ResourceType.newBuilder().setModeldbServiceResourceType(resourceTypes).build();
+                Resources.Builder resources =
+                    Resources.newBuilder()
+                        .setResourceType(resourceType)
+                        .setService(ServiceEnum.Service.MODELDB_SERVICE);
 
-                    var getResourcesBuilder =
-                        GetResources.newBuilder().setResources(resources.build());
-                    getResourcesBuilder.addAllOwnerIds(
-                        userInfoList.stream().map(Long::parseLong).collect(Collectors.toSet()));
-                    return getResources(getResourcesBuilder)
-                        .thenApply(
-                            accessibleAllWorkspaceItems ->
+                var getResourcesBuilder = GetResources.newBuilder().setResources(resources.build());
+                getResourcesBuilder.addAllOwnerIds(
+                    userInfoList.stream().map(Long::parseLong).collect(Collectors.toSet()));
+                return getResources(getResourcesBuilder)
+                    .thenCompose(
+                        accessibleAllWorkspaceItems ->
+                            Future.of(
                                 accessibleAllWorkspaceItems.stream()
                                     .map(GetResourcesResponseItem::getResourceId)
-                                    .collect(Collectors.toSet()),
-                            executor)
-                        .thenCompose(
-                            resourceIds -> {
-                              if (resourceIds.isEmpty()) {
-                                return InternalFuture.completedInternalFuture(
-                                    String.format("%s.id = '-1'", alias));
-                              }
+                                    .collect(Collectors.toSet())))
+                    .thenCompose(
+                        resourceIds -> {
+                          if (resourceIds.isEmpty()) {
+                            return Future.of(String.format("%s.id = '-1'", alias));
+                          }
 
-                              final var valueBindingName =
-                                  String.format("fuzzy_id_%d", new Date().getTime());
-                              String inClause;
-                              if (isHQL) {
-                                inClause = ":" + valueBindingName;
-                              } else {
-                                inClause = "<" + valueBindingName + ">";
-                              }
+                          final var valueBindingName =
+                              String.format("fuzzy_id_%d", new Date().getTime());
+                          String inClause;
+                          if (isHQL) {
+                            inClause = ":" + valueBindingName;
+                          } else {
+                            inClause = "<" + valueBindingName + ">";
+                          }
 
-                              parametersMap.put(
-                                  valueBindingName,
-                                  isResourceIdNumber
-                                      ? resourceIds.stream()
-                                          .map(Long::parseLong)
-                                          .collect(Collectors.toSet())
-                                      : resourceIds);
-                              String finalSql;
-                              if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-                                  || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
-                                finalSql = String.format("%s.id NOT IN (%s)", alias, inClause);
-                              } else {
-                                finalSql = String.format("%s.id IN (%s)", alias, inClause);
-                              }
-                              return InternalFuture.completedInternalFuture(finalSql);
-                            },
-                            executor);
-                  } else {
-                    return InternalFuture.completedInternalFuture(
-                        String.format("%s.id = '-1'", alias));
-                  }
-                },
-                executor)
-            .thenApply(sql -> sql, executor);
+                          parametersMap.put(
+                              valueBindingName,
+                              isResourceIdNumber
+                                  ? resourceIds.stream()
+                                      .map(Long::parseLong)
+                                      .collect(Collectors.toSet())
+                                  : resourceIds);
+                          String finalSql;
+                          if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                              || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+                            finalSql = String.format("%s.id NOT IN (%s)", alias, inClause);
+                          } else {
+                            finalSql = String.format("%s.id IN (%s)", alias, inClause);
+                          }
+                          return Future.of(finalSql);
+                        });
+              } else {
+                return Future.of(String.format("%s.id = '-1'", alias));
+              }
+            });
 
     try {
       return sqlFuture.blockAndGet();

@@ -7,6 +7,7 @@ option java_multiple_files = true;
 
 import "google/api/annotations.proto";
 import "registry/StageService.proto";
+import "registry/CustomAttributeService.proto";
 import "common/CommonService.proto";
 
 message RiskLevelEnum {
@@ -70,8 +71,12 @@ message ChecklistTemplate {
   // Sort value to be used in the UI
   int64 sort = 11;
 
-  // ChecklistTemplateItem
+  // Checklist template item
   repeated ChecklistTemplateItem checklist_template_items = 12;
+
+  // Checklist template value. This is used to apply checklists to only RMVs that have the values. optional.
+  repeated CustomAttributeValue custom_attribute_values = 13;
+
 }
 
 message ChecklistTemplateItem {
@@ -181,6 +186,9 @@ message SearchChecklistTemplates {
 
   // organization id
   string organization_id = 4;
+
+  // model version id.  optional
+  uint64 model_version_id = 5;
 
   message Response {
     repeated ChecklistTemplate checklist_templates = 1;

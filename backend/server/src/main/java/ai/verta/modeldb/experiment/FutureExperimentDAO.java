@@ -66,13 +66,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jdbi.v3.core.statement.Query;
 
 public class FutureExperimentDAO {
-  private static final Logger LOGGER = LogManager.getLogger(FutureExperimentDAO.class);
-
   private final FutureExecutor executor;
   private final FutureJdbi jdbi;
   private final UAC uac;
@@ -110,7 +106,6 @@ public class FutureExperimentDAO {
     DatasetHandler datasetHandler = new DatasetHandler(executor, jdbi, entityName, mdbConfig);
     artifactHandler =
         new ArtifactHandler(
-            executor,
             jdbi,
             entityName,
             codeVersionHandler,
@@ -263,7 +258,8 @@ public class FutureExperimentDAO {
                                             .collect(Collectors.toSet());
 
                                     // Get tags
-                                    final var futureTags = tagsHandler.getTagsMap(ids);
+                                    final var futureTags =
+                                        tagsHandler.getTagsMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureTags,
@@ -276,7 +272,7 @@ public class FutureExperimentDAO {
 
                                     // Get attributes
                                     final var futureAttributes =
-                                        attributeHandler.getKeyValuesMap(ids);
+                                        attributeHandler.getKeyValuesMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureAttributes,
@@ -289,7 +285,7 @@ public class FutureExperimentDAO {
 
                                     // Get artifacts
                                     final var futureArtifacts =
-                                        artifactHandler.getArtifactsMap(ids);
+                                        artifactHandler.getArtifactsMap(ids).toInternalFuture();
                                     futureBuildersStream =
                                         futureBuildersStream.thenCombine(
                                             futureArtifacts,
@@ -386,6 +382,7 @@ public class FutureExperimentDAO {
           .getAllowedEntitiesByResourceType(
               ModelDBActionEnum.ModelDBServiceActions.READ,
               ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+          .toInternalFuture()
           .thenApply(
               resources -> {
                 boolean allowedAllResources = RoleServiceUtils.checkAllResourceAllowed(resources);
@@ -407,6 +404,7 @@ public class FutureExperimentDAO {
       // futureProjectIds based on workspace
       return uacApisUtil
           .getAccessibleProjectIdsBasedOnWorkspace(workspaceName, Optional.of(requestedProjectId))
+          .toInternalFuture()
           .thenApply(
               accessibleProjectIds -> {
                 if (accessibleProjectIds.isEmpty()) {
@@ -624,7 +622,7 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> tagsHandler.getTags(expId), executor)
+        .thenSupply(() -> tagsHandler.getTags(expId).toInternalFuture(), executor)
         .thenApply(tags -> GetTags.Response.newBuilder().addAllTags(tags).build(), executor);
   }
 
@@ -683,7 +681,9 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> attributeHandler.getKeyValues(expId, keys, getAll), executor)
+        .thenCompose(
+            unused -> attributeHandler.getKeyValues(expId, keys, getAll).toInternalFuture(),
+            executor)
         .thenApply(
             keyValues -> GetAttributes.Response.newBuilder().addAllAttributes(keyValues).build(),
             executor);
@@ -726,6 +726,7 @@ public class FutureExperimentDAO {
                         Optional.of(new ArrayList<>(projectIdFromExperimentMap.values())),
                         Optional.empty(),
                         ModelDBServiceResourceTypes.PROJECT)
+                    .toInternalFuture()
                     .thenCompose(unused -> deleteExperiments(experimentIds), executor)
                     .thenApply(unused -> projectIdFromExperimentMap, executor),
             executor);
@@ -795,7 +796,9 @@ public class FutureExperimentDAO {
                     projectIdFromExperimentMap.get(experimentId), ModelDBServiceActions.UPDATE),
             executor)
         .thenCompose(
-            unused -> artifactHandler.getArtifacts(experimentId, Optional.empty()), executor)
+            unused ->
+                artifactHandler.getArtifacts(experimentId, Optional.empty()).toInternalFuture(),
+            executor)
         .thenAccept(
             existingArtifacts -> {
               for (Artifact existingArtifact : existingArtifacts) {
@@ -834,7 +837,8 @@ public class FutureExperimentDAO {
                 futureProjectDAO.checkProjectPermission(
                     projectIdFromExperimentMap.get(expId), ModelDBServiceActions.READ),
             executor)
-        .thenCompose(unused -> artifactHandler.getArtifacts(expId, maybeKey), executor);
+        .thenCompose(
+            unused -> artifactHandler.getArtifacts(expId, maybeKey).toInternalFuture(), executor);
   }
 
   public InternalFuture<Experiment> deleteArtifacts(DeleteExperimentArtifact request) {
@@ -896,6 +900,6 @@ public class FutureExperimentDAO {
                 executor);
 
     return permissionCheck.thenCompose(
-        unused -> artifactHandler.getUrlForArtifact(request), executor);
+        unused -> artifactHandler.getUrlForArtifact(request).toInternalFuture(), executor);
   }
 }
