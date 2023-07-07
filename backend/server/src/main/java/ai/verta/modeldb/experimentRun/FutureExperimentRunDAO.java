@@ -211,9 +211,7 @@ public class FutureExperimentRunDAO {
     hyperparametersFromConfigHandler =
         new HyperparametersFromConfigHandler(
             executor, jdbi, "hyperparameters", EXPERIMENT_RUN_ENTITY_NAME);
-    codeVersionFromBlobHandler =
-        new CodeVersionFromBlobHandler(
-            executor, jdbi, config.isPopulateConnectionsBasedOnPrivileges());
+    codeVersionFromBlobHandler = new CodeVersionFromBlobHandler();
   }
 
   public InternalFuture<ExperimentRun> deleteObservations(DeleteObservations request) {

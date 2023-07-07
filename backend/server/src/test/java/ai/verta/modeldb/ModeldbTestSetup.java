@@ -28,6 +28,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -212,88 +213,42 @@ public abstract class ModeldbTestSetup {
           GetUser.newBuilder().setEmail(testConfig.getService_user().getEmail()).build();
       serviceAccountUser = uacServiceStub.getUser(getUserRequest);
 
-      if (testConfig.isPermissionV2Enabled()) {
-        authServiceChannelServiceUser =
-            ManagedChannelBuilder.forTarget(
-                    testConfig.getAuthService().getHost()
-                        + ":"
-                        + testConfig.getAuthService().getPort())
-                .usePlaintext()
-                .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
-                .intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor())
-                .usePlaintext()
-                .executor(executor)
-                .build();
-        organizationServiceV2BlockingStub =
-            OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
-        organizationV2 = createAndGetOrganization();
-        organizationId = organizationV2.getId();
-
-        addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
-
-        groupIdUser1 = createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
-
-        roleIdUser1 =
-            createAndGetRole(
-                    authServiceChannelServiceUser,
-                    organizationId,
-                    Optional.empty(),
-                    Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET))
-                .getRole()
-                .getId();
-
-        testUser1Workspace =
-            createWorkspaceAndRoleForUser(
-                authServiceChannelServiceUser,
-                organizationId,
-                groupIdUser1,
-                roleIdUser1,
-                testUser1.getVertaInfo().getUsername());
-      }
-    } else {
-      serviceAccountUser =
-          UserInfo.newBuilder()
-              .setEmail(testConfig.getService_user().getEmail())
-              .setVertaInfo(
-                  VertaUserInfo.newBuilder()
-                      .setUserId("-111")
-                      .setUsername(testConfig.getService_user().getEmail())
-                      .setDefaultWorkspaceId(-111)
-                      .setWorkspaceId("-111")
-                      .build())
+      authServiceChannelServiceUser =
+          ManagedChannelBuilder.forTarget(
+                  testConfig.getAuthService().getHost()
+                      + ":"
+                      + testConfig.getAuthService().getPort())
+              .usePlaintext()
+              .maxInboundMessageSize(testConfig.getGrpcServer().getMaxInboundMessageSize())
+              .intercept(authClientInterceptor.getServiceAccountClientAuthInterceptor())
+              .usePlaintext()
+              .executor(executor)
               .build();
+      organizationServiceV2BlockingStub =
+          OrganizationServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+      organizationV2 = createAndGetOrganization();
+      organizationId = organizationV2.getId();
 
-      testUser1 =
-          UserInfo.newBuilder()
-              .setEmail(authClientInterceptor.getClient1Email())
-              .setVertaInfo(
-                  VertaUserInfo.newBuilder()
-                      .setUserId(String.valueOf(authClientInterceptor.getClient1WorkspaceId()))
-                      .setUsername(authClientInterceptor.getClient1UserName())
-                      .setDefaultWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
-                      .setWorkspaceId(String.valueOf(authClientInterceptor.getClient1WorkspaceId()))
-                      .build())
-              .build();
+      addTestUsersInOrganization(authServiceChannelServiceUser, organizationId);
 
-      testUser2 =
-          UserInfo.newBuilder()
-              .setEmail(authClientInterceptor.getClient2Email())
-              .setVertaInfo(
-                  VertaUserInfo.newBuilder()
-                      .setUserId(String.valueOf(authClientInterceptor.getClient2WorkspaceId()))
-                      .setUsername(authClientInterceptor.getClient2UserName())
-                      .setDefaultWorkspaceId(authClientInterceptor.getClient2WorkspaceId())
-                      .setWorkspaceId(String.valueOf(authClientInterceptor.getClient2WorkspaceId()))
-                      .build())
-              .build();
+      groupIdUser1 = createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
+
+      roleIdUser1 =
+          createAndGetRole(
+                  authServiceChannelServiceUser,
+                  organizationId,
+                  Optional.empty(),
+                  Set.of(ResourceTypeV2.PROJECT, ResourceTypeV2.DATASET))
+              .getRole()
+              .getId();
+
       testUser1Workspace =
-          WorkspaceV2.newBuilder()
-              .setId(Long.parseLong(testUser1.getVertaInfo().getWorkspaceId()))
-              .setName(testUser1.getVertaInfo().getUsername())
-              .setOrgId("-1")
-              .setNamespace("namespace")
-              .addPermissions(Permission.newBuilder().setGroupId("-1").setRoleId("-1").build())
-              .build();
+          createWorkspaceAndRoleForUser(
+              authServiceChannelServiceUser,
+              organizationId,
+              groupIdUser1,
+              roleIdUser1,
+              testUser1.getVertaInfo().getUsername());
     }
 
     LOGGER.trace("Test service infrastructure config complete.");
@@ -345,17 +300,40 @@ public abstract class ModeldbTestSetup {
   protected String createAndGetGroup(
       ManagedChannel authServiceChannelServiceUser, String organizationId, UserInfo userInfo) {
     var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
-    return groupStub
-        .setGroup(
-            SetGroup.newBuilder()
-                .setGroup(
-                    GroupV2.newBuilder()
-                        .setName("Test-Group-" + new Date().getTime())
-                        .setOrgId(organizationId)
-                        .addMemberIds(userInfo.getVertaInfo().getUserId()))
-                .build())
-        .getGroup()
-        .getId();
+    GroupV2 group =
+        groupStub
+            .setGroup(
+                SetGroup.newBuilder()
+                    .setGroup(
+                        GroupV2.newBuilder()
+                            .setName("Test-Group-" + new Date().getTime())
+                            .setOrgId(organizationId)
+                            .addMemberIds(userInfo.getVertaInfo().getUserId()))
+                    .build())
+            .getGroup();
+    LOGGER.info("Created group : " + group);
+    return group.getId();
+  }
+
+  private void deleteGroup(String organizationId, String groupId) {
+    var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
+    groupStub.deleteGroup(
+        DeleteGroup.newBuilder().setGroupId(groupId).setOrgId(organizationId).build());
+  }
+
+  private void deleteWorkspace(String organizationId, long workspaceId) {
+    WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser)
+        .deleteWorkspace(
+            DeleteWorkspaceV2.newBuilder()
+                .setWorkspaceId(workspaceId)
+                .setOrgId(organizationId)
+                .build());
+  }
+
+  private void deleteRole(String organizationId, String roleId) {
+    var roleStub = RoleServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
+    roleStub.deleteRole(
+        DeleteRoleV2.newBuilder().setRoleId(roleId).setOrgId(organizationId).build());
   }
 
   protected SetRoleV2.Response createAndGetRole(
@@ -389,12 +367,13 @@ public abstract class ModeldbTestSetup {
       String groupId,
       String roleId,
       String username) {
-    WorkspaceV2.Builder workspaceBuilder =
+    WorkspaceV2 workspaceRequest =
         WorkspaceV2.newBuilder()
             .setName(username)
             .setOrgId(organizationId)
             .setNamespace("namespace")
-            .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build());
+            .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build())
+            .build();
     var workspaceStub = WorkspaceServiceV2Grpc.newBlockingStub(authServiceChannelServiceUser);
     Optional<WorkspaceV2> existingWorkspace =
         workspaceStub
@@ -403,14 +382,18 @@ public abstract class ModeldbTestSetup {
             .stream()
             .filter(workspaceV2 -> workspaceV2.getName().equals(username))
             .findFirst();
+
     if (existingWorkspace.isPresent()) {
-      return existingWorkspace.get();
+      WorkspaceV2 workspace = existingWorkspace.get();
+      workspaceRequest =
+          workspace.toBuilder()
+              .addPermissions(Permission.newBuilder().setGroupId(groupId).setRoleId(roleId).build())
+              .build();
     }
 
     var testUserWorkspace =
         workspaceStub
-            .setWorkspace(
-                SetWorkspaceV2.newBuilder().setWorkspace(workspaceBuilder.build()).build())
+            .setWorkspace(SetWorkspaceV2.newBuilder().setWorkspace(workspaceRequest).build())
             .getWorkspace();
     LOGGER.debug("WorkspaceResult: {}", testUserWorkspace);
     return testUserWorkspace;
@@ -517,7 +500,7 @@ public abstract class ModeldbTestSetup {
   }
 
   protected void cleanUpResources() {
-    // Delete entities by cron job
+    // Delete entities via reconcilers
     SoftDeleteProjects softDeleteProjects = reconcilerInitializer.getSoftDeleteProjects();
     SoftDeleteExperiments softDeleteExperiments = reconcilerInitializer.getSoftDeleteExperiments();
     SoftDeleteExperimentRuns softDeleteExperimentRuns =
@@ -530,13 +513,16 @@ public abstract class ModeldbTestSetup {
     await().until(softDeleteExperiments::isEmpty);
 
     softDeleteExperimentRuns.resync();
-    await().until(softDeleteExperimentRuns::isEmpty);
+    await().atMost(30, TimeUnit.SECONDS).until(softDeleteExperimentRuns::isEmpty);
 
     reconcilerInitializer.getSoftDeleteDatasets().resync();
     reconcilerInitializer.getSoftDeleteRepositories().resync();
 
-    if (!runningIsolated && testConfig.isPermissionV2Enabled()) {
+    if (!runningIsolated) {
       removeOrganizationFromUAC();
+      deleteGroup(organizationId, groupIdUser1);
+      deleteWorkspace(organizationId, testUser1Workspace.getId());
+      deleteRole(organizationId, roleIdUser1);
     }
   }
 
