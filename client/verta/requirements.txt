@@ -2,6 +2,7 @@ click >= 7.0, < 9.0
 cloudpickle >= 1.0, < 3.0
 googleapis-common-protos >= 1.5, < 2.0
 importlib-metadata >= 3.7.0
+pydantic >= 1.10.9
 protobuf >= 3.8, < 4.0
 pytimeparse >= 1.1.8, < 2.0
 pyyaml >= 5.1, < 7.0
