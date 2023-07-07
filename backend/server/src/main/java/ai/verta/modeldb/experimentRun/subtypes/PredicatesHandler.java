@@ -605,7 +605,6 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         .findResourceIdsOwnedBy(predicate, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
         .thenCompose(
             resourceIds -> {
-              log.info("Resource ids to consider: " + resourceIds);
               final var valueBindingName = String.format("fuzzy_id_%d", index);
               var sql = "<" + valueBindingName + ">";
 
