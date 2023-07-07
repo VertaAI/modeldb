@@ -1,8 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
 
 import pytest
 
+from tests.registry.pydantic_models import AClass, AnotherClass
 from verta.registry import DockerImage
+from verta.registry._validate_schema import _MODEL_SCHEMA_PATH_ENV_VAR
 
 
 @pytest.fixture(scope="session")
@@ -17,4 +20,17 @@ def docker_image():
     )
 
 
+@pytest.fixture
+def make_model_schema_file(tmp_path, monkeypatch):
+    path = tmp_path / "model_schema.json"
+    schema = {"input": AClass.schema(), "output": AnotherClass.schema()}
+    path.write_text(json.dumps(schema))
+    monkeypatch.setenv(_MODEL_SCHEMA_PATH_ENV_VAR, str(path))
 
+
+@pytest.fixture
+def make_model_schema_file_no_output(tmp_path, monkeypatch):
+    path = tmp_path / "other_model_schema.json"
+    schema = {"input": AClass.schema()}
+    path.write_text(json.dumps(schema))
+    monkeypatch.setenv(_MODEL_SCHEMA_PATH_ENV_VAR, str(path))
