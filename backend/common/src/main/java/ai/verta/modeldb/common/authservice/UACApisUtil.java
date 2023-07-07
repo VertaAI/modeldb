@@ -90,7 +90,7 @@ public class UACApisUtil {
 
     var builder =
         GetResources.newBuilder().setResources(resources.build()).setWorkspaceId(workspaceId);
-    return getResources(builder);
+    return getResources(builder.build());
   }
 
   public Future<List<String>> getAccessibleProjectIdsBasedOnWorkspace(
@@ -175,11 +175,12 @@ public class UACApisUtil {
     var builder = GetResources.newBuilder().setResources(resources.build());
     workspaceName.ifPresent(builder::setWorkspaceName);
     resourceName.ifPresent(builder::setResourceName);
-    return getResources(builder);
+    return getResources(builder.build());
   }
 
-  private Future<List<GetResourcesResponseItem>> getResources(GetResources.Builder builder) {
-    return Future.fromListenableFuture(uac.getCollaboratorService().getResources(builder.build()))
+  private Future<List<GetResourcesResponseItem>> getResources(GetResources getResourcesRequest) {
+    return Future.fromListenableFuture(
+            uac.getCollaboratorService().getResources(getResourcesRequest))
         .thenCompose((GetResources.Response response) -> Future.of(response.getItemList()));
   }
 
@@ -317,6 +318,34 @@ public class UACApisUtil {
     throw new NotFoundException("WorkspaceId not found in userInfo");
   }
 
+  public Future<Set<String>> findResourceIdsOwnedBy(
+      KeyValueQuery predicate, ModelDBServiceResourceTypes resourceType) {
+    return findRelevantOwnerIds(predicate.getOperator(), predicate.getValue().getStringValue())
+        .thenCompose(
+            potentialOwners -> {
+              if (potentialOwners.isEmpty()) {
+                return Future.of(List.of());
+              }
+              Resources.Builder resources =
+                  Resources.newBuilder()
+                      .setResourceType(
+                          ResourceType.newBuilder()
+                              .setModeldbServiceResourceType(resourceType)
+                              .build())
+                      .setService(ServiceEnum.Service.MODELDB_SERVICE);
+              var getResourcesBuilder = GetResources.newBuilder().setResources(resources.build());
+              getResourcesBuilder.addAllOwnerIds(
+                  potentialOwners.stream().map(Long::parseLong).collect(Collectors.toSet()));
+              return getResources(getResourcesBuilder.build());
+            })
+        .thenCompose(
+            items ->
+                Future.of(
+                    items.stream()
+                        .map(GetResourcesResponseItem::getResourceId)
+                        .collect(Collectors.toSet())));
+  }
+
   public String getOwnerFilterClauseByPredicate(
       String alias,
       KeyValueQuery predicate,
@@ -324,12 +353,51 @@ public class UACApisUtil {
       ModelDBServiceResourceTypes resourceTypes,
       boolean isHQL,
       boolean isResourceIdNumber) {
-    var operator = predicate.getOperator();
+
+    var sqlFuture =
+        findResourceIdsOwnedBy(predicate, resourceTypes)
+            .thenCompose(
+                resourceIds -> {
+                  if (resourceIds.isEmpty()) {
+                    return Future.of(String.format("%s.id = '-1'", alias));
+                  }
+
+                  final var valueBindingName = String.format("fuzzy_id_%d", new Date().getTime());
+                  String inClause;
+                  if (isHQL) {
+                    inClause = ":" + valueBindingName;
+                  } else {
+                    inClause = "<" + valueBindingName + ">";
+                  }
+
+                  parametersMap.put(
+                      valueBindingName,
+                      isResourceIdNumber
+                          ? resourceIds.stream().map(Long::parseLong).collect(Collectors.toSet())
+                          : resourceIds);
+                  String finalSql;
+                  if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                      || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+                    finalSql = String.format("%s.id NOT IN (%s)", alias, inClause);
+                  } else {
+                    finalSql = String.format("%s.id IN (%s)", alias, inClause);
+                  }
+                  return Future.of(finalSql);
+                });
+    try {
+      return sqlFuture.blockAndGet();
+    } catch (Exception ex) {
+      throw new ModelDBException(ex);
+    }
+  }
+
+  private Future<List<String>> findRelevantOwnerIds(
+      OperatorEnum.Operator ownerPredicateOperator, String ownerPredicateValue) {
     Future<List<String>> ownerIdsFuture;
-    if (operator.equals(OperatorEnum.Operator.CONTAIN)
-        || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
+    if (ownerPredicateOperator.equals(OperatorEnum.Operator.CONTAIN)
+        || ownerPredicateOperator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
       ownerIdsFuture =
-          getFuzzyUserInfoList(predicate.getValue().getStringValue())
+          getFuzzyUserInfoList(ownerPredicateValue)
               .thenCompose(
                   userInfoPaginationDTO ->
                       Future.of(
@@ -337,78 +405,15 @@ public class UACApisUtil {
                               .map(userInfo -> userInfo.getVertaInfo().getUserId())
                               .collect(Collectors.toList())));
     } else {
-      var ownerIdsArrString = predicate.getValue().getStringValue();
       List<String> ownerIds = new ArrayList<>();
-      if (operator.equals(OperatorEnum.Operator.IN)) {
-        ownerIds = Arrays.asList(ownerIdsArrString.split(","));
+      if (ownerPredicateOperator.equals(OperatorEnum.Operator.IN)) {
+        ownerIds = Arrays.asList(ownerPredicateValue.split(","));
       } else {
-        ownerIds.add(ownerIdsArrString);
+        ownerIds.add(ownerPredicateValue);
       }
       ownerIdsFuture = Future.of(ownerIds);
     }
-
-    var sqlFuture =
-        ownerIdsFuture.thenCompose(
-            userInfoList -> {
-              if (userInfoList != null && !userInfoList.isEmpty()) {
-                var resourceType =
-                    ResourceType.newBuilder().setModeldbServiceResourceType(resourceTypes).build();
-                Resources.Builder resources =
-                    Resources.newBuilder()
-                        .setResourceType(resourceType)
-                        .setService(ServiceEnum.Service.MODELDB_SERVICE);
-
-                var getResourcesBuilder = GetResources.newBuilder().setResources(resources.build());
-                getResourcesBuilder.addAllOwnerIds(
-                    userInfoList.stream().map(Long::parseLong).collect(Collectors.toSet()));
-                return getResources(getResourcesBuilder)
-                    .thenCompose(
-                        accessibleAllWorkspaceItems ->
-                            Future.of(
-                                accessibleAllWorkspaceItems.stream()
-                                    .map(GetResourcesResponseItem::getResourceId)
-                                    .collect(Collectors.toSet())))
-                    .thenCompose(
-                        resourceIds -> {
-                          if (resourceIds.isEmpty()) {
-                            return Future.of(String.format("%s.id = '-1'", alias));
-                          }
-
-                          final var valueBindingName =
-                              String.format("fuzzy_id_%d", new Date().getTime());
-                          String inClause;
-                          if (isHQL) {
-                            inClause = ":" + valueBindingName;
-                          } else {
-                            inClause = "<" + valueBindingName + ">";
-                          }
-
-                          parametersMap.put(
-                              valueBindingName,
-                              isResourceIdNumber
-                                  ? resourceIds.stream()
-                                      .map(Long::parseLong)
-                                      .collect(Collectors.toSet())
-                                  : resourceIds);
-                          String finalSql;
-                          if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-                              || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
-                            finalSql = String.format("%s.id NOT IN (%s)", alias, inClause);
-                          } else {
-                            finalSql = String.format("%s.id IN (%s)", alias, inClause);
-                          }
-                          return Future.of(finalSql);
-                        });
-              } else {
-                return Future.of(String.format("%s.id = '-1'", alias));
-              }
-            });
-
-    try {
-      return sqlFuture.blockAndGet();
-    } catch (Exception ex) {
-      throw new ModelDBException(ex);
-    }
+    return ownerIdsFuture;
   }
 
   public enum UserIdentifier {
