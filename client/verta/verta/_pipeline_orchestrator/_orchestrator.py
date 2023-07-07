@@ -73,15 +73,29 @@ class _OrchestratorBase(abc.ABC):
         self,
         name: str,
     ) -> Any:
-        """TODO"""
+        """Get a step's input values from ``self._outputs``.
+
+        Parameters
+        ----------
+        name : str
+            Step name.
+
+        Returns
+        -------
+        ValueError
+            If `name` has no input steps.
+        RuntimeError
+            If `name`'s input steps are not in ``self._outputs``.
+
+        """
         predecessors: Set[str] = self._step_handlers[name].predecessors
         if not predecessors:
             raise ValueError(
-                f"unexpected error: step {name} has no predecessors, but no input was provided",
+                f"unexpected error: step {name} has no input steps",
             )
         if not predecessors <= self._outputs.keys():
             raise RuntimeError(
-                f"unexpected error: step {name}'s predecessors' outputs not found",
+                f"unexpected error: step {name}'s input steps' outputs not found",
             )
 
         # TODO: figure out how we actually want to collect upstream outputs
@@ -100,7 +114,24 @@ class _OrchestratorBase(abc.ABC):
         name: str,
         input: Any,
     ) -> Any:
-        """TODO"""
+        """Pass `input` to step `name` and return its output.
+
+        This method can be overridden to add further handling of `input` and
+        the output (if it's outside the purview of the step handler).
+
+        Parameters
+        ----------
+        name : str
+            Step name.
+        input : object
+            Step input.
+
+        Returns
+        -------
+        object
+            Step output.
+
+        """
         step_handler = self._step_handlers[name]
         return step_handler.run(input)
 
