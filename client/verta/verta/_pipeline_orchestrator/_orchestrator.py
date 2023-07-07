@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import abc
-from typing import Any, Dict, Optional, Set
+from typing import Any, Dict, List, Optional, Set
 
 from verta._internal_utils import _utils
 from verta._vendored.cpython.graphlib import TopologicalSorter
@@ -28,7 +28,26 @@ class _OrchestratorBase(abc.ABC):
         # mapping of step names to outputs
         self._outputs: Dict[str, Any] = dict()
 
-    def _prepare_pipeline(self) -> TopologicalSorter:
+    @staticmethod
+    def _get_steps_input_names(
+        pipeline_spec: Dict[str, Any],
+    ) -> Dict[str, List[str]]:
+        """Get the names of steps' inputs from a pipeline specification.
+
+        Parameters
+        ----------
+        pipeline_spec : dict
+            Pipeline specification.
+
+        Returns
+        -------
+        dict of str to list of str
+            Mapping between step names and their inputs' names.
+
+        """
+        return {node["name"]: node["inputs"] for node in pipeline_spec["graph"]}
+
+    def _prepare_pipeline(self):
         """Initialize ``self._dag`` and ``self._outputs``.
 
         Parameters
@@ -42,13 +61,79 @@ class _OrchestratorBase(abc.ABC):
             If the pipeline graph has cycles.
 
         """
-        dag = TopologicalSorter(self._pipeline_spec["graph"]["inputs"])
+        dag = TopologicalSorter(self._get_steps_input_names(self._pipeline_spec))
         dag.prepare()
         # TODO: assert one input node
         # TODO: assert one output node
 
         self._dag = dag
         self._outputs = dict()
+
+    def _get_step_input(
+        self,
+        name: str,
+    ) -> Any:
+        """Get a step's input values from ``self._outputs``.
+
+        Parameters
+        ----------
+        name : str
+            Step name.
+
+        Returns
+        -------
+        ValueError
+            If `name` has no input steps.
+        RuntimeError
+            If `name`'s input steps are not in ``self._outputs``.
+
+        """
+        predecessors: Set[str] = self._step_handlers[name].predecessors
+        if not predecessors:
+            raise ValueError(
+                f"unexpected error: step {name} has no input steps",
+            )
+        if not predecessors <= self._outputs.keys():
+            raise RuntimeError(
+                f"unexpected error: step {name}'s input steps' outputs not found",
+            )
+
+        # TODO: figure out how we actually want to collect upstream outputs
+        if len(predecessors) == 1:
+            return self._outputs[list(predecessors)[0]]
+        else:
+            # TODO: figure out how to orchestrate complex pipelines
+            raise ValueError("multiple inputs not yet supported")
+            # input = {
+            #     predecessor: self._outputs[predecessor]
+            #     for predecessor in predecessors
+            # }
+
+    def _run_step_inner(
+        self,
+        name: str,
+        input: Any,
+    ) -> Any:
+        """Pass `input` to step `name` and return its output.
+
+        This method can be overridden to add further handling of `input` and
+        the output (if it's outside the purview of the step handler).
+
+        Parameters
+        ----------
+        name : str
+            Step name.
+        input : object
+            Step input.
+
+        Returns
+        -------
+        object
+            Step output.
+
+        """
+        step_handler = self._step_handlers[name]
+        return step_handler.run(input)
 
     def _run_step(
         self,
@@ -70,37 +155,18 @@ class _OrchestratorBase(abc.ABC):
             predecessor(s) will be fetched from ``self._outputs``.
 
         """
-        if self._dag is None:
+        if self._dag is None:  # TODO: also check if DAG is completed
             raise RuntimeError(
                 "DAG not initialized; call run() instead of using this method directly",
             )
 
-        step_handler = self._step_handlers[name]
         if input is None:
-            predecessors: Set[str] = step_handler.predecessors
-            if not predecessors:
-                raise ValueError(
-                    f"unexpected error: step {name} has no predecessors, but no input was provided",
-                )
-            if not predecessors <= self._outputs.keys():
-                raise RuntimeError(
-                    f"unexpected error: step {name}'s predecessors' outputs not found",
-                )
+            input = self._get_step_input(name)
 
-            # TODO: figure out how we actually want to collect upstream outputs
-            if len(predecessors) == 1:
-                input = self._outputs[list(predecessors)[0]]
-            else:
-                # TODO: figure out how to orchestrate complex pipelines
-                raise ValueError("multiple inputs not yet supported")
-                # input = {
-                #     predecessor: self._outputs[predecessor]
-                #     for predecessor in predecessors
-                # }
-
-        self._outputs[name] = step_handler.run(input)
+        self._outputs[name] = self._run_step_inner(name, input)
         self._dag.done(name)
 
+    # TODO: make this async?
     def run(
         self,
         input: Any,
@@ -112,8 +178,8 @@ class _OrchestratorBase(abc.ABC):
         input : object
             Input for the pipeline's input node.
 
-        Return
-        ------
+        Returns
+        -------
         object
             Output from the pipeline's output node.
 
@@ -134,14 +200,10 @@ class _OrchestratorBase(abc.ABC):
         return self._outputs[step_name]
 
 
-class DeployedOrchestrator(_OrchestratorBase):  # TODO
-    """Inference pipeline orchestrator using HTTP server models."""
-
-
 class LocalOrchestrator(_OrchestratorBase):
     """Inference pipeline orchestrator using locally-instantiated models.
 
-    Paremeters
+    Parameters
     ----------
     conn : :class:`~verta._internal_utils._utils.Connection`
         Verta client connection.
@@ -169,8 +231,9 @@ class LocalOrchestrator(_OrchestratorBase):
             step_handlers=self._init_step_handlers(conn, pipeline_spec),
         )
 
-    @staticmethod
+    @classmethod
     def _init_step_handlers(
+        cls,
         conn: _utils.Connection,
         pipeline_spec: Dict[str, Any],
     ) -> Dict[str, ModelObjectStepHandler]:
@@ -189,12 +252,15 @@ class LocalOrchestrator(_OrchestratorBase):
             Mapping of step names to their handlers.
 
         """
+        step_inputs = cls._get_steps_input_names(pipeline_spec)
+
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
-            step_name = step["attributes"]["name"]
-            step_handlers[step_name] = ModelObjectStepHandler(
-                name=step_name,
-                predecessors=pipeline_spec["graph"]["inputs"].get(step_name, []),
-                model=ModelObjectStepHandler._init_model(conn, step["rmvId"]),
+            step_handlers[step["name"]] = ModelObjectStepHandler(
+                name=step["name"],
+                predecessors=step_inputs.get(step["name"], []),
+                model=ModelObjectStepHandler._init_model(
+                    conn, step["model_version_id"]
+                ),
             )
         return step_handlers
