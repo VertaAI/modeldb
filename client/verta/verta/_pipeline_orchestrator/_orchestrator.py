@@ -29,10 +29,10 @@ class _OrchestratorBase(abc.ABC):
         self._outputs: Dict[str, Any] = dict()
 
     @staticmethod
-    def _get_step_inputs(  # TODO: rename this
+    def _get_steps_input_names(
         pipeline_spec: Dict[str, Any],
     ) -> Dict[str, List[str]]:
-        """Get steps' inputs from a pipeline specification.
+        """Get the names of steps' inputs from a pipeline specification.
 
         Parameters
         ----------
@@ -61,7 +61,7 @@ class _OrchestratorBase(abc.ABC):
             If the pipeline graph has cycles.
 
         """
-        dag = TopologicalSorter(self._get_step_inputs(self._pipeline_spec))
+        dag = TopologicalSorter(self._get_steps_input_names(self._pipeline_spec))
         dag.prepare()
         # TODO: assert one input node
         # TODO: assert one output node
@@ -216,7 +216,7 @@ class LocalOrchestrator(_OrchestratorBase):
             Mapping of step names to their handlers.
 
         """
-        step_inputs = cls._get_step_inputs(pipeline_spec)
+        step_inputs = cls._get_steps_input_names(pipeline_spec)
 
         step_handlers = dict()
         for step in pipeline_spec["steps"]:
