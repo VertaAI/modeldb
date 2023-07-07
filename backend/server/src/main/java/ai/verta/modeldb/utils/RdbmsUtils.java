@@ -12,16 +12,13 @@ import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.PermissionDeniedException;
 import ai.verta.modeldb.common.exceptions.UnimplementedException;
 import ai.verta.modeldb.entities.*;
-import ai.verta.modeldb.entities.config.ConfigBlobEntity;
 import ai.verta.modeldb.entities.config.HyperparameterElementMappingEntity;
 import ai.verta.modeldb.entities.metadata.LabelsMappingEntity;
 import ai.verta.modeldb.entities.versioning.RepositoryEntity;
 import ai.verta.modeldb.entities.versioning.VersioningModeldbEntityMapping;
 import ai.verta.modeldb.metadata.IDTypeEnum;
 import ai.verta.modeldb.metadata.MetadataDAO;
-import ai.verta.modeldb.versioning.Blob;
 import ai.verta.modeldb.versioning.BlobDAO;
-import ai.verta.modeldb.versioning.BlobExpanded;
 import ai.verta.modeldb.versioning.Commit;
 import ai.verta.modeldb.versioning.RepositoryDAO;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -51,63 +48,6 @@ public class RdbmsUtils {
       "' and entity_name = 'ExperimentRunEntity') o, (select id from keyvalue where kv_key ='";
   private static final String MAX_EPOCH_NUMBER_SQL_3 =
       "' and  entity_name IS NULL) k where o.keyvaluemapping_id = k.id ";
-  private static final String AND_QUERY_OPERATOR = " AND ";
-
-  public static JobEntity generateJobEntity(Job job) {
-    return new JobEntity(job);
-  }
-
-  public static ProjectEntity generateProjectEntity(Project project) {
-    return new ProjectEntity(project);
-  }
-
-  // TODO: delete as it seems unused
-  public static List<Project> convertProjectsFromProjectEntityList(
-      MDBRoleService mdbRoleService,
-      UACApisUtil uacApisUtil,
-      List<ProjectEntity> projectEntityList) {
-    List<Project> projects = new ArrayList<>();
-    if (projectEntityList != null) {
-      Map<Long, Workspace> cacheWorkspaceMap = new HashMap<>();
-      Map<String, GetResourcesResponseItem> getResourcesMap = new HashMap<>();
-      for (ProjectEntity projectEntity : projectEntityList) {
-        projects.add(
-            projectEntity.getProtoObject(
-                mdbRoleService, uacApisUtil, cacheWorkspaceMap, getResourcesMap));
-      }
-    }
-    return projects;
-  }
-
-  public static ExperimentEntity generateExperimentEntity(Experiment experiment) {
-    return new ExperimentEntity(experiment);
-  }
-
-  public static List<Experiment> convertExperimentsFromExperimentEntityList(
-      List<ExperimentEntity> experimentEntityList) {
-    List<Experiment> experiments = new ArrayList<>();
-    if (experimentEntityList != null) {
-      for (ExperimentEntity experimentEntity : experimentEntityList) {
-        experiments.add(experimentEntity.getProtoObject());
-      }
-    }
-    return experiments;
-  }
-
-  public static List<ExperimentRun> convertExperimentRunsFromExperimentRunEntityList(
-      List<ExperimentRunEntity> experimentRunEntityList) {
-    List<ExperimentRun> experimentRuns = new ArrayList<>();
-    if (experimentRunEntityList != null) {
-      for (ExperimentRunEntity experimentRunEntity : experimentRunEntityList) {
-        experimentRuns.add(experimentRunEntity.getProtoObject());
-      }
-    }
-    return experimentRuns;
-  }
-
-  public static ExperimentRunEntity generateExperimentRunEntity(ExperimentRun experimentRun) {
-    return new ExperimentRunEntity(experimentRun);
-  }
 
   public static AttributeEntity generateAttributeEntity(
       Object entity, String fieldType, KeyValue attribute) {
@@ -224,15 +164,15 @@ public class RdbmsUtils {
       return new ObservationEntity(entity, fieldType, observation);
     } else {
       if (entity_name.equalsIgnoreCase("ExperimentRunEntity") && observation.hasAttribute()) {
-        StringBuilder MAX_EPOCH_NUMBER_SQL =
-            new StringBuilder(MAX_EPOCH_NUMBER_SQL_1)
-                .append(entity_id)
-                .append(MAX_EPOCH_NUMBER_SQL_2)
-                .append(observation.getAttribute().getKey())
-                .append(MAX_EPOCH_NUMBER_SQL_3);
-        Query sqlQuery = session.createSQLQuery(MAX_EPOCH_NUMBER_SQL.toString());
+        String maxEpochNumberSql =
+            MAX_EPOCH_NUMBER_SQL_1
+                + entity_id
+                + MAX_EPOCH_NUMBER_SQL_2
+                + observation.getAttribute().getKey()
+                + MAX_EPOCH_NUMBER_SQL_3;
+        Query<?> sqlQuery = session.createNativeQuery(maxEpochNumberSql);
         BigInteger maxEpochNumber = (BigInteger) sqlQuery.uniqueResult();
-        Long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
+        long newEpochValue = maxEpochNumber == null ? 0L : maxEpochNumber.longValue() + 1;
 
         var new_observation =
             Observation.newBuilder(observation)
@@ -340,21 +280,6 @@ public class RdbmsUtils {
     return Collections.emptyList();
   }
 
-  public static DatasetEntity generateDatasetEntity(Dataset dataset) {
-    return new DatasetEntity(dataset);
-  }
-
-  public static List<Dataset> convertDatasetsFromDatasetEntityList(
-      MDBRoleService mdbRoleService, List<DatasetEntity> datasetEntityList) {
-    List<Dataset> datasets = new ArrayList<>();
-    if (datasetEntityList != null) {
-      for (DatasetEntity datasetEntity : datasetEntityList) {
-        datasets.add(datasetEntity.getProtoObject(mdbRoleService));
-      }
-    }
-    return datasets;
-  }
-
   public static CodeVersionEntity generateCodeVersionEntity(
       String fieldType, CodeVersion codeVersion) {
     return new CodeVersionEntity(fieldType, codeVersion);
@@ -363,21 +288,6 @@ public class RdbmsUtils {
   public static GitSnapshotEntity generateGitSnapshotEntity(
       String fieldType, GitSnapshot gitSnapshot) {
     return new GitSnapshotEntity(fieldType, gitSnapshot);
-  }
-
-  public static DatasetVersionEntity generateDatasetVersionEntity(DatasetVersion datasetVersion) {
-    return new DatasetVersionEntity(datasetVersion);
-  }
-
-  public static List<DatasetVersion> convertDatasetVersionsFromDatasetVersionEntityList(
-      List<DatasetVersionEntity> datasetVersionEntityList) {
-    List<DatasetVersion> datasetVersions = new ArrayList<>();
-    if (datasetVersionEntityList != null) {
-      for (DatasetVersionEntity datasetVersionEntity : datasetVersionEntityList) {
-        datasetVersions.add(datasetVersionEntity.getProtoObject());
-      }
-    }
-    return datasetVersions;
   }
 
   public static RawDatasetVersionInfoEntity generateRawDatasetVersionInfoEntity(
@@ -477,190 +387,6 @@ public class RdbmsUtils {
   }
 
   /**
-   * Return List of entity data and total count base on the given parameters
-   *
-   * @param session : hibernate session
-   * @param entityName : entity name like ProjectEntity, DatasetEntity etc. Here we used the
-   *     hibernate so this entity name is the same name of java class name
-   * @param projectionFields : list of string which contains the selected field names
-   * @param whereClauseParam : where clause parameter map contains key="entity field name",
-   *     value="object[2] where position-1 = operator like EQ,IN etc. position-2 = entity field
-   *     values"
-   * @param pageNumber : page number for pagination
-   * @param pageLimit : page limit for pagination
-   * @param order : sort order for sorted list
-   * @param sortBy : sort key for sorted list (default sortKey=DATE_UPDATED)
-   * @param isNeedTotalCount : if service need the total count for pagination then
-   *     'isNeedTotalCount' = true
-   * @return {@link Map} : return Map where key=ModelDBConstants.DATA_LIST &
-   *     ModelDBConstants.TOTAL_COUNT AND value=list of entity (ex: List<ProjectEntity>),
-   *     total_count(Long)
-   */
-  public static Map<String, Object> findListWithPagination(
-      Session session,
-      String entityName,
-      List<String> projectionFields,
-      Map<String, Object[]> whereClauseParam,
-      Integer pageNumber,
-      Integer pageLimit,
-      Boolean order,
-      String sortBy,
-      Boolean isNeedTotalCount) {
-    var alias = "entity";
-    var finalQueryBuilder = new StringBuilder();
-    StringBuilder countQueryBuilder =
-        new StringBuilder("SELECT COUNT (")
-            .append(alias)
-            .append(".")
-            .append(ModelDBConstants.ID)
-            .append(") ");
-
-    if (projectionFields != null && !projectionFields.isEmpty()) {
-      finalQueryBuilder.append("SELECT ");
-      var index = 1;
-      for (String selectedField : projectionFields) {
-        finalQueryBuilder.append(alias).append(".");
-        finalQueryBuilder.append(selectedField);
-        if (index < projectionFields.size()) {
-          finalQueryBuilder.append(", ");
-          index++;
-        }
-      }
-      finalQueryBuilder.append(" ");
-    }
-
-    finalQueryBuilder.append("FROM ").append(entityName).append(" ").append(alias).append(" ");
-    countQueryBuilder.append("FROM ").append(entityName).append(" ").append(alias).append(" ");
-
-    if (whereClauseParam != null && whereClauseParam.size() > 0) {
-      finalQueryBuilder.append(" WHERE ");
-      countQueryBuilder.append(" WHERE ");
-      var index = 1;
-      for (Map.Entry<String, Object[]> entityFieldEntry : whereClauseParam.entrySet()) {
-        Object[] operatorWithValueArr = entityFieldEntry.getValue();
-        finalQueryBuilder.append(" ").append(alias).append(".").append(entityFieldEntry.getKey());
-        countQueryBuilder.append(" ").append(alias).append(".").append(entityFieldEntry.getKey());
-        finalQueryBuilder
-            .append(" ")
-            .append(operatorWithValueArr[0])
-            .append(" :")
-            .append(entityFieldEntry.getKey());
-        countQueryBuilder
-            .append(" ")
-            .append(operatorWithValueArr[0])
-            .append(" :")
-            .append(entityFieldEntry.getKey());
-
-        if (index < whereClauseParam.size()) {
-          finalQueryBuilder.append(AND_QUERY_OPERATOR);
-          countQueryBuilder.append(AND_QUERY_OPERATOR);
-          index++;
-        }
-      }
-    }
-
-    finalQueryBuilder
-        .append(AND_QUERY_OPERATOR)
-        .append(alias)
-        .append(".")
-        .append(ModelDBConstants.DELETED)
-        .append(" = false ");
-    countQueryBuilder
-        .append(AND_QUERY_OPERATOR)
-        .append(alias)
-        .append(".")
-        .append(ModelDBConstants.DELETED)
-        .append(" = false ");
-
-    sortBy = (sortBy == null || sortBy.isEmpty()) ? ModelDBConstants.DATE_UPDATED : sortBy;
-
-    if (order) {
-      finalQueryBuilder
-          .append(" ORDER BY ")
-          .append(alias)
-          .append(".")
-          .append(sortBy)
-          .append(" ")
-          .append(ModelDBConstants.ORDER_ASC);
-    } else {
-      finalQueryBuilder
-          .append(" ORDER BY ")
-          .append(alias)
-          .append(".")
-          .append(sortBy)
-          .append(" ")
-          .append(ModelDBConstants.ORDER_DESC);
-    }
-
-    var query = session.createQuery(finalQueryBuilder.toString());
-    if (pageNumber != null && pageLimit != null && pageNumber != 0 && pageLimit != 0) {
-      // Calculate number of documents to skip
-      int skips = pageLimit * (pageNumber - 1);
-      query.setFirstResult(skips);
-      query.setMaxResults(pageLimit);
-    }
-
-    if (whereClauseParam != null && whereClauseParam.size() > 0) {
-      for (Map.Entry<String, Object[]> entityFieldEntry : whereClauseParam.entrySet()) {
-        Object[] operatorWithValueArr = entityFieldEntry.getValue();
-        if (operatorWithValueArr[1] instanceof List) {
-          List<?> objectList = (List<?>) operatorWithValueArr[1];
-          query.setParameterList(entityFieldEntry.getKey(), objectList);
-        } else {
-          query.setParameter(entityFieldEntry.getKey(), operatorWithValueArr[1]);
-        }
-      }
-    }
-
-    var entityList = query.list();
-
-    Map<String, Object> dataWithCountMap = new HashMap<>();
-    dataWithCountMap.put(ModelDBConstants.DATA_LIST, entityList);
-
-    if (isNeedTotalCount) {
-      var countQuery = session.createQuery(countQueryBuilder.toString());
-      if (whereClauseParam != null && whereClauseParam.size() > 0) {
-        for (Map.Entry<String, Object[]> entityFieldEntry : whereClauseParam.entrySet()) {
-          Object[] operatorWithValueArr = entityFieldEntry.getValue();
-          if (operatorWithValueArr[1] instanceof List) {
-            List<?> objectList = (List<?>) operatorWithValueArr[1];
-            countQuery.setParameterList(entityFieldEntry.getKey(), objectList);
-          } else {
-            countQuery.setParameter(entityFieldEntry.getKey(), operatorWithValueArr[1]);
-          }
-        }
-      }
-      Long countResult = (Long) countQuery.uniqueResult();
-      dataWithCountMap.put(ModelDBConstants.TOTAL_COUNT, countResult);
-    }
-    LOGGER.debug(entityName + " getting successfully, list size : {}", entityList.size());
-    return dataWithCountMap;
-  }
-
-  public static String getRdbOperatorSymbol(Operator operator) {
-    switch (operator) {
-      case EQ:
-        return " = ";
-      case NE:
-        return " <> ";
-      case GT:
-        return " > ";
-      case GTE:
-        return " >= ";
-      case LT:
-        return " < ";
-      case LTE:
-        return " <= ";
-      case CONTAIN:
-        return " LIKE ";
-      case NOT_CONTAIN:
-        return " NOT LIKE ";
-      default:
-        return " = ";
-    }
-  }
-
-  /**
    * Return the where clause predicate based on given parameters
    *
    * @param builder : Hibernate criteria builder
@@ -670,6 +396,7 @@ public class RdbmsUtils {
    *     value
    * @return {@link Predicate} : return predicate (where clause condition) for criteria query
    */
+  @SuppressWarnings({"unchecked", "rawtypes"})
   private static Predicate getOperatorPredicate(
       CriteriaBuilder builder,
       Expression valueExpression,
@@ -710,10 +437,11 @@ public class RdbmsUtils {
    *     frontend
    * @return {@link Predicate} : return predicate (where clause condition) for criteria query
    */
+  @SuppressWarnings("unchecked")
   public static Predicate getValuePredicate(
       CriteriaBuilder builder,
       String fieldName,
-      Path valueExpression,
+      Path<?> valueExpression,
       KeyValueQuery keyValueQuery,
       boolean stringColumn) {
 
@@ -726,7 +454,9 @@ public class RdbmsUtils {
           if (stringColumn) {
             return getOperatorPredicate(
                 builder,
-                builder.trim(Trimspec.BOTH, '"', valueExpression).as(Double.class),
+                builder
+                    .trim(Trimspec.BOTH, '"', (Expression<String>) valueExpression)
+                    .as(Double.class),
                 operator,
                 value.getNumberValue());
           } else {
@@ -735,7 +465,10 @@ public class RdbmsUtils {
           }
         } else {
           return getOperatorPredicate(
-              builder, builder.toBigDecimal(valueExpression), operator, value.getNumberValue());
+              builder,
+              builder.toBigDecimal((Expression<? extends Number>) valueExpression),
+              operator,
+              value.getNumberValue());
         }
       case STRING_VALUE:
         if (!value.getStringValue().isEmpty()) {
@@ -988,237 +721,6 @@ public class RdbmsUtils {
   }
 
   /**
-   * Method add the where clause base on the sort key switch cases and create the condition and add
-   * it in final where clause predicate list and create the hibernate criteria Order for query
-   *
-   * @param sortBy : sort key for sorted list (default sortKey=DATE_UPDATED)
-   * @param isAscending : sort order for sorted list
-   * @param builder : Hibernate criteria builder
-   * @param root : entity root which is further used for getting sub filed path from it and set in
-   *     criteria where clause. Ex: Root<DatasetEntity> datasetRoot =
-   *     criteriaQuery.from(DatasetEntity.class);
-   * @param parentFieldName : entity has multi level field hierarchy so here mention the parent
-   *     field name like attributes, artifacts, tags, metrics etc.
-   * @return {@link Order} : return hibernate order base on the parameters
-   */
-  public static Order[] getOrderArrBasedOnSortKey(
-      String sortBy,
-      Boolean isAscending,
-      CriteriaBuilder builder,
-      Root<?> root,
-      String parentFieldName) {
-    if (sortBy == null || sortBy.isEmpty()) {
-      sortBy = ModelDBConstants.DATE_UPDATED;
-    }
-
-    String[] keys = sortBy.split("\\.");
-    root.get(ModelDBConstants.ID);
-    List<Expression<?>> orderByExpressionList = new ArrayList<>();
-    switch (keys[0]) {
-      case ModelDBConstants.ARTIFACTS:
-        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ARTIFACTS_DEBUG);
-        Join<ExperimentRunEntity, ArtifactEntity> artifactEntityJoin =
-            root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
-        artifactEntityJoin.alias(parentFieldName + "_art");
-        artifactEntityJoin.on(
-            builder.and(
-                builder.equal(
-                    artifactEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                    root.get(ModelDBConstants.ID)),
-                builder.equal(
-                    artifactEntityJoin.get(ModelDBConstants.FEILD_TYPE),
-                    ModelDBConstants.ARTIFACTS),
-                builder.equal(
-                    artifactEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
-
-        orderByExpressionList.add(artifactEntityJoin.get(ModelDBConstants.PATH));
-        break;
-      case ModelDBConstants.DATASETS:
-        LOGGER.debug(ModelDBMessages.SWITCH_CASE_DATASETS_DEBUG);
-        Join<ExperimentRunEntity, ArtifactEntity> datasetEntityJoin =
-            root.join(ModelDBConstants.ARTIFACT_MAPPING, JoinType.LEFT);
-        datasetEntityJoin.alias(parentFieldName + "_dts");
-        datasetEntityJoin.on(
-            builder.and(
-                builder.equal(
-                    datasetEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                    root.get(ModelDBConstants.ID)),
-                builder.equal(
-                    datasetEntityJoin.get(ModelDBConstants.FEILD_TYPE), ModelDBConstants.DATASETS),
-                builder.equal(datasetEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
-
-        orderByExpressionList.add(datasetEntityJoin.get(ModelDBConstants.PATH));
-        break;
-      case ModelDBConstants.ATTRIBUTES:
-        LOGGER.debug(ModelDBMessages.SWITCH_CASE_ATTRIBUTES_DEBUG);
-        Join<ExperimentRunEntity, AttributeEntity> attributeEntityJoin =
-            root.join(ModelDBConstants.ATTRIBUTE_MAPPING, JoinType.LEFT);
-        attributeEntityJoin.alias(parentFieldName + "_attr");
-        attributeEntityJoin.on(
-            builder.and(
-                builder.equal(
-                    attributeEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                    root.get(ModelDBConstants.ID)),
-                builder.equal(
-                    attributeEntityJoin.get(ModelDBConstants.FEILD_TYPE),
-                    ModelDBConstants.ATTRIBUTES),
-                builder.equal(
-                    attributeEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
-
-        orderByExpressionList.add(attributeEntityJoin.get(ModelDBConstants.VALUE));
-        break;
-      case ModelDBConstants.HYPERPARAMETERS:
-        LOGGER.debug(ModelDBMessages.SWITCH_CASE_HYPERPARAMETERS_DEBUG);
-        Join<ExperimentRunEntity, KeyValueEntity> hyperparameterEntityJoin =
-            root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
-        hyperparameterEntityJoin.alias(parentFieldName + "_hypr");
-        hyperparameterEntityJoin.on(
-            builder.and(
-                builder.equal(
-                    hyperparameterEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                    root.get(ModelDBConstants.ID)),
-                builder.equal(
-                    hyperparameterEntityJoin.get(ModelDBConstants.FEILD_TYPE),
-                    ModelDBConstants.HYPERPARAMETERS),
-                builder.equal(
-                    hyperparameterEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
-
-        orderByExpressionList.add(hyperparameterEntityJoin.get(ModelDBConstants.VALUE));
-
-        if (parentFieldName.equals("experimentRunEntity")) {
-          Join<ExperimentRunEntity, HyperparameterElementMappingEntity> elementMappingEntityJoin =
-              root.join(ModelDBConstants.HYPERPARAMETER_ELEMENT_MAPPINGS, JoinType.LEFT);
-          elementMappingEntityJoin.alias(parentFieldName + "_hyper_elem_mapping");
-          elementMappingEntityJoin.on(
-              builder.and(
-                  builder.equal(
-                      elementMappingEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                      root.get(ModelDBConstants.ID))),
-              builder.equal(
-                  elementMappingEntityJoin.get(ModelDBConstants.NAME), keys[keys.length - 1]));
-
-          orderByExpressionList.add(elementMappingEntityJoin.get("int_value"));
-          orderByExpressionList.add(elementMappingEntityJoin.get("float_value"));
-          orderByExpressionList.add(elementMappingEntityJoin.get("string_value"));
-        }
-        break;
-      case ModelDBConstants.METRICS:
-        LOGGER.debug(ModelDBMessages.SWITCH_CASE_METRICS_DEBUG);
-        Join<ExperimentRunEntity, KeyValueEntity> metricsEntityJoin =
-            root.join(ModelDBConstants.KEY_VALUE_MAPPING, JoinType.LEFT);
-        metricsEntityJoin.alias(parentFieldName + "_mtr");
-        metricsEntityJoin.on(
-            builder.and(
-                builder.equal(
-                    metricsEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                    root.get(ModelDBConstants.ID)),
-                builder.equal(
-                    metricsEntityJoin.get(ModelDBConstants.FEILD_TYPE), ModelDBConstants.METRICS),
-                builder.equal(metricsEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
-
-        orderByExpressionList.add(metricsEntityJoin.get(ModelDBConstants.VALUE));
-        break;
-      case ModelDBConstants.OBSERVATIONS:
-        LOGGER.debug(ModelDBMessages.SWITCH_CASE_OBSERVATION_DEBUG);
-        if (keys.length > 2) {
-          // If getting third level key like observation.attribute.attr_1 then it is not supported
-          throw new InvalidArgumentException("Third level of sorting not supported");
-          /*TODO: Below code for supporting the third level (ex: experimentRun.attributes.att_1) ordering data but right now Mongo doesn't support the third level ordering so commented below code to maintain the functionality.
-          switch (keys[1]) {
-              case ModelDBConstants.ATTRIBUTES:
-                  LOGGER.debug("switch case : Observation --> Attributes");
-                  String objAttrParentFieldName = "observationEntity";
-                  Path obsAttrExpression = criteriaQuery.from(KeyValueEntity.class);
-                  obsAttrExpression.alias(objAttrParentFieldName + "_kv");
-                  finalPredicatesList.addAll(
-                          getKeyValueTypePredicates(
-                                  obserExpression,
-                                  objAttrParentFieldName,
-                                  obsAttrExpression,
-                                  builder,
-                                  ModelDBConstants.ATTRIBUTES,
-                                  keys[keys.length - 1],
-                                  null));
-                  orderByExpression = obsAttrExpression.get(ModelDBConstants.VALUE);
-                  break;
-              case ModelDBConstants.ARTIFACTS:
-                  LOGGER.debug("switch case : Observation --> Artifact");
-                  String objArtParentFieldName = "observationEntity";
-                  Path obrArtExpression = criteriaQuery.from(ArtifactEntity.class);
-                  obrArtExpression.alias(objArtParentFieldName + "_art");
-                  finalPredicatesList.addAll(
-                          getKeyValueTypePredicates(
-                                  obserExpression,
-                                  objArtParentFieldName,
-                                  obrArtExpression,
-                                  builder,
-                                  ModelDBConstants.ARTIFACTS,
-                                  keys[keys.length - 1],
-                                  null));
-                  orderByExpression = obrArtExpression.get(ModelDBConstants.PATH);
-                  break;
-
-              default:
-                  break;
-          }*/
-        } else {
-          Join<ExperimentRunEntity, ObservationEntity> observationEntityJoin =
-              root.join(ModelDBConstants.OBSERVATION_MAPPING, JoinType.LEFT);
-          observationEntityJoin.alias(parentFieldName + "_obser");
-          observationEntityJoin.on(
-              builder.and(
-                  builder.equal(
-                      observationEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                      root.get(ModelDBConstants.ID)),
-                  builder.equal(
-                      observationEntityJoin.get(ModelDBConstants.FEILD_TYPE),
-                      ModelDBConstants.OBSERVATIONS),
-                  builder.equal(
-                      observationEntityJoin.get(ModelDBConstants.KEY), keys[keys.length - 1])));
-
-          orderByExpressionList.add(observationEntityJoin.get(keys[1]));
-        }
-        break;
-      case ModelDBConstants.FEATURES:
-        LOGGER.debug(ModelDBMessages.SWITCH_CASE_FEATURE_DEBUG);
-        Join<ExperimentRunEntity, FeatureEntity> featureEntityJoin =
-            root.join(ModelDBConstants.FEATURES, JoinType.LEFT);
-        featureEntityJoin.alias(parentFieldName + "_feature");
-        featureEntityJoin.on(
-            builder.and(
-                builder.equal(
-                    featureEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                    root.get(ModelDBConstants.ID))));
-
-        orderByExpressionList.add(featureEntityJoin.get(ModelDBConstants.NAME));
-        break;
-      case ModelDBConstants.TAGS:
-        LOGGER.debug(ModelDBMessages.SWITCH_CASE_TAGS_DEBUG);
-        Join<ExperimentRunEntity, TagsMapping> tagsEntityJoin =
-            root.join(ModelDBConstants.TAGS, JoinType.LEFT);
-        tagsEntityJoin.alias(parentFieldName + "_tags");
-        tagsEntityJoin.on(
-            builder.and(
-                builder.equal(
-                    tagsEntityJoin.get(parentFieldName).get(ModelDBConstants.ID),
-                    root.get(ModelDBConstants.ID))));
-
-        orderByExpressionList.add(tagsEntityJoin.get(ModelDBConstants.TAGS));
-        break;
-      default:
-        orderByExpressionList.add(root.get(sortBy));
-    }
-    var orderByArr = new Order[orderByExpressionList.size()];
-    for (var index = 0; index < orderByExpressionList.size(); index++) {
-      Expression<?> orderByExpression = orderByExpressionList.get(index);
-      orderByArr[index] =
-          isAscending ? builder.asc(orderByExpression) : builder.desc(orderByExpression);
-    }
-
-    return orderByArr;
-  }
-
-  /**
    * @param expression : entity has multi level field this field name from parent root path
    * @param builder : Hibernate criteria builder
    * @param fieldType : For example, artifact has the single table but type is different like
@@ -1229,7 +731,7 @@ public class RdbmsUtils {
    *     from KeyValueQuery base on artifact
    */
   private static List<Predicate> getArtifactTypePredicates(
-      Path expression,
+      Path<?> expression,
       CriteriaBuilder builder,
       String fieldType,
       String key,
@@ -1238,7 +740,7 @@ public class RdbmsUtils {
     var fieldTypePredicate = builder.equal(expression.get(ModelDBConstants.FEILD_TYPE), fieldType);
     fieldPredicates.add(fieldTypePredicate);
 
-    Path valueExpression;
+    Path<?> valueExpression;
     if (key.equals(ModelDBConstants.LINKED_ARTIFACT_ID)) {
       valueExpression = expression.get(key);
     } else {
@@ -1267,7 +769,7 @@ public class RdbmsUtils {
    *     from KeyValueQuery base on attributes
    */
   private static List<Predicate> getKeyValueTypePredicates(
-      Path expression,
+      Path<?> expression,
       CriteriaBuilder builder,
       String fieldType,
       String key,
@@ -1365,8 +867,6 @@ public class RdbmsUtils {
             throw new InvalidArgumentException(errorMessage);
           }
 
-          LOGGER.debug("Set predicate : \n{}", predicate);
-          Path expression;
           String[] names = key.split("\\.");
 
           var operator = predicate.getOperator();
@@ -1739,13 +1239,13 @@ public class RdbmsUtils {
                       operator);
                 }
               } else if (key.equalsIgnoreCase("dataset_visibility")) {
-                expression = entityRootPath.get("repository_visibility");
+                Path<?> expression = entityRootPath.get("repository_visibility");
                 var queryPredicate =
                     RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
                 keyValuePredicates.add(queryPredicate);
                 criteriaQuery.multiselect(entityRootPath, expression);
               } else {
-                expression = entityRootPath.get(key);
+                Path<?> expression = entityRootPath.get(key);
                 var queryPredicate =
                     RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
                 keyValuePredicates.add(queryPredicate);
@@ -1837,7 +1337,6 @@ public class RdbmsUtils {
       KeyValueQuery predicate,
       String key,
       Operator operator) {
-    Path expression;
     if (operator.equals(Operator.CONTAIN) || operator.equals(Operator.NOT_CONTAIN)) {
       var fuzzySearchPredicate =
           getFuzzyUsersQueryPredicate(uacApisUtil, builder, entityRootPath, predicate);
@@ -1848,7 +1347,7 @@ public class RdbmsUtils {
             ModelDBConstants.INTERNAL_MSG_USERS_NOT_FOUND, Code.FAILED_PRECONDITION);
       }
     } else {
-      expression = entityRootPath.get(key);
+      Path<?> expression = entityRootPath.get(key);
       var queryPredicate = RdbmsUtils.getValuePredicate(builder, key, expression, predicate, false);
       keyValuePredicates.add(queryPredicate);
       criteriaQuery.multiselect(entityRootPath, expression);
@@ -2056,53 +1555,6 @@ public class RdbmsUtils {
     }
   }
 
-  public static List<VersioningModeldbEntityMapping> getVersioningMappingFromVersioningInput(
-      Session session,
-      VersioningEntry versioningEntry,
-      Map<String, Map.Entry<BlobExpanded, String>> locationBlobWithHashMap,
-      Object entity) {
-    List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings = new ArrayList<>();
-    if (versioningEntry.getKeyLocationMapMap().isEmpty()) {
-      versioningModeldbEntityMappings.add(
-          new VersioningModeldbEntityMapping(
-              versioningEntry.getRepositoryId(),
-              versioningEntry.getCommit(),
-              "",
-              null,
-              null,
-              null,
-              entity));
-    } else {
-      for (Map.Entry<String, Location> locationEntry :
-          versioningEntry.getKeyLocationMapMap().entrySet()) {
-        var locationKey = String.join("#", locationEntry.getValue().getLocationList());
-        Map.Entry<BlobExpanded, String> blobExpandedWithHashMap =
-            locationBlobWithHashMap.get(locationKey);
-
-        var blob = blobExpandedWithHashMap.getKey().getBlob();
-
-        var vmem =
-            new VersioningModeldbEntityMapping(
-                versioningEntry.getRepositoryId(),
-                versioningEntry.getCommit(),
-                locationEntry.getKey(),
-                CommonUtils.getStringFromProtoObject(locationEntry.getValue()),
-                blob.getContentCase().getNumber(),
-                blobExpandedWithHashMap.getValue(),
-                entity);
-        if (blob.getContentCase().equals(Blob.ContentCase.CONFIG)) {
-          var query =
-              session.createQuery("FROM ConfigBlobEntity cb WHERE cb.blob_hash = :blobHash");
-          query.setParameter("blobHash", blobExpandedWithHashMap.getValue());
-          List<ConfigBlobEntity> configBlobEntities = query.list();
-          vmem.setConfig_blob_entities(new HashSet<>(configBlobEntities));
-        }
-        versioningModeldbEntityMappings.add(vmem);
-      }
-    }
-    return versioningModeldbEntityMappings;
-  }
-
   public static VersioningEntry getVersioningEntryFromList(
       List<VersioningModeldbEntityMapping> versioningModeldbEntityMappings) {
     var versioningEntry = VersioningEntry.newBuilder();
@@ -2232,8 +1684,9 @@ public class RdbmsUtils {
     queryBuilder.append(" ");
   }
 
-  public static void setParameterInQuery(Query query, Map<String, Object> parametersMap) {
-    if (parametersMap.size() > 0) {
+  @SuppressWarnings("unchecked")
+  public static void setParameterInQuery(Query<?> query, Map<String, Object> parametersMap) {
+    if (!parametersMap.isEmpty()) {
       parametersMap.forEach(
           (key, value) -> {
             if (value instanceof List) {
