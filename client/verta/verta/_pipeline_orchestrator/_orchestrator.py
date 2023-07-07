@@ -155,6 +155,11 @@ class _OrchestratorBase(abc.ABC):
             predecessor(s) will be fetched from ``self._outputs``.
 
         """
+        if self._dag is None:  # TODO: also check if DAG is completed
+            raise RuntimeError(
+                "DAG not initialized; call run() instead of using this method directly",
+            )
+
         if input is None:
             input = self._get_step_input(name)
 
