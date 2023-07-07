@@ -3,48 +3,36 @@
 from __future__ import print_function
 
 import ast
-import copy
+import json
 import os
 import pathlib
 import pickle
 import pprint
 import shutil
-import sys
-import time
 import warnings
+from typing import Dict
 
+import pydantic
 import requests
 
-from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
-from verta._protos.public.modeldb import (
-    CommonService_pb2 as _CommonService,
-    ProjectService_pb2,
-)
-from verta._protos.public.modeldb import (
-    ExperimentRunService_pb2 as _ExperimentRunService,
-)
-
-from verta._vendored import six
-
+from verta import data_types, utils
 from verta._internal_utils import (
     _artifact_utils,
-    _pip_requirements_utils,
     _request_utils,
     _utils,
     importer,
 )
-
+from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
+from verta._protos.public.modeldb import CommonService_pb2 as _CommonService, \
+    ExperimentRunService_pb2 as _ExperimentRunService, ProjectService_pb2
+from verta._vendored import six
 from verta.dataset.entities import (
     _dataset,
     _dataset_version,
 )
-from verta import data_types
-from verta import deployment
-from verta import utils
 from verta.environment import _Environment
-
-from ._entity import _MODEL_ARTIFACTS_ATTR_KEY
 from ._deployable_entity import _DeployableEntity
+from ._entity import _MODEL_ARTIFACTS_ATTR_KEY
 
 
 class ExperimentRun(_DeployableEntity):
@@ -837,6 +825,49 @@ class ExperimentRun(_DeployableEntity):
             except (KeyError, TypeError, ValueError):
                 pass
         return attributes
+
+
+    def set_schema(self, input: pydantic.BaseModel, output: pydantic.BaseModel) -> None:
+        """
+        Sets the input and output schemas of this Experiment Run. Schemas are stored as
+        model artifacts.
+
+        Parameters
+        ----------
+        input : pydantic.BaseModel
+            Input schema.
+        output : pydantic.BaseModel
+            Output schema.
+
+        """
+        if not isinstance(input, pydantic.BaseModel):
+            raise TypeError(f"`input` must be of type pydantic.BaseModel, not {type(input)}")
+        if not isinstance(output, pydantic.BaseModel):
+            raise TypeError(f"`output` must be of type pydantic.BaseModel, not {type(input)}")
+
+        schema = {
+            "input": input.schema(),
+            "output": output.schema(),
+        }
+        self.log_artifact("model_schema.json", json.dumps(schema))
+
+
+    def get_schema(self) -> Dict[str, pydantic.BaseModel]:
+        """
+        Gets the input and output schemas of this Experiment Run.
+
+        Returns
+        -------
+        Dict[str, pydantic.BaseModel]
+            Input and output schemas.
+
+        """
+        schema = self.get_artifact("model_schema.json")
+        schema = json.loads(schema)
+        return {
+            "input": pydantic.BaseModel.parse_obj(schema["input"]),
+            "output": pydantic.BaseModel.parse_obj(schema["output"]),
+        }
 
     def _delete_attributes(self, keys):
         response = _utils.make_request(

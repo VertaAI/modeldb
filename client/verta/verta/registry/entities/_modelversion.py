@@ -9,13 +9,20 @@ import os
 import pathlib
 import pickle
 import tempfile
-from typing import List
 import warnings
+from typing import Dict, List
 
+import pydantic
+import requests
 from google.protobuf.struct_pb2 import Value
 
-import requests
-
+from verta import _blob, code, data_types, environment, utils
+from verta._internal_utils import (
+    _artifact_utils,
+    _request_utils,
+    _utils,
+    importer,
+)
 from verta._protos.public.common import CommonService_pb2 as _CommonCommonService
 from verta._protos.public.modeldb.versioning import (
     VersioningService_pb2 as _VersioningService,
@@ -24,27 +31,13 @@ from verta._protos.public.registry import (
     RegistryService_pb2 as _RegistryService,
     StageService_pb2 as _StageService,
 )
-
 from verta._vendored import six
-
-from verta._internal_utils import (
-    _artifact_utils,
-    _request_utils,
-    _utils,
-    arg_handler,
-    importer,
-    time_utils,
-)
-from verta import utils
-
-from verta import _blob, code, data_types, environment
-from verta.endpoint.build import Build
-from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
-from verta.tracking.entities import _deployable_entity
-from .. import lock, DockerImage
-from ..stage_change import _StageChange
-
 from verta.dataset.entities import _dataset_version
+from verta.endpoint.build import Build
+from verta.tracking.entities import _deployable_entity
+from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
+from .. import DockerImage, lock
+from ..stage_change import _StageChange
 
 logger = logging.getLogger(__name__)
 
@@ -777,6 +770,48 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._fetch_with_no_cache()
         self._msg.ClearField("environment")
         self._update(self._msg, method="PUT")
+
+    def set_schema(self, input: pydantic.BaseModel, output: pydantic.BaseModel) -> None:
+        """
+        Sets the input and output schemas of this Model Version. Schemas are stored as
+        model artifacts.
+
+        Parameters
+        ----------
+        input : pydantic.BaseModel
+            Input schema.
+        output : pydantic.BaseModel
+            Output schema.
+
+        """
+        if not isinstance(input, pydantic.BaseModel):
+            raise TypeError(f"`input` must be of type pydantic.BaseModel, not {type(input)}")
+        if not isinstance(output, pydantic.BaseModel):
+                raise TypeError(f"`output` must be of type pydantic.BaseModel, not {type(input)}")
+
+        schema = {
+            "input": input.schema(),
+            "output": output.schema(),
+        }
+        self.log_artifact("model_schema.json", json.dumps(schema))
+
+
+    def get_schema(self) -> Dict[str, pydantic.BaseModel]:
+        """
+        Gets the input and output schemas of this Model Version.
+
+        Returns
+        -------
+        Dict[str, pydantic.BaseModel]
+            Input and output schemas.
+
+        """
+        schema = self.get_artifact("model_schema.json")
+        schema = json.loads(schema)
+        return {
+            "input": pydantic.BaseModel.parse_obj(schema["input"]),
+            "output": pydantic.BaseModel.parse_obj(schema["output"]),
+        }
 
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
