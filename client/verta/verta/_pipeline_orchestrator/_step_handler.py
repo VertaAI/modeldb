@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import abc
-import json
 from typing import Any, Dict, Iterable, List, Optional, Set, Type
 
-from verta._internal_utils import _utils, http_session
+from verta._internal_utils import _utils
 from verta.registry.entities import RegisteredModelVersion
 from verta.tracking.entities._entity import _MODEL_ARTIFACTS_ATTR_KEY
 
@@ -46,51 +45,6 @@ class _StepHandlerBase(abc.ABC):
     def predecessors(self) -> Set[str]:
         """Return the names of this step's predecessors."""
         return self._predecessors
-
-
-class ModelContainerStepHandler(_StepHandlerBase):
-    """Inference pipeline step handler for an HTTP server model.
-
-    Parameters
-    ----------
-    name : str
-        Name of this step.
-    predecessors : iterable of str
-        Names of this steps' predecessors
-    prediction_url : str
-        REST endpoint for model predictions.
-
-    Attributes
-    ----------
-    name
-    predecessors
-
-    """
-
-    def __init__(
-        self,
-        name: str,
-        predecessors: Iterable[str],
-        prediction_url: str,
-    ):
-        super().__init__(
-            name=name,
-            predecessors=predecessors,
-        )
-        self._session = http_session.init_session(retry=http_session.retry_config())
-        self._prediction_url = prediction_url
-
-    def run(self, input: Any) -> Any:
-        body = json.dumps(
-            _utils.to_builtin(input),
-            allow_nan=True,
-        )
-        response = self._session.post(
-            self._prediction_url,
-            data=body,
-        )
-        _utils.raise_for_http_error(response)
-        return response.json()
 
 
 class ModelObjectStepHandler(_StepHandlerBase):
