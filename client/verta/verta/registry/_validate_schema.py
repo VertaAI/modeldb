@@ -90,9 +90,7 @@ def validate_schema(f):
                 "no schema found for model; did you remember to call `model_ver.set_schema()`?"
             ) from e
         input_schema = schema["input"]
-        output_schema = None
-        if "output" in schema:
-            output_schema = schema["output"]
+        output_schema = schema.get("output")
 
         # Validate input
         if not isinstance(prediction_input, dict):
