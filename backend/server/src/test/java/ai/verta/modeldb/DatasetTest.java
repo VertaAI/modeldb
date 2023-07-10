@@ -8,7 +8,6 @@ import static org.springframework.boot.test.context.SpringBootTest.WebEnvironmen
 
 import ai.verta.common.Artifact;
 import ai.verta.common.ArtifactTypeEnum.ArtifactType;
-import ai.verta.common.CollaboratorTypeEnum;
 import ai.verta.common.KeyValue;
 import ai.verta.common.KeyValueQuery;
 import ai.verta.common.ModelDBResourceEnum.ModelDBServiceResourceTypes;
@@ -17,7 +16,6 @@ import ai.verta.common.ValueTypeEnum.ValueType;
 import ai.verta.modeldb.common.config.ArtifactStoreConfig;
 import ai.verta.modeldb.versioning.DeleteRepositoryRequest;
 import ai.verta.modeldb.versioning.RepositoryIdentification;
-import ai.verta.uac.AddCollaboratorRequest;
 import ai.verta.uac.AddGroupUsers;
 import ai.verta.uac.GetResources;
 import ai.verta.uac.GetResourcesResponseItem;
@@ -472,14 +470,12 @@ public class DatasetTest extends ModeldbTestSetup {
       mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser2);
       when(uac.getUACService().getCurrentUser(any()))
           .thenReturn(Futures.immediateFuture(testUser2));
-      if (testConfig.isPermissionV2Enabled()) {
-        when(uac.getWorkspaceService().getWorkspaceById(any()))
-            .thenReturn(
-                Futures.immediateFuture(
-                    Workspace.newBuilder()
-                        .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
-                        .build()));
-      }
+      when(uac.getWorkspaceService().getWorkspaceById(any()))
+          .thenReturn(
+              Futures.immediateFuture(
+                  Workspace.newBuilder()
+                      .setId(testUser1.getVertaInfo().getDefaultWorkspaceId())
+                      .build()));
     }
 
     try {
@@ -500,19 +496,6 @@ public class DatasetTest extends ModeldbTestSetup {
           when(uac.getUACService().getCurrentUser(any()))
               .thenReturn(Futures.immediateFuture(testUser1));
           mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser2);
-        } else if (!testConfig.isPermissionV2Enabled()) {
-          AddCollaboratorRequest addCollaboratorRequest =
-              CollaboratorUtils.addCollaboratorRequestDataset(
-                  dataset,
-                  authClientInterceptor.getClient1Email(),
-                  CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
-
-          AddCollaboratorRequest.Response addOrUpdateDatasetCollaboratorResponse =
-              collaboratorServiceStubClient2.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
-          LOGGER.info(
-              "Collaborator added in server : "
-                  + addOrUpdateDatasetCollaboratorResponse.getStatus());
-          assertTrue(addOrUpdateDatasetCollaboratorResponse.getStatus());
         }
 
         GetDatasetByName.Response getDatasetByNameResponse =
@@ -600,7 +583,7 @@ public class DatasetTest extends ModeldbTestSetup {
     // Create dataset
     CreateDataset createDatasetRequest = getDatasetRequest("Dataset-" + new Date().getTime());
     var workspaceNameUser2 = testUser2.getVertaInfo().getUsername();
-    if (testConfig.isPermissionV2Enabled() && !isRunningIsolated()) {
+    if (!isRunningIsolated()) {
       var groupIdUser1 =
           createAndGetGroup(authServiceChannelServiceUser, organizationId, testUser1);
       var groupStub = GroupServiceGrpc.newBlockingStub(authServiceChannelServiceUser);
@@ -630,7 +613,7 @@ public class DatasetTest extends ModeldbTestSetup {
       workspaceNameUser2 = organizationId + "/" + testUser1Workspace.getName();
     }
 
-    if (testConfig.isPermissionV2Enabled() && isRunningIsolated()) {
+    if (isRunningIsolated()) {
       when(uac.getWorkspaceService().getWorkspaceByName(any()))
           .thenReturn(
               Futures.immediateFuture(
@@ -655,28 +638,14 @@ public class DatasetTest extends ModeldbTestSetup {
         when(uac.getUACService().getCurrentUser(any()))
             .thenReturn(Futures.immediateFuture(testUser1));
         mockGetResourcesForAllDatasets(Map.of(dataset.getId(), dataset), testUser1);
-      } else if (!testConfig.isPermissionV2Enabled()) {
-        AddCollaboratorRequest addCollaboratorRequest =
-            CollaboratorUtils.addCollaboratorRequestDataset(
-                dataset,
-                authClientInterceptor.getClient1Email(),
-                CollaboratorTypeEnum.CollaboratorType.READ_WRITE);
-
-        AddCollaboratorRequest.Response addOrUpdateDatasetCollaboratorResponse =
-            collaboratorServiceStubClient2.addOrUpdateDatasetCollaborator(addCollaboratorRequest);
-        LOGGER.info(
-            "Collaborator added in server : " + addOrUpdateDatasetCollaboratorResponse.getStatus());
-        assertTrue(addOrUpdateDatasetCollaboratorResponse.getStatus());
       }
 
       // Create dataset
       createDatasetRequest = getDatasetRequest(dataset.getName());
       var workspaceNameUser1 = testUser1.getVertaInfo().getUsername();
-      if (testConfig.isPermissionV2Enabled()) {
-        workspaceNameUser1 = getWorkspaceNameUser1();
-        createDatasetRequest =
-            createDatasetRequest.toBuilder().setWorkspaceName(workspaceNameUser1).build();
-      }
+      workspaceNameUser1 = getWorkspaceNameUser1();
+      createDatasetRequest =
+          createDatasetRequest.toBuilder().setWorkspaceName(workspaceNameUser1).build();
       createDatasetResponse = datasetServiceStub.createDataset(createDatasetRequest);
       Dataset selfDataset = createDatasetResponse.getDataset();
       LOGGER.info("Dataset created successfully");

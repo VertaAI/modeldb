@@ -114,11 +114,9 @@ public class FutureExperimentDAO {
             mdbConfig);
     predicatesHandler =
         new PredicatesHandler(
-            executor,
             ModelDBConstants.EXPERIMENT_TABLE_NAME,
             ModelDBConstants.EXPERIMENT_TABLE_NAME /*alias*/,
-            uacApisUtil,
-            mdbConfig.isPermissionV2Enabled());
+            uacApisUtil);
     sortingHandler = new SortingHandler(ModelDBConstants.EXPERIMENT_TABLE_NAME);
 
     createExperimentHandler =

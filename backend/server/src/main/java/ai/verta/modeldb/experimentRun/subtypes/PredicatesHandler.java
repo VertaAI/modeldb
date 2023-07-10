@@ -8,26 +8,20 @@ import ai.verta.modeldb.ModelDBMessages;
 import ai.verta.modeldb.common.CommonUtils;
 import ai.verta.modeldb.common.EnumerateList;
 import ai.verta.modeldb.common.authservice.UACApisUtil;
-import ai.verta.modeldb.common.dto.UserInfoPaginationDTO;
 import ai.verta.modeldb.common.exceptions.InvalidArgumentException;
 import ai.verta.modeldb.common.exceptions.ModelDBException;
 import ai.verta.modeldb.common.exceptions.UnimplementedException;
+import ai.verta.modeldb.common.futures.Future;
 import ai.verta.modeldb.common.futures.FutureExecutor;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.common.query.QueryFilterContext;
-import ai.verta.uac.GetResourcesResponseItem;
-import ai.verta.uac.UserInfo;
 import com.google.protobuf.Value;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
+import lombok.extern.log4j.Log4j2;
 
+@Log4j2
 public class PredicatesHandler extends PredicateHandlerUtils {
   private static final String ENTITY_ID_NOT_IN_QUERY_CONDITION = "%s.id NOT IN (%s)";
   private static final String ENTITY_ID_IN_QUERY_CONDITION = "%s.id IN (%s)";
@@ -37,21 +31,12 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   private HyperparameterPredicatesHandler hyperparameterPredicatesHandler;
   private final String tableName;
   private final String alias;
-  private final FutureExecutor executor;
   private final UACApisUtil uacApisUtil;
-  private final boolean isPermissionV2;
 
-  public PredicatesHandler(
-      FutureExecutor executor,
-      String tableName,
-      String alias,
-      UACApisUtil uacApisUtil,
-      boolean isPermissionV2) {
-    this.executor = executor;
+  public PredicatesHandler(String tableName, String alias, UACApisUtil uacApisUtil) {
     this.tableName = tableName;
     this.alias = alias;
     this.uacApisUtil = uacApisUtil;
-    this.isPermissionV2 = isPermissionV2;
 
     if ("experiment_run".equals(tableName)) {
       this.hyperparameterPredicatesHandler = new HyperparameterPredicatesHandler();
@@ -128,7 +113,6 @@ public class PredicatesHandler extends PredicateHandlerUtils {
         }
       case "owner":
         return setOwnerPredicate(index, predicate);
-        // case visibility:
       case "":
         return InternalFuture.failedStage(new InvalidArgumentException("Key is empty"));
       case "end_time":
@@ -138,7 +122,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
                 .addBind(q -> q.bind(bindingName, value.getStringValue())));
       default:
         InternalFuture<QueryFilterContext> filterContext =
-            processEntityNameBasedPredicates(index, bindingName, predicate);
+            processEntityNameBasedPredicates(bindingName, predicate);
         if (filterContext != null) {
           return filterContext;
         }
@@ -200,14 +184,14 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   }
 
   private InternalFuture<QueryFilterContext> processEntityNameBasedPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
+      String bindingName, KeyValueQuery predicate) {
     switch (tableName) {
       case "project":
-        return processProjectPredicates(index, bindingName, predicate);
+        return processProjectPredicates(predicate);
       case "experiment":
-        return processExperimentPredicates(index, bindingName, predicate);
+        return processExperimentPredicates(predicate);
       case "experiment_run":
-        return processExperimentRunPredicates(index, bindingName, predicate);
+        return processExperimentRunPredicates(bindingName, predicate);
       default:
         // return null for further process
         return null;
@@ -215,7 +199,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
   }
 
   private InternalFuture<QueryFilterContext> processExperimentRunPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
+      String bindingName, KeyValueQuery predicate) {
 
     if (!predicate.getKey().contains(ModelDBConstants.LINKED_ARTIFACT_ID)
         && predicate.getOperator().equals(OperatorEnum.Operator.IN)) {
@@ -266,8 +250,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     }
   }
 
-  private InternalFuture<QueryFilterContext> processExperimentPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
+  private InternalFuture<QueryFilterContext> processExperimentPredicates(KeyValueQuery predicate) {
     var value = predicate.getValue();
     switch (predicate.getKey()) {
       default:
@@ -276,8 +259,7 @@ public class PredicatesHandler extends PredicateHandlerUtils {
     }
   }
 
-  private InternalFuture<QueryFilterContext> processProjectPredicates(
-      long index, String bindingName, KeyValueQuery predicate) {
+  private InternalFuture<QueryFilterContext> processProjectPredicates(KeyValueQuery predicate) {
     var value = predicate.getValue();
     switch (predicate.getKey()) {
       default:
@@ -619,85 +601,32 @@ public class PredicatesHandler extends PredicateHandlerUtils {
 
   private InternalFuture<QueryFilterContext> setOwnerPredicate(long index, KeyValueQuery predicate)
       throws ModelDBException {
-    var operator = predicate.getOperator();
-    InternalFuture<List<UserInfo>> userInfoListFuture;
-    if (operator.equals(OperatorEnum.Operator.CONTAIN)
-        || operator.equals(OperatorEnum.Operator.NOT_CONTAIN)) {
-      userInfoListFuture =
-          uacApisUtil
-              .getFuzzyUserInfoList(predicate.getValue().getStringValue())
-              .toInternalFuture()
-              .thenApply(UserInfoPaginationDTO::getUserInfoList, executor);
-    } else {
-      var ownerIdsArrString = predicate.getValue().getStringValue();
-      List<String> ownerIds = new ArrayList<>();
-      if (operator.equals(OperatorEnum.Operator.IN)) {
-        ownerIds = Arrays.asList(ownerIdsArrString.split(","));
-      } else {
-        ownerIds.add(ownerIdsArrString);
-      }
-      userInfoListFuture =
-          uacApisUtil
-              .getUserInfoFromAuthServer(
-                  new HashSet<>(ownerIds), Collections.emptySet(), Collections.emptyList(), false)
-              .toInternalFuture()
-              .thenApply(userInfoMap -> new ArrayList<>(userInfoMap.values()), executor);
-    }
+    return uacApisUtil
+        .findResourceIdsOwnedBy(predicate, ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
+        .thenCompose(
+            resourceIds -> {
+              final var valueBindingName = String.format("fuzzy_id_%d", index);
+              var sql = "<" + valueBindingName + ">";
 
-    return userInfoListFuture.thenCompose(
-        userInfoList -> {
-          if (userInfoList != null && !userInfoList.isEmpty()) {
-            var resourceItemsFutures = new ArrayList<InternalFuture<Set<String>>>();
-            for (var userInfo : userInfoList) {
-              resourceItemsFutures.add(
-                  uacApisUtil
-                      .getResourceItemsForLoginUserWorkspace(
-                          isPermissionV2
-                              ? Optional.empty()
-                              : Optional.of(userInfo.getVertaInfo().getUsername()),
-                          isPermissionV2 ? userInfo.getVertaInfo().getDefaultWorkspaceId() : null,
-                          Optional.empty(),
-                          ModelDBResourceEnum.ModelDBServiceResourceTypes.PROJECT)
-                      .toInternalFuture()
-                      .thenApply(
-                          accessibleAllWorkspaceItems ->
-                              accessibleAllWorkspaceItems.stream()
-                                  .map(GetResourcesResponseItem::getResourceId)
-                                  .collect(Collectors.toSet()),
-                          executor));
-            }
-            return InternalFuture.sequence(resourceItemsFutures, executor)
-                .thenCompose(
-                    resourceIdsList -> {
-                      var resourceIds = new HashSet<String>();
-                      for (var resourceIdSet : resourceIdsList) {
-                        resourceIds.addAll(resourceIdSet);
-                      }
-
-                      final var valueBindingName = String.format("fuzzy_id_%d", index);
-                      var sql = "<" + valueBindingName + ">";
-
-                      var queryContext =
-                          new QueryFilterContext()
-                              .addBind(q -> q.bindList(valueBindingName, resourceIds));
-                      if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
-                          || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
-                        queryContext =
-                            queryContext.addCondition(
-                                String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql));
-                      } else {
-                        queryContext =
-                            queryContext.addCondition(
-                                String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql));
-                      }
-                      return InternalFuture.completedInternalFuture(queryContext);
-                    },
-                    executor);
-          } else {
-            return InternalFuture.completedInternalFuture(
-                new QueryFilterContext().addCondition(String.format("%s.id = '-1'", alias)));
-          }
-        },
-        executor);
+              var queryContext =
+                  new QueryFilterContext().addBind(q -> q.bindList(valueBindingName, resourceIds));
+              if (predicate.getOperator().equals(OperatorEnum.Operator.NOT_CONTAIN)
+                  || predicate.getOperator().equals(OperatorEnum.Operator.NE)) {
+                if (resourceIds.isEmpty()) {
+                  return Future.of(new QueryFilterContext());
+                }
+                return Future.of(
+                    queryContext.addCondition(
+                        String.format(ENTITY_ID_NOT_IN_QUERY_CONDITION, alias, sql)));
+              }
+              if (resourceIds.isEmpty()) {
+                return Future.of(
+                    new QueryFilterContext().addCondition(String.format("%s.id = '-1'", alias)));
+              }
+              return Future.of(
+                  queryContext.addCondition(
+                      String.format(ENTITY_ID_IN_QUERY_CONDITION, alias, sql)));
+            })
+        .toInternalFuture();
   }
 }
