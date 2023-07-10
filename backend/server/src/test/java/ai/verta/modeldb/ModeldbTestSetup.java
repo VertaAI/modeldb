@@ -204,7 +204,7 @@ public abstract class ModeldbTestSetup {
 
       GetUser getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient1Email()).build();
-      // Get the user info by vertaId form the AuthService
+      // Get the user info by vertaId from the AuthService
       testUser1 = uacServiceStub.getUser(getUserRequest);
       getUserRequest =
           GetUser.newBuilder().setEmail(authClientInterceptor.getClient2Email()).build();
@@ -249,6 +249,50 @@ public abstract class ModeldbTestSetup {
               groupIdUser1,
               roleIdUser1,
               testUser1.getVertaInfo().getUsername());
+    } else {
+      serviceAccountUser =
+          UserInfo.newBuilder()
+              .setEmail(testConfig.getService_user().getEmail())
+              .setVertaInfo(
+                  VertaUserInfo.newBuilder()
+                      .setUserId("-111")
+                      .setUsername(testConfig.getService_user().getEmail())
+                      .setDefaultWorkspaceId(-111)
+                      .setWorkspaceId("-111")
+                      .build())
+              .build();
+
+      testUser1 =
+          UserInfo.newBuilder()
+              .setEmail(authClientInterceptor.getClient1Email())
+              .setVertaInfo(
+                  VertaUserInfo.newBuilder()
+                      .setUserId(String.valueOf(authClientInterceptor.getClient1WorkspaceId()))
+                      .setUsername(authClientInterceptor.getClient1UserName())
+                      .setDefaultWorkspaceId(authClientInterceptor.getClient1WorkspaceId())
+                      .setWorkspaceId(String.valueOf(authClientInterceptor.getClient1WorkspaceId()))
+                      .build())
+              .build();
+
+      testUser2 =
+          UserInfo.newBuilder()
+              .setEmail(authClientInterceptor.getClient2Email())
+              .setVertaInfo(
+                  VertaUserInfo.newBuilder()
+                      .setUserId(String.valueOf(authClientInterceptor.getClient2WorkspaceId()))
+                      .setUsername(authClientInterceptor.getClient2UserName())
+                      .setDefaultWorkspaceId(authClientInterceptor.getClient2WorkspaceId())
+                      .setWorkspaceId(String.valueOf(authClientInterceptor.getClient2WorkspaceId()))
+                      .build())
+              .build();
+      testUser1Workspace =
+          WorkspaceV2.newBuilder()
+              .setId(Long.parseLong(testUser1.getVertaInfo().getWorkspaceId()))
+              .setName(testUser1.getVertaInfo().getUsername())
+              .setOrgId("-1")
+              .setNamespace("namespace")
+              .addPermissions(Permission.newBuilder().setGroupId("-1").setRoleId("-1").build())
+              .build();
     }
 
     LOGGER.trace("Test service infrastructure config complete.");

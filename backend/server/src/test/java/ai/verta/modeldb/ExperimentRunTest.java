@@ -2,6 +2,7 @@ package ai.verta.modeldb;
 
 import static ai.verta.modeldb.CollaboratorUtils.addCollaboratorRequestProjectInterceptor;
 import static ai.verta.modeldb.RepositoryTest.createRepository;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
@@ -1346,7 +1347,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
   }
 
   /**
-   * This test tests comparision predicates on numeric Key Values (Hyperparameters in this case) It
+   * This test tests comparison predicates on numeric Key Values (Hyperparameters in this case) It
    * creates a project with two Experiments , each with two experiment runs. E1 ER1 hyperparameter.C
    * = 0.0001 E1 ER2 no hyperparameters E2 ER1 hyperparameter.C = 0.0001 E2 ER1 hyperparameter.C =
    * 1E-6
@@ -1389,7 +1390,6 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       createExperimentRunRequest =
           getCreateExperimentRunRequestSimple(
               project.getId(), experiment2.getId(), "ExperimentRun_ferh_2");
-      hyperparameter1 = generateNumericKeyValue("C", 0.0001);
       createExperimentRunRequest =
           createExperimentRunRequest.toBuilder().addHyperparameters(hyperparameter1).build();
       createExperimentRunResponse =
@@ -1449,7 +1449,7 @@ public class ExperimentRunTest extends ModeldbTestSetup {
       for (ExperimentRun exprRun : response.getExperimentRunsList()) {
         for (KeyValue kv : exprRun.getHyperparametersList()) {
           if (kv.getKey().equals("C")) {
-            assertTrue(kv.getValue().getNumberValue() > 0.0001, "Value should be GTE 0.0001 " + kv);
+            assertThat(kv.getValue().getNumberValue()).isGreaterThanOrEqualTo(0.0001);
           }
         }
       }
