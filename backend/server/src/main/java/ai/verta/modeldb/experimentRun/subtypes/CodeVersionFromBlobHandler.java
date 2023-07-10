@@ -4,7 +4,6 @@ import ai.verta.common.CodeVersion;
 import ai.verta.common.GitSnapshot;
 import ai.verta.modeldb.Location;
 import ai.verta.modeldb.common.CommonUtils;
-import ai.verta.modeldb.common.futures.FutureJdbi;
 import ai.verta.modeldb.common.futures.InternalFuture;
 import ai.verta.modeldb.entities.code.GitCodeBlobEntity;
 import ai.verta.modeldb.entities.code.NotebookCodeBlobEntity;
@@ -20,24 +19,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.Executor;
 import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class CodeVersionFromBlobHandler {
-  private static Logger LOGGER = LogManager.getLogger(CodeVersionFromBlobHandler.class);
-  private final FutureJdbi jdbi;
-  private final Executor executor;
-  private final boolean populateConnectionsBasedOnPrivileges;
+  private static final Logger LOGGER = LogManager.getLogger(CodeVersionFromBlobHandler.class);
   private final ModelDBHibernateUtil modelDBHibernateUtil = ModelDBHibernateUtil.getInstance();
-
-  public CodeVersionFromBlobHandler(
-      Executor executor, FutureJdbi jdbi, boolean populateConnectionsBasedOnPrivileges) {
-    this.executor = executor;
-    this.jdbi = jdbi;
-    this.populateConnectionsBasedOnPrivileges = populateConnectionsBasedOnPrivileges;
-  }
 
   /**
    * @param expRunIds : ExperimentRun ids
