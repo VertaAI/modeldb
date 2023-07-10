@@ -66,7 +66,7 @@ class TestValidateSchema:
         def predict(self, input):
             return input
 
-        # When verify_io is first, it will raise a TypeError before validate_schema is called
+        # when verify_io is first, it will raise a TypeError before validate_schema is called
         with pytest.raises(TypeError):
             predict(None, array)
 
