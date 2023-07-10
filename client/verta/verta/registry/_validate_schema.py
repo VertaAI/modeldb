@@ -2,6 +2,7 @@ import functools
 import json
 import os
 import warnings
+from typing import Dict
 
 import jsonschema
 
@@ -76,10 +77,8 @@ def validate_schema(f):
     """
 
     @functools.wraps(f)
-    def wrapper(self, *args, **kwargs):
-        # accepts dict input
+    def wrapper(self, prediction_input: Dict):
         # fetch schema
-        prediction_input = args[0]
         model_schema_path = os.environ.get(
             _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json"
         )
@@ -105,7 +104,7 @@ def validate_schema(f):
             ) from e
 
         # run function
-        output = f(self, *args, **kwargs)
+        output = f(self, prediction_input)
         if output_schema is None:
             return output
 
