@@ -48,14 +48,14 @@ def validate_schema(f):
         def main():
             client = Client()
 
-            # Register
+            # register
             model_ver = client.get_or_create_registered_model("My Model").create_standard_model(
                 MyModel,
                 environment=Python([]),
             )
             model_ver.set_schema(input=Input.schema(), output=Output.schema())
 
-            # Deploy
+            # deploy
             endpoint = client.get_or_create_endpoint("my-model")
             endpoint.update(model_ver, wait=True)
             deployed_model = endpoint.get_deployed_model()
@@ -64,8 +64,9 @@ def validate_schema(f):
             input = Input(a=1, b=2)
             output = deployed_model.predict(input.dict())
 
-            # fails; a list will be given to the deployed model as-is
-            deployed_model.predict({"something": "random"})
+            # fails; this input does not match the schema
+            bad_input = {"something": "random"}
+            deployed_model.predict(bad_input)
 
     References
     ----------
@@ -75,15 +76,14 @@ def validate_schema(f):
     @functools.wraps(f)
     def wrapper(self, *args, **kwargs):
         # accepts dict input
-        # TODO: validate length of args and type
-        # Fetch schema
+        # fetch schema
         prediction_input = args[0]
         model_schema_path = os.environ.get(
             _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json"
         )
         try:
             with open(model_schema_path, "r") as file:
-                # Load the JSON data into a variable
+                # load the JSON data into a variable
                 schema = json.load(file)
         except FileNotFoundError as e:
             raise FileNotFoundError(
@@ -92,7 +92,7 @@ def validate_schema(f):
         input_schema = schema["input"]
         output_schema = schema.get("output")
 
-        # Validate input
+        # validate input
         if not isinstance(prediction_input, dict):
             raise TypeError("input must be a dict; did you remember to call `.dict()`?")
         try:
@@ -102,12 +102,12 @@ def validate_schema(f):
                 "input failed schema validation"
             ) from e
 
-        # Run function
+        # run function
         output = f(self, *args, **kwargs)
         if output_schema is None:
             return output
 
-        # Validate output
+        # validate output
         if not isinstance(output, dict):
             raise TypeError(
                 "output must be a dict; did you remember to call `.dict()` in your model?"
