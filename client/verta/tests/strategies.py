@@ -102,8 +102,8 @@ def generate_inner_object(draw):
     h_dict = draw(st.dictionaries(st.text(), st.integers()))
     i_list_str = draw(st.lists(st.text()))
     return AnInnerClass(
-        h_dict,
-        i_list_str,
+        h_dict=h_dict,
+        i_list_str=i_list_str,
     )
 
 
@@ -118,13 +118,13 @@ def generate_object(draw):
     g_inner_input_class = draw(generate_inner_object())
 
     return AClass(
-        a_int,
-        b_str,
-        c_float,
-        d_bool,
-        e_list_int,
-        f_dict,
-        g_inner_input_class,
+        a_int=a_int,
+        b_str=b_str,
+        c_float=c_float,
+        d_bool=d_bool,
+        e_list_int=e_list_int,
+        f_dict=f_dict,
+        g_inner=g_inner_input_class,
     )
 
 
@@ -135,7 +135,7 @@ def generate_another_object(draw):
     l_str = draw(st.text())
 
     return AnotherClass(
-        j_bool,
-        k_list_list_int,
-        l_str,
+        j_bool=j_bool,
+        k_list_list_int=k_list_list_int,
+        l_str=l_str,
     )
