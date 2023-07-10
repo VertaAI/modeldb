@@ -87,7 +87,7 @@ def validate_schema(f):
                 schema = json.load(file)
         except FileNotFoundError as e:
             raise FileNotFoundError(
-                "no schema found for model. Did you remember to call `model_ver.set_schema()`?"
+                "no schema found for model; did you remember to call `model_ver.set_schema()`?"
             ) from e
         input_schema = schema["input"]
         output_schema = None
@@ -96,7 +96,7 @@ def validate_schema(f):
 
         # Validate input
         if not isinstance(prediction_input, dict):
-            raise TypeError("input must be a dict. Did you remember to call `.dict()`?")
+            raise TypeError("input must be a dict; did you remember to call `.dict()`?")
         try:
             jsonschema.validate(instance=prediction_input, schema=input_schema)
         except jsonschema.exceptions.ValidationError as e:
@@ -112,7 +112,7 @@ def validate_schema(f):
         # Validate output
         if not isinstance(output, dict):
             raise TypeError(
-                "output must be a dict. Did you remember to call `.dict()` in your model?"
+                "output must be a dict; did you remember to call `.dict()` in your model?"
             )
         try:
             jsonschema.validate(instance=output, schema=output_schema)
