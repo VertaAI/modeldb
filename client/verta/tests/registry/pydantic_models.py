@@ -6,7 +6,7 @@ class AnInnerClass(BaseModel):
     i_list_str: list[str]
 
 
-class AClass(BaseModel):
+class InputClass(BaseModel):
     a_int: int
     b_str: str
     c_float: float
@@ -16,7 +16,7 @@ class AClass(BaseModel):
     g_inner: AnInnerClass
 
 
-class AnotherClass(BaseModel):
+class OutputClass(BaseModel):
     j_bool: bool
     k_list_list_int: list[list[int]]
     l_str: str

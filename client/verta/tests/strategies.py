@@ -10,7 +10,7 @@ import hypothesis
 import hypothesis.strategies as st
 from hypothesis import given
 
-from tests.registry.pydantic_models import AnInnerClass, AClass, AnotherClass
+from tests.registry.pydantic_models import AnInnerClass, InputClass, OutputClass
 from verta._internal_utils.time_utils import duration_millis
 
 
@@ -117,7 +117,7 @@ def generate_object(draw):
     f_dict = draw(st.dictionaries(st.text(), st.text()))
     g_inner_input_class = draw(generate_inner_object())
 
-    return AClass(
+    return InputClass(
         a_int=a_int,
         b_str=b_str,
         c_float=c_float,
@@ -134,7 +134,7 @@ def generate_another_object(draw):
     k_list_list_int = draw(st.lists(st.lists(st.integers())))
     l_str = draw(st.text())
 
-    return AnotherClass(
+    return OutputClass(
         j_bool=j_bool,
         k_list_list_int=k_list_list_int,
         l_str=l_str,
