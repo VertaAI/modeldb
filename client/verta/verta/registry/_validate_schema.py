@@ -87,7 +87,7 @@ def validate_schema(f):
                 schema = json.load(file)
         except FileNotFoundError as e:
             raise FileNotFoundError(
-                "no schema found for model. Did you remember to `set_schema`?"
+                "no schema found for model. Did you remember to call `model_ver.set_schema()`?"
             ) from e
         input_schema = schema["input"]
         output_schema = None
