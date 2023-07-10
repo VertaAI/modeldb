@@ -30,7 +30,7 @@ def make_model_schema_file(tmp_path, monkeypatch):
 
 @pytest.fixture
 def make_model_schema_file_no_output(tmp_path, monkeypatch):
-    path = tmp_path / "other_model_schema.json"
+    path = tmp_path / "model_schema_no_output.json"
     schema = {"input": AClass.schema()}
     path.write_text(json.dumps(schema))
     monkeypatch.setenv(_MODEL_SCHEMA_PATH_ENV_VAR, str(path))
