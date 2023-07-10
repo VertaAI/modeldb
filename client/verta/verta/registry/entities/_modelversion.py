@@ -771,47 +771,50 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._msg.ClearField("environment")
         self._update(self._msg, method="PUT")
 
-    def set_schema(self, input: pydantic.BaseModel, output: pydantic.BaseModel) -> None:
+    def set_schema(self, input: dict, output: dict = None) -> None:
         """
         Sets the input and output schemas of this Model Version. Schemas are stored as
         model artifacts.
 
+        The output schema is optional.
+
+        To validate a prediction's input and output against these schemas, use the @validate_schema decorator.
+
         Parameters
         ----------
-        input : pydantic.BaseModel
-            Input schema.
-        output : pydantic.BaseModel
-            Output schema.
+        input : dict
+            Input schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema().
+        output : dict
+            Output schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema().
 
         """
-        if not isinstance(input, pydantic.BaseModel):
-            raise TypeError(f"`input` must be of type pydantic.BaseModel, not {type(input)}")
-        if not isinstance(output, pydantic.BaseModel):
-                raise TypeError(f"`output` must be of type pydantic.BaseModel, not {type(input)}")
+        if not isinstance(input, dict):
+            raise TypeError(f"`input` must be of type dict, not {type(input)}")
+        if output is not None and not isinstance(output, dict):
+            raise TypeError(f"`output` must be of type dict, not {type(input)}")
 
         schema = {
-            "input": input.schema(),
-            "output": output.schema(),
+            "input": input,
         }
+        if output is not None:
+            schema["output"] = output
         self.log_artifact("model_schema.json", json.dumps(schema))
 
-
-    def get_schema(self) -> Dict[str, pydantic.BaseModel]:
+    def get_schema(self) -> Dict[str, dict]:
         """
-        Gets the input and output schemas of this Model Version.
+        Gets the input and output json schemas of this Model Version.
+
+        If no output schema was provided, it will not be included in the returned dict.
 
         Returns
         -------
-        Dict[str, pydantic.BaseModel]
-            Input and output schemas.
+        Dict[str, dict]
+            Input and output json schemas.
 
         """
         schema = self.get_artifact("model_schema.json")
         schema = json.loads(schema)
-        return {
-            "input": pydantic.BaseModel.parse_obj(schema["input"]),
-            "output": pydantic.BaseModel.parse_obj(schema["output"]),
-        }
+        return schema
 
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
