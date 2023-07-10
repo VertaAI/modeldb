@@ -20,7 +20,7 @@
     "http-proxy-middleware": "^0.19.1",
     "jose-jwe-jws": "^0.1.7",
     "jwt-decode": "^2.2.0",
-    "nodemon": "^2.0.3",
+    "nodemon": "^3.0.1",
     "passport": "^0.4.0",
     "passport-auth0": "^1.1.0",
     "set-value": "2.0.1"
