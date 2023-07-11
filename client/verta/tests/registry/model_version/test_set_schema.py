@@ -32,7 +32,7 @@ class TestSetSchema:
         with pytest.raises(
             TypeError,
             match=re.escape(
-                "RegisteredModelVersion.set_schema() missing 1 required positional argument: 'input'"
+                "_DeployableEntity.set_schema() missing 1 required positional argument: 'input'"
             ),
         ):
             model_version.set_schema(output=output_schema)
