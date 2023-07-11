@@ -67,7 +67,7 @@ class TestValidateSchema:
             return input
 
         # when verify_io is first, it will raise a TypeError before validate_schema is called
-        with pytest.raises(TypeError):
+        with pytest.raises(TypeError, match="Object of type ndarray is not JSON serializable.*"):
             predict(None, array)
 
     @hypothesis.settings(
