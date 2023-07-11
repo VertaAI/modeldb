@@ -795,22 +795,28 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         """
         if not isinstance(input, dict):
-            raise TypeError(f"`input` must be of type dict, not {type(input)}")
+            raise TypeError(f"`input` must be of type dict, not {type(input)}; did you remember to call `.schema()`?")
         if output is not None and not isinstance(output, dict):
-            raise TypeError(f"`output` must be of type dict, not {type(input)}")
+            raise TypeError(f"`output` must be of type dict, not {type(output)}; did you remember to call `.schema()`?")
 
         schema = {
             "input": input,
         }
         if output is not None:
             schema["output"] = output
-        self.log_artifact("model_schema.json", json.dumps(schema))
+        self.log_artifact(key="model_schema.json", artifact=schema)
 
     def get_schema(self) -> Dict[str, dict]:
         """
-        Gets the input and output json schemas of this Model Version.
+        Gets the input and output json schemas of this Model Version, in the format:
 
-        If no output schema was provided, it will not be included in the returned dict.
+        .. code-block:: python
+        {
+            "input": <input schema>,
+            "output": <output schema>
+        }
+
+        If no output schema was provided, output will not be included in the returned dict.
 
         Returns
         -------
@@ -819,7 +825,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
 
         """
         schema = self.get_artifact("model_schema.json")
-        schema = json.loads(schema)
         return schema
 
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
