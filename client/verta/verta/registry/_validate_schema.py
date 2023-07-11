@@ -77,7 +77,7 @@ def validate_schema(f):
     """
 
     @functools.wraps(f)
-    def wrapper(self, prediction_input: Dict):
+    def wrapper(self, input: Dict):
         # fetch schema
         model_schema_path = os.environ.get(
             _MODEL_SCHEMA_PATH_ENV_VAR, "/app/model_schema.json"
@@ -94,17 +94,17 @@ def validate_schema(f):
         output_schema = schema.get("output")
 
         # validate input
-        if not isinstance(prediction_input, dict):
+        if not isinstance(input, dict):
             raise TypeError("input must be a dict; did you remember to call `.dict()`?")
         try:
-            jsonschema.validate(instance=prediction_input, schema=input_schema)
+            jsonschema.validate(instance=input, schema=input_schema)
         except jsonschema.exceptions.ValidationError as e:
             raise jsonschema.exceptions.ValidationError(
                 "input failed schema validation"
             ) from e
 
         # run function
-        output = f(self, prediction_input)
+        output = f(self, input)
         if output_schema is None:
             return output
 
