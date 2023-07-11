@@ -771,68 +771,6 @@ class RegisteredModelVersion(_deployable_entity._DeployableEntity):
         self._msg.ClearField("environment")
         self._update(self._msg, method="PUT")
 
-    def set_schema(self, input: dict, output: dict = None) -> None:
-        """
-        Sets the input and output schemas of this Model Version. Schemas are stored as
-        model artifacts.
-
-        The output schema is optional.
-
-        To validate a prediction's input and output against these schemas, use the
-        :func:`~verta.registry.validate_schema` decorator.
-
-        Parameters
-        ----------
-        input : dict
-            Input schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema() [#]_.
-        output : dict
-            Output schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema().
-
-
-        References
-        ----------
-        .. [#] https://docs.pydantic.dev/1.10/usage/schema/
-
-        """
-        if not isinstance(input, dict):
-            raise TypeError(f"`input` must be of type dict, not {type(input)}; did you remember to call `.schema()`?")
-        if output is not None and not isinstance(output, dict):
-            raise TypeError(f"`output` must be of type dict, not {type(output)}; did you remember to call `.schema()`?")
-
-        schema = {
-            "input": input,
-        }
-        if output is not None:
-            schema["output"] = output
-
-        # write a temp file because otherwise `log_artifact` will think the artifact contents are the file path
-        with tempfile.NamedTemporaryFile(mode='w') as temp_file:
-            temp_filename = temp_file.name
-            with open(temp_filename, 'w') as file:
-                json.dump(schema, file)
-            self.log_artifact(key="model_schema.json", artifact=temp_filename, overwrite=True)
-
-    def get_schema(self) -> Dict[str, dict]:
-        """
-        Gets the input and output json schemas of this Model Version, in the format:
-
-        .. code-block:: python
-        {
-            "input": <input schema>,
-            "output": <output schema>
-        }
-
-        If no output schema was provided, output will not be included in the returned dict.
-
-        Returns
-        -------
-        Dict[str, dict]
-            Input and output json schemas.
-
-        """
-        schema = self.get_artifact("model_schema.json")
-        return json.load(schema)
-
     def _get_url_for_artifact(self, key, method, artifact_type=0, part_num=0):
         if method.upper() not in ("GET", "PUT"):
             raise ValueError("`method` must be one of {'GET', 'PUT'}")

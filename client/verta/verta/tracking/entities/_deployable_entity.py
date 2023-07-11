@@ -5,6 +5,7 @@ from __future__ import print_function
 import abc
 import copy
 import importlib
+import json
 import os
 import shutil
 import sys
@@ -12,6 +13,7 @@ import tarfile
 import tempfile
 import warnings
 import zipfile
+from typing import Dict
 
 import requests
 
@@ -87,6 +89,68 @@ class _DeployableEntity(_ModelDBEntity):
     @abc.abstractmethod
     def _get_artifact(self, key):
         raise NotImplementedError
+
+    def set_schema(self, input: dict, output: dict = None) -> None:
+        """
+        Sets the input and output schemas of this Deployable Entity. Schemas are stored as
+        model artifacts.
+
+        The output schema is optional.
+
+        To validate a prediction's input and output against these schemas, use the
+        :func:`~verta.registry.validate_schema` decorator.
+
+        Parameters
+        ----------
+        input : dict
+            Input schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema() [#]_.
+        output : dict
+            Output schema as an OpenAPI-compatible json dict. Easiest to create using pydantic.BaseModel.schema().
+
+
+        References
+        ----------
+        .. [#] https://docs.pydantic.dev/1.10/usage/schema/
+
+        """
+        if not isinstance(input, dict):
+            raise TypeError(f"`input` must be of type dict, not {type(input)}; did you remember to call `.schema()`?")
+        if output is not None and not isinstance(output, dict):
+            raise TypeError(f"`output` must be of type dict, not {type(output)}; did you remember to call `.schema()`?")
+
+        schema = {
+            "input": input,
+        }
+        if output is not None:
+            schema["output"] = output
+
+        # write a temp file because otherwise `log_artifact` will think the artifact contents are the file path
+        with tempfile.NamedTemporaryFile(mode='w') as temp_file:
+            temp_filename = temp_file.name
+            with open(temp_filename, 'w') as file:
+                json.dump(schema, file)
+            self.log_artifact(key="model_schema.json", artifact=temp_filename, overwrite=True)
+
+    def get_schema(self) -> Dict[str, dict]:
+        """
+        Gets the input and output json schemas of this Deployable Entity, in the format:
+
+        .. code-block:: python
+        {
+            "input": <input schema>,
+            "output": <output schema>
+        }
+
+        If no output schema was provided, output will not be included in the returned dict.
+
+        Returns
+        -------
+        Dict[str, dict]
+            Input and output json schemas.
+
+        """
+        schema = self.get_artifact("model_schema.json")
+        return json.load(schema)
 
     @abc.abstractmethod
     def log_environment(self, env, overwrite=False):

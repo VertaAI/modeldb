@@ -9,6 +9,7 @@ import pathlib
 import pickle
 import pprint
 import shutil
+import tempfile
 import warnings
 from typing import Dict
 
@@ -825,49 +826,6 @@ class ExperimentRun(_DeployableEntity):
             except (KeyError, TypeError, ValueError):
                 pass
         return attributes
-
-
-    def set_schema(self, input: pydantic.BaseModel, output: pydantic.BaseModel) -> None:
-        """
-        Sets the input and output schemas of this Experiment Run. Schemas are stored as
-        model artifacts.
-
-        Parameters
-        ----------
-        input : pydantic.BaseModel
-            Input schema.
-        output : pydantic.BaseModel
-            Output schema.
-
-        """
-        if not isinstance(input, pydantic.BaseModel):
-            raise TypeError(f"`input` must be of type pydantic.BaseModel, not {type(input)}")
-        if not isinstance(output, pydantic.BaseModel):
-            raise TypeError(f"`output` must be of type pydantic.BaseModel, not {type(input)}")
-
-        schema = {
-            "input": input.schema(),
-            "output": output.schema(),
-        }
-        self.log_artifact("model_schema.json", json.dumps(schema))
-
-
-    def get_schema(self) -> Dict[str, pydantic.BaseModel]:
-        """
-        Gets the input and output schemas of this Experiment Run.
-
-        Returns
-        -------
-        Dict[str, pydantic.BaseModel]
-            Input and output schemas.
-
-        """
-        schema = self.get_artifact("model_schema.json")
-        schema = json.loads(schema)
-        return {
-            "input": pydantic.BaseModel.parse_obj(schema["input"]),
-            "output": pydantic.BaseModel.parse_obj(schema["output"]),
-        }
 
     def _delete_attributes(self, keys):
         response = _utils.make_request(
